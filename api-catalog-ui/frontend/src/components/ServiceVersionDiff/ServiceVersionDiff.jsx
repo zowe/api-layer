@@ -32,31 +32,37 @@ export default class ServiceVersionDiff extends Component {
         return (
             <div className="api-diff-container">
                 <div className="api-diff-form">
-                    <Typography>Compare</Typography>
+                    <Typography data-testid="compare-label">Compare</Typography>
                     <FormControl className="formField">
                         <InputLabel shrink>Version</InputLabel>
                         <Select
+                            data-testid="select-1"
                             label="versionSelect1"
                             value={selectedVersion1}
                             onChange={this.handleVersion1Change}
                             sx={selectorStyle}
                         >
                             {versions.map(version => (
-                                <MenuItem value={version}>{version}</MenuItem>
+                                <MenuItem data-testid="menu-items-1" value={version}>
+                                    {version}
+                                </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-                    <Typography>with</Typography>
+                    <Typography data-testid="label-with">with</Typography>
                     <FormControl className="formField">
                         <InputLabel shrink>Version</InputLabel>
                         <Select
+                            data-testid="select-2"
                             label="versionSelect2"
                             value={selectedVersion2}
                             onChange={this.handleVersion2Change}
                             sx={selectorStyle}
                         >
                             {versions.map(version => (
-                                <MenuItem value={version}>{version}</MenuItem>
+                                <MenuItem data-testid="menu-items-2" value={version}>
+                                    {version}
+                                </MenuItem>
                             ))}
                         </Select>
                     </FormControl>

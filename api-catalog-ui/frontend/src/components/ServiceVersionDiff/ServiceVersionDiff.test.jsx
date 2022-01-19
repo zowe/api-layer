@@ -3,7 +3,7 @@ import { shallow } from 'enzyme';
 import ServiceVersionDiff from './ServiceVersionDiff';
 
 describe('>>> ServiceVersionDiff component tests', () => {
-    xit('Should display service version diff with no data', () => {
+    it('Should disable the compare button', () => {
         const serviceVersionDiff = shallow(<ServiceVersionDiff serviceId="service" versions={['v1', 'v2']} />);
 
         expect(serviceVersionDiff.find('.api-diff-container').exists()).toEqual(true);
@@ -11,105 +11,73 @@ describe('>>> ServiceVersionDiff component tests', () => {
 
         expect(
             serviceVersionDiff
-                .find('Text')
+                .find('[data-testid="compare-label"]')
                 .first()
                 .prop('children')
         ).toEqual('Compare');
 
         expect(
             serviceVersionDiff
-                .find('Select')
+                .find('[data-testid="select-1"]')
                 .first()
                 .exists()
         ).toEqual(true);
-        expect(
-            serviceVersionDiff
-                .find('Select')
-                .first()
-                .prop('selectedItem')
-        ).toEqual(undefined);
-        expect(
-            serviceVersionDiff
-                .find('Select')
-                .first()
-                .prop('data')
-        ).toEqual([{ text: 'v1' }, { text: 'v2' }]);
 
         expect(
             serviceVersionDiff
-                .find('Text')
-                .at(1)
+                .find('[data-testid="select-2"]')
+                .first()
+                .exists()
+        ).toEqual(true);
+
+        expect(
+            serviceVersionDiff
+                .find('[data-testid="label-with"]')
+                .first()
                 .prop('children')
         ).toEqual('with');
 
         expect(
             serviceVersionDiff
-                .find('Select')
-                .at(1)
-                .exists()
-        ).toEqual(true);
-        expect(
-            serviceVersionDiff
-                .find('Select')
-                .at(1)
-                .prop('selectedItem')
-        ).toEqual(undefined);
-        expect(
-            serviceVersionDiff
-                .find('Select')
-                .at(1)
-                .prop('data')
-        ).toEqual([{ text: 'v1' }, { text: 'v2' }]);
-
-        expect(
-            serviceVersionDiff
-                .find('[data-testid="diff-button"]')
+                .find('[data-testid="menu-items-1"]')
                 .first()
                 .exists()
         ).toEqual(true);
+
+        expect(
+            serviceVersionDiff
+                .find('[data-testid="menu-items-2"]')
+                .first()
+                .exists()
+        ).toEqual(true);
+
+        expect(
+            serviceVersionDiff
+                .find('[data-testid="menu-items-1"]')
+                .first()
+                .prop('value')
+        ).toEqual('v1');
+
+        expect(
+            serviceVersionDiff
+                .find('[data-testid="menu-items-2"]')
+                .first()
+                .prop('value')
+        ).toEqual('v1');
+
         expect(
             serviceVersionDiff
                 .find('[data-testid="diff-button"]')
                 .first()
                 .prop('children')
         ).toEqual('Go');
-    });
-
-    xit('Should preselect versions for compare when state is set', () => {
-        const serviceVersionDiff = shallow(<ServiceVersionDiff serviceId="service" versions={['v1', 'v2']} />);
-        serviceVersionDiff.setState({ selectedVersion1: { text: 'v1' }, selectedVersion2: { text: 'v2' } });
 
         expect(
             serviceVersionDiff
-                .find('Select')
+                .find('[data-testid="diff-button"]')
                 .first()
-                .prop('selectedItem')
-        ).toEqual({ text: 'v1' });
-        expect(
-            serviceVersionDiff
-                .find('Select')
-                .at(1)
-                .prop('selectedItem')
-        ).toEqual({ text: 'v2' });
-    });
-
-    xit('Should preselect versions for compare when props are passed', () => {
-        const serviceVersionDiff = shallow(
-            <ServiceVersionDiff serviceId="service" versions={['v1', 'v2']} version1="v1" version2="v2" />
-        );
-
-        expect(
-            serviceVersionDiff
-                .find('Select')
-                .first()
-                .prop('selectedItem')
-        ).toEqual({ text: 'v1' });
-        expect(
-            serviceVersionDiff
-                .find('Select')
-                .at(1)
-                .prop('selectedItem')
-        ).toEqual({ text: 'v2' });
+                .prop('disabled')
+        ).toEqual(true);
     });
 
     it('Should call getDiff when button pressed', () => {
