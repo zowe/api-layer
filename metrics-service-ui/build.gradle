@@ -73,7 +73,7 @@ task npmBuild(type: NpmTask) {
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file('frontend/.eslintrc').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')

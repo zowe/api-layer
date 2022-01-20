@@ -90,6 +90,7 @@
         "prettier/prettier": [
             "error",
             {
+                "endOfLine": "auto",
                 "trailingComma": "es5",
                 "singleQuote": true,
                 "printWidth": 120
@@ -108,6 +109,10 @@
         "react/prop-types": 0
     },
     "plugins": [
-        "prettier"
+        "flowtype",
+        "import",
+        "jsx-a11y",
+        "prettier",
+        "react"
     ]
 }
