@@ -62,6 +62,13 @@ task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
 }
 npmE2ECI.dependsOn npmInstall
 
+task npmLint(type: NpmTask) {
+    group = 'npm'
+    description = 'Run eslint'
+    args = ['run', 'lint']
+}
+npmLint.dependsOn npmInstall
+
 task npmBuild(type: NpmTask) {
     group = 'npm'
     description = "Executes npm build"
@@ -78,6 +85,7 @@ task npmBuild(type: NpmTask) {
 
 }
 npmBuild.dependsOn npmInstall
+npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
 
 
