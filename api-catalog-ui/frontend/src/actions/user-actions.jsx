@@ -24,8 +24,8 @@ function login(credentials) {
     function failure(error) {
         return { type: userConstants.USERS_LOGIN_FAILURE, error };
     }
-    function passExpired(error) {
-        return { type: userConstants.USERS_LOGIN_EXPIREDPASSWORD, error };
+    function invalidPassword(error) {
+        return { type: userConstants.USERS_LOGIN_INVALIDPASSWORD, error };
     }
 
     return dispatch => {
@@ -36,8 +36,8 @@ function login(credentials) {
                 history.push('/dashboard');
             },
             error => {
-                if (error.messageNumber === 'ZWEAS199E') {
-                    dispatch(passExpired(error));
+                if (error.messageNumber === 'ZWEAS199E' || error.messageNumber === 'ZWEAS196E') {
+                    dispatch(invalidPassword(error));
                 } else {
                     dispatch(failure(error));
                 }

@@ -52,6 +52,7 @@ export default class Login extends React.Component {
         const { error, expired } = auth;
         let messageText;
         let invalidNewPassword;
+        let isSuspended;
         const { authentication } = this.props;
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
@@ -65,8 +66,8 @@ export default class Login extends React.Component {
             const filter = errorMessages.messages.filter(
                 x => x.messageKey != null && x.messageKey === error.messageNumber
             );
-            invalidNewPassword = error.messageNumber === 'ZWEAS198E';
-            const isSuspended = error.messageNumber === 'ZWEAS197E';
+            invalidNewPassword = error.messageNumber === 'ZWEAS198E' || error.messageNumber === 'ZWEAS196E';
+            isSuspended = error.messageNumber === 'ZWEAS197E';
             if (filter.length !== 0) {
                 if (filter[0].messageKey === 'ZWEAS120E') {
                     messageText = `${filter[0].messageText}`;
@@ -83,7 +84,7 @@ export default class Login extends React.Component {
         } else if (error.status === 500) {
             messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
-        return { messageText, expired, invalidNewPassword };
+        return { messageText, expired, invalidNewPassword, isSuspended };
     };
 
     handleChange(e) {
@@ -126,7 +127,7 @@ export default class Login extends React.Component {
             authentication.error !== null
         ) {
             error = this.handleError(authentication);
-            if (authentication.error.messageNumber === 'ZWEAS197E') {
+            if (error.isSuspended) {
                 return (
                     <div className="login-object">
                         <div className="login-form">
@@ -155,7 +156,7 @@ export default class Login extends React.Component {
         } else if (errorMessage) {
             error.messageText = errorMessage;
         }
-        debugger;
+
         return (
             <div className="login-object">
                 <div className="login-form">

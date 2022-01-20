@@ -40,7 +40,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                     sessionDefaultState.sessionOn = false;
                 },
             };
-        case userConstants.USERS_LOGIN_EXPIREDPASSWORD:
+        case userConstants.USERS_LOGIN_INVALIDPASSWORD:
             return {
                 error: action.error,
                 expired: true,
