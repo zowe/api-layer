@@ -44,7 +44,7 @@ export default class ServiceTab extends Component {
             selectService,
         } = this.props;
 
-        tiles[0].services.forEach(service => {
+        tiles[0].services.forEach((service) => {
             if (service.serviceId === serviceId) {
                 if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
                     selectService(service, tileID);
@@ -72,7 +72,7 @@ export default class ServiceTab extends Component {
         const { currentService } = this;
 
         if (currentService && currentService.apiVersions) {
-            apiVersions = currentService.apiVersions.map(version => {
+            apiVersions = currentService.apiVersions.map((version) => {
                 // Pre select default version or if only one version exists select that
                 let tabStyle = {};
                 if (

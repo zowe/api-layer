@@ -1,6 +1,5 @@
-/* eslint-disable no-undef */
-
 import * as enzyme from 'enzyme';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { AjaxError } from 'rxjs/ajax/index';
 import Error from './Error';
 import { ApiError, MessageType } from '../../constants/error-constants';

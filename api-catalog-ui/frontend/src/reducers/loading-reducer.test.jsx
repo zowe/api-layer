@@ -8,8 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-
 import loadingReducer from './loading-reducer';
 
 describe('>>> Loading reducer tests', () => {

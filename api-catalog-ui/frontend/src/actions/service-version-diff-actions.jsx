@@ -30,17 +30,19 @@ export function getDiff(serviceId, oldVersion, newVersion) {
         };
     }
 
-    return dispatch => {
+    return (dispatch) => {
         dispatch(request(serviceId, oldVersion, newVersion));
 
         return fetch(
-            `${process.env.REACT_APP_GATEWAY_URL +
+            `${
+                process.env.REACT_APP_GATEWAY_URL +
                 process.env.REACT_APP_CATALOG_HOME +
-                process.env.REACT_APP_APIDOC_UPDATE}/${serviceId}/${oldVersion}/${newVersion}`
+                process.env.REACT_APP_APIDOC_UPDATE
+            }/${serviceId}/${oldVersion}/${newVersion}`
         )
-            .then(response => response.text())
-            .then(text => dispatch(receive(text)))
-            .catch(e => {
+            .then((response) => response.text())
+            .then((text) => dispatch(receive(text)))
+            .catch((e) => {
                 // eslint-disable-next-line no-console
                 console.log(e);
             });

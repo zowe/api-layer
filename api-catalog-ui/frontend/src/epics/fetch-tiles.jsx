@@ -11,6 +11,7 @@
 import * as log from 'loglevel';
 import { of, throwError, timer } from 'rxjs';
 import { ofType } from 'redux-observable';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
 import { FETCH_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
 import { fetchTilesFailed, fetchTilesRetry, fetchTilesSuccess } from '../actions/catalog-tile-actions';
@@ -61,13 +62,13 @@ function getUrl(action) {
  * @returns {boolean} true if terminate
  */
 function shouldTerminate(error) {
-    let terminate = terminatingStatusCodes.find(e => e === error.status);
+    let terminate = terminatingStatusCodes.find((e) => e === error.status);
     if (terminate) {
         if (error.response.messages !== undefined) {
             const apiError = error.response.messages[0];
             if (apiError !== null && apiError !== undefined && apiError.messageNumber !== undefined) {
                 // if this APIM message number is in the response, then override the terminate flag
-                if (excludedMessageCodes.find(e => e === apiError.messageNumber)) {
+                if (excludedMessageCodes.find((e) => e === apiError.messageNumber)) {
                     terminate = false;
                 }
             }
@@ -76,33 +77,34 @@ function shouldTerminate(error) {
     return terminate;
 }
 
-export const retryMechanism = scheduler => ({
-    maxRetries = Number(process.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES),
-} = {}) => attempts =>
-    attempts.pipe(
-        mergeMap((error, i) => {
-            const retryAttempt = i + 1;
-            if (shouldTerminate(error)) {
-                return throwError(error);
-            }
-            // used for display Toast retry notification
-            fetchTilesRetry(retryAttempt, maxRetries);
-            if (retryAttempt > maxRetries) {
-                const message = `Could not retrieve tile info after ${maxRetries} attempts. Stopping fetch process.`;
-                log.error(message);
-                return throwError(new Error(message));
-            }
-            const msg = `Attempt ${retryAttempt}: retrying in ${scalingDuration * retryAttempt}s`;
-            log.warn(msg);
-            return timer(scalingDuration * retryAttempt, scheduler);
-        })
-    );
+export const retryMechanism =
+    (scheduler) =>
+    ({ maxRetries = Number(process.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES) } = {}) =>
+    (attempts) =>
+        attempts.pipe(
+            mergeMap((error, i) => {
+                const retryAttempt = i + 1;
+                if (shouldTerminate(error)) {
+                    return throwError(error);
+                }
+                // used for display Toast retry notification
+                fetchTilesRetry(retryAttempt, maxRetries);
+                if (retryAttempt > maxRetries) {
+                    const message = `Could not retrieve tile info after ${maxRetries} attempts. Stopping fetch process.`;
+                    log.error(message);
+                    return throwError(new Error(message));
+                }
+                const msg = `Attempt ${retryAttempt}: retrying in ${scalingDuration * retryAttempt}s`;
+                log.warn(msg);
+                return timer(scalingDuration * retryAttempt, scheduler);
+            })
+        );
 
 export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
     action$.pipe(
         ofType(FETCH_TILES_REQUEST),
         debounceTime(debounce, scheduler),
-        mergeMap(action =>
+        mergeMap((action) =>
             timer(0, updatePeriod, scheduler).pipe(
                 exhaustMap(() =>
                     ajax({
@@ -115,7 +117,7 @@ export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
                             'X-Requested-With': 'XMLHttpRequest',
                         },
                     }).pipe(
-                        map(ajaxResponse => {
+                        map((ajaxResponse) => {
                             const { response } = ajaxResponse;
                             if (response === null || response.length === 0) {
                                 // noinspection JSValidateTypes
@@ -131,7 +133,7 @@ export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
                     )
                 ),
                 takeUntil(action$.ofType(FETCH_TILES_STOP)),
-                catchError(error => {
+                catchError((error) => {
                     if (error.status === 401 || error.status === 403) {
                         return of(userActions.authenticationFailure(error));
                     }

@@ -1,5 +1,4 @@
 import { ThemeProvider } from 'mineral-ui';
-import { debounce } from 'lodash';
 // tslint:disable-next-line:no-implicit-dependencies
 import * as enzyme from 'enzyme';
 import SearchCriteria from './SearchCriteria';

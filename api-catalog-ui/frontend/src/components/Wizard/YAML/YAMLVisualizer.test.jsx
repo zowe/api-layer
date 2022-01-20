@@ -23,9 +23,7 @@ describe('>>> YAML Visualizer tests', () => {
             },
             multiple: false,
         };
-        enzyme.shallow(
-            <YAMLVisualizer createYamlObject={createYamlObject} inputData={dummyData} />
-        );
+        enzyme.shallow(<YAMLVisualizer createYamlObject={createYamlObject} inputData={dummyData} />);
         expect(createYamlObject).toHaveBeenCalledWith(dummyData);
     });
 
@@ -51,16 +49,14 @@ describe('>>> YAML Visualizer tests', () => {
                 writeText: () => {},
             },
         });
-        jest.spyOn(navigator.clipboard, "writeText");
+        jest.spyOn(navigator.clipboard, 'writeText');
         const wrapper = enzyme.shallow(<YAMLVisualizer createYamlObject={jest.fn()} />);
         wrapper.instance().copy();
         expect(navigator.clipboard.writeText).toHaveBeenCalled();
     });
 
     it('should display YAML from props', () => {
-        const wrapper = enzyme.shallow(
-            <YAMLVisualizer createYamlObject={jest.fn()} yamlObject="test:yaml" />
-        );
+        const wrapper = enzyme.shallow(<YAMLVisualizer createYamlObject={jest.fn()} yamlObject="test:yaml" />);
         expect(wrapper.find('.yamlContainer code').text()).toEqual('test:yaml\n');
     });
 });

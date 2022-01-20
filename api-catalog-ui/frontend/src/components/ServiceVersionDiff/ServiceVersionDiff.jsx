@@ -26,7 +26,7 @@ export default class ServiceVersionDiff extends Component {
     render() {
         const { serviceId, versions, getDiff, diffText } = this.props;
         const { selectedVersion1, selectedVersion2 } = this.state;
-        const versionData = versions.map(version => ({ text: version }));
+        const versionData = versions.map((version) => ({ text: version }));
         const selectorStyle = {
             width: '140px',
         };

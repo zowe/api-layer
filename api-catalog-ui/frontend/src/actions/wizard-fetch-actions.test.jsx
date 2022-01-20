@@ -1,10 +1,6 @@
 import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-fetch-actions';
-import {
-    assertAuthorization,
-    overrideStaticDef,
-    sendYAML,
-} from './wizard-fetch-actions';
+import { assertAuthorization, overrideStaticDef, sendYAML } from './wizard-fetch-actions';
 
 describe('>>> Wizard actions tests', () => {
     it('should do nothing on YAML error', () => {
@@ -31,12 +27,12 @@ describe('>>> Wizard actions tests', () => {
     it('should toggle wizard visibility', () => {
         const expectedAction = {
             type: constants.WIZARD_VISIBILITY_TOGGLE,
-            payload: {state: true},
+            payload: { state: true },
         };
         expect(actions.toggleWizardVisibility(true)).toEqual(expectedAction);
     });
     it('should override static definition', () => {
-        const yamlText = {test: 'hey'};
+        const yamlText = { test: 'hey' };
         const serviceId = 'Id';
         overrideStaticDef(yamlText, serviceId);
         const expectedAction = {
@@ -45,7 +41,7 @@ describe('>>> Wizard actions tests', () => {
         expect(actions.notifySuccess()).toEqual(expectedAction);
     });
     it('should add static definition', () => {
-        const yamlText = {test: 'hey'};
+        const yamlText = { test: 'hey' };
         const serviceId = 'Id';
         sendYAML(yamlText, serviceId);
         const expectedAction = {
@@ -57,7 +53,7 @@ describe('>>> Wizard actions tests', () => {
         assertAuthorization();
         const expectedAction = {
             type: constants.WIZARD_VISIBILITY_TOGGLE,
-            payload: {state: true},
+            payload: { state: true },
         };
         expect(actions.toggleWizardVisibility(true)).toEqual(expectedAction);
     });

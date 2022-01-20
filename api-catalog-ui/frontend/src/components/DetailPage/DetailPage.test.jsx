@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { shallow } from 'enzyme';
 import DetailPage from './DetailPage';
 
@@ -143,7 +142,7 @@ describe('>>> Detailed Page component tests', () => {
         const fetchTilesError = {
             status: 404,
         };
-        const wrapper = shallow(
+        shallow(
             <DetailPage
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
@@ -164,7 +163,7 @@ describe('>>> Detailed Page component tests', () => {
         const fetchTilesError = {
             message: 'some message',
         };
-        const wrapper = shallow(
+        shallow(
             <DetailPage
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
@@ -186,7 +185,7 @@ describe('>>> Detailed Page component tests', () => {
         const fetchTilesStart = jest.fn();
         const clearService = jest.fn();
         const selectedTile = 'apicatalog';
-        const wrapper = shallow(
+        shallow(
             <DetailPage
                 tiles={[tile]}
                 clearService={clearService}

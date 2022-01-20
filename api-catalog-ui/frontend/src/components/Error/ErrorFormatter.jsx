@@ -30,7 +30,7 @@ function formaHtmlError(message, color) {
     );
 }
 
-const formatError = error => {
+const formatError = (error) => {
     let message = 'Could not determine error';
     let color = colorDanger;
 

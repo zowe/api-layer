@@ -91,106 +91,99 @@ export default class DetailPage extends Component {
                         {error}
                     </div>
                 )}
-                {!isLoading &&
-                    !fetchTilesError && (
-                        <div className="api-description-container">
-                            <div className="description-container">
-                                <div className="link-block w-inline-block back-button-container">
-                                    <Button
-                                        id="go-back-button"
-                                        data-testid="go-back-button"
-                                        primary
-                                        onClick={this.handleGoBack}
-                                        size="medium"
-                                        iconStart={iconBack}
-                                    >
-                                        Back
-                                    </Button>
-                                </div>
-                            </div>
-                            <div className="detailed-description-container">
-                                <div className="title-api-container">
-                                    {tiles !== undefined &&
-                                        tiles.length === 1 && (
-                                            <div id="title" className="text-block-11">
-                                                {tiles[0].title}
-                                            </div>
-                                        )}
-                                </div>
-                                <div className="paragraph-description-container">
-                                    {tiles !== undefined &&
-                                        tiles.length > 0 && (
-                                            <div id="description" className="text-block-12">
-                                                {tiles[0].description}
-                                            </div>
-                                        )}
-                                </div>
+                {!isLoading && !fetchTilesError && (
+                    <div className="api-description-container">
+                        <div className="description-container">
+                            <div className="link-block w-inline-block back-button-container">
+                                <Button
+                                    id="go-back-button"
+                                    data-testid="go-back-button"
+                                    primary
+                                    onClick={this.handleGoBack}
+                                    size="medium"
+                                    iconStart={iconBack}
+                                >
+                                    Back
+                                </Button>
                             </div>
                         </div>
-                    )}
+                        <div className="detailed-description-container">
+                            <div className="title-api-container">
+                                {tiles !== undefined && tiles.length === 1 && (
+                                    <div id="title" className="text-block-11">
+                                        {tiles[0].title}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="paragraph-description-container">
+                                {tiles !== undefined && tiles.length > 0 && (
+                                    <div id="description" className="text-block-12">
+                                        {tiles[0].description}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <div className="content-description-container">
-                    {tiles !== undefined &&
-                        tiles.length === 1 && (
-                            <Suspense>
-                                <Router history={history}>
-                                    <Switch>
-                                        <Route
-                                            exact
-                                            path={`${match.path}`}
-                                            render={() => (
-                                                <Redirect
-                                                    replace
-                                                    to={`${match.url}/${tiles[0].services[0].serviceId}`}
-                                                />
-                                            )}
-                                        />
-                                        <Route
-                                            exact
-                                            path={`${match.path}/:serviceId`}
-                                            render={() => (
-                                                <div className="tabs-swagger">
-                                                    <div className="tabs-container">
-                                                        {tiles !== undefined &&
-                                                            tiles.length === 1 &&
-                                                            tiles[0].services.map(({ serviceId, title, status }) => (
-                                                                <Tooltip
-                                                                    key={serviceId}
-                                                                    content={this.setTitle(title, status)}
-                                                                    placement="bottom"
-                                                                >
-                                                                    <div>
-                                                                        {status === 'UP' && (
-                                                                            <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Text element="h4">{serviceId}</Text>
-                                                                            </NavTab>
-                                                                        )}
-                                                                        {status === 'DOWN' && (
-                                                                            <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Text element="h4" color="#de1b1b">
-                                                                                    {serviceId}
-                                                                                </Text>
-                                                                                <IconSuccessSimple color="#de1b1b" />
-                                                                            </NavTab>
-                                                                        )}
-                                                                    </div>
-                                                                </Tooltip>
-                                                            ))}
-                                                    </div>
-                                                    <ServiceTabContainer />
+                    {tiles !== undefined && tiles.length === 1 && (
+                        <Suspense>
+                            <Router history={history}>
+                                <Switch>
+                                    <Route
+                                        exact
+                                        path={`${match.path}`}
+                                        render={() => (
+                                            <Redirect replace to={`${match.url}/${tiles[0].services[0].serviceId}`} />
+                                        )}
+                                    />
+                                    <Route
+                                        exact
+                                        path={`${match.path}/:serviceId`}
+                                        render={() => (
+                                            <div className="tabs-swagger">
+                                                <div className="tabs-container">
+                                                    {tiles !== undefined &&
+                                                        tiles.length === 1 &&
+                                                        tiles[0].services.map(({ serviceId, title, status }) => (
+                                                            <Tooltip
+                                                                key={serviceId}
+                                                                content={this.setTitle(title, status)}
+                                                                placement="bottom"
+                                                            >
+                                                                <div>
+                                                                    {status === 'UP' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Text element="h4">{serviceId}</Text>
+                                                                        </NavTab>
+                                                                    )}
+                                                                    {status === 'DOWN' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Text element="h4" color="#de1b1b">
+                                                                                {serviceId}
+                                                                            </Text>
+                                                                            <IconSuccessSimple color="#de1b1b" />
+                                                                        </NavTab>
+                                                                    )}
+                                                                </div>
+                                                            </Tooltip>
+                                                        ))}
                                                 </div>
-                                            )}
-                                        />
-                                        <Route
-                                            render={(props, state) => (
-                                                <BigShield history={history}>
-                                                    <PageNotFound {...props} {...state} />
-                                                </BigShield>
-                                            )}
-                                        />
-                                    </Switch>
-                                </Router>
-                            </Suspense>
-                        )}
+                                                <ServiceTabContainer />
+                                            </div>
+                                        )}
+                                    />
+                                    <Route
+                                        render={(props, state) => (
+                                            <BigShield history={history}>
+                                                <PageNotFound {...props} {...state} />
+                                            </BigShield>
+                                        )}
+                                    />
+                                </Switch>
+                            </Router>
+                        </Suspense>
+                    )}
                 </div>
             </div>
         );

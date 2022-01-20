@@ -19,8 +19,7 @@ export const defaultSpring = {
     },
     'API Info': {
         swaggerUrl: {
-            value:
-                '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
+            value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
             hide: true,
         },
     },

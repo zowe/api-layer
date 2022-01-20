@@ -6,19 +6,14 @@ import { createLoadingSelector } from '../../selectors/selectors';
 
 const loadingSelector = createLoadingSelector(['USERS_LOGIN']);
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     authentication: state.authenticationReducer,
     isFetching: loadingSelector(state),
 });
 
 const mapDispatchToProps = {
-    login: credentials => userActions.login(credentials),
+    login: (credentials) => userActions.login(credentials),
     logout: () => userActions.logout(),
 };
 
-export default withRouter(
-    connect(
-        mapStateToProps,
-        mapDispatchToProps
-    )(Login)
-);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Login));

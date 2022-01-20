@@ -8,7 +8,7 @@ export default class ErrorDialog extends Component {
         clearError();
     };
 
-    getCorrectRefreshMessage = error => {
+    getCorrectRefreshMessage = (error) => {
         let messageText;
         if (error && !error.status && !error.messageNumber) {
             messageText = error.toString();
@@ -20,7 +20,7 @@ export default class ErrorDialog extends Component {
         if (error && error.messageNumber && error.messageType) {
             messageText = 'Unexpected error, please try again later';
             const filter = errorMessages.messages.filter(
-                x => x.messageKey != null && x.messageKey === error.messageNumber
+                (x) => x.messageKey != null && x.messageKey === error.messageNumber
             );
             if (filter.length !== 0) {
                 messageText = `(${error.messageNumber}) ${filter[0].messageText}`;

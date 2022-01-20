@@ -19,30 +19,10 @@ describe('>>> InstanceInfo component tests', () => {
             <InstanceInfo selectedService={selectedService} selectedVersion="v1" selectService={selectService} />
         );
 
-        expect(
-            instanceInfo
-                .find('label')
-                .at(0)
-                .prop('children')
-        ).toEqual('Instance URL:');
-        expect(
-            instanceInfo
-                .find('span')
-                .at(0)
-                .prop('children')
-        ).toEqual('https://localhost:6000');
-        expect(
-            instanceInfo
-                .find('label')
-                .at(1)
-                .prop('children')
-        ).toEqual('API ID:');
-        expect(
-            instanceInfo
-                .find('span')
-                .at(1)
-                .prop('children')
-        ).toEqual('zowe.apiml.gateway');
+        expect(instanceInfo.find('label').at(0).prop('children')).toEqual('Instance URL:');
+        expect(instanceInfo.find('span').at(0).prop('children')).toEqual('https://localhost:6000');
+        expect(instanceInfo.find('label').at(1).prop('children')).toEqual('API ID:');
+        expect(instanceInfo.find('span').at(1).prop('children')).toEqual('zowe.apiml.gateway');
     });
 
     it('No selected version, use defaultApiVersion', () => {
@@ -53,12 +33,7 @@ describe('>>> InstanceInfo component tests', () => {
         const selectService = jest.fn();
         const instanceInfo = shallow(<InstanceInfo selectedService={selectedService} selectService={selectService} />);
 
-        expect(
-            instanceInfo
-                .find('span')
-                .at(1)
-                .prop('children')
-        ).toEqual('zowe.apiml.gateway');
+        expect(instanceInfo.find('span').at(1).prop('children')).toEqual('zowe.apiml.gateway');
     });
 
     it('No selected version and not set defaultApiVersion use key default', () => {
@@ -69,11 +44,6 @@ describe('>>> InstanceInfo component tests', () => {
         const selectService = jest.fn();
         const instanceInfo = shallow(<InstanceInfo selectedService={selectedService} selectService={selectService} />);
 
-        expect(
-            instanceInfo
-                .find('span')
-                .at(1)
-                .prop('children')
-        ).toEqual('zowe.apiml.gateway');
+        expect(instanceInfo.find('span').at(1).prop('children')).toEqual('zowe.apiml.gateway');
     });
 });

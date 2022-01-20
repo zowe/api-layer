@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import * as enzyme from 'enzyme';
 import Footer from './Footer';
 
@@ -17,12 +16,7 @@ describe('>>> Footer component tests', () => {
     it('should have link href to CA support', () => {
         process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
-        expect(
-            footer
-                .find('Link')
-                .first()
-                .props().href
-        ).toEqual('https://support.ca.com/us.html');
+        expect(footer.find('Link').first().props().href).toEqual('https://support.ca.com/us.html');
     });
 
     it('should show the copyright', () => {

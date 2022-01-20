@@ -11,7 +11,7 @@ import DetailPage from './DetailPage';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     tile: state.tilesReducer.tile,
     tiles: state.tilesReducer.tiles,
     fetchTilesError: state.tilesReducer.error,
@@ -20,15 +20,12 @@ const mapStateToProps = state => ({
     isLoading: loadingSelector(state),
 });
 
-const mapDispatchToProps = dispatch => ({
-    fetchTilesStart: id => dispatch(fetchTilesStart(id)),
-    fetchTilesSuccess: tiles => dispatch(fetchTilesSuccess(tiles)),
-    fetchTilesFailed: error => dispatch(fetchTilesFailed(error)),
+const mapDispatchToProps = (dispatch) => ({
+    fetchTilesStart: (id) => dispatch(fetchTilesStart(id)),
+    fetchTilesSuccess: (tiles) => dispatch(fetchTilesSuccess(tiles)),
+    fetchTilesFailed: (error) => dispatch(fetchTilesFailed(error)),
     fetchTilesStop: () => dispatch(fetchTilesStop()),
     clearService: () => dispatch(clearService()),
 });
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(DetailPage);
+export default connect(mapStateToProps, mapDispatchToProps)(DetailPage);

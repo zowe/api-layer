@@ -40,7 +40,7 @@ export function confirmStaticDefOverride() {
  */
 function yamlEndpointConnect(yamlText, serviceId, endpoint) {
     const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/${endpoint}`;
-    return dispatch => {
+    return (dispatch) => {
         fetch(url, {
             method: 'POST',
             headers: {
@@ -48,7 +48,7 @@ function yamlEndpointConnect(yamlText, serviceId, endpoint) {
             },
             body: yamlText,
         })
-            .then(res => {
+            .then((res) => {
                 const { status } = res;
                 if (status === 201) {
                     dispatch(notifySuccess());
@@ -80,7 +80,7 @@ export function assertAuthorization() {
         resourceName: 'APIML.SERVICES',
         accessLevel: 'READ',
     };
-    return dispatch => {
+    return (dispatch) => {
         fetch(url, {
             headers: {
                 'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export function assertAuthorization() {
             method: 'POST',
             body: JSON.stringify(body),
         })
-            .then(res => {
+            .then((res) => {
                 const { status } = res;
                 if (status === 204) {
                     dispatch(toggleWizardVisibility(true));

@@ -46,14 +46,16 @@ export default class SwaggerUI extends Component {
                     allowTryItOutFor: () => () => true,
                 },
                 wrapActions: {
-                    updateLoadingStatus: ori => (...args) => {
-                        const [loadingStatus] = args;
-                        // eslint-disable-next-line react/no-unused-state
-                        this.setState({ isLoading: loadingStatus === 'loading' });
-                        // eslint-disable-next-line react/no-unused-state
-                        this.setState({ loadingStatus });
-                        return ori(...args);
-                    },
+                    updateLoadingStatus:
+                        (ori) =>
+                        (...args) => {
+                            const [loadingStatus] = args;
+                            // eslint-disable-next-line react/no-unused-state
+                            this.setState({ isLoading: loadingStatus === 'loading' });
+                            // eslint-disable-next-line react/no-unused-state
+                            this.setState({ loadingStatus });
+                            return ori(...args);
+                        },
                 },
             },
         },
@@ -68,7 +70,7 @@ export default class SwaggerUI extends Component {
                         <Original {...props} />
                     </div>
                 );
-            }
+            },
         },
     });
 
@@ -92,15 +94,17 @@ export default class SwaggerUI extends Component {
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
-                const url = `${process.env.REACT_APP_GATEWAY_URL +
+                const url = `${
+                    process.env.REACT_APP_GATEWAY_URL +
                     process.env.REACT_APP_CATALOG_HOME +
-                    process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/${selectedVersion}`;
+                    process.env.REACT_APP_APIDOC_UPDATE
+                }/${selectedService.serviceId}/${selectedVersion}`;
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     url,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
-                    responseInterceptor: res => {
+                    responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
                         const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
                         res.text = JSON.stringify(swagger);

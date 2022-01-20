@@ -5,7 +5,7 @@ import { Component } from 'react';
 import './Tile.css';
 
 export default class Tile extends Component {
-    getStatusFromServiceTotals = tile => {
+    getStatusFromServiceTotals = (tile) => {
         const { status } = tile;
         let tileStatus = status;
         if (tileStatus === 'UP' && tile.totalServices !== tile.activeServices) {
@@ -14,9 +14,9 @@ export default class Tile extends Component {
         return tileStatus;
     };
 
-    getStatusTextFromServiceTotals = tile => `${tile.activeServices} of ${tile.totalServices} services are running`;
+    getStatusTextFromServiceTotals = (tile) => `${tile.activeServices} of ${tile.totalServices} services are running`;
 
-    getTileStatus = tile => {
+    getTileStatus = (tile) => {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
@@ -33,7 +33,7 @@ export default class Tile extends Component {
         }
     };
 
-    getTileStatusText = tile => {
+    getTileStatusText = (tile) => {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
@@ -58,7 +58,7 @@ export default class Tile extends Component {
 
     // not a great way to avoid overlapping text in a card block
     // Mineral bug
-    shortenDescription = description => {
+    shortenDescription = (description) => {
         if (description.length > 180) {
             return `${description.substring(0, 177)}...`;
         }

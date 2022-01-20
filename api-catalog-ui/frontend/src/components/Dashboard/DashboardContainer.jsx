@@ -14,7 +14,7 @@ import { selectEnabler, wizardToggleDisplay } from '../../actions/wizard-actions
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     searchCriteria: state.filtersReducer.text,
     tiles: getVisibleTiles(state.tilesReducer.tiles, state.filtersReducer.text),
     fetchTilesError: state.tilesReducer.error,
@@ -37,7 +37,4 @@ const mapDispatchToProps = {
     selectEnabler,
 };
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Dashboard);
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

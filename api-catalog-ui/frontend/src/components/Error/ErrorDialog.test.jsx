@@ -1,7 +1,6 @@
-/* eslint-disable no-undef */
-import ErrorDialog from './ErrorDialog';
 import { shallow } from 'enzyme';
 import jest from 'jest-mock';
+import ErrorDialog from './ErrorDialog';
 
 describe('>>> ErrorDialog component tests', () => {
     it('should render the ErrorDialog if there is an error while refreshing apis', () => {

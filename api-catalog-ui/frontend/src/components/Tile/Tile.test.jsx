@@ -1,6 +1,4 @@
-/* eslint-disable no-undef */
-import { shallow } from 'enzyme';
-import { mount } from 'enzyme';
+import { shallow, mount } from 'enzyme';
 import Tile from './Tile';
 
 const match = {

@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { shallow } from 'enzyme';
 import PageNotFound from './PageNotFound';
 

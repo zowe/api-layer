@@ -11,7 +11,8 @@
 import _ from 'lodash';
 
 // check the current action against any states which are requests
-export const createLoadingSelector = actions => state => _(actions).some(action => _.get(state.loadingReducer, action));
+export const createLoadingSelector = (actions) => (state) =>
+    _(actions).some((action) => _.get(state.loadingReducer, action));
 
 // eslint-disable-next-line
 export const getVisibleTiles = (tiles, searchCriteria) => {
@@ -19,7 +20,7 @@ export const getVisibleTiles = (tiles, searchCriteria) => {
         return [];
     }
     return tiles
-        .filter(tile => {
+        .filter((tile) => {
             if (searchCriteria === undefined || searchCriteria === null || searchCriteria.length === 0) {
                 return true;
             }

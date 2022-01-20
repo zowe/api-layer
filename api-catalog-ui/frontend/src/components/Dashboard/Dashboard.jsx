@@ -25,7 +25,7 @@ export default class Dashboard extends Component {
         fetchTilesStop();
     }
 
-    handleSearch = value => {
+    handleSearch = (value) => {
         const { filterText } = this.props;
         filterText(value);
     };
@@ -93,13 +93,12 @@ export default class Dashboard extends Component {
                                 </Shield>
                                 <h2 className="api-heading">Available API services</h2>
                             </div>
-                            {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
-                            {!hasTiles &&
-                                hasSearchCriteria && (
-                                    <Text id="search_no_results" element="h4" color="#1d5bbf">
-                                        No tiles found matching search criteria
-                                    </Text>
-                                )}
+                            {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
+                            {!hasTiles && hasSearchCriteria && (
+                                <Text id="search_no_results" element="h4" color="#1d5bbf">
+                                    No tiles found matching search criteria
+                                </Text>
+                            )}
                         </div>
                     </div>
                 )}

@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+/* eslint-disable no-console */
 import * as enzyme from 'enzyme';
 import BigShield from './BigShield';
 
@@ -9,9 +9,11 @@ const Child = () => {
     throw new Error('error');
 };
 
-const pauseErrorLogging = codeToRun => {
+const pauseErrorLogging = (codeToRun) => {
     const logger = console.error;
-    console.error = () => {/* This is intentional */};
+    console.error = () => {
+        /* This is intentional */
+    };
 
     codeToRun();
 

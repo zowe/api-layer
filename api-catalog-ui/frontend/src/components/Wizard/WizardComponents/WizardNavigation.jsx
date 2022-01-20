@@ -16,7 +16,7 @@ class WizardNavigation extends Component {
      * React on navTab click
      * @param event number - index of the tab to be switched to
      */
-    handleChange = event => {
+    handleChange = (event) => {
         if (typeof event === 'number') {
             const navNamesArr = Object.keys(this.props.navsObj);
             if (this.props.selectedCategory < navNamesArr.length) {
@@ -24,7 +24,7 @@ class WizardNavigation extends Component {
             }
             if (event === navNamesArr.length) {
                 this.props.assertAuthorization();
-                navNamesArr.forEach(navName => {
+                navNamesArr.forEach((navName) => {
                     this.props.validateInput(navName, false);
                 });
             }
@@ -39,7 +39,7 @@ class WizardNavigation extends Component {
     returnNavs() {
         const navs = {};
         let index = 0;
-        this.props.inputData.forEach(category => {
+        this.props.inputData.forEach((category) => {
             if (!Array.isArray(navs[category.nav])) {
                 navs[category.nav] = [];
             }
@@ -69,7 +69,7 @@ class WizardNavigation extends Component {
      */
     loadTabs = () => {
         let index = 0;
-        const categories = Object.entries(this.returnNavs()).map(entry => {
+        const categories = Object.entries(this.returnNavs()).map((entry) => {
             const name = entry[0];
             const categoryArr = entry[1];
             index += 1;

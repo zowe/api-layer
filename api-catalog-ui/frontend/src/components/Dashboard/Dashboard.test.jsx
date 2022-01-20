@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';
@@ -13,7 +12,6 @@ const ajaxError = {
 };
 
 describe('>>> Dashboard component tests', () => {
-
     it('should have "Refresh Static APIs" button', () => {
         const wrapper = shallow(
             <Dashboard
@@ -25,7 +23,7 @@ describe('>>> Dashboard component tests', () => {
                 assertAuthorization={jest.fn()}
             />
         );
-        let button = wrapper.find('#refresh-api-button');
+        const button = wrapper.find('#refresh-api-button');
         expect(button.length).toEqual(1);
     });
 
@@ -42,12 +40,9 @@ describe('>>> Dashboard component tests', () => {
                 assertAuthorization={jest.fn()}
             />
         );
-        expect(
-            dashboard
-                .find('#search_no_results')
-                .children()
-                .text()
-        ).toEqual('No tiles found matching search criteria');
+        expect(dashboard.find('#search_no_results').children().text()).toEqual(
+            'No tiles found matching search criteria'
+        );
     });
 
     it('should display error if error comms failure', () => {
@@ -63,13 +58,9 @@ describe('>>> Dashboard component tests', () => {
                 assertAuthorization={jest.fn()}
             />
         );
-        expect(
-            dashboard
-                .find('Text')
-                .first()
-                .children()
-                .text()
-        ).toEqual('Tile details could not be retrieved, the following error was returned:');
+        expect(dashboard.find('Text').first().children().text()).toEqual(
+            'Tile details could not be retrieved, the following error was returned:'
+        );
     });
 
     it('should stop epic on unmount', () => {
