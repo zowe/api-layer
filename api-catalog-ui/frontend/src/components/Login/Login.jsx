@@ -51,6 +51,7 @@ export default class Login extends React.Component {
     handleError = auth => {
         const { error, expired } = auth;
         let messageText;
+        let invalidNewPassword;
         const { authentication } = this.props;
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
@@ -64,6 +65,7 @@ export default class Login extends React.Component {
             const filter = errorMessages.messages.filter(
                 x => x.messageKey != null && x.messageKey === error.messageNumber
             );
+            invalidNewPassword = error.messageNumber === 'ZWEAS198E';
             if (filter.length !== 0) {
                 if (filter[0].messageKey === 'ZWEAS120E') {
                     messageText = `${filter[0].messageText}`;
@@ -71,13 +73,16 @@ export default class Login extends React.Component {
                     messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
                 }
             }
+            if (error.messageNumber === 'ZWEAS199E' || invalidNewPassword) {
+                messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+            }
         } else if (error.status === 401 && authentication.sessionOn) {
             messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
             authentication.onCompleteHandling();
         } else if (error.status === 500) {
             messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
-        return { messageText, expired };
+        return { messageText, expired, invalidNewPassword };
     };
 
     handleChange(e) {
@@ -112,7 +117,7 @@ export default class Login extends React.Component {
     render() {
         const { username, password, errorMessage, showPassword, warning, newPassword, repeatNewPassword  } = this.state;
         const { authentication, isFetching } = this.props;
-        let error = { messageText: null, expired: false };
+        let error = { messageText: null, expired: false, invalidNewPassword: true };
         if (
             authentication !== undefined &&
             authentication !== null &&
