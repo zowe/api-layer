@@ -66,6 +66,7 @@ export default class Login extends React.Component {
                 x => x.messageKey != null && x.messageKey === error.messageNumber
             );
             invalidNewPassword = error.messageNumber === 'ZWEAS198E';
+            const isSuspended = error.messageNumber === 'ZWEAS197E';
             if (filter.length !== 0) {
                 if (filter[0].messageKey === 'ZWEAS120E') {
                     messageText = `${filter[0].messageText}`;
@@ -73,7 +74,7 @@ export default class Login extends React.Component {
                     messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
                 }
             }
-            if (error.messageNumber === 'ZWEAS199E' || invalidNewPassword) {
+            if (invalidNewPassword || isSuspended) {
                 messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
             }
         } else if (error.status === 401 && authentication.sessionOn) {
@@ -125,6 +126,32 @@ export default class Login extends React.Component {
             authentication.error !== null
         ) {
             error = this.handleError(authentication);
+            if (authentication.error.messageNumber === 'ZWEAS197E') {
+                return (
+                    <div className="login-object">
+                        <div className="login-form">
+                            <div className="susp-card">
+                                <Card>
+                                    <CardTitle>{error.messageText}</CardTitle>
+                                    <CardBlock>
+                                        {username} account has been suspended. Contact your security administrator to
+                                        unsuspend your account.
+                                    </CardBlock>
+                                    <Button
+                                        onClick={this.backToLogin}
+                                        data-testid="backToLogin"
+                                        primary
+                                        fullWidth
+                                        size="jumbo"
+                                    >
+                                        RETURN TO LOGIN
+                                    </Button>
+                                </Card>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
         } else if (errorMessage) {
             error.messageText = errorMessage;
         }

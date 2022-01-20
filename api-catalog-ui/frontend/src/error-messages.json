@@ -17,6 +17,10 @@
             "messageText": "Passwords do not match"
         },
         {
+            "messageKey": "ZWEAS197E",
+            "messageText": "Account suspended"
+        },
+        {
             "messageKey": "ZWEAS199E",
             "messageText": "The password for the specified identity has expired"
         },

@@ -1,0 +1,10 @@
+{
+    "messages": [
+        {
+            "messageType": "ERROR",
+            "messageNumber": "ZWEAS197E",
+            "messageContent": "Account suspended",
+            "messageKey": "org.zowe.apiml.security.platform.errno.EMVSSAFEXTRERR"
+        }
+    ]
+}

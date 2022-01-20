@@ -11,13 +11,15 @@ const passwordExpired = require('../assets/services/password-expired.json');
 const apiCatalog = require('../assets/apidoc/apicatalog.json');
 const discoverableClient = require('../assets/apidoc/discoverableclient');
 const sampleClient = require('../assets/apidoc/sample');
-
+const userSuspended = require('../assets/services/user-suspended.json');
 let allUP = false;
 
 function validateCredentials({ username, password }) {
     return username === 'user' && password === 'user';
 }
-
+function isUserSuspended({ username, password }) {
+    return username === 'susp' && password === 'user';
+}
 function validateExpiredCredentials({ username, password }) {
     return username === 'user' && password === 'exp';
 }
@@ -42,6 +44,8 @@ const appRouter = app => {
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
         } else if(validateExpiredCredentials(credentials)){
             res.status(401).send(passwordExpired);
+        } else if(isUserSuspended(credentials)){
+            res.status(401).send(userSuspended);
         }
         else {
             console.log(invalidCredentials);
