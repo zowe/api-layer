@@ -47,7 +47,6 @@
         "prettier": "2.3.0"
     },
     "scripts": {
-        "lint": "eslint src/**/*.{js,jsx}",
         "build": "react-scripts build",
         "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --silent",
         "start": "react-scripts start",

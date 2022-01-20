@@ -17,7 +17,8 @@
     "env": {
         "browser": true,
         "node": true,
-        "jquery": true
+        "jquery": true,
+        "jest": true
     },
     "rules": {
         "class-methods-use-this": 0,
