@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+/* eslint-disable no-console */
 import * as enzyme from 'enzyme';
 import Shield from './Shield';
 

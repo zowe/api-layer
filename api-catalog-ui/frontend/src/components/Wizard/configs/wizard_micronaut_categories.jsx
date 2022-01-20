@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+// eslint-disable-next-line import/prefer-default-export
 export const micronautSpecificCategories = [
     {
         text: 'API Info for Micronaut',
