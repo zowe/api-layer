@@ -50,7 +50,7 @@ jobs:
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
                   npm publish --access public
                   git add package.json
-                  git commit -m "Update version"
+                  git commit -m "[skip ci] Update version"
                   git push
                   cd ..
               env:

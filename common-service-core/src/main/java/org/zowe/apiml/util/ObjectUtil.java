@@ -82,7 +82,7 @@ public class ObjectUtil {
      *  Deep merge of two maps. Drills down recursively into Container values - Map and List
      */
     private static Map<String, Object> mergeMapsDeep(Map<String, Object> map1, Map<String, Object> map2) {
-        for (Map.Entry<String, Object> entry : (Set<Map.Entry<String, Object>>)map2.entrySet()) {
+        for (Map.Entry<String, Object> entry : map2.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
             if (map1.get(key) instanceof Map && value instanceof Map) {

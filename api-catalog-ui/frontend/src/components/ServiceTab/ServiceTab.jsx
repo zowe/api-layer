@@ -176,11 +176,11 @@ export default class ServiceTab extends Component {
                                         {selectedService.status === 'DOWN' && (
                                             <Tooltip
                                                 key={selectedService.serviceId}
-                                                content="API Homepage navigation is disabled as the service is not running"
+                                                content="Service Homepage navigation is disabled as the service is not running"
                                                 placement="bottom"
                                             >
                                                 <Link variant="danger">
-                                                    <strong>API Homepage</strong>
+                                                    <strong>Service Homepage</strong>
                                                 </Link>
                                             </Tooltip>
                                         )}
