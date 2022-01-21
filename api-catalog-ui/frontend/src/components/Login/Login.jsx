@@ -1,5 +1,16 @@
 import React from 'react';
-import { IconButton, InputAdornment, Typography, Button, CssBaseline, TextField, Link } from '@material-ui/core';
+import {
+    IconButton,
+    InputAdornment,
+    Typography,
+    Button,
+    CssBaseline,
+    TextField,
+    Link,
+    Card,
+    CardContent,
+    CardActions,
+} from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import WarningIcon from '@material-ui/icons/Warning';
@@ -117,7 +128,7 @@ export default class Login extends React.Component {
     }
 
     render() {
-        const { username, password, errorMessage, showPassword, warning, newPassword, repeatNewPassword  } = this.state;
+        const { username, password, errorMessage, showPassword, warning, newPassword, repeatNewPassword } = this.state;
         const { authentication, isFetching } = this.props;
         let error = { messageText: null, expired: false, invalidNewPassword: true };
         if (
@@ -133,20 +144,26 @@ export default class Login extends React.Component {
                         <div className="login-form">
                             <div className="susp-card">
                                 <Card>
-                                    <CardTitle>{error.messageText}</CardTitle>
-                                    <CardBlock>
-                                        {username} account has been suspended. Contact your security administrator to
-                                        unsuspend your account.
-                                    </CardBlock>
-                                    <Button
-                                        onClick={this.backToLogin}
-                                        data-testid="backToLogin"
-                                        primary
-                                        fullWidth
-                                        size="jumbo"
-                                    >
-                                        RETURN TO LOGIN
-                                    </Button>
+                                    <CardContent>
+                                        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                                            {error.messageText}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            {username} account has been suspended. Contact your security administrator
+                                            to unsuspend your account.
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button
+                                            onClick={this.backToLogin}
+                                            data-testid="backToLogin"
+                                            primary
+                                            fullWidth
+                                            size="jumbo"
+                                        >
+                                            RETURN TO LOGIN
+                                        </Button>
+                                    </CardActions>
                                 </Card>
                             </div>
                         </div>
@@ -181,11 +198,11 @@ export default class Login extends React.Component {
                                         <CssBaseline />
                                         <div className="text-block-4">API Catalog</div>
                                         <br />
-                                        {messageText !== undefined &&
-                                            messageText !== null && (
+                                        {error.messageText !== undefined &&
+                                            error.messageText !== null && (
                                                 <div id="error-message">
                                                     <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                                    {messageText}
+                                                    {error.messageText}
                                                 </div>
                                             )}
                                         <Typography
@@ -197,72 +214,182 @@ export default class Login extends React.Component {
                                             Login
                                         </Typography>
                                         <br />
-                                        <Typography variant="subtitle2" gutterBottom component="div">
-                                            Please enter your mainframe username and password to access this resource
-                                        </Typography>
-                                        <br />
-                                        <TextField
-                                            label="Username"
-                                            data-testid="username"
-                                            className="formfield"
-                                            variant="outlined"
-                                            required
-                                            error={!!messageText}
-                                            fullWidth
-                                            id="username"
-                                            name="username"
-                                            value={username}
-                                            onChange={this.handleChange}
-                                            autoComplete="on"
-                                            autoFocus
-                                        />
-                                        <br />
-                                        <br />
-                                        <br />
-                                        <TextField
-                                            id="password"
-                                            htmlFor="outlined-adornment-password"
-                                            label="Password"
-                                            data-testid="password"
-                                            className="formfield"
-                                            variant="outlined"
-                                            required
-                                            error={!!messageText}
-                                            fullWidth
-                                            name="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={password}
-                                            onKeyDown={this.onKeyDown}
-                                            onChange={this.handleChange}
-                                            caption="Default: password"
-                                            autoComplete="on"
-                                            InputProps={{
-                                                endAdornment: (
-                                                    <InputAdornment position="end">
-                                                        {messageText && <ErrorOutlineIcon className="errorIcon" />}
-                                                        <IconButton
-                                                            aria-label="toggle password visibility"
-                                                            edge="end"
-                                                            onClick={() => this.handleClickShowPassword(showPassword)}
-                                                        >
-                                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                        </IconButton>
-                                                    </InputAdornment>
-                                                ),
-                                            }}
-                                        />
-                                        {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
-                                        <Button
-                                            variant="outlined"
-                                            className="loginButton"
-                                            label=""
-                                            style={{ border: 'none' }}
-                                            type="submit"
-                                            data-testid="submit"
-                                            disabled={this.isDisabled()}
-                                        >
-                                            Log in
-                                        </Button>
+                                        {!error.expired && (
+                                            <div>
+                                                <Typography variant="subtitle2" gutterBottom component="div">
+                                                    Please enter your mainframe username and password to access this
+                                                    resource
+                                                </Typography>
+                                                <br />
+                                                <TextField
+                                                    label="Username"
+                                                    data-testid="username"
+                                                    className="formfield"
+                                                    variant="outlined"
+                                                    required
+                                                    error={!!error.messageText}
+                                                    fullWidth
+                                                    id="username"
+                                                    name="username"
+                                                    value={username}
+                                                    onChange={this.handleChange}
+                                                    autoComplete="on"
+                                                    autoFocus
+                                                />
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <TextField
+                                                    id="password"
+                                                    htmlFor="outlined-adornment-password"
+                                                    label="Password"
+                                                    data-testid="password"
+                                                    className="formfield"
+                                                    variant="outlined"
+                                                    required
+                                                    error={!!error.messageText}
+                                                    fullWidth
+                                                    name="password"
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={password}
+                                                    onKeyDown={this.onKeyDown}
+                                                    onChange={this.handleChange}
+                                                    caption="Default: password"
+                                                    autoComplete="on"
+                                                    InputProps={{
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                {error.messageText && (
+                                                                    <ErrorOutlineIcon className="errorIcon" />
+                                                                )}
+                                                                <IconButton
+                                                                    aria-label="toggle password visibility"
+                                                                    edge="end"
+                                                                    onClick={() =>
+                                                                        this.handleClickShowPassword(showPassword)
+                                                                    }
+                                                                >
+                                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                </IconButton>
+                                                            </InputAdornment>
+                                                        ),
+                                                    }}
+                                                />
+                                                {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
+                                                <Button
+                                                    variant="outlined"
+                                                    className="loginButton"
+                                                    label=""
+                                                    style={{ border: 'none' }}
+                                                    type="submit"
+                                                    data-testid="submit"
+                                                    disabled={this.isDisabled()}
+                                                >
+                                                    Log in
+                                                </Button>
+                                            </div>
+                                        )}
+                                        {error.expired && (
+                                            <div>
+                                                <TextField
+                                                    id="newPassword"
+                                                    htmlFor="outlined-adornment-password"
+                                                    label="Password"
+                                                    data-testid="newPassword"
+                                                    className="formfield"
+                                                    variant="outlined"
+                                                    required
+                                                    error={error.invalidNewPassword}
+                                                    fullWidth
+                                                    name="newPassword"
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={newPassword}
+                                                    onKeyDown={this.onKeyDown}
+                                                    onChange={this.handleChange}
+                                                    caption="Default: new password"
+                                                    autoComplete="on"
+                                                    InputProps={{
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                {error.messageText && (
+                                                                    <ErrorOutlineIcon className="errorIcon" />
+                                                                )}
+                                                                <IconButton
+                                                                    aria-label="toggle password visibility"
+                                                                    edge="end"
+                                                                    onClick={() =>
+                                                                        this.handleClickShowPassword(showPassword)
+                                                                    }
+                                                                >
+                                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                </IconButton>
+                                                            </InputAdornment>
+                                                        ),
+                                                    }}
+                                                />
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <TextField
+                                                    id="repeatNewPassword"
+                                                    htmlFor="outlined-adornment-password"
+                                                    label="Password"
+                                                    data-testid="repeatNewPassword"
+                                                    className="formfield"
+                                                    variant="outlined"
+                                                    required
+                                                    error={error.invalidNewPassword}
+                                                    fullWidth
+                                                    name="repeatNewPassword"
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={repeatNewPassword}
+                                                    onKeyDown={this.onKeyDown}
+                                                    onChange={this.handleChange}
+                                                    caption="Default: Repeat new password"
+                                                    autoComplete="on"
+                                                    InputProps={{
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                {error.messageText && (
+                                                                    <ErrorOutlineIcon className="errorIcon" />
+                                                                )}
+                                                                <IconButton
+                                                                    aria-label="toggle password visibility"
+                                                                    edge="end"
+                                                                    onClick={() =>
+                                                                        this.handleClickShowPassword(showPassword)
+                                                                    }
+                                                                >
+                                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                </IconButton>
+                                                            </InputAdornment>
+                                                        ),
+                                                    }}
+                                                />
+                                                <Button
+                                                    variant="outlined"
+                                                    className="loginButton"
+                                                    label=""
+                                                    style={{ border: 'none' }}
+                                                    onClick={this.backToLogin}
+                                                    data-testid="backToLogin"
+                                                    disabled={this.isDisabled()}
+                                                >
+                                                    BACK
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    className="loginButton"
+                                                    label=""
+                                                    style={{ border: 'none' }}
+                                                    type="submit"
+                                                    data-testid="submitChange"
+                                                    disabled={!repeatNewPassword || error.invalidNewPassword}
+                                                >
+                                                    CHANGE PASSWORD
+                                                </Button>
+                                            </div>
+                                        )}
                                         <Spinner
                                             className="formfield form-spinner"
                                             label=""
