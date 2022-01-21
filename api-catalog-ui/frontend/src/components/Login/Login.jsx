@@ -15,7 +15,6 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import WarningIcon from '@material-ui/icons/Warning';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import logoImage from '../../assets/images/api-catalog-logo.png';
 import Spinner from '../Spinner/Spinner';
 import './Login.css';
 
