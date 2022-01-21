@@ -13,19 +13,19 @@
             "messageText": "Invalid username or password"
         },
         {
-            "messageKey": "ZWEAS198E",
+            "messageKey": "ZWEAT603E",
             "messageText": "Passwords do not match"
         },
         {
-            "messageKey": "ZWEAS197E",
+            "messageKey": "ZWEAT414E",
             "messageText": "Account suspended"
         },
         {
-            "messageKey": "ZWEAS196E",
+            "messageKey": "ZWEAT413E",
             "messageText": "The new password is not valid"
         },
         {
-            "messageKey": "ZWEAS199E",
+            "messageKey": "ZWEAT412E",
             "messageText": "The password for the specified identity has expired"
         },
         {

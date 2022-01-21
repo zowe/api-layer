@@ -66,8 +66,8 @@ export default class Login extends React.Component {
             const filter = errorMessages.messages.filter(
                 x => x.messageKey != null && x.messageKey === error.messageNumber
             );
-            invalidNewPassword = error.messageNumber === 'ZWEAS198E' || error.messageNumber === 'ZWEAS196E';
-            isSuspended = error.messageNumber === 'ZWEAS197E';
+            invalidNewPassword = error.messageNumber === 'ZWEAT603E' || error.messageNumber === 'ZWEAS196E';
+            isSuspended = error.messageNumber === 'ZWEAT414E';
             if (filter.length !== 0) {
                 if (filter[0].messageKey === 'ZWEAS120E') {
                     messageText = `${filter[0].messageText}`;

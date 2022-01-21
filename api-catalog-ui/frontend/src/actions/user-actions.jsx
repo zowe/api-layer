@@ -36,7 +36,7 @@ function login(credentials) {
                 history.push('/dashboard');
             },
             error => {
-                if (error.messageNumber === 'ZWEAS199E' || error.messageNumber === 'ZWEAS196E') {
+                if (error.messageNumber === 'ZWEAT412E' || error.messageNumber === 'ZWEAT413E') {
                     dispatch(invalidPassword(error));
                 } else {
                     dispatch(failure(error));

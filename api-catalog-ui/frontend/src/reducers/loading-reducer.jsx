@@ -11,7 +11,7 @@
 const loadingReducer = (state = {}, action = {}) => {
     const { type } = action;
 
-    const matches = /(.*)_(REQUEST|SUCCESS|FAILURE|FAILED|EXPIREDPASSWORD)/.exec(type);
+    const matches = /(.*)_(REQUEST|SUCCESS|FAILURE|FAILED|INVALIDPASSWORD)/.exec(type);
 
     // not a *_REQUEST / *_SUCCESS /  *_FAILURE actions, so we ignore them
     if (!matches) {
