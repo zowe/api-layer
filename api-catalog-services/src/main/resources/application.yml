@@ -157,13 +157,15 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info
+                include: health,info,hystrix.stream
     health:
         defaults:
             enabled: false
     endpoint:
         health:
             showDetails: always
+
+hystrix.command.default.execution.timeout.enabled: false
 
 logbackServiceName: ZWEAAC1
 ---
@@ -175,7 +177,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers
+                include: health,info,loggers,hystrix.stream
 
 logging:
     level:

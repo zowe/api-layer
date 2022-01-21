@@ -64,7 +64,7 @@ public class DefaultZaasClientConfiguration {
     }
 
     @Bean
-    public ZaasClient zaasClient() throws ZaasConfigurationException {
-        return new ZaasClientImpl(getConfigProperties());
+    public ZaasClient zaasClient(ConfigProperties getConfigProperties) throws ZaasConfigurationException {
+        return new ZaasClientImpl(getConfigProperties);
     }
 }

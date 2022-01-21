@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.context.annotation.Profile;
@@ -31,6 +32,7 @@ public class AuthProviderController {
 
     @PostMapping()
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<Object> updateAuthProviderConfig(@RequestBody AuthProvider provider) {
         compoundAuthProvider.setLoginAuthProvider(provider.getProvider());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

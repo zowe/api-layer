@@ -324,6 +324,7 @@ task runBaseTests(type: Test) {
             'GeneralAuthenticationTest',
             'DiscoverableClientDependentTest',
             'CachingServiceTest',
+            'MetricsServiceTest',
             'WebsocketTest'
         )
         excludeTags(

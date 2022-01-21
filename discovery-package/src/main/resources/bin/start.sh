@@ -67,6 +67,13 @@ if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
 
+DISCOVERY_LOADER_PATH=${COMMON_LIB}
+
+if [[ ! -z ${ZWE_DISCOVERY_SHARED_LIBS} ]]
+then
+    DISCOVERY_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${DISCOVERY_LOADER_PATH}
+fi
+
 EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
 DISCOVERY_SERVICE_PORT=${DISCOVERY_PORT:-7553}
 
@@ -78,7 +85,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-export LIBPATH="$LIBPATH":
+LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START} \
@@ -109,8 +116,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB} \
-    -Djava.library.path=${LIBRARY_PATH} \
+    -Dloader.path=${DISCOVERY_LOADER_PATH} \
+    -Djava.library.path=${LIBPATH} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

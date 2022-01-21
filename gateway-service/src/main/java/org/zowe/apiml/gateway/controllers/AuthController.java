@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -59,6 +60,7 @@ public class AuthController {
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
 
     @DeleteMapping(path = INVALIDATE_PATH)
+    @HystrixCommand
     public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/invalidate/";
         final String uri = request.getRequestURI();
@@ -76,6 +78,7 @@ public class AuthController {
     }
 
     @GetMapping(path = DISTRIBUTE_PATH)
+    @HystrixCommand
     public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/distribute/";
         final String uri = request.getRequestURI();
@@ -94,6 +97,7 @@ public class AuthController {
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
     @ResponseBody
+    @HystrixCommand
     public JSONObject getAllPublicKeys() {
         final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
@@ -108,6 +112,7 @@ public class AuthController {
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
+    @HystrixCommand
     public JSONObject getCurrentPublicKeys() {
         final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
 
@@ -128,6 +133,7 @@ public class AuthController {
      */
     @GetMapping(path = PUBLIC_KEYS_PATH)
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<?> getPublicKeyUsedForSigning() {
         JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 

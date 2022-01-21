@@ -41,7 +41,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | keystore                                 | Config - Local TLS config          |
 | metrics-service                          | Core Service - Metrics Service     |
 | metrics-service-ui                       | Core - Service - Metrics Service UI|
-| mock-zosmf                               | Test - More zOSMF versions mock    |
+| mock-services                            | Test - Mock z/OS services          |
 | onboarding-enabler-java                  | APIML SDK - Java Enabler           |
 | onboarding-enabler-java-sample-app       | Sample Service - Java Enabler      |
 | onboarding-enabler-micronaut             | APIML SDK - Micronaut Enabler      |

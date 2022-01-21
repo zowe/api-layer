@@ -8,14 +8,36 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 
-const AuthRoute = (props) => {
-    const { authenticated } = props;
-    if (!authenticated) return <Redirect replace to="/login" />;
+import Spinner from '../Spinner/Spinner';
+import { userService } from '../../services';
+
+export default function AuthRoute(props) {
+    const [isLoading, setIsLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        userService
+            .checkAuthentication()
+            .then(() => {
+                setIsAuthenticated(true);
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                setIsAuthenticated(false);
+                setIsLoading(false);
+            });
+    });
+
+    if (isLoading) {
+        return <Spinner isLoading />;
+    }
+
+    if (!isAuthenticated) {
+        return <Redirect replace to="/login" />;
+    }
 
     return <Route {...props} />;
-};
-
-export default AuthRoute;
+}

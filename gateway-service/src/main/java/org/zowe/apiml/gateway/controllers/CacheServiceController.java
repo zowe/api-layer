@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,12 +36,14 @@ public class CacheServiceController {
     private final ApimlDiscoveryClient discoveryClient;
 
     @DeleteMapping(path = "")
+    @HystrixCommand
     public void evictAll() {
         toEvict.forEach(ServiceCacheEvict::evictCacheAllService);
         discoveryClient.fetchRegistry();
     }
 
     @DeleteMapping(path = "/{serviceId}")
+    @HystrixCommand
     public void evict(@PathVariable("serviceId") String serviceId) {
         toEvict.forEach(s -> s.evictCacheService(serviceId));
         discoveryClient.fetchRegistry();

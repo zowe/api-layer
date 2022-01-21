@@ -24,12 +24,13 @@ ext.projectsNeedLicense = [
     'onboarding-enabler-spring-sample-app',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
-    'onboarding-enabler-micronaut',
-    'onboarding-enabler-micronaut-sample-app',
+    //'onboarding-enabler-micronaut',
+    //'onboarding-enabler-micronaut-sample-app',
     'onboarding-enabler-nodejs',
     'zaas-client',
-    'mock-zosmf',
-    'apiml-tomcat-common'
+    'mock-services',
+    'apiml-tomcat-common',
+    'apiml-sample-extension'
 ]
 
 configure(subprojects.findAll { it.name in projectsNeedLicense }) {

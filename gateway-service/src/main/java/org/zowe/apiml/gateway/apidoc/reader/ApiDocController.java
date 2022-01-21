@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.apidoc.reader;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ public class ApiDocController {
     private final ApiDocReader apiDocReader;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @HystrixCommand
     public String getApiDoc() {
         return apiDocReader.load(API_DOC_LOCATION);
     }

@@ -17,6 +17,7 @@
 ## GitHub actions
 
 - Snapshot release - https://github.com/zowe/api-layer/actions/workflows/snapshot-release.yml
+- PR Snapshot release - https://github.com/zowe/api-layer/actions/workflows/pull-request-snapshot-release.yml
 - Automated release (patch, minor, major) - https://github.com/zowe/api-layer/actions/workflows/release.yml
 - Specific release - https://github.com/zowe/api-layer/actions/workflows/specific-release.yml
 
@@ -39,7 +40,7 @@ The commands below are listed as a reference. Use GitHub Actions to execute them
 ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.scope=major # new major
 ```
 
-### Release artifacts with custom version
+### Release artifacts with a custom version
 
 ```shell
 ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=0.0.0 -Prelease.newVersion=1.1.0-SNAPSHOT
@@ -64,7 +65,7 @@ You can get commit messages with the tool:
 
 `npm install -g conventional-changelog-cli`
 
-Command to display commit messages for specified number of releases:
+Command to display commit messages for a specified number of releases:
 
 `conventional-changelog -r <number_of_releases>`
 

@@ -77,8 +77,21 @@ function login(credentials) {
         .then((user) => user);
 }
 
+function checkAuthentication() {
+    const allowOrigin = checkOrigin();
+    const requestOptions = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': allowOrigin,
+        },
+    };
+    return fetch(`${process.env.REACT_APP_GATEWAY_URL}/gateway/api/v1/auth/query`, requestOptions).then(handleResponse);
+}
+
 // eslint-disable-next-line
 export const userService = {
     login,
     logout,
+    checkAuthentication,
 };

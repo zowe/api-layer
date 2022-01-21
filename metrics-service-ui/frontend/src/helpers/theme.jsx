@@ -27,6 +27,9 @@ const theme = createMuiTheme({
             main: red[500],
         },
     },
+    icon: {
+        size: 48,
+    },
     props: {
         MuiTooltip: {
             enterDelay: 300,

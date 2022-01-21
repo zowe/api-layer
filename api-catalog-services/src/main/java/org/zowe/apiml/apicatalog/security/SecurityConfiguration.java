@@ -72,6 +72,9 @@ public class SecurityConfiguration {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
+
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
      */
@@ -164,8 +167,15 @@ public class SecurityConfiguration {
                 .antMatchers("/static-api/**").authenticated()
                 .antMatchers("/containers/**").authenticated()
                 .antMatchers(APIDOC_ROUTES).authenticated()
-                .antMatchers("/application/health", "/application/info").permitAll()
-                .antMatchers("/application/**").authenticated();
+                .antMatchers("/application/health", "/application/info").permitAll();
+
+            if (isMetricsEnabled) {
+                http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
+            }
+
+
+            http.authorizeRequests().antMatchers("/application/**").authenticated();
+
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), BasicContentFilter.class);
             }

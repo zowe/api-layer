@@ -51,6 +51,7 @@ const epicMiddleware = createEpicMiddleware({
     dependencies: { ajax },
 });
 const composeEnhancers = compose;
+
 const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
 
 if (process.env.NODE_ENV !== 'production') {

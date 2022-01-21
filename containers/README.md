@@ -117,7 +117,7 @@ Example commands:
 # pull image
 docker pull zowe-docker-release.jfrog.io/ompzowe/caching-service:latest
 # start container
-docker run -it --rm -p 7554:7554 \
+docker run -it --rm -p 7555:7555 \
     -v $(pwd)/keystore:/home/zowe/keystore \
     -e KEYSTORE=/home/zowe/keystore/localhost/localhost.keystore.p12 \
     -e KEY_ALIAS=localhost \
@@ -125,4 +125,36 @@ docker run -it --rm -p 7554:7554 \
     -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
     -e WORKSPACE_DIR=/component \
     zowe-docker-release.jfrog.io/ompzowe/caching-service:latest
+```
+
+## Metrics Service Image
+
+Image `zowe-docker-release.jfrog.io/ompzowe/metrics-service:latest` should be able to run with minimal environment variables:
+
+- `KEYSTORE`: path to keystore.
+- `KEY_ALIAS`: certificate alias stored in keystore.
+- `KEYSTORE_PASSWORD`: password of your keystore and truststore.
+- `TRUSTSTORE`: path to truststore.
+- `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`.
+- `WORKSPACE_DIR`: set to `/component`.
+- `APIML_METRICS_ENBALED` set to `true`.
+
+Review the [Metrics Service package start script](../metrics-service-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
+
+Example commands:
+
+```
+# pull image
+docker pull zowe-docker-release.jfrog.io/ompzowe/metrics-service:latest
+# start container
+docker run -it --rm -p 7551:7551 \
+    -v $(pwd)/keystore:/home/zowe/keystore \
+    -e KEYSTORE=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e KEY_ALIAS=localhost \
+    -e KEYSTORE_PASSWORD=password \
+    -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
+    -e WORKSPACE_DIR=/component \
+    -e APIML_METRICS_ENABLED=true \
+    zowe-docker-release.jfrog.io/ompzowe/metrics-service:latest
 ```

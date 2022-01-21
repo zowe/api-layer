@@ -10,7 +10,7 @@
 
 import React, { useState } from 'react';
 import { Button, TextField, Typography } from '@material-ui/core';
-import { withStyles, makeStyles } from '@material-ui/core/styles';
+import { withStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 
 import './LoginWebflow.css';
 import LoginBackground from '../../assets/images/login_background.jpg';
@@ -130,13 +130,14 @@ const Login = (props) => {
             ? handleError(authentication.error)
             : errorText;
 
+    const theme = useTheme();
     const classes = useStyles();
 
     return (
         <div className={classes.root}>
             <div className={classes.formContainer}>
                 <MetricsServiceTitle variant="h5" align="left">
-                    <MetricsIconButton />
+                    <MetricsIconButton color={theme.palette.primary.main} />
                     Metrics Service
                 </MetricsServiceTitle>
                 <form className={classes.form} onSubmit={handleSubmit}>

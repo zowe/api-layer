@@ -47,7 +47,7 @@ public class FullApiMediationLayer {
         prepareCatalog();
         prepareDiscoverableClient();
         prepareGateway();
-        prepareMockZosmf();
+        prepareMockServices();
         prepareDiscovery();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
@@ -80,13 +80,13 @@ public class FullApiMediationLayer {
         cachingService = new RunningService("cachingservice", "caching-service/build/libs", null, null);
     }
 
-    private void prepareMockZosmf() {
+    private void prepareMockServices() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
         if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
-        mockZosmfService = new RunningService("zosmf", "mock-zosmf/build/libs/mock-zosmf.jar", before, after);
+        mockZosmfService = new RunningService("zosmf", "mock-services/build/libs/mock-services.jar", before, after);
     }
 
     private void prepareDiscoverableClient() {

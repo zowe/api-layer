@@ -118,11 +118,13 @@ management:
 
 turbine:
     aggregator:
-        clusterConfig: DISCOVERABLECLIENT,APICATALOG # uppercase serviceId
+        clusterConfig: APICATALOG,CACHINGSERVICE,GATEWAY,DISCOVERY # uppercase serviceId
     instanceUrlSuffix:
-        DISCOVERABLECLIENT: /discoverableclient/application/hystrix.stream
         APICATALOG: /apicatalog/application/hystrix.stream
-    appConfig: discoverableclient,apicatalog
+        CACHINGSERVICE: /cachingservice/application/hystrix.stream
+        GATEWAY: /application/hystrix.stream
+        DISCOVERY: /application/hystrix.stream
+    appConfig: apicatalog,cachingservice,gateway,discovery # lowercase serviceId
 
 ---
 spring:

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.controllers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.*;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -35,6 +36,7 @@ public class SafResourceAccessController {
     public static final String FULL_CONTEXT_PATH = "/gateway/auth/check";
 
     @PostMapping(path = CONTEXT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @HystrixCommand
     public ResponseEntity<ApiMessageView> hasSafAccess(@RequestBody CheckRequestModel request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

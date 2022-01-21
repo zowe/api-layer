@@ -80,13 +80,15 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,shutdown
+                include: health,info,shutdown,hystrix.stream
     health:
         defaults:
             enabled: false
     endpoint:
         shutdown:
             enabled: true
+
+hystrix.command.default.execution.timeout.enabled: false
 ---
 spring:
     profiles: https
@@ -135,7 +137,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers,shutdown
+                include: health,info,loggers,shutdown,hystrix.stream
     endpoint:
         shutdown:
             enabled: true

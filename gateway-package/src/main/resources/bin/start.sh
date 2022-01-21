@@ -59,11 +59,6 @@ then
     LOG_LEVEL=$DIAG_MODE
 fi
 
-if [[ -z ${PKCS11_TOKEN_LABEL} && ! -z ${APIML_SECURITY_AUTH_JWTKEYALIAS} ]]
-then
-    PKCS11_TOKEN_LABEL=${APIML_SECURITY_AUTH_JWTKEYALIAS}
-fi
-
 if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
@@ -100,7 +95,12 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-export LIBPATH="$LIBPATH":
+LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+
+if [[ ! -z ${ZWE_GATEWAY_LIBRARY_PATH} ]]
+then
+    LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
+fi
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
@@ -126,7 +126,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.auth.zosmf.serviceId=${APIML_ZOSMF_ID:-zosmf} \
     -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER:-zosmf} \
-    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
     -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=0.0.0.0 \
     -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-100} \
@@ -157,7 +156,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID:-IZUDFLT} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -Djava.library.path=${LIBRARY_PATH} \
+    -Djava.library.path=${LIBPATH} \
     -jar ${JAR_FILE} &
 
 pid=$!

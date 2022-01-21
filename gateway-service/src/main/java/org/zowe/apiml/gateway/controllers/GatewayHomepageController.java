@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -77,6 +78,7 @@ public class GatewayHomepageController {
     }
 
     @GetMapping("/")
+    @HystrixCommand
     public String home(Model model) {
         initializeCatalogAttributes(model);
         initializeMetricsAttributes(model);

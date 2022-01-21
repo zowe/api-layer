@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.error;
 
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -48,6 +49,7 @@ public class NotFoundErrorController implements ErrorController {
      */
     @GetMapping(value = NOT_FOUND_ENDPOINT, produces = "application/json")
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<ApiMessageView> notFound400HttpResponse(HttpServletRequest request) {
         Message message = messageService.createMessage("org.zowe.apiml.common.endPointNotFound",
             ErrorUtils.getGatewayUri(request));
