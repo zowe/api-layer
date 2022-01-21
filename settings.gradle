@@ -38,7 +38,7 @@ include 'security-service-client-spring'
 
 include 'onboarding-enabler-java'
 include 'onboarding-enabler-spring'
-//include 'onboarding-enabler-micronaut'
+include 'onboarding-enabler-micronaut'
 include 'onboarding-enabler-nodejs'
 include 'zaas-client'
 include 'mock-services'
