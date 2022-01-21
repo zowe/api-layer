@@ -7,6 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+/**
+ * Define default values for different enablers
+ */
 
 // eslint-disable-next-line import/prefer-default-export
 export const defaultPJE = {
