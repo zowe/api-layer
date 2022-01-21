@@ -10,7 +10,7 @@
 
 .login-object {
     overflow: hidden;
-    background-image: url("../../assets/images/login_background.jpg");
+    background-image: url("../../assets/images/zowe-background.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     display: flex;
@@ -21,11 +21,13 @@
 
 .login-form {
     width: 440px;
+    padding-right: 300px;
+    height: 100vh;
 }
 
 .login-form {
-    height: 100vh;
-    background-color: #fff;
+
+
 }
 
 .login-bg > img {
@@ -52,7 +54,6 @@
     display: inline-table;
     resize: inherit;
     position: static;
-    margin-top: 60px;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
@@ -132,7 +133,9 @@ form#login-form {
     margin-top: 20px;
     margin-bottom: 15px;
 }
-
+.cardTitle {
+    background-color: #FCE4EC;
+}
 #loginButton {
     display: flex;
     justify-content: flex-end;
@@ -159,5 +162,6 @@ form#login-form {
 }
 
 .susp-card {
-    padding: 300px 0;
+    padding-top: 200px;
+    padding-left: 600px;
 }
