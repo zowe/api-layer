@@ -402,7 +402,7 @@ describe('>>> WizardInputs tests', () => {
             'Optional field; Field must be lowercase; Max length is 40 characters'
         );
     });
-    it("should handle select's onCLick", () => {
+    it("should handle select's onClick", () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Category 1',
