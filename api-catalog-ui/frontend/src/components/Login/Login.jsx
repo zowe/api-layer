@@ -276,17 +276,20 @@ export default class Login extends React.Component {
                                                     }}
                                                 />
                                                 {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
-                                                <Button
-                                                    variant="outlined"
-                                                    className="loginButton"
-                                                    label=""
-                                                    style={{ border: 'none' }}
-                                                    type="submit"
-                                                    data-testid="submit"
-                                                    disabled={this.isDisabled()}
-                                                >
-                                                    Log in
-                                                </Button>
+                                                <div className="login-btns" id="loginButton">
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        label=""
+                                                        size="medium"
+                                                        style={{ border: 'none' }}
+                                                        type="submit"
+                                                        data-testid="submit"
+                                                        disabled={this.isDisabled()}
+                                                    >
+                                                        Log in
+                                                    </Button>
+                                                </div>
                                             </div>
                                         )}
                                         {error.expired && (
@@ -366,28 +369,34 @@ export default class Login extends React.Component {
                                                         ),
                                                     }}
                                                 />
-                                                <Button
-                                                    variant="outlined"
-                                                    className="loginButton"
-                                                    label=""
-                                                    style={{ border: 'none' }}
-                                                    onClick={this.backToLogin}
-                                                    data-testid="backToLogin"
-                                                    disabled={this.isDisabled()}
-                                                >
-                                                    BACK
-                                                </Button>
-                                                <Button
-                                                    variant="outlined"
-                                                    className="loginButton"
-                                                    label=""
-                                                    style={{ border: 'none' }}
-                                                    type="submit"
-                                                    data-testid="submitChange"
-                                                    disabled={!repeatNewPassword || error.invalidNewPassword}
-                                                >
-                                                    CHANGE PASSWORD
-                                                </Button>
+                                                <div className="login-btns">
+                                                    <Button
+                                                        variant="outlined"
+                                                        className="backBtn"
+                                                        color="primary"
+                                                        label=""
+                                                        size="medium"
+                                                        style={{ border: 'none' }}
+                                                        onClick={this.backToLogin}
+                                                        data-testid="backToLogin"
+                                                        disabled={this.isDisabled()}
+                                                    >
+                                                        BACK
+                                                    </Button>
+                                                    <Button
+                                                        variant="contained"
+                                                        className="updateBtn"
+                                                        color="primary"
+                                                        label=""
+                                                        size="medium"
+                                                        style={{ border: 'none' }}
+                                                        type="submit"
+                                                        data-testid="submitChange"
+                                                        disabled={!repeatNewPassword || error.invalidNewPassword}
+                                                    >
+                                                        CHANGE PASSWORD
+                                                    </Button>
+                                                </div>
                                             </div>
                                         )}
                                         <Spinner
