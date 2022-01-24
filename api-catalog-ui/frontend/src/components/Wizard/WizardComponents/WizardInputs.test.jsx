@@ -60,7 +60,7 @@ describe('>>> WizardInputs tests', () => {
             interference: 'catalog',
         };
         const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} tiles={['TIle 1']} data={dummyCategory} />
+            <WizardInputs updateWizardData={updateWizardData} tiles={['Tile 1']} data={dummyCategory} />
         );
         const instance = wrapper.instance();
         instance.handleSelect({ name: 'type', index: 0, value: 'Option 1' });
@@ -417,7 +417,7 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs
                 updateWizardData={updateWizardData}
                 validateInput={jest.fn()}
-                tiles={['TIle 1']}
+                tiles={['Tile 1']}
                 data={dummyCategory}
             />
         );
