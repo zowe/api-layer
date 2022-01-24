@@ -8,9 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-
-import { SELECT_SERVICE } from '../constants/selected-service-constants';
 import selectedServiceReducer from './selected-service-reducer';
 
 describe('>>> Selected Service reducer tests', () => {

@@ -35,7 +35,7 @@ export default class DialogDropdown extends Component {
     openOnClick() {
         const { data } = this.state;
         if (Array.isArray(data)) {
-            const arr = data.map(item => ({ ...item, onClick: this.handleClick }));
+            const arr = data.map((item) => ({ ...item, onClick: this.handleClick }));
             this.setState({ data: arr });
         }
     }

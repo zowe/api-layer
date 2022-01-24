@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { toast } from 'react-toastify';
 import { OVERRIDE_DEF, TOGGLE_DISPLAY, WIZARD_VISIBILITY_TOGGLE } from '../constants/wizard-constants';
 
@@ -40,7 +49,7 @@ export function confirmStaticDefOverride() {
  */
 function yamlEndpointConnect(yamlText, serviceId, endpoint) {
     const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/${endpoint}`;
-    return dispatch => {
+    return (dispatch) => {
         fetch(url, {
             method: 'POST',
             headers: {
@@ -48,7 +57,7 @@ function yamlEndpointConnect(yamlText, serviceId, endpoint) {
             },
             body: yamlText,
         })
-            .then(res => {
+            .then((res) => {
                 const { status } = res;
                 if (status === 201) {
                     dispatch(notifySuccess());
@@ -80,7 +89,7 @@ export function assertAuthorization() {
         resourceName: 'APIML.SERVICES',
         accessLevel: 'READ',
     };
-    return dispatch => {
+    return (dispatch) => {
         fetch(url, {
             headers: {
                 'Content-Type': 'application/json',
@@ -88,7 +97,7 @@ export function assertAuthorization() {
             method: 'POST',
             body: JSON.stringify(body),
         })
-            .then(res => {
+            .then((res) => {
                 const { status } = res;
                 if (status === 204) {
                     dispatch(toggleWizardVisibility(true));

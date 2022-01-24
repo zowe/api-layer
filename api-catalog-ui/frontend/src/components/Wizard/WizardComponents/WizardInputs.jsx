@@ -27,7 +27,7 @@ class WizardInputs extends Component {
      * When users fills out an input the inputData object is updated with the new information
      * @param event object containing input's name, value and its data-index attr.
      */
-    handleInputChange = event => {
+    handleInputChange = (event) => {
         const { name, checked } = event.target;
         let { value } = event.target;
         const objectToChange = this.props.data;
@@ -73,7 +73,7 @@ class WizardInputs extends Component {
         if (minions) {
             if (Object.values(minions)[0].includes(name)) {
                 let category;
-                this.props.inputData.forEach(cat => {
+                this.props.inputData.forEach((cat) => {
                     if (cat.text === Object.keys(this.props.data.minions)[0]) {
                         category = { ...cat };
                     }
@@ -101,7 +101,7 @@ class WizardInputs extends Component {
     checkRestrictions(inputObject, value, regexRestriction, validUrl) {
         let problem = false;
         if (regexRestriction !== undefined) {
-            regexRestriction.forEach(regex => {
+            regexRestriction.forEach((regex) => {
                 const restriction = new RegExp(regex.value);
                 if (!restriction.test(value)) {
                     inputObject.tooltip = regex.tooltip;
@@ -155,7 +155,7 @@ class WizardInputs extends Component {
             };
             this.updateDataWithNewContent(data, arr);
         } else if (data.interference === 'staticCatalog') {
-            this.props.inputData.forEach(category => {
+            this.props.inputData.forEach((category) => {
                 if (category.text === 'Catalog UI Tiles') {
                     data = category;
                 }
@@ -184,14 +184,14 @@ class WizardInputs extends Component {
      */
     fillCategoryFromATile(tiles, title, data) {
         let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
-        tiles.forEach(tile => {
+        tiles.forEach((tile) => {
             if (tile.title === title) {
                 selectedTile = tile;
                 selectedTile.disabled = true;
             }
         });
         const arr = [...data.content];
-        Object.keys(arr[0]).forEach(entry => {
+        Object.keys(arr[0]).forEach((entry) => {
             if (entry !== 'type') {
                 arr[0][entry] = { ...arr[0][entry], value: selectedTile[entry], disabled: selectedTile.disabled };
             }
@@ -203,7 +203,7 @@ class WizardInputs extends Component {
      * Select's onChange event contains only the changed value, so we create a usable event ourselves
      * @param entry each item's basic info - name value and index - we create event from that
      */
-    handleSelect = entry => {
+    handleSelect = (entry) => {
         const { name, value, index } = entry;
         this.interferenceInjection({ title: value, name, index });
     };
@@ -225,10 +225,10 @@ class WizardInputs extends Component {
      * Adds another set of config
      * @param category category which we should add the set to
      */
-    addFields = category => {
+    addFields = (category) => {
         const myObject = category.content[0];
         const newObject = {};
-        Object.keys(myObject).forEach(key => {
+        Object.keys(myObject).forEach((key) => {
             newObject[key] = { ...myObject[key] };
             newObject[key].interactedWith = false;
             if (typeof newObject[key].value !== 'boolean') {
@@ -252,7 +252,7 @@ class WizardInputs extends Component {
     addFieldsToCurrentCategory() {
         this.addFields(this.props.data);
         if (this.props.data.minions) {
-            this.props.inputData.forEach(category => {
+            this.props.inputData.forEach((category) => {
                 if (category.text === Object.keys(this.props.data.minions)[0]) {
                     this.addFields(category);
                 }
@@ -290,7 +290,7 @@ class WizardInputs extends Component {
         }
         let result = [];
         let index = 0;
-        dataAsObject.content.forEach(c => {
+        dataAsObject.content.forEach((c) => {
             if (index !== 0 && typeof this.state[`delBtn${index}`] === 'undefined') {
                 this.setState({ [`delBtn${index}`]: false });
             }
@@ -314,7 +314,7 @@ class WizardInputs extends Component {
      */
     dependenciesSatisfied(dependencies, content) {
         let satisfied = true;
-        Object.entries(dependencies).forEach(entry => {
+        Object.entries(dependencies).forEach((entry) => {
             const [key, value] = entry;
             if (typeof content[key] === 'undefined' || content[key].value !== value) {
                 satisfied = false;
@@ -354,7 +354,7 @@ class WizardInputs extends Component {
     renderInputs = (content, index = 0) => {
         const selectedData = Object.keys(content);
         let key = -1;
-        return selectedData.map(itemKey => {
+        return selectedData.map((itemKey) => {
             const input = content[itemKey];
             if (input.dependencies && !this.dependenciesSatisfied(input.dependencies, content)) {
                 input.show = false;
@@ -379,19 +379,8 @@ class WizardInputs extends Component {
      * @returns {JSX.Element} returns the input element
      */
     renderInputElement(itemKey, index, inputNode) {
-        const {
-            question,
-            value,
-            empty,
-            optional,
-            options,
-            maxLength,
-            lowercase,
-            tooltip,
-            problem,
-            type,
-            disabled,
-        } = inputNode;
+        const { question, value, empty, optional, options, maxLength, lowercase, tooltip, problem, type, disabled } =
+            inputNode;
         let caption = '';
         if (optional) {
             caption += 'Optional field; ';
@@ -432,7 +421,7 @@ class WizardInputs extends Component {
                     label={question}
                     variant={variant}
                     caption={caption}
-                    data={options.map(entry => ({
+                    data={options.map((entry) => ({
                         text: entry,
                         onClick: () => this.handleSelect({ name: itemKey, index, value: entry }),
                     }))}

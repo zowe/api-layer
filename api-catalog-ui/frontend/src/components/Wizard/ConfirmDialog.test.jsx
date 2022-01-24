@@ -11,17 +11,14 @@ import * as enzyme from 'enzyme';
 import ConfirmDialog from './ConfirmDialog';
 
 describe('>>> ConfirmDialog tests', () => {
-   it('should override the static definition', () => {
-       const overrideStaticDef = jest.fn();
-       const confirmStaticDefOverride = jest.fn();
-       const wrapper = enzyme.shallow(
-           <ConfirmDialog
-               overrideStaticDef={overrideStaticDef}
-               confirmStaticDefOverride={confirmStaticDefOverride}
-           />
-       );
-       wrapper.instance().override();
-       expect(overrideStaticDef).toHaveBeenCalled();
-       expect(overrideStaticDef).toHaveBeenCalled();
-   })
+    it('should override the static definition', () => {
+        const overrideStaticDef = jest.fn();
+        const confirmStaticDefOverride = jest.fn();
+        const wrapper = enzyme.shallow(
+            <ConfirmDialog overrideStaticDef={overrideStaticDef} confirmStaticDefOverride={confirmStaticDefOverride} />
+        );
+        wrapper.instance().override();
+        expect(overrideStaticDef).toHaveBeenCalled();
+        expect(overrideStaticDef).toHaveBeenCalled();
+    });
 });

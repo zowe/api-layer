@@ -35,15 +35,15 @@ export function refreshStaticApisError(error) {
 
 export function refreshedStaticApi() {
     const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/refresh`;
-    return dispatch => {
+    return (dispatch) => {
         fetch(url, {
             method: 'POST',
         })
-            .then(res => res.json())
+            .then((res) => res.json())
             // eslint-disable-next-line no-use-before-define
-            .then(fetchHandler, error => dispatch(refreshStaticApisError(error)))
+            .then(fetchHandler, (error) => dispatch(refreshStaticApisError(error)))
             .then(() => dispatch(refreshStaticApisSuccess()))
-            .catch(error => {
+            .catch((error) => {
                 dispatch(refreshStaticApisError(error));
             });
     };
@@ -61,7 +61,7 @@ function fetchHandler(res) {
     if (res && !res.errors) {
         return Promise.reject(res.messages[0]);
     } else if (res && res.errors && res.errors.length !== 0) {
-        res.errors.forEach(item => {
+        res.errors.forEach((item) => {
             errors.push(item.convertedText);
         });
         return Promise.reject(errors);

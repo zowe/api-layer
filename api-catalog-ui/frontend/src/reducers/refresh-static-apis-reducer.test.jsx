@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
 import refreshStaticApisReducer from './refresh-static-apis-reducer';
 import {
     REFRESH_STATIC_APIS_SUCCESS,

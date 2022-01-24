@@ -8,19 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-
 import {
     CLEAR_ERROR,
     REFRESH_STATIC_APIS_ERROR,
     REFRESH_STATIC_APIS_SUCCESS,
 } from '../constants/refresh-static-apis-constants';
-import {
-    refreshStaticApisSuccess,
-    refreshStaticApisError,
-    clearError,
-    refreshedStaticApi,
-} from './refresh-static-apis-actions';
+import { refreshStaticApisSuccess, refreshStaticApisError, clearError } from './refresh-static-apis-actions';
 import { ApiError, MessageType } from '../constants/error-constants';
 
 describe('>>> Refresh static apis actions tests', () => {

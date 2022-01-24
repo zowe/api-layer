@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import { confirmStaticDefOverride, overrideStaticDef } from '../../actions/wizard-fetch-actions';
 import ConfirmDialog from './ConfirmDialog';
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
     yamlObject: state.wizardReducer.yamlObject,
     serviceId: state.wizardReducer.serviceId,
@@ -21,7 +21,4 @@ const mapDispatchToProps = {
     confirmStaticDefOverride,
     overrideStaticDef,
 };
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(ConfirmDialog);
+export default connect(mapStateToProps, mapDispatchToProps)(ConfirmDialog);

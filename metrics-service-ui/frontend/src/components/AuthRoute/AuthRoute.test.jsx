@@ -12,7 +12,7 @@
 
 import { Router } from 'react-router-dom';
 import { mount } from 'enzyme';
-import {act} from "react-dom/test-utils";
+import { act } from 'react-dom/test-utils';
 
 import history from '../../helpers/history';
 import AuthRoute from './AuthRoute';
@@ -20,21 +20,21 @@ import AuthRoute from './AuthRoute';
 describe('>>> AuthRoute component tests', () => {
     it('should contain a Spinner component when waiting for authentication result', () => {
         const wrapper = mount(
-          <Router history={history}>
-              <AuthRoute />
-          </Router>
-      );
+            <Router history={history}>
+                <AuthRoute />
+            </Router>
+        );
         expect(wrapper.find('Spinner')).toExist();
     });
 
     it('should contain a Redirect component when not authenticated', async () => {
-        jest.spyOn(global, 'fetch').mockImplementation(() => Promise.reject({}));
+        jest.spyOn(global, 'fetch').mockImplementation(() => Promise.reject(new Error({})));
 
         const wrapper = mount(
-          <Router history={history}>
-              <AuthRoute />
-          </Router>
-      );
+            <Router history={history}>
+                <AuthRoute />
+            </Router>
+        );
 
         // awaits response from mocked fetch call
         await act(async () => {
@@ -46,13 +46,13 @@ describe('>>> AuthRoute component tests', () => {
     });
 
     it('should contain a Route component when authenticated', async () => {
-        const mockResponse = {ok: true, text: () => Promise.resolve()};
+        const mockResponse = { ok: true, text: () => Promise.resolve() };
         jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve(mockResponse));
 
         const wrapper = mount(
-          <Router history={history}>
-              <AuthRoute />
-          </Router>
+            <Router history={history}>
+                <AuthRoute />
+            </Router>
         );
 
         // awaits response from mocked fetch call
