@@ -8,8 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-
 import * as constants from '../constants/catalog-tile-constants';
 import * as actions from './catalog-tile-actions';
 

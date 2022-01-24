@@ -8,8 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-import { SEND_ERROR, CLEAR_ALL_ERRORS, ApiError, MessageType, GATEWAY_UP } from '../constants/error-constants';
+import { SEND_ERROR, CLEAR_ALL_ERRORS, ApiError, MessageType } from '../constants/error-constants';
 import errorReducer from './error-reducer';
 
 describe('>>> Error reducer tests', () => {

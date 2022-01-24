@@ -100,6 +100,13 @@ if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
 
+DISCOVERY_LOADER_PATH=${COMMON_LIB}
+
+if [[ ! -z ${ZWE_DISCOVERY_SHARED_LIBS} ]]
+then
+    DISCOVERY_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${DISCOVERY_LOADER_PATH}
+fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -141,7 +148,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUI
     -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
     -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB} \
+    -Dloader.path=${DISCOVERY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -jar "${JAR_FILE}" &
 pid=$!

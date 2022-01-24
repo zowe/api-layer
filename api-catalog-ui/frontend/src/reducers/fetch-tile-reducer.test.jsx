@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
 import tilesReducer from './fetch-tile-reducer';
 import {
     FETCH_TILES_FAILED,

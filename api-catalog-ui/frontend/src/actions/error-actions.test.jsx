@@ -8,8 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-
 import { sendError, clearAllErrors } from './error-actions';
 import { ApiError, CLEAR_ALL_ERRORS, MessageType, SEND_ERROR } from '../constants/error-constants';
 

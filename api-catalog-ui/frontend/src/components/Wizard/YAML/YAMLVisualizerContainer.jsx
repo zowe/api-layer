@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { createYamlObject } from '../../../actions/wizard-actions';
 import YAMLVisualizer from './YAMLVisualizer';
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     inputData: state.wizardReducer.inputData,
     yamlObject: state.wizardReducer.yamlObject,
 });
@@ -21,7 +21,4 @@ const mapDispatchToProps = {
     createYamlObject,
 };
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(YAMLVisualizer);
+export default connect(mapStateToProps, mapDispatchToProps)(YAMLVisualizer);

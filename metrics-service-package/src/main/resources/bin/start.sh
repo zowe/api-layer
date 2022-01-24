@@ -39,6 +39,8 @@
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
+if [[ ! -z ${APIML_METRICS_ENABLED} && ${APIML_METRICS_ENABLED} == true ]]
+then
 JAR_FILE="$(pwd)/bin/metrics-service-lite.jar"
 # script assumes it's in the metrics component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
@@ -120,3 +122,5 @@ pid=$!
 echo "pid=${pid}"
 
 wait %1
+
+fi

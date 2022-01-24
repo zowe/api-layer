@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
 import { CLEAR_FILTER, FILTER_TEXT } from '../constants/filter-constants';
 import filtersReducer from './filter-reducer';
 

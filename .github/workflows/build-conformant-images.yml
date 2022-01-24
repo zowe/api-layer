@@ -1,0 +1,267 @@
+name: Reusable workflow to create Zowe conformant images
+
+on:
+    workflow_call:
+        inputs:
+            release:
+                type: boolean
+                default: false
+                required: false
+            service:
+                description: 'Enter a service name for which to create an image. The name must match a directory in /containers. E.g. gateway-service or discovery-service. If skipped, images will be created for all services.'
+                type: string
+                default: 'all'
+                required: false
+            version:
+                description: 'Version of images that will be published.'
+                type: string
+                default: ''
+                required: false
+        secrets:
+            registry-user:
+                required: true
+            registry-password:
+                required: true
+            redhat-registry-user:
+                required: true
+            redhat-registry-password:
+                required: true
+            zlinux-host:
+                required: true
+            zlinux-ssh-user:
+                required: true
+            zlinux-ssh-key:
+                required: true
+            zlinux-ssh-passphrase:
+                required: true
+
+env:
+    IMAGE_BASE_DIR: ./containers
+
+jobs:
+
+    create-image-all-services-amd64:
+        strategy:
+            matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
+                os: [ ubuntu, ubi ]
+                include:
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+        runs-on: ubuntu-latest
+        if: ${{ inputs.service == 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch: amd64
+                    # Used only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
+
+            -   name: Build amd64
+                uses: zowe-actions/shared-actions/docker-build-local@main
+                with:
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                timeout-minutes: 45
+
+            -   uses: ./.github/actions/teardown
+
+    create-image-all-services-s390x:
+        strategy:
+            max-parallel: 2
+            matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
+                os: [ ubuntu, ubi ]
+                include:
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+        runs-on: ubuntu-latest
+        if: ${{ inputs.service == 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch: s390x
+                    # Used only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
+
+            -   name: Build s390x
+                uses: zowe-actions/shared-actions/docker-build-zlinux@main
+                with:
+                    zlinux-host: ${{ secrets.zlinux-host }}
+                    zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
+                    zlinux-ssh-key: ${{ secrets.zlinux-ssh-key }}
+                    zlinux-ssh-passphrase: ${{ secrets.zlinux-ssh-passphrase }}
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                    ### Only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
+                timeout-minutes: 45
+
+            -   uses: ./.github/actions/teardown
+
+    define-manifest-all-services:
+        needs:
+            - create-image-all-services-amd64
+            - create-image-all-services-s390x
+        strategy:
+            matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
+                os: [ ubuntu, ubi ]
+        runs-on: ubuntu-latest
+        if: ${{ inputs.service == 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
+                    linux-distro: ${{ matrix.os }}
+
+            -   uses: zowe-actions/shared-actions/docker-manifest@main
+                with:
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch-list: "amd64 s390x"
+                timeout-minutes: 2
+
+            -   uses: ./.github/actions/teardown
+
+    create-image-one-service:
+        strategy:
+            # no max-parallel because will only make 2 s390x builds and don't want to block amd64 concurrency
+            matrix:
+                arch: [ amd64, s390x ]
+                os: [ ubuntu, ubi ]
+                include:
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+        runs-on: ubuntu-latest
+        if: ${{ inputs.service != 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
+                    image-name: ${{ inputs.service }}
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch: ${{ matrix.arch }}
+                    # Used only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
+
+            -   name: Build amd64
+                if: matrix.arch == 'amd64'
+                uses: zowe-actions/shared-actions/docker-build-local@main
+                with:
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                timeout-minutes: 45
+
+            -   name: Build s390x
+                if: matrix.arch == 's390x'
+                uses: zowe-actions/shared-actions/docker-build-zlinux@main
+                with:
+                    zlinux-host: ${{ secrets.zlinux-host }}
+                    zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
+                    zlinux-ssh-key: ${{ secrets.zlinux-ssh-key }}
+                    zlinux-ssh-passphrase: ${{ secrets.zlinux-ssh-passphrase }}
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                    ### Only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
+                timeout-minutes: 45
+
+            -   uses: ./.github/actions/teardown
+
+    define-manifest-single-service:
+        needs:
+            - create-image-one-service
+        strategy:
+            matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
+                os: [ ubuntu, ubi ]
+        runs-on: ubuntu-latest
+        if: ${{ inputs.service != 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
+                    image-name: ${{ inputs.service }}
+                    linux-distro: ${{ matrix.os }}
+
+            -   uses: zowe-actions/shared-actions/docker-manifest@main
+                with:
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch-list: "amd64 s390x"
+                timeout-minutes: 2
+
+            -   uses: ./.github/actions/teardown

@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 /* eslint-disable import/no-extraneous-dependencies */
 import * as enzyme from 'enzyme';
 import 'jest-enzyme';

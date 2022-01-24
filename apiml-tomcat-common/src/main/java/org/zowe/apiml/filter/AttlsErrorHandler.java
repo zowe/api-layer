@@ -16,6 +16,10 @@ import java.io.IOException;
 
 public class AttlsErrorHandler {
 
+    private AttlsErrorHandler() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static void handleError(HttpServletResponse response, String errorMessage) throws IOException {
         response.setStatus(500);
         ObjectMapper objectMapper = new ObjectMapper();
