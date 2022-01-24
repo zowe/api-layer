@@ -8,17 +8,17 @@
  * Copyright Contributors to the Zowe Project.
  */
 /* eslint-disable no-console */
-import * as enzyme from 'enzyme';
+import React from 'react';
+import { render } from 'react-dom';
+import { act } from 'react-dom/test-utils';
 import Shield from './Shield';
-import React from "react";
-import { render } from "react-dom";
-import { act } from "react-dom/test-utils";
 
 const Child = () => {
     // eslint-disable-next-line no-throw-literal
     throw 'error';
 };
 
+// eslint-disable-next-line no-unused-vars
 const pauseErrorLogging = (codeToRun) => {
     const logger = console.error;
     console.error = () => {};
@@ -30,12 +30,15 @@ const pauseErrorLogging = (codeToRun) => {
 describe('>>> Shield component tests', () => {
     it('Should catches error and renders message', () => {
         const errorMessage = 'Display the error stack';
-        let container = document.createElement("div");
-        act(()=>{
-            render( <Shield>
-                <Child />
-            </Shield>,container)
-        })
+        const container = document.createElement('div');
+        act(() => {
+            render(
+                <Shield>
+                    <Child />
+                </Shield>,
+                container
+            );
+        });
         expect(container.textContent).toBe(errorMessage);
     });
 });

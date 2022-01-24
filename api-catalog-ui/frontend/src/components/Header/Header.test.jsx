@@ -1,4 +1,12 @@
-/* eslint-disable no-undef */
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import * as enzyme from 'enzyme';
 import Header from './Header';
 
@@ -10,11 +18,7 @@ describe('>>> Header component tests', () => {
 
     it('should have link href to itself', () => {
         const sample = enzyme.shallow(<Header />);
-        expect(
-            sample
-                .find('[data-testid="link"]')
-                .props().href
-        ).toEqual('ui/v1/apicatalog/#/dashboard');
+        expect(sample.find('[data-testid="link"]').props().href).toEqual('ui/v1/apicatalog/#/dashboard');
     });
 
     it('should handle a Logout button click', () => {

@@ -8,24 +8,22 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as enzyme from 'enzyme';
-import WizardInputs from './WizardInputs';
-import {render, fireEvent, screen, within} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, fireEvent, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/extend-expect';
+import WizardInputs from './WizardInputs';
 
 describe('>>> WizardInputs tests', () => {
-    it('should change value in component\'s state on keystroke when content is an array', async () => {
+    it("should change value in component's state on keystroke when content is an array", async () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: [
-                { testInput: { value: 'input', question: '' } },
-            ],
+            content: [{ testInput: { value: 'input', question: '' } }],
             multiple: true,
         };
-        render(<WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />)
+        render(<WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />);
         const input = screen.getByRole('textbox');
-        await userEvent.type(input, "Hello");
+        await userEvent.type(input, 'Hello');
         expect(updateWizardData).toHaveBeenCalled();
     });
     it('should handle booleans', () => {
@@ -43,8 +41,8 @@ describe('>>> WizardInputs tests', () => {
                 value: 'irrelevantValue',
                 checked: true,
                 name: 'testInput',
-                getAttribute: () => 0
-            }
+                getAttribute: () => 0,
+            },
         });
         expect(updateWizardData).toHaveBeenCalledWith({
             content: [{ testInput: { value: true, question: '', show: true, interactedWith: true } }],
@@ -55,41 +53,39 @@ describe('>>> WizardInputs tests', () => {
     it('should create 3 inputs based on data and visibility', () => {
         const dummyData = {
             text: 'Dummy Data',
-            content: [{
-                test: { value: '', question: '', hide: true },
-                test2: { value: '', question: '', },
-                test3: { value: '', question: '', },
-                test4: { value: '', question: '', },
-            }],
+            content: [
+                {
+                    test: { value: '', question: '', hide: true },
+                    test2: { value: '', question: '' },
+                    test3: { value: '', question: '' },
+                    test4: { value: '', question: '' },
+                },
+            ],
             multiple: false,
         };
-        render(
-            <WizardInputs updateWizardData={jest.fn()} data={dummyData} />
-        );
+        render(<WizardInputs updateWizardData={jest.fn()} data={dummyData} />);
 
         expect(screen.getAllByRole('textbox').length).toEqual(3);
     });
     it('should not load', () => {
         const updateWizardData = jest.fn();
         const dummyData = {};
-        const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
-        );
+        const wrapper = enzyme.shallow(<WizardInputs updateWizardData={updateWizardData} data={dummyData} />);
         expect(wrapper.find('FormField').length).toEqual(0);
     });
     it('should add more fields', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Dummy Data',
-            content: [{
-                test: { value: '', question: '', show: true },
-                test2: { value: '', question: '', show: true },
-            }],
+            content: [
+                {
+                    test: { value: '', question: '', show: true },
+                    test2: { value: '', question: '', show: true },
+                },
+            ],
             multiple: true,
         };
-        const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
-        );
+        const wrapper = enzyme.shallow(<WizardInputs updateWizardData={updateWizardData} data={dummyData} />);
         const instance = wrapper.instance();
         instance.addFields(dummyData);
         expect(updateWizardData).toHaveBeenCalled();
@@ -98,15 +94,15 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Dummy Data',
-            content: [{
-                test: { value: true, question: '', show: true },
-                test2: { value: '', question: '', show: true },
-            }],
+            content: [
+                {
+                    test: { value: true, question: '', show: true },
+                    test2: { value: '', question: '', show: true },
+                },
+            ],
             multiple: true,
         };
-        const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
-        );
+        const wrapper = enzyme.shallow(<WizardInputs updateWizardData={updateWizardData} data={dummyData} />);
         const instance = wrapper.instance();
         instance.addFields(dummyData);
         expect(updateWizardData).toHaveBeenCalled();
@@ -115,26 +111,31 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Dummy Category',
-            content: [{
-                field1: { value: true, question: '', show: true },
-                field2: { value: 'hey', question: '', show: true },
-            }],
+            content: [
+                {
+                    field1: { value: true, question: '', show: true },
+                    field2: { value: 'hey', question: '', show: true },
+                },
+            ],
             multiple: true,
-            minions: { 'Test Category 2': ['test2'] }
+            minions: { 'Test Category 2': ['test2'] },
         };
-        const dummyData = [{
-            text: 'Test Category',
-            content: [{
-                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
-            }],
-            multiple: true,
-        },
+        const dummyData = [
+            {
+                text: 'Test Category',
+                content: [
+                    {
+                        myCategory: { value: 'dummy value', question: 'This is a dummy question' },
+                    },
+                ],
+                multiple: true,
+            },
             {
                 text: 'Test Category 2',
                 content: [{ test2: { value: 'val', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
-            }
+            },
         ];
         const wrapper = enzyme.shallow(
             <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
@@ -147,19 +148,25 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Dummy Category',
-            content: [{
-                field1: { value: true, question: '', show: true },
-                field2: { value: 'hey', question: '', show: true },
-            }],
+            content: [
+                {
+                    field1: { value: true, question: '', show: true },
+                    field2: { value: 'hey', question: '', show: true },
+                },
+            ],
             multiple: true,
         };
-        const dummyData = [{
-            text: 'Test Category',
-            content: [{
-                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
-            }],
-            multiple: true,
-        },];
+        const dummyData = [
+            {
+                text: 'Test Category',
+                content: [
+                    {
+                        myCategory: { value: 'dummy value', question: 'This is a dummy question' },
+                    },
+                ],
+                multiple: true,
+            },
+        ];
         const wrapper = enzyme.shallow(
             <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
         );
@@ -171,11 +178,13 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Dummy Category',
-            content: [{
-                test2: { value: 'val', question: '', show: true },
-            }],
+            content: [
+                {
+                    test2: { value: 'val', question: '', show: true },
+                },
+            ],
             multiple: true,
-            minions: { 'Test Category 2': ['test2'] }
+            minions: { 'Test Category 2': ['test2'] },
         };
         const dummyData = [
             {
@@ -183,7 +192,7 @@ describe('>>> WizardInputs tests', () => {
                 content: [{ test2: { value: '', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
-            }
+            },
         ];
         const wrapper = enzyme.shallow(
             <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
@@ -196,11 +205,13 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Dummy Category',
-            content: [{
-                test2: { value: 'val', question: '', show: true },
-            }],
+            content: [
+                {
+                    test2: { value: 'val', question: '', show: true },
+                },
+            ],
             multiple: true,
-            minions: { 'Test Category 2': ['test'] }
+            minions: { 'Test Category 2': ['test'] },
         };
         const dummyData = [
             {
@@ -208,7 +219,7 @@ describe('>>> WizardInputs tests', () => {
                 content: [{ test2: { value: '', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
-            }
+            },
         ];
         const wrapper = enzyme.shallow(
             <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
@@ -221,11 +232,13 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Dummy Category',
-            content: [{
-                test2: { value: 'val', question: '', show: true },
-            }],
+            content: [
+                {
+                    test2: { value: 'val', question: '', show: true },
+                },
+            ],
             multiple: true,
-            minions: { 'Test Category 2': ['test2'] }
+            minions: { 'Test Category 2': ['test2'] },
         };
         const dummyData = [
             {
@@ -233,7 +246,7 @@ describe('>>> WizardInputs tests', () => {
                 content: [{ test2: { value: '', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
-            }
+            },
         ];
         const wrapper = enzyme.shallow(
             <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
@@ -249,19 +262,18 @@ describe('>>> WizardInputs tests', () => {
             text: 'Dummy Data',
             content: [
                 {
-                    test: { value: '', question: 'Why?', empty: true, },
-                    test2: { value: '', question: 'When?', empty: true, },
+                    test: { value: '', question: 'Why?', empty: true },
+                    test2: { value: '', question: 'When?', empty: true },
                 },
                 {
-                    test: { value: 'val', question: 'Why?', empty: false, },
-                    test2: { value: 'val2', question: 'When?', empty: false, },
-                }
+                    test: { value: 'val', question: 'Why?', empty: false },
+                    test2: { value: 'val2', question: 'When?', empty: false },
+                },
             ],
             multiple: true,
         };
         const wrapper = enzyme.shallow(
-            <WizardInputs data={dummyData} deleteCategoryConfig={deleteCategoryConfig} validateInput={validateInput}
-            />
+            <WizardInputs data={dummyData} deleteCategoryConfig={deleteCategoryConfig} validateInput={validateInput} />
         );
         const instance = wrapper.instance();
         instance.setState({ [`delBtn1`]: true });
@@ -277,20 +289,19 @@ describe('>>> WizardInputs tests', () => {
             text: 'Dummy Data',
             content: [
                 {
-                    test: { value: '', question: 'Why?', empty: true, },
-                    test2: { value: '', question: 'When?', empty: true, },
+                    test: { value: '', question: 'Why?', empty: true },
+                    test2: { value: '', question: 'When?', empty: true },
                 },
                 {
-                    test: { value: 'val', question: 'Why?', empty: false, },
-                    test2: { value: 'val2', question: 'When?', empty: false, },
-                }
+                    test: { value: 'val', question: 'Why?', empty: false },
+                    test2: { value: 'val2', question: 'When?', empty: false },
+                },
             ],
             multiple: true,
             minions: { 'Test Cat': ['testCont'] },
         };
         const wrapper = enzyme.shallow(
-            <WizardInputs deleteCategoryConfig={deleteCategoryConfig} validateInput={validateInput}
-                          data={dummyData} />
+            <WizardInputs deleteCategoryConfig={deleteCategoryConfig} validateInput={validateInput} data={dummyData} />
         );
         const instance = wrapper.instance();
         instance.setState({ [`delBtn1`]: true });
@@ -300,9 +311,7 @@ describe('>>> WizardInputs tests', () => {
         expect(deleteCategoryConfig).toHaveBeenCalledTimes(2);
     });
     it('should restrict values to lowercase and the allowed length', () => {
-        const wrapper = enzyme.shallow(
-            <WizardInputs data={[]} />
-        );
+        const wrapper = enzyme.shallow(<WizardInputs data={[]} />);
         const instance = wrapper.instance();
         const result = instance.applyRestrictions(5, 'SoMEthinG', true);
         expect(result).toEqual('somet');
@@ -310,23 +319,23 @@ describe('>>> WizardInputs tests', () => {
     it('should not render if dependencies are not satisfied', () => {
         const dummyData = {
             text: 'Category',
-            content: [{
-                test: {
-                    value: '',
-                    question: 'Why?',
-                    dependencies: { scheme: 'someScheme' },
-                    show: true,
+            content: [
+                {
+                    test: {
+                        value: '',
+                        question: 'Why?',
+                        dependencies: { scheme: 'someScheme' },
+                        show: true,
+                    },
+                    scheme: {
+                        value: '',
+                        question: 'Why not?',
+                        options: ['someScheme', 'otherScheme'],
+                    },
                 },
-                scheme: {
-                    value: '',
-                    question: 'Why not?',
-                    options: ['someScheme', 'otherScheme'],
-                },
-            }],
+            ],
         };
-        const wrapper = enzyme.shallow(
-            <WizardInputs data={dummyData} />
-        );
+        const wrapper = enzyme.shallow(<WizardInputs data={dummyData} />);
         const instance = wrapper.instance();
         const result = instance.renderInputs(dummyData.content[0]);
         expect(result[0]).toEqual(null);
@@ -334,50 +343,57 @@ describe('>>> WizardInputs tests', () => {
     it('should render if dependency is satisfied', () => {
         const dummyData = {
             text: 'Category',
-            content: [{
-                test: { value: '', question: 'Why?', dependencies: { scheme: 'schemeValue' } },
-                scheme: { value: 'schemeValue', question: 'Who?' },
-            }],
+            content: [
+                {
+                    test: { value: '', question: 'Why?', dependencies: { scheme: 'schemeValue' } },
+                    scheme: { value: 'schemeValue', question: 'Who?' },
+                },
+            ],
         };
-        const wrapper = enzyme.shallow(
-            <WizardInputs data={dummyData} />
-        );
+        const wrapper = enzyme.shallow(<WizardInputs data={dummyData} />);
         const instance = wrapper.instance();
-        const result = instance.renderInputs(dummyData.content,);
+        const result = instance.renderInputs(dummyData.content);
         expect(result[0]).not.toEqual(null);
     });
     it('should correctly generate captions for all restrictions', () => {
         const dummyData = {
             text: 'Category',
-            content: [{
-                test: {
-                    value: '',
-                    question: 'Why?',
-                    optional: true,
-                    maxLength: 40,
-                    lowercase: true,
-                    empty: true,
-                    problem: false
+            content: [
+                {
+                    test: {
+                        value: '',
+                        question: 'Why?',
+                        optional: true,
+                        maxLength: 40,
+                        lowercase: true,
+                        empty: true,
+                        problem: false,
+                    },
                 },
-            }],
+            ],
         };
-        render(
-            <WizardInputs data={dummyData} />
-        );
+        render(<WizardInputs data={dummyData} />);
         const element = screen.getByText('Optional field; Field must be lowercase; Max length is 40 characters');
         expect(element).toBeInTheDocument();
     });
-    it('should handle select\'s onCLick', () => {
+    it("should handle select's onCLick", () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Category 1',
-            content: [{
-                type: { value: 'val ', question: 'Why?', options: ['Option 1', 'val'] },
-            }],
+            content: [
+                {
+                    type: { value: 'val ', question: 'Why?', options: ['Option 1', 'val'] },
+                },
+            ],
             interference: 'catalog',
         };
         render(
-            <WizardInputs updateWizardData={updateWizardData}  validateInput={jest.fn()} tiles={['TIle 1']} data={dummyCategory}/>
+            <WizardInputs
+                updateWizardData={updateWizardData}
+                validateInput={jest.fn()}
+                tiles={['TIle 1']}
+                data={dummyCategory}
+            />
         );
 
         fireEvent.mouseDown(screen.getByRole('button'));
@@ -386,9 +402,11 @@ describe('>>> WizardInputs tests', () => {
         fireEvent.click(listbox.getByText(/val/i));
         expect(updateWizardData).toHaveBeenCalledWith({
             text: 'Category 1',
-            content: [{
-                type: { value: 'val', question: 'Why?', options: ['Option 1', 'val'], show: true },
-            }],
+            content: [
+                {
+                    type: { value: 'val', question: 'Why?', options: ['Option 1', 'val'], show: true },
+                },
+            ],
             interference: 'catalog',
         });
     });
@@ -399,7 +417,7 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        const result = instance.checkRestrictions(dummyData,'hey', [{ value: '^[a-z]+$', tooltip: 'Warning' }], false);
+        const result = instance.checkRestrictions(dummyData, 'hey', [{ value: '^[a-z]+$', tooltip: 'Warning' }], false);
         expect(result).toEqual(false);
     });
     it('should check for URL restrictions', () => {
@@ -409,7 +427,7 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        const result = instance.checkRestrictions(dummyData,'http://www.example.com/index.html', undefined, true);
+        const result = instance.checkRestrictions(dummyData, 'http://www.example.com/index.html', undefined, true);
         expect(result).toEqual(false);
     });
     it('should check for restrictions correctly', () => {
@@ -418,42 +436,47 @@ describe('>>> WizardInputs tests', () => {
         const dummyCategoryContent = {
             value: 'hEy9',
             question: 'Why?',
-        }
+        };
         const wrapper = enzyme.shallow(
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        const result = instance.checkRestrictions(dummyCategoryContent,'hEy9', [{ value: '^[a-z]+$', tooltip: 'Warning' }], true);
+        const result = instance.checkRestrictions(
+            dummyCategoryContent,
+            'hEy9',
+            [{ value: '^[a-z]+$', tooltip: 'Warning' }],
+            true
+        );
         expect(result).toEqual(true);
         expect(dummyCategoryContent.tooltip).toEqual('The URL has to be valid, example: https://localhost:10014');
     });
     it('should handle tooltip', () => {
         const dummyData = {
             text: 'Category',
-            content: [{
-                test: {
-                    value: '',
-                    question: 'Why?',
-                    optional: true,
-                    maxLength: 40,
-                    lowercase: true,
-                    empty: true,
-                    problem: false,
-                    tooltip: 'hey'
+            content: [
+                {
+                    test: {
+                        value: '',
+                        question: 'Why?',
+                        optional: true,
+                        maxLength: 40,
+                        lowercase: true,
+                        empty: true,
+                        problem: false,
+                        tooltip: 'hey',
+                    },
                 },
-            }],
+            ],
         };
-        render(
-            <WizardInputs data={dummyData} />
-        );
+        render(<WizardInputs data={dummyData} />);
         expect(screen.getByTitle('hey')).toBeInTheDocument();
     });
-    it('should alter fields if there\'s interference', () => {
+    it("should alter fields if there's interference", () => {
         const updateWizardData = jest.fn();
         const payload = { title: 'Option 1' };
         const dummyData = {
             text: 'Test category',
-            content: [{ type: { value: '', question: 'Why?', options: ['Custom'] }, }],
+            content: [{ type: { value: '', question: 'Why?', options: ['Custom'] } }],
             interference: 'catalog',
         };
         const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
@@ -461,8 +484,8 @@ describe('>>> WizardInputs tests', () => {
             text: 'Test category',
             content: [
                 {
-                    type: { value: 'Option 1', question: 'Why?', show: true, options: ['Custom'] }
-                }
+                    type: { value: 'Option 1', question: 'Why?', show: true, options: ['Custom'] },
+                },
             ],
             interference: 'catalog',
         };
@@ -473,15 +496,17 @@ describe('>>> WizardInputs tests', () => {
         instance.interferenceInjection(payload);
         expect(updateWizardData).toHaveBeenCalledWith(expectedArgument);
     });
-    it('should alter fields if there\'s interference correctly', () => {
+    it("should alter fields if there's interference correctly", () => {
         const updateWizardData = jest.fn();
         const payload = { title: 'Option 2' };
         const dummyData = {
             text: 'Test category',
-            content: [{
-                type: { value: '', question: 'Why?', options: ['Custom'] },
-                field: {value: '', question: 'Why not?'},
-            }],
+            content: [
+                {
+                    type: { value: '', question: 'Why?', options: ['Custom'] },
+                    field: { value: '', question: 'Why not?' },
+                },
+            ],
             interference: 'catalog',
         };
         const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
@@ -490,8 +515,8 @@ describe('>>> WizardInputs tests', () => {
             content: [
                 {
                     type: { value: 'Option 2', question: 'Why?', show: true, options: ['Custom'] },
-                    field: {value: undefined, question: 'Why not?', show: true, disabled: false}
-                }
+                    field: { value: undefined, question: 'Why not?', show: true, disabled: false },
+                },
             ],
             interference: 'catalog',
         };
@@ -507,42 +532,55 @@ describe('>>> WizardInputs tests', () => {
         const payload = { title: 'Option 1' };
         const dummyData = {
             text: 'Catalog UI Tiles',
-            content: [{
-                type: { value: '', question: 'Why?', options: ['Custom'] },
-            }],
+            content: [
+                {
+                    type: { value: '', question: 'Why?', options: ['Custom'] },
+                },
+            ],
             interference: 'staticCatalog',
         };
-        const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }]
+        const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
         const dummyInputData = [
             {
-            text: 'Catalog UI Tiles',
-            content: [{
-                type: { value: '', question: 'Why?', options: ['Custom'] },
-            }],
-            interference: 'staticCatalog',
-        },
+                text: 'Catalog UI Tiles',
+                content: [
+                    {
+                        type: { value: '', question: 'Why?', options: ['Custom'] },
+                    },
+                ],
+                interference: 'staticCatalog',
+            },
             {
                 text: 'Test category',
-                content: [{
-                    type: { value: '', question: 'Why?', options: ['Custom'] },
-                }],
-            }
+                content: [
+                    {
+                        type: { value: '', question: 'Why?', options: ['Custom'] },
+                    },
+                ],
+            },
         ];
         const wrapper = enzyme.shallow(
-            <WizardInputs data={dummyData} inputData={dummyInputData} tiles={dummyTiles} updateWizardData={updateWizardData} />
+            <WizardInputs
+                data={dummyData}
+                inputData={dummyInputData}
+                tiles={dummyTiles}
+                updateWizardData={updateWizardData}
+            />
         );
         const instance = wrapper.instance();
         instance.interferenceInjection(payload);
         expect(updateWizardData).toHaveBeenCalledWith(dummyData);
-    })
+    });
     it('should handle incorrect interference', () => {
         const updateWizardData = jest.fn();
         const payload = { title: 'Option 1' };
         const dummyData = {
             text: 'Test category',
-            content: [{
-                type: { value: '', question: 'Why?', options: ['Custom'] },
-            }],
+            content: [
+                {
+                    type: { value: '', question: 'Why?', options: ['Custom'] },
+                },
+            ],
             interference: 'something',
         };
         const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
@@ -559,40 +597,59 @@ describe('>>> WizardInputs tests', () => {
         const payload = { title: 'Option 1', name: 'field', index: 0 };
         const dummyData = {
             text: 'Test category',
-            content: [{
-                field: { value: '', question: 'Why?', options: ['Custom', 'Option 1'] },
-            }],
+            content: [
+                {
+                    field: { value: '', question: 'Why?', options: ['Custom', 'Option 1'] },
+                },
+            ],
             nav: 'Category',
         };
         const expectedArgument = {
             text: 'Test category',
-            content: [{
-                field: { value: 'Option 1', question: 'Why?', options: ['Custom', 'Option 1'], problem: false, show: true, interactedWith: true, empty: false },
-            }],
+            content: [
+                {
+                    field: {
+                        value: 'Option 1',
+                        question: 'Why?',
+                        options: ['Custom', 'Option 1'],
+                        problem: false,
+                        show: true,
+                        interactedWith: true,
+                        empty: false,
+                    },
+                },
+            ],
             nav: 'Category',
         };
         const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
         const wrapper = enzyme.shallow(
-            <WizardInputs data={dummyData} tiles={dummyTiles} updateWizardData={updateWizardData} validateInput={validateInput} />
+            <WizardInputs
+                data={dummyData}
+                tiles={dummyTiles}
+                updateWizardData={updateWizardData}
+                validateInput={validateInput}
+            />
         );
         const instance = wrapper.instance();
         instance.interferenceInjection(payload);
         expect(updateWizardData).toHaveBeenCalledWith(expectedArgument);
         expect(validateInput).toHaveBeenCalledWith(dummyData.nav, true);
-
-    })
+    });
     it('should update service ID', () => {
         const updateServiceId = jest.fn();
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: [
-                { serviceId: { value: 'input', question: '' } },
-            ],
+            content: [{ serviceId: { value: 'input', question: '' } }],
             multiple: true,
         };
         const wrapper = enzyme.shallow(
-            <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} updateServiceId={updateServiceId} data={dummyData} />
+            <WizardInputs
+                validateInput={jest.fn()}
+                updateWizardData={updateWizardData}
+                updateServiceId={updateServiceId}
+                data={dummyData}
+            />
         );
         const instance = wrapper.instance();
         instance.handleInputChange({ target: { value: 'test1', name: 'serviceId', getAttribute: () => 0 } });
@@ -603,13 +660,16 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: [
-                { serviceId: { value: '', question: '' } },
-            ],
+            content: [{ serviceId: { value: '', question: '' } }],
             multiple: true,
         };
         const wrapper = enzyme.shallow(
-            <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} updateServiceId={updateServiceId} data={dummyData} />
+            <WizardInputs
+                validateInput={jest.fn()}
+                updateWizardData={updateWizardData}
+                updateServiceId={updateServiceId}
+                data={dummyData}
+            />
         );
         const instance = wrapper.instance();
         instance.handleInputChange({ target: { value: '', name: 'serviceId', getAttribute: () => 0 } });

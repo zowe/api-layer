@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { shallow, mount } from 'enzyme/build';
+import { shallow } from 'enzyme/build';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 

@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import React from 'react';
 import { IconButton, InputAdornment, Typography, Button, CssBaseline, TextField, Link } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
@@ -29,7 +38,7 @@ export default class Login extends React.Component {
      * Detect caps lock being on when typing.
      * @param keyEvent On key down event.
      */
-    onKeyDown = keyEvent => {
+    onKeyDown = (keyEvent) => {
         this.setState({ warning: false });
         if (keyEvent.getModifierState('CapsLock')) {
             this.setState({ warning: true });
@@ -47,7 +56,7 @@ export default class Login extends React.Component {
         return isFetching;
     };
 
-    handleError = error => {
+    handleError = (error) => {
         let messageText;
         const { authentication } = this.props;
         // eslint-disable-next-line global-require
@@ -60,7 +69,7 @@ export default class Login extends React.Component {
         ) {
             messageText = `Unexpected error, please try again later (${error.messageNumber})`;
             const filter = errorMessages.messages.filter(
-                x => x.messageKey != null && x.messageKey === error.messageNumber
+                (x) => x.messageKey != null && x.messageKey === error.messageNumber
             );
             if (filter.length !== 0) {
                 if (filter[0].messageKey === 'ZWEAS120E') {
@@ -132,13 +141,12 @@ export default class Login extends React.Component {
                                         <CssBaseline />
                                         <div className="text-block-4">API Catalog</div>
                                         <br />
-                                        {messageText !== undefined &&
-                                            messageText !== null && (
-                                                <div id="error-message">
-                                                    <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                                    {messageText}
-                                                </div>
-                                            )}
+                                        {messageText !== undefined && messageText !== null && (
+                                            <div id="error-message">
+                                                <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                                {messageText}
+                                            </div>
+                                        )}
                                         <Typography
                                             className="login-typo"
                                             variant="subtitle1"
