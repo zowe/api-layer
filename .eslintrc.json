@@ -26,7 +26,6 @@
         "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
         "import/no-named-as-default": 1,
         "no-template-curly-in-string": "off",
-        "no-debugger":"off",
         "no-unused-vars": [
             1,
             {
