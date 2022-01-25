@@ -82,7 +82,7 @@ class WizardInputs extends Component {
         if (minions) {
             if (Object.values(minions)[0].includes(name)) {
                 let category;
-                this.props.inputData.forEach(cat => {
+                this.props.inputData.forEach((cat) => {
                     if (cat.text === Object.keys(this.props.data.minions)[0]) {
                         category = { ...cat };
                     }
@@ -110,7 +110,7 @@ class WizardInputs extends Component {
     checkRestrictions(inputObject, value, regexRestriction, validUrl) {
         let problem = false;
         if (regexRestriction !== undefined) {
-            regexRestriction.forEach(regex => {
+            regexRestriction.forEach((regex) => {
                 const restriction = new RegExp(regex.value);
                 if (!restriction.test(value)) {
                     inputObject.tooltip = regex.tooltip;
@@ -164,7 +164,7 @@ class WizardInputs extends Component {
             };
             this.updateDataWithNewContent(data, arr);
         } else if (data.interference === 'staticCatalog') {
-            this.props.inputData.forEach(category => {
+            this.props.inputData.forEach((category) => {
                 if (category.text === 'Catalog UI Tiles') {
                     data = category;
                 }
@@ -193,14 +193,14 @@ class WizardInputs extends Component {
      */
     fillCategoryFromATile(tiles, title, data) {
         let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
-        tiles.forEach(tile => {
+        tiles.forEach((tile) => {
             if (tile.title === title) {
                 selectedTile = tile;
                 selectedTile.disabled = true;
             }
         });
         const arr = [...data.content];
-        Object.keys(arr[0]).forEach(entry => {
+        Object.keys(arr[0]).forEach((entry) => {
             if (entry !== 'type') {
                 arr[0][entry] = { ...arr[0][entry], value: selectedTile[entry], disabled: selectedTile.disabled };
             }
@@ -235,10 +235,10 @@ class WizardInputs extends Component {
      * Adds another set of config
      * @param category category which we should add the set to
      */
-    addFields = category => {
+    addFields = (category) => {
         const myObject = category.content[0];
         const newObject = {};
-        Object.keys(myObject).forEach(key => {
+        Object.keys(myObject).forEach((key) => {
             newObject[key] = { ...myObject[key] };
             newObject[key].interactedWith = false;
             if (typeof newObject[key].value !== 'boolean') {
@@ -262,7 +262,7 @@ class WizardInputs extends Component {
     addFieldsToCurrentCategory() {
         this.addFields(this.props.data);
         if (this.props.data.minions) {
-            this.props.inputData.forEach(category => {
+            this.props.inputData.forEach((category) => {
                 if (category.text === Object.keys(this.props.data.minions)[0]) {
                     this.addFields(category);
                 }
@@ -300,7 +300,7 @@ class WizardInputs extends Component {
         }
         let result = [];
         let index = 0;
-        dataAsObject.content.forEach(c => {
+        dataAsObject.content.forEach((c) => {
             if (index !== 0 && typeof this.state[`delBtn${index}`] === 'undefined') {
                 this.setState({ [`delBtn${index}`]: false });
             }
@@ -324,7 +324,7 @@ class WizardInputs extends Component {
      */
     dependenciesSatisfied(dependencies, content) {
         let satisfied = true;
-        Object.entries(dependencies).forEach(entry => {
+        Object.entries(dependencies).forEach((entry) => {
             const [key, value] = entry;
             if (typeof content[key] === 'undefined' || content[key].value !== value) {
                 satisfied = false;
@@ -364,7 +364,7 @@ class WizardInputs extends Component {
     renderInputs = (content, index = 0) => {
         const selectedData = Object.keys(content);
         let key = -1;
-        return selectedData.map(itemKey => {
+        return selectedData.map((itemKey) => {
             const input = content[itemKey];
             if (input.dependencies && !this.dependenciesSatisfied(input.dependencies, content)) {
                 input.show = false;
@@ -412,7 +412,7 @@ class WizardInputs extends Component {
                         <Checkbox
                             className="wCheckBox"
                             checked={value}
-                            onChange={event => this.handleInputChange(event, index)}
+                            onChange={(event) => this.handleInputChange(event, index)}
                             name={itemKey}
                         />
                     }
@@ -425,8 +425,12 @@ class WizardInputs extends Component {
             return (
                 <FormControl className="formField" disabled={disabled}>
                     <InputLabel shrink>{question}</InputLabel>
-                    <Select id={itemKey} value={value} onChange={event => this.handleSelect(event, { index, itemKey })}>
-                        {options.map(entry => (
+                    <Select
+                        id={itemKey}
+                        value={value}
+                        onChange={(event) => this.handleSelect(event, { index, itemKey })}
+                    >
+                        {options.map((entry) => (
                             <MenuItem value={entry}>{entry}</MenuItem>
                         ))}
                     </Select>
@@ -446,7 +450,7 @@ class WizardInputs extends Component {
                         id={itemKey}
                         name={itemKey}
                         value={value}
-                        onChange={event => this.handleInputChange(event, index)}
+                        onChange={(event) => this.handleInputChange(event, index)}
                         aria-describedby={captionId}
                     />
                     <FormHelperText id={captionId}>{caption}</FormHelperText>

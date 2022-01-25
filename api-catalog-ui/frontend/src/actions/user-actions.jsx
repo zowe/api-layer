@@ -28,14 +28,15 @@ function login(credentials) {
         return { type: userConstants.USERS_LOGIN_INVALIDPASSWORD, error };
     }
 
-    return dispatch => {
+    return (dispatch) => {
         dispatch(request(credentials));
+
         userService.login(credentials).then(
-            token => {
+            (token) => {
                 dispatch(success(token));
                 history.push('/dashboard');
             },
-            error => {
+            (error) => {
                 if (error.messageNumber === 'ZWEAT412E' || error.messageNumber === 'ZWEAT413E') {
                     dispatch(invalidPassword(error));
                 } else {
@@ -57,14 +58,14 @@ function logout() {
     function failure(error) {
         return { type: userConstants.USERS_LOGOUT_FAILURE, error };
     }
-    return dispatch => {
+    return (dispatch) => {
         dispatch(request());
         userService.logout().then(
             () => {
                 dispatch(success());
                 history.push('/login');
             },
-            error => {
+            (error) => {
                 dispatch(failure(error));
             }
         );
@@ -75,9 +76,8 @@ function authenticationFailure(error) {
     function failure(err) {
         return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
-    return dispatch => {
+    return (dispatch) => {
         dispatch(failure(error));
-        debugger;
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
             window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
         } else {

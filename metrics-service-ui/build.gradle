@@ -67,13 +67,20 @@ task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
 }
 npmE2ECI.dependsOn npmInstall
 
+task npmLint(type: NpmTask) {
+    group = 'npm'
+    description = 'Run eslint'
+    args = ['run', 'lint']
+}
+npmLint.dependsOn npmInstall
+
 task npmBuild(type: NpmTask) {
     group = 'npm'
     description = "Executes npm build"
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file('frontend/.eslintrc').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')
@@ -83,6 +90,7 @@ task npmBuild(type: NpmTask) {
 
 }
 npmBuild.dependsOn npmInstall
+npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
 
 

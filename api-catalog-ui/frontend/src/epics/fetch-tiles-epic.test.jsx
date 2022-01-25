@@ -8,10 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
 import { ActionsObservable } from 'redux-observable';
-import { from, of, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { TestScheduler } from 'rxjs/testing';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { AjaxError } from 'rxjs/ajax';
 import { fetchTilesPollingEpic } from './fetch-tiles';
 import { fetchTilesFailed, fetchTilesStart, fetchTilesStop, fetchTilesSuccess } from '../actions/catalog-tile-actions';
@@ -34,16 +35,6 @@ const mockResponse = [
 const ajaxResponse = {
     response: mockResponse,
 };
-
-const ajaxError = new AjaxError(
-    'API Error',
-    {
-        status: 404,
-        response: { message: 'Fetch Failure' },
-        responseType: 'json',
-    },
-    null
-);
 
 const ajax500Error = new AjaxError(
     'API Error',

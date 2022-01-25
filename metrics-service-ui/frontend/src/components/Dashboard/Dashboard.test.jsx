@@ -13,24 +13,20 @@
 import React from 'react';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import { act } from 'react-dom/test-utils';
+import { render } from 'react-dom';
 import Dashboard from './Dashboard';
-import {act} from "react-dom/test-utils";
-import {render} from 'react-dom';
 
 describe('>>> Dashboard component tests', () => {
-
-
     it('should display the service name ', async () => {
-
-        window.addStreams = jest.fn().mockReturnValue(() => {
-        });
+        window.addStreams = jest.fn().mockReturnValue(() => {});
         const mock = new MockAdapter(axios);
-        mock.onGet().reply(200, [{name: "GATEWAY", link: "localhost/turbine.stream?cluster=GATEWAY"}]);
+        mock.onGet().reply(200, [{ name: 'GATEWAY', link: 'localhost/turbine.stream?cluster=GATEWAY' }]);
 
-        let container = document.createElement("div");
+        const container = document.createElement('div');
         document.body.appendChild(container);
 
-        await act(async () => render(<Dashboard/>, container));
-        expect(container.textContent).toBe("Metrics ServiceGATEWAY");
+        await act(async () => render(<Dashboard />, container));
+        expect(container.textContent).toBe('Metrics ServiceGATEWAY');
     });
 });

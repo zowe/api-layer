@@ -219,7 +219,7 @@ release {
     failOnUpdateNeeded = true
     revertOnFail = true
     preCommitText = '[Gradle Release plugin]'
-    preTagCommitMessage = 'Before tag commit'
+    preTagCommitMessage = '[skip ci] Before tag commit'
     tagCommitMessage = 'Release:'
     tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'

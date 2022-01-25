@@ -153,6 +153,11 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+if [[ ! -z ${ZWE_GATEWAY_LIBRARY_PATH} ]]
+then
+    LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
+fi
+
 # NOTE: these are moved from below
 #    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \

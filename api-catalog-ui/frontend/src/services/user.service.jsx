@@ -11,7 +11,7 @@
 import * as log from 'loglevel';
 
 function handleResponse(response) {
-    return response.text().then(text => {
+    return response.text().then((text) => {
         const data = text ? JSON.parse(text) : {};
         if (!response.ok) {
             const [message] = data.messages;
@@ -54,8 +54,8 @@ function logout() {
         `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/auth/logout`,
         requestOptions
     )
-        .then(data => data)
-        .catch(error => {
+        .then((data) => data)
+        .catch((error) => {
             log.error('Logout process failed', error);
             throw new Error(error);
         });
@@ -76,7 +76,7 @@ function login(credentials) {
     };
     return fetch(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/auth/login`, requestOptions)
         .then(handleResponse)
-        .then(user => user);
+        .then((user) => user);
 }
 
 // eslint-disable-next-line

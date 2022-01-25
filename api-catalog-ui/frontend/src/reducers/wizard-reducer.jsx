@@ -47,7 +47,7 @@ export function compareVariables(category, categoryInfo) {
         categoryInfo.nav = categoryInfo.name;
     }
     const overridingValues = ['indentation', 'multiple', 'inArr', 'arrIndent', 'minions'];
-    overridingValues.forEach(overrideKey => {
+    overridingValues.forEach((overrideKey) => {
         if (categoryInfo[overrideKey] !== undefined) {
             category[overrideKey] = categoryInfo[overrideKey];
         }
@@ -66,7 +66,7 @@ export function compareVariables(category, categoryInfo) {
  */
 export function addDefaultValues(content, defaultsArr) {
     const newContent = { ...content };
-    defaultsArr.forEach(entry => {
+    defaultsArr.forEach((entry) => {
         const key = entry[0];
         const defaultValueObj = entry[1];
         if (newContent[key]) {
@@ -90,7 +90,7 @@ export function setDefault(category, defaults) {
     }
     const result = [];
     const defaultsArr = Object.entries(defaults[category.text]);
-    category.content.forEach(config => result.push(addDefaultValues(config, defaultsArr)));
+    category.content.forEach((config) => result.push(addDefaultValues(config, defaultsArr)));
     return { ...category, content: result };
 }
 
@@ -102,7 +102,7 @@ export function setDefault(category, defaults) {
  */
 function emptyFieldsOfContent(content, silent) {
     const emptyFieldsArr = [];
-    Object.entries(content).forEach(entry => {
+    Object.entries(content).forEach((entry) => {
         const [key, objValue] = entry;
         if (objValue.value.length === 0 && objValue.optional !== true && objValue.show !== false) {
             if (!silent || objValue.interactedWith) {
@@ -125,7 +125,7 @@ function emptyFieldsOfContent(content, silent) {
  */
 export function findEmptyFieldsOfCategory(content, silent) {
     const result = [];
-    content.forEach(cont => {
+    content.forEach((cont) => {
         result.push(emptyFieldsOfContent(cont, silent));
     });
     return result;
@@ -137,11 +137,11 @@ export function findEmptyFieldsOfCategory(content, silent) {
  * @param inputData inputData
  */
 function warnMinions(minions, inputData) {
-    inputData.forEach(category => {
-        minions.forEach(entry => {
+    inputData.forEach((category) => {
+        minions.forEach((entry) => {
             if (category.text === entry.key) {
                 category.isMinion = true;
-                entry.inputsToBeDisabled.forEach(inputName => {
+                entry.inputsToBeDisabled.forEach((inputName) => {
                     category.content[0][inputName].disabled = true;
                 });
             }
@@ -176,8 +176,8 @@ function loadCategories(enablerObj, config, payload) {
     const inputData = [];
     const navCategories = {};
     const { categories } = enablerObj;
-    categories.forEach(categoryInfo => {
-        let category = config.categoryData.find(o => o.text === categoryInfo.name);
+    categories.forEach((categoryInfo) => {
+        let category = config.categoryData.find((o) => o.text === categoryInfo.name);
         if (category === undefined) {
             return;
         }
@@ -214,17 +214,17 @@ function loadCategories(enablerObj, config, payload) {
  */
 function checkPresence(inputData, navName, navsObj, silent) {
     const newObj = { ...navsObj };
-    inputData.forEach(category => {
+    inputData.forEach((category) => {
         if (category.nav === navName) {
             newObj[category.nav][category.text] = findEmptyFieldsOfCategory(category.content, silent);
         }
     });
     newObj[navName].silent = silent;
     let numOfEmptyFields = 0;
-    Object.values(newObj[navName]).forEach(val => {
+    Object.values(newObj[navName]).forEach((val) => {
         if (Array.isArray(val)) {
             // category
-            val.forEach(setArr => {
+            val.forEach((setArr) => {
                 numOfEmptyFields += setArr.length;
             });
         }
@@ -257,7 +257,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             };
         case SELECT_ENABLER: {
             const { enablerName } = action.payload;
-            const enablerObj = config.enablerData.find(o => o.text === enablerName);
+            const enablerObj = config.enablerData.find((o) => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
                 return { ...state, enablerName };
             }
@@ -266,7 +266,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         }
         case INPUT_UPDATED: {
             const { category } = action.payload;
-            const inputData = state.inputData.map(group => {
+            const inputData = state.inputData.map((group) => {
                 if (group.text === category.text) {
                     return category;
                 }
@@ -282,7 +282,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             return { ...state, yamlObject: action.payload.yaml };
         case REMOVE_INDEX: {
             const { index, text } = action.payload;
-            const newData = state.inputData.map(element => {
+            const newData = state.inputData.map((element) => {
                 const newElement = { ...element };
                 if (newElement.text === text) {
                     const newArr = [...newElement.content];

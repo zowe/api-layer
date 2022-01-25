@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.zosmf;
 
+import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -78,7 +79,7 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
         } else {
             return request.getEndpointExistenceMap().entrySet().stream()
                 .filter(entry -> entry.getKey().equalsIgnoreCase(request.getZosmfBaseUrl() + endpoint))
-                .findFirst().map(entry -> entry.getValue()).orElse(true);
+                .findFirst().map(Entry::getValue).orElse(true);
         }
     }
 

@@ -40,12 +40,17 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.servlet.http.Cookie;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -262,7 +267,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     private String createExpiredJwtToken(Key secretKey) {
-        return createJwtTokenWithExpiry(secretKey,  System.currentTimeMillis() - 1000);
+        return createJwtTokenWithExpiry(secretKey, System.currentTimeMillis() - 1000);
     }
 
     private String createJwtTokenWithExpiry(Key secretKey, long expireAt) {
@@ -555,16 +560,19 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     @Test
-    void testCreateJwtTokensAndCheckExpiration() {
+    void testCreateOrdinaryJwtTokenAndCheckExpiration() {
         String jwt1 = authService.createJwtToken("user", "domain", "ltpaToken");
-        String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
 
         QueryResponse qr1 = authService.parseJwtToken(jwt1);
-        QueryResponse qr2 = authService.parseJwtToken(jwt2);
-
         Date toBeExpired = DateUtils.addSeconds(qr1.getCreation(), authConfigurationProperties.getTokenProperties().getExpirationInSeconds());
-        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
         assertEquals(qr1.getExpiration(), toBeExpired);
+    }
+
+    @Test
+    void testCreateShortLivedJwtTokenAndCheckExpiration() {
+        String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
+        QueryResponse qr2 = authService.parseJwtToken(jwt2);
+        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
         assertEquals(qr2.getExpiration(), toBeExpired2);
     }
 
