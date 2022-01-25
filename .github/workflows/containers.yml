@@ -993,8 +993,12 @@ jobs:
         timeout-minutes: 10
 
         steps:
-            -   name: Checkout
-                uses: actions/checkout@v2
+#            -   name: Checkout
+#                uses: actions/checkout@v2
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
             -   name: Install root dependencies
                 uses: bahmutov/npm-install@v1
                 with:
