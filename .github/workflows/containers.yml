@@ -1027,12 +1027,6 @@ jobs:
                         ~/.cache/Cypress
                         node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-            ## test
-            -   name: Install dependency
-                run: |
-                    cd api-catalog-ui/frontend
-                    npm install
-            ##
             -   name: Cypress run
 #                run: |
 #                    cd api-catalog-ui/frontend
