@@ -985,12 +985,28 @@ jobs:
 #            -   uses: ./.github/actions/teardown
 
     E2EUITests:
-        needs: CITests
+#        needs: CITests
         runs-on: ubuntu-latest
         container: cypress/browsers:node14.17.0-chrome91-ff89
         strategy:
             fail-fast: false
         timeout-minutes: 10
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
 #            -   name: Checkout
