@@ -989,8 +989,8 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: cypress/browsers:node14.17.0-chrome91-ff89
-        strategy:
-            fail-fast: false
+#        strategy:
+#            fail-fast: false
         timeout-minutes: 10
 
         services:
@@ -1027,22 +1027,28 @@ jobs:
                         ~/.cache/Cypress
                         node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-            -   name: Cypress run
-                uses: actions/cache@v2
-                with:
-                    wait-on: https://gateway-service:10010/apicagalog/ui/v1
+            ## test
+            -   name: Install dependency
                 run: |
                     cd api-catalog-ui/frontend
-                    npm run cy:e2e:ci
+                    npm install
+            ##
+            -   name: Cypress run
+#                run: |
+#                    cd api-catalog-ui/frontend
+#                    npm run cy:e2e:ci
+                uses: ./
+                with:
+                    install: false
+                    spec: cypress/integration/e2e/**/*.test.js
+                    browser: chrome
+                    working-directory: api-catalog-ui/frontend
+                    headless: true
+                    wait-on: https://gateway-service:10010/apicagalog/ui/v1
             -   name: Upload screenshots
                 uses: actions/upload-artifact@v2
                 if: failure()
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
-#                uses: cypress-io/github-action@v2
-#                with:
-#                    install: false
-#                    spec: cypress/integration/e2e/**/*.test.js
-#                    browser: chrome
-#                    headless: true
+
