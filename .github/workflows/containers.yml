@@ -1040,7 +1040,7 @@ jobs:
                     headless: true
                     wait-on: https://gateway-service:10010/apicagalog/ui/v1
                 env:
-                    CYPRESS_catalogHomePage: https://gateway-service:10010/apicagalog/ui/v1
+                    catalogHomePage: https://gateway-service:10010/apicagalog/ui/v1
             -   name: Upload screenshots
                 uses: actions/upload-artifact@v2
                 if: failure()
