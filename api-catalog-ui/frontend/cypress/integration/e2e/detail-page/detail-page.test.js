@@ -46,7 +46,7 @@ describe('>>> Detail page test', () => {
         //     `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1 \]`,
         //     `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/api\/v1\/apicatalog \]`,
         // ];
-        // const regex = new RegExp(`${values.join('|')}`, 'g');
+        const regex = new RegExp(`${values.join('|')}`, 'g');
 
         cy.get('pre.base-url')
             .should('exist')
