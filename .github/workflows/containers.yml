@@ -1014,7 +1014,12 @@ jobs:
                 run: |
                     cd api-catalog-ui/frontend
                     npm run cy:e2e:ci
-
+            -   name: Upload screenshots
+                uses: actions/upload-artifact@latest
+                if: failure()
+                with:
+                    name: cypress-snapshots
+                    path: api-catalog-ui/frontend/cypress/screenshots
 #                uses: cypress-io/github-action@v2
 #                with:
 #                    install: false
