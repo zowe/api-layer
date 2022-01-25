@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
 import { IconButton, Typography, Tooltip } from '@material-ui/core';
@@ -85,116 +94,107 @@ export default class DetailPage extends Component {
                         {error}
                     </div>
                 )}
-                {!isLoading &&
-                    !fetchTilesError && (
-                        <div className="api-description-container">
-                            <IconButton
-                                id="go-back-button"
-                                data-testid="go-back-button"
-                                color="primary"
-                                onClick={this.handleGoBack}
-                                size="medium"
-                            >
-                                {iconBack}
-                                Back
-                            </IconButton>
-                            <div className="detailed-description-container">
-                                <div className="title-api-container">
-                                    {tiles !== undefined &&
-                                        tiles.length === 1 && (
-                                            <div id="title" className="text-block-11">
-                                                {tiles[0].title}
-                                            </div>
-                                        )}
-                                </div>
-                                <div className="paragraph-description-container">
-                                    {tiles !== undefined &&
-                                        tiles.length > 0 && (
-                                            <div id="description" className="text-block-12">
-                                                {tiles[0].description}
-                                            </div>
-                                        )}
-                                </div>
+                {!isLoading && !fetchTilesError && (
+                    <div className="api-description-container">
+                        <IconButton
+                            id="go-back-button"
+                            data-testid="go-back-button"
+                            color="primary"
+                            onClick={this.handleGoBack}
+                            size="medium"
+                        >
+                            {iconBack}
+                            Back
+                        </IconButton>
+                        <div className="detailed-description-container">
+                            <div className="title-api-container">
+                                {tiles !== undefined && tiles.length === 1 && (
+                                    <div id="title" className="text-block-11">
+                                        {tiles[0].title}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="paragraph-description-container">
+                                {tiles !== undefined && tiles.length > 0 && (
+                                    <div id="description" className="text-block-12">
+                                        {tiles[0].description}
+                                    </div>
+                                )}
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
                 <div className="content-description-container">
-                    {tiles !== undefined &&
-                        tiles.length === 1 && (
-                            <Suspense>
-                                <Router history={history}>
-                                    <Switch>
-                                        <Route
-                                            exact
-                                            path={`${match.path}`}
-                                            render={() => (
-                                                <Redirect
-                                                    replace
-                                                    to={`${match.url}/${tiles[0].services[0].serviceId}`}
-                                                />
-                                            )}
-                                        />
-                                        <Route
-                                            exact
-                                            path={`${match.path}/:serviceId`}
-                                            render={() => (
-                                                <div className="tabs-swagger">
-                                                    <div className="tabs-container">
-                                                        {tiles !== undefined &&
-                                                            tiles.length === 1 &&
-                                                            tiles[0].services.map(({ serviceId, title, status }) => (
-                                                                <Tooltip
-                                                                    key={serviceId}
-                                                                    title={this.setTitle(title, status)}
-                                                                    placement="bottom"
-                                                                >
-                                                                    <div id="service-tab">
-                                                                        {status === 'UP' && (
-                                                                            <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Typography
-                                                                                    id="serviceIdTabs"
-                                                                                    variant="subtitle2"
-                                                                                    style={{
-                                                                                        color: 'black',
-                                                                                        marginBottom: '12px',
-                                                                                    }}
-                                                                                >
-                                                                                    {serviceId}
-                                                                                </Typography>
-                                                                            </NavTab>
-                                                                        )}
-                                                                        {status === 'DOWN' && (
-                                                                            <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Typography
-                                                                                    variant="subtitle2"
-                                                                                    style={{ color: '#de1b1b' }}
-                                                                                >
-                                                                                    {serviceId}
-                                                                                </Typography>
-                                                                                <ErrorIcon
-                                                                                    style={{ color: '#de1b1b' }}
-                                                                                />
-                                                                            </NavTab>
-                                                                        )}
-                                                                    </div>
-                                                                </Tooltip>
-                                                            ))}
-                                                    </div>
-                                                    <ServiceTabContainer />
+                    {tiles !== undefined && tiles.length === 1 && (
+                        <Suspense>
+                            <Router history={history}>
+                                <Switch>
+                                    <Route
+                                        exact
+                                        path={`${match.path}`}
+                                        render={() => (
+                                            <Redirect replace to={`${match.url}/${tiles[0].services[0].serviceId}`} />
+                                        )}
+                                    />
+                                    <Route
+                                        exact
+                                        path={`${match.path}/:serviceId`}
+                                        render={() => (
+                                            <div className="tabs-swagger">
+                                                <div className="tabs-container">
+                                                    {tiles !== undefined &&
+                                                        tiles.length === 1 &&
+                                                        tiles[0].services.map(({ serviceId, title, status }) => (
+                                                            <Tooltip
+                                                                key={serviceId}
+                                                                title={this.setTitle(title, status)}
+                                                                placement="bottom"
+                                                            >
+                                                                <div id="service-tab">
+                                                                    {status === 'UP' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Typography
+                                                                                id="serviceIdTabs"
+                                                                                variant="subtitle2"
+                                                                                style={{
+                                                                                    color: 'black',
+                                                                                    marginBottom: '12px',
+                                                                                }}
+                                                                            >
+                                                                                {serviceId}
+                                                                            </Typography>
+                                                                        </NavTab>
+                                                                    )}
+                                                                    {status === 'DOWN' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Typography
+                                                                                variant="subtitle2"
+                                                                                style={{ color: '#de1b1b' }}
+                                                                            >
+                                                                                {serviceId}
+                                                                            </Typography>
+                                                                            <ErrorIcon style={{ color: '#de1b1b' }} />
+                                                                        </NavTab>
+                                                                    )}
+                                                                </div>
+                                                            </Tooltip>
+                                                        ))}
                                                 </div>
-                                            )}
-                                        />
-                                        <Route
-                                            render={(props, state) => (
-                                                <BigShield history={history}>
-                                                    <PageNotFound {...props} {...state} />
-                                                </BigShield>
-                                            )}
-                                        />
-                                    </Switch>
-                                </Router>
-                            </Suspense>
-                        )}
+                                                <ServiceTabContainer />
+                                            </div>
+                                        )}
+                                    />
+                                    <Route
+                                        render={(props, state) => (
+                                            <BigShield history={history}>
+                                                <PageNotFound {...props} {...state} />
+                                            </BigShield>
+                                        )}
+                                    />
+                                </Switch>
+                            </Router>
+                        </Suspense>
+                    )}
                 </div>
             </div>
         );

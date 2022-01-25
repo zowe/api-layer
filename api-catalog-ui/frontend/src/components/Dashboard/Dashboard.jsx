@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { Typography, IconButton } from '@material-ui/core';
 import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
@@ -25,7 +34,7 @@ export default class Dashboard extends Component {
         fetchTilesStop();
     }
 
-    handleSearch = value => {
+    handleSearch = (value) => {
         const { filterText } = this.props;
         filterText(value);
     };
@@ -101,13 +110,12 @@ export default class Dashboard extends Component {
                                 </Shield>
                                 <h2 className="api-heading">Available API services</h2>
                             </div>
-                            {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
-                            {!hasTiles &&
-                                hasSearchCriteria && (
-                                    <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
-                                        No tiles found matching search criteria
-                                    </Typography>
-                                )}
+                            {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
+                            {!hasTiles && hasSearchCriteria && (
+                                <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
+                                    No tiles found matching search criteria
+                                </Typography>
+                            )}
                         </div>
                     </div>
                 )}

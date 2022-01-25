@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { Component } from 'react';
 import { IconButton, InputLabel, Select, Typography, FormControl, MenuItem } from '@material-ui/core';
 import './ServiceVersionDiff.css';
@@ -15,11 +24,11 @@ export default class ServiceVersionDiff extends Component {
         this.handleVersion2Change = this.handleVersion2Change.bind(this);
     }
 
-    handleVersion1Change = event => {
+    handleVersion1Change = (event) => {
         this.setState({ selectedVersion1: event.target.value });
     };
 
-    handleVersion2Change = event => {
+    handleVersion2Change = (event) => {
         this.setState({ selectedVersion2: event.target.value });
     };
 
@@ -42,7 +51,7 @@ export default class ServiceVersionDiff extends Component {
                             onChange={this.handleVersion1Change}
                             sx={selectorStyle}
                         >
-                            {versions.map(version => (
+                            {versions.map((version) => (
                                 <MenuItem data-testid="menu-items-1" value={version}>
                                     {version}
                                 </MenuItem>
@@ -59,7 +68,7 @@ export default class ServiceVersionDiff extends Component {
                             onChange={this.handleVersion2Change}
                             sx={selectorStyle}
                         >
-                            {versions.map(version => (
+                            {versions.map((version) => (
                                 <MenuItem data-testid="menu-items-2" value={version}>
                                     {version}
                                 </MenuItem>

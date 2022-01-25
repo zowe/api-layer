@@ -28,7 +28,7 @@ public abstract class MetricsFunctionalTest {
     protected String hostname;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 

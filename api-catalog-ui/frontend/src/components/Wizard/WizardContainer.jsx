@@ -13,7 +13,7 @@ import { nextWizardCategory, wizardToggleDisplay, createYamlObject, validateInpu
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 import { sendYAML, notifyError } from '../../actions/wizard-fetch-actions';
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
     enablerName: state.wizardReducer.enablerName,
     selectedCategory: state.wizardReducer.selectedCategory,
@@ -31,7 +31,4 @@ const mapDispatchToProps = {
     sendYAML,
     notifyError,
 };
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(WizardDialog);
+export default connect(mapStateToProps, mapDispatchToProps)(WizardDialog);

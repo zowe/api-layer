@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { Component } from 'react';
 import { Tab, Tabs, Card, CardContent, Link, Box } from '@material-ui/core';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
@@ -25,7 +34,7 @@ class WizardNavigation extends Component {
             }
             if (value === navNamesArr.length) {
                 this.props.assertAuthorization();
-                navNamesArr.forEach(navName => {
+                navNamesArr.forEach((navName) => {
                     this.props.validateInput(navName, false);
                 });
             }
@@ -40,7 +49,7 @@ class WizardNavigation extends Component {
     returnNavs() {
         const navs = {};
         let index = 0;
-        this.props.inputData.forEach(category => {
+        this.props.inputData.forEach((category) => {
             if (!Array.isArray(navs[category.nav])) {
                 navs[category.nav] = [];
             }
@@ -63,7 +72,7 @@ class WizardNavigation extends Component {
         });
         return navs;
     }
-    a11yProps = index => ({
+    a11yProps = (index) => ({
         id: `vertical-tab-${index}`,
         'aria-controls': `vertical-tabpanel-${index}`,
     });
@@ -74,7 +83,7 @@ class WizardNavigation extends Component {
      */
     loadTabs = () => {
         let index = -1;
-        const categories = Object.entries(this.returnNavs()).map(entry => {
+        const categories = Object.entries(this.returnNavs()).map((entry) => {
             const name = entry[0];
             index += 1;
             const done = !this.props.navsObj[name].silent && !this.props.navsObj[name].warn;
@@ -85,9 +94,7 @@ class WizardNavigation extends Component {
                     icon={
                         this.props.navsObj[name].warn ? (
                             <ReportProblemIcon aria-label="problem" style={{ color: 'red' }} />
-                        ) : (
-                            undefined
-                        )
+                        ) : undefined
                     }
                     iconPosition="start"
                     label={name}
@@ -104,7 +111,7 @@ class WizardNavigation extends Component {
 
     loadWizard = () => {
         let index = -1;
-        const categories = Object.entries(this.returnNavs()).map(entry => {
+        const categories = Object.entries(this.returnNavs()).map((entry) => {
             const categoryArr = entry[1];
             index += 1;
             return (

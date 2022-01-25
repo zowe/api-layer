@@ -7,25 +7,22 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+/* eslint-disable react/display-name */
 import * as enzyme from 'enzyme';
-import WizardNavigation from './WizardNavigation';
-import {render, screen} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/extend-expect';
+import WizardNavigation from './WizardNavigation';
 
-jest.mock("../YAML/YAMLVisualizerContainer", () =>
-     () => {
-        const YAMLVisualizerContainerMock = "YAMLVisualizerContainerMock";
-        return <YAMLVisualizerContainerMock />;
-    });
-jest.mock("./WizardInputsContainer", () =>
-    () => {
-        const WizardInputsContainer = "WizardInputsContainerMock";
-        return <WizardInputsContainer />;
-    });
+jest.mock('../YAML/YAMLVisualizerContainer', () => () => {
+    const YAMLVisualizerContainerMock = 'YAMLVisualizerContainerMock';
+    return <YAMLVisualizerContainerMock />;
+});
+jest.mock('./WizardInputsContainer', () => () => {
+    const WizardInputsContainer = 'WizardInputsContainerMock';
+    return <WizardInputsContainer />;
+});
 describe('>>> Wizard navigation tests', () => {
-
-
     it('should handle category change', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
@@ -35,7 +32,7 @@ describe('>>> Wizard navigation tests', () => {
             <WizardNavigation
                 selectedCategory={0}
                 inputData={[]}
-                navsObj={{ 'Nav1': {} }}
+                navsObj={{ Nav1: {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
@@ -83,9 +80,9 @@ describe('>>> Wizard navigation tests', () => {
                 assertAuthorization={jest.fn()}
             />
         );
-        userEvent.click(screen.getByRole('tab',{name: 'Nav #1'}));
-        userEvent.click(screen.getByRole('tab',{name: 'Nav #2'}));
-        userEvent.click(screen.getByRole('tab',{name: 'YAML result'}));
+        userEvent.click(screen.getByRole('tab', { name: 'Nav #1' }));
+        userEvent.click(screen.getByRole('tab', { name: 'Nav #2' }));
+        userEvent.click(screen.getByRole('tab', { name: 'YAML result' }));
         expect(validateInput).toHaveBeenCalledTimes(5);
     });
     it('should not validate upon accessing something else', () => {
@@ -96,7 +93,7 @@ describe('>>> Wizard navigation tests', () => {
             <WizardNavigation
                 selectedCategory={3}
                 inputData={[]}
-                navsObj={{ 'Nav1': {}, 'Nav2': {} }}
+                navsObj={{ Nav1: {}, Nav2: {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
@@ -161,7 +158,7 @@ describe('>>> Wizard navigation tests', () => {
                 validateInput={validateInput}
             />
         );
-        userEvent.click(screen.getByRole('tab',{name: 'Nav #1'}));
+        userEvent.click(screen.getByRole('tab', { name: 'Nav #1' }));
         expect(screen.getByRole('link')).toBeInTheDocument();
         expect(screen.getByRole('tablist')).toBeInTheDocument();
     });
@@ -173,9 +170,11 @@ describe('>>> Wizard navigation tests', () => {
         const dummyData = [
             {
                 text: 'Category 1',
-                content: [{
-                    test: { value: 'val', question: 'Why?', },
-                },],
+                content: [
+                    {
+                        test: { value: 'val', question: 'Why?' },
+                    },
+                ],
                 help: 'Some additional information',
                 nav: 'Nav #1',
             },
@@ -188,9 +187,8 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 checkFilledInput={checkFilledInput}
-
             />
         );
-        expect(screen.getByLabelText("problem")).toBeInTheDocument();
+        expect(screen.getByLabelText('problem')).toBeInTheDocument();
     });
 });
