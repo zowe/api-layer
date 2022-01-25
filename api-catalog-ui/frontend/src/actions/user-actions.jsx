@@ -90,7 +90,7 @@ function returnToLogin() {
     function clean() {
         return { type: userConstants.USERS_LOGIN_INIT };
     }
-    return dispatch => {
+    return (dispatch) => {
         dispatch(clean());
         history.push('/login');
     };

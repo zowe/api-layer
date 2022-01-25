@@ -204,13 +204,12 @@ export default class Login extends React.Component {
                             <CssBaseline />
                             <div className="text-block-4">API Catalog</div>
                             <br />
-                            {error.messageText !== undefined &&
-                                error.messageText !== null && (
-                                    <div id="error-message">
-                                        <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                        {error.messageText}
-                                    </div>
-                                )}
+                            {error.messageText !== undefined && error.messageText !== null && (
+                                <div id="error-message">
+                                    <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                    {error.messageText}
+                                </div>
+                            )}
                             {!error.expired && (
                                 <div>
                                     <Typography className="login-typo" variant="subtitle1" gutterBottom component="div">

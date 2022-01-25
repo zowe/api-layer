@@ -9,60 +9,77 @@
  */
 import * as enzyme from 'enzyme';
 import jest from 'jest-mock';
-import Login from './Login';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-describe('>>> Login page component tests', () => {
+import Login from './Login';
 
+describe('>>> Login page component tests', () => {
     it('should display password update form', () => {
-        render(<Login authentication={{
+        render(
+            <Login
+                authentication={{
                     error: {
                         messageNumber: 'ZWEAT412E',
-                        messageType: 'ERROR'
+                        messageType: 'ERROR',
                     },
                     expired: true,
-        }}/>);
+                }}
+            />
+        );
         const newPassInput = screen.getByTestId('newPassword');
         const repeatNewPassword = screen.getByTestId('repeatNewPassword');
         expect(newPassInput).toBeInTheDocument();
         expect(repeatNewPassword).toBeInTheDocument();
-    })
+    });
 
     it('should display password validation error', () => {
-        render(<Login authentication={{
-            error: {
-                messageNumber: 'ZWEAT604E',
-                messageType: 'ERROR',
-            },
-            expired: true,
-        }}/>);
+        render(
+            <Login
+                authentication={{
+                    error: {
+                        messageNumber: 'ZWEAT604E',
+                        messageType: 'ERROR',
+                    },
+                    expired: true,
+                }}
+            />
+        );
         const newPassInput = screen.getByText('Passwords do not match');
         expect(newPassInput).toBeInTheDocument();
-    })
+    });
 
     it('should display account suspended warning ', () => {
-        render(<Login authentication={{
-            error: {
-                messageNumber: 'ZWEAT414E',
-                messageType: 'ERROR'
-            },
-        }}/>);
+        render(
+            <Login
+                authentication={{
+                    error: {
+                        messageNumber: 'ZWEAT414E',
+                        messageType: 'ERROR',
+                    },
+                }}
+            />
+        );
         const suspendedBtn = screen.getByTestId('suspendedBackToLogin');
         expect(suspendedBtn).toBeInTheDocument();
-    })
+    });
 
     it('should return to login ', () => {
         const backToLoginMock = jest.fn();
-        render(<Login returnToLogin={backToLoginMock} authentication={{
-            error: {
-                messageNumber: 'ZWEAT414E',
-                messageType: 'ERROR'
-            },
-        }}/>);
+        render(
+            <Login
+                returnToLogin={backToLoginMock}
+                authentication={{
+                    error: {
+                        messageNumber: 'ZWEAT414E',
+                        messageType: 'ERROR',
+                    },
+                }}
+            />
+        );
         const suspendedBtn = screen.getByTestId('suspendedBackToLogin');
         fireEvent.click(suspendedBtn);
         expect(backToLoginMock).toHaveBeenCalled();
-    })
+    });
 
     it('should submit username and password input', () => {
         const loginMock = jest.fn();
@@ -124,16 +141,19 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should display a credentials failure message', () => {
-        render(<Login authentication={{
-            error: {
-                messageType: 'ERROR',
-                messageNumber: 'ZWEAS120E',
-                messageContent:
-                    "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
-                messageKey: 'org.zowe.apiml.security.invalidUsername',
-            },
-        }}/>);
-
+        render(
+            <Login
+                authentication={{
+                    error: {
+                        messageType: 'ERROR',
+                        messageNumber: 'ZWEAS120E',
+                        messageContent:
+                            "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+                        messageKey: 'org.zowe.apiml.security.invalidUsername',
+                    },
+                }}
+            />
+        );
         expect(screen.getByText('Invalid username or password')).toBeInTheDocument();
     });
 
