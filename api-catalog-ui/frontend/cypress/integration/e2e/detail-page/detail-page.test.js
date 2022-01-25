@@ -55,26 +55,26 @@ describe('>>> Detail page test', () => {
                 expect(text).to.match(regex);
             });
 
-        cy.get('.tabs-container')
-            .should('exist')
-            .should('have.length', 2)
-            .within($el => {
-                cy.get('a').should('contain', 'apicatalog');
-            });
-
-        cy.contains('Service Homepage').should('exist');
-
-        cy.get(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.header > a'
-        )
-            .should('have.attr', 'href')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
-
-        cy.get('pre.version').should('contain', '1.0.0');
-
-        cy.contains('Swagger/OpenAPI JSON Document').should('exist');
-
-        cy.get('.opblock-tag-section').should('have.length.gte', 1);
+        // cy.get('.tabs-container')
+        //     .should('exist')
+        //     .should('have.length', 2)
+        //     .within($el => {
+        //         cy.get('a').should('contain', 'apicatalog');
+        //     });
+        //
+        // cy.contains('Service Homepage').should('exist');
+        //
+        // cy.get(
+        //     '#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.header > a'
+        // )
+        //     .should('have.attr', 'href')
+        //     .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
+        //
+        // cy.get('pre.version').should('contain', '1.0.0');
+        //
+        // cy.contains('Swagger/OpenAPI JSON Document').should('exist');
+        //
+        // cy.get('.opblock-tag-section').should('have.length.gte', 1);
     });
 
     it('Should display the Gateway information in the detail page', () => {
