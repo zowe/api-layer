@@ -76,7 +76,7 @@ export default class Login extends React.Component {
             const filter = errorMessages.messages.filter(
                 x => x.messageKey != null && x.messageKey === error.messageNumber
             );
-            invalidNewPassword = error.messageNumber === 'ZWEAT603E' || error.messageNumber === 'ZWEAS196E';
+            invalidNewPassword = error.messageNumber === 'ZWEAT604E' || error.messageNumber === 'ZWEAT413E';
             isSuspended = error.messageNumber === 'ZWEAT414E';
             if (filter.length !== 0) {
                 if (filter[0].messageKey === 'ZWEAS120E') {
@@ -86,7 +86,7 @@ export default class Login extends React.Component {
                 }
             }
             if (invalidNewPassword || isSuspended) {
-                messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+                messageText = `${filter[0].messageText}`;
             }
         } else if (error.status === 401 && authentication.sessionOn) {
             messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
@@ -166,7 +166,7 @@ export default class Login extends React.Component {
                                         size="medium"
                                         style={{ border: 'none' }}
                                         onClick={this.backToLogin}
-                                        data-testid="backToLogin"
+                                        data-testid="suspendedBackToLogin"
                                     >
                                         RETURN TO LOGIN
                                     </Button>
@@ -202,16 +202,14 @@ export default class Login extends React.Component {
                                         {error.messageText}
                                     </div>
                                 )}
-                            <Typography className="login-typo" variant="subtitle1" gutterBottom component="div">
-                                Login
-                            </Typography>
-                            <br />
                             {!error.expired && (
                                 <div>
+                                    <Typography className="login-typo" variant="subtitle1" gutterBottom component="div">
+                                        Login
+                                    </Typography>
                                     <Typography variant="subtitle2" gutterBottom component="div">
                                         Please enter your mainframe username and password to access this resource
                                     </Typography>
-                                    <br />
                                     <TextField
                                         label="Username"
                                         data-testid="username"
@@ -227,8 +225,6 @@ export default class Login extends React.Component {
                                         autoComplete="on"
                                         autoFocus
                                     />
-                                    <br />
-                                    <br />
                                     <br />
                                     <TextField
                                         id="password"
@@ -284,7 +280,7 @@ export default class Login extends React.Component {
                                     <TextField
                                         id="newPassword"
                                         htmlFor="outlined-adornment-password"
-                                        label="Password"
+                                        label="New Password"
                                         data-testid="newPassword"
                                         className="formfield"
                                         variant="outlined"
@@ -314,12 +310,10 @@ export default class Login extends React.Component {
                                         }}
                                     />
                                     <br />
-                                    <br />
-                                    <br />
                                     <TextField
                                         id="repeatNewPassword"
                                         htmlFor="outlined-adornment-password"
-                                        label="Password"
+                                        label="Repeat New Password"
                                         data-testid="repeatNewPassword"
                                         className="formfield"
                                         variant="outlined"

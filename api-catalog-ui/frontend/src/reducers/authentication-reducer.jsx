@@ -53,7 +53,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                     error: {
                         messageText: 'Passwords do not match',
                         messageKey: 'org.zowe.apiml.security.common.passwordUpdate',
-                        messageNumber: 'ZWEAT603E',
+                        messageNumber: 'ZWEAT604E',
                         messageType: 'ERROR',
                     },
                     expired: true,

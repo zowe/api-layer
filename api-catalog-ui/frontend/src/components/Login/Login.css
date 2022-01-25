@@ -25,10 +25,6 @@
     height: 100vh;
 }
 
-.login-form {
-
-
-}
 
 .login-bg > img {
     height: 100vh;
@@ -82,36 +78,6 @@ form#login-form {
     margin: 150px 0px;
 }
 
-/*.login-object .MuiButton-label {*/
-/*    flex-direction: row;*/
-/*    align-items: flex-start;*/
-/*    padding: 6px 6px 6px 8px;*/
-/*    font-family: inherit;*/
-/*    font-style: normal;*/
-/*    font-weight: 500;*/
-/*    background: #0052CC;*/
-/*    font-size: 12px;*/
-/*    height: 36px;*/
-/*    left: 218px;*/
-/*    line-height: 16px;*/
-/*    !* identical to box height, or 114% *!*/
-/*    letter-spacing: 1.25px;*/
-/*    text-transform: uppercase;*/
-/*    top: 0px;*/
-/*    color: #FFFFFF;*/
-/*    border-radius: 4px;*/
-/*    flex: none;*/
-/*    order: 0;*/
-/*    flex-grow: 0;*/
-/*    margin: 25px -14px 10px 14px;*/
-/*    position: static;*/
-/*}*/
-
-/*.login-object .MuiButton-label:hover {*/
-/*    background-color: rgb(50, 114, 217);*/
-/*    border: none;*/
-/*}*/
-
 .MuiTypography-gutterBottom {
     color: #57606E;
 }
@@ -164,4 +130,8 @@ form#login-form {
 .susp-card {
     padding-top: 200px;
     padding-left: 600px;
+}
+
+.MuiFormControl-root {
+    margin: 25px 0 !important;
 }

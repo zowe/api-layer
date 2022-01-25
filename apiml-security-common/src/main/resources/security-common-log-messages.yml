@@ -113,7 +113,7 @@ messages:
       action: "Verify the state of ZSS and IZS, then check if parameters `apiml.security.authorization.endpoint.*` are matching."
 
     - key: org.zowe.apiml.security.common.passwordUpdate
-      number: ZWEAT603
+      number: ZWEAT604
       type: ERROR
       text: "Passwords do not match"
       reason: "Re-entered password does not match for password update."

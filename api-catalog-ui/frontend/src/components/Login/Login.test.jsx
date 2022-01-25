@@ -2,8 +2,60 @@
 import * as enzyme from 'enzyme';
 import jest from 'jest-mock';
 import Login from './Login';
-
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 describe('>>> Login page component tests', () => {
+
+    it('should display password update form', () => {
+        render(<Login authentication={{
+                    error: {
+                        messageNumber: 'ZWEAT412E',
+                        messageType: 'ERROR'
+                    },
+                    expired: true,
+        }}/>);
+        const newPassInput = screen.getByTestId('newPassword');
+        const repeatNewPassword = screen.getByTestId('repeatNewPassword');
+        expect(newPassInput).toBeInTheDocument();
+        expect(repeatNewPassword).toBeInTheDocument();
+    })
+
+    it('should display password validation error', () => {
+        render(<Login authentication={{
+            error: {
+                messageNumber: 'ZWEAT604E',
+                messageType: 'ERROR',
+            },
+            expired: true,
+        }}/>);
+        const newPassInput = screen.getByText('Passwords do not match');
+        expect(newPassInput).toBeInTheDocument();
+    })
+
+    it('should display account suspended warning ', () => {
+        render(<Login authentication={{
+            error: {
+                messageNumber: 'ZWEAT414E',
+                messageType: 'ERROR'
+            },
+        }}/>);
+        const suspendedBtn = screen.getByTestId('suspendedBackToLogin');
+        expect(suspendedBtn).toBeInTheDocument();
+    })
+
+    it('should return to login ', () => {
+        const backToLoginMock = jest.fn();
+        render(<Login returnToLogin={backToLoginMock} authentication={{
+            error: {
+                messageNumber: 'ZWEAT414E',
+                messageType: 'ERROR'
+            },
+        }}/>);
+        const suspendedBtn = screen.getByTestId('suspendedBackToLogin');
+        fireEvent.click(suspendedBtn);
+        expect(backToLoginMock).toHaveBeenCalled();
+    })
+
     it('should submit username and password input', () => {
         const loginMock = jest.fn();
 
@@ -64,75 +116,24 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should display a credentials failure message', () => {
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError({
-            messageType: 'ERROR',
-            messageNumber: 'ZWEAS120E',
-            messageContent:
-                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
-            messageKey: 'org.zowe.apiml.security.invalidUsername',
-        });
-        expect(messageText).toEqual('Invalid username or password');
-    });
+        render(<Login authentication={{
+            error: {
+                messageType: 'ERROR',
+                messageNumber: 'ZWEAS120E',
+                messageContent:
+                    "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+                messageKey: 'org.zowe.apiml.security.invalidUsername',
+            },
+        }}/>);
 
-    it('should display authetication service not available message', () => {
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError({
-            messageType: 'ERROR',
-            messageNumber: 'ZWEAS104E',
-            messageContent: 'Authentication service is not available by URL',
-            messageKey: 'org.zowe.apiml.security.authenticationRequired',
-        });
-        expect(messageText).toEqual('(ZWEAS104E) Authentication service not available, please try again later');
-    });
-
-    it('should display session has expired', () => {
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError({
-            messageType: 'ERROR',
-            messageNumber: 'ZWEAS102E',
-            messageContent: 'Token is expired for URL',
-            messageKey: 'org.zowe.apiml.security.expiredToken',
-        });
-        expect(messageText).toEqual('(ZWEAS102E) Session has expired, please login again');
-    });
-
-    it('should display generic failure message', () => {
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError({
-            messageType: 'ERROR',
-            messageNumber: 'ZWEAS100E',
-            messageContent: 'Authentication exception for URL',
-            messageKey: 'org.zowe.apiml.security.generic',
-        });
-        expect(messageText).toEqual('(ZWEAS100E) A generic failure occurred while authenticating');
-    });
-
-    it('should display request timeout message', () => {
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError({
-            messageType: 'ERROR',
-            messageNumber: 'ZWEAM700E',
-            messageContent: 'No response received within the allowed time',
-            messageKey: 'org.zowe.apiml.common.serviceTimeout',
-        });
-        expect(messageText).toEqual(`(ZWEAM700E) Request timeout, please try again later`);
+        expect(screen.getByText('Invalid username or password')).toBeInTheDocument();
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
-        const wrapper = enzyme.shallow(<Login isFetching />);
+        render(<Login isFetching />);
 
-        const submitButton = wrapper.find('[data-testid="submit"]');
-        const spinner = wrapper.find('Spinner');
-
-        expect(submitButton).toBeDefined();
-        expect(spinner).toBeDefined();
-        expect(submitButton.props().disabled).toBeTruthy();
+        expect(screen.getByTestId('submit')).toBeInTheDocument();
+        expect(screen.getByTestId('spinner')).toBeInTheDocument();
     });
 
     it('should display UI errorMessage', () => {
