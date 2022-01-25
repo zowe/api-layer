@@ -1007,9 +1007,11 @@ jobs:
                         node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
             -   name: Cypress run
-                uses: cypress-io/github-action@v2
-                with:
-                    install: false
-                    spec: cypress/integration/e2e/**/*.test.js
-                    browser: chrome
-                    headless: true
+                run: >
+                    ./gradlew :api-catalog-ui:npmE2ECI
+#                uses: cypress-io/github-action@v2
+#                with:
+#                    install: false
+#                    spec: cypress/integration/e2e/**/*.test.js
+#                    browser: chrome
+#                    headless: true
