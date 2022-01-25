@@ -1028,19 +1028,19 @@ jobs:
                         node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
             -   name: Cypress run
-#                run: |
-#                    cd api-catalog-ui/frontend
-#                    npm run cy:e2e:ci
-                uses: cypress-io/github-action@v2
-                with:
-                    install: false
-                    spec: cypress/integration/e2e/**/*.test.js
-                    browser: chrome
-                    working-directory: api-catalog-ui/frontend
-                    headless: true
-                    wait-on: https://gateway-service:10010/apicagalog/ui/v1
-                env:
-                    catalogHomePage: https://gateway-service:10010/apicagalog/ui/v1
+                run: |
+                    cd api-catalog-ui/frontend
+                    npm run cy:e2e:ci
+#                uses: cypress-io/github-action@v2
+#                with:
+#                    install: false
+#                    spec: cypress/integration/e2e/**/*.test.js
+#                    browser: chrome
+#                    working-directory: api-catalog-ui/frontend
+#                    headless: true
+#                    wait-on: https://gateway-service:10010/apicagalog/ui/v1
+#                env:
+#                    catalogHomePage: https://gateway-service:10010/apicagalog/ui/v1
             -   name: Upload screenshots
                 uses: actions/upload-artifact@v2
                 if: failure()
