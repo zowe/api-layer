@@ -71,915 +71,945 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsRegistration:
-        needs: PublishJibContainers
+#    CITestsRegistration:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Run CI Tests
+#                run: >
+#                    ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: ContainerCITestsRegistration
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsZosmfRsu2012:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: ContainerCITestsZosmfRsu2012
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsZosmfPH34201:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: CITestsZosmfPH34201
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsZosmfWithoutJwt:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZOSMF_APPLIEDAPARS: ''
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: ContainerCITestsZosmfWithoutJwt
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#
+#    CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZOSMF_APPLIEDAPARS: AuthenticateApar
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsInternalPort:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#            metrics-service:
+#                image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: ContainerCITestsInternalPort
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsWithRedis:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+#                    CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
+#                    CACHING_STORAGE_REDIS_SSL_ENABLED: true
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZOSMF_APPLIEDAPARS: AuthenticateApar
+#            redis-master:
+#                image: redis:latest
+#                ports:
+#                    - "6379:6379"
+#
+#            redis-replica:
+#                image: redis:latest
+#                ports:
+#                    - "6380:6380"
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: ContainerCITestsWithRedis
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsWithRedisWithoutSslVerification:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+#                    CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
+#                    CACHING_STORAGE_REDIS_SSL_ENABLED: false
+#                    VERIFY_CERTIFICATES: false
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    VERIFY_CERTIFICATES: false
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    VERIFY_CERTIFICATES: false
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZOSMF_APPLIEDAPARS: AuthenticateApar
+#            redis-master:
+#                image: redis:latest
+#                ports:
+#                    - "6379:6379"
+#
+#            redis-replica:
+#                image: redis:latest
+#                ports:
+#                    - "6380:6380"
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: ContainerCITestsWithRedisWithoutSslVerification
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsHA:
+#        needs: PublishJibContainers
+#        container: ubuntu:latest
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            api-catalog-services-2:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client-2:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+#            discovery-service-2:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discovery-service-2
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#            gateway-service-2:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: gateway-service-2
+#                    SERVER_INTERNAL_PORT: 10027
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Run HA Tests
+#                run: >
+#                    ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                env:
+#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: CITestsHA
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    HALoadBalancing:
+#        needs: PublishJibContainers
+#        container: ubuntu:latest
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+#            discoverable-client-2:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+#                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+#            discovery-service-2:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discovery-service-2
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#                    APIML_ROUTING_INSTANCEIDHEADER: true
+#                    APIML_LOADBALANCER_DISTRIBUTE: true
+#            gateway-service-2:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: gateway-service-2
+#                    SERVER_INTERNAL_PORT: 10027
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#                    APIML_ROUTING_INSTANCEIDHEADER: true
+#                    APIML_LOADBALANCER_DISTRIBUTE: true
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Setup Docker
+#                if: ${{ false }} # Debug of containers
+#                run: |
+#                    apt update
+#                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+#                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+#                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+#                    apt update
+#                    apt-cache policy docker-ce
+#                    apt install -y docker-ce
+#
+#            -   name: Run HA Tests
+#                run: >
+#                    ./gradlew runLbHaTests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                env:
+#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Get Container Logs
+#                if: ${{ false }} # Debug of containers
+#                run: |
+#                    docker ps -a
+#                    docker ps -q | xargs -L 1 docker logs
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: LbHaTests
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsDiscoveryChaoticHA:
+#        needs: PublishJibContainers
+#        container: ubuntu:latest
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+#            discovery-service-2:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discovery-service-2
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#            gateway-service-2:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: gateway-service-2
+#                    SERVER_INTERNAL_PORT: 10027
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Run Discovery Service Chaotic HA Tests
+#                run: >
+#                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
+#                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                env:
+#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: CITestsDiscoveryChaoticHA
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsGatewayChaoticHA:
+#        needs: PublishJibContainers
+#        container: ubuntu:latest
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+#            discovery-service-2:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discovery-service-2
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#            gateway-service-2:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: gateway-service-2
+#                    SERVER_INTERNAL_PORT: 10027
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Run Gateway Service Chaotic HA Tests
+#                run: >
+#                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
+#                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                env:
+#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: CITestsGatewayChaoticHA
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsDicoverableClientChaoticHA:
+#        needs: PublishJibContainers
+#        container: ubuntu:latest
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client-2:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+#            discovery-service-2:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discovery-service-2
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#            gateway-service-2:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: gateway-service-2
+#                    SERVER_INTERNAL_PORT: 10027
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Run Discoverable Client Chaotic HA Tests
+#                run: >
+#                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
+#                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                env:
+#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: CITestsDicoverableClientChaoticHA
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsWebSocketChaoticHA:
+#        needs: PublishJibContainers
+#        container: ubuntu:latest
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discoverable-client-2:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+#            discovery-service-2:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#                env:
+#                    APIML_SERVICE_HOSTNAME: discovery-service-2
+#                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#            gateway-service-2:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    APIML_SERVICE_HOSTNAME: gateway-service-2
+#                    SERVER_INTERNAL_PORT: 10027
+#                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Run WebSocket Chaotic HA Tests
+#                run: >
+#                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
+#                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                env:
+#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: CITestsWebSocketChaoticHA
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+#
+#    CITestsWithInfinispan:
+#        needs: PublishJibContainers
+#        runs-on: ubuntu-latest
+#        container: ubuntu:latest
+#        timeout-minutes: 10
+#
+#        services:
+#            api-catalog-services:
+#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            caching-service:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+#                    JGROUPS_BIND_PORT: "7099"
+#                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+#                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
+#                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7098]"
+#                    CACHING_STORAGE_MODE: "infinispan"
+#                    APIML_SERVICE_PORT: "10022"
+#                    JGROUPS_BIND_ADDRESS: "caching-service"
+#
+#            caching-service-2:
+#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+#                    JGROUPS_BIND_PORT: "7098"
+#                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+#                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
+#                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7099]"
+#                    CACHING_STORAGE_MODE: "infinispan"
+#                    JGROUPS_BIND_ADDRESS: "caching-service-2"
+#                    APIML_SERVICE_HOSTNAME: "caching-service-2"
+#
+#            discoverable-client:
+#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+#            discovery-service:
+#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+#                volumes:
+#                    - /api-defs:/api-defs
+#            gateway-service:
+#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+#            mock-services:
+#                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+#                env:
+#                    ZOSMF_APPLIEDAPARS: AuthenticateApar
+#
+#        steps:
+#            -   uses: actions/checkout@v2
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Store results
+#                uses: actions/upload-artifact@v2
+#                if: always()
+#                with:
+#                    name: CITestsWithInfinispan
+#                    path: |
+#                        integration-tests/build/reports/**
+#
+#            -   uses: ./.github/actions/teardown
+
+    E2EUITests:
+        needs: CITests
         runs-on: ubuntu-latest
-        container: ubuntu:latest
+        container: cypress/browsers:node14.17.0-chrome91-ff89
+        strategy:
+            fail-fast: false
         timeout-minutes: 10
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-
         steps:
-            -   uses: actions/checkout@v2
+            -   name: Checkout
+                uses: actions/checkout@v2
+            -   name: Install root dependencies
+                uses: bahmutov/npm-install@v1
                 with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run CI Tests
-                run: >
-                    ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
+                    working-directory: api-catalog-ui/frontend
+            -   name: Cache NPM and Cypress 📦
+                uses: actions/cache@v2
                 with:
-                    name: ContainerCITestsRegistration
                     path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsZosmfRsu2012:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012
-
-        steps:
-            -   uses: actions/checkout@v2
+                        ~/.cache/Cypress
+                        node_modules
+                    key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+            -   name: Cypress run
+                uses: cypress-io/github-action@v2
                 with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsZosmfRsu2012
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsZosmfPH34201:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
-
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsZosmfPH34201
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsZosmfWithoutJwt:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: ''
-
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsZosmfWithoutJwt
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-
-    CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
-
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsInternalPort:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-            metrics-service:
-                image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
-
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsInternalPort
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsWithRedis:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
-                    CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
-                    CACHING_STORAGE_REDIS_SSL_ENABLED: true
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
-            redis-master:
-                image: redis:latest
-                ports:
-                    - "6379:6379"
-
-            redis-replica:
-                image: redis:latest
-                ports:
-                    - "6380:6380"
-
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsWithRedis
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsWithRedisWithoutSslVerification:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
-                    CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
-                    CACHING_STORAGE_REDIS_SSL_ENABLED: false
-                    VERIFY_CERTIFICATES: false
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    VERIFY_CERTIFICATES: false
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    VERIFY_CERTIFICATES: false
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
-            redis-master:
-                image: redis:latest
-                ports:
-                    - "6379:6379"
-
-            redis-replica:
-                image: redis:latest
-                ports:
-                    - "6380:6380"
-
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsWithRedisWithoutSslVerification
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsHA:
-        needs: PublishJibContainers
-        container: ubuntu:latest
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run HA Tests
-                run: >
-                    ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsHA
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    HALoadBalancing:
-        needs: PublishJibContainers
-        container: ubuntu:latest
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_ROUTING_INSTANCEIDHEADER: true
-                    APIML_LOADBALANCER_DISTRIBUTE: true
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_ROUTING_INSTANCEIDHEADER: true
-                    APIML_LOADBALANCER_DISTRIBUTE: true
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Setup Docker
-                if: ${{ false }} # Debug of containers
-                run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-                    apt update
-                    apt-cache policy docker-ce
-                    apt install -y docker-ce
-
-            -   name: Run HA Tests
-                run: >
-                    ./gradlew runLbHaTests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Get Container Logs
-                if: ${{ false }} # Debug of containers
-                run: |
-                    docker ps -a
-                    docker ps -q | xargs -L 1 docker logs
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: LbHaTests
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsDiscoveryChaoticHA:
-        needs: PublishJibContainers
-        container: ubuntu:latest
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run Discovery Service Chaotic HA Tests
-                run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsDiscoveryChaoticHA
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsGatewayChaoticHA:
-        needs: PublishJibContainers
-        container: ubuntu:latest
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run Gateway Service Chaotic HA Tests
-                run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
-                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsGatewayChaoticHA
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsDicoverableClientChaoticHA:
-        needs: PublishJibContainers
-        container: ubuntu:latest
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run Discoverable Client Chaotic HA Tests
-                run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
-                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsDicoverableClientChaoticHA
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsWebSocketChaoticHA:
-        needs: PublishJibContainers
-        container: ubuntu:latest
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run WebSocket Chaotic HA Tests
-                run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
-                    --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsWebSocketChaoticHA
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
-    CITestsWithInfinispan:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
-                    JGROUPS_BIND_PORT: "7099"
-                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
-                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7098]"
-                    CACHING_STORAGE_MODE: "infinispan"
-                    APIML_SERVICE_PORT: "10022"
-                    JGROUPS_BIND_ADDRESS: "caching-service"
-
-            caching-service-2:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
-                    JGROUPS_BIND_PORT: "7098"
-                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
-                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7099]"
-                    CACHING_STORAGE_MODE: "infinispan"
-                    JGROUPS_BIND_ADDRESS: "caching-service-2"
-                    APIML_SERVICE_HOSTNAME: "caching-service-2"
-
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
-
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsWithInfinispan
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
+                    install: false
+                    spec: cypress/integration/e2e/**/*.test.js
+                    browser: chrome
+                    headless: true
