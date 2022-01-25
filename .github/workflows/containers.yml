@@ -1031,7 +1031,7 @@ jobs:
 #                run: |
 #                    cd api-catalog-ui/frontend
 #                    npm run cy:e2e:ci
-                uses: ./
+                uses: cypress-io/github-action@v2
                 with:
                     install: false
                     spec: cypress/integration/e2e/**/*.test.js
@@ -1039,6 +1039,8 @@ jobs:
                     working-directory: api-catalog-ui/frontend
                     headless: true
                     wait-on: https://gateway-service:10010/apicagalog/ui/v1
+                env:
+                    CYPRESS_catalogHomePage: https://gateway-service:10010/apicagalog/ui/v1
             -   name: Upload screenshots
                 uses: actions/upload-artifact@v2
                 if: failure()
