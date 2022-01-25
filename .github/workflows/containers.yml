@@ -1028,6 +1028,8 @@ jobs:
                         node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
             -   name: Cypress run
+                with:
+                    wait-on: https://gateway-service:10010/apicagalog/ui/v1
                 run: |
                     cd api-catalog-ui/frontend
                     npm run cy:e2e:ci
