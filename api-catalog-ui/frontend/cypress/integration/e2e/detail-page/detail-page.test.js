@@ -64,11 +64,11 @@ describe('>>> Detail page test', () => {
 
         cy.contains('Service Homepage').should('exist');
 
-        cy.get(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.header > a'
-        )
-            .should('have.attr', 'href')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
+        // cy.get(
+        //     '#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.header > a'
+        // )
+        //     .should('have.attr', 'href')
+        //     .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
 
         cy.get('pre.version').should('contain', '1.0.0');
 
