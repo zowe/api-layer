@@ -38,6 +38,7 @@ on:
 
 env:
     IMAGE_BASE_DIR: ./containers
+    SNAPSHOT_POSTFIX: "-SNAPSHOT"
 
 jobs:
 
@@ -59,14 +60,15 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ !inputs.forceNoRelease }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -103,14 +105,15 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ !inputs.forceNoRelease }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -152,14 +155,15 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ !inputs.forceNoRelease }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -191,14 +195,15 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ !inputs.forceNoRelease }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}
@@ -247,14 +252,15 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ !inputs.forceNoRelease }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}

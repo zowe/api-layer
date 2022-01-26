@@ -2,10 +2,14 @@ name: "Setup for image publishing action"
 description: "Prepares for image publishing"
 
 inputs:
-    imageVersion:
-        description: "Image version to be published"
+    versionOverride:
+        description: "Value to override existing version with. If empty no override is done."
         required: false
         default: ""
+outputs:
+    imageVersion:
+        description: "Image version to be published"
+        value: ${{ steps.output-version.outputs.version }}
 
 runs:
     using: "composite"
@@ -18,5 +22,11 @@ runs:
             if: ${{ inputs.imageVersion != '' }}
             shell: bash
             run: sed -i 's/version=.*/version=${{ inputs.imageVersion }}/g' gradle.properties
+
+        -   id: output-version
+            shell: bash
+            run: |
+                version=$(cat gradle.properties | awk '/version=/' | awk -F= '{print$2;}')
+                echo "::set-output name=version::$version"
 
         -   uses: zowe-actions/shared-actions/prepare-workflow@main
