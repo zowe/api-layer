@@ -70,7 +70,7 @@ describe('>>> Detail page test', () => {
         //     .should('have.attr', 'href')
         //     .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
 
-        cy.get('pre.version').should('contain', '1.0.0');
+        // cy.get('pre.version').should('contain', '1.0.0');
 
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
