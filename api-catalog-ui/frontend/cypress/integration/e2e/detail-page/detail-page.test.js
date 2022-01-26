@@ -42,11 +42,12 @@ describe('>>> Detail page test', () => {
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
-        const values = [
-            `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1 \]`,
-            `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/api\/v1\/apicatalog \]`,
-        ];
-        const regex = new RegExp(`${values.join('|')}`, 'g');
+        // const value = `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1 \]`;
+        // const regex = new RegExp(`${value.join('|')}`, 'g');
+
+        cy.get('#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > pre')
+            .should('exist')
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1`);
 
         // cy.get('pre.base-url')
         //     .should('exist')
@@ -54,7 +55,6 @@ describe('>>> Detail page test', () => {
         //         const text = element.text();
         //         expect(text).to.match(regex);
         //     });
-
         // cy.get('.tabs-container')
         //     .should('exist')
         //     .should('have.length', 2)
