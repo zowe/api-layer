@@ -9,7 +9,7 @@ on:
 jobs:
     PublishJibContainers:
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         steps:
             -   uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -75,7 +75,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -120,7 +120,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -167,7 +167,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -214,7 +214,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -262,7 +262,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -309,7 +309,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -356,7 +356,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -416,7 +416,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -481,7 +481,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -556,7 +556,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -647,7 +647,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -713,7 +713,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -779,7 +779,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -849,7 +849,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -919,7 +919,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -988,7 +988,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: cypress/browsers:node14.17.0-chrome91-ff89
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
