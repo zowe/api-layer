@@ -91,7 +91,6 @@ jobs:
             - get-image-version
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
-            release: true
             version: ${{ needs.get-image-version.outputs.imageVersion }}
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}

@@ -3,8 +3,9 @@ name: Reusable workflow to create Zowe conformant images
 on:
     workflow_call:
         inputs:
-            release:
+            forceNoRelease:
                 type: boolean
+                description: 'If this is set to true, images will be published to the snapshot location. If false, the publish location will be determined from the version.'
                 default: false
                 required: false
             service:
@@ -65,7 +66,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -109,7 +110,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -158,7 +159,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -197,7 +198,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}
@@ -253,7 +254,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}
