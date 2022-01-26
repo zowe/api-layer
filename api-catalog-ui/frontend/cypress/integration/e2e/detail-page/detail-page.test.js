@@ -74,7 +74,7 @@ describe('>>> Detail page test', () => {
 
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
-        cy.get('.opblock-tag-section').should('have.length.gte', 1);
+        // cy.get('.opblock-tag-section').should('have.length.gte', 1);
     });
 
     it('Should display the Gateway information in the detail page', () => {
