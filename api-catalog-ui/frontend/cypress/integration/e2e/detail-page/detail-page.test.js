@@ -48,12 +48,12 @@ describe('>>> Detail page test', () => {
         ];
         const regex = new RegExp(`${values.join('|')}`, 'g');
 
-        cy.get('pre.base-url')
-            .should('exist')
-            .then(element => {
-                const text = element.text();
-                expect(text).to.match(regex);
-            });
+        // cy.get('pre.base-url')
+        //     .should('exist')
+        //     .then(element => {
+        //         const text = element.text();
+        //         expect(text).to.match(regex);
+        //     });
 
         // cy.get('.tabs-container')
         //     .should('exist')
