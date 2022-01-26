@@ -86,7 +86,7 @@ jobs:
                   version=$(cat onboarding-enabler-nodejs/package.json | awk '/"version":/' | awk -F: '{print$2;}' | awk -F\" '{print$2;}')
                   echo "::set-output name=imageVersion::$version"
 
-    release-images:
+    publish-images:
         needs:
             - get-image-version
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master

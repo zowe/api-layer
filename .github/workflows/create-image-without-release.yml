@@ -39,7 +39,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
 
-    build-images:
+    publish-images:
         needs:
             - build-services
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
