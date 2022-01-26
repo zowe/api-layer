@@ -88,7 +88,7 @@ class GatewaySecurityServiceTest {
             when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
                 .thenReturn(new ResponseEntity<>(responseHeaders, HttpStatus.NO_CONTENT));
 
-            Optional<String> token = securityService.login(USERNAME, PASSWORD);
+            Optional<String> token = securityService.login(USERNAME, PASSWORD, null);
 
             assertTrue(token.isPresent());
             assertEquals(TOKEN, token.get());
@@ -99,7 +99,7 @@ class GatewaySecurityServiceTest {
             when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-            Optional<String> token = securityService.login(USERNAME, PASSWORD);
+            Optional<String> token = securityService.login(USERNAME, PASSWORD, null);
             assertFalse(token.isPresent());
         }
 
@@ -108,7 +108,7 @@ class GatewaySecurityServiceTest {
             when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
                 .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-            Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD));
+            Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
             assertEquals("Username or password are invalid.", exception.getMessage());
         }
 
@@ -126,7 +126,7 @@ class GatewaySecurityServiceTest {
                     when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
                         .thenThrow(ex);
 
-                    assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD));
+                    assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
                     verify(responseHandler).handleBadResponse(ex, ErrorType.AUTH_GENERAL, LOG_PARAMETER_STRING, uri, "401 " + errorMessage);
                 }
             }
@@ -138,7 +138,7 @@ class GatewaySecurityServiceTest {
                 when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
                     .thenThrow(ex);
 
-                assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD));
+                assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
                 verify(responseHandler).handleBadResponse(ex, ErrorType.BAD_CREDENTIALS, LOG_PARAMETER_STRING, uri, "401 " + errorMessage);
             }
         }

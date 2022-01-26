@@ -39,14 +39,16 @@ public class GatewayLoginProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) {
         String username = authentication.getPrincipal().toString();
         String password;
+        String newPassword = null;
         if (authentication.getCredentials() instanceof LoginRequest) {
             LoginRequest credentials = (LoginRequest) authentication.getCredentials();
             password = credentials.getPassword();
+            newPassword = LoginRequest.getNewPassword(authentication);
         } else {
             password = (String) authentication.getCredentials();
         }
 
-        Optional<String> token = gatewaySecurityService.login(username, password);
+        Optional<String> token = gatewaySecurityService.login(username, password, newPassword);
 
         if (!token.isPresent()) {
             throw new BadCredentialsException("Username or password are invalid.");

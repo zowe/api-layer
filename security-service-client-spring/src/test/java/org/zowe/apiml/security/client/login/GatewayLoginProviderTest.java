@@ -41,7 +41,7 @@ class GatewayLoginProviderTest {
         class FailAuthentication {
             @Test
             void givenInvalidUsernamePassword() {
-                when(gatewaySecurityService.login(USER, INVALID_PASSWORD)).thenReturn(Optional.empty());
+                when(gatewaySecurityService.login(USER, INVALID_PASSWORD, null)).thenReturn(Optional.empty());
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, INVALID_PASSWORD));
                 assertThrows(BadCredentialsException.class, () -> gatewayLoginProvider.authenticate(auth));
@@ -52,7 +52,7 @@ class GatewayLoginProviderTest {
         class AuthenticationSuccess {
             @Test
             void givenValidLoginRequestWithUsernamePassword() {
-                when(gatewaySecurityService.login(USER, VALID_PASSWORD)).thenReturn(Optional.of(VALID_TOKEN));
+                when(gatewaySecurityService.login(USER, VALID_PASSWORD, null)).thenReturn(Optional.of(VALID_TOKEN));
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, VALID_PASSWORD));
                 Authentication processedAuthentication = gatewayLoginProvider.authenticate(auth);
@@ -65,7 +65,7 @@ class GatewayLoginProviderTest {
 
             @Test
             void givenValidUsernamePassword() {
-                when(gatewaySecurityService.login(USER, VALID_PASSWORD)).thenReturn(Optional.of(VALID_TOKEN));
+                when(gatewaySecurityService.login(USER, VALID_PASSWORD,null)).thenReturn(Optional.of(VALID_TOKEN));
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(USER, VALID_PASSWORD);
                 Authentication processedAuthentication = gatewayLoginProvider.authenticate(auth);
