@@ -9,9 +9,9 @@
  */
 /* eslint-disable no-console */
 import React from 'react';
-import BigShield from './BigShield';
 import { render } from 'react-dom';
 import { act } from 'react-dom/test-utils';
+import BigShield from './BigShield';
 
 const Child = () => {
     // eslint-disable-next-line no-throw-literal
