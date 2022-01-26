@@ -89,8 +89,6 @@ describe('>>> Service version compare Test', () => {
             .should('have.text', 'zowe.apiml.discoverableclient.rest v2.0.0');
     });
 
-    // Ignored because suspected internal environment instabilities causing the test
-    // to fail. Should be reenabled when tests run on stable env
     it('Should display diff when versions set', () => {
         cy.get('.api-diff-container').should('not.exist');
         cy.get('.nav-tab')
