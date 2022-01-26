@@ -19,9 +19,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
+import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -71,6 +73,12 @@ public class RestResponseHandler {
                         throw new TokenNotProvidedException(errorType.getDefaultMessage());
                     } else if (errorType.equals(ErrorType.INVALID_TOKEN_TYPE)) {
                         throw new InvalidTokenTypeException(errorType.getDefaultMessage());
+                    } else if (errorType.equals(ErrorType.USER_SUSPENDED)) {
+                        throw new ZosAuthenticationException(PlatformReturned.builder().errno(163).errnoMsg("org.zowe.apiml.security.platform.errno.EMVSSAFEXTRERR").build());
+                    } else if (errorType.equals(ErrorType.NEW_PASSWORD_INVALID)) {
+                        throw new ZosAuthenticationException(PlatformReturned.builder().errno(169).errnoMsg("org.zowe.apiml.security.platform.errno.EMVSPASSWORD").build());
+                    } else if (errorType.equals(ErrorType.PASSWORD_EXPIRED)) {
+                        throw new ZosAuthenticationException(PlatformReturned.builder().errno(168).errnoMsg("org.zowe.apiml.security.platform.errno.EMVSEXPIRE").build());
                     }
                 }
                 throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage(), exception);

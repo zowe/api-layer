@@ -1,0 +1,10 @@
+{
+    "messages": [
+        {
+            "messageType": "ERROR",
+            "messageNumber": "ZWEAT413E",
+            "messageContent": "The new password is not valid",
+            "messageKey": "org.zowe.apiml.security.platform.errno.EMVSPASSWORD"
+        }
+    ]
+}

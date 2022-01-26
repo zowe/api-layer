@@ -24,6 +24,9 @@ function login(credentials) {
     function failure(error) {
         return { type: userConstants.USERS_LOGIN_FAILURE, error };
     }
+    function invalidPassword(error) {
+        return { type: userConstants.USERS_LOGIN_INVALIDPASSWORD, error };
+    }
 
     return (dispatch) => {
         dispatch(request(credentials));
@@ -34,7 +37,11 @@ function login(credentials) {
                 history.push('/dashboard');
             },
             (error) => {
-                dispatch(failure(error));
+                if (error.messageNumber === 'ZWEAT412E' || error.messageNumber === 'ZWEAT413E') {
+                    dispatch(invalidPassword(error));
+                } else {
+                    dispatch(failure(error));
+                }
             }
         );
     };
@@ -79,9 +86,25 @@ function authenticationFailure(error) {
     };
 }
 
+function returnToLogin() {
+    function clean() {
+        return { type: userConstants.USERS_LOGIN_INIT };
+    }
+    return (dispatch) => {
+        dispatch(clean());
+        history.push('/login');
+    };
+}
+
+function validateInput(credentials) {
+    return { type: userConstants.USERS_LOGIN_VALIDATE, credentials };
+}
+
 // eslint-disable-next-line
 export const userActions = {
     login,
     logout,
     authenticationFailure,
+    returnToLogin,
+    validateInput,
 };

@@ -87,4 +87,52 @@ describe('>>> Authentication reducer tests', () => {
         expect(authenticationReducer({}, action)).toEqual({ error: 'error', showHeader: false });
         expect(authenticationReducer()).toEqual({ sessionOn: false });
     });
+
+    it('should handle USERS_LOGIN_INVALIDPASSWORD', () => {
+        const action = {
+            type: userConstants.USERS_LOGIN_INVALIDPASSWORD,
+            error: 'error',
+        };
+        expect(authenticationReducer({}, action)).toEqual({ error: 'error', expired: true });
+    });
+
+    it('should validate new password', () => {
+        const action = {
+            type: userConstants.USERS_LOGIN_VALIDATE,
+            credentials: {
+                newPassword: 'newPass',
+                repeatNewPassword: 'typo',
+            },
+        };
+        expect(authenticationReducer({}, action)).toEqual({
+            error: {
+                messageKey: 'org.zowe.apiml.security.common.passwordUpdate',
+                messageNumber: 'ZWEAT604E',
+                messageText: 'Passwords do not match',
+                messageType: 'ERROR',
+            },
+            expired: true,
+        });
+    });
+
+    it('should return empty error object if re-entered new password matches', () => {
+        const action = {
+            type: userConstants.USERS_LOGIN_VALIDATE,
+            credentials: {
+                newPassword: 'newPass',
+                repeatNewPassword: 'newPass',
+            },
+        };
+        expect(authenticationReducer({}, action)).toEqual({
+            error: {},
+            expired: true,
+        });
+    });
+
+    it('should init with empty state', () => {
+        const action = {
+            type: userConstants.USERS_LOGIN_INIT,
+        };
+        expect(authenticationReducer({}, action)).toEqual({});
+    });
 });

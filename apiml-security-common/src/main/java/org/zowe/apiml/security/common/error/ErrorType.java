@@ -24,7 +24,10 @@ public enum ErrorType {
     AUTH_GENERAL("org.zowe.apiml.security.generic", "A failure occurred when authenticating."),
     SERVICE_UNAVAILABLE("org.zowe.apiml.security.serviceUnavailable", "Authentication service not available."),
     GATEWAY_NOT_AVAILABLE("org.zowe.apiml.security.gatewayNotAvailable", "API Gateway Service not available."),
-    INVALID_TOKEN_TYPE("org.zowe.apiml.security.login.invalidTokenType", "Invalid token type in response from Authentication service.");
+    INVALID_TOKEN_TYPE("org.zowe.apiml.security.login.invalidTokenType", "Invalid token type in response from Authentication service."),
+    USER_SUSPENDED("org.zowe.apiml.security.platform.errno.EMVSSAFEXTRERR","Account suspended"),
+    NEW_PASSWORD_INVALID("org.zowe.apiml.security.platform.errno.EMVSPASSWORD", "The new password is not valid"),
+    PASSWORD_EXPIRED("org.zowe.apiml.security.platform.errno.EMVSEXPIRE", "Password has expired");
 
     private final String errorMessageKey;
     private final String defaultMessage;

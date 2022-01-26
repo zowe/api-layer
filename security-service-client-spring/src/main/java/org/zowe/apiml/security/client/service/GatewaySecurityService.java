@@ -12,6 +12,7 @@ package org.zowe.apiml.security.client.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
@@ -45,7 +46,7 @@ public class GatewaySecurityService {
      * @param password Password
      * @return Valid JWT token for the supplied credentials
      */
-    public Optional<String> login(String username, String password) {
+    public Optional<String> login(String username, String password, String newPassword) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
@@ -54,7 +55,9 @@ public class GatewaySecurityService {
         ObjectNode loginRequest = mapper.createObjectNode();
         loginRequest.put("username", username);
         loginRequest.put("password", password);
-
+        if (StringUtils.isNotEmpty(newPassword)) {
+            loginRequest.put("newPassword", newPassword);
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 

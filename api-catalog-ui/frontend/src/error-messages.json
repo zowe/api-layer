@@ -13,6 +13,22 @@
             "messageText": "Invalid username or password"
         },
         {
+            "messageKey": "ZWEAT604E",
+            "messageText": "Passwords do not match"
+        },
+        {
+            "messageKey": "ZWEAT414E",
+            "messageText": "Account suspended"
+        },
+        {
+            "messageKey": "ZWEAT413E",
+            "messageText": "The new password is not valid"
+        },
+        {
+            "messageKey": "ZWEAT412E",
+            "messageText": "The password for the specified identity has expired"
+        },
+        {
             "messageKey": "ZWEAS123E",
             "messageText": "Invalid token type in response from Authentication service"
         },

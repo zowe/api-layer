@@ -23,6 +23,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
     login: (credentials) => userActions.login(credentials),
     logout: () => userActions.logout(),
+    returnToLogin: () => userActions.returnToLogin(),
+    validateInput: (credentials) => userActions.validateInput(credentials),
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Login));

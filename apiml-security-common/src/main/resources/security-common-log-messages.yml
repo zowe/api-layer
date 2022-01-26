@@ -112,7 +112,14 @@ messages:
       reason: "The application cannot call the endpoint to check the SAF resource of the user"
       action: "Verify the state of ZSS and IZS, then check if parameters `apiml.security.authorization.endpoint.*` are matching."
 
-  # Service specific messages
+    - key: org.zowe.apiml.security.common.passwordUpdate
+      number: ZWEAT604
+      type: ERROR
+      text: "Passwords do not match"
+      reason: "Re-entered password does not match for password update."
+      action: "Enter the same value as the one entered for new password."
+
+    # Service specific messages
     # 700-999
 
     # Legacy messages

@@ -18,7 +18,7 @@ export default class Spinner extends Component {
             ...css,
         };
         return (
-            <div id="spinner" className="lds-ring" style={divStyle}>
+            <div id="spinner" className="lds-ring" style={divStyle} data-testid="spinner">
                 <div />
                 <div />
                 <div />

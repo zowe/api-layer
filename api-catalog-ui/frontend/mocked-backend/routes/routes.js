@@ -7,15 +7,30 @@ const testinson = require('../assets/services/testinson');
 const cademoapps = require('../assets/services/cademoapps');
 const loginSuccess = require('../assets/services/login_success');
 const invalidCredentials = require('../assets/services/user-name-invalid.json');
-
+const passwordExpired = require('../assets/services/password-expired.json');
 const apiCatalog = require('../assets/apidoc/apicatalog.json');
 const discoverableClient = require('../assets/apidoc/discoverableclient');
 const sampleClient = require('../assets/apidoc/sample');
+const userSuspended = require('../assets/services/user-suspended.json');
+const newPassNotValid = require('../assets/services/new-pass-not-valid.json');
 
 let allUP = false;
 
 function validateCredentials({ username, password }) {
     return username === 'user' && password === 'user';
+}
+function isUserSuspended({ username, password }) {
+    return username === 'susp' && password === 'user';
+}
+function validateExpiredCredentials({ username, password }) {
+    return username === 'user' && password === 'exp';
+}
+function isNewPasswordInvalid({newPassword}) {
+    return newPassword === 'invalid';
+}
+
+function validatePasswordUpdate({ username, password, newPassword }) {
+    return username === 'user' && password === 'exp' && newPassword !== undefined && newPassword !== password && newPassword !== 'invalid';
 }
 
 const appRouter = app => {
@@ -26,11 +41,20 @@ const appRouter = app => {
 
     app.post('/apicatalog/api/v1/auth/login', async (req, res) => {
         const credentials = req.body;
-
-        if (validateCredentials(credentials)) {
+        if (validatePasswordUpdate(credentials)) {
+            console.log('PASSWORD UPDATE');
+            setTimeout(() => res.status(204).send(loginSuccess), 2000);
+        } else if (isNewPasswordInvalid(credentials)){
+            res.status(401).send(newPassNotValid);
+        } else if (validateCredentials(credentials)) {
             console.log('LOGIN');
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
-        } else {
+        } else if(validateExpiredCredentials(credentials)){
+            res.status(401).send(passwordExpired);
+        } else if(isUserSuspended(credentials)){
+            res.status(401).send(userSuspended);
+        }
+        else {
             console.log(invalidCredentials);
             res.status(401).send(invalidCredentials);
         }

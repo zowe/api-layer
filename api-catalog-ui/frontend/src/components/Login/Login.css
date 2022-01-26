@@ -10,7 +10,7 @@
 
 .login-object {
     overflow: hidden;
-    background-image: url("../../assets/images/login_background.jpg");
+    background-image: url("../../assets/images/zowe-background.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     display: flex;
@@ -21,12 +21,10 @@
 
 .login-form {
     width: 440px;
+    padding-right: 300px;
+    height: 100vh;
 }
 
-.login-form {
-    height: 100vh;
-    background-color: #fff;
-}
 
 .login-bg > img {
     height: 100vh;
@@ -52,7 +50,6 @@
     display: inline-table;
     resize: inherit;
     position: static;
-    margin-top: 60px;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
@@ -81,36 +78,6 @@ form#login-form {
     margin: 150px 0px;
 }
 
-.login-object .MuiButton-label {
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 6px 6px 6px 8px;
-    font-family: inherit;
-    font-style: normal;
-    font-weight: 500;
-    background: #0052CC;
-    font-size: 12px;
-    height: 36px;
-    left: 218px;
-    line-height: 16px;
-    /* identical to box height, or 114% */
-    letter-spacing: 1.25px;
-    text-transform: uppercase;
-    top: 0px;
-    color: #FFFFFF;
-    border-radius: 4px;
-    flex: none;
-    order: 0;
-    flex-grow: 0;
-    margin: 25px -14px 10px 14px;
-    position: static;
-}
-
-.login-object .MuiButton-label:hover {
-    background-color: rgb(50, 114, 217);
-    border: none;
-}
-
 .MuiTypography-gutterBottom {
     color: #57606E;
 }
@@ -123,12 +90,21 @@ form#login-form {
     color: black;
 }
 
-.loginButton {
-    display: inline-block;
-    width: 100px;
+
+.updateBtn{
     float: right;
-    margin-right: 10px;
-    position: relative;
+}
+
+.login-btns{
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+.cardTitle {
+    background-color: #FCE4EC;
+}
+#loginButton {
+    display: flex;
+    justify-content: flex-end;
 }
 
 #error-message {
@@ -149,4 +125,13 @@ form#login-form {
 .logo-container {
     margin: 24px;
     width: 71px;
+}
+
+.susp-card {
+    padding-top: 200px;
+    padding-left: 600px;
+}
+
+.MuiFormControl-root {
+    margin: 25px 0 !important;
 }
