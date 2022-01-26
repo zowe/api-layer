@@ -62,7 +62,7 @@ describe('>>> Detail page test', () => {
         //         cy.get('a').should('contain', 'apicatalog');
         //     });
 
-        cy.contains('Service Homepage').should('exist');
+        // cy.contains('Service Homepage').should('exist');
 
         // cy.get(
         //     '#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.header > a'
