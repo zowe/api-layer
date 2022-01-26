@@ -9,7 +9,7 @@ on:
 jobs:
     PublishJibContainers:
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         steps:
             -   uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -75,7 +75,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -120,7 +120,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -167,7 +167,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -214,7 +214,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -262,7 +262,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -309,7 +309,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -356,7 +356,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -416,7 +416,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -481,7 +481,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -556,7 +556,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -647,7 +647,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -713,7 +713,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -779,7 +779,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -849,7 +849,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -919,7 +919,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -983,3 +983,54 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+
+    E2EUITests:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: cypress/browsers:node14.17.0-chrome91-ff89
+        timeout-minutes: 15
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
+            -   name: Install npm dependencies
+                uses: bahmutov/npm-install@v1
+                with:
+                    working-directory: api-catalog-ui/frontend
+            -   name: Cache NPM and Cypress 📦
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.cache/Cypress
+                        node_modules
+                    key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+            -   name: Cypress run
+                run: |
+                    cd api-catalog-ui/frontend
+                    npm run cy:e2e:ci
+            -   name: Upload screenshots
+                uses: actions/upload-artifact@v2
+                if: failure()
+                with:
+                    name: cypress-snapshots
+                    path: api-catalog-ui/frontend/cypress/screenshots
+            -   uses: ./.github/actions/teardown
+

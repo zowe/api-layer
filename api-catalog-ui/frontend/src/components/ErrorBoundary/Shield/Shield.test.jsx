@@ -18,15 +18,6 @@ const Child = () => {
     throw 'error';
 };
 
-// eslint-disable-next-line no-unused-vars
-const pauseErrorLogging = (codeToRun) => {
-    const logger = console.error;
-    console.error = () => {};
-
-    codeToRun();
-
-    console.error = logger;
-};
 describe('>>> Shield component tests', () => {
     it('Should catches error and renders message', () => {
         const errorMessage = 'Display the error stack';
