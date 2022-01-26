@@ -91,7 +91,8 @@ jobs:
             - get-image-version
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
-            release: true
+            # TODO need to figure out what tag this releases binaries with, and then use that to inform where get version from (or if forceNoRelease=true)
+            release: true # TODO check imageVersion ends with -snapshot, and use gradle.properties to get image version (? what version of gradle.properties? before or after release job?)
             version: ${{ needs.get-image-version.outputs.imageVersion }}
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
