@@ -21,7 +21,7 @@ describe('>>> Dashboard test', () => {
 
     // Ignored because suspected internal environment instabilities causing the test
     // to fail. Should be reenabled when tests run on stable env
-    xit('dashboard test', () => {
+    it('dashboard test', () => {
         login();
 
         cy.get('.header').should('exist');
