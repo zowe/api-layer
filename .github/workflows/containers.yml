@@ -1032,4 +1032,5 @@ jobs:
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
+            -   uses: ./.github/actions/teardown
 
