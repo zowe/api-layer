@@ -72,7 +72,7 @@ describe('>>> Detail page test', () => {
 
         // cy.get('pre.version').should('contain', '1.0.0');
 
-        cy.contains('Swagger/OpenAPI JSON Document').should('exist');
+        // cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
         // cy.get('.opblock-tag-section').should('have.length.gte', 1);
     });
