@@ -35,6 +35,7 @@ import static org.mockito.Mockito.*;
 class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
     private static final String PASSWORD = "pass";
+    private static final String NEW_PASSWORD = "newPass";
     private static final String TOKEN = "token";
     private static final String GATEWAY_SCHEME = "https";
     private static final String GATEWAY_HOST = "localhost:10010";
@@ -72,12 +73,22 @@ class GatewaySecurityServiceTest {
     class WhenDoLogin {
         private String uri;
         private HttpEntity loginRequest;
+        private HttpEntity passwordUpdateRequest;
 
         @BeforeEach
         void setup() {
             uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
                 gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
-            loginRequest = createLoginRequest();
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode credentials = mapper.createObjectNode();
+            credentials.put("username", USERNAME);
+            credentials.put("password", PASSWORD);
+            loginRequest = createLoginRequest(credentials);
+            ObjectNode updateCredentials = mapper.createObjectNode();
+            updateCredentials.put("username", USERNAME);
+            updateCredentials.put("password", PASSWORD);
+            updateCredentials.put("newPassword", NEW_PASSWORD);
+            passwordUpdateRequest = createLoginRequest(updateCredentials);
         }
 
         @Test
@@ -89,6 +100,20 @@ class GatewaySecurityServiceTest {
                 .thenReturn(new ResponseEntity<>(responseHeaders, HttpStatus.NO_CONTENT));
 
             Optional<String> token = securityService.login(USERNAME, PASSWORD, null);
+
+            assertTrue(token.isPresent());
+            assertEquals(TOKEN, token.get());
+        }
+
+        @Test
+        void givenValidUpdatePasswordRequest_thenGetToken() {
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add(HttpHeaders.SET_COOKIE, cookie);
+
+            when(restTemplate.exchange(uri, HttpMethod.POST, passwordUpdateRequest, String.class))
+                .thenReturn(new ResponseEntity<>(responseHeaders, HttpStatus.NO_CONTENT));
+
+            Optional<String> token = securityService.login(USERNAME, PASSWORD, NEW_PASSWORD);
 
             assertTrue(token.isPresent());
             assertEquals(TOKEN, token.get());
@@ -143,15 +168,10 @@ class GatewaySecurityServiceTest {
             }
         }
 
-        private HttpEntity createLoginRequest() {
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode loginRequest = mapper.createObjectNode();
-            loginRequest.put("username", USERNAME);
-            loginRequest.put("password", PASSWORD);
-
+        private HttpEntity createLoginRequest(ObjectNode credentials) {
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-            return new HttpEntity<>(loginRequest, requestHeaders);
+            return new HttpEntity<>(credentials, requestHeaders);
         }
     }
 

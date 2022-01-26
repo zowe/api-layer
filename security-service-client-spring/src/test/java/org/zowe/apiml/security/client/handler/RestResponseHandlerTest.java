@@ -22,10 +22,12 @@ import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
@@ -138,5 +140,29 @@ class RestResponseHandlerTest {
         assertThrows(ServiceNotAccessibleException.class, () -> {
             handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
+    }
+
+    @Test
+    void handleUserSuspendedError() {
+        ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class, () -> {
+            handler.handleBadResponse(unauthorizedException, ErrorType.USER_SUSPENDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
+        assertEquals(163, exception.getPlatformError().errno);
+    }
+
+    @Test
+    void handleInvalidNewPasswordError() {
+        ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class, () -> {
+            handler.handleBadResponse(unauthorizedException, ErrorType.NEW_PASSWORD_INVALID, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
+        assertEquals(169, exception.getPlatformError().errno);
+    }
+
+    @Test
+    void handleExpiredPasswordError() {
+        ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class, () -> {
+            handler.handleBadResponse(unauthorizedException, ErrorType.PASSWORD_EXPIRED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
+        assertEquals(168, exception.getPlatformError().errno);
     }
 }

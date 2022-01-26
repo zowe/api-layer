@@ -114,4 +114,25 @@ describe('>>> Authentication reducer tests', () => {
             expired: true,
         });
     });
+
+    it('should return empty error object if re-entered new password matches', () => {
+        const action = {
+            type: userConstants.USERS_LOGIN_VALIDATE,
+            credentials: {
+                newPassword: 'newPass',
+                repeatNewPassword: 'newPass',
+            },
+        };
+        expect(authenticationReducer({}, action)).toEqual({
+            error: {},
+            expired: true,
+        });
+    });
+
+    it('should init with empty state', () => {
+        const action = {
+            type: userConstants.USERS_LOGIN_INIT,
+        };
+        expect(authenticationReducer({}, action)).toEqual({});
+    });
 });
