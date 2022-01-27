@@ -1,7 +1,7 @@
 ext.enablers = [
     'onboarding-enabler-spring',
-    'onboarding-enabler-java',
-    'onboarding-enabler-micronaut'
+    'onboarding-enabler-java'
+    //'onboarding-enabler-micronaut'
 ]
 
 ext.javaLibraries = [
