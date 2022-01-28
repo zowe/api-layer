@@ -64,13 +64,12 @@ jobs:
 
             - uses: ./.github/actions/teardown
 
-    release-images:
+    publish-images:
         needs:
             - release # Ensure services can build and binary released successfully
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
-            release: true
-            version: ${{ inputs.release_version }}
+            version: ${{ github.event.inputs.release_version }}
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
             registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
