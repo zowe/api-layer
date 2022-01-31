@@ -151,4 +151,25 @@ describe('>>> Tile reducer tests', () => {
             )
         ).toEqual(expectedState);
     });
+
+    it('should handle DEFAULT', () => {
+        const expectedState = {
+            id: 'apicatalog',
+            tiles: [sampleTile],
+            updates: [],
+        };
+
+        expect(
+            tilesReducer(
+                {
+                    id: 'apicatalog',
+                    tiles: [sampleTile],
+                    updates: [],
+                },
+                {
+                    type: 'UNKNOWN'
+                }
+            )
+        ).toEqual(expectedState);
+    });
 });
