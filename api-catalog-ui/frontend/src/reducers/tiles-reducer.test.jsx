@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import tilesReducer from './fetch-tile-reducer';
+import tilesReducer from './tiles-reducer';
 import {
     FETCH_TILES_FAILED,
     FETCH_TILES_REQUEST,
