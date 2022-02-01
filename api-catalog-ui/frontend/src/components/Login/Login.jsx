@@ -44,7 +44,7 @@ const Login = (props) => {
      */
     const onKeyDown = (keyEvent) => {
         setWarning(false);
-        if (keyEvent.getModifierState('CapsLock')) {
+        if (keyEvent.getModifierState('CapsLock') || keyEvent.getModifierState('Shift')) {
             setWarning(true);
         } else {
             setWarning(false);
@@ -226,6 +226,7 @@ const Login = (props) => {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onKeyDown={onKeyDown}
+                                    onKeyUp={onKeyDown}
                                     onChange={(t) => handleChange(t.target, setPassword)}
                                     caption="Default: password"
                                     autoComplete="on"
