@@ -9,7 +9,7 @@
  */
 
 import { CLEAR_FILTER, FILTER_TEXT } from '../constants/filter-constants';
-import filtersReducer from './filter-reducer';
+import filtersReducer from './filters-reducer';
 
 describe('>>> Filter reducer tests', () => {
     it('should handle CLEAR_FILTER', () => {
