@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import tilesReducer from './fetch-tile-reducer';
+import tilesReducer from './tiles-reducer';
 import {
     FETCH_TILES_FAILED,
     FETCH_TILES_REQUEST,
@@ -147,6 +147,27 @@ describe('>>> Tile reducer tests', () => {
                 {
                     type: FETCH_TILES_FAILED,
                     payload: 'test',
+                }
+            )
+        ).toEqual(expectedState);
+    });
+
+    it('should handle DEFAULT', () => {
+        const expectedState = {
+            id: 'apicatalog',
+            tiles: [sampleTile],
+            updates: [],
+        };
+
+        expect(
+            tilesReducer(
+                {
+                    id: 'apicatalog',
+                    tiles: [sampleTile],
+                    updates: [],
+                },
+                {
+                    type: 'UNKNOWN',
                 }
             )
         ).toEqual(expectedState);
