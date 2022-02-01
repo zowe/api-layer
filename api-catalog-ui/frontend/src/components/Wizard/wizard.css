@@ -9,11 +9,11 @@
  */
 
 .wizardForm {
-    padding: 0 2px;
+    padding: 0 12px;
 }
 
 .wizardForm .entry {
-    margin-bottom: 12px;
+    margin-bottom: 24px;
 }
 
 .selector {
@@ -25,6 +25,7 @@
 }
 
 #wizard-navigation > div {
+    margin-left: -8px;
     max-height: 21em;
 }
 
@@ -74,6 +75,7 @@ label.wCheckBox span:last-child {
 }
 
 .readyTab {
+    margin-right: 10px;
     font-weight: 800;
 }
 
@@ -131,4 +133,8 @@ MuiTab-textColorInherit {
 
 .MuiFormControl-root {
     display: flex;
+}
+
+label.MuiFormLabel-root.MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLabel-animated.MuiInputLabel-shrink {
+    font-weight: bold;
 }
