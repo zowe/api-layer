@@ -138,3 +138,7 @@ MuiTab-textColorInherit {
 label.MuiFormLabel-root.MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLabel-animated.MuiInputLabel-shrink {
     font-weight: bold;
 }
+
+.MuiFormControl-root.formField {
+    width: 100%;
+}
