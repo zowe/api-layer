@@ -53,7 +53,7 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
-    padding: 24px 24px 2px;
+    padding: 24px;
     width: 344px;
     height: 420px;
     left: 428px;
@@ -71,7 +71,7 @@
 }
 
 form#login-form {
-    width: 294px;
+    width: 100%;
 }
 
 .product-title {
@@ -97,7 +97,6 @@ form#login-form {
 
 .login-btns{
     margin-top: 20px;
-    margin-bottom: 15px;
 }
 .cardTitle {
     background-color: #FCE4EC;

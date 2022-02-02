@@ -19,6 +19,7 @@ import {
     Card,
     CardContent,
     CardActions,
+    Grid,
 } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
@@ -145,18 +146,20 @@ const Login = (props) => {
                                 </Typography>
                             </CardContent>
                             <CardActions>
-                                <Button
-                                    variant="outlined"
-                                    className="backBtn"
-                                    color="primary"
-                                    label=""
-                                    size="medium"
-                                    style={{ border: 'none' }}
-                                    onClick={backToLogin}
-                                    data-testid="suspendedBackToLogin"
-                                >
-                                    RETURN TO LOGIN
-                                </Button>
+                                <Grid container justifyContent="flex-end">
+                                    <Button
+                                        variant="outlined"
+                                        className="backBtn"
+                                        color="primary"
+                                        label=""
+                                        size="medium"
+                                        style={{ border: 'none' }}
+                                        onClick={backToLogin}
+                                        data-testid="suspendedBackToLogin"
+                                    >
+                                        RETURN TO LOGIN
+                                    </Button>
+                                </Grid>
                             </CardActions>
                         </Card>
                     </div>
@@ -194,7 +197,7 @@ const Login = (props) => {
                                     Login
                                 </Typography>
                                 <Typography variant="subtitle2" gutterBottom component="div">
-                                    Please enter your mainframe username and password to access this resource
+                                    Please enter your mainframe username and password
                                 </Typography>
                                 <TextField
                                     label="Username"
