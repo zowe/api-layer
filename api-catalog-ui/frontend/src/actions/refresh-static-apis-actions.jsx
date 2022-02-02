@@ -20,6 +20,9 @@ export function refreshStaticApisSuccess() {
         closeOnClick: true,
         autoClose: 2000,
     });
+    setTimeout(() => {
+        toast.dismiss();
+    }, 2000);
     return {
         type: REFRESH_STATIC_APIS_SUCCESS,
         refreshTimestamp: Date.now(),

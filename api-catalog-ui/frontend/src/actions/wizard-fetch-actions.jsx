@@ -15,6 +15,9 @@ export function notifySuccess() {
         closeOnClick: true,
         autoClose: 2000,
     });
+    setTimeout(() => {
+        toast.dismiss();
+    }, 2000);
     return {
         type: TOGGLE_DISPLAY,
     };
@@ -25,6 +28,9 @@ export function notifyError(error) {
         closeOnClick: true,
         autoClose: 2000,
     });
+    setTimeout(() => {
+        toast.dismiss();
+    }, 2000);
     return {
         type: 'IGNORE',
         payload: null,
