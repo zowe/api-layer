@@ -44,10 +44,22 @@ const Login = (props) => {
      */
     const onKeyDown = (keyEvent) => {
         setWarning(false);
-        if (keyEvent.getModifierState('CapsLock') || keyEvent.getModifierState('Shift')) {
+        if (keyEvent.keyCode === 20 || keyEvent.keyCode === 16) {
             setWarning(true);
         } else {
             setWarning(false);
+        }
+    };
+
+    /**
+     * Detect caps lock being on when typing.
+     * @param keyEvent On key up event.
+     */
+    const onKeyUp = (keyEvent) => {
+        if (keyEvent.keyCode === 20 || keyEvent.keyCode === 16) {
+            setWarning(false);
+        } else {
+            setWarning(true);
         }
     };
 
@@ -226,7 +238,7 @@ const Login = (props) => {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onKeyDown={onKeyDown}
-                                    onKeyUp={onKeyDown}
+                                    onKeyUp={onKeyUp}
                                     onChange={(t) => handleChange(t.target, setPassword)}
                                     caption="Default: password"
                                     autoComplete="on"
@@ -245,7 +257,11 @@ const Login = (props) => {
                                         ),
                                     }}
                                 />
-                                {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
+                                {warning && (
+                                    <Link id="capslock" data-testid="caps-lock-on" underline="hover">
+                                        Caps Lock is ON!
+                                    </Link>
+                                )}
                                 <div className="login-btns" id="loginButton">
                                     <Button
                                         variant="contained"
