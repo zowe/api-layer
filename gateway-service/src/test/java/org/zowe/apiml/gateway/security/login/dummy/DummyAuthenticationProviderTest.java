@@ -70,6 +70,6 @@ class DummyAuthenticationProviderTest {
         Exception exception = assertThrows(BadCredentialsException.class,
             () -> dummyAuthenticationProvider.authenticate(usernamePasswordAuthentication),
         "Expected exception is not BadCredentialsException");
-        assertEquals("Username or password are invalid.", exception.getMessage());
+        assertEquals("Invalid Credentials", exception.getMessage());
     }
 }

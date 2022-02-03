@@ -13,6 +13,7 @@ const discoverableClient = require('../assets/apidoc/discoverableclient');
 const sampleClient = require('../assets/apidoc/sample');
 const userSuspended = require('../assets/services/user-suspended.json');
 const newPassNotValid = require('../assets/services/new-pass-not-valid.json');
+const timeout = require('../assets/services/timeout-error.json');
 
 let allUP = false;
 
@@ -32,6 +33,9 @@ function isNewPasswordInvalid({newPassword}) {
 function validatePasswordUpdate({ username, password, newPassword }) {
     return username === 'user' && password === 'exp' && newPassword !== undefined && newPassword !== password && newPassword !== 'invalid';
 }
+function returnTimeout({ username }) {
+    return username === 'timeout';
+}
 
 const appRouter = app => {
     // NOTE: The root route
@@ -41,7 +45,9 @@ const appRouter = app => {
 
     app.post('/apicatalog/api/v1/auth/login', async (req, res) => {
         const credentials = req.body;
-        if (validatePasswordUpdate(credentials)) {
+        if (returnTimeout(credentials)) {
+            res.status(500).send(timeout);
+        } else if (validatePasswordUpdate(credentials)) {
             console.log('PASSWORD UPDATE');
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
         } else if (isNewPasswordInvalid(credentials)){

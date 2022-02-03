@@ -3,7 +3,7 @@
         {
             "messageType": "ERROR",
             "messageNumber": "ZWEAS120E",
-            "messageContent": "Invalid username or password",
+            "messageContent": "Invalid Credentials",
             "messageKey": "org.zowe.apiml.security.invalidUsername"
         }
     ]

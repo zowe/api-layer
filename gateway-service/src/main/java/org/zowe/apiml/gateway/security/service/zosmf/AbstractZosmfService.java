@@ -124,7 +124,7 @@ public abstract class AbstractZosmfService {
         }
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
-            return new BadCredentialsException("Username or password are invalid.");
+            return new BadCredentialsException("Invalid Credentials");
         }
 
         if (re instanceof RestClientException) {

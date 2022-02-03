@@ -51,7 +51,7 @@ public class GatewayLoginProvider implements AuthenticationProvider {
         Optional<String> token = gatewaySecurityService.login(username, password, newPassword);
 
         if (!token.isPresent()) {
-            throw new BadCredentialsException("Username or password are invalid.");
+            throw new BadCredentialsException("Invalid Credentials");
         }
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(username, token.get());

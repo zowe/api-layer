@@ -20,11 +20,12 @@ import {
     CardContent,
     CardActions,
     Grid,
+    Box,
+    Tooltip,
 } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import WarningIcon from '@material-ui/icons/Warning';
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import Spinner from '../Spinner/Spinner';
 import './Login.css';
 
@@ -36,9 +37,11 @@ const Login = (props) => {
     const [errorMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [warning, setWarning] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     const { returnToLogin, login, authentication, isFetching, validateInput } = props;
-
+    const enterNewPassMsg = 'Enter a new password for account';
+    const invalidPassMsg = 'The specified username or password is invalid.';
     /**
      * Detect caps lock being on when typing.
      * @param keyEvent On key down event.
@@ -61,6 +64,7 @@ const Login = (props) => {
         let messageText;
         let invalidNewPassword;
         let isSuspended;
+        let invalidCredentials;
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
         if (
@@ -75,8 +79,9 @@ const Login = (props) => {
             );
             invalidNewPassword = error.messageNumber === 'ZWEAT604E' || error.messageNumber === 'ZWEAT413E';
             isSuspended = error.messageNumber === 'ZWEAT414E';
+            invalidCredentials = filter[0].messageKey === 'ZWEAS120E';
             if (filter.length !== 0) {
-                if (filter[0].messageKey === 'ZWEAS120E') {
+                if (invalidCredentials || filter[0].messageKey === 'ZWEAT412E') {
                     messageText = `${filter[0].messageText}`;
                 } else {
                     messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
@@ -91,13 +96,14 @@ const Login = (props) => {
         } else if (error.status === 500) {
             messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
-        return { messageText, expired, invalidNewPassword, isSuspended };
+        return { messageText, expired, invalidNewPassword, isSuspended, invalidCredentials };
     };
 
     function handleChange(target, setStateFunction) {
         setStateFunction(target.value);
         if (target.name === 'repeatNewPassword') {
             validateInput({ newPassword, repeatNewPassword: target.value });
+            setSubmitted(false);
         }
     }
 
@@ -115,9 +121,10 @@ const Login = (props) => {
         } else if (username && password) {
             login({ username, password });
         }
+        setSubmitted(true);
     }
 
-    let error = { messageText: null, expired: false, invalidNewPassword: true };
+    let error = { messageText: null, expired: false, invalidNewPassword: true, invalidCredentials: false };
     if (
         authentication !== undefined &&
         authentication !== null &&
@@ -131,19 +138,23 @@ const Login = (props) => {
                     <div className="susp-card">
                         <Card variant="outlined">
                             <CardContent className="cardTitle">
-                                <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                                    <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                    <b>{error.messageText}</b>
-                                </Typography>
+                                <div className="susp-acc">
+                                    <WarningIcon style={{ color: '#de1b1b' }} fontSize="medium" />
+                                    <Typography className="susp-msg" variant="h6" color="text.secondary">
+                                        {error.messageText}
+                                    </Typography>
+                                </div>
                             </CardContent>
                             <CardContent>
-                                <Typography variant="body2">
-                                    <b>{username}</b> account has been suspended.
-                                </Typography>
-                                <br />
-                                <Typography variant="body2">
-                                    Contact your security administrator to unsuspend your account.
-                                </Typography>
+                                <Box sx={{ width: 300 }}>
+                                    <Typography variant="body2">
+                                        <b>{username}</b> account has been suspended.
+                                    </Typography>
+                                    <br />
+                                    <Typography variant="body2">
+                                        Contact your security administrator to unsuspend your account.
+                                    </Typography>
+                                </Box>
                             </CardContent>
                             <CardActions>
                                 <Grid container justifyContent="flex-end">
@@ -185,12 +196,42 @@ const Login = (props) => {
                         <CssBaseline />
                         <div className="text-block-4">API Catalog</div>
                         <br />
-                        {error.messageText !== undefined && error.messageText !== null && (
-                            <div id="error-message">
-                                <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                {error.messageText}
-                            </div>
-                        )}
+                        {error.messageText !== undefined &&
+                            error.messageText !== null &&
+                            !authentication.expiredWarning && (
+                                <div id="error-message">
+                                    <div id="warn-first-line">
+                                        <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                        <Typography className="susp-msg" variant="body1" color="text.secondary">
+                                            {error.messageText}
+                                        </Typography>
+                                    </div>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {error.expired && (
+                                            <p>
+                                                {enterNewPassMsg} <b>{username}</b>
+                                            </p>
+                                        )}
+                                        {error.invalidCredentials && <p>{invalidPassMsg}</p>}
+                                    </Typography>
+                                </div>
+                            )}
+                        {error.messageText !== undefined &&
+                            error.messageText !== null &&
+                            error.expired &&
+                            authentication.expiredWarning && (
+                                <div id="warn-message">
+                                    <div id="warn-first-line">
+                                        <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                        <Typography className="susp-msg" variant="body1" color="text.secondary">
+                                            Password Expired
+                                        </Typography>
+                                    </div>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Your Password for account <b>{username}</b> has expired. Enter a new password.
+                                    </Typography>
+                                </div>
+                            )}
                         {!error.expired && (
                             <div>
                                 <Typography className="login-typo" variant="subtitle1" gutterBottom component="div">
@@ -235,7 +276,7 @@ const Login = (props) => {
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
-                                                {error.messageText && <ErrorOutlineIcon className="errorIcon" />}
+                                                {error.messageText && <WarningIcon className="errorIcon" />}
                                                 <IconButton
                                                     aria-label="toggle password visibility"
                                                     edge="end"
@@ -286,7 +327,7 @@ const Login = (props) => {
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
-                                                {error.messageText && <ErrorOutlineIcon className="errorIcon" />}
+                                                {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
                                                 <IconButton
                                                     aria-label="toggle password visibility"
                                                     edge="end"
@@ -299,38 +340,48 @@ const Login = (props) => {
                                     }}
                                 />
                                 <br />
-                                <TextField
-                                    id="repeatNewPassword"
-                                    htmlFor="outlined-adornment-password"
-                                    label="Repeat New Password"
-                                    data-testid="repeatNewPassword"
-                                    className="formfield"
-                                    variant="outlined"
-                                    required
-                                    error={error.invalidNewPassword}
-                                    fullWidth
-                                    name="repeatNewPassword"
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={repeatNewPassword}
-                                    onKeyDown={onKeyDown}
-                                    onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
-                                    caption="Default: Repeat new password"
-                                    autoComplete="on"
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                {error.messageText && <ErrorOutlineIcon className="errorIcon" />}
-                                                <IconButton
-                                                    aria-label="toggle password visibility"
-                                                    edge="end"
-                                                    onClick={() => handleClickShowPassword()}
-                                                >
-                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                />
+                                <Tooltip
+                                    open={repeatNewPassword !== null && !authentication.matches}
+                                    disableFocusListener
+                                    disableHoverListener
+                                    disableTouchListener
+                                    placement="top"
+                                    title="Passwords do not match. Please make sure the passwords match."
+                                >
+                                    <TextField
+                                        id="repeatNewPassword"
+                                        htmlFor="outlined-adornment-password"
+                                        label="Repeat New Password"
+                                        data-testid="repeatNewPassword"
+                                        className="formfield"
+                                        variant="outlined"
+                                        required
+                                        error={error.invalidNewPassword}
+                                        fullWidth
+                                        name="repeatNewPassword"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={repeatNewPassword}
+                                        onKeyDown={onKeyDown}
+                                        onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
+                                        caption="Default: Repeat new password"
+                                        autoComplete="on"
+                                        InputProps={{
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
+                                                    <IconButton
+                                                        aria-label="toggle password visibility"
+                                                        edge="end"
+                                                        onClick={() => handleClickShowPassword()}
+                                                    >
+                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+                                </Tooltip>
+                                {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
                                 <div className="login-btns">
                                     <Button
                                         variant="outlined"
@@ -354,7 +405,7 @@ const Login = (props) => {
                                         style={{ border: 'none' }}
                                         type="submit"
                                         data-testid="submitChange"
-                                        disabled={!repeatNewPassword || error.invalidNewPassword}
+                                        disabled={!repeatNewPassword || !authentication.matches || submitted}
                                     >
                                         CHANGE PASSWORD
                                     </Button>

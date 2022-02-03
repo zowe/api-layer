@@ -128,8 +128,7 @@ describe('>>> Login page component tests', () => {
             const error = {
                 messageType: 'ERROR',
                 messageNumber: 'ZWEAS120E',
-                messageContent:
-                    "Authentication problem: 'Username or password are invalid.' for URL '/metrics-service/auth/login'",
+                messageContent: "Authentication problem: 'Invalid Credentials' for URL '/metrics-service/auth/login'",
                 messageKey: 'org.zowe.apiml.security.invalidUsername',
             };
             const wrapper = shallow(<Login authentication={{ error }} />);

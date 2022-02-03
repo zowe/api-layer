@@ -65,7 +65,7 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
             usernamePasswordAuthentication
                 = (UsernamePasswordAuthenticationToken) super.authenticate(authentication);
         } catch (AuthenticationException exception) {
-            throw new BadCredentialsException("Username or password are invalid.");
+            throw new BadCredentialsException("Invalid Credentials");
         } catch (Exception e) {
             throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }

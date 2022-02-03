@@ -148,13 +148,13 @@ describe('>>> Login page component tests', () => {
                         messageType: 'ERROR',
                         messageNumber: 'ZWEAS120E',
                         messageContent:
-                            "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+                            "Authentication problem: 'Invalid Credentials' for URL '/apicatalog/auth/login'",
                         messageKey: 'org.zowe.apiml.security.invalidUsername',
                     },
                 }}
             />
         );
-        expect(screen.getByText('Invalid username or password')).toBeInTheDocument();
+        expect(screen.getByText('Invalid Credentials')).toBeInTheDocument();
     });
 
     it('should disable button and show spinner when request is being resolved', () => {

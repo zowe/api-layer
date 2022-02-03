@@ -27,7 +27,9 @@ function login(credentials) {
     function invalidPassword(error) {
         return { type: userConstants.USERS_LOGIN_INVALIDPASSWORD, error };
     }
-
+    function expiredPassword(error) {
+        return { type: userConstants.USERS_LOGIN_EXPIREDPASSWORD, error };
+    }
     return (dispatch) => {
         dispatch(request(credentials));
 
@@ -37,8 +39,10 @@ function login(credentials) {
                 history.push('/dashboard');
             },
             (error) => {
-                if (error.messageNumber === 'ZWEAT412E' || error.messageNumber === 'ZWEAT413E') {
+                if (error.messageNumber === 'ZWEAT413E') {
                     dispatch(invalidPassword(error));
+                } else if (error.messageNumber === 'ZWEAT412E') {
+                    dispatch(expiredPassword(error));
                 } else {
                     dispatch(failure(error));
                 }
