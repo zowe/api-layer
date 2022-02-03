@@ -9,7 +9,7 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
+import SwaggerUiReact, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 
@@ -95,7 +95,7 @@ export default class SwaggerUI extends Component {
             ) {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
-                SwaggerUi({
+                SwaggerUiReact({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
                     presets: [presets.apis],
@@ -108,7 +108,7 @@ export default class SwaggerUI extends Component {
                     process.env.REACT_APP_CATALOG_HOME +
                     process.env.REACT_APP_APIDOC_UPDATE
                 }/${selectedService.serviceId}/${selectedVersion}`;
-                SwaggerUi({
+                SwaggerUiReact({
                     dom_id: '#swaggerContainer',
                     url,
                     presets: [presets.apis],
