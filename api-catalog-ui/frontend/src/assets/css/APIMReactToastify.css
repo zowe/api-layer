@@ -400,3 +400,25 @@
   animation-name: Toastify__slideOutDown; }
 
 /*# sourceMappingURL=ReactToastify.css.map */
+@keyframes Toastify__trackProgress {
+    0% {
+        transform: scaleX(1);
+    }
+    100% {
+        transform: scaleX(0);
+    }
+}
+.Toastify__progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    z-index: var(--toastify-z-index);
+    opacity: 0.7;
+    transform-origin: left;
+}
+
+.Toastify__progress-bar--animated {
+    animation: Toastify__trackProgress linear 1 forwards;
+}

@@ -170,4 +170,32 @@ describe('>>> Login page component tests', () => {
 
         expect(errorMessage).toBeDefined();
     });
+
+    it('should track keydown event on capslock', () => {
+        const page = enzyme.shallow(<Login />);
+        page.find('[data-testid="password"]').last().simulate('keydown', { keyCode: 20 });
+        const label = page.find('#capslock');
+        expect(label.text()).toEqual('Caps Lock is ON!');
+    });
+
+    it('should track keydown event on shift', () => {
+        const page = enzyme.shallow(<Login />);
+        page.find('[data-testid="password"]').last().simulate('keydown', { keyCode: 16 });
+        const label = page.find('#capslock');
+        expect(label.text()).toEqual('Caps Lock is ON!');
+    });
+
+    it('should track keyup event on capslock', () => {
+        const page = enzyme.shallow(<Login />);
+        page.find('[data-testid="password"]').last().simulate('keyup', { keyCode: 20 });
+        const label = page.find('#capslock');
+        expect(label).toEqual({});
+    });
+
+    it('should track keyup event on shift', () => {
+        const page = enzyme.shallow(<Login />);
+        page.find('[data-testid="password"]').last().simulate('keyup', { keyCode: 16 });
+        const label = page.find('#capslock');
+        expect(label).toEqual({});
+    });
 });
