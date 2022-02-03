@@ -175,6 +175,6 @@ describe('>>> Login page component tests', () => {
         const page = enzyme.shallow(<Login />);
         page.find('[data-testid="password"]').last().simulate('keydown', { keyCode: 20 });
         const label = page.find('#capslock');
-        expect(label.text()).toEqual("Caps Lock is ON!");
+        expect(label.text()).toEqual('Caps Lock is ON!');
     });
 });
