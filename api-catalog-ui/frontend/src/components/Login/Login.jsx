@@ -52,7 +52,7 @@ const Login = (props) => {
     };
 
     /**
-     * Detect caps lock being on when typing.
+     * Detect caps lock being off when typing.
      * @param keyEvent On key up event.
      */
     const onKeyUp = (keyEvent) => {
