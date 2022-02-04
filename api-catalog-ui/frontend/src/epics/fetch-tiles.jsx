@@ -49,7 +49,7 @@ function checkOrigin() {
  * @returns the URL to call
  */
 function getUrl(action) {
-    let url = `${getBaseUrl()}/${process.env.REACT_APP_CATALOG_UPDATE}`;
+    let url = `${getBaseUrl()}${process.env.REACT_APP_CATALOG_UPDATE}`;
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }
