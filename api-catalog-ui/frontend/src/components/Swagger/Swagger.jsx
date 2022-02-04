@@ -12,6 +12,7 @@ import * as React from 'react';
 import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
+import getBaseUrl from '../../helpers/urls';
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
@@ -103,11 +104,7 @@ export default class SwaggerUI extends Component {
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
-                const url = `${
-                    process.env.REACT_APP_GATEWAY_URL +
-                    process.env.REACT_APP_CATALOG_HOME +
-                    process.env.REACT_APP_APIDOC_UPDATE
-                }/${selectedService.serviceId}/${selectedVersion}`;
+                const url = `${getBaseUrl()}/${process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/${selectedVersion}`;
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     url,
@@ -153,5 +150,5 @@ export default class SwaggerUI extends Component {
 }
 
 SwaggerUI.defaultProps = {
-    url: `${process.env.REACT_APP_CATALOG_HOME}/apidoc`,
+    url: `${getBaseUrl()}/apidoc`,
 };

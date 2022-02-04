@@ -16,6 +16,7 @@ import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUnt
 import { FETCH_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
 import { fetchTilesFailed, fetchTilesRetry, fetchTilesSuccess } from '../actions/catalog-tile-actions';
 import { userActions } from '../actions/user-actions';
+import getBaseUrl from '../helpers/urls';
 
 const updatePeriod = Number(process.env.REACT_APP_STATUS_UPDATE_PERIOD);
 const debounce = Number(process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE);
@@ -48,8 +49,7 @@ function checkOrigin() {
  * @returns the URL to call
  */
 function getUrl(action) {
-    let url =
-        process.env.REACT_APP_GATEWAY_URL + process.env.REACT_APP_CATALOG_HOME + process.env.REACT_APP_CATALOG_UPDATE;
+    let url = `${getBaseUrl()}/${process.env.REACT_APP_CATALOG_UPDATE}`;
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }

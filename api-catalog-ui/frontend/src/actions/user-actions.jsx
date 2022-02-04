@@ -24,24 +24,17 @@ function login(credentials) {
     function failure(error) {
         return { type: userConstants.USERS_LOGIN_FAILURE, error };
     }
-    function invalidPassword(error) {
-        return { type: userConstants.USERS_LOGIN_INVALIDPASSWORD, error };
-    }
 
-    return (dispatch) => {
+    return dispatch => {
         dispatch(request(credentials));
 
         userService.login(credentials).then(
-            (token) => {
+            token => {
                 dispatch(success(token));
                 history.push('/dashboard');
             },
-            (error) => {
-                if (error.messageNumber === 'ZWEAT412E' || error.messageNumber === 'ZWEAT413E') {
-                    dispatch(invalidPassword(error));
-                } else {
-                    dispatch(failure(error));
-                }
+            error => {
+                dispatch(failure(error));
             }
         );
     };
@@ -58,14 +51,14 @@ function logout() {
     function failure(error) {
         return { type: userConstants.USERS_LOGOUT_FAILURE, error };
     }
-    return (dispatch) => {
+    return dispatch => {
         dispatch(request());
         userService.logout().then(
             () => {
                 dispatch(success());
                 history.push('/login');
             },
-            (error) => {
+            error => {
                 dispatch(failure(error));
             }
         );
@@ -76,7 +69,7 @@ function authenticationFailure(error) {
     function failure(err) {
         return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
-    return (dispatch) => {
+    return dispatch => {
         dispatch(failure(error));
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
             window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
@@ -86,25 +79,9 @@ function authenticationFailure(error) {
     };
 }
 
-function returnToLogin() {
-    function clean() {
-        return { type: userConstants.USERS_LOGIN_INIT };
-    }
-    return (dispatch) => {
-        dispatch(clean());
-        history.push('/login');
-    };
-}
-
-function validateInput(credentials) {
-    return { type: userConstants.USERS_LOGIN_VALIDATE, credentials };
-}
-
 // eslint-disable-next-line
 export const userActions = {
     login,
     logout,
     authenticationFailure,
-    returnToLogin,
-    validateInput,
 };

@@ -9,6 +9,7 @@
  */
 
 import * as log from 'loglevel';
+import getBaseUrl from '../helpers/urls';
 
 function handleResponse(response) {
     return response.text().then((text) => {
@@ -51,7 +52,7 @@ function logout() {
     };
 
     return fetch(
-        `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/auth/logout`,
+        `${getBaseUrl()}/auth/logout`,
         requestOptions
     )
         .then((data) => data)
@@ -74,7 +75,7 @@ function login(credentials) {
         },
         body: JSON.stringify(credentials),
     };
-    return fetch(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/auth/login`, requestOptions)
+    return fetch(`${getBaseUrl()}/auth/login`, requestOptions)
         .then(handleResponse)
         .then((user) => user);
 }
