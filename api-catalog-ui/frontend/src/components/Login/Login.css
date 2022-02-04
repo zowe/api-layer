@@ -123,6 +123,11 @@ form#login-form {
 
 .errorIcon {
     color: #de1b1b;
+    margin: 0;
+}
+
+.visibility-icon {
+    padding: 6px !important;
 }
 
 .logo-container {

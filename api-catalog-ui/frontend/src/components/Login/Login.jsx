@@ -140,7 +140,7 @@ const Login = (props) => {
                             <CardContent className="cardTitle">
                                 <div className="susp-acc">
                                     <WarningIcon style={{ color: '#de1b1b' }} fontSize="medium" />
-                                    <Typography className="susp-msg" variant="h6" color="text.secondary">
+                                    <Typography className="susp-msg" variant="h6">
                                         {error.messageText}
                                     </Typography>
                                 </div>
@@ -278,6 +278,7 @@ const Login = (props) => {
                                             <InputAdornment position="end">
                                                 {error.messageText && <WarningIcon className="errorIcon" />}
                                                 <IconButton
+                                                    className="visibility-icon"
                                                     aria-label="toggle password visibility"
                                                     edge="end"
                                                     onClick={() => handleClickShowPassword()}
@@ -329,6 +330,7 @@ const Login = (props) => {
                                             <InputAdornment position="end">
                                                 {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
                                                 <IconButton
+                                                    className="visibility-icon"
                                                     aria-label="toggle password visibility"
                                                     edge="end"
                                                     onClick={() => handleClickShowPassword()}
@@ -370,6 +372,7 @@ const Login = (props) => {
                                                 <InputAdornment position="end">
                                                     {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
                                                     <IconButton
+                                                        className="visibility-icon"
                                                         aria-label="toggle password visibility"
                                                         edge="end"
                                                         onClick={() => handleClickShowPassword()}

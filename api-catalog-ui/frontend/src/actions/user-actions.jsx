@@ -96,7 +96,6 @@ function returnToLogin() {
     }
     return (dispatch) => {
         dispatch(clean());
-        history.push('/login');
     };
 }
 
