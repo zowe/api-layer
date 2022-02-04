@@ -146,6 +146,16 @@ public class ZosmfService extends AbstractZosmfService {
         return authenticationResponse;
     }
 
+    @Retryable(value = {TokenNotValidException.class}, maxAttempts = 2, backoff = @Backoff(value = 1500))
+    public AuthenticationResponse changePassword(Authentication authentication) {
+        AuthenticationResponse authenticationResponse ;
+        authenticationResponse = issueChangePasswordRequest(
+            authentication,
+            getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
+            HttpMethod.PUT);
+        return authenticationResponse;
+    }
+
     /**
      * Checks if jwtToken is in the list of invalidated tokens.
      *
@@ -233,6 +243,32 @@ public class ZosmfService extends AbstractZosmfService {
                 new HttpEntity<>(null, headers), String.class);
             return getAuthenticationResponse(response);
         } catch (RuntimeException re) {
+            throw handleExceptionOnCall(url, re);
+        }
+    }
+
+    /**
+     * PUT to provided url and return authentication response
+     *
+     * @param authentication
+     * @param url            String containing change password endpoint to be used
+     * @return AuthenticationResponse
+     */
+    protected AuthenticationResponse issueChangePasswordRequest(Authentication authentication, String url, HttpMethod httpMethod) {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+        try {
+            final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(
+                url,
+                httpMethod,
+                new HttpEntity<>(authentication.getCredentials(), headers), String.class);
+            return getAuthenticationResponse(response);
+        } catch (RuntimeException re) {
+            if (re instanceof HttpClientErrorException.NotFound) {
+                log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure that the PTF for APAR PH34912 " +
+                    "(https://www.ibm.com/support/pages/apar/PH34912) has been installed. ");
+                throw new AuthenticationServiceException("Error occurred while changing password.", re);
+            }
             throw handleExceptionOnCall(url, re);
         }
     }
