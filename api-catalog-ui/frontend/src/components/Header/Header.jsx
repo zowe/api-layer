@@ -37,7 +37,7 @@ export default class Header extends Component {
                 <div className="right-icons">
                     <div className="logout-container">
                         <Tooltip title="Logout">
-                            <IconButton data-testid="logout" onClick={this.handleLogout}>
+                            <IconButton id="logout-button" data-testid="logout" onClick={this.handleLogout}>
                                 {iconLogout}
                             </IconButton>
                         </Tooltip>
