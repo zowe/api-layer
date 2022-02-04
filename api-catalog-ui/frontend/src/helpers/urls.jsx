@@ -9,23 +9,23 @@
  */
 
 /**
- * Return base URL. It should work for environment where the API Catalog is behind the 
+ * Return base URL. It should work for environment where the API Catalog is behind the
  * gateway as well as in a standalone environments. It should also correctly work behind
- * the Gateway for different service ids for the API Catalog. 
- * 
+ * the Gateway for different service ids for the API Catalog.
+ *
  * @returns Valid Base Url without ending /
  */
 const getBaseUrl = () => {
     if (process.env.REACT_APP_GATEWAY_URL && process.env.REACT_APP_CATALOG_HOME) {
         return `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}`;
-    } 
+    }
 
-    const urlParts = window.location.pathname.split("/");
-    if (urlParts [1] == "ui") {
+    const urlParts = window.location.pathname.split('/');
+    if (urlParts[1] === 'ui') {
         return `${window.location.protocol}://${window.location.host}/${urlParts[0]}/${urlParts[1]}/${urlParts[2]}`;
-    } 
+    }
 
     return window.location.href;
-}
+};
 
 export default getBaseUrl;

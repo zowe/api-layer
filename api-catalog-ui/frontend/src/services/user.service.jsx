@@ -51,10 +51,7 @@ function logout() {
         },
     };
 
-    return fetch(
-        `${getBaseUrl()}/auth/logout`,
-        requestOptions
-    )
+    return fetch(`${getBaseUrl()}/auth/logout`, requestOptions)
         .then((data) => data)
         .catch((error) => {
             log.error('Logout process failed', error);
