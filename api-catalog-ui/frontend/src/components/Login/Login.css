@@ -109,6 +109,7 @@ form#login-form {
     background-color: #FCE4EC;
     margin-bottom: 20px;
     align-self: baseline;
+    width: 100%
 }
 #warn-message {
     padding: 20px;
@@ -126,6 +127,9 @@ form#login-form {
     margin: 0;
 }
 
+#FormHelperText {
+    color: #de1b1b;
+}
 .visibility-icon {
     padding: 6px !important;
 }

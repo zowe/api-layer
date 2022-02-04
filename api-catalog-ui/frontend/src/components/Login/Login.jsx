@@ -21,7 +21,6 @@ import {
     CardActions,
     Grid,
     Box,
-    Tooltip,
 } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
@@ -48,7 +47,7 @@ const Login = (props) => {
      */
     const onKeyDown = (keyEvent) => {
         setWarning(false);
-        if (keyEvent.keyCode === 20 || keyEvent.keyCode === 16) {
+        if (keyEvent.getModifierState('CapsLock')) {
             setWarning(true);
         } else {
             setWarning(false);
@@ -60,10 +59,10 @@ const Login = (props) => {
      * @param keyEvent On key up event.
      */
     const onKeyUp = (keyEvent) => {
-        if (keyEvent.keyCode === 20 || keyEvent.keyCode === 16) {
-            setWarning(false);
-        } else {
+        if (keyEvent.getModifierState('CapsLock')) {
             setWarning(true);
+        } else {
+            setWarning(false);
         }
     };
 
@@ -359,49 +358,43 @@ const Login = (props) => {
                                     }}
                                 />
                                 <br />
-                                <Tooltip
-                                    open={repeatNewPassword !== null && !authentication.matches}
-                                    disableFocusListener
-                                    disableHoverListener
-                                    disableTouchListener
-                                    placement="top"
-                                    title="Passwords do not match. Please make sure the passwords match."
-                                >
-                                    <TextField
-                                        id="repeatNewPassword"
-                                        htmlFor="outlined-adornment-password"
-                                        label="Repeat New Password"
-                                        data-testid="repeatNewPassword"
-                                        className="formfield"
-                                        variant="outlined"
-                                        required
-                                        error={error.invalidNewPassword}
-                                        fullWidth
-                                        name="repeatNewPassword"
-                                        type={showPassword ? 'text' : 'password'}
-                                        value={repeatNewPassword}
-                                        onKeyDown={onKeyDown}
-                                        onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
-                                        caption="Default: Repeat new password"
-                                        autoComplete="on"
-                                        InputProps={{
-                                            endAdornment: (
-                                                <InputAdornment position="end">
-                                                    {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
-                                                    <IconButton
-                                                        className="visibility-icon"
-                                                        aria-label="toggle password visibility"
-                                                        edge="end"
-                                                        onClick={() => handleClickShowPassword()}
-                                                    >
-                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                    />
-                                </Tooltip>
-                                {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
+                                <TextField
+                                    id="repeatNewPassword"
+                                    htmlFor="outlined-adornment-password"
+                                    label="Repeat New Password"
+                                    data-testid="repeatNewPassword"
+                                    className="formfield"
+                                    variant="outlined"
+                                    required
+                                    error={error.invalidNewPassword}
+                                    fullWidth
+                                    name="repeatNewPassword"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={repeatNewPassword}
+                                    onKeyDown={onKeyDown}
+                                    onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
+                                    caption="Default: Repeat new password"
+                                    autoComplete="on"
+                                    helperText="Passwords do not match."
+                                    FormHelperTextProps={{
+                                        error: repeatNewPassword !== null && !authentication.matches,
+                                    }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
+                                                <IconButton
+                                                    className="visibility-icon"
+                                                    aria-label="toggle password visibility"
+                                                    edge="end"
+                                                    onClick={() => handleClickShowPassword()}
+                                                >
+                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
                                 <div className="login-btns">
                                     <Button
                                         variant="outlined"
