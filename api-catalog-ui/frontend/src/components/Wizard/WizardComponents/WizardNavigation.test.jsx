@@ -8,8 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as enzyme from 'enzyme';
-import WizardNavigation from './WizardNavigation';
 import { IconDanger } from 'mineral-ui-icons';
+import WizardNavigation from './WizardNavigation';
 
 describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
@@ -20,7 +20,7 @@ describe('>>> Wizard navigation tests', () => {
             <WizardNavigation
                 selectedCategory={0}
                 inputData={[]}
-                navsObj={{ 'Nav1': {} }}
+                navsObj={{ Nav1: {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
@@ -39,7 +39,7 @@ describe('>>> Wizard navigation tests', () => {
             <WizardNavigation
                 selectedCategory={0}
                 inputData={[]}
-                navsObj={{ 'Nav1': {}, 'Nav2': {} }}
+                navsObj={{ Nav1: {}, Nav2: {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
@@ -58,7 +58,7 @@ describe('>>> Wizard navigation tests', () => {
             <WizardNavigation
                 selectedCategory={3}
                 inputData={[]}
-                navsObj={{ 'Nav1': {}, 'Nav2': {} }}
+                navsObj={{ Nav1: {}, Nav2: {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
@@ -119,7 +119,6 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 checkFilledInput={checkFilledInput}
-
             />
         );
         expect(wrapper.find('Tab').length).toEqual(2);
@@ -134,9 +133,11 @@ describe('>>> Wizard navigation tests', () => {
         const dummyData = [
             {
                 text: 'Category 1',
-                content: [{
-                    test: { value: 'val', question: 'Why?', },
-                },],
+                content: [
+                    {
+                        test: { value: 'val', question: 'Why?' },
+                    },
+                ],
                 help: 'Some additional information',
                 nav: 'Nav #1',
             },
@@ -149,7 +150,6 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 checkFilledInput={checkFilledInput}
-
             />
         );
         expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconDanger style={{ color: 'red' }} />);

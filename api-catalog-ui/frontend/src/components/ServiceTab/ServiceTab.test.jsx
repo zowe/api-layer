@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { shallow } from 'enzyme';
 import ServiceTab from './ServiceTab';
 
@@ -24,8 +33,8 @@ const selectedService = {
     ssoAllInstances: true,
     gatewayUrls: {
         'org.zowe v1': 'api/v1',
-        'org.zowe v2': 'api/v2'
-    }
+        'org.zowe v2': 'api/v2',
+    },
 };
 
 const tiles = {
@@ -53,21 +62,11 @@ describe('>>> ServiceTab component tests', () => {
 
         expect(serviceTab.find('Tooltip').exists()).toEqual(true);
         expect(serviceTab.find('Link').exists()).toEqual(true);
-        expect(
-            serviceTab
-                .find('Link')
-                .first()
-                .props().href
-        ).toEqual('https://localhost:10010/');
-        expect(
-            serviceTab
-                .find('Text')
-                .first()
-                .prop('children')
-        ).toEqual('API Gateway');
+        expect(serviceTab.find('Link').first().props().href).toEqual('https://localhost:10010/');
+        expect(serviceTab.find('Text').first().prop('children')).toEqual('API Gateway');
 
-        const checkValueItem = function(serviceTab, order, title, value) {
-            const row = serviceTab.find('Text').at(order);
+        const checkValueItem = function (serviceTabElement, order, title, value) {
+            const row = serviceTabElement.find('Text').at(order);
             expect(row.find('label').prop('children')).toEqual(title);
             expect(row.find('span').prop('children')).toEqual(value);
         };
@@ -75,26 +74,11 @@ describe('>>> ServiceTab component tests', () => {
         checkValueItem(serviceTab, 1, 'API Base Path:', '/gateway/api/v1');
         checkValueItem(serviceTab, 2, 'Service ID:', 'gateway');
         checkValueItem(serviceTab, 3, 'SSO:', 'supported');
-        expect(
-            serviceTab
-                .find('Text')
-                .at(4)
-                .prop('children')
-        ).toEqual(
+        expect(serviceTab.find('Text').at(4).prop('children')).toEqual(
             'API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.'
         );
-        expect(
-            serviceTab
-                .find('Text')
-                .at(5)
-                .prop('children')
-        ).toEqual('org.zowe v1');
-        expect(
-            serviceTab
-                .find('Text')
-                .at(6)
-                .prop('children')
-        ).toEqual('org.zowe v2');
+        expect(serviceTab.find('Text').at(5).prop('children')).toEqual('org.zowe v1');
+        expect(serviceTab.find('Text').at(6).prop('children')).toEqual('org.zowe v2');
     });
 
     it('should change selected version when clicking v2 api version', () => {
@@ -110,36 +94,13 @@ describe('>>> ServiceTab component tests', () => {
         serviceTab.setState({ selectedVersion: 'org.zowe v1' });
 
         let tabContainer = serviceTab.find('div').at(3);
-        expect(
-            tabContainer
-                .find('span')
-                .first()
-                .prop('style').backgroundColor
-        ).toEqual('#fff');
-        expect(
-            tabContainer
-                .find('span')
-                .at(1)
-                .prop('style').backgroundColor
-        ).toEqual(undefined);
+        expect(tabContainer.find('span').first().prop('style').backgroundColor).toEqual('#fff');
+        expect(tabContainer.find('span').at(1).prop('style').backgroundColor).toEqual(undefined);
 
-        tabContainer
-            .find('span')
-            .at(1)
-            .simulate('click');
+        tabContainer.find('span').at(1).simulate('click');
 
         tabContainer = serviceTab.find('div').at(3);
-        expect(
-            tabContainer
-                .find('span')
-                .at(1)
-                .prop('style').backgroundColor
-        ).toEqual('#fff');
-        expect(
-            tabContainer
-                .find('span')
-                .first()
-                .prop('style').backgroundColor
-        ).toEqual(undefined);
+        expect(tabContainer.find('span').at(1).prop('style').backgroundColor).toEqual('#fff');
+        expect(tabContainer.find('span').first().prop('style').backgroundColor).toEqual(undefined);
     });
 });

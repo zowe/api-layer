@@ -1,7 +1,15 @@
-/* eslint-disable no-undef */
-import ErrorDialog from './ErrorDialog';
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { shallow } from 'enzyme';
 import jest from 'jest-mock';
+import ErrorDialog from './ErrorDialog';
 
 describe('>>> ErrorDialog component tests', () => {
     it('should render the ErrorDialog if there is an error while refreshing apis', () => {

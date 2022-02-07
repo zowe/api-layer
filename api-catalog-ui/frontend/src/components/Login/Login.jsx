@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { Component } from 'react';
 import { Button, FormField, TextInput } from 'mineral-ui';
 import { IconDanger } from 'mineral-ui-icons';
@@ -26,7 +35,7 @@ export default class Login extends Component {
         return isFetching;
     };
 
-    handleError = error => {
+    handleError = (error) => {
         let messageText;
         const { authentication } = this.props;
         // eslint-disable-next-line global-require
@@ -39,7 +48,7 @@ export default class Login extends Component {
         ) {
             messageText = `Unexpected error, please try again later (${error.messageNumber})`;
             const filter = errorMessages.messages.filter(
-                x => x.messageKey != null && x.messageKey === error.messageNumber
+                (x) => x.messageKey != null && x.messageKey === error.messageNumber
             );
             if (filter.length !== 0) messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
         } else if (error.status === 401 && authentication.sessionOn) {
@@ -151,16 +160,15 @@ export default class Login extends Component {
                                                 }}
                                             />
                                         </FormField>
-                                        {messageText !== undefined &&
-                                            messageText !== null && (
-                                                <FormField className="error-message" label="">
-                                                    <div id="error-message">
-                                                        <p className="error-message-content">
-                                                            <IconDanger color="#de1b1b" size="2rem" /> {messageText}
-                                                        </p>
-                                                    </div>
-                                                </FormField>
-                                            )}
+                                        {messageText !== undefined && messageText !== null && (
+                                            <FormField className="error-message" label="">
+                                                <div id="error-message">
+                                                    <p className="error-message-content">
+                                                        <IconDanger color="#de1b1b" size="2rem" /> {messageText}
+                                                    </p>
+                                                </div>
+                                            </FormField>
+                                        )}
                                     </form>
                                 </div>
                             </div>

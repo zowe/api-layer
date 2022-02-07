@@ -1,6 +1,15 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
+import SwaggerUiReact, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 
@@ -46,14 +55,16 @@ export default class SwaggerUI extends Component {
                     allowTryItOutFor: () => () => true,
                 },
                 wrapActions: {
-                    updateLoadingStatus: ori => (...args) => {
-                        const [loadingStatus] = args;
-                        // eslint-disable-next-line react/no-unused-state
-                        this.setState({ isLoading: loadingStatus === 'loading' });
-                        // eslint-disable-next-line react/no-unused-state
-                        this.setState({ loadingStatus });
-                        return ori(...args);
-                    },
+                    updateLoadingStatus:
+                        (ori) =>
+                        (...args) => {
+                            const [loadingStatus] = args;
+                            // eslint-disable-next-line react/no-unused-state
+                            this.setState({ isLoading: loadingStatus === 'loading' });
+                            // eslint-disable-next-line react/no-unused-state
+                            this.setState({ loadingStatus });
+                            return ori(...args);
+                        },
                 },
             },
         },
@@ -68,7 +79,7 @@ export default class SwaggerUI extends Component {
                         <Original {...props} />
                     </div>
                 );
-            }
+            },
         },
     });
 
@@ -84,7 +95,7 @@ export default class SwaggerUI extends Component {
             ) {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
-                SwaggerUi({
+                SwaggerUiReact({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
                     presets: [presets.apis],
@@ -92,15 +103,17 @@ export default class SwaggerUI extends Component {
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
-                const url = `${process.env.REACT_APP_GATEWAY_URL +
+                const url = `${
+                    process.env.REACT_APP_GATEWAY_URL +
                     process.env.REACT_APP_CATALOG_HOME +
-                    process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/${selectedVersion}`;
-                SwaggerUi({
+                    process.env.REACT_APP_APIDOC_UPDATE
+                }/${selectedService.serviceId}/${selectedVersion}`;
+                SwaggerUiReact({
                     dom_id: '#swaggerContainer',
                     url,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
-                    responseInterceptor: res => {
+                    responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
                         const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
                         res.text = JSON.stringify(swagger);

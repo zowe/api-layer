@@ -8,8 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-
 import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
 import { selectService, clearService } from './selected-service-actions';
 

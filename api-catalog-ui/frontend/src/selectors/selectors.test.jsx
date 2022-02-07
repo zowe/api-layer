@@ -8,8 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/* eslint-disable no-undef */
-
 import { getVisibleTiles } from './selectors';
 
 const tiles = [

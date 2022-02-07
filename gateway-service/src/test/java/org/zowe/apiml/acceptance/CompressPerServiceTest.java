@@ -24,7 +24,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
 @AcceptanceTest
-public class CompressPerServiceTest extends AcceptanceTestWithTwoServices {
+class CompressPerServiceTest extends AcceptanceTestWithTwoServices {
     @Nested
     class GivenServiceAcceptsCompression {
         @Nested

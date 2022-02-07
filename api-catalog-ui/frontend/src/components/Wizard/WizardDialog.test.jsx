@@ -14,18 +14,24 @@ import { categoryData } from './configs/wizard_categories';
 describe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
         const wrapper = enzyme.shallow(
-            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} navsObj={{ 'Tab 1': {} }}
-                          wizardIsOpen />
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                inputData={categoryData}
+                navsObj={{ 'Tab 1': {} }}
+                wizardIsOpen
+            />
         );
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
     it('should create 0 inputs if content is an empty object', () => {
-        const dummyData = [
-            { text: 'Basic info', content: [], },
-        ];
+        const dummyData = [{ text: 'Basic info', content: [] }];
         const wrapper = enzyme.shallow(
-            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} navsObj={{ 'Basic info': {} }}
-                          wizardIsOpen />
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                inputData={dummyData}
+                navsObj={{ 'Basic info': {} }}
+                wizardIsOpen
+            />
         );
         expect(wrapper.find('TextInput').length).toEqual(0);
     });
@@ -36,8 +42,12 @@ describe('>>> WizardDialog tests', () => {
             },
         ];
         const wrapper = enzyme.shallow(
-            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} navsObj={{ 'Basic info': {} }}
-                          wizardIsOpen />
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                inputData={dummyData}
+                navsObj={{ 'Basic info': {} }}
+                wizardIsOpen
+            />
         );
         expect(wrapper.find('TextInput').length).toEqual(0);
     });
@@ -49,8 +59,12 @@ describe('>>> WizardDialog tests', () => {
             },
         ];
         const wrapper = enzyme.shallow(
-            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} navsObj={{ 'Basic info': {} }}
-                          wizardIsOpen />
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                inputData={dummyData}
+                navsObj={{ 'Basic info': {} }}
+                wizardIsOpen
+            />
         );
         expect(wrapper.find('TextInput').length).toEqual(0);
     });
@@ -81,7 +95,10 @@ describe('>>> WizardDialog tests', () => {
     it('should check all input on accessing the YAML tab', () => {
         const validateInput = jest.fn();
         const nextWizardCategory = jest.fn();
-        const dummyData = [{ text: 'Basic info', content: null, }, { text: 'IP info', content: null, }];
+        const dummyData = [
+            { text: 'Basic info', content: null },
+            { text: 'IP info', content: null },
+        ];
         const wrapper = enzyme.shallow(
             <WizardDialog
                 tiles={null}
@@ -105,7 +122,10 @@ describe('>>> WizardDialog tests', () => {
     it('should not validate all input when not accessing the YAML tab', () => {
         const validateInput = jest.fn();
         const nextWizardCategory = jest.fn();
-        const dummyData = [{ text: 'Basic info', content: null, }, { text: 'IP info', content: null, }];
+        const dummyData = [
+            { text: 'Basic info', content: null },
+            { text: 'IP info', content: null },
+        ];
         const wrapper = enzyme.shallow(
             <WizardDialog
                 tiles={null}
@@ -129,7 +149,7 @@ describe('>>> WizardDialog tests', () => {
         const wizardToggleDisplay = jest.fn();
         const refreshedStaticApi = jest.fn();
         const createYamlObject = jest.fn();
-        const dummyData = [{ text: 'Basic info', content: null, },];
+        const dummyData = [{ text: 'Basic info', content: null }];
         const wrapper = enzyme.shallow(
             <WizardDialog
                 tiles={null}
@@ -154,9 +174,7 @@ describe('>>> WizardDialog tests', () => {
     it('should invoke nextCategory on clicking "Next"', () => {
         const nextWizardCategory = jest.fn();
         const validateInput = jest.fn();
-        const dummyData = [
-            { text: 'Basic info', content: null, },
-        ];
+        const dummyData = [{ text: 'Basic info', content: null }];
         const wrapper = enzyme.shallow(
             <WizardDialog
                 inputData={dummyData}
@@ -181,12 +199,12 @@ describe('>>> WizardDialog tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog
-                enablerName={'Static Onboarding'}
+                enablerName="Static Onboarding"
                 inputData={dummyData}
                 selectedCategory={1}
                 navsObj={{ Basics: { 'Basic info': [[]] } }}
                 sendYAML={sendYAML}
-                userCanAutoOnboard={true}
+                userCanAutoOnboard
             />
         );
         const instance = wrapper.instance();
@@ -203,12 +221,12 @@ describe('>>> WizardDialog tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog
-                enablerName={'Static Onboarding'}
+                enablerName="Static Onboarding"
                 inputData={dummyData}
                 selectedCategory={1}
                 navsObj={{ Basics: { 'Basic info': [['key']], silent: true } }}
                 notifyError={notifyError}
-                userCanAutoOnboard={true}
+                userCanAutoOnboard
             />
         );
         const instance = wrapper.instance();

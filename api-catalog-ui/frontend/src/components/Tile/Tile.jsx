@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 import { CardStatus } from 'mineral-ui';
 import Card, { CardBlock, CardTitle } from 'mineral-ui/Card';
 import { Component } from 'react';
@@ -5,7 +14,7 @@ import { Component } from 'react';
 import './Tile.css';
 
 export default class Tile extends Component {
-    getStatusFromServiceTotals = tile => {
+    getStatusFromServiceTotals = (tile) => {
         const { status } = tile;
         let tileStatus = status;
         if (tileStatus === 'UP' && tile.totalServices !== tile.activeServices) {
@@ -14,9 +23,9 @@ export default class Tile extends Component {
         return tileStatus;
     };
 
-    getStatusTextFromServiceTotals = tile => `${tile.activeServices} of ${tile.totalServices} services are running`;
+    getStatusTextFromServiceTotals = (tile) => `${tile.activeServices} of ${tile.totalServices} services are running`;
 
-    getTileStatus = tile => {
+    getTileStatus = (tile) => {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
@@ -33,7 +42,7 @@ export default class Tile extends Component {
         }
     };
 
-    getTileStatusText = tile => {
+    getTileStatusText = (tile) => {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
@@ -58,7 +67,7 @@ export default class Tile extends Component {
 
     // not a great way to avoid overlapping text in a card block
     // Mineral bug
-    shortenDescription = description => {
+    shortenDescription = (description) => {
         if (description.length > 180) {
             return `${description.substring(0, 177)}...`;
         }

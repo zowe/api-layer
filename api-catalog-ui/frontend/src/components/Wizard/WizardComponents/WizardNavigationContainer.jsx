@@ -13,7 +13,7 @@ import WizardNavigation from './WizardNavigation';
 import { changeWizardCategory, nextWizardCategory, validateInput } from '../../../actions/wizard-actions';
 import { assertAuthorization } from '../../../actions/wizard-fetch-actions';
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     selectedCategory: state.wizardReducer.selectedCategory,
     inputData: state.wizardReducer.inputData,
     navsObj: state.wizardReducer.navsObj,
@@ -26,7 +26,4 @@ const mapDispatchToProps = {
     assertAuthorization,
 };
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(WizardNavigation);
+export default connect(mapStateToProps, mapDispatchToProps)(WizardNavigation);
