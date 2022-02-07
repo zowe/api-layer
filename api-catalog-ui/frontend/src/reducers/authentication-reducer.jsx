@@ -27,6 +27,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                 error: null,
                 user: action.user,
                 showHeader: true,
+                showUpdatePassSuccess: action.showUpdatePassSuccess,
             };
         case userConstants.USERS_LOGIN_FAILURE:
             return {
@@ -72,6 +73,11 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
             return {
                 error: action.error,
                 showHeader: false,
+            };
+        case userConstants.USERS_CLOSE_ALERT:
+            return {
+                ...state,
+                showUpdatePassSuccess: false,
             };
         default:
             return state;

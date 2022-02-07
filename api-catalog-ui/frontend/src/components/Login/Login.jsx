@@ -15,12 +15,15 @@ import {
     Button,
     CssBaseline,
     TextField,
-    Link,
     Card,
     CardContent,
     CardActions,
     Grid,
     Box,
+    FormControl,
+    OutlinedInput,
+    InputLabel,
+    FormHelperText,
 } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
@@ -31,8 +34,8 @@ import './Login.css';
 const Login = (props) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [newPassword, setNewPassword] = useState(null);
-    const [repeatNewPassword, setRepeatNewPassword] = useState(null);
+    const [newPassword, setNewPassword] = useState('');
+    const [repeatNewPassword, setRepeatNewPassword] = useState('');
     const [errorMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [warning, setWarning] = useState(false);
@@ -213,11 +216,11 @@ const Login = (props) => {
                                 <div id="error-message">
                                     <div id="warn-first-line">
                                         <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                        <Typography className="susp-msg" variant="body1" color="text.secondary">
+                                        <Typography className="susp-msg" variant="body1">
                                             {error.messageText}
                                         </Typography>
                                     </div>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant="body2">
                                         {error.expired && (
                                             <p>
                                                 {enterNewPassMsg} <b>{username}</b>
@@ -234,11 +237,11 @@ const Login = (props) => {
                                 <div id="warn-message">
                                     <div id="warn-first-line">
                                         <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                        <Typography className="susp-msg" variant="body1" color="text.secondary">
+                                        <Typography className="susp-msg" variant="body1">
                                             Password Expired
                                         </Typography>
                                     </div>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant="body2">
                                         Your Password for account <b>{username}</b> has expired. Enter a new password.
                                     </Typography>
                                 </div>
@@ -253,11 +256,12 @@ const Login = (props) => {
                                 </Typography>
                                 <TextField
                                     label="Username"
-                                    data-testid="username"
                                     className="formfield"
                                     variant="outlined"
+                                    data-testid="user"
                                     required
                                     error={!!error.messageText}
+                                    inputProps={{ 'data-testid': 'username' }}
                                     fullWidth
                                     id="username"
                                     name="username"
@@ -267,26 +271,24 @@ const Login = (props) => {
                                     autoFocus
                                 />
                                 <br />
-                                <TextField
-                                    id="password"
-                                    htmlFor="outlined-adornment-password"
-                                    label="Password"
-                                    data-testid="password"
-                                    className="formfield"
-                                    variant="outlined"
-                                    required
-                                    error={!!error.messageText}
-                                    fullWidth
-                                    name="password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onKeyDown={onKeyDown}
-                                    onKeyUp={onKeyUp}
-                                    onChange={(t) => handleChange(t.target, setPassword)}
-                                    caption="Default: password"
-                                    autoComplete="on"
-                                    InputProps={{
-                                        endAdornment: (
+                                <FormControl required fullWidth>
+                                    <InputLabel variant="outlined">Password</InputLabel>
+                                    <OutlinedInput
+                                        id="component-outlined"
+                                        className="formfield"
+                                        data-testid="pass"
+                                        aria-describedby="my-helper-text"
+                                        error={!!error.messageText}
+                                        name="password"
+                                        inputProps={{ 'data-testid': 'password' }}
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onKeyDown={onKeyDown}
+                                        onKeyUp={onKeyUp}
+                                        onChange={(t) => handleChange(t.target, setPassword)}
+                                        autoComplete="on"
+                                        label="Password"
+                                        endAdornment={
                                             <InputAdornment position="end">
                                                 {error.messageText && <WarningIcon className="errorIcon" />}
                                                 <IconButton
@@ -298,14 +300,19 @@ const Login = (props) => {
                                                     {showPassword ? <VisibilityOff /> : <Visibility />}
                                                 </IconButton>
                                             </InputAdornment>
-                                        ),
-                                    }}
-                                />
-                                {warning && (
-                                    <Link id="capslock" data-testid="caps-lock-on" underline="hover">
-                                        Caps Lock is ON!
-                                    </Link>
-                                )}
+                                        }
+                                    />
+                                    {warning && (
+                                        <FormHelperText
+                                            error
+                                            id="capslock"
+                                            data-testid="caps-lock-on"
+                                            underline="hover"
+                                        >
+                                            Caps Lock is ON!
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
                                 <div className="login-btns" id="loginButton">
                                     <Button
                                         variant="contained"
@@ -324,25 +331,21 @@ const Login = (props) => {
                         )}
                         {error.expired && (
                             <div>
-                                <TextField
-                                    id="newPassword"
-                                    htmlFor="outlined-adornment-password"
-                                    label="New Password"
-                                    data-testid="newPassword"
-                                    className="formfield"
-                                    variant="outlined"
-                                    required
-                                    error={error.invalidNewPassword}
-                                    fullWidth
-                                    name="newPassword"
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={newPassword}
-                                    onKeyDown={onKeyDown}
-                                    onChange={(t) => handleChange(t.target, setNewPassword)}
-                                    caption="Default: new password"
-                                    autoComplete="on"
-                                    InputProps={{
-                                        endAdornment: (
+                                <FormControl required fullWidth>
+                                    <InputLabel variant="outlined">New Password</InputLabel>
+                                    <OutlinedInput
+                                        id="newPass"
+                                        error={error.invalidNewPassword}
+                                        name="newPassword"
+                                        data-testid="newPassword"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={newPassword}
+                                        onKeyDown={onKeyDown}
+                                        onKeyUp={onKeyUp}
+                                        onChange={(t) => handleChange(t.target, setNewPassword)}
+                                        autoComplete="on"
+                                        label="New Password"
+                                        endAdornment={
                                             <InputAdornment position="end">
                                                 {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
                                                 <IconButton
@@ -354,33 +357,27 @@ const Login = (props) => {
                                                     {showPassword ? <VisibilityOff /> : <Visibility />}
                                                 </IconButton>
                                             </InputAdornment>
-                                        ),
-                                    }}
-                                />
+                                        }
+                                    />
+                                </FormControl>
                                 <br />
-                                <TextField
-                                    id="repeatNewPassword"
-                                    htmlFor="outlined-adornment-password"
-                                    label="Repeat New Password"
-                                    data-testid="repeatNewPassword"
-                                    className="formfield"
-                                    variant="outlined"
-                                    required
-                                    error={error.invalidNewPassword}
-                                    fullWidth
-                                    name="repeatNewPassword"
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={repeatNewPassword}
-                                    onKeyDown={onKeyDown}
-                                    onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
-                                    caption="Default: Repeat new password"
-                                    autoComplete="on"
-                                    helperText="Passwords do not match."
-                                    FormHelperTextProps={{
-                                        error: repeatNewPassword !== null && !authentication.matches,
-                                    }}
-                                    InputProps={{
-                                        endAdornment: (
+                                <FormControl required fullWidth>
+                                    <InputLabel variant="outlined">Repeat New Password</InputLabel>
+                                    <OutlinedInput
+                                        id="component-outlined"
+                                        aria-describedby="my-helper-text"
+                                        data-testid="repeatNewPassword"
+                                        error={error.invalidNewPassword}
+                                        name="repeatNewPassword"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={repeatNewPassword}
+                                        onKeyDown={onKeyDown}
+                                        onKeyUp={onKeyUp}
+                                        onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
+                                        caption="Default: Repeat new password"
+                                        autoComplete="on"
+                                        label="Repeat New Password"
+                                        endAdornment={
                                             <InputAdornment position="end">
                                                 {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
                                                 <IconButton
@@ -392,9 +389,24 @@ const Login = (props) => {
                                                     {showPassword ? <VisibilityOff /> : <Visibility />}
                                                 </IconButton>
                                             </InputAdornment>
-                                        ),
-                                    }}
-                                />
+                                        }
+                                    />
+                                    {repeatNewPassword && !authentication.matches && (
+                                        <FormHelperText error id="my-helper-text">
+                                            Passwords do not match.
+                                        </FormHelperText>
+                                    )}
+                                    {warning && (
+                                        <FormHelperText
+                                            error
+                                            id="capslock"
+                                            data-testid="caps-lock-on"
+                                            underline="hover"
+                                        >
+                                            Caps Lock is ON!
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
                                 <div className="login-btns">
                                     <Button
                                         variant="outlined"

@@ -20,6 +20,7 @@ import { filterText, clear } from '../../actions/filter-actions';
 import { createLoadingSelector, getVisibleTiles } from '../../selectors/selectors';
 import { clearError, refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 import { selectEnabler, wizardToggleDisplay } from '../../actions/wizard-actions';
+import { userActions } from '../../actions/user-actions';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 
@@ -30,6 +31,7 @@ const mapStateToProps = (state) => ({
     isLoading: loadingSelector(state),
     refreshedStaticApisError: state.refreshStaticApisReducer.error,
     refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
+    authentication: state.authenticationReducer,
 });
 
 const mapDispatchToProps = {
@@ -44,6 +46,7 @@ const mapDispatchToProps = {
     clearError,
     wizardToggleDisplay,
     selectEnabler,
+    closeAlert: () => userActions.closeAlert(),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
