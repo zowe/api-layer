@@ -10,7 +10,7 @@
         },
         {
             "messageKey": "ZWEAS120E",
-            "messageText": "Invalid username or password"
+            "messageText": "Invalid Credentials"
         },
         {
             "messageKey": "ZWEAT604E",
@@ -18,7 +18,7 @@
         },
         {
             "messageKey": "ZWEAT414E",
-            "messageText": "Account suspended"
+            "messageText": "Account Suspended"
         },
         {
             "messageKey": "ZWEAT413E",

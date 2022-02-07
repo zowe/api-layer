@@ -41,10 +41,6 @@
     }
 }
 
-#error-message {
-    margin-bottom: 20px;
-    align-self: baseline;
-}
 
 .w-form {
     display: inline-table;
@@ -53,8 +49,8 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
-    padding: 24px 24px 2px;
-    width: 344px;
+    padding: 24px;
+    width: 360px;
     height: 420px;
     left: 428px;
     top: calc(50% - 420px/2 - 0.29px);
@@ -71,7 +67,7 @@
 }
 
 form#login-form {
-    width: 294px;
+    width: 100%;
 }
 
 .product-title {
@@ -97,7 +93,6 @@ form#login-form {
 
 .login-btns{
     margin-top: 20px;
-    margin-bottom: 15px;
 }
 .cardTitle {
     background-color: #FCE4EC;
@@ -108,10 +103,19 @@ form#login-form {
 }
 
 #error-message {
-    padding: 20px;
+    padding: 16px;
     display: inline-block;
     color: #B71C1C;
     background-color: #FCE4EC;
+    margin-bottom: 20px;
+    align-self: baseline;
+    width: 100%
+}
+#warn-message {
+    padding: 20px;
+    display: inline-block;
+    color: #E65100;
+    background-color: #FFF3E0;
 }
 
 .login-inputs-container {
@@ -120,6 +124,14 @@ form#login-form {
 
 .errorIcon {
     color: #de1b1b;
+    margin: 0;
+}
+
+#FormHelperText {
+    color: #de1b1b;
+}
+.visibility-icon {
+    padding: 6px !important;
 }
 
 .logo-container {
@@ -134,4 +146,18 @@ form#login-form {
 
 .MuiFormControl-root {
     margin: 25px 0 !important;
+}
+
+.susp-acc {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.susp-msg {
+    margin-left: 15px !important;
+}
+
+#warn-first-line {
+    display: flex;
+    padding-bottom: 10px;
 }

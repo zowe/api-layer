@@ -93,7 +93,7 @@ describe('>>> Authentication reducer tests', () => {
             type: userConstants.USERS_LOGIN_INVALIDPASSWORD,
             error: 'error',
         };
-        expect(authenticationReducer({}, action)).toEqual({ error: 'error', expired: true });
+        expect(authenticationReducer({}, action)).toEqual({ error: 'error', expiredWarning: false });
     });
 
     it('should validate new password', () => {
@@ -105,13 +105,7 @@ describe('>>> Authentication reducer tests', () => {
             },
         };
         expect(authenticationReducer({}, action)).toEqual({
-            error: {
-                messageKey: 'org.zowe.apiml.security.common.passwordUpdate',
-                messageNumber: 'ZWEAT604E',
-                messageText: 'Passwords do not match',
-                messageType: 'ERROR',
-            },
-            expired: true,
+            matches: false,
         });
     });
 
@@ -124,8 +118,7 @@ describe('>>> Authentication reducer tests', () => {
             },
         };
         expect(authenticationReducer({}, action)).toEqual({
-            error: {},
-            expired: true,
+            matches: true,
         });
     });
 

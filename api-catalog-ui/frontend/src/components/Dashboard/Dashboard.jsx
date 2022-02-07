@@ -7,7 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Typography, IconButton } from '@material-ui/core';
+import { Typography, IconButton, Snackbar } from '@material-ui/core';
+import { Alert } from '@mui/material';
 import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -49,6 +50,11 @@ export default class Dashboard extends Component {
         wizardToggleDisplay();
     };
 
+    handleClose = () => {
+        const { closeAlert } = this.props;
+        closeAlert();
+    };
+
     render() {
         const {
             tiles,
@@ -59,6 +65,7 @@ export default class Dashboard extends Component {
             fetchTilesStop,
             refreshedStaticApisError,
             clearError,
+            authentication,
         } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
@@ -88,6 +95,15 @@ export default class Dashboard extends Component {
                     </IconButton>
                 </div>
                 <WizardContainer />
+                <Snackbar
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    open={authentication.showUpdatePassSuccess}
+                    onClose={this.handleClose}
+                >
+                    <Alert onClose={this.handleClose} severity="success" sx={{ width: '100%' }}>
+                        Your mainframe password was sucessfully changed.
+                    </Alert>
+                </Snackbar>
                 <ConfirmDialogContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (

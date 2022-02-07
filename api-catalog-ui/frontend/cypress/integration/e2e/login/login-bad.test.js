@@ -23,6 +23,6 @@ describe('>>> Login bad test', () => {
 
         cy.get('#error-message')
             .should('exist')
-            .should('contain', 'Invalid username or password');
+            .should('contain', 'Invalid Credentials');
     });
 });

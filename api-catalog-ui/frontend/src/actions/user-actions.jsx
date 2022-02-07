@@ -17,8 +17,8 @@ function login(credentials) {
         return { type: userConstants.USERS_LOGIN_REQUEST, user };
     }
 
-    function success(user) {
-        return { type: userConstants.USERS_LOGIN_SUCCESS, user };
+    function success(user, showUpdatePassSuccess) {
+        return { type: userConstants.USERS_LOGIN_SUCCESS, user, showUpdatePassSuccess };
     }
 
     function failure(error) {
@@ -27,18 +27,26 @@ function login(credentials) {
     function invalidPassword(error) {
         return { type: userConstants.USERS_LOGIN_INVALIDPASSWORD, error };
     }
-
+    function expiredPassword(error) {
+        return { type: userConstants.USERS_LOGIN_EXPIREDPASSWORD, error };
+    }
     return (dispatch) => {
         dispatch(request(credentials));
 
         userService.login(credentials).then(
             (token) => {
-                dispatch(success(token));
+                let showUpdatePassSuccess = false;
+                if (credentials.newPassword) {
+                    showUpdatePassSuccess = true;
+                }
+                dispatch(success(token, showUpdatePassSuccess));
                 history.push('/dashboard');
             },
             (error) => {
-                if (error.messageNumber === 'ZWEAT412E' || error.messageNumber === 'ZWEAT413E') {
+                if (error.messageNumber === 'ZWEAT413E') {
                     dispatch(invalidPassword(error));
+                } else if (error.messageNumber === 'ZWEAT412E') {
+                    dispatch(expiredPassword(error));
                 } else {
                     dispatch(failure(error));
                 }
@@ -92,12 +100,15 @@ function returnToLogin() {
     }
     return (dispatch) => {
         dispatch(clean());
-        history.push('/login');
     };
 }
 
 function validateInput(credentials) {
     return { type: userConstants.USERS_LOGIN_VALIDATE, credentials };
+}
+
+function closeAlert() {
+    return { type: userConstants.USERS_CLOSE_ALERT };
 }
 
 // eslint-disable-next-line
@@ -107,4 +118,5 @@ export const userActions = {
     authenticationFailure,
     returnToLogin,
     validateInput,
+    closeAlert,
 };

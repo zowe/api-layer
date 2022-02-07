@@ -7,9 +7,20 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';
+
+jest.mock('../Wizard/WizardContainer', () => () => {
+    const WizardContainer = 'WizardContainerMock';
+    return <WizardContainer />;
+});
+jest.mock('../Wizard/ConfirmDialogContainer', () => () => {
+    const ConfirmDialogContainer = 'ConfirmDialogContainerMock';
+    return <ConfirmDialogContainer />;
+});
 
 const ajaxError = {
     message: 'ajax Error 404',
@@ -30,6 +41,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         const button = wrapper.find('#refresh-api-button');
@@ -47,6 +59,7 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         expect(dashboard.find('#search_no_results').children().text()).toEqual(
@@ -65,6 +78,7 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         expect(dashboard.find('[data-testid="error"]').first().children().text()).toEqual(
@@ -83,6 +97,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={clear}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -102,6 +117,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -121,6 +137,7 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 inputData={categoryData}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -139,6 +156,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -178,9 +196,25 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
             />
         );
         const tile = dashboard.find('Tile');
         expect(tile.length).toEqual(1);
+    });
+
+    it('should display successful password change', () => {
+        render(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={{ showUpdatePassSuccess: true }}
+            />
+        );
+        expect(screen.getByText('Your mainframe password was sucessfully changed.')).toBeInTheDocument();
     });
 });

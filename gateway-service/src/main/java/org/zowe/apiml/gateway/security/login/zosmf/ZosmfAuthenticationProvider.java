@@ -74,7 +74,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         }
 
         // JWT and LTPA tokens are missing, authentication was wrong
-        throw new BadCredentialsException("Username or password are invalid.");
+        throw new BadCredentialsException("Invalid Credentials");
     }
 
     public TokenAuthentication getZosmfJwtToken(String user, ZosmfService.AuthenticationResponse ar) {
