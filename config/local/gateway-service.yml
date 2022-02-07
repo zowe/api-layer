@@ -8,7 +8,7 @@ apiml:
     security:
         allowTokenRefresh: true
         auth:
-            provider: dummy
+            provider: zosmf
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
             passTicket:

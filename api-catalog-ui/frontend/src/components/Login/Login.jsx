@@ -44,24 +44,12 @@ const Login = (props) => {
     const { returnToLogin, login, authentication, isFetching, validateInput } = props;
     const enterNewPassMsg = 'Enter a new password for account';
     const invalidPassMsg = 'The specified username or password is invalid.';
-    /**
-     * Detect caps lock being on when typing.
-     * @param keyEvent On key down event.
-     */
-    const onKeyDown = (keyEvent) => {
-        setWarning(false);
-        if (keyEvent.getModifierState('CapsLock')) {
-            setWarning(true);
-        } else {
-            setWarning(false);
-        }
-    };
 
     /**
      * Detect caps lock being off when typing.
      * @param keyEvent On key up event.
      */
-    const onKeyUp = (keyEvent) => {
+    const onKeyEvent = (keyEvent) => {
         if (keyEvent.getModifierState('CapsLock')) {
             setWarning(true);
         } else {
@@ -283,8 +271,8 @@ const Login = (props) => {
                                         inputProps={{ 'data-testid': 'password' }}
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
-                                        onKeyDown={onKeyDown}
-                                        onKeyUp={onKeyUp}
+                                        onKeyDown={onKeyEvent}
+                                        onKeyUp={onKeyEvent}
                                         onChange={(t) => handleChange(t.target, setPassword)}
                                         autoComplete="on"
                                         label="Password"
@@ -340,8 +328,8 @@ const Login = (props) => {
                                         data-testid="newPassword"
                                         type={showPassword ? 'text' : 'password'}
                                         value={newPassword}
-                                        onKeyDown={onKeyDown}
-                                        onKeyUp={onKeyUp}
+                                        onKeyDown={onKeyEvent}
+                                        onKeyUp={onKeyEvent}
                                         onChange={(t) => handleChange(t.target, setNewPassword)}
                                         autoComplete="on"
                                         label="New Password"
@@ -371,8 +359,8 @@ const Login = (props) => {
                                         name="repeatNewPassword"
                                         type={showPassword ? 'text' : 'password'}
                                         value={repeatNewPassword}
-                                        onKeyDown={onKeyDown}
-                                        onKeyUp={onKeyUp}
+                                        onKeyDown={onKeyEvent}
+                                        onKeyUp={onKeyEvent}
                                         onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
                                         caption="Default: Repeat new password"
                                         autoComplete="on"

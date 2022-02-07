@@ -48,7 +48,6 @@ const appRouter = app => {
         if (returnTimeout(credentials)) {
             res.status(500).send(timeout);
         } else if (validatePasswordUpdate(credentials)) {
-            console.log('PASSWORD UPDATE');
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
         } else if (isNewPasswordInvalid(credentials)){
             res.status(401).send(newPassNotValid);
