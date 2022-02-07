@@ -13,20 +13,25 @@
  * gateway as well as in a standalone environments. It should also correctly work behind
  * the Gateway for different service ids for the API Catalog.
  *
+ * @param pEnvironment {Optional} Provide environment to be used to get the Gateway URL
+ * @param pLocation {Optional} Provide custom location object
  * @returns Valid Base Url without ending /
  */
 
-const getBaseUrl = () => {
-    const urlParts = window.location.pathname.split('/');
+const getBaseUrl = (pEnvironment, pLocation) => {
+    const location = pLocation || window.location;
+    const environment = pEnvironment || process.env;
+
+    const urlParts = location.pathname.split('/');
     if (urlParts[2] === 'ui') {
-        return `${window.location.protocol}//${window.location.host}/${urlParts[1]}/api/${urlParts[3]}`;
+        return `${location.protocol}//${location.host}/${urlParts[1]}/api/${urlParts[3]}`;
     }
 
-    if (process.env.REACT_APP_GATEWAY_URL && process.env.REACT_APP_CATALOG_HOME) {
-        return `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}`;
+    if (environment.REACT_APP_GATEWAY_URL && environment.REACT_APP_CATALOG_HOME) {
+        return `${environment.REACT_APP_GATEWAY_URL}${environment.REACT_APP_CATALOG_HOME}`;
     }
 
-    return `${window.location.protocol}//${window.location.host}/apicatalog`;
+    return `${location.protocol}//${location.host}/apicatalog`;
 };
 
 export default getBaseUrl;
