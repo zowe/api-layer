@@ -7,21 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
-jest.mock("../Wizard/WizardContainer", () =>
-    () => {
-        const WizardContainer = "WizardContainerMock";
-        return <WizardContainer />;
-    });
-jest.mock("../Wizard/ConfirmDialogContainer", () =>
-    () => {
-        const ConfirmDialogContainer = "ConfirmDialogContainerMock";
-        return <ConfirmDialogContainer />;
-    });
+
+jest.mock('../Wizard/WizardContainer', () => () => {
+    const WizardContainer = 'WizardContainerMock';
+    return <WizardContainer />;
+});
+jest.mock('../Wizard/ConfirmDialogContainer', () => () => {
+    const ConfirmDialogContainer = 'ConfirmDialogContainerMock';
+    return <ConfirmDialogContainer />;
+});
+
 const ajaxError = {
     message: 'ajax Error 404',
     name: 'AjaxError',
@@ -204,15 +204,17 @@ describe('>>> Dashboard component tests', () => {
     });
 
     it('should display successful password change', () => {
-        render(<Dashboard
-            tiles={null}
-            fetchTilesStart={jest.fn()}
-            fetchTilesStop={jest.fn()}
-            clearService={jest.fn()}
-            clear={jest.fn()}
-            assertAuthorization={jest.fn()}
-            authentication={{showUpdatePassSuccess: true}}
-        />)
+        render(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={{ showUpdatePassSuccess: true }}
+            />
+        );
         expect(screen.getByText('Your mainframe password was sucessfully changed.')).toBeInTheDocument();
-    })
+    });
 });

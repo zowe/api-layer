@@ -85,9 +85,9 @@ describe('>>> Login page component tests', () => {
         const loginMock = jest.fn();
         render(<Login login={loginMock} />);
         const password = screen.getByTestId('password');
-        fireEvent.change(password, {target: {value: 'password'}});
+        fireEvent.change(password, { target: { value: 'password' } });
         const username = screen.getByTestId('username');
-        fireEvent.change(username, {target: {value: 'user'}});
+        fireEvent.change(username, { target: { value: 'user' } });
         const submit = screen.getByText('LOG IN');
         fireEvent.click(submit);
         expect(loginMock).toBeCalled();
@@ -168,8 +168,8 @@ describe('>>> Login page component tests', () => {
         render(<Login />);
 
         const password = screen.getByTestId('password');
-        fireEvent.keyDown(password, {key:'A', modifierCapsLock: true});
-        
+        fireEvent.keyDown(password, { key: 'A', modifierCapsLock: true });
+
         expect(screen.getByText('Caps Lock is ON!')).toBeInTheDocument();
     });
 
@@ -177,9 +177,8 @@ describe('>>> Login page component tests', () => {
         render(<Login />);
 
         const password = screen.getByTestId('password');
-        fireEvent.keyUp(password, {key:'A', modifierCapsLock: true});
-        
+        fireEvent.keyUp(password, { key: 'A', modifierCapsLock: true });
+
         expect(screen.getByText('Caps Lock is ON!')).toBeInTheDocument();
     });
-
 });
