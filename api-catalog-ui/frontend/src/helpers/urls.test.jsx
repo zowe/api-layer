@@ -8,14 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import getBaseUrl from "./urls";
+import getBaseUrl from './urls';
 
 describe('>>> Urls Tests', () => {
     it('should return the Gateway URL if used', () => {
         const environment = {
             REACT_APP_GATEWAY_URL: '',
-            REACT_APP_CATALOG_HOME: ''
-        }
+            REACT_APP_CATALOG_HOME: '',
+        };
 
         const location = {
             protocol: 'https:',
@@ -26,11 +26,11 @@ describe('>>> Urls Tests', () => {
         expect(getBaseUrl(environment, location)).toEqual('https://localhost:10010/apicatalog/api/v1');
     });
 
-    it('should return the information stored in env if the URL isn\'t the gateway one', () => {
+    it("should return the information stored in env if the URL isn't the gateway one", () => {
         const environment = {
             REACT_APP_GATEWAY_URL: 'https://localhost:10010',
-            REACT_APP_CATALOG_HOME: '/apicatalog/api/v1'
-        }
+            REACT_APP_CATALOG_HOME: '/apicatalog/api/v1',
+        };
 
         const location = {
             protocol: 'https:',
@@ -44,8 +44,8 @@ describe('>>> Urls Tests', () => {
     it('should return the current URL if none above, access via standalone Catalog', () => {
         const environment = {
             REACT_APP_GATEWAY_URL: '',
-            REACT_APP_CATALOG_HOME: ''
-        }
+            REACT_APP_CATALOG_HOME: '',
+        };
 
         const location = {
             protocol: 'https:',
