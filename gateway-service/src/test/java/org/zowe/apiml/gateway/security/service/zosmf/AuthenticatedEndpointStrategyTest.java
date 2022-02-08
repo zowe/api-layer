@@ -18,7 +18,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
