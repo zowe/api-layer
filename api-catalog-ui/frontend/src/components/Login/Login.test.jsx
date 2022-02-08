@@ -83,31 +83,24 @@ describe('>>> Login page component tests', () => {
 
     it('should submit username and password input', () => {
         const loginMock = jest.fn();
-
-        const page = enzyme.shallow(<Login login={loginMock} />);
-        page.find('[data-testid="username"]')
-            .first()
-            .simulate('change', { target: { name: 'username', value: 'user' } });
-
-        page.find('[data-testid="password"]')
-            .last()
-            .simulate('change', { target: { name: 'password', value: 'password' } });
-
-        page.find('form').simulate('submit', {
-            preventDefault: () => {},
-        });
-
-        expect(loginMock).toHaveBeenCalled();
+        render(<Login login={loginMock} />);
+        const password = screen.getByTestId('password');
+        fireEvent.change(password, { target: { value: 'password' } });
+        const username = screen.getByTestId('username');
+        fireEvent.change(username, { target: { value: 'user' } });
+        const submit = screen.getByText('LOG IN');
+        fireEvent.click(submit);
+        expect(loginMock).toBeCalled();
     });
 
     it('should display message if username and password are empty and submited', () => {
         const page = enzyme.shallow(<Login />);
 
-        page.find('[data-testid="username"]')
+        page.find('[data-testid="user"]')
             .first()
             .simulate('change', { target: { name: 'username', value: '' } });
 
-        page.find('[data-testid="password"]')
+        page.find('[data-testid="pass"]')
             .last()
             .simulate('change', { target: { name: 'password', value: '' } });
 
@@ -121,11 +114,11 @@ describe('>>> Login page component tests', () => {
     it('should enable login button if username and password are populated', () => {
         const page = enzyme.shallow(<Login />);
 
-        page.find('[data-testid="username"]')
+        page.find('[data-testid="user"]')
             .first()
             .simulate('change', { target: { name: 'username', value: 'user' } });
 
-        page.find('[data-testid="password"]')
+        page.find('[data-testid="pass"]')
             .last()
             .simulate('change', { target: { name: 'password', value: 'password' } });
 
@@ -148,13 +141,13 @@ describe('>>> Login page component tests', () => {
                         messageType: 'ERROR',
                         messageNumber: 'ZWEAS120E',
                         messageContent:
-                            "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+                            "Authentication problem: 'Invalid Credentials' for URL '/apicatalog/auth/login'",
                         messageKey: 'org.zowe.apiml.security.invalidUsername',
                     },
                 }}
             />
         );
-        expect(screen.getByText('Invalid username or password')).toBeInTheDocument();
+        expect(screen.getByText('Invalid Credentials')).toBeInTheDocument();
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
@@ -172,30 +165,20 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should track keydown event on capslock', () => {
-        const page = enzyme.shallow(<Login />);
-        page.find('[data-testid="password"]').last().simulate('keydown', { keyCode: 20 });
-        const label = page.find('#capslock');
-        expect(label.text()).toEqual('Caps Lock is ON!');
-    });
+        render(<Login />);
 
-    it('should track keydown event on shift', () => {
-        const page = enzyme.shallow(<Login />);
-        page.find('[data-testid="password"]').last().simulate('keydown', { keyCode: 16 });
-        const label = page.find('#capslock');
-        expect(label.text()).toEqual('Caps Lock is ON!');
+        const password = screen.getByTestId('password');
+        fireEvent.keyDown(password, { key: 'A', modifierCapsLock: true });
+
+        expect(screen.getByText('Caps Lock is ON!')).toBeInTheDocument();
     });
 
     it('should track keyup event on capslock', () => {
-        const page = enzyme.shallow(<Login />);
-        page.find('[data-testid="password"]').last().simulate('keyup', { keyCode: 20 });
-        const label = page.find('#capslock');
-        expect(label).toEqual({});
-    });
+        render(<Login />);
 
-    it('should track keyup event on shift', () => {
-        const page = enzyme.shallow(<Login />);
-        page.find('[data-testid="password"]').last().simulate('keyup', { keyCode: 16 });
-        const label = page.find('#capslock');
-        expect(label).toEqual({});
+        const password = screen.getByTestId('password');
+        fireEvent.keyUp(password, { key: 'A', modifierCapsLock: true });
+
+        expect(screen.getByText('Caps Lock is ON!')).toBeInTheDocument();
     });
 });

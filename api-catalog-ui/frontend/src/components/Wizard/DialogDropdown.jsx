@@ -87,7 +87,9 @@ export default class DialogDropdown extends Component {
                     }}
                 >
                     {this.state.data.map((itemType) => (
-                        <MenuItem onClick={this.handleClick}>{itemType.text}</MenuItem>
+                        <MenuItem key={itemType.text} onClick={this.handleClick}>
+                            {itemType.text}
+                        </MenuItem>
                     ))}
                 </Menu>
             </span>

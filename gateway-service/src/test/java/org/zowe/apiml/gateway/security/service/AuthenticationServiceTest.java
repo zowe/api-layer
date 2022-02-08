@@ -346,13 +346,13 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         )).when(authService).parseJwtToken(jwtToken);
         doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
 
-        Mockito.doThrow(new BadCredentialsException("Username or password are invalid.")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, jwtToken);
+        Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, jwtToken);
 
         Exception exception = assertThrows(BadCredentialsException.class, () -> {
             authService.invalidateJwtToken(jwtToken, false);
         });
 
-        assertEquals("Username or password are invalid.", exception.getMessage());
+        assertEquals("Invalid Credentials", exception.getMessage());
         verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, jwtToken);
     }
 

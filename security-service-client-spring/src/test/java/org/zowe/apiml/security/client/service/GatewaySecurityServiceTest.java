@@ -134,7 +134,7 @@ class GatewaySecurityServiceTest {
                 .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
             Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
-            assertEquals("Username or password are invalid.", exception.getMessage());
+            assertEquals("Invalid Credentials", exception.getMessage());
         }
 
         @Nested

@@ -27,6 +27,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                 error: null,
                 user: action.user,
                 showHeader: true,
+                showUpdatePassSuccess: action.showUpdatePassSuccess,
             };
         case userConstants.USERS_LOGIN_FAILURE:
             return {
@@ -42,26 +43,22 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
             };
         case userConstants.USERS_LOGIN_INVALIDPASSWORD:
             return {
+                ...state,
+                error: action.error,
+                expiredWarning: false,
+            };
+        case userConstants.USERS_LOGIN_EXPIREDPASSWORD:
+            return {
                 error: action.error,
                 expired: true,
+                expiredWarning: true,
             };
         case userConstants.USERS_LOGIN_INIT:
             return {};
         case userConstants.USERS_LOGIN_VALIDATE:
-            if (action.credentials.newPassword !== action.credentials.repeatNewPassword) {
-                return {
-                    error: {
-                        messageText: 'Passwords do not match',
-                        messageKey: 'org.zowe.apiml.security.common.passwordUpdate',
-                        messageNumber: 'ZWEAT604E',
-                        messageType: 'ERROR',
-                    },
-                    expired: true,
-                };
-            }
             return {
-                error: {},
-                expired: true,
+                ...state,
+                matches: action.credentials.newPassword === action.credentials.repeatNewPassword,
             };
         case userConstants.USERS_LOGOUT_REQUEST:
         case userConstants.USERS_LOGOUT_SUCCESS:
@@ -76,6 +73,11 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
             return {
                 error: action.error,
                 showHeader: false,
+            };
+        case userConstants.USERS_CLOSE_ALERT:
+            return {
+                ...state,
+                showUpdatePassSuccess: false,
             };
         default:
             return state;
