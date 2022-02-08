@@ -146,14 +146,14 @@ public class ZosmfService extends AbstractZosmfService {
         return authenticationResponse;
     }
 
-    @Retryable(value = {TokenNotValidException.class}, maxAttempts = 2, backoff = @Backoff(value = 1500))
-    public AuthenticationResponse changePassword(Authentication authentication) {
-        AuthenticationResponse authenticationResponse ;
-        authenticationResponse = issueChangePasswordRequest(
+    @Retryable(maxAttempts = 2, backoff = @Backoff(value = 1500))
+    public ResponseEntity<String> changePassword(Authentication authentication) {
+        ResponseEntity changePasswordResponse;
+        changePasswordResponse = issueChangePasswordRequest(
             authentication,
             getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
             HttpMethod.PUT);
-        return authenticationResponse;
+        return changePasswordResponse;
     }
 
     /**
@@ -254,15 +254,14 @@ public class ZosmfService extends AbstractZosmfService {
      * @param url            String containing change password endpoint to be used
      * @return AuthenticationResponse
      */
-    protected AuthenticationResponse issueChangePasswordRequest(Authentication authentication, String url, HttpMethod httpMethod) {
+    protected ResponseEntity<String> issueChangePasswordRequest(Authentication authentication, String url, HttpMethod httpMethod) {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
         try {
-            final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(
+            return restTemplateWithoutKeystore.exchange(
                 url,
                 httpMethod,
                 new HttpEntity<>(authentication.getCredentials(), headers), String.class);
-            return getAuthenticationResponse(response);
         } catch (RuntimeException re) {
             if (re instanceof HttpClientErrorException.NotFound) {
                 log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure that the PTF for APAR PH34912 " +
