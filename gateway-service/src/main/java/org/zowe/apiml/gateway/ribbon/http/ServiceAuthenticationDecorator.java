@@ -12,15 +12,17 @@ package org.zowe.apiml.gateway.ribbon.http;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpRequest;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
@@ -29,7 +31,7 @@ import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServi
 public class ServiceAuthenticationDecorator {
 
     private final ServiceAuthenticationService serviceAuthenticationService;
-    private final AuthenticationService authenticationService;
+    private final AuthSourceService authSourceService;
 
     /**
      * If a service requires authentication,
@@ -53,7 +55,8 @@ public class ServiceAuthenticationDecorator {
             AuthenticationCommand cmd;
 
             try {
-                final String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
+                final Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
+                final String jwtToken = authSource.map(JwtAuthSource::getSource).orElse(null);
 
                 cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
 
@@ -62,7 +65,7 @@ public class ServiceAuthenticationDecorator {
                 }
 
                 if (cmd.isRequiredValidJwt()
-                    && (jwtToken == null || !authenticationService.validateJwtToken(jwtToken).isAuthenticated())) {
+                    && (!authSource.isPresent() || !authSourceService.isValid(authSource.get()))) {
                     throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                 }
             }

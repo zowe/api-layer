@@ -14,6 +14,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
@@ -30,9 +31,10 @@ import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationSche
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.util.CacheUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -70,20 +72,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final AuthenticationService authenticationService;
+    private final AuthSourceService authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
     public Authentication getAuthentication(InstanceInfo instanceInfo) {
         return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
-    }
-
-    /**
-     * This method is only for testing purpose, to be set authenticationService in inner classes
-     *
-     * @return reference for AuthenticationService
-     */
-    protected AuthenticationService getAuthenticationService() {
-        return authenticationService;
     }
 
     @Override
@@ -159,19 +153,19 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             if (instanceInfo == null) throw new NullPointerException("Argument instanceInfo is required");
 
             final Authentication auth = getAuthentication(instanceInfo);
-            final RequestContext requestContext = RequestContext.getCurrentContext();
-            final HttpServletRequest request = requestContext.getRequest();
 
             AuthenticationCommand cmd = null;
 
             boolean rejected = false;
             try {
-                final String jwtToken = getAuthenticationService().getJwtTokenFromRequest(request).orElse(null);
+                final Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
+                final String jwtToken = authSource.map(JwtAuthSource::getSource).orElse(null);
+
                 cmd = getAuthenticationCommand(auth, jwtToken);
 
                 // if authentication schema required valid JWT, check it
                 if (cmd.isRequiredValidJwt()) {
-                    rejected = (jwtToken == null) || !authenticationService.validateJwtToken(jwtToken).isAuthenticated();
+                    rejected = (!authSource.isPresent()) || !authSourceService.isValid(authSource.get());
                 }
 
             } catch (AuthenticationException ae) {

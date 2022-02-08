@@ -36,11 +36,12 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
@@ -78,6 +79,9 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     private AuthenticationService authenticationService;
 
     @Autowired
+    private AuthSourceService authSourceService;
+
+    @Autowired
     private ServiceAuthenticationService serviceAuthenticationService;
 
     @Autowired
@@ -100,6 +104,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
                 new EurekaMetadataParser(),
                 authenticationSchemeFactory,
                 authenticationService,
+                authSourceService,
                 cacheManager,
                 new CacheUtils());
     }
@@ -416,11 +421,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
         Stubber stubber;
         if (StringUtils.equals(jwtToken, "validJwt")) {
-            stubber = doReturn(Optional.of(jwtToken));
+            stubber = doReturn(Optional.of(new JwtAuthSource(jwtToken)));
         } else {
             stubber = doThrow(new TokenNotValidException("Token is not valid."));
         }
-        stubber.when(getUnProxy(authenticationService)).getJwtTokenFromRequest(request);
+        stubber.when(getUnProxy(authSourceService)).getAuthSource();
         doReturn(ac).when(schema).createCommand(eq(authentication), argThat(x -> Objects.equals(x.get(), queryResponse)));
         doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
         doReturn(queryResponse).when(getUnProxy(authenticationService)).parseJwtToken("validJwt");
@@ -454,7 +459,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     @Test
     void givenValidExpiredJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
         doThrow(new TokenExpireException("Token is expired."))
-            .when(getUnProxy(authenticationService)).validateJwtToken("validJwt");
+            .when(getUnProxy(authSourceService)).isValid(any());
 
         try {
             testRequiredAuthentication(true, "validJwt");
@@ -466,8 +471,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
     @Test
     void givenValidJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
-        doReturn(TokenAuthentication.createAuthenticated("user", "pass"))
-            .when(getUnProxy(authenticationService)).validateJwtToken("validJwt");
+        doReturn(true)
+            .when(getUnProxy(authSourceService)).isValid(any());
 
         AuthenticationCommand ac = testRequiredAuthentication(true, "validJwt");
         verify(ac, times(1)).apply(any());
