@@ -104,8 +104,8 @@ export default class SwaggerUI extends Component {
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
-                const url = `${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/
-                    ${selectedService.serviceId}/${selectedVersion}`;
+                const basePath = `${selectedService.serviceId}/${selectedVersion}`;
+                const url = `${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     url,

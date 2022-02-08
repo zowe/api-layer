@@ -22,15 +22,23 @@ const getBaseUrl = (pEnvironment, pLocation) => {
     const location = pLocation || window.location;
     const environment = pEnvironment || process.env;
 
+    // Going through the Gateway
     const urlParts = location.pathname.split('/');
     if (urlParts[2] === 'ui') {
         return `${location.protocol}//${location.host}/${urlParts[1]}/api/${urlParts[3]}`;
     }
 
+    // Testing environment
     if (environment.REACT_APP_GATEWAY_URL && environment.REACT_APP_CATALOG_HOME) {
         return `${environment.REACT_APP_GATEWAY_URL}${environment.REACT_APP_CATALOG_HOME}`;
     }
 
+    // Local development environment
+    if (environment.REACT_APP_CATALOG_HOME) {
+        return `${location.protocol}//${location.host}${environment.REACT_APP_CATALOG_HOME}`;
+    }
+
+    // Standalone access to the Catalog
     return `${location.protocol}//${location.host}/apicatalog`;
 };
 
