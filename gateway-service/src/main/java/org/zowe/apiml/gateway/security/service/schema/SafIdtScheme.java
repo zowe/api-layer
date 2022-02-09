@@ -27,11 +27,9 @@ import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.util.CookieUtil;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.function.Supplier;
@@ -49,10 +47,16 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final PassTicketService passTicketService;
     private final SafIdtProvider safIdtProvider;
-    private final String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+
+    private String cookieName;
 
     @Value("${apiml.security.saf.defaultIdtExpiration:10}")
     private final int defaultIdtExpiration;
+
+    @PostConstruct
+    public void initCookieName() {
+        cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+    }
 
     @Override
     public AuthenticationScheme getScheme() {
