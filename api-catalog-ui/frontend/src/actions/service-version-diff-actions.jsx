@@ -8,6 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import getBaseUrl from '../helpers/urls';
+
 export const REQUEST_VERSION_DIFF = 'REQUEST_VERSION_DIFF';
 export const RECEIVE_VERSION_DIFF = 'RECEIVE_VERSION_DIFF';
 
@@ -33,13 +35,7 @@ export function getDiff(serviceId, oldVersion, newVersion) {
     return (dispatch) => {
         dispatch(request(serviceId, oldVersion, newVersion));
 
-        return fetch(
-            `${
-                process.env.REACT_APP_GATEWAY_URL +
-                process.env.REACT_APP_CATALOG_HOME +
-                process.env.REACT_APP_APIDOC_UPDATE
-            }/${serviceId}/${oldVersion}/${newVersion}`
-        )
+        return fetch(`${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${serviceId}/${oldVersion}/${newVersion}`)
             .then((response) => response.text())
             .then((text) => dispatch(receive(text)))
             .catch((e) => {

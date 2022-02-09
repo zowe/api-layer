@@ -9,6 +9,7 @@
  */
 import { toast } from 'react-toastify';
 import { OVERRIDE_DEF, TOGGLE_DISPLAY, WIZARD_VISIBILITY_TOGGLE } from '../constants/wizard-constants';
+import getBaseUrl from '../helpers/urls';
 
 export function notifySuccess() {
     toast.success('Automatic onboarding successful!', {
@@ -54,7 +55,7 @@ export function confirmStaticDefOverride() {
  * @param endpoint specifies whether to override or save the definition
  */
 function yamlEndpointConnect(yamlText, serviceId, endpoint) {
-    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/${endpoint}`;
+    const url = `${getBaseUrl()}/static-api/${endpoint}`;
     return (dispatch) => {
         fetch(url, {
             method: 'POST',

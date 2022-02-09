@@ -8,7 +8,7 @@ describe('>>> Swagger Test', () => {
         cy.get('button[type="submit"').as('submitButton');
 
         cy.get('#username').type(username);
-        cy.get('#password').type(password);
+        cy.get('input[name="password"]').type(password);
 
         cy.get('@submitButton').click();
 

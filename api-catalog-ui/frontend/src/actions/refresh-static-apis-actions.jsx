@@ -14,6 +14,7 @@ import {
     REFRESH_STATIC_APIS_ERROR,
     CLEAR_ERROR,
 } from '../constants/refresh-static-apis-constants';
+import getBaseUrl from '../helpers/urls';
 
 export function refreshStaticApisSuccess() {
     toast.success('The refresh of static APIs was successful!', {
@@ -37,7 +38,7 @@ export function refreshStaticApisError(error) {
 }
 
 export function refreshedStaticApi() {
-    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/refresh`;
+    const url = `${getBaseUrl()}/static-api/refresh`;
     return (dispatch) => {
         fetch(url, {
             method: 'POST',

@@ -24,6 +24,7 @@ function login(credentials) {
     function failure(error) {
         return { type: userConstants.USERS_LOGIN_FAILURE, error };
     }
+
     function invalidPassword(error) {
         return { type: userConstants.USERS_LOGIN_INVALIDPASSWORD, error };
     }
