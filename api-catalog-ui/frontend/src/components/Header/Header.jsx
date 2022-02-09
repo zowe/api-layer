@@ -8,19 +8,38 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import { IconButton, Link, Typography, Tooltip } from '@material-ui/core';
-import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
+import { Button, Link, Typography, Menu, MenuItem } from '@material-ui/core';
+import PersonIcon from '@material-ui/icons/Person';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
 import './Header.css';
 
 export default class Header extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isOpen: false,
+            anchorEl: null,
+        };
+        this.handleLogout = this.handleLogout.bind(this);
+        this.openMenu = this.openMenu.bind(this);
+        this.handleLogout = this.handleLogout.bind(this);
+    }
     handleLogout = () => {
         const { logout } = this.props;
         logout();
     };
 
+    closeMenu() {
+        this.setState({ isOpen: false });
+    }
+
+    openMenu(event) {
+        this.setState({ isOpen: true, anchorEl: event.target });
+    }
+
     render() {
-        const iconLogout = <PowerSettingsNewIcon id="logoutIcon" style={{ color: 'white' }} />;
+        const iconProfile = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
         const dashboard = 'ui/v1/apicatalog/#/dashboard';
         return (
             <div className="header">
@@ -36,11 +55,35 @@ export default class Header extends Component {
                 </div>
                 <div className="right-icons">
                     <div className="logout-container">
-                        <Tooltip title="Logout">
-                            <IconButton id="logout-button" data-testid="logout" onClick={this.handleLogout}>
-                                {iconLogout}
-                            </IconButton>
-                        </Tooltip>
+                        <Button
+                            aria-controls={this.state.isOpen ? 'basic-menu' : undefined}
+                            aria-expanded={this.state.isOpen ? 'true' : undefined}
+                            aria-haspopup="true"
+                            aria-label="more"
+                            onClick={this.openMenu}
+                            endIcon={<KeyboardArrowDownIcon />}
+                        >
+                            {iconProfile}
+                        </Button>
+                        <Menu
+                            keepMounted
+                            open={this.state.isOpen}
+                            onClose={this.closeMenu}
+                            anchorEl={this.state.anchorEl}
+                            getContentAnchorEl={null}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'center',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'center',
+                            }}
+                        >
+                            <MenuItem id="logout-button" data-testid="logout" onClick={this.handleLogout}>
+                                Sign out
+                            </MenuItem>
+                        </Menu>
                     </div>
                 </div>
             </div>

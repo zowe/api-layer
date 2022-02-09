@@ -13,13 +13,11 @@
 }
 
 #logout-button {
-    width: 50px;
     height: auto;
 }
 #logout-button:hover {
     background-color: #5691f0;
     transition: background-color .3s ease-in-out;
-    width: 50px;
     height: auto;
 }
 
@@ -44,4 +42,8 @@ span.MuiTypography-root {
 
 h6.MuiTypography-root.MuiTypography-subtitle2 {
     color: white;
+}
+
+#profileIcon {
+    margin-right: -14px;
 }
