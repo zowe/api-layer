@@ -15,7 +15,7 @@ describe('>>> Login bad test', () => {
         const user = { username: 'bad', password: 'bad' };
 
         cy.get('#username').type(user.username);
-        cy.get('#password').type(user.password);
+        cy.get('input[name="password"]').type(user.password);
         cy.get('button[type="submit"').as('submitButton');
         cy.get('@submitButton').click();
 
