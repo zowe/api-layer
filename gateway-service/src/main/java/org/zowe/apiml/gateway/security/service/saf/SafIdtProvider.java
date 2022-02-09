@@ -11,7 +11,7 @@ package org.zowe.apiml.gateway.security.service.saf;
 
 /**
  * It's possible to configure various SafIdtProviders. At the moment only one configured at the time is allowed.
- * If there are multiple providers configured, the behavior cam be unpredictable.
+ * If there are multiple providers configured, the behavior can be unpredictable.
  */
 public interface SafIdtProvider {
 

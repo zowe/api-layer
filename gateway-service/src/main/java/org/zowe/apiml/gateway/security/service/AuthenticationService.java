@@ -45,8 +45,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static org.zowe.apiml.gateway.security.service.AuthenticationUtils.getJwtClaims;
-import static org.zowe.apiml.gateway.security.service.AuthenticationUtils.handleJwtParserException;
+import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
+import static org.zowe.apiml.gateway.security.service.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 

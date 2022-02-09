@@ -13,9 +13,11 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -28,11 +30,13 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.util.CookieUtil;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.function.Supplier;
 
-import static org.zowe.apiml.gateway.security.service.AuthenticationUtils.getJwtClaims;
+import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
 /**
  * The scheme allowing for the safIdt authentication scheme.
@@ -45,6 +49,10 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final PassTicketService passTicketService;
     private final SafIdtProvider safIdtProvider;
+    private final String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+
+    @Value("${apiml.security.saf.defaultIdtExpiration:10}")
+    private final int defaultIdtExpiration;
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -60,27 +68,27 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         }
 
         final String userId = zoweToken.getUserId();
-        char[] passTicket = new char[0];
         final String applId = authentication.getApplid();
 
         String safIdentityToken;
         try {
-            passTicket = passTicketService.generate(userId, applId).toCharArray();
-            safIdentityToken = safIdtProvider.generate(userId, passTicket, applId);
+            char[] passTicket = passTicketService.generate(userId, applId).toCharArray();
+            try {
+                safIdentityToken = safIdtProvider.generate(userId, passTicket, applId);
+            } finally {
+                Arrays.fill(passTicket, (char) 0);
+            }
         } catch (IRRPassTicketGenerationException e) {
             throw new PassTicketException(
                     String.format("Could not generate PassTicket for user ID '%s' and APPLID '%s'", userId, applId), e
             );
-        } finally {
-            Arrays.fill(passTicket, (char) 0);
         }
 
         Claims claims = getJwtClaims(safIdentityToken);
         Date expirationDate = claims.getExpiration();
-        if (expirationDate == null)
-            throw new TokenExpireException("Token is expired.");
-
-        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+        if (expirationDate == null) {
+            expirationDate = DateUtils.addMinutes(new Date(), defaultIdtExpiration);
+        }
 
         return new SafIdtCommand(safIdentityToken, cookieName, expirationDate.getTime());
     }

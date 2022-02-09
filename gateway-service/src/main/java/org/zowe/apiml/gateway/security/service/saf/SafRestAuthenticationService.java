@@ -11,10 +11,13 @@ package org.zowe.apiml.gateway.security.service.saf;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
@@ -24,7 +27,6 @@ import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -41,10 +43,18 @@ import static org.springframework.util.StringUtils.isEmpty;
  */
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
 public class SafRestAuthenticationService implements SafIdtProvider {
 
     private final PassTicketService passTicketService;
     private final RestTemplate restTemplate;
+
+    static final HttpHeaders HEADER = new HttpHeaders();
+
+    static {
+        HEADER.setContentType(MediaType.APPLICATION_JSON);
+        HEADER.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+    }
 
     @Value("${apiml.security.saf.urls.authenticate}")
     String authenticationUrl;
@@ -53,18 +63,18 @@ public class SafRestAuthenticationService implements SafIdtProvider {
 
     @Override
     public String generate(String username, String applId) {
-        char[] passTicket = new char[0];
         try {
-            passTicket = passTicketService.generate(username, applId).toCharArray();
+            char[] passTicket = passTicketService.generate(username, applId).toCharArray();
+            try {
+                return generate(username, passTicket, applId);
+            } finally {
+                Arrays.fill(passTicket, (char) 0);
+            }
         } catch (IRRPassTicketGenerationException e) {
             throw new PassTicketException(
                     String.format("Could not generate PassTicket for user ID '%s' and APPLID '%s'", username, applId), e
             );
-        } finally {
-            Arrays.fill(passTicket, (char) 0);
         }
-
-        return generate(username, passTicket, applId);
     }
 
     @Override
@@ -79,7 +89,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             ResponseEntity<Token> response = restTemplate.exchange(
                     URI.create(authenticationUrl),
                     HttpMethod.POST,
-                    new HttpEntity<>(authentication, getHeaders()),
+                    new HttpEntity<>(authentication, HEADER),
                     Token.class);
 
             Token responseBody = response.getBody();
@@ -100,24 +110,16 @@ public class SafRestAuthenticationService implements SafIdtProvider {
         }
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
+            ResponseEntity<Void> response = restTemplate.exchange(
                     URI.create(verifyUrl),
                     HttpMethod.POST,
-                    new HttpEntity<>(new Token(safToken, applid), getHeaders()),
-                    String.class);
+                    new HttpEntity<>(new Token(safToken, applid), HEADER),
+                    Void.class);
 
             return response.getStatusCode().is2xxSuccessful();
         } catch (RestClientException e) {
             return false;
         }
-    }
-
-    private HttpHeaders getHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(new ArrayList<>(Collections.singletonList(MediaType.APPLICATION_JSON)));
-
-        return headers;
     }
 
     @Data

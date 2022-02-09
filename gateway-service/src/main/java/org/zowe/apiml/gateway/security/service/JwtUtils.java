@@ -20,7 +20,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 @Slf4j
 @UtilityClass
-public class AuthenticationUtils {
+public class JwtUtils {
 
     private static final String TOKEN_IS_NOT_VALID_DUE_TO = "Token is not valid due to: {}.";
 
@@ -29,7 +29,7 @@ public class AuthenticationUtils {
          * Removes signature, because we don't have key to verify z/OS tokens, and we just need to read claim.
          * Verification is done by SAF itself. JWT library doesn't parse signed key without verification.
          */
-        final String withoutSign = removeJwtSign(jwt);
+        String withoutSign = removeJwtSign(jwt);
 
         try {
             return Jwts.parserBuilder()
@@ -52,9 +52,8 @@ public class AuthenticationUtils {
     public static String removeJwtSign(String jwtToken) {
         if (jwtToken == null) return null;
 
-        final int index = jwtToken.indexOf('.');
-        final int index2 = jwtToken.indexOf('.', index + 1);
-        if (index2 > 0) return jwtToken.substring(0, index2 + 1);
+        final int index = jwtToken.lastIndexOf('.');
+        if (index > 0) return jwtToken.substring(0, index + 1);
 
         return jwtToken;
     }
