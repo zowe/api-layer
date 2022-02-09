@@ -9,22 +9,24 @@
  */
 package org.zowe.apiml.gateway.security.service.saf;
 
-import com.netflix.zuul.context.RequestContext;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.net.URI;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.springframework.util.StringUtils.isEmpty;
 
@@ -37,88 +39,101 @@ import static org.springframework.util.StringUtils.isEmpty;
  * - apiml.security.saf.urls.authenticate - URL to generate token
  * - apiml.security.saf.urls.verify - URL to verify the validity of the token
  */
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class SafRestAuthenticationService implements SafIdtProvider {
-    private final RestTemplate restTemplate;
-    private final AuthenticationService authenticationService;
+
     private final PassTicketService passTicketService;
+    private final RestTemplate restTemplate;
 
     @Value("${apiml.security.saf.urls.authenticate}")
     String authenticationUrl;
     @Value("${apiml.security.saf.urls.verify}")
     String verifyUrl;
-    @Value("${apiml.security.zosmf.applid:IZUDFLT}")
-    protected String zosmfApplId;
 
     @Override
-    public Optional<String> generate(String username) {
-        final RequestContext context = RequestContext.getCurrentContext();
-        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-        if (!jwtToken.isPresent()) {
-            return Optional.empty();
+    public String generate(String username, String applId) {
+        char[] passTicket = new char[0];
+        try {
+            passTicket = passTicketService.generate(username, applId).toCharArray();
+        } catch (IRRPassTicketGenerationException e) {
+            throw new PassTicketException(
+                    String.format("Could not generate PassTicket for user ID '%s' and APPLID '%s'", username, applId), e
+            );
+        } finally {
+            Arrays.fill(passTicket, (char) 0);
         }
 
-        TokenAuthentication tokenAuthentication = authenticationService.validateJwtToken(jwtToken.get());
-        if (!tokenAuthentication.isAuthenticated()) {
-            return Optional.empty();
-        }
+        return generate(username, passTicket, applId);
+    }
+
+    @Override
+    public String generate(String username, char[] password, String applId) {
+        Authentication authentication = Authentication.builder()
+                .username(username)
+                .pass(password)
+                .appl(applId)
+                .build();
 
         try {
-            Authentication authentication = new Authentication();
-            authentication.setJwt(jwtToken.get());
-            authentication.setUsername(username);
-            String passTicket = passTicketService.generate(username, zosmfApplId);
-            log.debug("Generated passticket: {}", passTicket);
-            authentication.setPass(passTicket);
+            ResponseEntity<Token> response = restTemplate.exchange(
+                    URI.create(authenticationUrl),
+                    HttpMethod.POST,
+                    new HttpEntity<>(authentication, getHeaders()),
+                    Token.class);
 
-            ResponseEntity<Token> re = restTemplate.postForEntity(URI.create(authenticationUrl), authentication, Token.class);
-
-            if (!re.getStatusCode().is2xxSuccessful()) {
-                return Optional.empty();
-            }
-
-            Token responseBody = re.getBody();
+            Token responseBody = response.getBody();
             if (responseBody == null) {
-                return Optional.empty();
+                throw new SafIdtException("ZSS authentication service has not returned the Identity token");
             }
 
-            return Optional.of(responseBody.getJwt());
-        } catch (HttpClientErrorException.Unauthorized e) {
-            return Optional.empty();
-        }
-        catch (IRRPassTicketGenerationException e) {
-            throw new AuthenticationTokenException("Problem with generating PassTicket");
+            return responseBody.getJwt();
+        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden e) {
+            throw new SafIdtException("Unable to connect to ZSS authentication service", e);
         }
     }
 
     @Override
-    public boolean verify(String safToken) {
+    public boolean verify(String safToken, String applid) {
         if (isEmpty(safToken)) {
             return false;
         }
 
         try {
-            Token token = new Token();
-            token.setJwt(safToken);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    URI.create(verifyUrl),
+                    HttpMethod.POST,
+                    new HttpEntity<>(new Token(safToken, applid), getHeaders()),
+                    String.class);
 
-            ResponseEntity<String> re = restTemplate.postForEntity(URI.create(verifyUrl), token, String.class);
-
-            return re.getStatusCode().is2xxSuccessful();
-        } catch (HttpClientErrorException.Unauthorized e) {
+            return response.getStatusCode().is2xxSuccessful();
+        } catch (RestClientException e) {
             return false;
         }
     }
 
-    @Data
-    public static class Token {
-        String jwt;
+    private HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(new ArrayList<>(Collections.singletonList(MediaType.APPLICATION_JSON)));
+
+        return headers;
     }
 
     @Data
-    public static class Authentication {
+    @AllArgsConstructor
+    public static class Token {
         String jwt;
-        String username;
-        String pass;
+        String applid;
     }
+
+    @lombok.Value
+    @Builder
+    public static class Authentication {
+        String username;
+        @JsonSerialize(using = StdArraySerializers.CharArraySerializer.class)
+        char[] pass;
+        String appl;
+    }
+
 }
