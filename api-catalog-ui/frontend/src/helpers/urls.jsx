@@ -39,7 +39,7 @@ const getBaseUrl = (pEnvironment, pLocation) => {
     }
 
     // Standalone access to the Catalog
-    return `${location.protocol}//${location.host}/apicatalog`;
+    return location.href;
 };
 
 export default getBaseUrl;

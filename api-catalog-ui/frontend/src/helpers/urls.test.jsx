@@ -56,7 +56,7 @@ describe('>>> Urls Tests', () => {
         expect(getBaseUrl(environment, location)).toEqual('https://localhost:3000/apicatalog/api/v1');
     });
 
-    it('should return the current URL if none above, access via standalone Catalog', () => {
+    it('should return the current default URL if none above, access via standalone Catalog', () => {
         const environment = {
             REACT_APP_GATEWAY_URL: '',
             REACT_APP_CATALOG_HOME: '',
@@ -66,6 +66,7 @@ describe('>>> Urls Tests', () => {
             protocol: 'https:',
             host: 'localhost:10014',
             pathname: '/apicatalog',
+            href: 'https://localhost:10014/apicatalog',
         };
 
         expect(getBaseUrl(environment, location)).toEqual('https://localhost:10014/apicatalog');
