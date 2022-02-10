@@ -9,11 +9,30 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import java.io.Serializable;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public class JwtAuthSource {
+public class JwtAuthSource implements Serializable {
     private final String source;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        JwtAuthSource that = (JwtAuthSource) o;
+        return source.equals(that.source);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(source);
+    }
 }

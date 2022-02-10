@@ -68,10 +68,11 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
 
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("token")));
+        JwtAuthSource authSource = new JwtAuthSource("token");
+        when(authSourceService.getAuthSource()).thenReturn(Optional.of(authSource));
 
         serviceAuthenticationFilter.run();
-        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", "token");
+        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", authSource);
         verify(command, times(1)).apply(null);
 
         when(authSourceService.getAuthSource()).thenReturn(Optional.empty());
@@ -102,14 +103,15 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     }
 
     private AuthenticationCommand createJwtValidationCommand(String jwtToken) {
+        JwtAuthSource authSource = new JwtAuthSource(jwtToken);
         RequestContext requestContext = mock(RequestContext.class);
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
-        doReturn(Optional.of(new JwtAuthSource(jwtToken))).when(authSourceService).getAuthSource();
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSource();
 
         AuthenticationCommand cmd = mock(AuthenticationCommand.class);
-        doReturn(cmd).when(serviceAuthenticationService).getAuthenticationCommand("service", jwtToken);
-        doReturn(true).when(cmd).isRequiredValidJwt();
+        doReturn(cmd).when(serviceAuthenticationService).getAuthenticationCommand("service", authSource);
+        doReturn(true).when(cmd).isRequiredValidSource();
 
         return cmd;
     }

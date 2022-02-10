@@ -65,12 +65,11 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         try {
             Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
-            String jwtToken = authSource.map(JwtAuthSource::getSource).orElse(null);
-            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
+            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authSource.orElse(null));
 
             // Verify JWT validity if it is required for the schema
             if (
-                (authSource.isPresent()) && cmd.isRequiredValidJwt() &&
+                (authSource.isPresent()) && cmd.isRequiredValidSource() &&
                 !authSourceService.isValid(authSource.get())
             ) {
                     rejected = true;

@@ -56,15 +56,13 @@ public class ServiceAuthenticationDecorator {
 
             try {
                 final Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
-                final String jwtToken = authSource.map(JwtAuthSource::getSource).orElse(null);
-
-                cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
+                cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, authSource.orElse(null));
 
                 if (cmd == null) {
                     return;
                 }
 
-                if (cmd.isRequiredValidJwt()
+                if (cmd.isRequiredValidSource()
                     && (!authSource.isPresent() || !authSourceService.isValid(authSource.get()))) {
                     throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                 }

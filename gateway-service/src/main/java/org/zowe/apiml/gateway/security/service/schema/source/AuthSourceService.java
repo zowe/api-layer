@@ -49,4 +49,8 @@ public class AuthSourceService {
     public QueryResponse parse(JwtAuthSource authSource) {
         return authenticationService.parseJwtToken(authSource.getSource());
     }
+
+    public String getLtpaTokenWithValidation(String jwtToken) {
+        return authenticationService.getLtpaTokenWithValidation(jwtToken);
+    }
 }

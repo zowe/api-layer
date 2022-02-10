@@ -131,25 +131,26 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     private void prepareContext(AuthenticationCommand command) {
+        JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of(new JwtAuthSource("jwtToken"))).when(authSourceService).getAuthSource();
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSource();
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
-        when(serviceAuthenticationService.getAuthenticationCommand(authentication, "jwtToken")).thenReturn(command);
-        doReturn(true).when(command).isRequiredValidJwt();
+        when(serviceAuthenticationService.getAuthenticationCommand(authentication, authSource)).thenReturn(command);
+        doReturn(true).when(command).isRequiredValidSource();
     }
 
     private void prepareWrongContextForCmdNull(AuthenticationCommand command) {
-
+        JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of(new JwtAuthSource("jwtToken"))).when(authSourceService).getAuthSource();
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSource();
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
-        when(serviceAuthenticationService.getAuthenticationCommand(authentication, "jwtToken")).thenReturn(null);
-        doReturn(true).when(command).isRequiredValidJwt();
+        when(serviceAuthenticationService.getAuthenticationCommand(authentication, authSource)).thenReturn(null);
+        doReturn(true).when(command).isRequiredValidSource();
     }
 }

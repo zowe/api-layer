@@ -45,7 +45,7 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return false;
         }
 
@@ -66,7 +66,7 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * @return true is valid token is required, otherwise false
      */
 
-    public abstract boolean isRequiredValidJwt();
+    public abstract boolean isRequiredValidSource();
 
     /**
      * Used for deferred processing of command during Ribbon Retry.

@@ -71,7 +71,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
-    private final AuthenticationService authenticationService;
     private final AuthSourceService authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
@@ -83,10 +82,9 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, JwtAuthSource authSource) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
-        if (jwtToken == null) return scheme.createCommand(authentication, () -> null);
-        return scheme.createCommand(authentication, () -> authenticationService.parseJwtToken(jwtToken));
+        return scheme.createCommand(authentication, authSource);
     }
 
     @Override
@@ -97,7 +95,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, JwtAuthSource authSource) {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
@@ -119,7 +117,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         // if no instance exist or no metadata found, do nothing
         if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
 
-        return getAuthenticationCommand(found, jwtToken);
+        return getAuthenticationCommand(found, authSource);
     }
 
     @Override
@@ -159,12 +157,10 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             boolean rejected = false;
             try {
                 final Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
-                final String jwtToken = authSource.map(JwtAuthSource::getSource).orElse(null);
-
-                cmd = getAuthenticationCommand(auth, jwtToken);
+                cmd = getAuthenticationCommand(auth, authSource.orElse(null));
 
                 // if authentication schema required valid JWT, check it
-                if (cmd.isRequiredValidJwt()) {
+                if (cmd.isRequiredValidSource()) {
                     rejected = (!authSource.isPresent()) || !authSourceService.isValid(authSource.get());
                 }
 
@@ -185,7 +181,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return false;
         }
 
@@ -211,7 +207,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return false;
         }
 

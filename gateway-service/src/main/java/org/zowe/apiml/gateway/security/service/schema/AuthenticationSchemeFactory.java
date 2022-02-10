@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -84,11 +83,7 @@ public class AuthenticationSchemeFactory {
             scheme = getSchema(authentication.getScheme());
         }
 
-        final QueryResponse jwtQr = authSourceService.getAuthSource()
-            .map(x -> authSourceService.parse(x))
-            .orElse(null);
-
-        return scheme.createCommand(authentication, () -> jwtQr);
+        return scheme.createCommand(authentication, authSourceService.getAuthSource().orElse(null));
     }
 
 }

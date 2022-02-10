@@ -17,13 +17,12 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
-import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
-import java.util.function.Supplier;
 
 /**
  * This schema adds requested information about client certificate. This information is added
@@ -42,7 +41,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
+    public AuthenticationCommand createCommand(Authentication authentication, JwtAuthSource authSource) {
         String[] headers;
         if (StringUtils.isEmpty(authentication.getHeaders())) {
             headers = ALL_HEADERS.split(",");
@@ -122,7 +121,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return false;
         }
 

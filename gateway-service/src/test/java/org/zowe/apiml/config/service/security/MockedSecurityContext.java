@@ -59,7 +59,6 @@ public class MockedSecurityContext {
                 getDiscoveryClient(),
                 getEurekaMetadataParser(),
                 getAuthenticationSchemeFactory(),
-                getAuthenticationService(),
                 getAuthSourceService(),
                 cacheManager,
                 cacheUtils
