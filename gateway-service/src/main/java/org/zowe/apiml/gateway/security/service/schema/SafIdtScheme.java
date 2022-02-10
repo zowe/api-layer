@@ -17,9 +17,8 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 
 import java.util.Optional;
 
@@ -30,7 +29,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class SafIdtScheme implements AbstractAuthenticationScheme {
-    private final AuthSourceService authSourceService;
+    private final AuthSourceServiceImpl authSourceService;
     private final SafIdtProvider safIdtProvider;
 
     @Override
@@ -39,10 +38,10 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, JwtAuthSource authSource) {
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         // Same behavior as for the ZosmfScheme.
-        final QueryResponse queryResponse = authSourceService.parse(authSource);
-        final Date expiration = queryResponse == null ? null : queryResponse.getExpiration();
+        final AuthSource.Parsed parsedSource = authSourceService.parse(authSource);
+        final Date expiration = parsedSource == null ? null : parsedSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
         return new SafIdtCommand(expirationTime);
     }
@@ -55,12 +54,12 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
 
-            Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
+            Optional<AuthSource> authSource = authSourceService.getAuthSource();
             authSource.ifPresent(token -> {
                 if (authSourceService.isValid(token)) {
-                    QueryResponse queryResponse = authSourceService.parse(token);
+                    AuthSource.Parsed parsedSource = authSourceService.parse(token);
                     // Get principal from the token?
-                    Optional<String> safIdt = safIdtProvider.generate(queryResponse.getUserId());
+                    Optional<String> safIdt = safIdtProvider.generate(parsedSource.getUserId());
 
                     safIdt.ifPresent(safToken -> context.addZuulRequestHeader("X-SAF-Token", safToken));
                 }

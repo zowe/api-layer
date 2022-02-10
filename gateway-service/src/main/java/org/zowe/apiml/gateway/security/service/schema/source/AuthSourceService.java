@@ -9,48 +9,39 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.stereotype.Service;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.security.common.token.QueryResponse;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-@EnableAspectJAutoProxy(proxyTargetClass = true)
-public class AuthSourceService {
-    @Autowired
-    private AuthenticationService authenticationService;
+/**
+ * Interface represents main methods of service for getting the source of authentication and process it.
+ */
+public interface AuthSourceService {
 
+    /**
+     * Core method of the interface. Gets specific source of authentication from request and defines precedence
+     * in case if more than one source is present.
+     * @return AuthSource object which hold original source of authentication (token or client certificate)
+     */
+    Optional<AuthSource> getAuthSource();
 
-    public Optional<JwtAuthSource> getAuthSource() {
-        final RequestContext context = RequestContext.getCurrentContext();
+    /**
+     * Implements validation logic for specific source of authentication.
+     * For example validates JWT token with z/OSMF or APIML or perform user mapping for client certificate.
+     * @param authSource AuthSource object which hold original source of authentication (token or client certificate)
+     * @return true if authentication source is valid
+     */
+    boolean isValid(AuthSource authSource);
 
-        String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
-        if (jwtToken != null) {
-            return Optional.of(new JwtAuthSource(jwtToken));
-        }
+    /**
+     * Parses the source of authentication and provides basic detials like userId or expiration date.
+     * @param authSource
+     * @return
+     */
+    AuthSource.Parsed parse(AuthSource authSource);
 
-        return Optional.empty();
-    }
-
-    public boolean isValid(JwtAuthSource authSource) {
-        return authenticationService.validateJwtToken(authSource.getSource()).isAuthenticated();
-    }
-
-    public QueryResponse parse(JwtAuthSource authSource) {
-        return authenticationService.parseJwtToken(authSource.getSource());
-    }
-
-    public String getLtpaTokenWithValidation(String jwtToken) {
-        return authenticationService.getLtpaTokenWithValidation(jwtToken);
-    }
+    /**
+     * Generates LTPA token from current source of authentication.
+     * @param AuthSource object which hold original source of authentication (token or client certificate)
+     * @return LTPA token
+     */
+    String getLtpaToken(AuthSource authSource);
 }

@@ -9,15 +9,22 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import java.io.Serializable;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Implementation of JWT token source of authentication.
+ */
 @RequiredArgsConstructor
 @Getter
-public class JwtAuthSource implements Serializable {
+public class JwtAuthSource implements AuthSource {
     private final String source;
+
+    @Override
+    public String getSource() {
+        return source;
+    }
 
     @Override
     public boolean equals(Object o) {

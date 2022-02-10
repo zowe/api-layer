@@ -16,9 +16,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.QueryResponse.Source;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -32,12 +32,12 @@ import static org.mockito.Mockito.when;
 
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
-    private AuthSourceService authSourceService;
+    private AuthSourceServiceImpl authSourceService;
     private SafRestAuthenticationService safAuthenticationService;
 
     @BeforeEach
     void setUp() {
-        authSourceService = mock(AuthSourceService.class);
+        authSourceService = mock(AuthSourceServiceImpl.class);
         safAuthenticationService = mock(SafRestAuthenticationService.class);
         underTest = new SafIdtScheme(authSourceService, safAuthenticationService);
     }
@@ -64,7 +64,7 @@ class SafIdtSchemeTest {
 
                 when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("validJwtToken")));
                 when(authSourceService.isValid(new JwtAuthSource("validJwtToken"))).thenReturn(true);
-                when(authSourceService.parse(new JwtAuthSource("validJwtToken"))).thenReturn(new QueryResponse("domain", validUsername, new Date(), new Date(), Source.ZOWE));
+                when(authSourceService.parse(new JwtAuthSource("validJwtToken"))).thenReturn(new Parsed(validUsername, new Date(), new Date(), Source.ZOWE));
                 when(safAuthenticationService.generate(validUsername)).thenReturn(Optional.of("validTokenValidJwtToken"));
 
                 commandUnderTest.apply(info);

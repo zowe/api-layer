@@ -31,8 +31,8 @@ import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationSche
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.util.List;
@@ -71,7 +71,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
-    private final AuthSourceService authSourceService;
+    private final AuthSourceServiceImpl authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
@@ -82,7 +82,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, JwtAuthSource authSource) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         return scheme.createCommand(authentication, authSource);
     }
@@ -95,7 +95,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, JwtAuthSource authSource) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, AuthSource authSource) {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
@@ -156,7 +156,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
             boolean rejected = false;
             try {
-                final Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
+                final Optional<AuthSource> authSource = authSourceService.getAuthSource();
                 cmd = getAuthenticationCommand(auth, authSource.orElse(null));
 
                 // if authentication schema required valid JWT, check it

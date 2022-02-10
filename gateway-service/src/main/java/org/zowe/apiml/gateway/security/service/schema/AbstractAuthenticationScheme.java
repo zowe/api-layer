@@ -11,7 +11,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 
 /**
@@ -33,7 +33,7 @@ public interface AbstractAuthenticationScheme {
      * @param authentication DTO describing details about authentication
      * @param authSource User's parsed (Zowe's) JWT token, evaluated only, if needed
      */
-    AuthenticationCommand createCommand(Authentication authentication, JwtAuthSource authSource);
+    AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource);
 
     /**
      * Define implementation, which will be use in case no scheme is defined.

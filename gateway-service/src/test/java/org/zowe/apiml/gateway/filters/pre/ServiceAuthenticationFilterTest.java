@@ -23,7 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -48,7 +48,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     private AuthenticationCommand command;
 
     @Mock
-    private AuthSourceService authSourceService;
+    private AuthSourceServiceImpl authSourceService;
 
     @Test
     void testConfig() {

@@ -19,8 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
@@ -38,7 +38,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
 
     @Autowired
-    private AuthSourceService authSourceService;
+    private AuthSourceServiceImpl authSourceService;
 
     @Override
     public String filterType() {
@@ -64,7 +64,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         try {
-            Optional<JwtAuthSource> authSource = authSourceService.getAuthSource();
+            Optional<AuthSource> authSource = authSourceService.getAuthSource();
             cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authSource.orElse(null));
 
             // Verify JWT validity if it is required for the schema

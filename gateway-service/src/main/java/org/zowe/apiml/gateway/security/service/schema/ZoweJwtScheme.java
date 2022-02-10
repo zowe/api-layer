@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 
 @Component
@@ -24,7 +24,7 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, JwtAuthSource authSource) {
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         return AuthenticationCommand.EMPTY;
     }
 

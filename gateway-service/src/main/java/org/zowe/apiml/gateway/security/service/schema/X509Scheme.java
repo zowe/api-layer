@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.CertificateEncodingException;
@@ -41,7 +41,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, JwtAuthSource authSource) {
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         String[] headers;
         if (StringUtils.isEmpty(authentication.getHeaders())) {
             headers = ALL_HEADERS.split(",");

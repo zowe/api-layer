@@ -36,7 +36,9 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
@@ -75,7 +77,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     private AuthenticationSchemeFactory authenticationSchemeFactory;
 
     @Autowired
-    private AuthSourceService authSourceService;
+    private AuthSourceServiceImpl authSourceService;
 
     @Autowired
     private ServiceAuthenticationService serviceAuthenticationService;
@@ -169,13 +171,15 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             Date.valueOf(LocalDate.of(2000, 1, 1)),
             QueryResponse.Source.ZOWE
         );
+        AuthSource.Parsed parsedSource1 = new Parsed(qr1.getUserId(), qr1.getCreation(), qr1.getExpiration(), qr1.getSource());
+        AuthSource.Parsed parsedSource2 = new Parsed(qr2.getUserId(), qr2.getCreation(), qr2.getExpiration(), qr2.getSource());
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
 
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET))
             .thenReturn(schemeBeanMock);
-        when(authSourceService.parse(new JwtAuthSource("token1"))).thenReturn(qr1);
-        when(authSourceService.parse(new JwtAuthSource("token2"))).thenReturn(qr2);
+        when(authSourceService.parse(new JwtAuthSource("token1"))).thenReturn(parsedSource1);
+        when(authSourceService.parse(new JwtAuthSource("token2"))).thenReturn(parsedSource2);
         when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), eq(new JwtAuthSource("token1")))).thenReturn(acValid);
         when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), eq(new JwtAuthSource("token2")))).thenReturn(acExpired);
 
@@ -408,7 +412,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
 
         AuthenticationCommand ac = mock(AuthenticationCommand.class);
-        QueryResponse queryResponse = mock(QueryResponse.class);
+        AuthSource.Parsed parsedSource = mock(AuthSource.Parsed.class);
         AbstractAuthenticationScheme schema = mock(AbstractAuthenticationScheme.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
         RequestContext.getCurrentContext().setRequest(request);
@@ -422,7 +426,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         stubber.when(getUnProxy(authSourceService)).getAuthSource();
         doReturn(ac).when(schema).createCommand(eq(authentication), eq(new JwtAuthSource(jwtToken)));
         doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
-        doReturn(queryResponse).when(getUnProxy(authSourceService)).parse(new JwtAuthSource("validJwt"));
+        doReturn(parsedSource).when(getUnProxy(authSourceService)).parse(new JwtAuthSource("validJwt"));
         doReturn(requiredJwtValidation).when(ac).isRequiredValidSource();
 
         universalAuthenticationCommand.apply(createInstanceInfo("id", authentication));

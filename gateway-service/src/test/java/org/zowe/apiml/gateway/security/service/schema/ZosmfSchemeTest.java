@@ -24,7 +24,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -46,7 +48,7 @@ import static org.zowe.apiml.gateway.security.service.schema.ZosmfScheme.ZosmfCo
 class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Mock
-    private AuthSourceService authSourceService;
+    private AuthSourceServiceImpl authSourceService;
 
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;
@@ -86,9 +88,10 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenRequestWithNoCookie_whenCreateCommand_thenAddOnlyLtpaCookie() {
+        AuthSource.Parsed parsedSource = new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
         when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken1")));
-        when(authSourceService.getLtpaTokenWithValidation("jwtToken1")).thenReturn("ltpa1");
-        when(authSourceService.parse(new JwtAuthSource("jwtToken1"))).thenReturn(queryResponse);
+        when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken1"))).thenReturn("ltpa1");
+        when(authSourceService.parse(new JwtAuthSource("jwtToken1"))).thenReturn(parsedSource);
         requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, null);
 
         zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken1")).apply(null);
@@ -98,9 +101,10 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenRequestWithSetCookie_whenCreateCommand_thenAppendSetCookie() {
+        AuthSource.Parsed parsedSource = new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
         when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
-        when(authSourceService.getLtpaTokenWithValidation("jwtToken2")).thenReturn("ltpa2");
-        when(authSourceService.parse(new JwtAuthSource("jwtToken2"))).thenReturn(queryResponse);
+        when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken2"))).thenReturn("ltpa2");
+        when(authSourceService.parse(new JwtAuthSource("jwtToken2"))).thenReturn(parsedSource);
         requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, "cookie1=1");
 
         zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken2")).apply(null);
@@ -110,9 +114,10 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenNotValidToken_whenCreateCommand_thenThrowTokenNotValidException() {
+        AuthSource.Parsed parsedSource = new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
         when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken3")));
-        when(authSourceService.getLtpaTokenWithValidation("jwtToken3")).thenThrow(new TokenNotValidException("Token is not valid"));
-        when(authSourceService.parse(new JwtAuthSource("jwtToken3"))).thenReturn(queryResponse);
+        when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken3"))).thenThrow(new TokenNotValidException("Token is not valid"));
+        when(authSourceService.parse(new JwtAuthSource("jwtToken3"))).thenReturn(parsedSource);
 
         AuthenticationCommand command = zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken3"));
         Exception exception = assertThrows(TokenNotValidException.class, () -> command.apply(null), " Token is not valid");
@@ -122,9 +127,10 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenExpiredToken_whenCreateCommand_thenThrowJwtTokenException() {
+        AuthSource.Parsed parsedSource = new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
         when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken3")));
-        when(authSourceService.getLtpaTokenWithValidation("jwtToken3")).thenThrow(new JwtException("Token is expired"));
-        when(authSourceService.parse(new JwtAuthSource("jwtToken3"))).thenReturn(queryResponse);
+        when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken3"))).thenThrow(new JwtException("Token is expired"));
+        when(authSourceService.parse(new JwtAuthSource("jwtToken3"))).thenReturn(parsedSource);
 
         AuthenticationCommand command = zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken3"));
         Exception exception = assertThrows(JwtException.class, () -> command.apply(null), "Token is expired");
@@ -147,7 +153,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenTokenWithoutExpiration_whenCreateCommand_thenTestCommandExpiration() {
-        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(new QueryResponse("domain", "user", null, null, Source.ZOWE));
+        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(new AuthSource.Parsed("user", null, null, Source.ZOWE));
 
         AuthenticationCommand command = scheme.createCommand(null, new JwtAuthSource("jwtToken"));
 
@@ -157,7 +163,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenTokenWithExpiration_whenCreateCommand_thenTestCommandExpiration() {
-        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(new QueryResponse("domain", "user", new Date(123), new Date(123), Source.ZOWE));
+        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(new AuthSource.Parsed("user", new Date(123), new Date(123), Source.ZOWE));
 
         AuthenticationCommand command = scheme.createCommand(null, new JwtAuthSource("jwtToken"));
 
@@ -166,12 +172,10 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         assertTrue(command.isExpired());
     }
 
-    private QueryResponse prepareQueryResponseForTime(int amountOfSeconds) {
-        QueryResponse queryResponse = new QueryResponse();
+    private AuthSource.Parsed prepareQueryResponseForTime(int amountOfSeconds) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.SECOND, amountOfSeconds);
-        queryResponse.setExpiration(c.getTime());
-        return queryResponse;
+        return new AuthSource.Parsed("user", new Date(), c.getTime(), Source.ZOWE);
     }
 
     @Test
@@ -200,8 +204,9 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         ZosmfScheme scheme = new ZosmfScheme(authSourceService, authConfigurationProperties);
         QueryResponse queryResponse = new QueryResponse("domain", "username", new Date(), new Date(), QueryResponse.Source.ZOSMF);
+        AuthSource.Parsed parsedSource = new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
         when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtTokenZosmf")));
-        when(authSourceService.parse(new JwtAuthSource("jwtTokenZosmf"))).thenReturn(queryResponse);
+        when(authSourceService.parse(new JwtAuthSource("jwtTokenZosmf"))).thenReturn(parsedSource);
 
         AuthenticationCommand command = scheme.createCommand(new Authentication(AuthenticationScheme.ZOSMF, null), new JwtAuthSource("jwtTokenZosmf"));
 
@@ -209,7 +214,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         verify(authSourceService, times(1)).getAuthSource();
         verify(authSourceService, times(2)).parse(new JwtAuthSource("jwtTokenZosmf"));
-        verify(authSourceService, never()).getLtpaTokenWithValidation("jwtTokenZosmf");
+        verify(authSourceService, never()).getLtpaToken(new JwtAuthSource("jwtTokenZosmf"));
     }
 
     @Test
@@ -220,9 +225,10 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     private void prepareAuthenticationService(String ltpaToken) {
+        AuthSource.Parsed parsedSource = new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
         when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
-        when(authSourceService.getLtpaTokenWithValidation("jwtToken2")).thenReturn(ltpaToken);
-        when(authSourceService.parse(new JwtAuthSource("jwtToken2"))).thenReturn(queryResponse);
+        when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken2"))).thenReturn(ltpaToken);
+        when(authSourceService.parse(new JwtAuthSource("jwtToken2"))).thenReturn(parsedSource);
     }
 
     @Test
@@ -272,8 +278,9 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         HttpServletRequest request = new MockHttpServletRequest();
         requestContext.setRequest(request);
 
+        AuthSource.Parsed parsedSource = new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
         when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
-        when(authSourceService.parse(any())).thenReturn(queryResponse);
+        when(authSourceService.parse(any())).thenReturn(parsedSource);
         when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn("apimlAuthenticationToken");
 
         zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken")).applyToRequest(httpRequest);

@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 /**
  * Interface with base method to get AuthenticationCommand by serviceId or Authentication.
@@ -27,7 +27,7 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      * @param authSource JWT security token of user (authentication can depends on user privilege)
      * @return authentication command to update request in ZUUL
      */
-    AuthenticationCommand getAuthenticationCommand(Authentication authentication, JwtAuthSource authSource);
+    AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource);
 
     /**
      * Get or create command to service's authentication using serviceId and jwtToken of current user
@@ -35,7 +35,7 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      * @param authSource JWT security token of user (authentication can depends on user privilege)
      * @return authentication command to update request in ZUUL (or lazy command to be updated in load balancer)
      */
-    AuthenticationCommand getAuthenticationCommand(String serviceId, JwtAuthSource authSource);
+    AuthenticationCommand getAuthenticationCommand(String serviceId, AuthSource authSource);
 
     /**
      * Get authentication for given InstanceInfo
