@@ -63,10 +63,10 @@ public class ExtensionConfigReader {
                     } else if (Files.exists(manifestJsonPath)) {
                         extensions.add(jsonMapper.readValue(Files.readAllBytes(manifestJsonPath), ExtensionDefinition.class));
                     } else {
-                        log.info("msg");
+                        log.info("No manifest found for component " + installedComponent);
                     }
                 } catch (Exception e) {
-                    log.error("msg", e);
+                    log.error("Failed reading component manifests", e);
                 }
             }
         }
