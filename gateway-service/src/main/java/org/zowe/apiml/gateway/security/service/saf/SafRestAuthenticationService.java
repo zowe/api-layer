@@ -11,10 +11,7 @@ package org.zowe.apiml.gateway.security.service.saf;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -125,6 +122,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     }
 
     @Data
+    @NoArgsConstructor
     @AllArgsConstructor
     public static class Token {
         String jwt;

@@ -14,6 +14,7 @@ import io.jsonwebtoken.Jwts;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,12 +51,14 @@ class SafIdtSchemeTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SafIdtScheme(authConfigurationProperties, passTicketService, safIdtProvider, 10);
+        underTest = new SafIdtScheme(authConfigurationProperties, passTicketService, safIdtProvider);
         underTest.initCookieName();
+        underTest.defaultIdtExpiration = 10;
     }
 
     @Nested
-    class WhenTokenIsRequested {
+    @DisplayName("when token is requested")
+    class WhenTokenIsRequestedTests {
         AuthenticationCommand commandUnderTest;
 
         private static final String USERNAME = "USERNAME";
@@ -72,7 +75,8 @@ class SafIdtSchemeTest {
         );
 
         @Nested
-        class ThenValidSafTokenIsProduced {
+        @DisplayName("then valid token is produced")
+        class ThenValidSafTokenIsProducedTests {
 
             @BeforeEach
             void setUp() throws IRRPassTicketGenerationException {
@@ -131,7 +135,8 @@ class SafIdtSchemeTest {
         }
 
         @Nested
-        class ThenNoTokenIsProduced {
+        @DisplayName("then no token is produced")
+        class ThenNoTokenIsProducedTests {
 
             @Test
             void givenNoJwtToken() {

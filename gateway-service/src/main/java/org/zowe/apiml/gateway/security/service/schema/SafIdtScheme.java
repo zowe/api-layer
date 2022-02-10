@@ -48,10 +48,9 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     private final PassTicketService passTicketService;
     private final SafIdtProvider safIdtProvider;
 
-    private String cookieName;
-
     @Value("${apiml.security.saf.defaultIdtExpiration:10}")
-    private final int defaultIdtExpiration;
+    int defaultIdtExpiration;
+    private String cookieName;
 
     @PostConstruct
     public void initCookieName() {

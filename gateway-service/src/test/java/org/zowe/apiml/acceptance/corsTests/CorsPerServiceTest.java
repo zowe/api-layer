@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
  *  The case for downstream headers will be?
  *     With disabled by default not much.
  *     Is there case when disabled cors would mean that we will have to change it?
- *     When allowed the headers are also irelevant as the headers adds no behavior
+ *     When allowed the headers are also irrelevant as the headers adds no behavior
  *  What can the headers do?
  *  If the pre-flight request comes and we
  */
