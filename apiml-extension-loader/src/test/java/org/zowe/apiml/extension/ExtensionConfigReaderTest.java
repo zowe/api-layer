@@ -60,7 +60,7 @@ class ExtensionConfigReaderTest {
     }
 
     @Test
-    public void testGetBasePackages_NoInstalledComponents() {
+    void testGetBasePackages_NoInstalledComponents() {
         when(environment.getInstalledComponents()).thenReturn(Collections.emptyList());
         when(environment.getEnabledComponents()).thenReturn(Collections.emptyList());
 
