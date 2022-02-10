@@ -42,6 +42,7 @@ export default class Header extends Component {
     render() {
         const iconProfile = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
         const dashboard = 'ui/v1/apicatalog/#/dashboard';
+        const username = JSON.parse(localStorage.getItem('username'));
         return (
             <div className="header">
                 <div className="product-name">
@@ -81,10 +82,12 @@ export default class Header extends Component {
                                 horizontal: 'center',
                             }}
                         >
-                            <Typography id="usernameLabel">Signed in as</Typography>
-                            <MenuItem id="logout-button" data-testid="logout" onClick={this.handleLogout}>
-                                Sign out
-                            </MenuItem>
+                            <div id="profile-menu">
+                                Signed in as <strong>{username}</strong>
+                                <MenuItem id="logout-button" data-testid="logout" onClick={this.handleLogout}>
+                                    Sign out
+                                </MenuItem>
+                            </div>
                         </Menu>
                     </div>
                 </div>

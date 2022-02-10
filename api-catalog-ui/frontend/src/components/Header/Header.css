@@ -51,3 +51,7 @@ h6.MuiTypography-root.MuiTypography-subtitle2 {
 #usernameLabel {
     margin-left: 16px;
 }
+
+#profile-menu {
+    padding: 6px;
+}

@@ -117,7 +117,7 @@ const Login = (props) => {
 
     function handleSubmit(e) {
         e.preventDefault();
-
+        localStorage.setItem('username', JSON.stringify(username));
         if (username && password && newPassword) {
             login({ username, password, newPassword });
         } else if (username && password) {
