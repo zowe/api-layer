@@ -9,10 +9,11 @@
 */
 package org.zowe.apiml.extension;
 
+import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import com.google.common.io.Resources;
 
@@ -33,24 +34,36 @@ public class ExtensionConfigReaderTest {
     @BeforeEach
     public void setUp() {
         this.configReader = new ExtensionConfigReader(environment);
-        // setup example files
+    }
+
+    private String getTestResourcesPath() {
+        String path = Resources.getResource("apimlextension").getPath();
+        return path.substring(0, path.lastIndexOf('/'));
     }
 
     @Test
-    public void testGetInstalledExtensions() {
+    public void testGetBasePackages_PackagesDefined() {
+        when(environment.getExtensionDirecotry()).thenReturn(getTestResourcesPath());
+        when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
+        when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 
-        String[] basePackages = configReader.getBasePackages();
-
-
+        assertArrayEquals(new String[]{ "org.zowe" }, configReader.getBasePackages());
     }
 
     @Test
-    public void testGetBasePackages() {
-        when(environment.getPluginsDir()).thenReturn(Optional.of(Resources.getResource("manifest.yaml").getPath()));
-        when(environment.getInstalledComponents()).thenReturn(Collections.singletonList("customextension"));
-        when(environment.getEnabledComponents()).thenReturn(Collections.singletonList("customextension"));
+    public void testGetBasePackages_NoManifest() {
+        when(environment.getExtensionDirecotry()).thenReturn(".");
+        when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
+        when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 
-
+        assertArrayEquals(new String[]{}, configReader.getBasePackages());
     }
 
+    @Test
+    public void testGetBasePackages_NoInstalledComponents() {
+        when(environment.getInstalledComponents()).thenReturn(Collections.emptyList());
+        when(environment.getEnabledComponents()).thenReturn(Collections.emptyList());
+
+        assertArrayEquals(new String[]{}, configReader.getBasePackages());
+    }
 }

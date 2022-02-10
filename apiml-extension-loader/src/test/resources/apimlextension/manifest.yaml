@@ -1,0 +1,4 @@
+---
+name: apimlextension
+apimlServices:
+    basePackage: org.zowe

@@ -10,20 +10,23 @@
 package org.zowe.apiml.extension;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Definition based on https://docs.zowe.org/stable/extend/packaging-zos-extensions/#zowe-component-manifest
  */
 @Data
+@NoArgsConstructor
 public class ExtensionDefinition {
 
-    private final String name;
-    private final ApimlServices apimlServices;
+    private String name;
+    private ApimlServices apimlServices;
 
     @Data
+    @NoArgsConstructor
     public static class ApimlServices {
 
-        private final String basePackage;
+        private String basePackage;
 
     }
 }
