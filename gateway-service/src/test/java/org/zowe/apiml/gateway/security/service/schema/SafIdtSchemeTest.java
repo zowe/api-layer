@@ -9,92 +9,144 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import io.jsonwebtoken.Jwts;
+import org.apache.http.HttpRequest;
+import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
 
+@ExtendWith(MockitoExtension.class)
 class SafIdtSchemeTest {
+
     private SafIdtScheme underTest;
-    private AuthenticationService authenticationService;
-    private SafRestAuthenticationService safAuthenticationService;
+    private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+
+    @Mock
+    private PassTicketService passTicketService;
+    @Mock
+    private SafIdtProvider safIdtProvider;
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(AuthenticationService.class);
-        safAuthenticationService = mock(SafRestAuthenticationService.class);
-        underTest = new SafIdtScheme(authenticationService, safAuthenticationService);
+        underTest = new SafIdtScheme(authConfigurationProperties, passTicketService, safIdtProvider, 10);
+        underTest.initCookieName();
     }
 
     @Nested
     class WhenTokenIsRequested {
         AuthenticationCommand commandUnderTest;
 
-        @BeforeEach
-        void setCommandUnderTest() {
-            QueryResponse response = mock(QueryResponse.class);
-            Supplier<QueryResponse> supplier = () -> response;
-            commandUnderTest = underTest.createCommand(null, supplier);
-        }
+        private static final String USERNAME = "USERNAME";
+        private static final String APPLID = "ANYAPPL";
+        private static final String PASSTICKET = "PASSTICKET";
+
+        private final Authentication auth = new Authentication(SAF_IDT, APPLID);
+        private final QueryResponse queryResponse = new QueryResponse(
+                null,
+                USERNAME,
+                null,
+                null,
+                null
+        );
 
         @Nested
         class ThenValidSafTokenIsProduced {
+
+            @BeforeEach
+            void setUp() throws IRRPassTicketGenerationException {
+                when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
+            }
+
             @Test
-            void givenAuthenticatedJwtToken() {
-                InstanceInfo info = mock(InstanceInfo.class);
+            void givenAuthenticatedJwtToken_whenApply() {
+                assertThat(underTest.getScheme(), is(AuthenticationScheme.SAF_IDT));
 
-                String validUsername = "hg679853";
-                TokenAuthentication authentication = new TokenAuthentication(validUsername, "validJwtToken");
-                authentication.setAuthenticated(true);
+                String safIdt = Jwts.builder()
+                        .setExpiration(new Date(System.currentTimeMillis() + 1000000))
+                        .compact();
 
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("validJwtToken"));
-                when(authenticationService.validateJwtToken("validJwtToken")).thenReturn(authentication);
-                when(safAuthenticationService.generate(validUsername)).thenReturn(Optional.of("validTokenValidJwtToken"));
+                when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
 
-                commandUnderTest.apply(info);
+                AuthenticationCommand ac = underTest.createCommand(auth, () -> queryResponse);
+                assertNotNull(ac);
+                assertFalse(ac.isExpired());
+                assertTrue(ac.isRequiredValidJwt());
 
-                assertThat(getValueOfZuulHeader(), is("validTokenValidJwtToken"));
+                ac.apply(null);
+                assertThat(getValueOfZuulHeader(), is(safIdt));
+            }
+
+            @Test
+            void givenAuthenticatedJwtToken_whenApplyToRequest() {
+                String safIdt = Jwts.builder()
+                        .setExpiration(new Date(System.currentTimeMillis() + 1000000))
+                        .compact();
+
+                when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
+
+                AuthenticationCommand ac = commandUnderTest = underTest.createCommand(auth, () -> queryResponse);
+                assertNotNull(ac);
+
+                HttpRequest httpRequest = new HttpGet("/test/request");
+
+                ac.applyToRequest(httpRequest);
+                assertThat(httpRequest.getHeaders("X-SAF-Token"),
+                        hasItemInArray(hasToString("X-SAF-Token: " + safIdt)));
+            }
+
+            @Test
+            void givenIdtWithoutExpiration_whenApply() {
+                String safIdt = Jwts.builder()
+                        .setSubject(USERNAME)
+                        .compact();
+
+                when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
+
+                AuthenticationCommand ac = commandUnderTest = underTest.createCommand(auth, () -> queryResponse);
+                assertNotNull(ac);
+                assertFalse(ac.isExpired());
             }
         }
 
         @Nested
         class ThenNoTokenIsProduced {
+
             @Test
             void givenNoJwtToken() {
-                InstanceInfo info = mock(InstanceInfo.class);
-
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
-
-                commandUnderTest.apply(info);
-
-                assertThat(getValueOfZuulHeader(), is(nullValue()));
+                AuthenticationCommand ac = underTest.createCommand(auth, () -> null);
+                assertThat(ac, is(AuthenticationCommand.EMPTY));
             }
 
             @Test
-            void givenInvalidJwtToken() {
-                InstanceInfo info = mock(InstanceInfo.class);
+            void givenNoRightsToGeneratePassticket() throws IRRPassTicketGenerationException {
+                when(passTicketService.generate(USERNAME, APPLID))
+                        .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
 
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("invalidJwtToken"));
-                when(authenticationService.validateJwtToken("invalidJwtToken")).thenReturn(new TokenAuthentication("invalidJwtToken"));
-
-                commandUnderTest.apply(info);
-
-                assertThat(getValueOfZuulHeader(), is(nullValue()));
+                PassTicketException ex = assertThrows(PassTicketException.class,
+                        () -> underTest.createCommand(auth, () -> queryResponse));
+                assertThat(ex.getMessage(), allOf(containsString(USERNAME), containsString(APPLID)));
             }
         }
     }
