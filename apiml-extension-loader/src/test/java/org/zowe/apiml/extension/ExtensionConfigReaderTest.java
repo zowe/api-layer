@@ -24,7 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ExtensionConfigReaderTest {
+class ExtensionConfigReaderTest {
 
     @Mock
     private ZoweRuntimeEnvironment environment;
@@ -42,8 +42,8 @@ public class ExtensionConfigReaderTest {
     }
 
     @Test
-    public void testGetBasePackages_PackagesDefined() {
-        when(environment.getExtensionDirecotry()).thenReturn(getTestResourcesPath());
+    void testGetBasePackages_PackagesDefined() {
+        when(environment.getExtensionDirectory()).thenReturn(getTestResourcesPath());
         when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
         when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 
@@ -51,8 +51,8 @@ public class ExtensionConfigReaderTest {
     }
 
     @Test
-    public void testGetBasePackages_NoManifest() {
-        when(environment.getExtensionDirecotry()).thenReturn(".");
+    void testGetBasePackages_NoManifest() {
+        when(environment.getExtensionDirectory()).thenReturn(".");
         when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
         when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 

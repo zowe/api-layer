@@ -64,7 +64,7 @@ public class ZoweRuntimeEnvironment {
                 .orElse(emptyList());
     }
 
-    String getExtensionDirecotry() {
+    String getExtensionDirectory() {
         return System.getenv(EXTENSION_DIR_ENV);
     }
 }

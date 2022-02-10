@@ -40,7 +40,7 @@ import org.zowe.CustomBean;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles("test")
-public class ExtensionsLoaderTest {
+class ExtensionsLoaderTest {
 
     @Autowired
     private ApplicationEventPublisher publisher;
@@ -52,7 +52,7 @@ public class ExtensionsLoaderTest {
     private ExtensionConfigReader reader;
 
     @Test
-    public void onEvent_ContextIsBadType() {
+    void onEvent_ContextIsBadType() {
         ConfigurableApplicationContext registry = mock(ConfigurableApplicationContext.class);
         SpringApplication application = mock(SpringApplication.class);
 
@@ -66,7 +66,7 @@ public class ExtensionsLoaderTest {
     }
 
     @Test
-    public void onEvent_ContextIsRightType() {
+    void onEvent_ContextIsRightType() {
         AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(this.getClass()).getTestContext().getApplicationContext();
         ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
 

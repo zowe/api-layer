@@ -9,6 +9,7 @@
 */
 package org.zowe.apiml.extension;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -54,7 +55,7 @@ public class ExtensionConfigReader {
 
         for (String installedComponent : installedComponents) {
             if (enabledComponents.contains(installedComponent)) {
-                String parentPath = environment.getExtensionDirecotry() + "/" + installedComponent;
+                String parentPath = environment.getExtensionDirectory() + File.separator + installedComponent;
                 Path manifestYamlPath = Paths.get(parentPath + "/manifest.yaml");
                 Path manifestJsonPath = Paths.get(parentPath + "/manifest.json");
                 try {
