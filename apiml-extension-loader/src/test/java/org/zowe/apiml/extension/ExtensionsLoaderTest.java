@@ -21,6 +21,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,6 +54,14 @@ class ExtensionsLoaderTest {
 
     @MockBean
     private ExtensionConfigReader reader;
+
+    @AfterEach
+    void tearDown() {
+        AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(this.getClass()).getTestContext().getApplicationContext();
+        if (context.containsBeanDefinition("customBean")) {
+            context.removeBeanDefinition("customBean");
+        }
+    }
 
     @Test
     void onEvent_ContextIsBadType() {
