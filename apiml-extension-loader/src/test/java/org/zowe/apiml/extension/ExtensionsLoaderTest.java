@@ -12,10 +12,12 @@ package org.zowe.apiml.extension;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +25,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -63,6 +66,21 @@ class ExtensionsLoaderTest {
 
         verify(extensionsLoader).onApplicationEvent(event);
         verify(registry, never()).containsBeanDefinition(anyString());
+    }
+
+    @Test
+    void onEvent_ContextAlreadyHasBean() {
+        AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(this.getClass()).getTestContext().getApplicationContext();
+        BeanDefinitionRegistry registry = spy(context);
+        ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
+        context.registerBean(CustomBean.class);
+        SpringApplication application = mock(SpringApplication.class);
+        ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, context);
+        when(reader.getBasePackages()).thenReturn(new String[]{ "org.zowe" });
+        doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
+        publisher.publishEvent(event);
+        verify(extensionsLoader).onApplicationEvent(event);
+        verify(registry, never()).registerBeanDefinition(anyString(), any());
     }
 
     @Test
