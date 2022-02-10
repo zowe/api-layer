@@ -47,3 +47,7 @@ h6.MuiTypography-root.MuiTypography-subtitle2 {
 #profileIcon {
     margin-right: -14px;
 }
+
+#usernameLabel {
+    margin-left: 16px;
+}

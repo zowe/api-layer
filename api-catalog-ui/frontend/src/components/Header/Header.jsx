@@ -24,6 +24,7 @@ export default class Header extends Component {
         this.handleLogout = this.handleLogout.bind(this);
         this.openMenu = this.openMenu.bind(this);
         this.handleLogout = this.handleLogout.bind(this);
+        this.closeMenu = this.closeMenu.bind(this);
     }
     handleLogout = () => {
         const { logout } = this.props;
@@ -80,6 +81,7 @@ export default class Header extends Component {
                                 horizontal: 'center',
                             }}
                         >
+                            <Typography id="usernameLabel">Signed in as</Typography>
                             <MenuItem id="logout-button" data-testid="logout" onClick={this.handleLogout}>
                                 Sign out
                             </MenuItem>
