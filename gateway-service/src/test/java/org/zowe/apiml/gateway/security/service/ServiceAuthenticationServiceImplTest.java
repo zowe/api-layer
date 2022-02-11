@@ -180,8 +180,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             .thenReturn(schemeBeanMock);
         when(authSourceService.parse(new JwtAuthSource("token1"))).thenReturn(parsedSource1);
         when(authSourceService.parse(new JwtAuthSource("token2"))).thenReturn(parsedSource2);
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), eq(new JwtAuthSource("token1")))).thenReturn(acValid);
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), eq(new JwtAuthSource("token2")))).thenReturn(acExpired);
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1"))).thenReturn(acValid);
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2"))).thenReturn(acExpired);
 
         assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1")));
         verify(schemeBeanMock, times(1)).createCommand(any(), any());
@@ -193,7 +193,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         assertSame(acExpired, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2")));
         verify(schemeBeanMock, times(2)).createCommand(any(), any());
         // replace result (to know that expired record is removed and get new one)
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), eq(new JwtAuthSource("token2")))).thenReturn(acValid);
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2"))).thenReturn(acValid);
         assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2")));
         verify(schemeBeanMock, times(3)).createCommand(any(), any());
     }
@@ -208,8 +208,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         serviceAuthenticationService.getAuthenticationCommand(authentication, null);
 
         verify(schemeBeanMock, times(1)).createCommand(
-            eq(authentication),
-            eq(null)
+            authentication,
+            null
         );
     }
 
@@ -424,7 +424,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             stubber = doThrow(new TokenNotValidException("Token is not valid."));
         }
         stubber.when(getUnProxy(authSourceService)).getAuthSource();
-        doReturn(ac).when(schema).createCommand(eq(authentication), eq(new JwtAuthSource(jwtToken)));
+        doReturn(ac).when(schema).createCommand(authentication, new JwtAuthSource(jwtToken));
         doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
         doReturn(parsedSource).when(getUnProxy(authSourceService)).parse(new JwtAuthSource("validJwt"));
         doReturn(requiredJwtValidation).when(ac).isRequiredValidSource();

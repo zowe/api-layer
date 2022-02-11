@@ -137,41 +137,41 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         RequestContext requestContext = new RequestContext();
         requestContext.setRequest(request);
 
-        AuthSource.Parsed parsedSource = new Parsed("userId", new Date(), new Date(), QueryResponse.Source.ZOWE);
-        when(as.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken123")));
-        when(as.parse(null)).thenReturn(null);
-        when(as.parse(new JwtAuthSource("jwtToken123"))).thenReturn(parsedSource);
-
-        verify(byPass, times(0)).createCommand(eq(authentication), eq(null));
-        verify(passTicket, times(0)).createCommand(eq(authentication), eq(null));
+        verify(byPass, times(0)).createCommand(authentication,null);
+        verify(passTicket, times(0)).createCommand(authentication,null);
         asf.getAuthenticationCommand(authentication);
 
-        verify(byPass, times(1)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
-        verify(passTicket, times(0)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
+        verify(byPass, times(1)).createCommand(authentication,null);
+        verify(passTicket, times(0)).createCommand(authentication,null);
         authentication.setScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
         asf.getAuthenticationCommand(authentication);
 
-        verify(byPass, times(1)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
-        verify(passTicket, times(1)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
+        verify(byPass, times(1)).createCommand(authentication,null);
+        verify(passTicket, times(1)).createCommand(authentication,null);
         authentication.setScheme(null);
         asf.getAuthenticationCommand(authentication);
 
-        verify(byPass, times(2)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
-        verify(passTicket, times(1)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
+        verify(byPass, times(2)).createCommand(authentication,null);
+        verify(passTicket, times(1)).createCommand(authentication,null);
         asf.getAuthenticationCommand(null);
 
-        verify(byPass, times(2)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
-        verify(byPass, times(1)).createCommand(eq(null), eq(new JwtAuthSource("jwtToken123")));
-        verify(passTicket, times(1)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
+        verify(byPass, times(2)).createCommand(authentication,null);
+        verify(byPass, times(1)).createCommand(null,null);
+        verify(passTicket, times(1)).createCommand(authentication,null);
 
         RequestContext.testSetCurrentContext(requestContext);
+        QueryResponse qr = new QueryResponse("domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOWE);
+        Parsed parsedSource = new Parsed(qr.getUserId(), qr.getCreation(), qr.getExpiration(), qr.getSource());
+        when(as.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken123")));
+        when(as.parse(new JwtAuthSource("jwtToken123"))).thenReturn(parsedSource);
 
-        verify(byPass, times(0)).createCommand(eq(authentication), eq(null));
-        verify(passTicket, times(0)).createCommand(eq(authentication), eq(null));
+
+        verify(byPass, times(0)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
+        verify(passTicket, times(0)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
         authentication.setScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
         asf.getAuthenticationCommand(authentication);
-        verify(byPass, times(0)).createCommand(eq(authentication), eq(null));
-//        verify(passTicket, times(1)).createCommand(eq(authentication), eq(new JwtAuthSource("jwtToken123")));
+        verify(byPass, times(0)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
+        verify(passTicket, times(1)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
     }
 
     @Test
