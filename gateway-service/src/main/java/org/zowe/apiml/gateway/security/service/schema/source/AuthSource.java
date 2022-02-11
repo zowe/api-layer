@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.zowe.apiml.security.common.token.QueryResponse.Source;
 
@@ -23,6 +24,7 @@ public interface AuthSource extends Serializable {
 
     @AllArgsConstructor
     @Getter
+    @EqualsAndHashCode
     class Parsed {
         private final String userId;
         private Date creation;

@@ -11,7 +11,6 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -27,7 +26,6 @@ import org.zowe.apiml.security.common.token.QueryResponse;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class AuthSourceServiceImpl implements AuthSourceService {
@@ -37,24 +35,33 @@ public class AuthSourceServiceImpl implements AuthSourceService {
     public Optional<AuthSource> getAuthSource() {
         final RequestContext context = RequestContext.getCurrentContext();
 
-        String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
-        if (jwtToken != null) {
-            return Optional.of(new JwtAuthSource(jwtToken));
-        }
-
-        return Optional.empty();
+        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        return jwtToken.map(JwtAuthSource::new);
     }
 
     public boolean isValid(AuthSource authSource) {
-        return authenticationService.validateJwtToken(((JwtAuthSource)authSource).getSource()).isAuthenticated();
+        if (authSource instanceof JwtAuthSource) {
+            String jwtToken = ((JwtAuthSource)authSource).getSource();
+            return jwtToken != null && authenticationService.validateJwtToken(jwtToken).isAuthenticated();
+        }
+        return false;
     }
 
     public AuthSource.Parsed parse(AuthSource authSource) {
-        QueryResponse queryResponse = authenticationService.parseJwtToken(((JwtAuthSource)authSource).getSource());
-        return new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
+        if (authSource instanceof JwtAuthSource) {
+            String jwtToken = ((JwtAuthSource)authSource).getSource();
+            QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken);
+            return queryResponse == null ? null : new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
+                queryResponse.getSource());
+        }
+        return null;
     }
 
     public String getLtpaToken(AuthSource authSource) {
-        return authenticationService.getLtpaTokenWithValidation((String)authSource.getSource());
+        if (authSource instanceof JwtAuthSource) {
+            String jwtToken = ((JwtAuthSource)authSource).getSource();
+            return jwtToken == null ? null : authenticationService.getLtpaTokenWithValidation(jwtToken);
+        }
+        return null;
     }
 }

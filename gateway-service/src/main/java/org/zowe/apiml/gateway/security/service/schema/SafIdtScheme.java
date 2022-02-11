@@ -58,10 +58,12 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
             authSource.ifPresent(token -> {
                 if (authSourceService.isValid(token)) {
                     AuthSource.Parsed parsedSource = authSourceService.parse(token);
-                    // Get principal from the token?
-                    Optional<String> safIdt = safIdtProvider.generate(parsedSource.getUserId());
+                    if (parsedSource != null) {
+                        // Get principal from the token?
+                        Optional<String> safIdt = safIdtProvider.generate(parsedSource.getUserId());
 
-                    safIdt.ifPresent(safToken -> context.addZuulRequestHeader("X-SAF-Token", safToken));
+                        safIdt.ifPresent(safToken -> context.addZuulRequestHeader("X-SAF-Token", safToken));
+                    }
                 }
             });
         }
