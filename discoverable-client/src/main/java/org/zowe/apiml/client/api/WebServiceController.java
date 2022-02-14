@@ -33,7 +33,7 @@ public class WebServiceController {
     /**
      * Gets a custom greeting from Web Service.
      */
-    @GetMapping(value = {"/ws"})
+    @GetMapping(value = {"/ws", "/sse"})
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Web Service"})
     @HystrixCommand()
