@@ -131,8 +131,10 @@ zuul:
     semaphore:
         maxSemaphores: ${server.maxTotalConnections}
     ignoredPatterns:
-        - /**/ws/**
-        - /**/sse/**
+        - /ws/**
+        - /*/ws/**
+        - /sse/**
+        - /*/sse/**
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
