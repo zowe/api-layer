@@ -63,11 +63,11 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         final long before = System.currentTimeMillis();
 
-        if (authSource == null) {
+        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+
+        if (authSource == null || parsedAuthSource == null) {
             return AuthenticationCommand.EMPTY;
         }
-
-        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
 
         final String applId = authentication.getApplid();
         final String userId = parsedAuthSource.getUserId();

@@ -62,8 +62,8 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
     /**
      * This method identify if for this authentication command, schema is required to be logged. Main purpose is
      * to make differences between bypass and other schema's type. Schema shouldn't change anything, but for some other
-     * it is required be logged and send valid JWT token.
-     * @return true is valid token is required, otherwise false
+     * it is required be logged and send valid authentication source.
+     * @return true is valid authentication source is required, otherwise false
      */
 
     public abstract boolean isRequiredValidSource();

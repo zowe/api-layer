@@ -43,7 +43,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     private AuthSourceServiceImpl serviceUnderTest;
 
     @Test
-    void givenTokenInRequest_whenGetAuthSource_thenAuthSourceIsPresent() {
+    void givenTokenInRequest_thenAuthSourceIsPresent() {
         String jwtToken = "jwtToken";
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(jwtToken));
 
@@ -56,7 +56,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenNoTokenInRequest_whenGetAuthSource_thenAuthSourceIsPresent() {
+    void givenNoTokenInRequest_thenAuthSourceIsPresent() {
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
 
         Optional<AuthSource> authSource = serviceUnderTest.getAuthSource();
@@ -66,25 +66,25 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenNullAuthSource_whenIsValid_thenFalse() {
+    void givenNullAuthSource_thenAuthSourceIsInvalid() {
         Assertions.assertFalse(serviceUnderTest.isValid(null));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenNullTokenInAuthSource_whenIsValid_thenFalse() {
+    void givenNullTokenInAuthSource_thenAuthSourceIsInvalid() {
         Assertions.assertFalse(serviceUnderTest.isValid(new JwtAuthSource(null)));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenUnknownAuthSource_whenIsValid_thenFalse() {
+    void givenUnknownAuthSource_thenAuthSourceIsInvalid() {
         Assertions.assertFalse(serviceUnderTest.isValid(new DummyAuthSource()));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenValidAuthSource_whenIsValid_thenTrue() {
+    void givenValidAuthSource_thenAuthSourceIsValid() {
         TokenAuthentication tokenAuthentication = new TokenAuthentication("user");
         tokenAuthentication.setAuthenticated(true);
         when(authenticationService.validateJwtToken(anyString())).thenReturn(tokenAuthentication);
@@ -94,7 +94,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenInvalidAuthSource_whenIsValid_thenFalse() {
+    void givenInvalidAuthSource_thenAuthSourceIsInvalid() {
         TokenAuthentication tokenAuthentication = new TokenAuthentication("user");
         tokenAuthentication.setAuthenticated(false);
         when(authenticationService.validateJwtToken(anyString())).thenReturn(tokenAuthentication);
@@ -104,7 +104,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenTokenNotValidException_whenIsValid_thenThrow() {
+    void givenTokenNotValidException_thenThrowWhenCallisValid() {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         when(authenticationService.validateJwtToken(anyString())).thenThrow(new TokenNotValidException("token not valid"));
 
@@ -113,7 +113,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenTokenExpireException_whenIsValid_thenThrow() {
+    void givenTokenExpireException_thenThrowWhenCallisValid() {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         when(authenticationService.validateJwtToken(anyString())).thenThrow(new TokenExpireException("token expired"));
 
@@ -122,25 +122,25 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenNullAuthSource_whenParse_thenNull() {
+    void givenNullAuthSource_thenParsedIsNull() {
         Assertions.assertNull(serviceUnderTest.parse(null));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenNullTokenInAuthSource_whenParse_thenFalse() {
+    void givenNullTokenInAuthSource_thenParsedIsNull() {
         Assertions.assertNull(serviceUnderTest.parse(new JwtAuthSource(null)));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenUnknownAuthSource_whenParse_thenFalse() {
+    void givenUnknownAuthSource_thenParsedIsNull() {
         Assertions.assertNull(serviceUnderTest.parse(new DummyAuthSource()));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenValidAuthSource_wheParse_thenTrue() {
+    void givenValidAuthSource_thenParseCorrectly() {
         Parsed expectedParsedSource = new Parsed("user", new Date(111), new Date(222), Source.ZOSMF);
         when(authenticationService.parseJwtToken(anyString())).thenReturn(new QueryResponse("domain", "user", new Date(111), new Date(222), Source.ZOSMF));
 
@@ -152,7 +152,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenTokenNotValidException_whenParse_thenThrow() {
+    void givenTokenNotValidException_thenThrowWhenParse() {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         when(authenticationService.parseJwtToken(anyString())).thenThrow(new TokenNotValidException("token not valid"));
 
@@ -161,7 +161,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenTokenExpireException_whenParse_thenThrow() {
+    void givenTokenExpireException_thenThrowWhenParse() {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         when(authenticationService.parseJwtToken(anyString())).thenThrow(new TokenExpireException("token expired"));
 
@@ -170,25 +170,25 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenNullAuthSource_whenGetLtpaToken_thenNull() {
+    void givenNullAuthSource_thenNullLtpa() {
         Assertions.assertNull(serviceUnderTest.getLtpaToken(null));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenNullTokenInAuthSource_whenGetLtpaToken_thenNull() {
+    void givenNullTokenInAuthSource_thenNullLtpa() {
         Assertions.assertNull(serviceUnderTest.getLtpaToken(new JwtAuthSource(null)));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenUnknownAuthSource_whenGetLtpaToken_thenNull() {
+    void givenUnknownAuthSource_thenNullLtpa() {
         Assertions.assertNull(serviceUnderTest.getLtpaToken(new DummyAuthSource()));
         verifyNoInteractions(authenticationService);
     }
 
     @Test
-    void givenValidAuthSource_whenGetLtpaToken_thenTokenGenerated() {
+    void givenValidAuthSource_theLtpaGenerated() {
         String ltpa = "ltpaToken";
         when(authenticationService.getLtpaTokenWithValidation(anyString())).thenReturn(ltpa);
 
@@ -197,7 +197,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenTokenNotValidException_whenGetLtpaToken_thenThrow() {
+    void givenTokenNotValidException_thenThrowWhenGetLpta() {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         when(authenticationService.getLtpaTokenWithValidation(anyString())).thenThrow(new TokenNotValidException("token not valid"));
 
@@ -206,7 +206,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenTokenExpireException_whenGetLtpaToken_thenThrow() {
+    void givenTokenExpireException_thenThrowWhenGetLpta() {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         when(authenticationService.getLtpaTokenWithValidation(anyString())).thenThrow(new TokenExpireException("token expired"));
 

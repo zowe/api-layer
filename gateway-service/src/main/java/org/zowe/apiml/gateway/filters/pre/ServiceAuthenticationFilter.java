@@ -68,10 +68,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
             cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authSource.orElse(null));
 
             // Verify JWT validity if it is required for the schema
-            if (
-                (authSource.isPresent()) && cmd.isRequiredValidSource() &&
-                !authSourceService.isValid(authSource.get())
-            ) {
+            if (!isSourceValidForCommand(authSource.orElse(null), cmd)) {
                     rejected = true;
             }
         } catch (TokenExpireException tee) {
@@ -99,6 +96,10 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
         }
 
         return null;
+    }
+
+    private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
+        return !cmd.isRequiredValidSource() || (authSource != null && authSourceService.isValid(authSource));
     }
 
 }

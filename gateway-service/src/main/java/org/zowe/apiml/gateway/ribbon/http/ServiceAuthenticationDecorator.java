@@ -62,8 +62,7 @@ public class ServiceAuthenticationDecorator {
                     return;
                 }
 
-                if (cmd.isRequiredValidSource()
-                    && (!authSource.isPresent() || !authSourceService.isValid(authSource.get()))) {
+                if (!isSourceValidForCommand(authSource.orElse(null), cmd)) {
                     throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                 }
             }
@@ -73,6 +72,10 @@ public class ServiceAuthenticationDecorator {
 
             cmd.applyToRequest(request);
         }
+    }
+
+    private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
+        return !cmd.isRequiredValidSource() || (authSource != null && authSourceService.isValid(authSource));
     }
 }
 
