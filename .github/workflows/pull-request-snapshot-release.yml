@@ -10,7 +10,7 @@ on:
                 required: true
 
 env:
-    PR_NUMBER: ${{ github.event.number }}
+    PR_NUMBER: ${{ github.event.inputs.pull_request }}
 
 jobs:
     build:
