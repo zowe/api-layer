@@ -38,7 +38,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
 
     @Autowired
-    private AuthSourceServiceImpl authSourceService;
+    private AuthSourceService authSourceService;
 
     @Override
     public String filterType() {
