@@ -11,24 +11,18 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import org.zowe.apiml.security.common.token.QueryResponse.Source;
 
 /**
  * Interface defines simple source of authentication.
  */
 public interface AuthSource extends Serializable {
-    Object getSource();
+    Object getRawSource();
 
-    @AllArgsConstructor
-    @Getter
-    @EqualsAndHashCode
-    class Parsed {
-        private final String userId;
-        private Date creation;
-        private Date expiration;
-        private final Source source;
+    interface Parsed {
+        String getUserId();
+        Date getCreation();
+        Date getExpiration();
+        Source getSource();
     }
 }

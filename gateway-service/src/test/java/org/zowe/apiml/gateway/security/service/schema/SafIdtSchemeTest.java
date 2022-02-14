@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.token.QueryResponse.Source;
@@ -64,7 +63,7 @@ class SafIdtSchemeTest {
 
                 when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("validJwtToken")));
                 when(authSourceService.isValid(new JwtAuthSource("validJwtToken"))).thenReturn(true);
-                when(authSourceService.parse(new JwtAuthSource("validJwtToken"))).thenReturn(new Parsed(validUsername, new Date(), new Date(), Source.ZOWE));
+                when(authSourceService.parse(new JwtAuthSource("validJwtToken"))).thenReturn(new JwtAuthSource.Parsed(validUsername, new Date(), new Date(), Source.ZOWE));
                 when(safAuthenticationService.generate(validUsername)).thenReturn(Optional.of("validTokenValidJwtToken"));
 
                 commandUnderTest.apply(info);

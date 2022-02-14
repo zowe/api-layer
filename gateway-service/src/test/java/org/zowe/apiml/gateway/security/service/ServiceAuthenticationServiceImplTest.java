@@ -37,7 +37,6 @@ import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
@@ -171,8 +170,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             Date.valueOf(LocalDate.of(2000, 1, 1)),
             QueryResponse.Source.ZOWE
         );
-        AuthSource.Parsed parsedSource1 = new Parsed(qr1.getUserId(), qr1.getCreation(), qr1.getExpiration(), qr1.getSource());
-        AuthSource.Parsed parsedSource2 = new Parsed(qr2.getUserId(), qr2.getCreation(), qr2.getExpiration(), qr2.getSource());
+        AuthSource.Parsed parsedSource1 = new JwtAuthSource.Parsed(qr1.getUserId(), qr1.getCreation(), qr1.getExpiration(), qr1.getSource());
+        AuthSource.Parsed parsedSource2 = new JwtAuthSource.Parsed(qr2.getUserId(), qr2.getCreation(), qr2.getExpiration(), qr2.getSource());
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
 

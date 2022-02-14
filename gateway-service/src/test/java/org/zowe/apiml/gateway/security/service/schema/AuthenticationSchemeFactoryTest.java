@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
@@ -161,7 +160,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
         RequestContext.testSetCurrentContext(requestContext);
         QueryResponse qr = new QueryResponse("domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOWE);
-        Parsed parsedSource = new Parsed(qr.getUserId(), qr.getCreation(), qr.getExpiration(), qr.getSource());
+        AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(qr.getUserId(), qr.getCreation(), qr.getExpiration(), qr.getSource());
         when(as.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken123")));
         when(as.parse(new JwtAuthSource("jwtToken123"))).thenReturn(parsedSource);
 

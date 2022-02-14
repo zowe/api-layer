@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 /**
@@ -41,7 +40,7 @@ public class AuthSourceServiceImpl implements AuthSourceService {
 
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
-            String jwtToken = ((JwtAuthSource)authSource).getSource();
+            String jwtToken = ((JwtAuthSource)authSource).getRawSource();
             return jwtToken != null && authenticationService.validateJwtToken(jwtToken).isAuthenticated();
         }
         return false;
@@ -49,9 +48,9 @@ public class AuthSourceServiceImpl implements AuthSourceService {
 
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
-            String jwtToken = ((JwtAuthSource)authSource).getSource();
+            String jwtToken = ((JwtAuthSource)authSource).getRawSource();
             QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken);
-            return queryResponse == null ? null : new Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
+            return queryResponse == null ? null : new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
                 queryResponse.getSource());
         }
         return null;
@@ -59,7 +58,7 @@ public class AuthSourceServiceImpl implements AuthSourceService {
 
     public String getLtpaToken(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
-            String jwtToken = ((JwtAuthSource)authSource).getSource();
+            String jwtToken = ((JwtAuthSource)authSource).getRawSource();
             return jwtToken == null ? null : authenticationService.getLtpaTokenWithValidation(jwtToken);
         }
         return null;

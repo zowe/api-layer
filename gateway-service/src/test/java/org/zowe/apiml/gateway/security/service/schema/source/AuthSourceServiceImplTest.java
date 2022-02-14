@@ -52,7 +52,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
         verify(authenticationService, times(1)).getJwtTokenFromRequest(any());
         Assertions.assertTrue(authSource.isPresent());
         Assertions.assertTrue(authSource.get() instanceof JwtAuthSource);
-        Assertions.assertEquals(jwtToken, authSource.get().getSource());
+        Assertions.assertEquals(jwtToken, authSource.get().getRawSource());
     }
 
     @Test
@@ -141,7 +141,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenValidAuthSource_thenParseCorrectly() {
-        Parsed expectedParsedSource = new Parsed("user", new Date(111), new Date(222), Source.ZOSMF);
+        Parsed expectedParsedSource = new JwtAuthSource.Parsed("user", new Date(111), new Date(222), Source.ZOSMF);
         when(authenticationService.parseJwtToken(anyString())).thenReturn(new QueryResponse("domain", "user", new Date(111), new Date(222), Source.ZOSMF));
 
         Parsed parsedSource = serviceUnderTest.parse(new JwtAuthSource("jwtToken"));
@@ -217,7 +217,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
 
     static class DummyAuthSource implements AuthSource {
         @Override
-        public Object getSource() {
+        public Object getRawSource() {
             return null;
         }
     }
