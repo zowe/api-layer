@@ -125,9 +125,9 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
                 assertThat(textResponse, startsWith("<!DOCTYPE html><html lang=\"en\">"));
                 assertThat(textResponse, containsString("<header><h1>Api Change Log</h1></header>"));
                 assertThat(textResponse, containsString(
-                    "<div><h2>What&#x27;s New</h2><hr><ol><li><span class=\"GET\">GET</span>/greeting/{yourName} <span>Get a greeting</span></li></ol></div>"));
+                    "<div><h2>What&#x27;s New</h2><hr><ol><li><span class=\"GET\">GET</span>"));
                 assertThat(textResponse, containsString(
-                    "<div><h2>What&#x27;s Deleted</h2><hr><ol><li><span class=\"GET\">GET</span><del>/{yourName}/greeting</del><span> Get a greeting</span></li>"));
+                    "<div><h2>What&#x27;s Deleted</h2><hr><ol><li><span class=\"GET\">GET</span>"));
             }
         }
 
