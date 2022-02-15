@@ -35,6 +35,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -52,6 +53,7 @@ class ZosmfAuthenticationProviderTest {
 
     private static final String USERNAME = "user";
     private static final String PASSWORD = "password";
+    private static final String NEW_PASSWORD = "newPassword";
     private static final String SERVICE_ID = "service";
     private static final String HOST = "localhost";
     private static final int PORT = 0;
@@ -176,6 +178,39 @@ class ZosmfAuthenticationProviderTest {
                     () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
                     "Expected exception is not BadCredentialsException");
                 assertEquals("Username or password are invalid.", exception.getMessage());
+            }
+        }
+
+        @Nested
+        class WhenNewPasswordProvided {
+            @Test
+            void thenChangePasswordAndAuthenticate() {
+                authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
+                LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD, NEW_PASSWORD);
+                usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(USERNAME, loginRequest);
+                final Application application = createApplication(zosmfInstance);
+                when(discovery.getApplication(ZOSMF)).thenReturn(application);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
+                headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
+                when(restTemplate.exchange(Mockito.anyString(),
+                    Mockito.eq(HttpMethod.GET),
+                    Mockito.any(),
+                    Mockito.<Class<Object>>any()))
+                    .thenReturn(new ResponseEntity<>(getResponse(true), headers, HttpStatus.OK));
+
+                ZosmfService zosmfService = createZosmfService();
+                ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+                    new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
+
+                mockZosmfRealmRestCallResponse();
+                Authentication tokenAuthentication
+                    = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
+
+                assertTrue(tokenAuthentication.isAuthenticated());
+                verify(zosmfService, times(1)).changePassword(any());
+                assertEquals(USERNAME, tokenAuthentication.getPrincipal());
             }
         }
 
