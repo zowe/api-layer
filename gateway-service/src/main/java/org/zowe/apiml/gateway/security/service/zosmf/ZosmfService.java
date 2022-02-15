@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.login.ChangePasswordRequest;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
@@ -252,16 +254,18 @@ public class ZosmfService extends AbstractZosmfService {
      *
      * @param authentication
      * @param url            String containing change password endpoint to be used
-     * @return AuthenticationResponse
+     * @return ResponseEntity
      */
     protected ResponseEntity<String> issueChangePasswordRequest(Authentication authentication, String url, HttpMethod httpMethod) {
+        log.debug("Changing password via z/OSMF");
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
+        headers.setContentType(MediaType.APPLICATION_JSON);
         try {
             return restTemplateWithoutKeystore.exchange(
                 url,
                 httpMethod,
-                new HttpEntity<>(authentication.getCredentials(), headers), String.class);
+                new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers), String.class);
         } catch (RuntimeException re) {
             if (re instanceof HttpClientErrorException.NotFound) {
                 log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure that the PTF for APAR PH34912 " +
