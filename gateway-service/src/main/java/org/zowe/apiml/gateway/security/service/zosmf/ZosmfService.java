@@ -150,7 +150,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     @Retryable(maxAttempts = 2, backoff = @Backoff(value = 1500))
     public ResponseEntity<String> changePassword(Authentication authentication) {
-        ResponseEntity changePasswordResponse;
+        ResponseEntity<String> changePasswordResponse;
         changePasswordResponse = issueChangePasswordRequest(
             authentication,
             getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
@@ -267,11 +267,8 @@ public class ZosmfService extends AbstractZosmfService {
                 httpMethod,
                 new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers), String.class);
         } catch (RuntimeException re) {
-            if (re instanceof HttpClientErrorException.NotFound) {
-                log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure that the PTF for APAR PH34912 " +
-                    "(https://www.ibm.com/support/pages/apar/PH34912) has been installed. ");
-                throw new AuthenticationServiceException("Error occurred while changing password.", re);
-            }
+            log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure that the PTF for APAR PH34912 " +
+                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed. ");
             throw handleExceptionOnCall(url, re);
         }
     }
