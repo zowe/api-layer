@@ -65,169 +65,6 @@ class CachedProductFamilyServiceTest {
     }
 
     @Nested
-    class WhenRetrievingUpdatedContainers {
-        @Nested
-        class GivenExistingTilesAreValid {
-            @Test
-            void returnExistingTiles() {
-                underTest.getContainer("demoapp", servicesBuilder.instance1);
-                underTest.getContainer("demoapp2", servicesBuilder.instance2);
-
-                Collection<APIContainer> containers = underTest.getRecentlyUpdatedContainers();
-                assertEquals(2, containers.size());
-            } 
-        }
-
-        @Nested
-        class GivenOneTileIsTooOld {
-            @Test
-            void returnOnlyOneService() throws InterruptedException {
-                // To speed up the test, create instance which consider even 5 milliseconds as old.
-                underTest = new CachedProductFamilyService(
-                    null,
-                    transformService,
-                    5);
-                // This is considered as old update.
-                underTest.getContainer("demoapp", servicesBuilder.instance1);
-    
-                Thread.sleep(10);
-    
-                underTest.getContainer("demoapp2", servicesBuilder.instance2);
-    
-                Collection<APIContainer> containers = underTest.getRecentlyUpdatedContainers();
-                assertEquals(1, containers.size());
-            }
-        }
-    }
-
-    @Nested
-    class WhenRetrievingServiceForContainer {
-        @Nested
-        class GivenTwoServicesAssignedToSameTile {
-            @Test
-            void transformCorrectOneBasedOnInstanceInfo() {
-                underTest.getContainer("demoapp", servicesBuilder.instance1);
-                underTest.addServiceToContainer("demoapp", servicesBuilder.instance2);
-
-                APIService containerService = underTest.getContainerService("demoapp", servicesBuilder.instance1);
-                assertEquals("service1", containerService.getServiceId());
-
-                containerService = underTest.getContainerService("demoapp", servicesBuilder.instance2);
-                assertEquals("service2", containerService.getServiceId());
-            }
-        }
-    }
-
-    @Nested
-    class WhenGettingContainerWithoutServiceInstances {
-        @Test
-        void noServicesAreWithinTheContainer() {
-            assertThrows(NullPointerException.class, () -> underTest.getContainer("demoapp", null));
-            assertEquals(0, underTest.getContainerCount());
-            assertEquals(0, underTest.getAllContainers().size());
-        }
-    }
-
-    @Nested
-    class WhenServiceIsAssignedToMultipleContainers {
-        @Nested
-        class GivenOneInstance {
-            @Test
-            void theServiceWillBeAssignedToMultipleContainers() {
-                underTest.getContainer("demoapp1", servicesBuilder.instance1);
-                underTest.getContainer("demoapp2", servicesBuilder.instance1);
-
-                List<APIContainer> containersForService = underTest.getContainersForService("service1");
-                assertEquals(2, containersForService.size());
-                assertEquals(2, underTest.getContainerCount());
-                assertEquals(2, underTest.getAllContainers().size());
-            }
-        }
-    }
-
-    @Nested
-    class WhenCalculatingContainerTotals {
-        InstanceInfo instance1;
-        InstanceInfo instance2;
-
-        @BeforeEach
-        void prepareApplications() {
-            instance1 = servicesBuilder.createInstance("service1", "demoapp");
-            instance2 = servicesBuilder.createInstance("service2", "demoapp");
-            Application application1 = new Application();
-            application1.addInstance(instance1);
-            Application application2 = new Application();
-            application2.addInstance(instance2);
-
-            when(cachedServicesService.getService("service1")).thenReturn(application1);
-            when(cachedServicesService.getService("service2")).thenReturn(application2);
-            underTest = new CachedProductFamilyService(
-                cachedServicesService,
-                transformService,
-                cacheRefreshUpdateThresholdInMillis);
-        }
-
-        @Nested
-        class GivenAllServicesAreUp {
-            @Test
-            void containerStatusIsUp() {
-                underTest.getContainer("demoapp", instance1);
-                underTest.addServiceToContainer("demoapp", instance2);
-
-                APIContainer container = underTest.retrieveContainer("demoapp");
-                assertNotNull(container);
-
-                underTest.calculateContainerServiceValues(container);
-                assertThatContainerHasValidState(container, "UP", 2);
-            }
-        }
-
-        @Nested
-        class GivenAllServicesAreDown {
-            @Test
-            void containerStatusIsDown() {
-                instance1.setStatus(InstanceInfo.InstanceStatus.DOWN);
-                instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
-
-                underTest.getContainer("demoapp", instance1);
-                underTest.addServiceToContainer("demoapp", instance2);
-
-                APIContainer container = underTest.retrieveContainer("demoapp");
-                assertNotNull(container);
-
-                underTest.calculateContainerServiceValues(container);
-                assertThatContainerHasValidState(container, "DOWN", 0);
-            }
-        }
-
-        @Nested
-        class GivenSomeServicesAreDown {
-            @Test
-            void containerStatusIsWarning() {
-                instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
-
-                underTest.getContainer("demoapp", instance1);
-                underTest.addServiceToContainer("demoapp", instance2);
-
-                APIContainer container = underTest.retrieveContainer("demoapp");
-                assertNotNull(container);
-
-                underTest.calculateContainerServiceValues(container);
-                assertThatContainerHasValidState(container, "WARNING", 1);
-            }
-        }
-
-        void assertThatContainerHasValidState(APIContainer container, String state, int activeServices) {
-            assertNotNull(container);
-
-            underTest.calculateContainerServiceValues(container);
-            assertEquals(state, container.getStatus());
-            assertEquals(2, container.getTotalServices().intValue());
-            assertEquals(activeServices, container.getActiveServices().intValue());
-        }
-    }
-
-    @Nested
     class WhenCallSaveContainerFromInstance {
         @Nested
         class AndWhenCachedInstance {
@@ -293,7 +130,8 @@ class CachedProductFamilyServiceTest {
             class GivenInstanceIsInCacheAndNothingChanged {
                 @Test
                 void theOriginalTimestampDoesntChange() {
-                    APIContainer originalContainer = underTest.getContainer("demoapp", instance);
+                    // This actually behaves differently
+                    APIContainer originalContainer = underTest.saveContainerFromInstance("demoapp", instance);
                     Calendar createdTimestamp = originalContainer.getLastUpdatedTimestamp();
             
                     APIContainer updatedContainer = underTest.saveContainerFromInstance("demoapp", instance);
@@ -302,7 +140,141 @@ class CachedProductFamilyServiceTest {
                     assertThat(updatedTimestamp, is(createdTimestamp));
                 }
             }
+        }        
+
+        private void assertThatContainerIsCorrect(List<APIContainer> lsContainer, APIContainer containerToVerify, InstanceInfo instance) {
+            assertThat(lsContainer.size(), is(1));
+            assertThatMetadataAreCorrect(containerToVerify, instance.getMetadata());
+
+            Set<APIService> apiServices = containerToVerify.getServices();
+            assertThat(apiServices.size(), is(1));
+            assertThatInstanceIsCorrect(apiServices.iterator().next(), instance);
         }
+
+        private void assertThatInstanceIsCorrect(APIService result, InstanceInfo correct) {
+            assertThat(result.getServiceId(), is(correct.getAppName().toLowerCase()));
+            assertThat(result.isSecured(), is(correct.isPortEnabled(InstanceInfo.PortType.SECURE)));
+            assertThat(result.getHomePageUrl(), is(correct.getHomePageUrl()));
+        }
+
+        private void assertThatMetadataAreCorrect(APIContainer result, Map<String, String> correct) {
+            assertThat(result.getId(), is(correct.get(CATALOG_ID)));
+            assertThat(result.getTitle(), is(correct.get(CATALOG_TITLE)));
+            assertThat(result.getDescription(), is(correct.get(CATALOG_DESCRIPTION)));
+            assertThat(result.getVersion(), is(correct.get(CATALOG_VERSION)));
+        }
+    }
+
+    @Nested
+    class WhenRetrievingUpdatedContainers {
+        @Nested
+        class GivenExistingTilesAreValid {
+            @Test
+            void returnExistingTiles() {
+                underTest.saveContainerFromInstance("demoapp", servicesBuilder.instance1);
+                underTest.saveContainerFromInstance("demoapp2", servicesBuilder.instance2);
+
+                Collection<APIContainer> containers = underTest.getRecentlyUpdatedContainers();
+                assertEquals(2, containers.size());
+            } 
+        }
+
+        @Nested
+        class GivenOneTileIsTooOld {
+            @Test
+            void returnOnlyOneService() throws InterruptedException {
+                // To speed up the test, create instance which consider even 5 milliseconds as old.
+                underTest = new CachedProductFamilyService(
+                    null,
+                    transformService,
+                    5);
+                // This is considered as old update.
+                underTest.saveContainerFromInstance("demoapp", servicesBuilder.instance1);
+    
+                Thread.sleep(10);
+    
+                underTest.saveContainerFromInstance("demoapp2", servicesBuilder.instance2);
+    
+                Collection<APIContainer> containers = underTest.getRecentlyUpdatedContainers();
+                assertEquals(1, containers.size());
+            }
+        }
+    }
+
+    @Nested
+    class WhenCalculatingContainerTotals {
+        @Nested
+        class AndStatusIsInvolved {
+            InstanceInfo instance1;
+            InstanceInfo instance2;
+
+            @BeforeEach
+            void prepareApplications() {
+                instance1 = servicesBuilder.createInstance("service1", "demoapp");
+                instance2 = servicesBuilder.createInstance("service2", "demoapp");
+                Application application1 = new Application();
+                application1.addInstance(instance1);
+                Application application2 = new Application();
+                application2.addInstance(instance2);
+
+                when(cachedServicesService.getService("service1")).thenReturn(application1);
+                when(cachedServicesService.getService("service2")).thenReturn(application2);
+                underTest = new CachedProductFamilyService(
+                    cachedServicesService,
+                    transformService,
+                    cacheRefreshUpdateThresholdInMillis);
+            }
+
+            @Nested
+            class GivenAllServicesAreUp {
+                @Test
+                void containerStatusIsUp() {
+                    underTest.saveContainerFromInstance("demoapp", instance1);
+                    underTest.addServiceToContainer("demoapp", instance2);
+
+                    APIContainer container = underTest.getContainerById("demoapp");
+                    assertNotNull(container);
+
+                    underTest.calculateContainerServiceValues(container);
+                    assertThatContainerHasValidState(container, "UP", 2);
+                }
+            }
+
+            @Nested
+            class GivenAllServicesAreDown {
+                @Test
+                void containerStatusIsDown() {
+                    instance1.setStatus(InstanceInfo.InstanceStatus.DOWN);
+                    instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
+
+                    underTest.saveContainerFromInstance("demoapp", instance1);
+                    underTest.addServiceToContainer("demoapp", instance2);
+
+                    APIContainer container = underTest.getContainerById("demoapp");
+                    assertNotNull(container);
+
+                    underTest.calculateContainerServiceValues(container);
+                    assertThatContainerHasValidState(container, "DOWN", 0);
+                }
+            }
+
+            @Nested
+            class GivenSomeServicesAreDown {
+                @Test
+                void containerStatusIsWarning() {
+                    instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
+
+                    underTest.saveContainerFromInstance("demoapp", instance1);
+                    underTest.addServiceToContainer("demoapp", instance2);
+
+                    APIContainer container = underTest.getContainerById("demoapp");
+                    assertNotNull(container);
+
+                    underTest.calculateContainerServiceValues(container);
+                    assertThatContainerHasValidState(container, "WARNING", 1);
+                }
+            }
+    }
 
         @Nested
         class GivenMultipleApiIds {
@@ -319,7 +291,7 @@ class CachedProductFamilyServiceTest {
                     )
                 );
                 doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
-                APIContainer apiContainer = underTest.retrieveContainer(SERVICE_ID);
+                APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
                 underTest.calculateContainerServiceValues(apiContainer);
 
                 APIService apiService = apiContainer.getServices().iterator().next();
@@ -332,62 +304,63 @@ class CachedProductFamilyServiceTest {
         }
 
         @Nested
-        class GivenSsoAndNonSsoInstances {
-            @Test
-            void returnNonSso() {
-                Application application = servicesBuilder.createApp(
-                    SERVICE_ID,
-                    servicesBuilder.createInstance(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "bypass")),
-                    servicesBuilder.createInstance(SERVICE_ID, "catalog2", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"))
-                );
-                doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
-                APIContainer apiContainer = underTest.retrieveContainer(SERVICE_ID);
-                underTest.calculateContainerServiceValues(apiContainer);
+        class AndSsoInvolved {
 
-                assertFalse(apiContainer.isSso());
-                for (APIService apiService : apiContainer.getServices()) {
-                    assertFalse(apiService.isSsoAllInstances());
+            @Nested
+            class GivenSsoAndNonSsoInstances {
+                @Test
+                void returnNonSso() {
+                    Application application = servicesBuilder.createApp(
+                        SERVICE_ID,
+                        servicesBuilder.createInstance(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "bypass")),
+                        servicesBuilder.createInstance(SERVICE_ID, "catalog2", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"))
+                    );
+                    doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
+
+                    APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
+                    underTest.calculateContainerServiceValues(apiContainer);
+
+                    assertFalse(apiContainer.isSso());
+                    for (APIService apiService : apiContainer.getServices()) {
+                        assertFalse(apiService.isSsoAllInstances());
+                    }
+                }
+            }
+
+            @Nested
+            class GivenAllInstancesAreSso {
+                @Test
+                void returnSso() {
+                    InstanceInfo instanceInfo = servicesBuilder.createInstance(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
+                    doReturn(servicesBuilder.createApp(SERVICE_ID, instanceInfo)).when(cachedServicesService).getService(SERVICE_ID);
+                    APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
+                    underTest.calculateContainerServiceValues(apiContainer);
+
+                    assertTrue(apiContainer.isSso());
+                    for (APIService apiService : apiContainer.getServices()) {
+                        assertTrue(apiService.isSso());
+                        assertTrue(apiService.isSsoAllInstances());
+                    }
                 }
             }
         }
 
-        @Nested
-        class GivenAllInstancesAreSso {
-            @Test
-            void returnSso() {
-                InstanceInfo instanceInfo = servicesBuilder.createInstance(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
-                doReturn(servicesBuilder.createApp(SERVICE_ID, instanceInfo)).when(cachedServicesService).getService(SERVICE_ID);
-                APIContainer apiContainer = underTest.retrieveContainer(SERVICE_ID);
-                underTest.calculateContainerServiceValues(apiContainer);
+        void assertThatContainerHasValidState(APIContainer container, String state, int activeServices) {
+            assertNotNull(container);
 
-                assertTrue(apiContainer.isSso());
-                for (APIService apiService : apiContainer.getServices()) {
-                    assertTrue(apiService.isSso());
-                    assertTrue(apiService.isSsoAllInstances());
-                }
-            }
+            underTest.calculateContainerServiceValues(container);
+            assertEquals(state, container.getStatus());
+            assertEquals(2, container.getTotalServices().intValue());
+            assertEquals(activeServices, container.getActiveServices().intValue());
         }
-    } 
-
-    private void assertThatContainerIsCorrect(List<APIContainer> lsContainer, APIContainer containerToVerify, InstanceInfo instance) {
-        assertThat(lsContainer.size(), is(1));
-        assertThatMetadataAreCorrect(containerToVerify, instance.getMetadata());
-
-        Set<APIService> apiServices = containerToVerify.getServices();
-        assertThat(apiServices.size(), is(1));
-        assertThatInstanceIsCorrect(apiServices.iterator().next(), instance);
     }
 
-    private void assertThatInstanceIsCorrect(APIService result, InstanceInfo correct) {
-        assertThat(result.getServiceId(), is(correct.getAppName().toLowerCase()));
-        assertThat(result.isSecured(), is(correct.isPortEnabled(InstanceInfo.PortType.SECURE)));
-        assertThat(result.getHomePageUrl(), is(correct.getHomePageUrl()));
-    }
-
-    private void assertThatMetadataAreCorrect(APIContainer result, Map<String, String> correct) {
-        assertThat(result.getId(), is(correct.get(CATALOG_ID)));
-        assertThat(result.getTitle(), is(correct.get(CATALOG_TITLE)));
-        assertThat(result.getDescription(), is(correct.get(CATALOG_DESCRIPTION)));
-        assertThat(result.getVersion(), is(correct.get(CATALOG_VERSION)));
+    @Nested
+    class WhenGettingContainerWithoutServiceInstances {
+        @Test
+        void noServicesAreWithinTheContainer() {
+            assertThat(underTest.getContainerCount(), is(0));
+            assertThat(underTest.getAllContainers().size(), is(0));
+        }
     }
 }
