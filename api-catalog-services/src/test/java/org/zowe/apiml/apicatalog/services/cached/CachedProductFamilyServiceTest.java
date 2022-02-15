@@ -146,45 +146,6 @@ class CachedProductFamilyServiceTest {
     }
 
     @Nested
-    class WhenUpdatingContainer {
-        @Nested
-        class GivenTheContainerAlreadyExists {
-            @Nested
-            class AndNothingChanged {
-                @Test
-                void theOriginalTimestampDoesntChange() {
-                    APIContainer originalContainer = underTest.getContainer("demoapp", servicesBuilder.instance1);
-                    Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
-            
-                    APIContainer updatedContainer = underTest.createContainerFromInstance("demoapp", servicesBuilder.instance1);
-                    Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
-            
-                    boolean equals = updatedTimestamp.equals(createTimestamp);
-                    assertTrue(equals);
-                }
-            }
-
-            @Nested
-            class AndNewVersionIsProvided {
-                @Test
-                void metadataIsProvided() {
-                    // Create the initial container
-                    String serviceId = "apptoupdate",
-                        catalogId = "demoapp";
-                    APIContainer container =
-                        underTest.createContainerFromInstance(serviceId, servicesBuilder.createInstance(serviceId, catalogId));
-
-                    String newTitle = "New Title";
-                    underTest.updateContainerFromInstance(serviceId, servicesBuilder.createInstance(serviceId, catalogId,
-                        "1.0.1", newTitle));
-
-                    assertEquals(container.getTitle(), newTitle);
-                }
-            }
-        }
-    }
-
-    @Nested
     class WhenCalculatingContainerTotals {
         InstanceInfo instance1;
         InstanceInfo instance2;
@@ -325,6 +286,20 @@ class CachedProductFamilyServiceTest {
     
                     List<APIContainer> lsContainer = underTest.getRecentlyUpdatedContainers();
                     assertThatContainerIsCorrect(lsContainer, updatedContainer, updatedInstance);
+                }
+            }
+
+            @Nested
+            class GivenInstanceIsInCacheAndNothingChanged {
+                @Test
+                void theOriginalTimestampDoesntChange() {
+                    APIContainer originalContainer = underTest.getContainer("demoapp", instance);
+                    Calendar createdTimestamp = originalContainer.getLastUpdatedTimestamp();
+            
+                    APIContainer updatedContainer = underTest.saveContainerFromInstance("demoapp", instance);
+                    Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
+            
+                    assertThat(updatedTimestamp, is(createdTimestamp));
                 }
             }
         }

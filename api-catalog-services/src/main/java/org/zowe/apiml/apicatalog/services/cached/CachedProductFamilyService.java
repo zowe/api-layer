@@ -182,7 +182,7 @@ public class CachedProductFamilyService {
      * @param instanceInfo    the service instance
      */
     @CachePut(key = "#productFamilyId")
-    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
+    private APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
             container = createNewContainerFromService(productFamilyId, instanceInfo);
@@ -358,17 +358,6 @@ public class CachedProductFamilyService {
             .apiId(apiId)
             .gatewayUrls(gatewayUrls)
             .build();
-    }
-
-    /**
-     * Update a containers details using a service's metadata
-     *
-     * @param productFamilyId the product family id of the container
-     * @param instanceInfo    the service instance
-     */
-    @CacheEvict(key = "#productFamilyId")
-    public void updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
-        createContainerFromInstance(productFamilyId, instanceInfo);
     }
 
     /**

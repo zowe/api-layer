@@ -76,7 +76,7 @@ class InstanceInitializeServiceTest {
 
         instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
 
-        verify(cachedProductFamilyService, times(2)).createContainerFromInstance(
+        verify(cachedProductFamilyService, times(2)).saveContainerFromInstance(
             apiCatalogInstance.getMetadata().get(CATALOG_ID),
             apiCatalogInstance
         );
@@ -95,7 +95,7 @@ class InstanceInitializeServiceTest {
             .stream()
             .filter(f -> !f.getAppName().equals(catalogId.toUpperCase()))
             .forEach(instanceInfo ->
-                verify(cachedProductFamilyService, times(1)).createContainerFromInstance(
+                verify(cachedProductFamilyService, times(1)).saveContainerFromInstance(
                     instanceInfo.getMetadata().get(CATALOG_ID),
                     instanceInfo
                 ));
