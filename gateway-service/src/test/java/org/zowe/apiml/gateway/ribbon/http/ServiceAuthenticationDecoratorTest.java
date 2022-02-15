@@ -21,7 +21,7 @@ import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -36,7 +36,7 @@ class ServiceAuthenticationDecoratorTest {
     private static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
 
     ServiceAuthenticationService serviceAuthenticationService = mock(ServiceAuthenticationService.class);
-    AuthSourceServiceImpl authSourceService = mock(AuthSourceServiceImpl.class);
+    AuthSourceService authSourceService = mock(AuthSourceService.class);
     InstanceInfo info = InstanceInfo.Builder.newBuilder().setInstanceId("instanceid").setAppName("appname").build();
 
     ServiceAuthenticationDecorator decorator;

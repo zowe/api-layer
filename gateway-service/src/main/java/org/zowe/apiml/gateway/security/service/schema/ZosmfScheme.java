@@ -18,7 +18,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -37,7 +37,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ZosmfScheme implements AbstractAuthenticationScheme {
 
-    private final AuthSourceServiceImpl authSourceService;
+    private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
     @Override

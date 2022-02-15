@@ -18,7 +18,7 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 
 import java.util.Optional;
 
@@ -29,7 +29,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class SafIdtScheme implements AbstractAuthenticationScheme {
-    private final AuthSourceServiceImpl authSourceService;
+    private final AuthSourceService authSourceService;
     private final SafIdtProvider safIdtProvider;
 
     @Override

@@ -22,7 +22,7 @@ import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
@@ -31,7 +31,7 @@ import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServi
 public class ServiceAuthenticationDecorator {
 
     private final ServiceAuthenticationService serviceAuthenticationService;
-    private final AuthSourceServiceImpl authSourceService;
+    private final AuthSourceService authSourceService;
 
     /**
      * If a service requires authentication,

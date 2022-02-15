@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.token.QueryResponse.Source;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -31,12 +31,12 @@ import static org.mockito.Mockito.when;
 
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
-    private AuthSourceServiceImpl authSourceService;
+    private AuthSourceService authSourceService;
     private SafRestAuthenticationService safAuthenticationService;
 
     @BeforeEach
     void setUp() {
-        authSourceService = mock(AuthSourceServiceImpl.class);
+        authSourceService = mock(AuthSourceService.class);
         safAuthenticationService = mock(SafRestAuthenticationService.class);
         underTest = new SafIdtScheme(authSourceService, safAuthenticationService);
     }

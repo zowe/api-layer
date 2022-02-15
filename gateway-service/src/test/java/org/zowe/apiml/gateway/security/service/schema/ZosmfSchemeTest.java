@@ -25,7 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -47,7 +47,7 @@ import static org.zowe.apiml.gateway.security.service.schema.ZosmfScheme.ZosmfCo
 class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Mock
-    private AuthSourceServiceImpl authSourceService;
+    private AuthSourceService authSourceService;
 
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;

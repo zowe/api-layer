@@ -37,7 +37,7 @@ import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
@@ -76,7 +76,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     private AuthenticationSchemeFactory authenticationSchemeFactory;
 
     @Autowired
-    private AuthSourceServiceImpl authSourceService;
+    private AuthSourceService authSourceService;
 
     @Autowired
     private ServiceAuthenticationService serviceAuthenticationService;

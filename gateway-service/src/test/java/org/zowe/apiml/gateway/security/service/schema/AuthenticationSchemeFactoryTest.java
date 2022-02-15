@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
@@ -52,7 +52,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     void testInit_OK() {
         assertDoesNotThrow(() -> {
             new AuthenticationSchemeFactory(
-                mock(AuthSourceServiceImpl.class),
+                mock(AuthSourceService.class),
                 Arrays.asList(
                     createScheme(AuthenticationScheme.BYPASS, true),
                     createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
@@ -72,7 +72,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
         // no default
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new AuthenticationSchemeFactory(mock(AuthSourceServiceImpl.class), schemes);
+            new AuthenticationSchemeFactory(mock(AuthSourceService.class), schemes);
         });
         assertTrue(exception.getMessage().contains("No scheme"));
     }
@@ -85,7 +85,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
             createScheme(AuthenticationScheme.ZOWE_JWT, false)
         );
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new AuthenticationSchemeFactory(mock(AuthSourceServiceImpl.class), schemes);
+            new AuthenticationSchemeFactory(mock(AuthSourceService.class), schemes);
         });
         assertTrue(exception.getMessage().contains("Multiple scheme"));
         assertTrue(exception.getMessage().contains("as default"));
@@ -99,7 +99,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
             createScheme(AuthenticationScheme.BYPASS, true),
             createScheme(AuthenticationScheme.BYPASS, false));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new AuthenticationSchemeFactory(mock(AuthSourceServiceImpl.class), schemes);
+            new AuthenticationSchemeFactory(mock(AuthSourceService.class), schemes);
         });
         assertTrue(exception.getMessage().contains("Multiple beans for scheme"));
         assertTrue(exception.getMessage().contains("AuthenticationSchemeFactoryTest$1"));
@@ -108,7 +108,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     @Test
     void testGetSchema() {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
-            mock(AuthSourceServiceImpl.class),
+            mock(AuthSourceService.class),
             Arrays.asList(
                 createScheme(AuthenticationScheme.BYPASS, true),
                 createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
@@ -128,7 +128,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         final AbstractAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
         final AbstractAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
 
-        AuthSourceServiceImpl as = mock(AuthSourceServiceImpl.class);
+        AuthSourceService as = mock(AuthSourceService.class);
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(as, Arrays.asList(byPass, passTicket));
         Authentication authentication = new Authentication(AuthenticationScheme.BYPASS, "applid1");
 
@@ -176,7 +176,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     @Test
     void testUnknownScheme() {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
-            mock(AuthSourceServiceImpl.class),
+            mock(AuthSourceService.class),
             Arrays.asList(
                 createScheme(AuthenticationScheme.BYPASS, true),
                 createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),

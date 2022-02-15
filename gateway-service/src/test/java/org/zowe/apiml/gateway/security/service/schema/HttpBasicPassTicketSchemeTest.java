@@ -22,6 +22,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
@@ -54,7 +55,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     @BeforeEach
     void init() {
         PassTicketService passTicketService = new PassTicketService();
-        AuthSourceServiceImpl authSourceService = new AuthSourceServiceImpl();
+        AuthSourceService authSourceService = new AuthSourceServiceImpl();
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
     }
 
@@ -66,7 +67,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void testCreateCommand() {
         PassTicketService passTicketService = new PassTicketService();
-        AuthSourceServiceImpl authSourceService = mock(AuthSourceServiceImpl.class);
+        AuthSourceService authSourceService = mock(AuthSourceService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
@@ -117,7 +118,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
         PassTicketService passTicketService = mock(PassTicketService.class);
-        AuthSourceServiceImpl authSourceService = mock(AuthSourceServiceImpl.class);
+        AuthSourceService authSourceService = mock(AuthSourceService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
@@ -148,7 +149,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void getExceptionWhenUserIdNotValid() {
         String applId = "APPLID";
         PassTicketService passTicketService = new PassTicketService();
-        AuthSourceServiceImpl authSourceService = mock(AuthSourceServiceImpl.class);
+        AuthSourceService authSourceService = mock(AuthSourceService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
@@ -165,7 +166,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void testIsRequiredValidJwt() {
         PassTicketService passTicketService = new PassTicketService();
-        AuthSourceServiceImpl authSourceService = mock(AuthSourceServiceImpl.class);
+        AuthSourceService authSourceService = mock(AuthSourceService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
@@ -186,7 +187,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
     private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {
         PassTicketService passTicketService = new PassTicketService();
-        AuthSourceServiceImpl authSourceService = mock(AuthSourceServiceImpl.class);
+        AuthSourceService authSourceService = mock(AuthSourceService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar c = Calendar.getInstance();
