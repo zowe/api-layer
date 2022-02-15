@@ -165,43 +165,6 @@ class CachedProductFamilyServiceTest {
             }
 
             @Nested
-            class AndServiceIdChanged {
-                @Test
-                void returnUpdatedTimestamp() throws InterruptedException {
-                    APIContainer originalContainer = underTest.getContainer("demoapp", servicesBuilder.instance1);
-                    Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
-            
-                    Thread.sleep(100);
-            
-                    APIContainer updatedContainer = underTest.createContainerFromInstance("demoapp",
-                        servicesBuilder.createInstance("service",
-                            "demoapp",
-                            "Title 2",
-                            "Description 2",
-                            "1.0.1",
-                            InstanceInfo.InstanceStatus.UP));
-                    Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
-            
-                    boolean equals = updatedTimestamp.equals(createTimestamp);
-                    assertFalse(equals);
-            
-                    Thread.sleep(100);
-            
-                    underTest.updateContainerFromInstance("demoapp",
-                        servicesBuilder.createInstance("service",
-                            "demoapp",
-                            "Title 2",
-                            "Description 2",
-                            "2.0.0",
-                            InstanceInfo.InstanceStatus.UP));
-                    Calendar retrievedTimestamp = updatedContainer.getLastUpdatedTimestamp();
-            
-                    equals = updatedTimestamp.equals(retrievedTimestamp);
-                    assertFalse(equals);
-                }
-            }
-
-            @Nested
             class AndNewVersionIsProvided {
                 @Test
                 void metadataIsProvided() {
