@@ -98,7 +98,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
 
             return responseBody.getJwt();
         } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden e) {
-            throw new SafIdtAuthException("Unable to connect to ZSS authentication service", e);
+            throw new SafIdtAuthException("Authentication to ZSS failed", e);
         }
     }
 

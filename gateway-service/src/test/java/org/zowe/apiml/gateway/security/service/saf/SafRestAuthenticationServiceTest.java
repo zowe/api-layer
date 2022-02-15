@@ -10,198 +10,147 @@
 package org.zowe.apiml.gateway.security.service.saf;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-
-import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class SafRestAuthenticationServiceTest {
-    private SafRestAuthenticationService underTest;
 
-    private AuthenticationService authenticationService;
+    @Mock
     private RestTemplate restTemplate;
 
-    private PassTicketService passTicketService;
-    private final String VALID_USERNAME = "am456723";
+    private SafRestAuthenticationService underTest;
+
+    private final static String VALID_USERNAME = "am456723";
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(AuthenticationService.class);
-        restTemplate = mock(RestTemplate.class);
-        passTicketService = mock(PassTicketService.class);
-
-        underTest = new SafRestAuthenticationService(restTemplate, authenticationService, passTicketService);
+        underTest = new SafRestAuthenticationService(null, restTemplate);
         underTest.authenticationUrl = "https://localhost:10013/zss/saf/generate";
         underTest.verifyUrl = "https://localhost:10013/zss/saf/verify";
     }
 
     @Nested
-    class WhenGenerating {
-        @Nested
-        class GivenValidJwtToken {
-            @BeforeEach
-            void prepareValidToken() {
-                String validToken = "validToken";
-                TokenAuthentication unauthenticated = new TokenAuthentication(validToken);
-                unauthenticated.setAuthenticated(true);
+    @DisplayName("When greeting")
+    class WhenGeneratingTest {
 
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(validToken));
-                when(authenticationService.validateJwtToken(validToken)).thenReturn(unauthenticated);
-            }
+        @Nested
+        @DisplayName("Given valid JWT")
+        class GivenValidJwtTest {
 
             @Nested
-            class ReturnValidToken {
+            @DisplayName("Return valid token")
+            class ReturnValidTokenTest {
+
                 @Test
                 void givenValidResponse() {
                     String validSafToken = "validSafToken";
 
-                    ResponseEntity<Object> response = mock(ResponseEntity.class);
-                    when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
-                    when(response.getStatusCode()).thenReturn(HttpStatus.CREATED);
-                    SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
-                    responseBody.setJwt(validSafToken);
-                    when(response.getBody()).thenReturn(responseBody);
+                    SafRestAuthenticationService.Token responseBody =
+                            new SafRestAuthenticationService.Token(validSafToken, "applid");
+                    ResponseEntity<SafRestAuthenticationService.Token> response =
+                            new ResponseEntity<>(responseBody, HttpStatus.CREATED);
+                    when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                            .thenReturn(response);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
+                    String token = underTest.generate(VALID_USERNAME, "password".toCharArray(), "ANYAPPL");
 
-                    assertThat(token.isPresent(), is(true));
-                    assertThat(token.get(), is(validSafToken));
+                    assertThat(token, is(validSafToken));
                 }
             }
 
             @Nested
-            class ReturnEmpty {
+            @DisplayName("Return Exception")
+            class ReturnExceptionTest {
+
                 @Test
                 void givenUnauthorizedResponse() {
-                    HttpClientErrorException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
-                    when(restTemplate.postForEntity(any(), any(), any())).thenThrow(exception);
+                    HttpClientErrorException exception =
+                            HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
+                    when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                            .thenThrow(exception);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
-                    assertThat(token.isPresent(), is(false));
+                    assertThrows(SafIdtAuthException.class,
+                            () -> underTest.generate(VALID_USERNAME, "password".toCharArray(), "ANYAPPL"));
                 }
 
                 @Test
                 void givenBadResponse() {
-                    ResponseEntity<Object> response = mock(ResponseEntity.class);
-                    when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
-                    when(response.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
+                    ResponseEntity<SafRestAuthenticationService.Token> response =
+                            new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+                    when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                            .thenReturn(response);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
-                    assertThat(token.isPresent(), is(false));
-                }
-
-                @Test
-                void givenEmptyResponse() {
-                    ResponseEntity<Object> response = mock(ResponseEntity.class);
-                    when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
-                    when(response.getStatusCode()).thenReturn(HttpStatus.CREATED);
-                    when(response.getBody()).thenReturn(null);
-
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
-                    assertThat(token.isPresent(), is(false));
+                    assertThrows(SafIdtException.class,
+                            () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
                 }
             }
-
-            @Nested
-            class ThrowException {
-                @Test
-                void givenInvalidPassticket() throws IRRPassTicketGenerationException {
-                    String validSafToken = "validSafToken";
-
-                    ResponseEntity<Object> response = mock(ResponseEntity.class);
-                    when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
-                    when(response.getStatusCode()).thenReturn(HttpStatus.CREATED);
-                    SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
-                    responseBody.setJwt(validSafToken);
-                    when(response.getBody()).thenReturn(responseBody);
-
-                    when(passTicketService.generate(any(), any())).thenThrow(new IRRPassTicketGenerationException(1, 2, 3));
-                    assertThrows(AuthenticationTokenException.class,
-                        () -> underTest.generate(VALID_USERNAME), "Exception is not AuthenticationTokenException");
-                }
-            }
-        }
-
-        @Nested
-        class ReturnEmpty {
-            @Test
-            void givenNoJwtToken() {
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
-
-                Optional<String> token = underTest.generate(VALID_USERNAME);
-                assertThat(token.isPresent(), is(false));
-            }
-
-            @Test
-            void givenInvalidJwtToken() {
-                String invalidToken = "invalidToken";
-                TokenAuthentication unauthenticated = new TokenAuthentication(invalidToken);
-                unauthenticated.setAuthenticated(false);
-
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(invalidToken));
-                when(authenticationService.validateJwtToken(invalidToken)).thenReturn(unauthenticated);
-
-                Optional<String> token = underTest.generate(VALID_USERNAME);
-                assertThat(token.isPresent(), is(false));
-            }
-
         }
     }
 
     @Nested
-    class WhenVerifying {
+    @DisplayName("When calling Verify")
+    class WhenVerifyingTest {
+
         @Nested
-        class ReturnFalse {
+        @DisplayName("Return false")
+        class ReturnFalseTest {
+
             @Test
             void givenNoSafToken() {
-                assertThat(underTest.verify(null), is(false));
+                assertThat(underTest.verify(null, null), is(false));
             }
 
             @Test
             void givenUnauthenticated() {
-                HttpClientErrorException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
-                when(restTemplate.postForEntity(any(), any(), any())).thenThrow(exception);
+                HttpClientErrorException exception =
+                        HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
+                when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(Void.class))).thenThrow(exception);
 
-                assertThat(underTest.verify("validSafToken"), is(false));
+                assertThat(underTest.verify("invalidSafToken", "applid"), is(false));
             }
 
             @Test
             void givenOtherWrongResponse() {
-                ResponseEntity<Object> response = mock(ResponseEntity.class);
-                when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
+                ResponseEntity<Void> response = mock(ResponseEntity.class);
+                when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(Void.class))).thenReturn(response);
                 when(response.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
 
-                assertThat(underTest.verify("validSafToken"), is(false));
+                assertThat(underTest.verify("validSafToken", "applid"), is(false));
             }
         }
 
         @Nested
-        class ReturnTrue {
+        @DisplayName("Return true")
+        class ReturnTrueTest {
+
             @Test
             void givenCorrectResponse() {
-                ResponseEntity<Object> response = mock(ResponseEntity.class);
-                when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
+                ResponseEntity<Void> response = mock(ResponseEntity.class);
+                when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(Void.class))).thenReturn(response);
                 when(response.getStatusCode()).thenReturn(HttpStatus.OK);
 
-                assertThat(underTest.verify("validSafToken"), is(true));
+                assertThat(underTest.verify("validSafToken", "applid"), is(true));
             }
         }
     }
+
 }

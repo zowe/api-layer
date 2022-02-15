@@ -97,10 +97,8 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 ResponseEntity<SafRestAuthenticationService.Token> response = mock(ResponseEntity.class);
                 when(mockTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
                         .thenReturn(response);
-                when(response.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.CREATED);
                 SafRestAuthenticationService.Token responseBody =
-                        new SafRestAuthenticationService.Token("jwt", "applid");
-                responseBody.setJwt(resultSafToken);
+                        new SafRestAuthenticationService.Token(resultSafToken, "applid");
                 when(response.getBody()).thenReturn(responseBody);
 
                 //@formatter:off
