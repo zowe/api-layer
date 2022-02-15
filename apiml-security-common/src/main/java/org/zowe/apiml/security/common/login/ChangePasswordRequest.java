@@ -26,12 +26,6 @@ public class ChangePasswordRequest {
     @JsonProperty("newPwd")
     private String newPassword;
 
-    public ChangePasswordRequest(String username, String password, String newPassword) {
-        this.username = username;
-        this.password = password;
-        this.newPassword = newPassword;
-    }
-
     public ChangePasswordRequest(LoginRequest loginRequest) {
         this.username = loginRequest.getUsername();
         this.password = loginRequest.getPassword();
