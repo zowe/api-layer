@@ -12,35 +12,34 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import java.util.Optional;
 
 /**
- * Interface represents main methods of service for getting the source of authentication and process it.
+ * Interface represents main methods of service which gets the source of authentication and process it.
  */
 public interface AuthSourceService {
 
     /**
      * Core method of the interface. Gets specific source of authentication from request and defines precedence
      * in case if more than one source is present.
-     * @return AuthSource object which hold original source of authentication (token or client certificate)
+     * @return AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
      */
     Optional<AuthSource> getAuthSource();
 
     /**
      * Implements validation logic for specific source of authentication.
-     * For example validates JWT token with z/OSMF or APIML or perform user mapping for client certificate.
-     * @param authSource AuthSource object which hold original source of authentication (token or client certificate)
+     * @param authSource AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
      * @return true if authentication source is valid
      */
     boolean isValid(AuthSource authSource);
 
     /**
-     * Parses the source of authentication and provides basic detials like userId or expiration date.
-     * @param authSource
-     * @return
+     * Parses the source of authentication and provides basic details like userId or expiration date.
+     * @param authSource AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
+     * @return authentication source in parsed form
      */
     AuthSource.Parsed parse(AuthSource authSource);
 
     /**
      * Generates LTPA token from current source of authentication.
-     * @param AuthSource object which hold original source of authentication (token or client certificate)
+     * @param authSource AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
      * @return LTPA token
      */
     String getLtpaToken(AuthSource authSource);

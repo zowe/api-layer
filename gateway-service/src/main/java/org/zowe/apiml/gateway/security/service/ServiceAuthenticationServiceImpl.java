@@ -159,7 +159,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
                 final Optional<AuthSource> authSource = authSourceService.getAuthSource();
                 cmd = getAuthenticationCommand(auth, authSource.orElse(null));
 
-                // if authentication schema required valid JWT, check it
+                // if authentication schema required valid authentication source, check it
                 if (cmd.isRequiredValidSource()) {
                     rejected = (!authSource.isPresent()) || !authSourceService.isValid(authSource.get());
                 }

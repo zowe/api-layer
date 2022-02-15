@@ -22,6 +22,9 @@ import org.zowe.apiml.security.common.token.QueryResponse.Source;
 @RequiredArgsConstructor
 @Getter
 public class JwtAuthSource implements AuthSource {
+    /**
+     * JWT token
+     */
     private final String source;
 
     @Override

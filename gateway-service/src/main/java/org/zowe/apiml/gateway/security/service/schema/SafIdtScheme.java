@@ -24,7 +24,7 @@ import java.util.Optional;
 
 /**
  * The scheme allowing for the safIdt authentication scheme.
- * It adds new header with the SAF IDT token in case of valid JWT provided.
+ * It adds new header with the SAF IDT token in case of valid authentication source provided.
  */
 @Component
 @RequiredArgsConstructor
@@ -59,7 +59,6 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
                 if (authSourceService.isValid(token)) {
                     AuthSource.Parsed parsedSource = authSourceService.parse(token);
                     if (parsedSource != null) {
-                        // Get principal from the token?
                         Optional<String> safIdt = safIdtProvider.generate(parsedSource.getUserId());
 
                         safIdt.ifPresent(safToken -> context.addZuulRequestHeader("X-SAF-Token", safToken));

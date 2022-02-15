@@ -31,7 +31,7 @@ public interface AbstractAuthenticationScheme {
      * This method decorate the request for target service
      *
      * @param authentication DTO describing details about authentication
-     * @param authSource User's parsed (Zowe's) JWT token, evaluated only, if needed
+     * @param authSource User's parsed authentication source (Zowe's JWT token, client certificate, etc.), evaluated only, if needed
      */
     AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource);
 

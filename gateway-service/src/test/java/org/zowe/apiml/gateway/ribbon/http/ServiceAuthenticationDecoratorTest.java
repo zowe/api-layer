@@ -23,7 +23,6 @@ import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationServi
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
 
@@ -96,8 +95,6 @@ class ServiceAuthenticationDecoratorTest {
     void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort() {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
-        TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
-//        doReturn(tokenAuthentication).when(authenticationService).validateJwtToken("jwtToken");
         when(authSourceService.isValid(any())).thenReturn(false);
 
         assertThrows(RequestAbortException.class, () ->

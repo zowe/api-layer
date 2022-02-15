@@ -79,7 +79,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     void givenNoToken_whenCreateCommand_thenDontAddZuulHeader() {
         when(authSourceService.getAuthSource()).thenReturn(Optional.empty());
 
-        zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken1")).apply(null);
+        zosmfScheme.createCommand(authentication, null).apply(null);
 
         verify(requestContext, never()).addZuulRequestHeader(anyString(), anyString());
 
@@ -171,7 +171,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         assertTrue(command.isExpired());
     }
 
-    private AuthSource.Parsed prepareQueryResponseForTime(int amountOfSeconds) {
+    private AuthSource.Parsed prepareParsedAuthSourceForTime(int amountOfSeconds) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.SECOND, amountOfSeconds);
         return new JwtAuthSource.Parsed("user", new Date(), c.getTime(), Source.ZOWE);
@@ -179,7 +179,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenTokenExpiredOneSecAgo_whenCreateCommand_thenTestCommandExpiration() {
-        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(prepareQueryResponseForTime(-1));
+        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(prepareParsedAuthSourceForTime(-1));
 
         AuthenticationCommand command = scheme.createCommand(null, new JwtAuthSource("jwtToken"));
 
@@ -188,7 +188,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenTokenThatWillExpireInOneSec_whenCreateCommand_thenTestCommandExpiration() {
-        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(prepareQueryResponseForTime(2));
+        when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(prepareParsedAuthSourceForTime(2));
 
         AuthenticationCommand command = scheme.createCommand(null, new JwtAuthSource("jwtToken"));
 

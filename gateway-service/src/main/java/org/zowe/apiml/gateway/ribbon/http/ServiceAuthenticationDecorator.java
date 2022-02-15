@@ -36,10 +36,10 @@ public class ServiceAuthenticationDecorator {
     /**
      * If a service requires authentication,
      *   verify that the specific instance was selected upfront
-     *   decide whether it requires valid JWT token and if it does
+     *   decide whether it requires valid authentication source (JWT token, client certificate etc.) and if it does
      *     verify that the request contains valid one
      *
-     * Prevent ribbon from retrying if Authentication Exception was thrown or if valid JWT token is required and wasn't
+     * Prevent ribbon from retrying if Authentication Exception was thrown or if valid authentication source is required and wasn't
      * provided.
      *
      * @param request Current http request.

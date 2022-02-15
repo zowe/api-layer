@@ -14,7 +14,7 @@ import java.util.Date;
 import org.zowe.apiml.security.common.token.QueryResponse.Source;
 
 /**
- * Interface defines simple source of authentication.
+ * Interface defines general source of authentication. Keeps original source of authentication (JWT token, client certificate etc.).
  */
 public interface AuthSource extends Serializable {
     Object getRawSource();
