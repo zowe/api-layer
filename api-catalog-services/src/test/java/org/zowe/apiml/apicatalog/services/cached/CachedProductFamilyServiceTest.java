@@ -125,21 +125,6 @@ class CachedProductFamilyServiceTest {
                     assertThatContainerIsCorrect(lsContainer, updatedContainer, updatedInstance);
                 }
             }
-
-            @Nested
-            class GivenInstanceIsInCacheAndNothingChanged {
-                @Test
-                void theOriginalTimestampDoesntChange() {
-                    // This actually behaves differently
-                    APIContainer originalContainer = underTest.saveContainerFromInstance("demoapp", instance);
-                    Calendar createdTimestamp = originalContainer.getLastUpdatedTimestamp();
-            
-                    APIContainer updatedContainer = underTest.saveContainerFromInstance("demoapp", instance);
-                    Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
-            
-                    assertThat(updatedTimestamp, is(createdTimestamp));
-                }
-            }
         }        
 
         private void assertThatContainerIsCorrect(List<APIContainer> lsContainer, APIContainer containerToVerify, InstanceInfo instance) {

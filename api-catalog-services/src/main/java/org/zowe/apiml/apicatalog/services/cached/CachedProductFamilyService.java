@@ -20,7 +20,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.model.SemanticVersion;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
