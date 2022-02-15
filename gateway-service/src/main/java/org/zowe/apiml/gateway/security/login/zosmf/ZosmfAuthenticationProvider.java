@@ -49,6 +49,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         final String newPassword = LoginRequest.getNewPassword(authentication);
         if (StringUtils.isNotEmpty(newPassword)) {
             zosmfService.changePassword(authentication);
+            authentication = new UsernamePasswordAuthenticationToken(user, newPassword);
         }
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
 
