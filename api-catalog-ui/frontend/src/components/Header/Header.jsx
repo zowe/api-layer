@@ -83,9 +83,9 @@ const Header = (props) => {
                         }}
                     >
                         <div id="profile-menu">
-                            Signed in as <strong>{username}</strong>
+                            Logged in as <strong>{username}</strong>
                             <MenuItem id="logout-button" data-testid="logout" onClick={handleLogout}>
-                                Sign out
+                                Log out
                             </MenuItem>
                         </div>
                     </Menu>
