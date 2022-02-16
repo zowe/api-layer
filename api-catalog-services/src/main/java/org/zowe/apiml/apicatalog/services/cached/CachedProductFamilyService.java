@@ -11,18 +11,15 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.model.SemanticVersion;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
@@ -112,21 +109,6 @@ public class CachedProductFamilyService {
     }
 
     /**
-     * return a cached service instance from a container
-     *
-     * @param productFamilyId the service identifier
-     * @return instances for this service (might be empty instances collection)
-     */
-    @Cacheable(key = "#productFamilyId+ #instanceInfo.appName")
-    public APIService getContainerService(final String productFamilyId, final InstanceInfo instanceInfo) {
-        APIContainer apiContainer = products.get(productFamilyId.toLowerCase());
-        Optional<APIService> result = apiContainer.getServices().stream()
-            .filter(service -> instanceInfo.getAppName().equalsIgnoreCase(service.getServiceId()))
-            .findFirst();
-        return result.orElse(null);
-    }
-
-    /**
      * Add service to container
      *
      * @param productFamilyId the service identifier
@@ -141,59 +123,71 @@ public class CachedProductFamilyService {
     }
 
     /**
-     * Retrieve a container from the cache
+     * Save a containers details using a service's metadata
      *
-     * @param productFamilyId the product family id
-     * @return a container
-     */
-    @Cacheable(key = "#productFamilyId", sync = true)
-    public APIContainer getContainer(final String productFamilyId, @NonNull InstanceInfo instanceInfo) {
-        return createContainerFromInstance(productFamilyId, instanceInfo);
-    }
-
-    /**
-     * Return an uncached container for a given family id
-     *
-     * @param productFamilyId find a container with this family id
-     * @return a container (or null)
-     */
-    public APIContainer retrieveContainer(@NonNull final String productFamilyId) {
-        return this.products.get(productFamilyId);
-    }
-
-    /**
-     * Return any containers which have the given service registered
-     *
-     * @param serviceId check for this service
-     * @return a list of containers
-     */
-    public List<APIContainer> getContainersForService(final String serviceId) {
-        return this.products.values().stream().filter(
-            container -> container.getServices().stream().anyMatch(service -> serviceId.equalsIgnoreCase(service.getServiceId()))
-        ).collect(toList());
-    }
-
-
-    /**
-     * Create a container from a service instance and add it to the cache
-     * or update an existing container if the instance version number has increased
-     *
-     * @param productFamilyId the product family id
+     * @param productFamilyId the product family id of the container
      * @param instanceInfo    the service instance
      */
     @CachePut(key = "#productFamilyId")
-    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
+    public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
             container = createNewContainerFromService(productFamilyId, instanceInfo);
         } else {
-            addServiceToContainer(productFamilyId, instanceInfo);
-            container = products.get(productFamilyId);
-            checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
+            Set<APIService> apiServices = container.getServices();
+            APIService service = createAPIServiceFromInstance(instanceInfo);
+            apiServices.remove(service);
+
+            apiServices.add(service);
+            container.setServices(apiServices);
+            //update container
+            String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_VERSION);
+            String title = instanceInfo.getMetadata().get(CATALOG_TITLE);
+            String description = instanceInfo.getMetadata().get(CATALOG_DESCRIPTION);
+
+            container.setVersion(versionFromInstance);
+            container.setTitle(title);
+            container.setDescription(description);
+            container.updateLastUpdatedTimestamp();
+
+            products.put(productFamilyId, container);
         }
+
         return container;
     }
 
+    /**
+     * Update the summary totals, sso and API IDs info for a container based on it's running services
+     *
+     * @param apiContainer calculate totals for this container
+     */
+    public void calculateContainerServiceValues(APIContainer apiContainer) {
+        if (apiContainer.getServices() == null) {
+            apiContainer.setServices(new HashSet<>());
+        }
+
+        int servicesCount = apiContainer.getServices().size();
+        int activeServicesCount = 0;
+        boolean isSso = servicesCount > 0;
+        for (APIService apiService : apiContainer.getServices()) {
+            if (update(apiService)) {
+                activeServicesCount ++;
+            }
+            isSso &= apiService.isSsoAllInstances();
+        }
+
+        setStatus(apiContainer, servicesCount, activeServicesCount);
+        apiContainer.setSso(isSso);
+    }
+
+    /**
+     * Return the number of containers (used for checking if a new container was created)
+     *
+     * @return the number of containers
+     */
+    public int getContainerCount() {
+        return products.size();
+    }
 
     /**
      * Try to transform the service homepage url and return it. If it fails,
@@ -281,42 +275,6 @@ public class CachedProductFamilyService {
     }
 
     /**
-     * Compare the version of the parent in the given instance
-     * If the version is greater, then update the parent
-     *
-     * @param instanceInfo service instance
-     * @param container    parent container
-     */
-    private void checkIfContainerShouldBeUpdatedFromInstance(InstanceInfo instanceInfo, APIContainer container) {
-        String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_VERSION);
-        // if the instance has a parent version
-        if (versionFromInstance != null) {
-            final SemanticVersion instanceVer = new SemanticVersion(versionFromInstance);
-            SemanticVersion containerVer;
-            if (container.getVersion() == null) {
-                containerVer = new SemanticVersion("0.0.0");
-            } else {
-                containerVer = new SemanticVersion(container.getVersion());
-            }
-
-            // Only update if the instance version is greater than the container version
-            int result = instanceVer.compareTo(containerVer);
-            if (result > 0) {
-                container.setVersion(versionFromInstance);
-                String title = instanceInfo.getMetadata().get(CATALOG_TITLE);
-                String description = instanceInfo.getMetadata().get(CATALOG_DESCRIPTION);
-                if (!container.getTitle().equals(title)) {
-                    container.setTitle(title);
-                }
-                if (!container.getDescription().equals(description)) {
-                    container.setDescription(description);
-                }
-                container.updateLastUpdatedTimestamp();
-            }
-        }
-    }
-
-    /**
      * Create a APIService object using the instances metadata
      *
      * @param instanceInfo the service instance
@@ -360,51 +318,6 @@ public class CachedProductFamilyService {
             .build();
     }
 
-    /**
-     * Update a containers details using a service's metadata
-     *
-     * @param productFamilyId the product family id of the container
-     * @param instanceInfo    the service instance
-     */
-    @CacheEvict(key = "#productFamilyId")
-    public void updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
-        createContainerFromInstance(productFamilyId, instanceInfo);
-    }
-
-    /**
-     * Save a containers details using a service's metadata
-     *
-     * @param productFamilyId the product family id of the container
-     * @param instanceInfo    the service instance
-     */
-    @CachePut(key = "#productFamilyId")
-    public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
-        APIContainer container = products.get(productFamilyId);
-        if (container == null) {
-            container = createNewContainerFromService(productFamilyId, instanceInfo);
-        } else {
-            Set<APIService> apiServices = container.getServices();
-            APIService service = createAPIServiceFromInstance(instanceInfo);
-            apiServices.remove(service);
-
-            apiServices.add(service);
-            container.setServices(apiServices);
-            //update container
-            String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_VERSION);
-            String title = instanceInfo.getMetadata().get(CATALOG_TITLE);
-            String description = instanceInfo.getMetadata().get(CATALOG_DESCRIPTION);
-
-            container.setVersion(versionFromInstance);
-            container.setTitle(title);
-            container.setDescription(description);
-            container.updateLastUpdatedTimestamp();
-
-            products.put(productFamilyId, container);
-        }
-
-        return container;
-    }
-
     private boolean isSso(InstanceInfo instanceInfo) {
         Map<String, String> eurekaMetadata = instanceInfo.getMetadata();
         return Authentication.builder()
@@ -440,39 +353,6 @@ public class CachedProductFamilyService {
         } else {
             apiContainer.setStatus("WARNING");
         }
-    }
-
-    /**
-     * Update the summary totals, sso and API IDs info for a container based on it's running services
-     *
-     * @param apiContainer calculate totals for this container
-     */
-    public void calculateContainerServiceValues(APIContainer apiContainer) {
-        if (apiContainer.getServices() == null) {
-            apiContainer.setServices(new HashSet<>());
-        }
-
-        int servicesCount = apiContainer.getServices().size();
-        int activeServicesCount = 0;
-        boolean isSso = servicesCount > 0;
-        for (APIService apiService : apiContainer.getServices()) {
-            if (update(apiService)) {
-                activeServicesCount ++;
-            }
-            isSso &= apiService.isSsoAllInstances();
-        }
-
-        setStatus(apiContainer, servicesCount, activeServicesCount);
-        apiContainer.setSso(isSso);
-    }
-
-    /**
-     * Return the number of containers (used for checking if a new container was created)
-     *
-     * @return the number of containers
-     */
-    public int getContainerCount() {
-        return products.size();
     }
 
 }

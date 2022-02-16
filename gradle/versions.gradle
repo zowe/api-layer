@@ -1,8 +1,9 @@
 ext {
     springBootVersion = '2.3.12.RELEASE'
-    springCloudVersion = '2.2.9.RELEASE'
+    springCloudVersion = '2.2.10.RELEASE'
+    springCloudCommonsVersion = '2.2.9.RELEASE'
     springSecurityVersion = '5.3.11.RELEASE!!'
-    springFrameworkVersion = '5.2.18.RELEASE!!'
+    springFrameworkVersion = '5.2.19.RELEASE!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
@@ -59,9 +60,9 @@ ext {
     swagger3ParserVersion = '2.0.17'
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
-    tomcatVersion = '9.0.54'
+    tomcatVersion = '9.0.58'
     velocityVersion = '2.3'
-    xstreamVersion = '1.4.18!!'
+    xstreamVersion = '1.4.19!!'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
@@ -84,7 +85,7 @@ ext {
         spring_cloud_starter_ribbon        : "org.springframework.cloud:spring-cloud-starter-netflix-ribbon:${springCloudVersion}",
         spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
         spring_cloud_starter_turbine       : "org.springframework.cloud:spring-cloud-starter-netflix-turbine:${springCloudVersion}",
-        spring_cloud_commons               : "org.springframework.cloud:spring-cloud-commons:${springCloudVersion}",
+        spring_cloud_commons               : "org.springframework.cloud:spring-cloud-commons:${springCloudCommonsVersion}",
 
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
         spring_security_core               : "org.springframework.security:spring-security-core:${springSecurityVersion}",
