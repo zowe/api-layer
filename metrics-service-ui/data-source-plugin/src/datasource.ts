@@ -32,14 +32,16 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         frame.addField({ name: 'time', type: FieldType.time });
         frame.addField({ name: 'value', type: FieldType.number });
 
+        console.log(query);
+
         const eventSource = new EventSource(
-          'https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=GATEWAY',
+          'https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=' + query.cluster,
           { withCredentials: true }
         );
         eventSource.addEventListener('message', (event) => {
           // "event.data" is a string
           const data = JSON.parse(event.data);
-          frame.add({ time: Date.now(), value: data['timestamp'] });
+          frame.add({ time: Date.now(), value: data[query.metricName] });
           subscriber.next({
             data: [frame],
             key: query.refId,
