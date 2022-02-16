@@ -54,21 +54,20 @@ class SafIdtControllerTest {
         mockMvc
             .perform(post("/zss/saf/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\": \"\", \"jwt\": \"\"}"))
+                .content("{\"username\": \"\", \"pass\": \"\"}"))
             .andExpect(status().is(SC_BAD_REQUEST));
     }
 
     @Test
     void whenCallAuthenticateEndpointWithValidPayload_thenReturnOkAndToken() throws Exception {
-        Token valid = new Token();
-        valid.setJwt("safJwt");
+        Token valid = new Token("safJwt");
 
         when(safProvider.authenticate(any())).thenReturn(Optional.of(valid));
         mockMvc
             .perform(
                 post("/zss/saf/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"username\": \"validName\", \"jwt\": \"validJwt\"}"))
+                        .content("{\"username\": \"validUser\", \"pass\": \"validPass\", \"appl\": \"ZOWEAPPL\"}"))
             .andExpect(status().is(SC_CREATED))
             .andExpect(content().json("{\"jwt\": \"safJwt\"}"));
     }
@@ -78,7 +77,7 @@ class SafIdtControllerTest {
         mockMvc
             .perform(post("/zss/saf/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\": \"validUser\", \"jwt\": \"invalidToken\"}"))
+                .content("{\"username\": \"validUser\", \"pass\": \"invalidPass\", \"appl\": \"ZOWEAPPL\"}"))
             .andExpect(status().is(SC_UNAUTHORIZED));
     }
 
@@ -119,4 +118,5 @@ class SafIdtControllerTest {
                 .content("{\"jwt\": \"invalid\"}"))
             .andExpect(status().is(SC_UNAUTHORIZED));
     }
+
 }

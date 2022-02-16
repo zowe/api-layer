@@ -126,7 +126,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     @AllArgsConstructor
     public static class Token {
         String jwt;
-        String applid;
+        String appl;
     }
 
     @lombok.Value

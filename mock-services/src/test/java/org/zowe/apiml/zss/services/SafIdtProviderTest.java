@@ -60,8 +60,7 @@ public class SafIdtProviderTest {
         class GivenExistingToken {
             @Test
             void tokenIsVerified() {
-                Token token = new Token();
-                token.setJwt("username;validJwt");
+                Token token = new Token("username;validJwt");
 
                 tokens.put("username", token.getJwt());
 

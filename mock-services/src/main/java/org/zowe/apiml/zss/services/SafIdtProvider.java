@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @Service
 public class SafIdtProvider {
-    private Map<String, String> providedTokens;
+    private final Map<String, String> providedTokens;
 
     public SafIdtProvider() {
         providedTokens = new HashMap<>();
@@ -36,8 +36,7 @@ public class SafIdtProvider {
         String token = authentication.getUsername() + ";" + UUID.randomUUID();
         providedTokens.put(authentication.getUsername(), token);
 
-        Token result = new Token();
-        result.setJwt(token);
+        Token result = new Token(token);
         return Optional.of(result);
     }
 

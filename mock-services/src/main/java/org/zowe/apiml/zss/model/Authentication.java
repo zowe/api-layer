@@ -13,6 +13,7 @@ import lombok.Data;
 
 @Data
 public class Authentication {
-    private String jwt;
     private String username;
+    private char[] pass;
+    private String appl;
 }
