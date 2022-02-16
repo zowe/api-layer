@@ -12,6 +12,7 @@ package org.zowe.apiml.client.services.apars;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.Cookie;
@@ -50,6 +51,7 @@ public class FunctionalApar implements Apar {
         Optional<ResponseEntity<?>> originalResult = (Optional<ResponseEntity<?>>) parameters[2];
         HttpServletResponse response = (HttpServletResponse) parameters[3];
         Map<String, String> headers = (Map<String, String>) parameters[4];
+        LoginBody body = (LoginBody) parameters[5];
         ResponseEntity<?> result = null;
         String token = jwtTokenService.extractToken(headers);
 
@@ -60,6 +62,9 @@ public class FunctionalApar implements Apar {
                     break;
                 case "verify":
                     result = handleAuthenticationVerify(headers, response);
+                    break;
+                case "update":
+                    result = handleAuthenticationUpdate(headers, body);
                     break;
                 case "delete":
                     result = handleAuthenticationDelete(headers);
@@ -106,6 +111,14 @@ public class FunctionalApar implements Apar {
      * for the authentication service is called with proper authorization.
      */
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
+        return null;
+    }
+
+    /**
+     * Override to provide a response entity, or set fields (like cookies) in the HTTP response when the update method
+     * for the authentication service is called with proper authorization.
+     */
+    protected ResponseEntity<?> handleAuthenticationUpdate(Map<String, String> headers, LoginBody loginBody) {
         return null;
     }
 
