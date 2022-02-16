@@ -12,20 +12,13 @@ package org.zowe.apiml.gateway.security.service.saf;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
 import lombok.*;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.*;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
 
 import static org.springframework.util.StringUtils.isEmpty;
@@ -39,13 +32,9 @@ import static org.springframework.util.StringUtils.isEmpty;
  * - apiml.security.saf.urls.authenticate - URL to generate token
  * - apiml.security.saf.urls.verify - URL to verify the validity of the token
  */
-@Slf4j
 @RequiredArgsConstructor
-@Service
-@ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
 public class SafRestAuthenticationService implements SafIdtProvider {
 
-    private final PassTicketService passTicketService;
     private final RestTemplate restTemplate;
 
     static final HttpHeaders HEADER = new HttpHeaders();
@@ -59,22 +48,6 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     String authenticationUrl;
     @Value("${apiml.security.saf.urls.verify}")
     String verifyUrl;
-
-    @Override
-    public String generate(String username, String applId) {
-        try {
-            char[] passTicket = passTicketService.generate(username, applId).toCharArray();
-            try {
-                return generate(username, passTicket, applId);
-            } finally {
-                Arrays.fill(passTicket, (char) 0);
-            }
-        } catch (IRRPassTicketGenerationException e) {
-            throw new PassTicketException(
-                    String.format("Could not generate PassTicket for user ID '%s' and APPLID '%s'", username, applId), e
-            );
-        }
-    }
 
     @Override
     public String generate(String username, char[] password, String applId) {
