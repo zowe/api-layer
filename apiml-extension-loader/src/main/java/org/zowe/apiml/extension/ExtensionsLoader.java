@@ -32,7 +32,6 @@ public class ExtensionsLoader implements ApplicationListener<ApplicationContextI
 
     @Override
     public void onApplicationEvent(ApplicationContextInitializedEvent event) {
-        log.info("on ApplicationContextInitializedEvent");
         if (!(event.getApplicationContext() instanceof BeanDefinitionRegistry)) {
             log.error("Expected Spring context to be a BeanDefinitionRegistry. Exiting Gateway Service");
             SpringApplication.exit(event.getApplicationContext(), () -> 1);
