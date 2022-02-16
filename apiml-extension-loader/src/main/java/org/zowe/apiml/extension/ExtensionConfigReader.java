@@ -9,12 +9,13 @@
 */
 package org.zowe.apiml.extension;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -51,16 +52,12 @@ public class ExtensionConfigReader {
         List<String> installedComponents = environment.getInstalledComponents();
         List<String> enabledComponents = environment.getEnabledComponents();
         List<ExtensionDefinition> extensions = new ArrayList<>();
-        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-        ObjectMapper jsonMapper = new ObjectMapper();
-
-        log.info("installed components: " + Arrays.toString(installedComponents.toArray()));
-        log.info("enabled components: " + Arrays.toString(enabledComponents.toArray()));
+        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()).configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper jsonMapper = new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         for (String installedComponent : installedComponents) {
             if (enabledComponents.contains(installedComponent)) {
                 String parentPath = environment.getExtensionDirectory() + File.separator + installedComponent;
-                log.info("check path: " + parentPath);
                 Path manifestYamlPath = Paths.get(parentPath + "/manifest.yaml");
                 Path manifestJsonPath = Paths.get(parentPath + "/manifest.json");
                 try {
@@ -68,8 +65,6 @@ public class ExtensionConfigReader {
                         extensions.add(yamlMapper.readValue(Files.readAllBytes(manifestYamlPath), ExtensionDefinition.class));
                     } else if (Files.exists(manifestJsonPath)) {
                         extensions.add(jsonMapper.readValue(Files.readAllBytes(manifestJsonPath), ExtensionDefinition.class));
-                    } else {
-                        log.info("No manifest found for component " + installedComponent);
                     }
                 } catch (Exception e) {
                     log.error("Failed reading component manifests", e);

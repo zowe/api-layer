@@ -42,15 +42,19 @@ public class ExtensionsLoader implements ApplicationListener<ApplicationContextI
 
             String[] extensionsBasePackages = configReader.getBasePackages();
             if (extensionsBasePackages.length > 0) {
-                scanner.scan(configReader.getBasePackages());
+                try {
+                    scanner.scan(configReader.getBasePackages());
 
-                String[] beanNames = scanner.getRegistry().getBeanDefinitionNames();
-                for (String name : beanNames) {
-                    if (!registry.containsBeanDefinition(name)) {
-                        registry.registerBeanDefinition(name, scanner.getRegistry().getBeanDefinition(name));
-                    } else {
-                        log.info("Bean with name " + name + " is already registered in the context");
+                    String[] beanNames = scanner.getRegistry().getBeanDefinitionNames();
+                    for (String name : beanNames) {
+                        if (!registry.containsBeanDefinition(name)) {
+                            registry.registerBeanDefinition(name, scanner.getRegistry().getBeanDefinition(name));
+                        } else {
+                            log.info("Bean with name " + name + " is already registered in the context");
+                        }
                     }
+                } catch (Exception e) {
+                    log.error("Failed loading extensions", e);
                 }
             }
         }

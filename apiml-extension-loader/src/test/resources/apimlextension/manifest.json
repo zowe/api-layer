@@ -1,5 +1,6 @@
 {
     "name": "apimlextension",
+    "id": "org.zowe.apiml.sdk.apiml-sample-extension-package",
     "apimlServices": {
         "basePackage": "org.zowe"
     }
