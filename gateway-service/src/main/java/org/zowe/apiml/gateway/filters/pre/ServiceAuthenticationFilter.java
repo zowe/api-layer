@@ -78,7 +78,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
             rejected = true;
         } catch (Exception e) {
             throw new ZuulRuntimeException(
-                new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), String.valueOf(e))
+                new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getLocalizedMessage())
             );
         }
 
@@ -91,7 +91,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
                 cmd.apply(null);
             } catch (Exception e) {
                 throw new ZuulRuntimeException(
-                    new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), String.valueOf(e))
+                    new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getLocalizedMessage())
                 );
             }
         }

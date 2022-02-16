@@ -14,7 +14,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -37,8 +39,10 @@ import static org.springframework.util.StringUtils.isEmpty;
  * - apiml.security.saf.urls.authenticate - URL to generate token
  * - apiml.security.saf.urls.verify - URL to verify the validity of the token
  */
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
+@Service
+@ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
 public class SafRestAuthenticationService implements SafIdtProvider {
     private final RestTemplate restTemplate;
     private final AuthenticationService authenticationService;
