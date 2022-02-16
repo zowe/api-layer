@@ -43,7 +43,7 @@ class SafRestAuthenticationServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SafRestAuthenticationService(null, restTemplate);
+        underTest = new SafRestAuthenticationService(restTemplate);
         underTest.authenticationUrl = "https://localhost:10013/zss/saf/generate";
         underTest.verifyUrl = "https://localhost:10013/zss/saf/verify";
     }
