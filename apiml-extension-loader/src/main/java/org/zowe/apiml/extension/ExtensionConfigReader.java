@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -53,9 +54,13 @@ public class ExtensionConfigReader {
         ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
         ObjectMapper jsonMapper = new ObjectMapper();
 
+        log.info("installed components: " + Arrays.toString(installedComponents.toArray()));
+        log.info("enabled components: " + Arrays.toString(enabledComponents.toArray()));
+
         for (String installedComponent : installedComponents) {
             if (enabledComponents.contains(installedComponent)) {
                 String parentPath = environment.getExtensionDirectory() + File.separator + installedComponent;
+                log.info("check path: " + parentPath);
                 Path manifestYamlPath = Paths.get(parentPath + "/manifest.yaml");
                 Path manifestJsonPath = Paths.get(parentPath + "/manifest.json");
                 try {

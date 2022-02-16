@@ -40,14 +40,17 @@ public class ExtensionsLoader implements ApplicationListener<ApplicationContextI
             BeanDefinitionRegistry registry = (BeanDefinitionRegistry) event.getApplicationContext();
             ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
 
-            scanner.scan(configReader.getBasePackages());
+            String[] extensionsBasePackages = configReader.getBasePackages();
+            if (extensionsBasePackages.length > 0) {
+                scanner.scan(configReader.getBasePackages());
 
-            String[] beanNames = scanner.getRegistry().getBeanDefinitionNames();
-            for (String name : beanNames) {
-                if (!registry.containsBeanDefinition(name)) {
-                    registry.registerBeanDefinition(name, scanner.getRegistry().getBeanDefinition(name));
-                } else {
-                    log.info("Bean with name " + name + " is already registered in the context");
+                String[] beanNames = scanner.getRegistry().getBeanDefinitionNames();
+                for (String name : beanNames) {
+                    if (!registry.containsBeanDefinition(name)) {
+                        registry.registerBeanDefinition(name, scanner.getRegistry().getBeanDefinition(name));
+                    } else {
+                        log.info("Bean with name " + name + " is already registered in the context");
+                    }
                 }
             }
         }

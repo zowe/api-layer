@@ -93,6 +93,18 @@ class ExtensionsLoaderTest {
     }
 
     @Test
+    void onEvent_noExtensions() {
+        ConfigurableApplicationContext registry = mock(ConfigurableApplicationContext.class);
+        when(reader.getBasePackages()).thenReturn(new String[]{ });
+        ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
+        SpringApplication application = mock(SpringApplication.class);
+        ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, registry);
+        doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
+        publisher.publishEvent(event);
+        verify(registry, never()).containsBeanDefinition(anyString());
+    }
+
+    @Test
     void onEvent_ContextIsRightType() {
         AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(this.getClass()).getTestContext().getApplicationContext();
         ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
