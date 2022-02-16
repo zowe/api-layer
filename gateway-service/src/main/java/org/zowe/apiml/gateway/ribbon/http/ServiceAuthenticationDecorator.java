@@ -55,7 +55,7 @@ public class ServiceAuthenticationDecorator {
             AuthenticationCommand cmd;
 
             try {
-                final Optional<AuthSource> authSource = authSourceService.getAuthSource();
+                final Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
                 cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, authSource.orElse(null));
 
                 if (cmd == null) {

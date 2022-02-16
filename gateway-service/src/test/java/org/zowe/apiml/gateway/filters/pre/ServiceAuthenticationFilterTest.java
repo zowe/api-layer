@@ -69,13 +69,13 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         RequestContext.testSetCurrentContext(requestContext);
 
         JwtAuthSource authSource = new JwtAuthSource("token");
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(authSource));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
 
         serviceAuthenticationFilter.run();
         verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", authSource);
         verify(command, times(1)).apply(null);
 
-        when(authSourceService.getAuthSource()).thenReturn(Optional.empty());
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
         serviceAuthenticationFilter.run();
         verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", null);
         verify(serviceAuthenticationService, times(2)).getAuthenticationCommand(anyString(), any());
@@ -88,7 +88,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
             }
         });
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("error");
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("token")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("token")));
         when(serviceAuthenticationService.getAuthenticationCommand(eq("error"), any()))
             .thenThrow(new RuntimeException("Potential exception"));
         try {
@@ -107,7 +107,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         RequestContext requestContext = mock(RequestContext.class);
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
-        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSource();
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
 
         AuthenticationCommand cmd = mock(AuthenticationCommand.class);
         doReturn(cmd).when(serviceAuthenticationService).getAuthenticationCommand("service", authSource);

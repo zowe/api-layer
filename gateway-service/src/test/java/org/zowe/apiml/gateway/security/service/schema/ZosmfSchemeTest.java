@@ -77,7 +77,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenNoToken_whenCreateCommand_thenDontAddZuulHeader() {
-        when(authSourceService.getAuthSource()).thenReturn(Optional.empty());
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
 
         zosmfScheme.createCommand(authentication, null).apply(null);
 
@@ -88,7 +88,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void givenRequestWithNoCookie_whenCreateCommand_thenAddOnlyLtpaCookie() {
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken1")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken1")));
         when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken1"))).thenReturn("ltpa1");
         when(authSourceService.parse(new JwtAuthSource("jwtToken1"))).thenReturn(parsedSource);
         requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, null);
@@ -101,7 +101,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void givenRequestWithSetCookie_whenCreateCommand_thenAppendSetCookie() {
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
         when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken2"))).thenReturn("ltpa2");
         when(authSourceService.parse(new JwtAuthSource("jwtToken2"))).thenReturn(parsedSource);
         requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, "cookie1=1");
@@ -114,7 +114,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void givenNotValidToken_whenCreateCommand_thenThrowTokenNotValidException() {
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken3")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken3")));
         when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken3"))).thenThrow(new TokenNotValidException("Token is not valid"));
         when(authSourceService.parse(new JwtAuthSource("jwtToken3"))).thenReturn(parsedSource);
 
@@ -127,7 +127,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void givenExpiredToken_whenCreateCommand_thenThrowJwtTokenException() {
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken3")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken3")));
         when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken3"))).thenThrow(new JwtException("Token is expired"));
         when(authSourceService.parse(new JwtAuthSource("jwtToken3"))).thenReturn(parsedSource);
 
@@ -204,14 +204,14 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         ZosmfScheme scheme = new ZosmfScheme(authSourceService, authConfigurationProperties);
         QueryResponse queryResponse = new QueryResponse("domain", "username", new Date(), new Date(), QueryResponse.Source.ZOSMF);
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtTokenZosmf")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtTokenZosmf")));
         when(authSourceService.parse(new JwtAuthSource("jwtTokenZosmf"))).thenReturn(parsedSource);
 
         AuthenticationCommand command = scheme.createCommand(new Authentication(AuthenticationScheme.ZOSMF, null), new JwtAuthSource("jwtTokenZosmf"));
 
         command.apply(null);
 
-        verify(authSourceService, times(1)).getAuthSource();
+        verify(authSourceService, times(1)).getAuthSourceFromRequest();
         verify(authSourceService, times(2)).parse(new JwtAuthSource("jwtTokenZosmf"));
         verify(authSourceService, never()).getLtpaToken(new JwtAuthSource("jwtTokenZosmf"));
     }
@@ -225,7 +225,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     private void prepareAuthenticationService(String ltpaToken) {
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
         when(authSourceService.getLtpaToken(new JwtAuthSource("jwtToken2"))).thenReturn(ltpaToken);
         when(authSourceService.parse(new JwtAuthSource("jwtToken2"))).thenReturn(parsedSource);
     }
@@ -278,7 +278,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         requestContext.setRequest(request);
 
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(), queryResponse.getSource());
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
         when(authSourceService.parse(any())).thenReturn(parsedSource);
         when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn("apimlAuthenticationToken");
 

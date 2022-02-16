@@ -64,7 +64,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         try {
-            Optional<AuthSource> authSource = authSourceService.getAuthSource();
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
             cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authSource.orElse(null));
 
             // Verify authentication source validity if it is required for the schema

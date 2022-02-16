@@ -119,15 +119,5 @@ public class X509Scheme implements AbstractAuthenticationScheme {
                 }
             }
         }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return false;
-        }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
     }
 }

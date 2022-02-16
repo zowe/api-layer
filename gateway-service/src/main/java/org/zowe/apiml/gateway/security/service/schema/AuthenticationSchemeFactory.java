@@ -83,7 +83,7 @@ public class AuthenticationSchemeFactory {
             scheme = getSchema(authentication.getScheme());
         }
 
-        return scheme.createCommand(authentication, authSourceService.getAuthSource().orElse(null));
+        return scheme.createCommand(authentication, authSourceService.getAuthSourceFromRequest().orElse(null));
     }
 
 }

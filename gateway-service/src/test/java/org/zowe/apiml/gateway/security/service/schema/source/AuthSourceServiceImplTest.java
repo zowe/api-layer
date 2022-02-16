@@ -47,7 +47,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
         String jwtToken = "jwtToken";
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(jwtToken));
 
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSource();
+        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
 
         verify(authenticationService, times(1)).getJwtTokenFromRequest(any());
         Assertions.assertTrue(authSource.isPresent());
@@ -59,7 +59,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
     void givenNoTokenInRequest_thenAuthSourceIsPresent() {
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
 
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSource();
+        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
 
         verify(authenticationService, times(1)).getJwtTokenFromRequest(any());
         Assertions.assertFalse(authSource.isPresent());

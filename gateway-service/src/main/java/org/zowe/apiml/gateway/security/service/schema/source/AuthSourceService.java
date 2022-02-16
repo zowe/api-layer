@@ -21,7 +21,7 @@ public interface AuthSourceService {
      * in case if more than one source is present.
      * @return AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
      */
-    Optional<AuthSource> getAuthSource();
+    Optional<AuthSource> getAuthSourceFromRequest();
 
     /**
      * Implements validation logic for specific source of authentication.

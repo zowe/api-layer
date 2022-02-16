@@ -38,17 +38,6 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
         public void applyToRequest(HttpRequest request) {
             // do nothing
         }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return false;
-        }
-
     };
 
     /**
@@ -65,8 +54,15 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * it is required be logged and send valid authentication source.
      * @return true is valid authentication source is required, otherwise false
      */
+    public boolean isRequiredValidSource() {
+        return false;
+    }
 
-    public abstract boolean isRequiredValidSource();
+    @Override
+    public boolean isExpired() {
+        return false;
+    }
+
 
     /**
      * Used for deferred processing of command during Ribbon Retry.

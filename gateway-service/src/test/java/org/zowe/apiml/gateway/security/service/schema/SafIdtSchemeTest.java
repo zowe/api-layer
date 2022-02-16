@@ -61,7 +61,7 @@ class SafIdtSchemeTest {
                 TokenAuthentication authentication = new TokenAuthentication(validUsername, "validJwtToken");
                 authentication.setAuthenticated(true);
 
-                when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("validJwtToken")));
+                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("validJwtToken")));
                 when(authSourceService.isValid(new JwtAuthSource("validJwtToken"))).thenReturn(true);
                 when(authSourceService.parse(new JwtAuthSource("validJwtToken"))).thenReturn(new JwtAuthSource.Parsed(validUsername, new Date(), new Date(), Source.ZOWE));
                 when(safAuthenticationService.generate(validUsername)).thenReturn(Optional.of("validTokenValidJwtToken"));
@@ -78,7 +78,7 @@ class SafIdtSchemeTest {
             void givenNoJwtToken() {
                 InstanceInfo info = mock(InstanceInfo.class);
 
-                when(authSourceService.getAuthSource()).thenReturn(Optional.empty());
+                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
 
                 commandUnderTest.apply(info);
 
@@ -89,7 +89,7 @@ class SafIdtSchemeTest {
             void givenInvalidJwtToken() {
                 InstanceInfo info = mock(InstanceInfo.class);
 
-                when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("invalidJwtToken")));
+                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("invalidJwtToken")));
                 when(authSourceService.isValid(new JwtAuthSource("invalidJwtToken"))).thenReturn(false);
 
                 commandUnderTest.apply(info);

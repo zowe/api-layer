@@ -323,7 +323,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(requestContext.getRequest()).thenReturn(request);
         RequestContext.testSetCurrentContext(requestContext);
-        when(authSourceService.getAuthSource()).thenReturn(Optional.of(new JwtAuthSource("jwtToken01")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken01")));
         AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         when(scheme.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid0001")), any())).thenReturn(ac);
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(scheme);
@@ -422,7 +422,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         } else {
             stubber = doThrow(new TokenNotValidException("Token is not valid."));
         }
-        stubber.when(getUnProxy(authSourceService)).getAuthSource();
+        stubber.when(getUnProxy(authSourceService)).getAuthSourceFromRequest();
         doReturn(ac).when(schema).createCommand(authentication, new JwtAuthSource(jwtToken));
         doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
         doReturn(parsedSource).when(getUnProxy(authSourceService)).parse(new JwtAuthSource("validJwt"));

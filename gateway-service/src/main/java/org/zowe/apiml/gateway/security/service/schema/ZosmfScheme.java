@@ -94,7 +94,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
 
-            Optional<AuthSource> authSourceOptional = authSourceService.getAuthSource();
+            Optional<AuthSource> authSourceOptional = authSourceService.getAuthSourceFromRequest();
             authSourceOptional.ifPresent(authSource -> {
                 // parse authentication source to detect the source (z/OSMF / Zowe)
                 AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
@@ -122,7 +122,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         public void applyToRequest(HttpRequest request) {
             Cookies cookies = Cookies.of(request);
 
-            Optional<AuthSource> authSourceOptional = authSourceService.getAuthSource();
+            Optional<AuthSource> authSourceOptional = authSourceService.getAuthSourceFromRequest();
             authSourceOptional.ifPresent(authSource -> {
                 // parse JWT token to detect the source (z/OSMF / Zowe)
                 AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);

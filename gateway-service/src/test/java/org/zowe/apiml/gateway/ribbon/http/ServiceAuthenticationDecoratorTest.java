@@ -131,7 +131,7 @@ class ServiceAuthenticationDecoratorTest {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSource();
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
@@ -143,7 +143,7 @@ class ServiceAuthenticationDecoratorTest {
         JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSource();
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);

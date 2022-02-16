@@ -54,7 +54,7 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
 
-            Optional<AuthSource> authSource = authSourceService.getAuthSource();
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
             authSource.ifPresent(token -> {
                 if (authSourceService.isValid(token)) {
                     AuthSource.Parsed parsedSource = authSourceService.parse(token);

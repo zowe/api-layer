@@ -31,7 +31,7 @@ public class AuthSourceServiceImpl implements AuthSourceService {
     @Autowired
     private AuthenticationService authenticationService;
 
-    public Optional<AuthSource> getAuthSource() {
+    public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
 
         Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());

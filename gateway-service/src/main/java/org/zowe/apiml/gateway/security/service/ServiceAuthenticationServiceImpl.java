@@ -156,7 +156,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
             boolean rejected = false;
             try {
-                final Optional<AuthSource> authSource = authSourceService.getAuthSource();
+                final Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
                 cmd = getAuthenticationCommand(auth, authSource.orElse(null));
 
                 // if authentication schema required valid authentication source, check it
@@ -174,17 +174,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
             cmd.apply(null);
         }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return false;
-        }
-
     }
 
     public class LoadBalancerAuthenticationCommand extends AuthenticationCommand {
@@ -200,17 +189,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         public void apply(InstanceInfo instanceInfo) {
             RequestContext.getCurrentContext().put(AUTHENTICATION_COMMAND_KEY, universal);
         }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return false;
-        }
-
     }
 
 }
