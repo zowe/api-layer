@@ -59,7 +59,6 @@ class SafIdtSchemeTest {
     @Nested
     @DisplayName("when token is requested")
     class WhenTokenIsRequestedTests {
-        AuthenticationCommand commandUnderTest;
 
         private static final String USERNAME = "USERNAME";
         private static final String APPLID = "ANYAPPL";
@@ -110,7 +109,7 @@ class SafIdtSchemeTest {
 
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
 
-                AuthenticationCommand ac = commandUnderTest = underTest.createCommand(auth, () -> queryResponse);
+                AuthenticationCommand ac = underTest.createCommand(auth, () -> queryResponse);
                 assertNotNull(ac);
 
                 HttpRequest httpRequest = new HttpGet("/test/request");
@@ -128,7 +127,7 @@ class SafIdtSchemeTest {
 
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
 
-                AuthenticationCommand ac = commandUnderTest = underTest.createCommand(auth, () -> queryResponse);
+                AuthenticationCommand ac = underTest.createCommand(auth, () -> queryResponse);
                 assertNotNull(ac);
                 assertFalse(ac.isExpired());
             }

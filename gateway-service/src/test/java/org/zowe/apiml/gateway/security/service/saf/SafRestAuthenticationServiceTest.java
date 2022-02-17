@@ -89,7 +89,7 @@ class SafRestAuthenticationServiceTest {
                             .thenThrow(exception);
 
                     assertThrows(SafIdtAuthException.class,
-                            () -> underTest.generate(VALID_USERNAME, "password".toCharArray(), "ANYAPPL"));
+                            () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
                 }
 
                 @Test
