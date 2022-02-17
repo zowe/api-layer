@@ -17,6 +17,9 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class ZoweRuntimeEnvironment {
 
     static final String INSTALLED_EXTENSIONS_ENV = "ZWE_INSTALLED_COMPONENTS";
@@ -26,10 +29,6 @@ public class ZoweRuntimeEnvironment {
     static final String COMPONENTS_APP_SERVER_DIR_ENV = "ZWE_components_app_server_pluginsDir";
     static final String PLUGINS_DIR_ENV = "ZWED_pluginsDir";
     static final String EXTENSION_DIR_ENV = "ZWE_zowe_extensionDirectory";
-
-    ZoweRuntimeEnvironment() {
-        super();
-    }
 
     public static ZoweRuntimeEnvironment defaultEnv() {
         return new ZoweRuntimeEnvironment();

@@ -33,7 +33,6 @@ public class ExtensionConfigReader {
     private final ZoweRuntimeEnvironment environment;
 
     public ExtensionConfigReader(ZoweRuntimeEnvironment environment) {
-        super();
         this.environment = environment;
     }
 
