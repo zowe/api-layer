@@ -43,7 +43,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  */
 @Slf4j
 @Service
-@CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
 
     @InjectApimlLogger
@@ -73,7 +72,6 @@ public class CachedProductFamilyService {
      *
      * @return instances
      */
-    @Cacheable
     public Collection<APIContainer> getAllContainers() {
         return products.values();
     }
@@ -114,7 +112,6 @@ public class CachedProductFamilyService {
      * @param productFamilyId the service identifier
      * @param instanceInfo    InstanceInfo
      */
-    @CachePut(key = "#productFamilyId")
     public void addServiceToContainer(final String productFamilyId, final InstanceInfo instanceInfo) {
         APIContainer apiContainer = products.get(productFamilyId);
         // fix - throw error if null
@@ -128,7 +125,6 @@ public class CachedProductFamilyService {
      * @param productFamilyId the product family id of the container
      * @param instanceInfo    the service instance
      */
-    @CachePut(key = "#productFamilyId")
     public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
