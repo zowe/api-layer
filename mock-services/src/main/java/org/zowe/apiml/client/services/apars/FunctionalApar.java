@@ -51,7 +51,6 @@ public class FunctionalApar implements Apar {
         Optional<ResponseEntity<?>> originalResult = (Optional<ResponseEntity<?>>) parameters[2];
         HttpServletResponse response = (HttpServletResponse) parameters[3];
         Map<String, String> headers = (Map<String, String>) parameters[4];
-        LoginBody body = (LoginBody) parameters[5];
         ResponseEntity<?> result = null;
         String token = jwtTokenService.extractToken(headers);
 
@@ -64,7 +63,10 @@ public class FunctionalApar implements Apar {
                     result = handleAuthenticationVerify(headers, response);
                     break;
                 case "update":
-                    result = handleAuthenticationUpdate(headers, body);
+                    if (parameters.length > 4) {
+                        LoginBody body = (LoginBody) parameters[5];
+                        result = handleAuthenticationUpdate(headers, body);
+                    }
                     break;
                 case "delete":
                     result = handleAuthenticationDelete(headers);

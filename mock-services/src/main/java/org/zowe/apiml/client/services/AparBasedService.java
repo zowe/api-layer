@@ -46,12 +46,17 @@ public class AparBasedService {
     public ResponseEntity<?> process(String calledService, String calledMethods, HttpServletResponse response, Map<String, String> headers, Object ... parameters) {
         try {
             List<Apar> applied = versions.fullSetOfApplied(baseVersion, appliedApars);
-            LoginBody body = (LoginBody) parameters[0];
             log.info("calledService: {}, calledMethods, {}", calledService, calledMethods);
             Optional<ResponseEntity<?>> result = Optional.empty();
             for (Apar apar : applied) {
                 log.info("applying: {}", apar);
-                result = apar.apply(calledService, calledMethods, result, response, headers, body);
+                if (parameters.length > 0) {
+                    LoginBody body = (LoginBody) parameters[0];
+                    result = apar.apply(calledService, calledMethods, result, response, headers, body);
+                }
+                else {
+                    result = apar.apply(calledService, calledMethods, result, response, headers);
+                }
                 log.info("result: {}", result);
             }
 

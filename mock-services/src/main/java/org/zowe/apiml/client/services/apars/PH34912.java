@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.client.services.apars;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.client.model.LoginBody;
@@ -19,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @SuppressWarnings("squid:S1452")
 public class PH34912 extends FunctionalApar {
     private final String keystorePath;
@@ -31,12 +29,10 @@ public class PH34912 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        log.error("SONO LA");
         if (isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         if (noAuthentication(headers)) {
-            log.error("SONO QUA");
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
