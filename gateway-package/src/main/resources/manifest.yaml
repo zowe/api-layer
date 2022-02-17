@@ -46,7 +46,7 @@ configs:
           enabled: false
           # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/saf-auth
           url:
-        provider: zosmf
+        provider: ""
         resourceClass: ZOWE
         resourceNamePrefix: "APIML."
       jwtInitializerTimeout: 5
