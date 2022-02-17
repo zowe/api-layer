@@ -7,7 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+import yaml from 'js-yaml';
 import * as YAML from 'yaml';
+import { toast } from 'react-toastify';
 import { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
@@ -17,6 +19,7 @@ export default class WizardDialog extends Component {
     constructor(props) {
         super(props);
         this.nextSave = this.nextSave.bind(this);
+        this.showFile = this.showFile.bind(this);
         this.renderDoneButtonText = this.renderDoneButtonText.bind(this);
     }
 
@@ -76,6 +79,26 @@ export default class WizardDialog extends Component {
         }
     };
 
+    // Convert an uploaded yaml file to JSON and save in local storage
+    showFile = (e) => {
+        e.preventDefault();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target.result;
+            try {
+                const obj = yaml.load(text);
+                this.props.storeUploadedYaml(obj);
+            } catch {
+                document.getElementById('yaml-browser').value = null;
+                toast.warn('Please make sure the file you are uploading is in valid YAML format!', {
+                    closeOnClick: true,
+                    autoClose: 4000,
+                });
+            }
+        };
+        reader.readAsText(e.target.files[0]);
+    };
+
     renderDoneButtonText() {
         if (this.props.enablerName === 'Static Onboarding' && this.props.userCanAutoOnboard) {
             return 'Save';
@@ -95,6 +118,10 @@ export default class WizardDialog extends Component {
                     </DialogHeader>
                     <DialogBody>
                         <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
+                        <div className="yaml-file-browser">
+                            <Text>Select your YAML configuration file to prefill the fields:</Text>
+                            <input id="yaml-browser" type="file" onChange={this.showFile} />
+                        </div>
                         <WizardNavigationContainer />
                     </DialogBody>
                     <DialogFooter className="dialog-footer">

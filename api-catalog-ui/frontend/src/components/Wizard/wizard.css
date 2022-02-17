@@ -76,3 +76,8 @@ label.wCheckBox span:last-child {
 .readyTab {
     font-weight: 800;
 }
+
+.yaml-file-browser {
+    display: flex;
+    flex-direction: row;
+}

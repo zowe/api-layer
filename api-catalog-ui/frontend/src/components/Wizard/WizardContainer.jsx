@@ -9,7 +9,13 @@
  */
 import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
-import { nextWizardCategory, wizardToggleDisplay, createYamlObject, validateInput } from '../../actions/wizard-actions';
+import {
+    nextWizardCategory,
+    wizardToggleDisplay,
+    createYamlObject,
+    validateInput,
+    storeUploadedYaml,
+} from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 import { sendYAML, notifyError } from '../../actions/wizard-fetch-actions';
 
@@ -30,5 +36,6 @@ const mapDispatchToProps = {
     validateInput,
     sendYAML,
     notifyError,
+    storeUploadedYaml,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(WizardDialog);
