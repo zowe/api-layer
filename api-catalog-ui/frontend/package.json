@@ -20,6 +20,7 @@
         "exception-formatter": "1.0.7",
         "history": "4.7.2",
         "install": "0.12.2",
+        "js-yaml": "^4.1.0",
         "lodash": "4.17.21",
         "loglevel": "1.6.1",
         "npm": "7.20.5",

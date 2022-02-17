@@ -18,6 +18,7 @@ import {
     REMOVE_INDEX,
     VALIDATE_INPUT,
     UPDATE_SERVICE_ID,
+    STORE_UPLOADED_YAML,
 } from '../constants/wizard-constants';
 
 /**
@@ -289,5 +290,16 @@ export function updateServiceId(value) {
     return {
         type: UPDATE_SERVICE_ID,
         payload: { value },
+    };
+}
+
+/**
+ * Store uploaded YAML file to prefill options for the wizard
+ * @param file JSON of all the yaml fields in the uploaded file
+ */
+export function storeUploadedYaml(file) {
+    return {
+        type: STORE_UPLOADED_YAML,
+        payload: { file },
     };
 }

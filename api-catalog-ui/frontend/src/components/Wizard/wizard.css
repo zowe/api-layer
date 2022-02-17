@@ -142,3 +142,7 @@ label.MuiFormLabel-root.MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLab
 .MuiFormControl-root.formField {
     width: 100%;
 }
+.yaml-file-browser {
+    display: flex;
+    flex-direction: row;
+}
