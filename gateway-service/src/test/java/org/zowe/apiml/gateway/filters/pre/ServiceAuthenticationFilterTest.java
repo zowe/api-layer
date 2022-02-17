@@ -97,7 +97,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
             assertTrue(zre.getCause() instanceof ZuulException);
             ZuulException ze = (ZuulException) zre.getCause();
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), ze.nStatusCode);
-            assertEquals(new RuntimeException("Potential exception"), ze.errorCause);
+            assertEquals(new RuntimeException("Potential exception").getLocalizedMessage(), ze.errorCause);
         }
     }
 
