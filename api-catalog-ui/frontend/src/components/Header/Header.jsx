@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useState } from 'react';
-import { Button, Link, Typography, Menu, MenuItem, makeStyles } from '@material-ui/core';
+import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled } from '@material-ui/core';
 import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
@@ -21,6 +21,36 @@ const useStyles = makeStyles({
         },
     },
 });
+
+const StyledMenu = styled((props) => (
+    <Menu
+        elevation={0}
+        anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+        }}
+        transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+        }}
+        {...props}
+    />
+))(({ theme }) => ({
+    '& .MuiPaper-root': {
+        borderRadius: 6,
+        marginTop: theme.spacing(2),
+        minWidth: 150,
+        '& .MuiMenu-list': {
+            padding: '0',
+        },
+        '& .MuiMenuItem-root': {
+            '& .MuiSvgIcon-root': {
+                fontSize: 10,
+                color: theme.palette.text.secondary,
+            },
+        },
+    },
+}));
 const Header = (props) => {
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -58,6 +88,7 @@ const Header = (props) => {
                 <div className="logout-container">
                     <Button
                         className={classes.root}
+                        data-testid="logout-menu"
                         aria-controls={open ? 'basic-menu' : undefined}
                         aria-expanded={open ? 'true' : undefined}
                         aria-haspopup="true"
@@ -67,7 +98,7 @@ const Header = (props) => {
                     >
                         {s}
                     </Button>
-                    <Menu
+                    <StyledMenu
                         keepMounted
                         open={open}
                         onClose={closeMenu}
@@ -83,12 +114,15 @@ const Header = (props) => {
                         }}
                     >
                         <div id="profile-menu">
-                            Logged in as <strong>{username}</strong>
+                            <Typography variant="subtitle2" gutterBottom component="div" id="user-info-text">
+                                Logged in as <strong>{username}</strong>
+                            </Typography>
+                            <Divider />
                             <MenuItem id="logout-button" data-testid="logout" onClick={handleLogout}>
                                 Log out
                             </MenuItem>
                         </div>
-                    </Menu>
+                    </StyledMenu>
                 </div>
             </div>
         </div>
