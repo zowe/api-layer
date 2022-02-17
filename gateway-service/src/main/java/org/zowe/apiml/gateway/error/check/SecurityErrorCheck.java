@@ -63,7 +63,7 @@ public class SecurityErrorCheck implements ErrorCheck {
             } else if (cause instanceof PassTicketException) {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
                 messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-                        cause.getLocalizedMessage()  + ". " + cause.getCause()
+                        cause.getLocalizedMessage() + ". " + cause.getCause()
                 ).mapToView();
             } else if (cause instanceof SafIdtAuthException) {
                 messageView = messageService.createMessage("org.zowe.apiml.security.idt.auth.failed",
@@ -79,8 +79,9 @@ public class SecurityErrorCheck implements ErrorCheck {
 
             if (cause instanceof SafIdtException) {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
-                messageView = messageService.createMessage("org.zowe.apiml.security.idt.failed",
-                        cause.getMessage() + ". " + cause.getCause()
+                messageView = messageService.createMessage(
+                        "org.zowe.apiml.security.idt.failed",
+                        cause.getLocalizedMessage()
                 ).mapToView();
             }
 

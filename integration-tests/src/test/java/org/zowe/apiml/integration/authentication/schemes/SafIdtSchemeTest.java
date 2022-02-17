@@ -11,6 +11,7 @@ package org.zowe.apiml.integration.authentication.schemes;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
@@ -35,9 +36,13 @@ public class SafIdtSchemeTest {
     }
 
     @Nested
-    class WhenUsingSafIdtAuthenticationScheme {
+    @DisplayName("When using SAF IDT authentication scheme")
+    class WhenUsingSafIdtAuthenticationSchemeTest {
+
         @Nested
-        class ResultContainsSafIdtInHeader {
+        @DisplayName("Result contains SAF IDT header")
+        class ResultContainsSafIdtInHeaderTest {
+
             @Test
             void givenJwtInCookie() {
                 JsonResponse response = gateway.authenticatedRoute("/api/v1/dcsafidt/request");
@@ -48,4 +53,5 @@ public class SafIdtSchemeTest {
             }
         }
     }
+
 }
