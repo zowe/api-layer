@@ -25,7 +25,17 @@ import DeleteIcon from '@material-ui/icons/Delete';
 class WizardInputs extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        let upYaml;
+        if (this.props.uploaded_yaml) {
+            upYaml = this.props.uploaded_yaml;
+            localStorage.setItem('uploaded_yaml', JSON.stringify(upYaml));
+        } else {
+            upYaml = localStorage.getItem('uploaded_yaml');
+        }
+        
+        this.state = {
+            uploaded_yaml: upYaml,
+        };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.addFields = this.addFields.bind(this);
         this.addFieldsToCurrentCategory = this.addFieldsToCurrentCategory.bind(this);
