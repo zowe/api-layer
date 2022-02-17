@@ -9,11 +9,13 @@
  */
 package org.zowe.apiml.client.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class LoginBody {
-    private String username;
-    private String password;
-    private String newPassword;
+    private String userID;
+    private String oldPwd;
+    private String newPwd;
 }

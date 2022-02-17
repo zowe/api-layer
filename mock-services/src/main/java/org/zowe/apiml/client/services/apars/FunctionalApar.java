@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.client.services.apars;
 
+import lombok.Data;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings({"squid:S1452", "squid:S1172"})
+@Data
 public class FunctionalApar implements Apar {
     private static final String COOKIE_HEADER = "cookie";
     private static final String JWT_TOKEN_NAME = "jwtToken";
@@ -31,7 +33,7 @@ public class FunctionalApar implements Apar {
     protected static final String AUTHORIZATION_HEADER = "authorization";
 
     private final List<String> usernames;
-    private final List<String> passwords;
+    private List<String> passwords;
     private JwtTokenService jwtTokenService;
 
     protected FunctionalApar(List<String> usernames, List<String> passwords) {
@@ -65,7 +67,7 @@ public class FunctionalApar implements Apar {
                 case "update":
                     if (parameters.length > 4) {
                         LoginBody body = (LoginBody) parameters[5];
-                        result = handleAuthenticationUpdate(headers, body);
+                        result = handleChangePassword(body);
                     }
                     break;
                 case "delete":
@@ -117,14 +119,6 @@ public class FunctionalApar implements Apar {
     }
 
     /**
-     * Override to provide a response entity, or set fields (like cookies) in the HTTP response when the update method
-     * for the authentication service is called with proper authorization.
-     */
-    protected ResponseEntity<?> handleAuthenticationUpdate(Map<String, String> headers, LoginBody loginBody) {
-        return null;
-    }
-
-    /**
      * Override to provide a response entity when the delete method for the authentication service is called
      * with proper authorization.
      */
@@ -137,6 +131,14 @@ public class FunctionalApar implements Apar {
      * is not explicitly handled.
      */
     protected ResponseEntity<?> handleAuthenticationDefault(Map<String, String> headers) {
+        return null;
+    }
+
+    /**
+     * Override to provide a response entity when the update method for the authentication service is called
+     * with proper authorization.
+     */
+    protected ResponseEntity<?> handleChangePassword(LoginBody body) {
         return null;
     }
 

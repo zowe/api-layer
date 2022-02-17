@@ -76,10 +76,28 @@ public class PH34912 extends FunctionalApar {
         return containsInvalidOrNoUser(headers) && noLtpaCookie(headers);
     }
 
+    private boolean isInternalError(LoginBody body) {
+        return body == null ||
+            body.getOldPwd().equals(body.getNewPwd());
+    }
+
+    private boolean isBadRequest(LoginBody body) {
+        return body == null ||
+            body.getUserID().isEmpty() ||
+            body.getOldPwd().isEmpty() ||
+            body.getNewPwd().isEmpty() ||
+            body.getOldPwd().equals(body.getNewPwd());
+    }
+
     @Override
-    protected ResponseEntity<?> handleAuthenticationUpdate(Map<String, String> headers, LoginBody loginBody) {
-        if (loginBody == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    protected ResponseEntity<?> handleChangePassword(LoginBody body) {
+        List<String> passwords = getPasswords();
+        passwords.add(body.getNewPwd());
+        setPasswords(passwords);
+        if (isInternalError(body)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } else if (isBadRequest(body)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
