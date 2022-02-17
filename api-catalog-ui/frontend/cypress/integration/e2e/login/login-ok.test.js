@@ -33,7 +33,6 @@ describe('>>> Login ok page test', () => {
 
     it('should logout and delete session cookie', () => {
         cy.get('button[data-testid="logout-menu"]').click();
-        cy.get('button[data-testid="logout"]').click();
         cy.contains('API Catalog');
 
         cy.getCookie('apimlAuthenticationToken').should('not.exist');

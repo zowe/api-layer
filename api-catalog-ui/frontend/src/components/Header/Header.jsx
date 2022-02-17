@@ -17,7 +17,7 @@ import './Header.css';
 const useStyles = makeStyles({
     root: {
         '&:hover': {
-            backgroundColor: 'rgba(16,155,255,0.94)',
+            backgroundColor: 'rgb(86, 145, 240)',
         },
     },
 });

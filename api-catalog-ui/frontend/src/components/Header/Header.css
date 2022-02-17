@@ -14,8 +14,9 @@
 
 #logout-button {
     height: auto;
-    text-align: left;
+    text-align: center;
     font-size: 0.875rem;
+    color: #3272d9;
 }
 
 #down-arrow {
