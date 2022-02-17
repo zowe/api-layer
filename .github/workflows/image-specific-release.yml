@@ -6,9 +6,6 @@ on:
             release_version:
                 description: 'The version that is going to be release'
                 required: true
-            new_version:
-                description: 'The version that should be used as a new one after the release.'
-                required: true
 
 jobs:
     publish-images:
