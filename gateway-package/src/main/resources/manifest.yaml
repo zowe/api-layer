@@ -56,8 +56,6 @@ configs:
         externalMapperUrl:
         # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
         externalMapperUser:
-      zosmf:
-        applid: IZUDFLT
     service:
       allowEncodedSlashes: true
       corsEnabled: false
