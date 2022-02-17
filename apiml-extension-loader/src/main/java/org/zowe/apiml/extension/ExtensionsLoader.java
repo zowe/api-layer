@@ -10,7 +10,6 @@
 package org.zowe.apiml.extension;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -33,8 +32,7 @@ public class ExtensionsLoader implements ApplicationListener<ApplicationContextI
     @Override
     public void onApplicationEvent(ApplicationContextInitializedEvent event) {
         if (!(event.getApplicationContext() instanceof BeanDefinitionRegistry)) {
-            log.error("Expected Spring context to be a BeanDefinitionRegistry. Exiting Gateway Service");
-            SpringApplication.exit(event.getApplicationContext(), () -> 1);
+            log.error("Expected Spring context to be a BeanDefinitionRegistry. Extensions are not loaded");
         } else {
             BeanDefinitionRegistry registry = (BeanDefinitionRegistry) event.getApplicationContext();
             ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);

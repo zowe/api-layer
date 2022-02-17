@@ -49,18 +49,19 @@ public class ZoweRuntimeEnvironment {
         return Optional.empty();
     }
 
-    List<String> getInstalledComponents() {
-        return Optional.ofNullable(System.getenv(INSTALLED_EXTENSIONS_ENV))
+    private List<String> getComponents(String env) {
+        return Optional.ofNullable(env)
                 .map(installed -> installed.split(","))
                 .map(Arrays::asList)
                 .orElse(emptyList());
     }
 
+    List<String> getInstalledComponents() {
+        return getComponents(System.getenv(INSTALLED_EXTENSIONS_ENV));
+    }
+
     List<String> getEnabledComponents() {
-        return Optional.ofNullable(System.getenv(ENABLED_EXTENSIONS_ENV))
-                .map(enabled -> enabled.split(","))
-                .map(Arrays::asList)
-                .orElse(emptyList());
+        return getComponents(System.getenv(ENABLED_EXTENSIONS_ENV));
     }
 
     String getExtensionDirectory() {
