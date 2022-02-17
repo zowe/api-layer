@@ -11,10 +11,13 @@ package org.zowe.apiml.client.services.apars;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -29,11 +32,11 @@ public class PH34912 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        if (isUnauthorized(headers)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
         if (noAuthentication(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (isUnauthorized(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         String[] credentials = getPiecesOfCredentials(headers);
@@ -77,28 +80,29 @@ public class PH34912 extends FunctionalApar {
     }
 
     private boolean isInternalError(LoginBody body) {
-        return body == null ||
-            body.getOldPwd().equals(body.getNewPwd());
+        return !StringUtils.isEmpty(body.getOldPwd()) &&
+            !StringUtils.isEmpty(body.getNewPwd()) && body.getOldPwd().equals(body.getNewPwd());
     }
 
     private boolean isBadRequest(LoginBody body) {
         return body == null ||
-            body.getUserID().isEmpty() ||
-            body.getOldPwd().isEmpty() ||
-            body.getNewPwd().isEmpty() ||
+            StringUtils.isEmpty(body.getUserID()) ||
+            StringUtils.isEmpty(body.getOldPwd()) ||
+            StringUtils.isEmpty(body.getNewPwd()) ||
             body.getOldPwd().equals(body.getNewPwd());
     }
 
     @Override
     protected ResponseEntity<?> handleChangePassword(LoginBody body) {
-        List<String> passwords = getPasswords();
-        passwords.add(body.getNewPwd());
-        setPasswords(passwords);
         if (isInternalError(body)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } else if (isBadRequest(body)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else {
+            List<String> passwords = new <String>ArrayList(Arrays.asList(getPasswords()));
+            passwords.add(body.getNewPwd());
+            setPasswords(passwords);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
