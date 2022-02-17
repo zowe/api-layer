@@ -14,17 +14,15 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 
-public class JwtUtilsTest {
+class JwtUtilsTest {
 
     @Test
     void testHandleJwtParserException() {
@@ -43,4 +41,5 @@ public class JwtUtilsTest {
         assertTrue(exception instanceof TokenNotValidException);
         assertEquals("An internal error occurred while validating the token therefore the token is no longer valid.", exception.getMessage());
     }
+
 }
