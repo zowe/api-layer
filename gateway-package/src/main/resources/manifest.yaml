@@ -46,7 +46,7 @@ configs:
           enabled: false
           # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/saf-auth
           url:
-        provider: zosmf
+        provider: ""
         resourceClass: ZOWE
         resourceNamePrefix: "APIML."
       jwtInitializerTimeout: 5
@@ -56,8 +56,6 @@ configs:
         externalMapperUrl:
         # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
         externalMapperUser:
-      zosmf:
-        applid: IZUDFLT
     service:
       allowEncodedSlashes: true
       corsEnabled: false
