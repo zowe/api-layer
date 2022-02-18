@@ -48,7 +48,7 @@ public class DiscoverableClientConfig {
     @Value("${server.ssl.trustStoreType}")
     private String trustStoreType;
 
-    @Value("${server.ssl.keyAlias}")
+    @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
     @Value("${server.ssl.keyPassword}")
