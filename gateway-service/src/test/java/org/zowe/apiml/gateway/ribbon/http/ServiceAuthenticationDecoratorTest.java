@@ -17,12 +17,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.AuthenticationException;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 
 import java.util.Optional;
 
@@ -35,7 +35,7 @@ class ServiceAuthenticationDecoratorTest {
     private static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
 
     ServiceAuthenticationService serviceAuthenticationService = mock(ServiceAuthenticationService.class);
-    AuthenticationService authenticationService = mock(AuthenticationService.class);
+    AuthSourceService authSourceService = mock(AuthSourceService.class);
     InstanceInfo info = InstanceInfo.Builder.newBuilder().setInstanceId("instanceid").setAppName("appname").build();
 
     ServiceAuthenticationDecorator decorator;
@@ -43,7 +43,7 @@ class ServiceAuthenticationDecoratorTest {
 
     @BeforeEach
     void setUp() {
-       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authenticationService);
+       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authSourceService);
        request = new HttpGet("/");
        RequestContext.getCurrentContext().clear();
     }
@@ -74,7 +74,7 @@ class ServiceAuthenticationDecoratorTest {
     void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
-        doReturn(TokenAuthentication.createAuthenticated("user", "jwtToken")).when(authenticationService).validateJwtToken("jwtToken");
+        doReturn(true).when(authSourceService).isValid(any());
 
         decorator.process(request);
 
@@ -95,9 +95,7 @@ class ServiceAuthenticationDecoratorTest {
     void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort() {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
-        TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
-        doReturn(tokenAuthentication).when(authenticationService).validateJwtToken("jwtToken");
-        when(authenticationService.validateJwtToken("jwtToken").isAuthenticated()).thenReturn(false);
+        when(authSourceService.isValid(any())).thenReturn(false);
 
         assertThrows(RequestAbortException.class, () ->
             decorator.process(request),
@@ -110,7 +108,7 @@ class ServiceAuthenticationDecoratorTest {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
         AuthenticationException ae = mock(AuthenticationException.class);
-        doThrow(ae).when(authenticationService).validateJwtToken(anyString());
+        doThrow(ae).when(authSourceService).isValid(any());
 
         assertThrows(RequestAbortException.class, () ->
                 decorator.process(request),
@@ -130,25 +128,26 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     private void prepareContext(AuthenticationCommand command) {
+        JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of("jwtToken")).when(authenticationService).getJwtTokenFromRequest(any());
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
-        when(serviceAuthenticationService.getAuthenticationCommand(authentication, "jwtToken")).thenReturn(command);
-        doReturn(true).when(command).isRequiredValidJwt();
+        when(serviceAuthenticationService.getAuthenticationCommand(authentication, authSource)).thenReturn(command);
+        doReturn(true).when(command).isRequiredValidSource();
     }
 
     private void prepareWrongContextForCmdNull(AuthenticationCommand command) {
-
+        JwtAuthSource authSource = new JwtAuthSource("jwtToken");
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of("jwtToken")).when(authenticationService).getJwtTokenFromRequest(any());
+        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
-        when(serviceAuthenticationService.getAuthenticationCommand(authentication, "jwtToken")).thenReturn(null);
-        doReturn(true).when(command).isRequiredValidJwt();
+        when(serviceAuthenticationService.getAuthenticationCommand(authentication, authSource)).thenReturn(null);
+        doReturn(true).when(command).isRequiredValidSource();
     }
 }

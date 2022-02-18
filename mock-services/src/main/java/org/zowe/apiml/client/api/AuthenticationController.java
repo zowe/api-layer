@@ -12,6 +12,7 @@ package org.zowe.apiml.client.api;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.AparBasedService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,15 @@ public class AuthenticationController {
         @RequestHeader Map<String, String> headers
     ) {
         return authentication.process(AUTHENTICATION_SERVICE, "create", response, headers);
+    }
+
+    @PutMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8")
+    public ResponseEntity<?> changePassword(
+        @RequestBody LoginBody loginBody,
+        HttpServletResponse response,
+        @RequestHeader Map<String, String> headers
+    ) {
+        return authentication.process(AUTHENTICATION_SERVICE, "update", response, headers, loginBody);
     }
 
     @GetMapping(value = "/zosmf/notifications/inbox", produces = "application/json; charset=utf-8")

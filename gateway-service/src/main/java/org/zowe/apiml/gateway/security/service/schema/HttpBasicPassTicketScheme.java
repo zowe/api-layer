@@ -19,17 +19,17 @@ import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.CookieUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.function.Supplier;
 
 /**
  * This bean support PassTicket. Bean is responsible for getting PassTicket from
@@ -39,14 +39,17 @@ import java.util.function.Supplier;
 public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
     private final PassTicketService passTicketService;
+    private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final String cookieName;
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
+        AuthSourceService authSourceService,
         AuthConfigurationProperties authConfigurationProperties
     ) {
         this.passTicketService = passTicketService;
+        this.authSourceService = authSourceService;
         this.authConfigurationProperties = authConfigurationProperties;
         cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
     }
@@ -57,16 +60,17 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) {
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         final long before = System.currentTimeMillis();
-        final QueryResponse token = tokenSupplier.get();
 
-        if (token == null) {
+        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+
+        if (authSource == null || parsedAuthSource == null) {
             return AuthenticationCommand.EMPTY;
         }
 
         final String applId = authentication.getApplid();
-        final String userId = token.getUserId();
+        final String userId = parsedAuthSource.getUserId();
         String passTicket;
         try {
             passTicket = passTicketService.generate(userId, applId);
@@ -80,7 +84,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         final String value = "Basic " + encoded;
 
         final long expiredAt = Math.min(before + authConfigurationProperties.getPassTicket().getTimeout() * 1000,
-            token.getExpiration().getTime());
+            parsedAuthSource.getExpiration().getTime());
 
         return new PassTicketCommand(value, cookieName, expiredAt);
     }
@@ -131,7 +135,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return true;
         }
 
