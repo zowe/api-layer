@@ -41,8 +41,8 @@ class PH34912Test {
     @BeforeEach
     void setUp() {
         List<String> usernames = Collections.singletonList(USERNAME);
-        List<String> passwords = Collections.singletonList(PASSWORD);
-
+        List<String> passwords = new ArrayList<>();
+        passwords.add(PASSWORD);
         underTest = new PH34912(usernames, passwords, "../keystore/localhost/localhost.keystore.p12", 60);
         mockResponse = mock(HttpServletResponse.class);
         headers = new HashMap<>();
