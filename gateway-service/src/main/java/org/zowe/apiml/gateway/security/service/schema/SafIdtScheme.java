@@ -29,7 +29,6 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CookieUtil;
@@ -37,13 +36,12 @@ import org.zowe.apiml.util.CookieUtil;
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.function.Supplier;
 
 import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
 /**
  * The scheme allowing for the safIdt authentication scheme.
- * It adds new header with the SAF IDT token in case of valid JWT provided.
+ * It adds new header with the SAF IDT token in case of valid authentication source provided.
  */
 @Component
 @RequiredArgsConstructor
