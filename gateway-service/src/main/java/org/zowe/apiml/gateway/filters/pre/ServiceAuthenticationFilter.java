@@ -12,13 +12,15 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
@@ -36,7 +38,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private AuthSourceService authSourceService;
 
     @Override
     public String filterType() {
@@ -62,15 +64,12 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         try {
-            String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
-            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
+            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authSource.orElse(null));
 
-            // Verify JWT validity if it is required for the schema
-            if (
-                (jwtToken != null) && cmd.isRequiredValidJwt() &&
-                !authenticationService.validateJwtToken(jwtToken).isAuthenticated()
-            ) {
-                    rejected = true;
+            // Verify authentication source validity if it is required for the schema
+            if (authSource.isPresent() && !isSourceValidForCommand(authSource.get(), cmd)) {
+                rejected = true;
             }
         } catch (TokenExpireException tee) {
             cmd = null;
@@ -97,6 +96,10 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
         }
 
         return null;
+    }
+
+    private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
+        return !cmd.isRequiredValidSource() || authSourceService.isValid(authSource);
     }
 
 }
