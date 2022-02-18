@@ -1,4 +1,4 @@
-name: Release new image version (specific)
+name: Image specific release
 
 on:
     workflow_dispatch:
