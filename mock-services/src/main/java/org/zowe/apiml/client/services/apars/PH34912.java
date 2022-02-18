@@ -84,6 +84,7 @@ public class PH34912 extends FunctionalApar {
 
     private boolean isBadRequest(LoginBody body) {
         return body == null ||
+            (!passwords.contains(body.getOldPwd())) ||
             StringUtils.isEmpty(body.getUserID()) ||
             StringUtils.isEmpty(body.getOldPwd()) ||
             StringUtils.isEmpty(body.getNewPwd()) ||
@@ -97,7 +98,7 @@ public class PH34912 extends FunctionalApar {
         } else if (isBadRequest(body)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
-            getPasswords().add(body.getNewPwd());
+            passwords.add(body.getNewPwd());
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }

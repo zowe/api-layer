@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.client.services.apars;
 
-import lombok.Data;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings({"squid:S1452", "squid:S1172"})
-@Data
 public class FunctionalApar implements Apar {
     private static final String COOKIE_HEADER = "cookie";
     private static final String JWT_TOKEN_NAME = "jwtToken";
@@ -33,7 +31,7 @@ public class FunctionalApar implements Apar {
     protected static final String AUTHORIZATION_HEADER = "authorization";
 
     private final List<String> usernames;
-    private List<String> passwords;
+    protected List<String> passwords;
     private JwtTokenService jwtTokenService;
 
     protected FunctionalApar(List<String> usernames, List<String> passwords) {
