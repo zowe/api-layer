@@ -48,11 +48,9 @@ public class Requests {
         ExtractableResponse<Response> response = given()
             .accept(ContentType.JSON)
             .cookie(COOKIE_NAME, authentication)
-                .log().all()
         .when()
-                .log().all()
             .get(uri)
-        .then().log().all().extract();
+        .then().extract();
 
         String responseText = response.body().asString();
         Map<String, String> cookies = response.cookies();

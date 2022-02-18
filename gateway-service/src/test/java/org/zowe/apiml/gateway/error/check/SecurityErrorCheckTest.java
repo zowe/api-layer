@@ -119,7 +119,7 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.login.invalidCredentials",
-            MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'")));
+                MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'")));
     }
 
     @Test
@@ -156,7 +156,7 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.idt.failed",
-                MessageType.ERROR, "ZWEAG150E", "SAF IDT generation failed. Reason: " + exceptionMessage)));
+                MessageType.ERROR, "ZWEAG150E", "SAF IDT generation failed. Reason: " + exceptionMessage + ". ")));
     }
 
 }

@@ -9,14 +9,16 @@
  */
 package org.zowe.apiml.zss.services;
 
+import io.jsonwebtoken.Jwts;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.zss.model.Authentication;
 import org.zowe.apiml.zss.model.Token;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class SafIdtProvider {
@@ -31,9 +33,12 @@ public class SafIdtProvider {
     }
 
     public Optional<Token> authenticate(
-        Authentication authentication
+            Authentication authentication
     ) {
-        String token = authentication.getUsername() + ";" + UUID.randomUUID();
+        String token = Jwts.builder()
+                .setSubject(authentication.getUsername())
+                .setExpiration(DateUtils.addMinutes(new Date(), 10))
+                .compact(); //NOSONAR - No signature in mock allows easier verification. DO NOT COPY TO PRODUCTION!
         providedTokens.put(authentication.getUsername(), token);
 
         Token result = new Token(token);
@@ -41,10 +46,14 @@ public class SafIdtProvider {
     }
 
     public boolean verify(
-        Token token
+            Token token
     ) {
         String safToken = token.getJwt();
-        String username = safToken.split(";")[0];
+        String username = Jwts.parserBuilder()
+                .build()
+                .parseClaimsJwt(safToken)
+                .getBody()
+                .getSubject();
 
         return providedTokens.containsKey(username) && providedTokens.get(username).equals(safToken);
     }

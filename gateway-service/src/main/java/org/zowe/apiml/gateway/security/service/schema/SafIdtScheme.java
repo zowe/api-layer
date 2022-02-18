@@ -22,11 +22,14 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CookieUtil;
 
 import javax.annotation.PostConstruct;
@@ -87,13 +90,17 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
             );
         }
 
-        Claims claims = getJwtClaims(safIdentityToken);
-        Date expirationDate = claims.getExpiration();
-        if (expirationDate == null) {
-            expirationDate = DateUtils.addMinutes(new Date(), defaultIdtExpiration);
-        }
+        try {
+            Claims claims = getJwtClaims(safIdentityToken);
+            Date expirationDate = claims.getExpiration();
+            if (expirationDate == null) {
+                expirationDate = DateUtils.addMinutes(new Date(), defaultIdtExpiration);
+            }
 
-        return new SafIdtCommand(safIdentityToken, cookieName, expirationDate.getTime());
+            return new SafIdtCommand(safIdentityToken, cookieName, expirationDate.getTime());
+        } catch (TokenNotValidException | TokenExpireException e) {
+            throw new SafIdtException("Unable to parse Identity Token", e);
+        }
     }
 
     @RequiredArgsConstructor
