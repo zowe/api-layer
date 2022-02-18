@@ -29,12 +29,11 @@ describe('>>> Login ok page test', () => {
         cy.get('.header').should('exist');
 
         cy.getCookie('apimlAuthenticationToken').should('exist');
-    });
-
-    it('should logout and delete session cookie', () => {
-        cy.get('button[data-testid="logout"]').click();
+        cy.get('button[data-testid="logout-menu"]').click();
+        cy.get('li[data-testid="logout"]').click();
         cy.contains('API Catalog');
 
         cy.getCookie('apimlAuthenticationToken').should('not.exist');
     });
+
 });
