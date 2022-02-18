@@ -7,43 +7,126 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Component } from 'react';
-import { IconButton, Link, Typography, Tooltip } from '@material-ui/core';
-import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
+import React, { useState } from 'react';
+import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled } from '@material-ui/core';
+import PersonIcon from '@material-ui/icons/Person';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
 import './Header.css';
 
-export default class Header extends Component {
-    handleLogout = () => {
-        const { logout } = this.props;
+const useStyles = makeStyles({
+    root: {
+        '&:hover': {
+            backgroundColor: 'rgb(86, 145, 240)',
+        },
+    },
+});
+
+const StyledMenu = styled((props) => (
+    <Menu
+        elevation={0}
+        anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+        }}
+        transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+        }}
+        {...props}
+    />
+))(({ theme }) => ({
+    '& .MuiPaper-root': {
+        borderRadius: 6,
+        marginTop: theme.spacing(2),
+        minWidth: 150,
+        '& .MuiMenu-list': {
+            padding: '0',
+        },
+        '& .MuiMenuItem-root': {
+            '& .MuiSvgIcon-root': {
+                fontSize: 10,
+                color: theme.palette.text.secondary,
+            },
+        },
+    },
+}));
+const Header = (props) => {
+    const [open, setOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const { logout } = props;
+    const classes = useStyles();
+    const handleLogout = () => {
         logout();
     };
 
-    render() {
-        const iconLogout = <PowerSettingsNewIcon id="logoutIcon" style={{ color: 'white' }} />;
-        const dashboard = 'ui/v1/apicatalog/#/dashboard';
-        return (
-            <div className="header">
-                <div className="product-name">
-                    <Link data-testid="link" href={dashboard}>
-                        <div className="app-icon-container">
-                            <img id="logo" alt="API Catalog Product Name" src={productImage} />
-                        </div>
-                    </Link>
-                    <Link href={dashboard}>
-                        <Typography variant="subtitle2">API Catalog</Typography>
-                    </Link>
-                </div>
-                <div className="right-icons">
-                    <div className="logout-container">
-                        <Tooltip title="Logout">
-                            <IconButton id="logout-button" data-testid="logout" onClick={this.handleLogout}>
-                                {iconLogout}
-                            </IconButton>
-                        </Tooltip>
+    const closeMenu = () => {
+        setOpen(false);
+    };
+
+    const openMenu = (event) => {
+        setOpen(true);
+        setAnchorEl(event.target);
+    };
+
+    const s = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
+    const dashboard = 'ui/v1/apicatalog/#/dashboard';
+    const username = localStorage.getItem('username');
+    return (
+        <div className="header">
+            <div className="product-name">
+                <Link data-testid="link" href={dashboard}>
+                    <div className="app-icon-container">
+                        <img id="logo" alt="API Catalog Product Name" src={productImage} />
                     </div>
+                </Link>
+                <Link href={dashboard}>
+                    <Typography variant="subtitle2">API Catalog</Typography>
+                </Link>
+            </div>
+            <div className="right-icons">
+                <div className="logout-container">
+                    <Button
+                        className={classes.root}
+                        data-testid="logout-menu"
+                        aria-controls={open ? 'basic-menu' : undefined}
+                        aria-expanded={open ? 'true' : undefined}
+                        aria-haspopup="true"
+                        aria-label="more"
+                        onClick={openMenu}
+                        endIcon={<KeyboardArrowDownIcon id="down-arrow" />}
+                    >
+                        {s}
+                    </Button>
+                    <StyledMenu
+                        keepMounted
+                        open={open}
+                        onClose={closeMenu}
+                        anchorEl={anchorEl}
+                        getContentAnchorEl={null}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'center',
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'center',
+                        }}
+                    >
+                        <div id="profile-menu">
+                            <Typography variant="subtitle2" gutterBottom component="div" id="user-info-text">
+                                Logged in as <strong>{username}</strong>
+                            </Typography>
+                            <Divider />
+                            <MenuItem id="logout-button" data-testid="logout" onClick={handleLogout}>
+                                Log out
+                            </MenuItem>
+                        </div>
+                    </StyledMenu>
                 </div>
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
+
+export default Header;

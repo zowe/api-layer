@@ -8,6 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as enzyme from 'enzyme';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 import Header from './Header';
 
 describe('>>> Header component tests', () => {
@@ -30,9 +32,9 @@ describe('>>> Header component tests', () => {
 
     it('should handle a Logout button click', () => {
         const logout = jest.fn();
-        const wrapper = enzyme.shallow(<Header logout={logout} />);
-        const instance = wrapper.instance();
-        instance.handleLogout();
+        render(<Header logout={logout} />);
+        fireEvent.click(screen.getByTestId('logout-menu'));
+        fireEvent.click(screen.getByText('Log out'));
         expect(logout).toHaveBeenCalled();
     });
 });
