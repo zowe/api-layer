@@ -16,10 +16,10 @@ import org.zowe.apiml.cache.EntryExpiration;
 import java.io.Serializable;
 
 /**
- * This command represented a code, which distribute right access right to a service. Gateway translates requests
+ * This command represented a code, which distribute right access to a service. Gateway translates requests
  * to a service and by login in there generate or translate authentication to the service.
  *
- * Responsible for this translation is filter {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter}
+ * Responsible for this translation is the filter {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter}
  */
 public abstract class AuthenticationCommand implements EntryExpiration, Serializable {
 
