@@ -192,9 +192,7 @@ public class HttpsFactory {
     }
 
     private PrivateKeyStrategy getPrivateKeyStrategy() {
-        return config.getKeyAlias() != null ?
-            (aliases, socket) -> config.getKeyAlias() :
-            null;
+        return config.getKeyAlias() != null ? (aliases, socket) -> config.getKeyAlias() : null;
     }
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
@@ -265,6 +263,7 @@ public class HttpsFactory {
         setSystemProperty("javax.net.ssl.keyStorePassword",
             config.getKeyStorePassword() == null ? null : String.valueOf(config.getKeyStorePassword()));
         setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
+
         setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.replaceFourSlashes(config.getTrustStore()));
         setSystemProperty("javax.net.ssl.trustStorePassword",
             config.getTrustStorePassword() == null ? null : String.valueOf(config.getTrustStorePassword()));
