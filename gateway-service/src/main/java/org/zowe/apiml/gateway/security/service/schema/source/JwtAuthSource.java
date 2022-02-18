@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import java.util.Date;
-import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,32 +20,17 @@ import org.zowe.apiml.security.common.token.QueryResponse.Source;
  */
 @RequiredArgsConstructor
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class JwtAuthSource implements AuthSource {
     /**
      * JWT token
      */
+    @EqualsAndHashCode.Include
     private final String source;
 
     @Override
     public String getRawSource() {
         return source;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        JwtAuthSource that = (JwtAuthSource) o;
-        return source.equals(that.source);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(source);
     }
 
     @RequiredArgsConstructor
