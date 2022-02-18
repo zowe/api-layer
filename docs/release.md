@@ -22,11 +22,12 @@ When there is a new minor release of Zowe, there should be a new patch release o
 This is done in two steps:
  
 1. Release the binaries with the [binary specific release workflow](https://github.com/zowe/api-layer/actions/workflows/binary-specific-release.yml).
-    `release_version` is the version that will be released. This should be a new patch version. For example, if `master` is currently on version 1.27.1, `release_version` would be 1.27.2
-    `new_version` should be a `SNAPSHOT` version with a new minor version. For example, if `master` is currently on version 1.27.1, `new_version` would be 1.28.0-SNAPSHOT
+    * `release_version` is the version that will be released. This should be a new patch version. For example, if `master` is currently on version 1.27.1, `release_version` would be 1.27.2.
+    * `new_version` should be a `SNAPSHOT` version with a new minor version. For example, if `master` is currently on version 1.27.1, `new_version` would be 1.28.0-SNAPSHOT.
+      If 1.28.0-SNAPSHOT already exists due to previous releases, the patch version should be incremented, in this example to 1.28.1-SNAPSHOT.
 
 2. Release the images with the [image specific release workflow](https://github.com/zowe/api-layer/actions/workflows/image-specific-release.yml).
-    `release_version` is the version that will be released. This should be the same value as used in step `i`.
+    * `release_version` is the version that will be released. This should be the same value as used in step `i`.
 
 After this release is finished the new version must be added to the [release candidate manifest](https://github.com/zowe/zowe-install-packaging/blob/rc/manifest.json.template).
 
