@@ -12,6 +12,7 @@ package org.zowe.apiml.client.services.apars;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.Cookie;
@@ -30,7 +31,7 @@ public class FunctionalApar implements Apar {
     protected static final String AUTHORIZATION_HEADER = "authorization";
 
     private final List<String> usernames;
-    private final List<String> passwords;
+    protected List<String> passwords;
     private JwtTokenService jwtTokenService;
 
     protected FunctionalApar(List<String> usernames, List<String> passwords) {
@@ -60,6 +61,12 @@ public class FunctionalApar implements Apar {
                     break;
                 case "verify":
                     result = handleAuthenticationVerify(headers, response);
+                    break;
+                case "update":
+                    if (parameters.length > 4) {
+                        LoginBody body = (LoginBody) parameters[5];
+                        result = handleChangePassword(body);
+                    }
                     break;
                 case "delete":
                     result = handleAuthenticationDelete(headers);
@@ -122,6 +129,14 @@ public class FunctionalApar implements Apar {
      * is not explicitly handled.
      */
     protected ResponseEntity<?> handleAuthenticationDefault(Map<String, String> headers) {
+        return null;
+    }
+
+    /**
+     * Override to provide a response entity when the update method for the authentication service is called
+     * with proper authorization.
+     */
+    protected ResponseEntity<?> handleChangePassword(LoginBody body) {
         return null;
     }
 

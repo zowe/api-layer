@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.apars.Apar;
 import org.zowe.apiml.client.services.versions.Versions;
 
@@ -42,15 +43,20 @@ public class AparBasedService {
         log.info("fullSetOfApplied: {}", versions.fullSetOfApplied(baseVersion, appliedApars));
     }
 
-    public ResponseEntity<?> process(String calledService, String calledMethods, HttpServletResponse response, Map<String, String> headers) {
+    public ResponseEntity<?> process(String calledService, String calledMethods, HttpServletResponse response, Map<String, String> headers, Object ... parameters) {
         try {
             List<Apar> applied = versions.fullSetOfApplied(baseVersion, appliedApars);
-
             log.info("calledService: {}, calledMethods, {}", calledService, calledMethods);
             Optional<ResponseEntity<?>> result = Optional.empty();
             for (Apar apar : applied) {
                 log.info("applying: {}", apar);
-                result = apar.apply(calledService, calledMethods, result, response, headers);
+                if (parameters.length > 0) {
+                    LoginBody body = (LoginBody) parameters[0];
+                    result = apar.apply(calledService, calledMethods, result, response, headers, body);
+                }
+                else {
+                    result = apar.apply(calledService, calledMethods, result, response, headers);
+                }
                 log.info("result: {}", result);
             }
 

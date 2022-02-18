@@ -17,29 +17,33 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 
 class JwtUtilsTest {
 
     @Test
-    void testHandleJwtParserException() {
+    void testHandleJwtParserExceptionForExpiredToken() {
 
-        Exception exception;
-
-        exception = JwtUtils.handleJwtParserException(new ExpiredJwtException(mock(Header.class), mock(Claims.class), "msg"));
+        Exception exception = JwtUtils.handleJwtParserException(new ExpiredJwtException(mock(Header.class), mock(Claims.class), "msg"));
         assertTrue(exception instanceof TokenExpireException);
         assertEquals("Token is expired.", exception.getMessage());
+    }
 
-        exception = JwtUtils.handleJwtParserException(new JwtException("msg"));
+    @Test
+    void testHandleJwtParserExceptionForInvalidToken() {
+
+        Exception exception = JwtUtils.handleJwtParserException(new JwtException("msg"));
         assertTrue(exception instanceof TokenNotValidException);
         assertEquals("Token is not valid.", exception.getMessage());
+    }
 
-        exception = JwtUtils.handleJwtParserException(new RuntimeException("msg"));
+    @Test
+    void testHandleJwtParserRuntimeException() {
+        Exception exception = JwtUtils.handleJwtParserException(new RuntimeException("msg"));
         assertTrue(exception instanceof TokenNotValidException);
         assertEquals("An internal error occurred while validating the token therefore the token is no longer valid.", exception.getMessage());
     }
-
 }
