@@ -267,8 +267,8 @@ public class ZosmfService extends AbstractZosmfService {
                 httpMethod,
                 new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers), String.class);
         } catch (RuntimeException re) {
-            log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure that the PTF for APAR PH34912 " +
-                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed. ");
+            log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
+                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provide are correct.");
             throw handleExceptionOnCall(url, re);
         }
     }
