@@ -16,8 +16,6 @@ import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -99,9 +97,7 @@ public class PH34912 extends FunctionalApar {
         } else if (isBadRequest(body)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
-            List<String> passwords = new <String>ArrayList(Arrays.asList(getPasswords()));
-            passwords.add(body.getNewPwd());
-            setPasswords(passwords);
+            getPasswords().add(body.getNewPwd());
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }
