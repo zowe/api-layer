@@ -24,6 +24,8 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -48,6 +50,7 @@ import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 public class SafIdtScheme implements AbstractAuthenticationScheme {
 
     private final AuthConfigurationProperties authConfigurationProperties;
+    private final AuthSourceService authSourceService;
     private final PassTicketService passTicketService;
     private final SafIdtProvider safIdtProvider;
 
@@ -66,14 +69,14 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) {
-        final QueryResponse zoweToken = tokenSupplier.get();
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
 
-        if (zoweToken == null) {
+        if (authSource == null || parsedAuthSource == null) {
             return AuthenticationCommand.EMPTY;
         }
 
-        final String userId = zoweToken.getUserId();
+        final String userId = parsedAuthSource.getUserId();
         final String applId = authentication.getApplid();
 
         String safIdentityToken;
@@ -151,7 +154,7 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return true;
         }
     }

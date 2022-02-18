@@ -24,10 +24,11 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.Date;
 
@@ -43,7 +44,10 @@ class SafIdtSchemeTest {
 
     private SafIdtScheme underTest;
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+    private final JwtAuthSource authSource = new JwtAuthSource("token");
 
+    @Mock
+    private AuthSourceService authSourceService;
     @Mock
     private PassTicketService passTicketService;
     @Mock
@@ -51,7 +55,7 @@ class SafIdtSchemeTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SafIdtScheme(authConfigurationProperties, passTicketService, safIdtProvider);
+        underTest = new SafIdtScheme(authConfigurationProperties, authSourceService, passTicketService, safIdtProvider);
         underTest.initCookieName();
         underTest.defaultIdtExpiration = 10;
     }
@@ -65,8 +69,7 @@ class SafIdtSchemeTest {
         private static final String PASSTICKET = "PASSTICKET";
 
         private final Authentication auth = new Authentication(SAF_IDT, APPLID);
-        private final QueryResponse queryResponse = new QueryResponse(
-                null,
+        private final JwtAuthSource.Parsed parsedAuthSource = new JwtAuthSource.Parsed(
                 USERNAME,
                 null,
                 null,
@@ -79,6 +82,7 @@ class SafIdtSchemeTest {
 
             @BeforeEach
             void setUp() throws IRRPassTicketGenerationException {
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
             }
 
@@ -92,10 +96,10 @@ class SafIdtSchemeTest {
 
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
 
-                AuthenticationCommand ac = underTest.createCommand(auth, () -> queryResponse);
+                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                 assertNotNull(ac);
                 assertFalse(ac.isExpired());
-                assertTrue(ac.isRequiredValidJwt());
+                assertTrue(ac.isRequiredValidSource());
 
                 ac.apply(null);
                 assertThat(getValueOfZuulHeader(), is(safIdt));
@@ -109,7 +113,7 @@ class SafIdtSchemeTest {
 
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
 
-                AuthenticationCommand ac = underTest.createCommand(auth, () -> queryResponse);
+                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                 assertNotNull(ac);
 
                 HttpRequest httpRequest = new HttpGet("/test/request");
@@ -127,7 +131,7 @@ class SafIdtSchemeTest {
 
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
 
-                AuthenticationCommand ac = underTest.createCommand(auth, () -> queryResponse);
+                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                 assertNotNull(ac);
                 assertFalse(ac.isExpired());
             }
@@ -139,17 +143,18 @@ class SafIdtSchemeTest {
 
             @Test
             void givenNoJwtToken() {
-                AuthenticationCommand ac = underTest.createCommand(auth, () -> null);
+                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                 assertThat(ac, is(AuthenticationCommand.EMPTY));
             }
 
             @Test
             void givenNoRightsToGeneratePassticket() throws IRRPassTicketGenerationException {
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID))
                         .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
 
                 PassTicketException ex = assertThrows(PassTicketException.class,
-                        () -> underTest.createCommand(auth, () -> queryResponse));
+                        () -> underTest.createCommand(auth, authSource));
                 assertThat(ex.getMessage(), allOf(containsString(USERNAME), containsString(APPLID)));
             }
         }
