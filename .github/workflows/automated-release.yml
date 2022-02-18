@@ -1,5 +1,5 @@
 # This workflow will release project with Gradle
-name: Automated release (binaries and images)
+name: Automated binary release
 
 on:
     schedule:
