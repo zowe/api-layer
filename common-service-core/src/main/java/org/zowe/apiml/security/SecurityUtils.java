@@ -206,9 +206,9 @@ public class SecurityUtils {
      * @throws MalformedURLException throws in case of incorrect key ring format
      */
     public static URL keyRingUrl(String uri, String trustStore) throws MalformedURLException {
-        if (!uri.startsWith(SAFKEYRING + ":////")) {
+        if (!uri.startsWith(SAFKEYRING + "://")) {
             throw new MalformedURLException("Incorrect key ring format: " + trustStore
-                + ". Make sure you use format safkeyring:////userId/keyRing");
+                + ". Make sure you use format safkeyring://userId/keyRing");
         }
         return new URL(replaceFourSlashes(uri));
     }
