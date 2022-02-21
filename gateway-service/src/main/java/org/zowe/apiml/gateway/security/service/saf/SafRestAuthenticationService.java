@@ -37,11 +37,11 @@ public class SafRestAuthenticationService implements SafIdtProvider {
 
     private final RestTemplate restTemplate;
 
-    static final HttpHeaders HEADER = new HttpHeaders();
+    static final HttpHeaders HEADERS = new HttpHeaders();
 
     static {
-        HEADER.setContentType(MediaType.APPLICATION_JSON);
-        HEADER.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        HEADERS.setContentType(MediaType.APPLICATION_JSON);
+        HEADERS.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
     @Value("${apiml.security.saf.urls.authenticate}")
@@ -61,11 +61,11 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             ResponseEntity<Token> response = restTemplate.exchange(
                     URI.create(authenticationUrl),
                     HttpMethod.POST,
-                    new HttpEntity<>(authentication, HEADER),
+                    new HttpEntity<>(authentication, HEADERS),
                     Token.class);
 
             Token responseBody = response.getBody();
-            if (responseBody == null) {
+            if (responseBody == null && !StringUtils.isEmpty(responseBody.getJwt())) {
                 throw new SafIdtException("ZSS authentication service has not returned the Identity token");
             }
 
@@ -85,7 +85,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             ResponseEntity<Void> response = restTemplate.exchange(
                     URI.create(verifyUrl),
                     HttpMethod.POST,
-                    new HttpEntity<>(new Token(safToken, applid), HEADER),
+                    new HttpEntity<>(new Token(safToken, applid), HEADERS),
                     Void.class);
 
             return response.getStatusCode().is2xxSuccessful();

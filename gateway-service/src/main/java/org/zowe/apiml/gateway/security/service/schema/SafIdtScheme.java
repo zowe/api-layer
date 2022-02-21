@@ -70,12 +70,17 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
 
-        if (authSource == null || parsedAuthSource == null) {
+        if (parsedAuthSource == null) {
             return AuthenticationCommand.EMPTY;
         }
 
         final String userId = parsedAuthSource.getUserId();
         final String applId = authentication.getApplid();
+        if (applId == null) {
+            throw new PassTicketException(
+                    "Applid is required. Check the configuration of service"
+            );
+        }
 
         String safIdentityToken;
         try {

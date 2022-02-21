@@ -90,8 +90,9 @@ public class SecurityErrorCheck implements ErrorCheck {
         return null;
     }
 
-    private String getPreviousCause(Throwable cause) {
-        return cause.getCause() == null ? "" : cause.getCause().toString();
+    private static String getPreviousCause(Throwable cause) {
+        Throwable t = cause.getCause();
+        return t == null ? "" : t.getMessage();
     }
 
 }
