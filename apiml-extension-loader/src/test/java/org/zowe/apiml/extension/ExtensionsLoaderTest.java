@@ -63,70 +63,91 @@ class ExtensionsLoaderTest {
         }
     }
 
-    @Test
-    void onEvent_ContextIsBadType() {
-        ConfigurableApplicationContext registry = mock(ConfigurableApplicationContext.class);
-        SpringApplication application = mock(SpringApplication.class);
+    @Nested
+    class WhenLoadingExtensions {
+        @Nested
+        class GivenContextIsBadType {
 
-        ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, registry);
+            @Test
+            void itDoesntModifyContext() {
+                ConfigurableApplicationContext registry = mock(ConfigurableApplicationContext.class);
+                SpringApplication application = mock(SpringApplication.class);
 
-        doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
-        publisher.publishEvent(event);
+                ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, registry);
 
-        verify(extensionsLoader).onApplicationEvent(event);
-        verify(registry, never()).containsBeanDefinition(anyString());
-    }
+                doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
+                publisher.publishEvent(event);
 
-    @Test
-    void onEvent_ContextAlreadyHasBean() {
-        AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(this.getClass()).getTestContext().getApplicationContext();
-        BeanDefinitionRegistry registry = spy(context);
-        ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
-        context.registerBean(CustomBean.class);
-        SpringApplication application = mock(SpringApplication.class);
-        ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, context);
-        when(reader.getBasePackages()).thenReturn(new String[]{ "org.zowe" });
-        doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
-        publisher.publishEvent(event);
-        verify(extensionsLoader).onApplicationEvent(event);
-        verify(registry, never()).registerBeanDefinition(anyString(), any());
-    }
-
-    @Test
-    void onEvent_noExtensions() {
-        ConfigurableApplicationContext registry = mock(ConfigurableApplicationContext.class);
-        when(reader.getBasePackages()).thenReturn(new String[]{ });
-        ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
-        SpringApplication application = mock(SpringApplication.class);
-        ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, registry);
-        doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
-        publisher.publishEvent(event);
-        verify(registry, never()).containsBeanDefinition(anyString());
-    }
-
-    @Test
-    void onEvent_ContextIsRightType() {
-        AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(this.getClass()).getTestContext().getApplicationContext();
-        ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
-
-        try {
-            assertNull(context.getBean(CustomBean.class));
-        } catch (Exception e) {
-            // ignored, it's expected that this bean does not exist at this point
+                verify(extensionsLoader).onApplicationEvent(event);
+                verify(registry, never()).containsBeanDefinition(anyString());
+            }
         }
 
-        SpringApplication application = mock(SpringApplication.class);
-        ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, context);
+        @Nested
+        class GivenContextIsRightType {
+            @Nested
+            class AndNoExtensionsAreConfigured {
 
-        when(reader.getBasePackages()).thenReturn(new String[]{ "org.zowe" });
-        doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
-        publisher.publishEvent(event);
-        verify(extensionsLoader).onApplicationEvent(event);
+                @Test
+                void itDoesntModifyContext() {
+                    ConfigurableApplicationContext registry = mock(ConfigurableApplicationContext.class);
+                    when(reader.getBasePackages()).thenReturn(new String[]{ });
+                    ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
+                    SpringApplication application = mock(SpringApplication.class);
+                    ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, registry);
+                    doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
+                    publisher.publishEvent(event);
+                    verify(registry, never()).containsBeanDefinition(anyString());
+                }
+            }
 
-        try {
-            assertNotNull(context.getBean(CustomBean.class));
-        } catch (Exception e) {
-            fail("Expected bean registration", e);
+            @Nested
+            class AndExtensionIsConfigured {
+                @Test
+                void itRegistersNewBeans() {
+                    AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(ExtensionsLoaderTest.this.getClass()).getTestContext().getApplicationContext();
+                    ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
+
+                    try {
+                        assertNull(context.getBean(CustomBean.class));
+                    } catch (Exception e) {
+                        // ignored, it's expected that this bean does not exist at this point
+                    }
+
+                    SpringApplication application = mock(SpringApplication.class);
+                    ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, context);
+
+                    when(reader.getBasePackages()).thenReturn(new String[]{ "org.zowe" });
+                    doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
+                    publisher.publishEvent(event);
+                    verify(extensionsLoader).onApplicationEvent(event);
+
+                    try {
+                        assertNotNull(context.getBean(CustomBean.class));
+                    } catch (Exception e) {
+                        fail("Expected bean registration", e);
+                    }
+                }
+
+                @Nested
+                class AndBeanIsAlreadyRegisteredInContext {
+
+                    @Test
+                    void itDoesntReplaceIt() {
+                        AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) new TestContextManager(ExtensionsLoaderTest.this.getClass()).getTestContext().getApplicationContext();
+                        BeanDefinitionRegistry registry = spy(context);
+                        ReflectionTestUtils.setField(extensionsLoader, "configReader", reader);
+                        context.registerBean(CustomBean.class);
+                        SpringApplication application = mock(SpringApplication.class);
+                        ApplicationContextInitializedEvent event = new ApplicationContextInitializedEvent(application, new String[]{}, context);
+                        when(reader.getBasePackages()).thenReturn(new String[]{ "org.zowe" });
+                        doCallRealMethod().when(extensionsLoader).onApplicationEvent(event);
+                        publisher.publishEvent(event);
+                        verify(extensionsLoader).onApplicationEvent(event);
+                        verify(registry, never()).registerBeanDefinition(anyString(), any());
+                    }
+                }
+            }
         }
     }
 

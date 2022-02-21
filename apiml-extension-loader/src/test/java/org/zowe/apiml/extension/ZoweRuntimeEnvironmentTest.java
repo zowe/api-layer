@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,24 +25,31 @@ class ZoweRuntimeEnvironmentTest {
 
     private final ZoweRuntimeEnvironment env = ZoweRuntimeEnvironment.defaultEnv();
 
-    @Test
-    void getPluginDir_noEnv() {
-        assertSame(Optional.empty(), env.getPluginsDir());
-    }
+    @Nested
+    class WhenReadingEnvironmentInformation {
 
-    @Test
-    void getInstalledComponents_noEnv() {
-        assertEquals(0, env.getInstalledComponents().size());
-    }
+        @Nested
+        class GivenEnvironmentIsTheDefault {
 
-    @Test
-    void getEnabledComponents_noEnv() {
-        assertEquals(0, env.getEnabledComponents().size());
-    }
+            @Test
+            void pluginDirIsNotSetLocally() {
+                assertSame(Optional.empty(), env.getPluginsDir());
+            }
 
-    @Test
-    void getExtensionDirectory_noEnv() {
-        assertNull(env.getExtensionDirectory());
-    }
+            @Test
+            void installedComponentsAreNotSet() {
+                assertEquals(0, env.getInstalledComponents().size());
+            }
 
+            @Test
+            void enabledComponentsAreNotSet() {
+                assertEquals(0, env.getEnabledComponents().size());
+            }
+
+            @Test
+            void extensionDirectoryIsNotSet() {
+                assertNull(env.getExtensionDirectory());
+            }
+        }
+    }
 }

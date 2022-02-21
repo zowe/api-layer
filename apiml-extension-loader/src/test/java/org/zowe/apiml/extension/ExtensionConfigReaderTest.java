@@ -18,6 +18,7 @@ import java.util.Collections;
 import com.google.common.io.Resources;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -41,29 +42,42 @@ class ExtensionConfigReaderTest {
         return path.substring(0, path.lastIndexOf('/'));
     }
 
-    @Test
-    void testGetBasePackages_PackagesDefined() {
-        when(environment.getExtensionDirectory()).thenReturn(getTestResourcesPath());
-        when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
-        when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
+    @Nested
+    class WhenGettingExtensionsConfiguration {
 
-        assertArrayEquals(new String[]{ "org.zowe" }, configReader.getBasePackages());
-    }
+        @Nested
+        class GivenNoManifestIsAvailable {
+            @Test
+            void itReturnsNoPackagesToScan() {
+                when(environment.getExtensionDirectory()).thenReturn(".");
+                when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
+                when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 
-    @Test
-    void testGetBasePackages_NoManifest() {
-        when(environment.getExtensionDirectory()).thenReturn(".");
-        when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
-        when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
+                assertArrayEquals(new String[]{}, configReader.getBasePackages());
+            }
+        }
 
-        assertArrayEquals(new String[]{}, configReader.getBasePackages());
-    }
+        @Nested
+        class GivenAnExtensionIsDefined {
+            @Test
+            void itReturnsPackageNameToScan() {
+                when(environment.getExtensionDirectory()).thenReturn(getTestResourcesPath());
+                when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
+                when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 
-    @Test
-    void testGetBasePackages_NoInstalledComponents() {
-        when(environment.getInstalledComponents()).thenReturn(Collections.emptyList());
-        when(environment.getEnabledComponents()).thenReturn(Collections.emptyList());
+                assertArrayEquals(new String[]{ "org.zowe" }, configReader.getBasePackages());
+            }
+        }
 
-        assertArrayEquals(new String[]{}, configReader.getBasePackages());
+        @Nested
+        class GivenNoComponentsAreInstalled {
+            @Test
+            void itReturnsNoPackagesToScan() {
+                when(environment.getInstalledComponents()).thenReturn(Collections.emptyList());
+                when(environment.getEnabledComponents()).thenReturn(Collections.emptyList());
+
+                assertArrayEquals(new String[]{}, configReader.getBasePackages());
+            }
+        }
     }
 }
