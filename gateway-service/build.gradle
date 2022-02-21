@@ -119,6 +119,7 @@ dependencies {
     implementation libraries.netty_transport_rxtx
     implementation libraries.netty_transport_sctp
     implementation libraries.netty_transport_udt
+    implementation libraries.thymeleaf
 
     implementation libraries.commons_io
     implementation libraries.guava
