@@ -108,7 +108,7 @@ class MessageTest {
 
         String expectedReadableText = "No response received within the allowed time: 3000";
         ApiMessageView expectedApiMessageView = new ApiMessageView(Collections.singletonList(
-            new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText, "action")));
+            new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText, null, null)));
 
         assertEquals(expectedApiMessageView, actualApiMessageView, "ApiMessageView is different");
     }
@@ -119,7 +119,7 @@ class MessageTest {
         ApiMessage actualApiMessage = message.mapToApiMessage();
 
         String expectedReadableText = "No response received within the allowed time: 3000";
-        ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText, "action");
+        ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText, null, null);
 
         assertEquals(expectedApiMessage, actualApiMessage, "ApiMessage is different");
     }
