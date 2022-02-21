@@ -13,14 +13,14 @@
 }
 
 #logout-button {
-    width: 50px;
     height: auto;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #3272d9;
 }
-#logout-button:hover {
-    background-color: #5691f0;
-    transition: background-color .3s ease-in-out;
-    width: 50px;
-    height: auto;
+
+#down-arrow {
+    color: white;
 }
 
 .logout-container button.css-1upkw8q-Button:hover svg {
@@ -44,4 +44,26 @@ span.MuiTypography-root {
 
 h6.MuiTypography-root.MuiTypography-subtitle2 {
     color: white;
+}
+
+#profileIcon {
+    margin-right: -14px;
+}
+
+#usernameLabel {
+    margin-left: 16px;
+}
+
+.menu-window {
+    padding: 20px;
+}
+
+#user-info-text {
+    margin-bottom: 0;
+    padding: 5px;
+    text-align: center;
+}
+#logout-text{
+    padding: 5px;
+    text-align: left;
 }
