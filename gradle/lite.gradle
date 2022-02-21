@@ -32,7 +32,7 @@ def getLiteLibJar(file, output) {
 
 def getLiteLibJarOutput(file) {
     def output = []
-    if (!file.exists()) return
+    if (!file.exists()) return []
     if (file.isDirectory()) {
         file.listFiles().each { getLiteLibJar(it, output) }
     } else if (file.name.contains("-lite-lib") && file.name.endsWith(".jar")) {
