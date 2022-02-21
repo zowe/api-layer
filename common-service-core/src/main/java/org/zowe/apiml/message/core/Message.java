@@ -130,7 +130,8 @@ public final class Message {
             requestedKey,
             messageTemplate.getType(),
             messageTemplate.getNumber() + messageTemplate.getType().toChar(),
-            getConvertedText());
+            getConvertedText(),
+            messageTemplate.getAction());
     }
 
     /**
