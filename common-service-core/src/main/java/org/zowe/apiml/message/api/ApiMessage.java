@@ -36,12 +36,13 @@ public class ApiMessage {
     private String messageSource;
 
 
-    public ApiMessage(String messageKey, MessageType messageType, String messageNumber, String messageContent, String messageAction) {
+    public ApiMessage(String messageKey, MessageType messageType, String messageNumber, String messageContent, String messageReason, String messageAction) {
         this.messageKey = messageKey;
         this.messageType = messageType;
         this.messageNumber = messageNumber;
         this.messageContent = messageContent;
         this.messageAction = messageAction;
+        this.messageReason = messageReason;
     }
 
     /**
