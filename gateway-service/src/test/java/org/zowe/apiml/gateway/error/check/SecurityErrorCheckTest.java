@@ -137,8 +137,11 @@ class SecurityErrorCheckTest {
 
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.idt.auth.failed",
-                MessageType.ERROR, "ZWEAG151E", "SAF IDT is not generated because authentication or authorization failed. Reason: " + exceptionMessage + ". " + exception.getCause())));
+        assertThat(actualMessageList, hasItem(new ApiMessage(
+                "org.zowe.apiml.security.idt.auth.failed",
+                MessageType.ERROR, "ZWEAG151E",
+                "SAF IDT is not generated because authentication or authorization failed. Reason: " + exceptionMessage + ". " + exception.getCause().getLocalizedMessage()))
+        );
     }
 
     @Test

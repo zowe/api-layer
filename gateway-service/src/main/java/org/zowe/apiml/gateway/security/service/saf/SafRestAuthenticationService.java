@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.saf;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -65,7 +66,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
                     Token.class);
 
             Token responseBody = response.getBody();
-            if (responseBody == null && !StringUtils.isEmpty(responseBody.getJwt())) {
+            if (responseBody == null || StringUtils.isEmpty(responseBody.getJwt())) {
                 throw new SafIdtException("ZSS authentication service has not returned the Identity token");
             }
 
