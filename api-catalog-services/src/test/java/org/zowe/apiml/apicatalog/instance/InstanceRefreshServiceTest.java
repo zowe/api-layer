@@ -140,6 +140,7 @@ class InstanceRefreshServiceTest {
                     underTest.refreshCacheFromDiscovery();
 
                     verify(cachedServicesService, times(1)).updateService(anyString(), any(Application.class));
+                    // Verify the service is actually removed. 
                     verify(cachedProductFamilyService, never()).saveContainerFromInstance("api-three", changedInstanceOfService);
                 }
 

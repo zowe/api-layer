@@ -153,6 +153,16 @@ public class CachedProductFamilyService {
     }
 
     /**
+     * Remove Instance which isn't available anymore. If it is the only instance on specific tile, remove the tile as well. 
+     * 
+     * @param removedInstanceFamilyId
+     * @param removedInstance
+     */
+	public void removeInstance(String removedInstanceFamilyId, InstanceInfo removedInstance) {
+        
+	}
+
+    /**
      * Update the summary totals, sso and API IDs info for a container based on it's running services
      *
      * @param apiContainer calculate totals for this container
