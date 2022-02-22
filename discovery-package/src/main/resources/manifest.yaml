@@ -31,6 +31,3 @@ apimlServices:
 configs:
   port: 7553
   debug: false
-  spring:
-    profiles:
-      active:

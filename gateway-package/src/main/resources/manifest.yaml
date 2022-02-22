@@ -31,10 +31,6 @@ configs:
   debug: false
 
   apiml:
-    catalog:
-      serviceId: apicatalog
-    gateway:
-      timeoutMillis: 600000
     security:
       auth:
         provider: zosmf
@@ -49,16 +45,12 @@ configs:
         provider: ""
         resourceClass: ZOWE
         resourceNamePrefix: "APIML."
-      jwtInitializerTimeout: 5
       x509:
         enabled: false
         # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/certificate/x509/map
         externalMapperUrl:
         # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
         externalMapperUser:
-    service:
-      allowEncodedSlashes: true
-      corsEnabled: false
 
   server:
     internal:

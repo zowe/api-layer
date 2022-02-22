@@ -38,7 +38,3 @@ configs:
     vsam:
       # this is required if storage mode is VSAM
       name:
-
-  spring:
-    profiles:
-      active:
