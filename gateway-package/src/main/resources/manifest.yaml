@@ -60,8 +60,8 @@ configs:
         enabled: true
         # you can customize certificate for internal usage
         # certificate:
-      maxConnectionsPerRoute: 100
-      maxTotalConnections: 1000
+    maxConnectionsPerRoute: 100
+    maxTotalConnections: 1000
     ssl:
       enabled: true
 
