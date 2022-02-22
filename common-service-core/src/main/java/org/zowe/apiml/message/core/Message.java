@@ -131,8 +131,8 @@ public final class Message {
             messageTemplate.getType(),
             messageTemplate.getNumber() + messageTemplate.getType().toChar(),
             getConvertedText(),
-            messageTemplate.getReason(),
-            messageTemplate.getAction());
+            messageTemplate.getAction(),
+            messageTemplate.getReason());
     }
 
     /**

@@ -73,7 +73,7 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "The token has expired", "The JWT token has expired.", "Obtain new token by performing an authentication request.")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "The token has expired","Obtain new token by performing an authentication request.", "The JWT token has expired.")));
     }
 
     @Test
@@ -93,7 +93,7 @@ class SecurityErrorCheckTest {
 
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid", "The JWT token is not valid.", "Provide a valid token.")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid", "Provide a valid token.", "The JWT token is not valid.")));
     }
 
     @Test
@@ -114,7 +114,7 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.login.invalidCredentials",
-            MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'", "The username and/or password are invalid.", "Provide a valid username and password.")));
+            MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'", "Provide a valid username and password.", "The username and/or password are invalid.")));
     }
 }
 
