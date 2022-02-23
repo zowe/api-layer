@@ -161,18 +161,33 @@ class CachedProductFamilyServiceTest {
 
             @BeforeEach
             void prepareExistingInstance() {
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put(CATALOG_ID, "demoapp");
+                metadata.put(CATALOG_TITLE, "Title");
+                metadata.put(CATALOG_DESCRIPTION, "Description");
+                metadata.put(CATALOG_VERSION, "1.0.0");
+                metadata.put(SERVICE_TITLE, "sTitle");
+                metadata.put(SERVICE_DESCRIPTION, "sDescription");
+                removedInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
 
             }
+
             @Nested
             class AndWholeTileIsRemoved {
                 @BeforeEach
                 void prepareTileWithOneInstance() {
-
+                    underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
                 }
 
                 @Test
                 void tileIsntPresentInCache() {
+                    // This is relevant for the higher up tests. 
+                    removedInstance.setActionType(InstanceInfo.ActionType.DELETED);
+                    
                     underTest.removeInstance(removedInstanceFamilyId, removedInstance);
+
+                    // There should be none
+                    underTest.getContainerById(removedInstanceFamilyId);
                 }
             }
 
@@ -180,12 +195,16 @@ class CachedProductFamilyServiceTest {
             class AndTileRemains {
                 @BeforeEach
                 void prepareTileWithMultipleInstances() {
-
+                    underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
                 }
 
                 @Test
-                void tileIsntPresentInCache() {
+                void tileIsInCacheButServiceIsntInTile() {
+                    underTest.removeInstance(removedInstanceFamilyId, removedInstance);
 
+                    underTest.getContainerById(removedInstanceFamilyId);
+
+                    // The API Container shouldn't contain the removedInstance but should exist
                 }
             }
         }
