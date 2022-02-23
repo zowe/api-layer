@@ -182,7 +182,7 @@ public class InstanceRefreshService {
             // update any containers which contain this service
             updateContainer(containersUpdated, instance);
         }
-        if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
+        if (InstanceInfo.ActionType.DELETED.equals(instance.getActionType())) {
             // remove instance which isn't available anymore
             cachedProductFamilyService.removeInstance(instance.getMetadata().get(CATALOG_ID), instance);
             return;
