@@ -185,6 +185,7 @@ public class InstanceRefreshService {
         if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             // remove instance which isn't available anymore
             cachedProductFamilyService.removeInstance(instance.getMetadata().get(CATALOG_ID), instance);
+            return;
         }
 
         // Update the service cache
