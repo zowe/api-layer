@@ -32,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -157,7 +158,7 @@ class CachedProductFamilyServiceTest {
         @Nested
         class GivenServiceExists {
             InstanceInfo removedInstance;
-            String removedInstanceFamilyId;
+            String removedInstanceFamilyId = "service1";
 
             @BeforeEach
             void prepareExistingInstance() {
@@ -169,42 +170,70 @@ class CachedProductFamilyServiceTest {
                 metadata.put(SERVICE_TITLE, "sTitle");
                 metadata.put(SERVICE_DESCRIPTION, "sDescription");
                 removedInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
-
+                
+                underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
             }
 
             @Nested
             class AndWholeTileIsRemoved {
-                @BeforeEach
-                void prepareTileWithOneInstance() {
-                    underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
-                }
-
                 @Test
                 void tileIsntPresentInCache() {
-                    // This is relevant for the higher up tests. 
-                    removedInstance.setActionType(InstanceInfo.ActionType.DELETED);
-                    
                     underTest.removeInstance(removedInstanceFamilyId, removedInstance);
 
-                    // There should be none
-                    underTest.getContainerById(removedInstanceFamilyId);
+                    // The container should be removed
+                    APIContainer receivedContainer = underTest.getContainerById(removedInstanceFamilyId);
+                    assertThat(receivedContainer, is(nullValue()));
                 }
             }
 
             @Nested
             class AndTileRemains {
-                @BeforeEach
-                void prepareTileWithMultipleInstances() {
-                    underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+                InstanceInfo remainingInstance;
+
+                @Nested
+                class AndTheInstancesAreFromTheSameService {
+                    @BeforeEach
+                    void prepareTileWithMultipleInstancesOfSameService() {
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+
+                        Map<String, String> metadata = new HashMap<>();
+                        metadata.put(CATALOG_ID, "demoapp");
+                        metadata.put(CATALOG_TITLE, "Title");
+                        metadata.put(CATALOG_DESCRIPTION, "Description");
+                        metadata.put(CATALOG_VERSION, "1.0.0");
+                        metadata.put(SERVICE_TITLE, "sTitle");
+                        metadata.put(SERVICE_DESCRIPTION, "sDescription");
+                        remainingInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+                    }
+
+                    // There are two cases. One is if instance of the same Service 
+                    @Test
+                    void tileIsInCacheButServiceIsntInTile() {
+                        underTest.removeInstance(removedInstanceFamilyId, removedInstance);
+
+                        underTest.getContainerById(removedInstanceFamilyId);
+
+                        // The API Container shouldn't contain the removedInstance but should exist
+                    }
                 }
 
-                @Test
-                void tileIsInCacheButServiceIsntInTile() {
-                    underTest.removeInstance(removedInstanceFamilyId, removedInstance);
+                @Nested
+                class AndTheInstancesAreFromDifferentService {
+                    @BeforeEach
+                    void prepareTileWithMultipleInstancesOfSameService() {
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
 
-                    underTest.getContainerById(removedInstanceFamilyId);
-
-                    // The API Container shouldn't contain the removedInstance but should exist
+                        Map<String, String> metadata = new HashMap<>();
+                        metadata.put(CATALOG_ID, "demoapp");
+                        metadata.put(CATALOG_TITLE, "Title");
+                        metadata.put(CATALOG_DESCRIPTION, "Description");
+                        metadata.put(CATALOG_VERSION, "1.0.0");
+                        metadata.put(SERVICE_TITLE, "sTitle");
+                        metadata.put(SERVICE_DESCRIPTION, "sDescription");
+                        remainingInstance = servicesBuilder.createInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+                    }
                 }
             }
         }
