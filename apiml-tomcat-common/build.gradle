@@ -1,6 +1,13 @@
 dependencies {
     compile libraries.spring_boot_starter_web
     compile libraries.zowe_attls
+    
+    compile libraries.spring_aop
+    compile libraries.spring_beans
+    compile libraries.spring_context
+    compile libraries.spring_core
+    compile libraries.spring_expression
+
     testCompile libraries.mockito_core
     testCompile libraries.mockito_jupiter
     testCompile libraries.spring_boot_starter_test
