@@ -218,7 +218,7 @@ class CachedProductFamilyServiceTest {
                         assertThat(remainingServices.size(), is(1));
                         APIService remainingService = remainingServices.iterator().next();
                         assertThat(remainingService.getInstances().size(), is(1));
-                        assertThat(remainingService.getInstances().get(0), is("service12"));
+                        assertThat(remainingService.getInstances().get(0), is("service13"));
                     }
                 }
 

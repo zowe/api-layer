@@ -30,6 +30,7 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -161,13 +162,46 @@ public class CachedProductFamilyService {
     }
 
     /**
-     * Remove Instance which isn't available anymore. If it is the only instance on specific tile, remove the tile as well. 
+     * Remove Instance which isn't available anymore. Based on what service the instance belongs to:
+     * 1) it will remove the whole APIContainer (Tile) if there is no instance of any service remaining
+     * 2) Remove the service from the containe if there is no instance of service remaining
+     * 3) Remove instance from the service
      * 
-     * @param removedInstanceFamilyId
-     * @param removedInstance
+     * @param removedInstanceFamilyId the product family id of the container
+     * @param removedInstance         the service instance
      */
     public void removeInstance(String removedInstanceFamilyId, InstanceInfo removedInstance) {
-        
+        APIContainer containerWithInstance = products.get(removedInstanceFamilyId);
+        // There is nothing to do.
+        if(containerWithInstance == null) {
+            log.info("Remove product with id: {} instance {}", removedInstanceFamilyId, removedInstance.getInstanceId());
+            return;
+        }
+
+        APIService toBeRemoved = createAPIServiceFromInstance(removedInstance);
+
+        Set<APIService> currentServices = containerWithInstance.getServices();
+        AtomicBoolean removeFullService = new AtomicBoolean(false);
+        currentServices.stream()
+            .filter(existingService -> existingService.equals(toBeRemoved))
+            .forEach(existingService -> {
+                if (existingService.getInstances().size() == 1) {
+                    removeFullService.set(true);
+                } else {
+                    // Only remove one of the instances
+                    existingService.getInstances().remove(removedInstance.getInstanceId());
+                }
+            });
+
+        // Remove at least the full service
+        if (removeFullService.get()) {
+            currentServices.remove(toBeRemoved);
+
+            // Remove the whole container (tile)
+            if (currentServices.isEmpty()) {
+                products.remove(removedInstanceFamilyId);
+            }
+        }
     }
 
     /**
