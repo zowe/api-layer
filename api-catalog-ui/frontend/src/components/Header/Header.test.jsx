@@ -20,7 +20,7 @@ describe('>>> Header component tests', () => {
 
     it('should have link href to itself', () => {
         const sample = enzyme.shallow(<Header />);
-        expect(sample.find('[data-testid="link"]').props().href).toEqual('ui/v1/apicatalog/#/dashboard');
+        expect(sample.find('[data-testid="link"]').props().href).toEqual('#/dashboard');
     });
 
     it('should handle a Logout button click', () => {

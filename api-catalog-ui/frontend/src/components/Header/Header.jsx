@@ -70,7 +70,7 @@ const Header = (props) => {
     };
 
     const s = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
-    const dashboard = 'ui/v1/apicatalog/#/dashboard';
+    const dashboard = '#/dashboard';
     const username = localStorage.getItem('username');
     return (
         <div className="header">
