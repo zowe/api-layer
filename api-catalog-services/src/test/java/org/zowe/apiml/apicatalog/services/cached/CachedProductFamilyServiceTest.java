@@ -204,17 +204,21 @@ class CachedProductFamilyServiceTest {
                         metadata.put(SERVICE_TITLE, "sTitle");
                         metadata.put(SERVICE_DESCRIPTION, "sDescription");
                         remainingInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
-                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, remainingInstance);
                     }
 
-                    // There are two cases. One is if instance of the same Service 
                     @Test
                     void tileIsInCacheButServiceIsntInTile() {
                         underTest.removeInstance(removedInstanceFamilyId, removedInstance);
 
-                        underTest.getContainerById(removedInstanceFamilyId);
+                        APIContainer result = underTest.getContainerById(removedInstanceFamilyId);
+                        assertThat(result, is(not(nullValue())));
 
-                        // The API Container shouldn't contain the removedInstance but should exist
+                        Set<APIService> remainingServices =  result.getServices();
+                        assertThat(remainingServices.size(), is(1));
+                        APIService remainingService = remainingServices.iterator().next();
+                        assertThat(remainingService.getInstances().size(), is(1));
+                        assertThat(remainingService.getInstances().get(0), is("service12"));
                     }
                 }
 
@@ -232,7 +236,21 @@ class CachedProductFamilyServiceTest {
                         metadata.put(SERVICE_TITLE, "sTitle");
                         metadata.put(SERVICE_DESCRIPTION, "sDescription");
                         remainingInstance = servicesBuilder.createInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
-                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, remainingInstance);
+                    }
+
+                    @Test
+                    void tileIsInCacheButServiceIsntInTile() {
+                        underTest.removeInstance(removedInstanceFamilyId, removedInstance);
+
+                        APIContainer result = underTest.getContainerById(removedInstanceFamilyId);
+                        assertThat(result, is(not(nullValue())));
+
+                        Set<APIService> remainingServices =  result.getServices();
+                        assertThat(remainingServices.size(), is(1));
+
+                        APIService remainingService = remainingServices.iterator().next();
+                        assertThat(remainingService.getServiceId(), is("service2"));
                     }
                 }
             }

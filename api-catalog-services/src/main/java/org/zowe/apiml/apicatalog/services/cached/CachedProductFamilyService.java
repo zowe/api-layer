@@ -14,9 +14,6 @@ import com.netflix.discovery.shared.Application;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -132,9 +129,20 @@ public class CachedProductFamilyService {
         } else {
             Set<APIService> apiServices = container.getServices();
             APIService service = createAPIServiceFromInstance(instanceInfo);
-            apiServices.remove(service);
+        
+            // Verify whether already exists
+            if (apiServices.contains(service)) {
+                apiServices.stream()
+                    .filter(existingService -> existingService.equals(service))
+                    .forEach(existingService -> {
+                        if(!existingService.getInstances().contains(instanceInfo.getInstanceId())) {
+                            existingService.getInstances().add(instanceInfo.getInstanceId());
+                        }
+                    }); // If the instance is in list, do nothing otherwise 
+            } else {
+                apiServices.add(service);
+            }
 
-            apiServices.add(service);
             container.setServices(apiServices);
             //update container
             String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_VERSION);
@@ -158,9 +166,9 @@ public class CachedProductFamilyService {
      * @param removedInstanceFamilyId
      * @param removedInstance
      */
-	public void removeInstance(String removedInstanceFamilyId, InstanceInfo removedInstance) {
+    public void removeInstance(String removedInstanceFamilyId, InstanceInfo removedInstance) {
         
-	}
+    }
 
     /**
      * Update the summary totals, sso and API IDs info for a container based on it's running services
@@ -321,6 +329,7 @@ public class CachedProductFamilyService {
             .sso(isSso(instanceInfo))
             .apiId(apiId)
             .gatewayUrls(gatewayUrls)
+            .instanceId(instanceInfo.getInstanceId())
             .build();
     }
 
