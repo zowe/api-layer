@@ -136,7 +136,7 @@ public class CachedProductFamilyService {
                 apiServices.stream()
                     .filter(existingService -> existingService.equals(service))
                     .forEach(existingService -> {
-                        if(!existingService.getInstances().contains(instanceInfo.getInstanceId())) {
+                        if (!existingService.getInstances().contains(instanceInfo.getInstanceId())) {
                             existingService.getInstances().add(instanceInfo.getInstanceId());
                         }
                     }); // If the instance is in list, do nothing otherwise 
@@ -173,7 +173,7 @@ public class CachedProductFamilyService {
     public void removeInstance(String removedInstanceFamilyId, InstanceInfo removedInstance) {
         APIContainer containerWithInstance = products.get(removedInstanceFamilyId);
         // There is nothing to do.
-        if(containerWithInstance == null) {
+        if (containerWithInstance == null) {
             log.info("Remove product with id: {} instance {}", removedInstanceFamilyId, removedInstance.getInstanceId());
             return;
         }
