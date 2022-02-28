@@ -254,12 +254,19 @@ class CachedProductFamilyServiceTest {
                     }
                 }
             }
+
+            @Nested
+            class GivenRemovingNonExistentService {
+                @Test
+                void nothingHappens() {
+                    underTest.removeInstance("nonexistent", removedInstance);
+
+                    APIContainer result = underTest.getContainerById(removedInstanceFamilyId);
+                    assertThat(result, is(not(nullValue())));
+                }
+
+            }
         }
-
-        class GivenServiceDoesntExist {
-
-        }
-
     }
 
     @Nested
