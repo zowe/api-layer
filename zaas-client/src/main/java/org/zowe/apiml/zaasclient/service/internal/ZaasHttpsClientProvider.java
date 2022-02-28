@@ -128,7 +128,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     }
 
     private InputStream getCorrectInputStream(String uri) throws IOException {
-        if (uri.startsWith(SAFKEYRING + ":////")) {
+        if (uri.startsWith(SAFKEYRING + "://")) {
             URL url = new URL(replaceFourSlashes(uri));
             return url.openStream();
         }

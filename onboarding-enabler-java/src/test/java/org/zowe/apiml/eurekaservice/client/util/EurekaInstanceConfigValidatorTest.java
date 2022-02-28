@@ -55,7 +55,7 @@ class EurekaInstanceConfigValidatorTest {
     @CsvSource(value = {
         "bad-ssl-configuration.yml|SSL configuration was not provided. Try add apiml.service.ssl section.",
         "wrong-routes-service-configuration.yml|Routes parameters  ** gatewayUrl, serviceUrl ** are missing or were not replaced by the system properties.",
-        "missing-ssl-configuration.yml|SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, enabled, trustStorePassword, keyStorePassword, keyPassword ** are missing or were not replaced by the system properties."
+        "missing-ssl-configuration.yml|SSL parameters ** protocol, trustStore, keyStore, keyStoreType, trustStoreType, enabled, trustStorePassword, keyStorePassword, keyPassword ** are missing or were not replaced by the system properties."
     }, delimiter = '|')
     void givenConfigurationWithInvalidSsl_whenValidate_thenThrowException(String cfgFile, String expectedMsg) throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration(cfgFile);

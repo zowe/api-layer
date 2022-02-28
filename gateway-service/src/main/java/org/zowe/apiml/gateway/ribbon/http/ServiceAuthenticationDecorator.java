@@ -12,15 +12,17 @@ package org.zowe.apiml.gateway.ribbon.http;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpRequest;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
@@ -29,15 +31,15 @@ import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServi
 public class ServiceAuthenticationDecorator {
 
     private final ServiceAuthenticationService serviceAuthenticationService;
-    private final AuthenticationService authenticationService;
+    private final AuthSourceService authSourceService;
 
     /**
      * If a service requires authentication,
      *   verify that the specific instance was selected upfront
-     *   decide whether it requires valid JWT token and if it does
+     *   decide whether it requires valid authentication source (JWT token, client certificate etc.) and if it does
      *     verify that the request contains valid one
      *
-     * Prevent ribbon from retrying if Authentication Exception was thrown or if valid JWT token is required and wasn't
+     * Prevent ribbon from retrying if Authentication Exception was thrown or if valid authentication source is required and wasn't
      * provided.
      *
      * @param request Current http request.
@@ -53,16 +55,14 @@ public class ServiceAuthenticationDecorator {
             AuthenticationCommand cmd;
 
             try {
-                final String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
-
-                cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
+                final Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
+                cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, authSource.orElse(null));
 
                 if (cmd == null) {
                     return;
                 }
 
-                if (cmd.isRequiredValidJwt()
-                    && (jwtToken == null || !authenticationService.validateJwtToken(jwtToken).isAuthenticated())) {
+                if (!isSourceValidForCommand(authSource.orElse(null), cmd)) {
                     throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                 }
             }
@@ -72,6 +72,10 @@ public class ServiceAuthenticationDecorator {
 
             cmd.applyToRequest(request);
         }
+    }
+
+    private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
+        return !cmd.isRequiredValidSource() || (authSource != null && authSourceService.isValid(authSource));
     }
 }
 

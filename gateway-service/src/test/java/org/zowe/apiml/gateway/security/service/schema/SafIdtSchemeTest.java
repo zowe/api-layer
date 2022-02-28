@@ -11,34 +11,34 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
-import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.security.common.token.QueryResponse.Source;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
-    private AuthenticationService authenticationService;
+    private AuthSourceService authSourceService;
     private SafRestAuthenticationService safAuthenticationService;
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(AuthenticationService.class);
+        authSourceService = mock(AuthSourceService.class);
         safAuthenticationService = mock(SafRestAuthenticationService.class);
-        underTest = new SafIdtScheme(authenticationService, safAuthenticationService);
+        underTest = new SafIdtScheme(authSourceService, safAuthenticationService);
     }
 
     @Nested
@@ -47,9 +47,8 @@ class SafIdtSchemeTest {
 
         @BeforeEach
         void setCommandUnderTest() {
-            QueryResponse response = mock(QueryResponse.class);
-            Supplier<QueryResponse> supplier = () -> response;
-            commandUnderTest = underTest.createCommand(null, supplier);
+            JwtAuthSource authSource = mock(JwtAuthSource.class);
+            commandUnderTest = underTest.createCommand(null, authSource);
         }
 
         @Nested
@@ -62,8 +61,9 @@ class SafIdtSchemeTest {
                 TokenAuthentication authentication = new TokenAuthentication(validUsername, "validJwtToken");
                 authentication.setAuthenticated(true);
 
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("validJwtToken"));
-                when(authenticationService.validateJwtToken("validJwtToken")).thenReturn(authentication);
+                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("validJwtToken")));
+                when(authSourceService.isValid(new JwtAuthSource("validJwtToken"))).thenReturn(true);
+                when(authSourceService.parse(new JwtAuthSource("validJwtToken"))).thenReturn(new JwtAuthSource.Parsed(validUsername, new Date(), new Date(), Source.ZOWE));
                 when(safAuthenticationService.generate(validUsername)).thenReturn(Optional.of("validTokenValidJwtToken"));
 
                 commandUnderTest.apply(info);
@@ -78,7 +78,7 @@ class SafIdtSchemeTest {
             void givenNoJwtToken() {
                 InstanceInfo info = mock(InstanceInfo.class);
 
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
+                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
 
                 commandUnderTest.apply(info);
 
@@ -89,8 +89,8 @@ class SafIdtSchemeTest {
             void givenInvalidJwtToken() {
                 InstanceInfo info = mock(InstanceInfo.class);
 
-                when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("invalidJwtToken"));
-                when(authenticationService.validateJwtToken("invalidJwtToken")).thenReturn(new TokenAuthentication("invalidJwtToken"));
+                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("invalidJwtToken")));
+                when(authSourceService.isValid(new JwtAuthSource("invalidJwtToken"))).thenReturn(false);
 
                 commandUnderTest.apply(info);
 

@@ -16,10 +16,10 @@ import org.zowe.apiml.cache.EntryExpiration;
 import java.io.Serializable;
 
 /**
- * This command represented a code, which distribute right access right to a service. Gateway translates requests
+ * This command represented a code, which distribute right access to a service. Gateway translates requests
  * to a service and by login in there generate or translate authentication to the service.
  *
- * Responsible for this translation is filter {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter}
+ * Responsible for this translation is the filter {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter}
  */
 public abstract class AuthenticationCommand implements EntryExpiration, Serializable {
 
@@ -38,17 +38,6 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
         public void applyToRequest(HttpRequest request) {
             // do nothing
         }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidJwt() {
-            return false;
-        }
-
     };
 
     /**
@@ -62,11 +51,18 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
     /**
      * This method identify if for this authentication command, schema is required to be logged. Main purpose is
      * to make differences between bypass and other schema's type. Schema shouldn't change anything, but for some other
-     * it is required be logged and send valid JWT token.
-     * @return true is valid token is required, otherwise false
+     * it is required be logged and send valid authentication source.
+     * @return true is valid authentication source is required, otherwise false
      */
+    public boolean isRequiredValidSource() {
+        return false;
+    }
 
-    public abstract boolean isRequiredValidJwt();
+    @Override
+    public boolean isExpired() {
+        return false;
+    }
+
 
     /**
      * Used for deferred processing of command during Ribbon Retry.
