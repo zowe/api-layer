@@ -21,4 +21,5 @@ jobs:
             - name: Open PR
               run: |
                   cd scripts/create_pull_request
+                  npm install
                   node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }}
