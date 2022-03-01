@@ -1034,4 +1034,3 @@ jobs:
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
 
-            -   uses: ./.github/actions/teardown
