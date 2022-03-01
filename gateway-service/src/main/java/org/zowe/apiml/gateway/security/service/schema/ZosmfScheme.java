@@ -105,7 +105,8 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, null);
             });
         }
-        
+
+        @Override
         public boolean isExpired() {
             if (expireAt == null) return false;
 
