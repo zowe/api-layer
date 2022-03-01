@@ -9,6 +9,9 @@
  */
 package org.zowe.apiml;
 
-public class TestClass {
-    
+public class TestClass implements ZUtil {
+    @Override
+    public String getCurrentJobId() {
+        return null;
+    }
 }
