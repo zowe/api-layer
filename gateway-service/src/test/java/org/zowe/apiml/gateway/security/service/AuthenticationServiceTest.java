@@ -576,14 +576,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         assertEquals(qr2.getExpiration(), toBeExpired2);
     }
 
-    @Test
-    void testCreateShortLivedJwtTokenAndCheckExpiration() {
-        String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
-        QueryResponse qr2 = authService.parseJwtToken(jwt2);
-        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
-        assertEquals(qr2.getExpiration(), toBeExpired2);
-    }
-
 
     @Test
     void testDistributeInvalidateNotFoundApplication() {

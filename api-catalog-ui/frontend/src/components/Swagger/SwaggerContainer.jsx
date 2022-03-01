@@ -16,4 +16,4 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {};
 
-export default connect(mapStateToProps, mapDispatchToProps)(Swagger);
+export default connect(mapStateToProps, mapDispatchToProps)(SwaggerUI);

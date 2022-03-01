@@ -39,12 +39,8 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return false;
-        }
-
-        public void applyToRequest(HttpRequest request) {
-            // do nothing
         }
     };
 

@@ -46,6 +46,7 @@ import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.hamcrest.Matchers.is;
 
 @TestsNotMeantForZowe
 @WebsocketTest

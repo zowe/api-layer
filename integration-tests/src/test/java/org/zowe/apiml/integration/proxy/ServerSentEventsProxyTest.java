@@ -26,12 +26,10 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
 import javax.net.ssl.SSLException;
-import java.net.URI;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
@@ -138,7 +136,7 @@ public class ServerSentEventsProxyTest {
         @Test
         void getGreetingFromREST() {
             given()
-                .get(DC_SSE_REST_ENDPOINT)
+                .get(DISCOVERABLE_SSE_EVENTS)
                 .then().body("content", Matchers.is("Hello, Web service!"))
                 .and()
                 .statusCode(SC_OK);

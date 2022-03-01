@@ -106,7 +106,7 @@ export default class SwaggerUI extends Component {
             if (selectedVersion !== null && selectedVersion !== undefined) {
                 const basePath = `${selectedService.serviceId}/${selectedVersion}`;
                 const url = `${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
-                SwaggerUi({
+                SwaggerUI({
                     dom_id: '#swaggerContainer',
                     url,
                     presets: [presets.apis],

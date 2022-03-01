@@ -39,11 +39,6 @@ public class ByPassScheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public void applyToRequest(HttpRequest request) {
-            // do nothing
-        }
-
-        @Override
         public boolean isRequiredValidSource() {
             return false;
         }
