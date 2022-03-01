@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml;
 
+import org.zowe.apiml.eurekaservice.client.impl.ZUtil;
+
 public class TestClass implements ZUtil {
     @Override
     public String getCurrentJobId() {
