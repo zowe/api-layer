@@ -20,5 +20,5 @@ jobs:
 
             - name: Open PR
               run: |
-                  cd api-layer/scripts/create_pull_request
+                  cd scripts/create_pull_request
                   node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }}
