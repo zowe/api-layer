@@ -35,14 +35,18 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -68,7 +72,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     private AuthenticationSchemeFactory authenticationSchemeFactory;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private AuthSourceService authSourceService;
 
     @Autowired
     private ServiceAuthenticationService serviceAuthenticationService;
@@ -162,28 +166,30 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             Date.valueOf(LocalDate.of(2000, 1, 1)),
             QueryResponse.Source.ZOWE
         );
+        AuthSource.Parsed parsedSource1 = new JwtAuthSource.Parsed(qr1.getUserId(), qr1.getCreation(), qr1.getExpiration(), qr1.getSource());
+        AuthSource.Parsed parsedSource2 = new JwtAuthSource.Parsed(qr2.getUserId(), qr2.getCreation(), qr2.getExpiration(), qr2.getSource());
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
 
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET))
             .thenReturn(schemeBeanMock);
-        when(authenticationService.parseJwtToken("token1")).thenReturn(qr1);
-        when(authenticationService.parseJwtToken("token2")).thenReturn(qr2);
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr1)))).thenReturn(acValid);
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr2)))).thenReturn(acExpired);
+        when(authSourceService.parse(new JwtAuthSource("token1"))).thenReturn(parsedSource1);
+        when(authSourceService.parse(new JwtAuthSource("token2"))).thenReturn(parsedSource2);
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1"))).thenReturn(acValid);
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2"))).thenReturn(acExpired);
 
-        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token1"));
+        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1")));
         verify(schemeBeanMock, times(1)).createCommand(any(), any());
         // cache is working, it is not expired
-        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token1"));
+        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1")));
         verify(schemeBeanMock, times(1)).createCommand(any(), any());
 
         // new entry - expired, dont cache that
-        assertSame(acExpired, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token2"));
+        assertSame(acExpired, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2")));
         verify(schemeBeanMock, times(2)).createCommand(any(), any());
         // replace result (to know that expired record is removed and get new one)
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr2)))).thenReturn(acValid);
-        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token2"));
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2"))).thenReturn(acValid);
+        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2")));
         verify(schemeBeanMock, times(3)).createCommand(any(), any());
     }
 
@@ -197,8 +203,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         serviceAuthenticationService.getAuthenticationCommand(authentication, null);
 
         verify(schemeBeanMock, times(1)).createCommand(
-            eq(authentication),
-            argThat(x -> x.get() == null)
+            authentication,
+            null
         );
     }
 
@@ -220,7 +226,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         //AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         doAnswer(invocation -> {
-            ((Supplier<?>) invocation.getArgument(1)).get();
             return ok;
         }).when(scheme).createCommand(any(), any());
         when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
@@ -228,25 +233,40 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         // just one instance
         application = createApplication(ii1);
         when(discoveryClient.getApplication("svr01")).thenReturn(application);
-        assertSame(ok, sas.getAuthenticationCommand("svr01", "jwt01"));
+        assertSame(ok, sas.getAuthenticationCommand("svr01", new JwtAuthSource("jwt01")));
 
         // multiple same instances
         application = createApplication(ii1, ii1, ii1);
         when(discoveryClient.getApplication("svr02")).thenReturn(application);
-        assertSame(ok, sas.getAuthenticationCommand("svr02", "jwt02"));
+        assertSame(ok, sas.getAuthenticationCommand("svr02", new JwtAuthSource("jwt02")));
 
         // multiple different instances
         reset(discoveryClient);
         application = createApplication(ii1, ii2);
         when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertSame(ok, sas.getAuthenticationCommand("svr03", "jwt03"));
+        assertTrue(sas.getAuthenticationCommand("svr03", new JwtAuthSource("jwt03")) instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
+
+        reset(discoveryClient);
+        application = createApplication(ii1, ii3);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
+        assertTrue(sas.getAuthenticationCommand("svr03", new JwtAuthSource("jwt03")) instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
+
+        reset(discoveryClient);
+        application = createApplication(ii1, ii4);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
+        assertTrue(sas.getAuthenticationCommand("svr03", new JwtAuthSource("jwt03")) instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
+
+        reset(discoveryClient);
+        application = createApplication(ii1, ii2, ii3, ii4);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
+        assertTrue(sas.getAuthenticationCommand("svr03", new JwtAuthSource("jwt03")) instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
 
         reset(discoveryClient);
         when(discoveryClient.getInstancesById("svr03")).thenReturn(Collections.singletonList(ii5));
-        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr03", "jwt03"));
+        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr03", new JwtAuthSource("jwt03")));
 
         when(discoveryClient.getInstancesById("svr04")).thenReturn(Collections.emptyList());
-        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr04", "jwt03"));
+        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr04", new JwtAuthSource("jwt03")));
     }
 
     @Test
@@ -263,7 +283,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         when(aas1.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1")), any()))
             .thenReturn(ac1);
 
-        assertSame(ac1, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
+        assertSame(ac1, serviceAuthenticationService.getAuthenticationCommand("s1", new JwtAuthSource("jwt")));
         verify(discoveryClient, times(2)).getApplication("s1");
 
         serviceAuthenticationService.evictCacheAllService();
@@ -271,10 +291,52 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         when(aas1.getScheme()).thenReturn(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
         when(aas1.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1")), any()))
             .thenReturn(ac2);
-        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
+        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", new JwtAuthSource("jwt")));
         verify(discoveryClient, times(3)).getApplication("s1");
-        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
+        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", new JwtAuthSource("jwt")));
         verify(discoveryClient, times(3)).getApplication("s1");
+    }
+
+    @Test
+    void testUniversalAuthenticationCommand() {
+        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand uac = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+        assertFalse(uac.isExpired());
+
+        try {
+            uac.apply(null);
+            fail();
+        } catch (NullPointerException e) {
+            // this command cannot be applied without parameter (null)
+        }
+
+        AuthenticationCommand ac = mock(AuthenticationCommand.class);
+        InstanceInfo ii = createInstanceInfo("inst0001", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid0001");
+        RequestContext requestContext = mock(RequestContext.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(requestContext.getRequest()).thenReturn(request);
+        RequestContext.testSetCurrentContext(requestContext);
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken01")));
+        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        when(scheme.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid0001")), any())).thenReturn(ac);
+        when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(scheme);
+
+        uac.apply(ii);
+
+        verify(ac, times(1)).apply(null);
+    }
+
+    @Test
+    void testLoadBalancerAuthenticationCommand() {
+        ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand lbac = serviceAuthenticationServiceImpl.new LoadBalancerAuthenticationCommand();
+        assertFalse(lbac.isExpired());
+
+        RequestContext requestContext = new RequestContext();
+        RequestContext.testSetCurrentContext(requestContext);
+
+        assertNull(requestContext.get(AUTHENTICATION_COMMAND_KEY));
+        lbac.apply(null);
+        assertTrue(requestContext.get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand);
+        assertFalse(lbac.isRequiredValidSource());
     }
 
     @Test
@@ -288,40 +350,45 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         verify(discoveryClient, never()).getInstancesById("service0001");
         verify(discoveryClient, never()).getInstancesById("service0002");
 
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(1)).getApplication("service0001");
         verify(discoveryClient, never()).getApplication("service0002");
 
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt02")));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(2)).getApplication("service0001");
         verify(discoveryClient, times(1)).getApplication("service0002");
 
         serviceAuthenticationService.evictCacheService("service0001");
 
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(3)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt02")));
         verify(discoveryClient, times(4)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(1)).getApplication("service0002");
 
         serviceAuthenticationService.evictCacheAllService();
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(5)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt02")));
         verify(discoveryClient, times(6)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(2)).getApplication("service0002");
     }
 
     @Test
     void testNoApplication() {
         when(discoveryClient.getApplication(any())).thenReturn(null);
-        assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", "jwtToken"));
+        assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", new JwtAuthSource("jwtToken")));
     }
 
+    @Test
+    void testIsRequiredValidJwt() {
+        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+        assertFalse(universalAuthenticationCommand.isRequiredValidSource());
+    }
 
     private <T> T getUnProxy(T springClass) throws Exception {
         if (springClass instanceof Advised) {
@@ -330,6 +397,75 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         return springClass;
     }
 
+    private AuthenticationCommand testRequiredAuthentication(boolean requiredJwtValidation, String jwtToken) throws Exception {
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
+        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand =
+            serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+
+        AuthenticationCommand ac = mock(AuthenticationCommand.class);
+        AuthSource.Parsed parsedSource = mock(AuthSource.Parsed.class);
+        AbstractAuthenticationScheme schema = mock(AbstractAuthenticationScheme.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        RequestContext.getCurrentContext().setRequest(request);
+
+        Stubber stubber;
+        if (StringUtils.equals(jwtToken, "validJwt")) {
+            stubber = doReturn(Optional.of(new JwtAuthSource(jwtToken)));
+        } else {
+            stubber = doThrow(new TokenNotValidException("Token is not valid."));
+        }
+        stubber.when(getUnProxy(authSourceService)).getAuthSourceFromRequest();
+        doReturn(ac).when(schema).createCommand(authentication, new JwtAuthSource(jwtToken));
+        doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
+        doReturn(parsedSource).when(getUnProxy(authSourceService)).parse(new JwtAuthSource("validJwt"));
+        doReturn(requiredJwtValidation).when(ac).isRequiredValidSource();
+
+        universalAuthenticationCommand.apply(createInstanceInfo("id", authentication));
+
+        return ac;
+    }
+
+    @Test
+    void givenMissingJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
+        try {
+            testRequiredAuthentication(true, null);
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @Test
+    void givenInvalidJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
+        try {
+            testRequiredAuthentication(true, "invalidJwt");
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @Test
+    void givenValidExpiredJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
+        doThrow(new TokenExpireException("Token is expired."))
+            .when(getUnProxy(authSourceService)).isValid(any());
+
+        try {
+            testRequiredAuthentication(true, "validJwt");
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @Test
+    void givenValidJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
+        doReturn(true)
+            .when(getUnProxy(authSourceService)).isValid(any());
+
+        AuthenticationCommand ac = testRequiredAuthentication(true, "validJwt");
+        verify(ac, times(1)).apply(any());
+    }
 
     @Test
     void givenServiceIdAndJwt_whenExpiringCommand_thenReturnNewOne() {
@@ -343,11 +479,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         doReturn(cmd).when(scheme).createCommand(any(), any());
 
         // first time, create and put into cache
-        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
 
         // second time, get from cache
-        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
 
         // command expired, take new one
@@ -355,11 +491,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthenticationCommand cmd2 = new AuthenticationCommandTest(false);
         reset(scheme);
         doReturn(cmd2).when(scheme).createCommand(any(), any());
-        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
 
         // second command is cached now
-        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
     }
 
@@ -377,7 +513,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return false;
         }
 

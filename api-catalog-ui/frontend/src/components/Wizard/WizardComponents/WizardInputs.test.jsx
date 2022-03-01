@@ -49,7 +49,6 @@ describe('>>> WizardInputs tests', () => {
             text: 'Basic info',
         });
     });
-
     it('should create 3 inputs based on data and visibility', () => {
         const dummyData = {
             text: 'Dummy Data',

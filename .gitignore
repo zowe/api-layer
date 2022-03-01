@@ -106,6 +106,7 @@ gateway-service/**/*.index
 gateway-service/jwt*.tmp
 
 # zowe-api-dev
+.api-dev
 .zowe-api-dev
 user-zowe-api.json
 lastJob.json

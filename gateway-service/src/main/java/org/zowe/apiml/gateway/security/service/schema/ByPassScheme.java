@@ -14,9 +14,7 @@ import com.netflix.zuul.context.RequestContext;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.token.QueryResponse;
-
-import java.util.function.Supplier;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 /**
  * Default scheme, just forward, don't set anything.
@@ -41,7 +39,12 @@ public class ByPassScheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public void applyToRequest(HttpRequest request) {
+            // do nothing
+        }
+
+        @Override
+        public boolean isRequiredValidSource() {
             return false;
         }
     };
@@ -52,7 +55,7 @@ public class ByPassScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         return AUTHENTICATION_COMMAND;
     }
 

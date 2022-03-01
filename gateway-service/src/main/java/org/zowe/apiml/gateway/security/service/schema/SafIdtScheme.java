@@ -11,27 +11,25 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 
-import java.util.Date;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * The scheme allowing for the safIdt authentication scheme.
- * It adds new header with the SAF IDT token in case of valid JWT provided.
+ * It adds new header with the SAF IDT token in case of valid authentication source provided.
  */
 @Component
 @RequiredArgsConstructor
 public class SafIdtScheme implements AbstractAuthenticationScheme {
-    private final AuthenticationService authenticationService;
+    private final AuthSourceService authSourceService;
     private final SafIdtProvider safIdtProvider;
 
     @Override
@@ -40,10 +38,10 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) {
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         // Same behavior as for the ZosmfScheme.
-        final QueryResponse queryResponse = tokenSupplier.get();
-        final Date expiration = queryResponse == null ? null : queryResponse.getExpiration();
+        final AuthSource.Parsed parsedSource = authSourceService.parse(authSource);
+        final Date expiration = parsedSource == null ? null : parsedSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
         return new SafIdtCommand(expirationTime);
     }
@@ -56,14 +54,15 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
 
-            Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-            jwtToken.ifPresent(token -> {
-                TokenAuthentication authentication = authenticationService.validateJwtToken(jwtToken.get());
-                if (authentication.isAuthenticated()) {
-                    // Get principal from the token?
-                    Optional<String> safIdt = safIdtProvider.generate(authentication.getPrincipal());
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
+            authSource.ifPresent(token -> {
+                if (authSourceService.isValid(token)) {
+                    AuthSource.Parsed parsedSource = authSourceService.parse(token);
+                    if (parsedSource != null) {
+                        Optional<String> safIdt = safIdtProvider.generate(parsedSource.getUserId());
 
-                    safIdt.ifPresent(safToken -> context.addZuulRequestHeader("X-SAF-Token", safToken));
+                        safIdt.ifPresent(safToken -> context.addZuulRequestHeader("X-SAF-Token", safToken));
+                    }
                 }
             });
         }
@@ -76,7 +75,7 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return true;
         }
     }

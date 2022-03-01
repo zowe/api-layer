@@ -9,8 +9,10 @@
  */
 package org.zowe.apiml.integration.proxy;
 
+import io.restassured.RestAssured;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +32,7 @@ import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,6 +40,8 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,6 +51,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 @WebsocketTest
 class WebSocketProxyTest implements TestWithStartedInstances {
     private final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static final URI DC_WS_REST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/ws");
 
     private static final int WAIT_TIMEOUT_MS = 10000;
 
@@ -234,6 +240,24 @@ class WebSocketProxyTest implements TestWithStartedInstances {
             }
 
             assertEquals("BYECloseStatus[code=1000, reason=null]", response.toString());
+        }
+    }
+
+    @Nested
+    class WhenRequestIsNotForWebSocket {
+
+        @BeforeEach
+        void beforeClass() {
+            RestAssured.useRelaxedHTTPSValidation();
+        }
+
+        @Test
+        void getGreetingFromREST() {
+            given()
+                .get(DC_WS_REST_ENDPOINT)
+                .then().body("content",is("Hello, Web service!"))
+                .and()
+                .statusCode(SC_OK);
         }
     }
 

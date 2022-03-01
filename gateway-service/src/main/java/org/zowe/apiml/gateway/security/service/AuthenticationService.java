@@ -40,6 +40,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
+import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
+import static org.zowe.apiml.gateway.security.service.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -57,8 +59,6 @@ public class AuthenticationService {
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String CACHE_VALIDATION_JWT_TOKEN = "validationJwtToken";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
-
-    private static final String TOKEN_IS_NOT_VALID_DUE_TO = "Token is not valid due to: {}.";
 
     private final ApplicationContext applicationContext;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -183,26 +183,6 @@ public class AuthenticationService {
         return Boolean.FALSE;
     }
 
-    /**
-     * Method to translate original exception to internal one. It is used in case of parsing and verifying of JWT tokens.
-     *
-     * @param exception original exception
-     * @return translated exception (better messaging and allow subsequent handling)
-     */
-    protected RuntimeException handleJwtParserException(RuntimeException exception) {
-        if (exception instanceof ExpiredJwtException) {
-            final ExpiredJwtException expiredJwtException = (ExpiredJwtException) exception;
-            log.debug("Token with id '{}' for user '{}' is expired.", expiredJwtException.getClaims().getId(), expiredJwtException.getClaims().getSubject());
-            return new TokenExpireException("Token is expired.");
-        }
-        if (exception instanceof JwtException) {
-            log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
-            return new TokenNotValidException("Token is not valid.");
-        }
-
-        log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
-        return new TokenNotValidException("An internal error occurred while validating the token therefore the token is no longer valid.");
-    }
 
     private Claims validateAndParseLocalJwtToken(String jwtToken) {
         try {
@@ -241,7 +221,7 @@ public class AuthenticationService {
                 isValid = true;
                 break;
             case ZOSMF:
-               isValid = zosmfService.validate(jwtToken);
+                isValid = zosmfService.validate(jwtToken);
                 break;
             default:
                 throw new TokenNotValidException("Unknown token type.");
@@ -310,25 +290,7 @@ public class AuthenticationService {
             throw new TokenNotValidException("Null token.");
         }
         parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache, which is in the next line
-        return meAsProxy.validateJwtToken( token.getCredentials());
-    }
-
-    /**
-     * This method removes the token signature. Each JWT token is concatenated of three parts (header, body, sign) joined
-     * with ".". JWT library used for parsing contains also validation. A public key is needed for validation, but
-     * we are also using JWT tokens from another application (z/OSMF) and we don't have it.
-     *
-     * @param jwtToken token to modify
-     * @return jwt token without sign part
-     */
-    private String removeSign(String jwtToken) {
-        if (jwtToken == null) return null;
-
-        final int index = jwtToken.indexOf('.');
-        final int index2 = jwtToken.indexOf('.', index + 1);
-        if (index2 > 0) return jwtToken.substring(0, index2 + 1);
-
-        return jwtToken;
+        return meAsProxy.validateJwtToken(token.getCredentials());
     }
 
     /**
@@ -339,29 +301,15 @@ public class AuthenticationService {
      * @return the query response
      */
     public QueryResponse parseJwtToken(String jwtToken) {
-        /*
-         * Removes signature, because of z/OSMF we don't have key to verify certificate and
-         * we just need to read claim. Verification is realized via REST call to z/OSMF.
-         * JWT library doesn't parse signed key without verification.
-         */
-        final String withoutSign = removeSign(jwtToken);
+        Claims claims = getJwtClaims(jwtToken);
 
-        // parse to claims and construct QueryResponse
-        try {
-            Claims claims = Jwts.parserBuilder()
-                .build()
-                .parseClaimsJwt(withoutSign)
-                .getBody();
-            return new QueryResponse(
+        return new QueryResponse(
                 claims.get(DOMAIN_CLAIM_NAME, String.class),
                 claims.getSubject(),
                 claims.getIssuedAt(),
                 claims.getExpiration(),
                 QueryResponse.Source.valueByIssuer(claims.getIssuer())
-            );
-        } catch (RuntimeException exception) {
-            throw handleJwtParserException(exception);
-        }
+        );
     }
 
     /**
@@ -383,19 +331,9 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the JWT token is not valid
      */
     public String getLtpaToken(String jwtToken) {
-        // remove sign to avoid validation of sign
-        final String withoutSign = removeSign(jwtToken);
+        Claims claims = getJwtClaims(jwtToken);
 
-        // parse to claims and construct QueryResponse
-        try {
-            return Jwts.parserBuilder()
-                .build()
-                .parseClaimsJwt(withoutSign)
-                .getBody()
-                .get(LTPA_CLAIM_NAME, String.class);
-        } catch (RuntimeException exception) {
-            throw handleJwtParserException(exception);
-        }
+        return claims.get(LTPA_CLAIM_NAME, String.class);
     }
 
     /**

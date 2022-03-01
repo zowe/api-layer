@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-apply plugin: 'maven-publish'
 ext {
     artifactName = 'apiml-sample-extension-package'
     pullNo = project.hasProperty("pullRequest") && project.getProperty("pullRequest") != null ? "-" + project.getProperty("pullRequest") : ""

@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.login.ChangePasswordRequest;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
@@ -146,6 +148,16 @@ public class ZosmfService extends AbstractZosmfService {
         return authenticationResponse;
     }
 
+    @Retryable(maxAttempts = 2, backoff = @Backoff(value = 1500))
+    public ResponseEntity<String> changePassword(Authentication authentication) {
+        ResponseEntity<String> changePasswordResponse;
+        changePasswordResponse = issueChangePasswordRequest(
+            authentication,
+            getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
+            HttpMethod.PUT);
+        return changePasswordResponse;
+    }
+
     /**
      * Checks if jwtToken is in the list of invalidated tokens.
      *
@@ -233,6 +245,30 @@ public class ZosmfService extends AbstractZosmfService {
                 new HttpEntity<>(null, headers), String.class);
             return getAuthenticationResponse(response);
         } catch (RuntimeException re) {
+            throw handleExceptionOnCall(url, re);
+        }
+    }
+
+    /**
+     * PUT to provided url and return authentication response
+     *
+     * @param authentication
+     * @param url            String containing change password endpoint to be used
+     * @return ResponseEntity
+     */
+    protected ResponseEntity<String> issueChangePasswordRequest(Authentication authentication, String url, HttpMethod httpMethod) {
+        log.debug("Changing password via z/OSMF");
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            return restTemplateWithoutKeystore.exchange(
+                url,
+                httpMethod,
+                new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers), String.class);
+        } catch (RuntimeException re) {
+            log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
+                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provide are correct.");
             throw handleExceptionOnCall(url, re);
         }
     }

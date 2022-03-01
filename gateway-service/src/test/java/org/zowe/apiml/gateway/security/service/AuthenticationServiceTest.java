@@ -577,35 +577,13 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     @Test
-    void testHandleJwtParserException() {
-        class AuthenticationServiceExceptionHandlerTest extends AuthenticationService {
-
-            AuthenticationServiceExceptionHandlerTest() {
-                super(null, null, null, null, null, null, null, null);
-            }
-
-            @Override
-            public RuntimeException handleJwtParserException(RuntimeException re) {
-                return super.handleJwtParserException(re);
-            }
-
-        }
-
-        AuthenticationServiceExceptionHandlerTest as = new AuthenticationServiceExceptionHandlerTest();
-        Exception exception;
-
-        exception = as.handleJwtParserException(new ExpiredJwtException(mock(Header.class), mock(Claims.class), "msg"));
-        assertTrue(exception instanceof TokenExpireException);
-        assertEquals("Token is expired.", exception.getMessage());
-
-        exception = as.handleJwtParserException(new JwtException("msg"));
-        assertTrue(exception instanceof TokenNotValidException);
-        assertEquals("Token is not valid.", exception.getMessage());
-
-        exception = as.handleJwtParserException(new RuntimeException("msg"));
-        assertTrue(exception instanceof TokenNotValidException);
-        assertEquals("An internal error occurred while validating the token therefore the token is no longer valid.", exception.getMessage());
+    void testCreateShortLivedJwtTokenAndCheckExpiration() {
+        String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
+        QueryResponse qr2 = authService.parseJwtToken(jwt2);
+        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
+        assertEquals(qr2.getExpiration(), toBeExpired2);
     }
+
 
     @Test
     void testDistributeInvalidateNotFoundApplication() {

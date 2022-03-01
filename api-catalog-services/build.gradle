@@ -105,7 +105,8 @@ dependencies {
     implementation libraries.spring_web
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
-
+    implementation libraries.thymeleaf
+    implementation libraries.thymeleafSpring
 
     implementation libraries.springFox
 

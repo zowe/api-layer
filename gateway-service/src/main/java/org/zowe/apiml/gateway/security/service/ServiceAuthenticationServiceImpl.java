@@ -12,11 +12,15 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import com.netflix.loadbalancer.reactive.ExecutionListener;
+import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -26,6 +30,8 @@ import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationSche
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.util.List;
@@ -62,7 +68,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
-    private final AuthenticationService authenticationService;
+    private final AuthSourceService authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
@@ -70,22 +76,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
     }
 
-    /**
-     * This method is only for testing purpose, to be set authenticationService in inner classes
-     *
-     * @return reference for AuthenticationService
-     */
-    protected AuthenticationService getAuthenticationService() {
-        return authenticationService;
-    }
-
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
-        if (jwtToken == null) return scheme.createCommand(authentication, () -> null);
-        return scheme.createCommand(authentication, () -> authenticationService.parseJwtToken(jwtToken));
+        return scheme.createCommand(authentication, authSource);
     }
 
     @Override
@@ -96,13 +92,13 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, AuthSource authSource) {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
         final List<InstanceInfo> instances = application.getInstances();
         Authentication auth = null;
-//        If any instance is specifying which authentication it wants, then use the first found.
+        // If any instance is specifying which authentication it wants, then use the first found.
         for (InstanceInfo instance : instances) {
             auth = getAuthentication(instance);
             if (auth != null && !auth.isEmpty()) {
@@ -110,8 +106,8 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             }
         }
         if (auth == null || auth.isEmpty()) return AuthenticationCommand.EMPTY;
-        return getAuthenticationCommand(auth, jwtToken);
 
+        return getAuthenticationCommand(auth, authSource);
     }
 
     @Override
@@ -131,5 +127,58 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         cacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> StringUtils.equalsIgnoreCase((String) x.get(0), serviceId));
     }
 
+    public class UniversalAuthenticationCommand extends AuthenticationCommand {
+
+        private static final long serialVersionUID = -2980076158001292742L;
+
+        private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
+
+        protected UniversalAuthenticationCommand() {
+        }
+
+        @Override
+        public void apply(InstanceInfo instanceInfo) {
+            if (instanceInfo == null) throw new NullPointerException("Argument instanceInfo is required");
+
+            final Authentication auth = getAuthentication(instanceInfo);
+
+            AuthenticationCommand cmd = null;
+
+            boolean rejected = false;
+            try {
+                final Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
+                cmd = getAuthenticationCommand(auth, authSource.orElse(null));
+
+                // if authentication schema required valid authentication source, check it
+                if (cmd.isRequiredValidSource()) {
+                    rejected = (!authSource.isPresent()) || !authSourceService.isValid(authSource.get());
+                }
+
+            } catch (AuthenticationException ae) {
+                rejected = true;
+            }
+
+            if (rejected) {
+                throw new ExecutionListener.AbortExecutionException(INVALID_JWT_MESSAGE, new BadCredentialsException(INVALID_JWT_MESSAGE));
+            }
+
+            cmd.apply(null);
+        }
+    }
+
+    public class LoadBalancerAuthenticationCommand extends AuthenticationCommand {
+
+        private static final long serialVersionUID = 3363375706967769113L;
+
+        private final UniversalAuthenticationCommand universal = new UniversalAuthenticationCommand();
+
+        protected LoadBalancerAuthenticationCommand() {
+        }
+
+        @Override
+        public void apply(InstanceInfo instanceInfo) {
+            RequestContext.getCurrentContext().put(AUTHENTICATION_COMMAND_KEY, universal);
+        }
+    }
 
 }

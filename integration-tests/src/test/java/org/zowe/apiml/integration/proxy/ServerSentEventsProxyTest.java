@@ -13,7 +13,10 @@ package org.zowe.apiml.integration.proxy;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.restassured.RestAssured;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.client.reactive.ClientHttpConnector;
@@ -23,12 +26,16 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
 import javax.net.ssl.SSLException;
+import java.net.URI;
 import java.time.Duration;
 
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.zowe.apiml.util.requests.Endpoints.*;
@@ -117,6 +124,24 @@ public class ServerSentEventsProxyTest {
                 String response = fluxResult.getResponseBody().next().block();
                 assertThat(response, is("ZWEAG712E The URI '/sse/v1' is an invalid format"));
             }
+        }
+    }
+
+    @Nested
+    class WhenRequestIsNotForSSE {
+
+        @BeforeEach
+        void beforeClass() {
+            RestAssured.useRelaxedHTTPSValidation();
+        }
+
+        @Test
+        void getGreetingFromREST() {
+            given()
+                .get(DC_SSE_REST_ENDPOINT)
+                .then().body("content", Matchers.is("Hello, Web service!"))
+                .and()
+                .statusCode(SC_OK);
         }
     }
 }
