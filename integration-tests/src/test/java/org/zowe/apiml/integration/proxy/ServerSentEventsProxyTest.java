@@ -124,22 +124,4 @@ public class ServerSentEventsProxyTest {
             }
         }
     }
-
-    @Nested
-    class WhenRequestIsNotForSSE {
-
-        @BeforeEach
-        void beforeClass() {
-            RestAssured.useRelaxedHTTPSValidation();
-        }
-
-        @Test
-        void getGreetingFromREST() {
-            given()
-                .get(DISCOVERABLE_SSE_EVENTS)
-                .then().body("content", Matchers.is("Hello, Web service!"))
-                .and()
-                .statusCode(SC_OK);
-        }
-    }
 }
