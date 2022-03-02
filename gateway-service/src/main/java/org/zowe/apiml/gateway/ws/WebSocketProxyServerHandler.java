@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.SubProtocolCapable;
@@ -55,22 +56,25 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private final WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
     private final WebSocketClientFactory webSocketClientFactory;
     private static final String SEPARATOR = "/";
+    private LoadBalancerClient lbCLient;
 
     @Autowired
-    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory) {
+    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory, LoadBalancerClient lbCLient) {
         this.discovery = discovery;
         this.webSocketClientFactory = webSocketClientFactory;
         this.routedSessions = new ConcurrentHashMap<>();  // Default
         this.webSocketRoutedSessionFactory = new WebSocketRoutedSessionFactoryImpl();
+        this.lbCLient = lbCLient;
         log.debug("Creating WebSocketProxyServerHandler {} ", this);
     }
 
     public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory,
-                                       Map<String, WebSocketRoutedSession> routedSessions, WebSocketRoutedSessionFactory webSocketRoutedSessionFactory) {
+                                       Map<String, WebSocketRoutedSession> routedSessions, WebSocketRoutedSessionFactory webSocketRoutedSessionFactory, LoadBalancerClient lbCLient) {
         this.discovery = discovery;
         this.webSocketClientFactory = webSocketClientFactory;
         this.routedSessions = routedSessions;
         this.webSocketRoutedSessionFactory = webSocketRoutedSessionFactory;
+        this.lbCLient = lbCLient;
         log.debug("Creating WebSocketProxyServerHandler {}", this);
     }
 
@@ -127,7 +131,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             return;
         }
 
-        ServiceInstance serviceInstance = findServiceInstance(serviceId);
+        ServiceInstance serviceInstance = this.lbCLient.choose(serviceId);
         if (serviceInstance != null) {
             openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
         } else {
