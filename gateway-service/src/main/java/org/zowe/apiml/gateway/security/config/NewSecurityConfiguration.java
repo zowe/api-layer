@@ -28,6 +28,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -447,7 +448,8 @@ public class NewSecurityConfiguration {
                 .authorizeRequests()
                 .anyRequest()
                 .permitAll()
-                .and().logout().disable();
+                .and().logout().disable()
+                .addFilterAfter(new ApimlX509Filter(publicKeyCertificatesBase64), AnonymousAuthenticationFilter.class);
         }
     }
 
