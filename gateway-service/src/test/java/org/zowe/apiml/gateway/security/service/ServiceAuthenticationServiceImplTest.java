@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -35,6 +34,7 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.CacheUtils;
@@ -42,7 +42,6 @@ import org.zowe.apiml.util.CacheUtils;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -92,7 +91,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             discoveryClient,
             new EurekaMetadataParser(),
             authenticationSchemeFactory,
-            authenticationService,
             cacheManager,
             new CacheUtils());
     }
@@ -169,21 +167,21 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             .thenReturn(schemeBeanMock);
         when(authenticationService.parseJwtToken("token1")).thenReturn(qr1);
         when(authenticationService.parseJwtToken("token2")).thenReturn(qr2);
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr1)))).thenReturn(acValid);
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr2)))).thenReturn(acExpired);
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1"))).thenReturn(acValid);
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2"))).thenReturn(acExpired);
 
-        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token1"));
+        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1")));
         verify(schemeBeanMock, times(1)).createCommand(any(), any());
         // cache is working, it is not expired
-        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token1"));
+        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1")));
         verify(schemeBeanMock, times(1)).createCommand(any(), any());
 
         // new entry - expired, dont cache that
-        assertSame(acExpired, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token2"));
+        assertSame(acExpired, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2")));
         verify(schemeBeanMock, times(2)).createCommand(any(), any());
         // replace result (to know that expired record is removed and get new one)
-        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr2)))).thenReturn(acValid);
-        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token2"));
+        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2"))).thenReturn(acValid);
+        assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2")));
         verify(schemeBeanMock, times(3)).createCommand(any(), any());
     }
 
@@ -197,8 +195,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         serviceAuthenticationService.getAuthenticationCommand(authentication, null);
 
         verify(schemeBeanMock, times(1)).createCommand(
-            eq(authentication),
-            argThat(x -> x.get() == null)
+            authentication,
+            null
         );
     }
 
@@ -220,7 +218,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         //AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         doAnswer(invocation -> {
-            ((Supplier<?>) invocation.getArgument(1)).get();
             return ok;
         }).when(scheme).createCommand(any(), any());
         when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
@@ -228,25 +225,25 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         // just one instance
         application = createApplication(ii1);
         when(discoveryClient.getApplication("svr01")).thenReturn(application);
-        assertSame(ok, sas.getAuthenticationCommand("svr01", "jwt01"));
+        assertSame(ok, sas.getAuthenticationCommand("svr01", new JwtAuthSource("jwt01")));
 
         // multiple same instances
         application = createApplication(ii1, ii1, ii1);
         when(discoveryClient.getApplication("svr02")).thenReturn(application);
-        assertSame(ok, sas.getAuthenticationCommand("svr02", "jwt02"));
+        assertSame(ok, sas.getAuthenticationCommand("svr02", new JwtAuthSource("jwt02")));
 
         // multiple different instances
         reset(discoveryClient);
         application = createApplication(ii1, ii2);
         when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertSame(ok, sas.getAuthenticationCommand("svr03", "jwt03"));
+        assertSame(ok, sas.getAuthenticationCommand("svr03", new JwtAuthSource("jwt03")));
 
         reset(discoveryClient);
         when(discoveryClient.getInstancesById("svr03")).thenReturn(Collections.singletonList(ii5));
-        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr03", "jwt03"));
+        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr03", new JwtAuthSource("jwt03")));
 
         when(discoveryClient.getInstancesById("svr04")).thenReturn(Collections.emptyList());
-        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr04", "jwt03"));
+        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr04", new JwtAuthSource("jwt03")));
     }
 
     @Test
@@ -263,7 +260,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         when(aas1.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1")), any()))
             .thenReturn(ac1);
 
-        assertSame(ac1, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
+        assertSame(ac1, serviceAuthenticationService.getAuthenticationCommand("s1", new JwtAuthSource("jwt")));
         verify(discoveryClient, times(2)).getApplication("s1");
 
         serviceAuthenticationService.evictCacheAllService();
@@ -271,9 +268,9 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         when(aas1.getScheme()).thenReturn(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
         when(aas1.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1")), any()))
             .thenReturn(ac2);
-        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
+        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", new JwtAuthSource("jwt")));
         verify(discoveryClient, times(3)).getApplication("s1");
-        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
+        assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", new JwtAuthSource("jwt")));
         verify(discoveryClient, times(3)).getApplication("s1");
     }
 
@@ -288,48 +285,39 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         verify(discoveryClient, never()).getInstancesById("service0001");
         verify(discoveryClient, never()).getInstancesById("service0002");
 
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(1)).getApplication("service0001");
         verify(discoveryClient, never()).getApplication("service0002");
 
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt02")));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(2)).getApplication("service0001");
         verify(discoveryClient, times(1)).getApplication("service0002");
 
         serviceAuthenticationService.evictCacheService("service0001");
 
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(3)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt02")));
         verify(discoveryClient, times(4)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(1)).getApplication("service0002");
 
         serviceAuthenticationService.evictCacheAllService();
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(5)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", new JwtAuthSource("jwt02")));
         verify(discoveryClient, times(6)).getApplication("service0001");
-        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
+        assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", new JwtAuthSource("jwt01")));
         verify(discoveryClient, times(2)).getApplication("service0002");
     }
 
     @Test
     void testNoApplication() {
         when(discoveryClient.getApplication(any())).thenReturn(null);
-        assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", "jwtToken"));
+        assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", new JwtAuthSource("jwtToken")));
     }
-
-
-    private <T> T getUnProxy(T springClass) throws Exception {
-        if (springClass instanceof Advised) {
-            return (T) ((Advised) springClass).getTargetSource().getTarget();
-        }
-        return springClass;
-    }
-
 
     @Test
     void givenServiceIdAndJwt_whenExpiringCommand_thenReturnNewOne() {
@@ -343,11 +331,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         doReturn(cmd).when(scheme).createCommand(any(), any());
 
         // first time, create and put into cache
-        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
 
         // second time, get from cache
-        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
 
         // command expired, take new one
@@ -355,11 +343,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthenticationCommand cmd2 = new AuthenticationCommandTest(false);
         reset(scheme);
         doReturn(cmd2).when(scheme).createCommand(any(), any());
-        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
 
         // second command is cached now
-        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", new JwtAuthSource("jwt")));
         verify(scheme, times(1)).createCommand(any(), any());
     }
 
@@ -377,7 +365,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         }
 
         @Override
-        public boolean isRequiredValidJwt() {
+        public boolean isRequiredValidSource() {
             return false;
         }
 

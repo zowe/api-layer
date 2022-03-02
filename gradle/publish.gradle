@@ -13,7 +13,8 @@ ext.javaLibraries = [
     'common-service-core',
     'security-service-client-spring',
     'zaas-client',
-    'apiml-sample-extension'
+    'apiml-sample-extension',
+    'apiml-sample-extension-package'
 ]
 
 ext.servicesToPublish = [

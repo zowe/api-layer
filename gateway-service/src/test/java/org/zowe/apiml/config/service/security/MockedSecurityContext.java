@@ -19,6 +19,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
 
 import static org.mockito.Mockito.mock;
@@ -48,12 +49,16 @@ public class MockedSecurityContext {
     }
 
     @Bean
+    public AuthSourceService getAuthSourceService() {
+        return mock(AuthSourceService.class);
+    }
+
+    @Bean
     public ServiceAuthenticationService getServiceAuthenticationService(@Autowired CacheManager cacheManager, CacheUtils cacheUtils) {
         return new ServiceAuthenticationServiceImpl(
                 getDiscoveryClient(),
                 getEurekaMetadataParser(),
                 getAuthenticationSchemeFactory(),
-                getAuthenticationService(),
                 cacheManager,
                 cacheUtils
         );

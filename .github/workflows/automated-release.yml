@@ -1,5 +1,5 @@
 # This workflow will release project with Gradle
-name: Release new version (automated)
+name: Automated binary release
 
 on:
     schedule:
@@ -68,37 +68,3 @@ jobs:
                   DEFAULT_SCOPE: 'patch'
 
             - uses: ./.github/actions/teardown
-
-    get-image-version:
-        # get image version from onboarding-enabler-nodejs/package.json as set in release job
-        runs-on: ubuntu-latest
-        needs:
-            - release # Ensure build and binary release work properly, meaning version is set appropriately
-        outputs:
-            imageVersion: ${{ steps.getImageVersion.outputs.imageVersion }}
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-
-            - id: getImageVersion
-              run: |
-                  version=$(cat onboarding-enabler-nodejs/package.json | awk '/"version":/' | awk -F: '{print$2;}' | awk -F\" '{print$2;}')
-                  echo "::set-output name=imageVersion::$version"
-
-    release-images:
-        needs:
-            - get-image-version
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
-        with:
-            release: true
-            version: ${{ needs.get-image-version.outputs.imageVersion }}
-        secrets:
-            registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
-            registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
-            redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
-            redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
-            zlinux-host: ${{ secrets.ZLINUX_HOST }}
-            zlinux-ssh-user: ${{ secrets.ZLINUX_SSH_USER }}
-            zlinux-ssh-key: ${{ secrets.ZLINUX_SSH_KEY }}
-            zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}

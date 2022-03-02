@@ -1,6 +1,6 @@
 # This workflow will release project with Gradle
 
-name: Release new version (snapshot)
+name: Binary snapshot release
 
 on:
     push:
@@ -25,19 +25,3 @@ jobs:
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             - uses: ./.github/actions/teardown
-
-    release-images:
-        needs:
-            - release # Ensure services can build and binary released successfully
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
-        with:
-            release: true
-        secrets:
-            registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
-            registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
-            redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
-            redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
-            zlinux-host: ${{ secrets.ZLINUX_HOST }}
-            zlinux-ssh-user: ${{ secrets.ZLINUX_SSH_USER }}
-            zlinux-ssh-key: ${{ secrets.ZLINUX_SSH_KEY }}
-            zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}

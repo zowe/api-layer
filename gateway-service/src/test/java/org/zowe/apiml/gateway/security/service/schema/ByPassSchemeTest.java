@@ -29,7 +29,7 @@ class ByPassSchemeTest {
         cmd.apply(null);
         assertEquals(Boolean.TRUE, RequestContext.getCurrentContext().get("AuthenticationSchemeByPass"));
         assertFalse(cmd.isExpired());
-        assertFalse(cmd.isRequiredValidJwt());
+        assertFalse(cmd.isRequiredValidSource());
     }
 
 

@@ -29,5 +29,4 @@ public class BeanConfig {
     ) {
         return new HttpClientChooser(withoutCertificate, withCertificate);
     }
-
 }

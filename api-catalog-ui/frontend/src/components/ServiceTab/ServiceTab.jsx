@@ -186,7 +186,7 @@ export default class ServiceTab extends Component {
                                                 placement="bottom"
                                             >
                                                 <Link variant="danger">
-                                                    <strong>API Homepage</strong>
+                                                    <strong>Service Homepage</strong>
                                                 </Link>
                                             </Tooltip>
                                         )}

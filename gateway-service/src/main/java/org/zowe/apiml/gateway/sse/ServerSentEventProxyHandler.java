@@ -53,7 +53,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         this.messageService = messageService;
     }
 
-    @GetMapping("/**/sse/**")
+    @GetMapping({"/sse/**","/*/sse/**"})
     public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws IOException {
         SseEmitter emitter = new SseEmitter(-1L);
 
