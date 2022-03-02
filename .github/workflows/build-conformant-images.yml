@@ -3,8 +3,9 @@ name: Reusable workflow to create Zowe conformant images
 on:
     workflow_call:
         inputs:
-            release:
+            forceNoRelease:
                 type: boolean
+                description: 'If this is set to true, images will be published to the snapshot location. If false, the publish location will be determined from the version.'
                 default: false
                 required: false
             service:
@@ -37,6 +38,7 @@ on:
 
 env:
     IMAGE_BASE_DIR: ./containers
+    SNAPSHOT_POSTFIX: "-SNAPSHOT"
 
 jobs:
 
@@ -58,14 +60,16 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
+                timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -79,7 +83,7 @@ jobs:
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
-                timeout-minutes: 45
+                timeout-minutes: 60
 
             -   uses: ./.github/actions/teardown
 
@@ -102,14 +106,16 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
+                timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -131,7 +137,7 @@ jobs:
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
                     redhat-registry-user: ${{ secrets.redhat-registry-user }}
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
-                timeout-minutes: 45
+                timeout-minutes: 60
 
             -   uses: ./.github/actions/teardown
 
@@ -151,14 +157,16 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
+                timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -190,14 +198,16 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
+                timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}
@@ -212,7 +222,7 @@ jobs:
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
-                timeout-minutes: 45
+                timeout-minutes: 60
 
             -   name: Build s390x
                 if: matrix.arch == 's390x'
@@ -227,7 +237,7 @@ jobs:
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
                     redhat-registry-user: ${{ secrets.redhat-registry-user }}
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
-                timeout-minutes: 45
+                timeout-minutes: 60
 
             -   uses: ./.github/actions/teardown
 
@@ -236,7 +246,6 @@ jobs:
             - create-image-one-service
         strategy:
             matrix:
-                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         if: ${{ inputs.service != 'all' }}
@@ -246,14 +255,16 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/image-publish-setup
+                id: setup
                 with:
-                    imageVersion: ${{ inputs.version }}
+                    versionOverride: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
+                timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: ${{ inputs.release }}
+                    release: ${{ !inputs.forceNoRelease && !endsWith(steps.setup.outputs.imageVersion, env.SNAPSHOT_POSTFIX) }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}

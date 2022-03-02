@@ -39,13 +39,13 @@ jobs:
             -   uses: ./.github/actions/teardown
 
 
-    build-images:
+    publish-images:
         needs:
             - build-services
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
             service: ${{ github.event.inputs.service }}
-            release: false
+            forceNoRelease: true
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
             registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}

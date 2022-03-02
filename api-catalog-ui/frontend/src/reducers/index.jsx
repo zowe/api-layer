@@ -9,8 +9,8 @@
  */
 
 import { combineReducers } from 'redux';
-import tilesReducer from './fetch-tile-reducer';
-import filtersReducer from './filter-reducer';
+import tilesReducer from './tiles-reducer';
+import filtersReducer from './filters-reducer';
 import loadingReducer from './loading-reducer';
 import errorReducer from './error-reducer';
 import authenticationReducer from './authentication-reducer';

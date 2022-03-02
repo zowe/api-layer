@@ -26,6 +26,7 @@ import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationSche
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.util.List;
@@ -62,7 +63,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
-    private final AuthenticationService authenticationService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
@@ -70,22 +70,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
     }
 
-    /**
-     * This method is only for testing purpose, to be set authenticationService in inner classes
-     *
-     * @return reference for AuthenticationService
-     */
-    protected AuthenticationService getAuthenticationService() {
-        return authenticationService;
-    }
-
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
-        if (jwtToken == null) return scheme.createCommand(authentication, () -> null);
-        return scheme.createCommand(authentication, () -> authenticationService.parseJwtToken(jwtToken));
+        return scheme.createCommand(authentication, authSource);
     }
 
     @Override
@@ -96,13 +86,13 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, AuthSource authSource) {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
         final List<InstanceInfo> instances = application.getInstances();
         Authentication auth = null;
-//        If any instance is specifying which authentication it wants, then use the first found.
+        // If any instance is specifying which authentication it wants, then use the first found.
         for (InstanceInfo instance : instances) {
             auth = getAuthentication(instance);
             if (auth != null && !auth.isEmpty()) {
@@ -110,8 +100,8 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             }
         }
         if (auth == null || auth.isEmpty()) return AuthenticationCommand.EMPTY;
-        return getAuthenticationCommand(auth, jwtToken);
 
+        return getAuthenticationCommand(auth, authSource);
     }
 
     @Override
@@ -130,6 +120,4 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     public void evictCacheService(String serviceId) {
         cacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> StringUtils.equalsIgnoreCase((String) x.get(0), serviceId));
     }
-
-
 }
