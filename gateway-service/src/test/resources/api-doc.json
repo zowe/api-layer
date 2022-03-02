@@ -18,7 +18,7 @@
                     "Security"
                 ],
                 "summary": "Authenticate mainframe user credentials and return authentication token.",
-                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token.\n\n**Request:**\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n\n**Response:**\n\nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\n\n**Request:**\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n  * HTTP header containing the client certificate\n\n**Response:**\n\nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
                 "operationId": "loginUsingPOST",
                 "requestBody": {
                     "content": {
