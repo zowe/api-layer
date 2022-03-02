@@ -131,6 +131,14 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             return;
         }
 
+        try {
+            openConn(serviceId, service, webSocketSession, path);
+        } catch (Exception e) {
+            openConn(serviceId, service, webSocketSession, path);
+        }
+    }
+
+    void openConn(String serviceId, RoutedService service, WebSocketSession webSocketSession, String path) throws IOException {
         ServiceInstance serviceInstance = this.lbCLient.choose(serviceId);
         if (serviceInstance != null) {
             openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
@@ -168,16 +176,6 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         } catch (WebSocketProxyError e) {
             log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage());
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
-        }
-    }
-
-    private ServiceInstance findServiceInstance(String serviceId) {
-        List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
-        if (!serviceInstances.isEmpty()) {
-            // TODO: Is this implementation apropriate?
-            return serviceInstances.get(0);
-        } else {
-            return null;
         }
     }
 
