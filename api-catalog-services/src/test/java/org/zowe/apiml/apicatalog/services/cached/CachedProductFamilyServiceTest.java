@@ -32,14 +32,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
- * Container is used the same way as Tile 
+ * Container is used the same way as Tile
  */
-@SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
+@SuppressWarnings({ "squid:S2925" }) // replace with proper wait test library
 class CachedProductFamilyServiceTest {
 
     private static final String SERVICE_ID = "service_test_id";
@@ -57,11 +58,11 @@ class CachedProductFamilyServiceTest {
         cachedServicesService = mock(CachedServicesService.class);
         transformService = mock(TransformService.class);
         underTest = new CachedProductFamilyService(
-            cachedServicesService,
-            transformService,
-            cacheRefreshUpdateThresholdInMillis);
+                cachedServicesService,
+                transformService,
+                cacheRefreshUpdateThresholdInMillis);
 
-        servicesBuilder = new ServicesBuilder(underTest);            
+        servicesBuilder = new ServicesBuilder(underTest);
     }
 
     @Nested
@@ -89,11 +90,12 @@ class CachedProductFamilyServiceTest {
                 updatedMetadata.put(CATALOG_VERSION, "2.0.0");
                 updatedMetadata.put(SERVICE_TITLE, "sTitle2");
                 updatedMetadata.put(SERVICE_DESCRIPTION, "sDescription2");
-                updatedInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP, updatedMetadata);
+                updatedInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP,
+                        updatedMetadata);
 
                 when(transformService.transformURL(
-                        any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class)
-                    )).thenReturn(instance.getHomePageUrl());
+                        any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class)))
+                                .thenReturn(instance.getHomePageUrl());
             }
 
             @Nested
@@ -101,33 +103,34 @@ class CachedProductFamilyServiceTest {
                 @Test
                 void createNew() throws URLTransformationException {
                     APIContainer originalContainer = underTest.saveContainerFromInstance("demoapp", instance);
-    
+
                     List<APIContainer> lsContainer = underTest.getRecentlyUpdatedContainers();
                     assertThatContainerIsCorrect(lsContainer, originalContainer, instance);
                 }
             }
-    
+
             @Nested
             class GivenInstanceIsInTheCache {
                 @Test
                 void update() throws InterruptedException, URLTransformationException {
                     APIContainer originalContainer = underTest.saveContainerFromInstance("demoapp", instance);
                     Calendar createdTimestamp = originalContainer.getLastUpdatedTimestamp();
-    
+
                     Thread.sleep(100);
-    
+
                     APIContainer updatedContainer = underTest.saveContainerFromInstance("demoapp", updatedInstance);
                     Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
-    
+
                     assertThat(updatedTimestamp, is(not(createdTimestamp)));
-    
+
                     List<APIContainer> lsContainer = underTest.getRecentlyUpdatedContainers();
                     assertThatContainerIsCorrect(lsContainer, updatedContainer, updatedInstance);
                 }
             }
-        }        
+        }
 
-        private void assertThatContainerIsCorrect(List<APIContainer> lsContainer, APIContainer containerToVerify, InstanceInfo instance) {
+        private void assertThatContainerIsCorrect(List<APIContainer> lsContainer, APIContainer containerToVerify,
+                InstanceInfo instance) {
             assertThat(lsContainer.size(), is(1));
             assertThatMetadataAreCorrect(containerToVerify, instance.getMetadata());
 
@@ -148,6 +151,122 @@ class CachedProductFamilyServiceTest {
             assertThat(result.getDescription(), is(correct.get(CATALOG_DESCRIPTION)));
             assertThat(result.getVersion(), is(correct.get(CATALOG_VERSION)));
         }
+    }   
+
+    @Nested
+    class WhenRemovingService {
+        @Nested
+        class GivenServiceExists {
+            InstanceInfo removedInstance;
+            String removedInstanceFamilyId = "service1";
+
+            @BeforeEach
+            void prepareExistingInstance() {
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put(CATALOG_ID, "demoapp");
+                metadata.put(CATALOG_TITLE, "Title");
+                metadata.put(CATALOG_DESCRIPTION, "Description");
+                metadata.put(CATALOG_VERSION, "1.0.0");
+                metadata.put(SERVICE_TITLE, "sTitle");
+                metadata.put(SERVICE_DESCRIPTION, "sDescription");
+                removedInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+                
+                underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+            }
+
+            @Nested
+            class AndWholeTileIsRemoved {
+                @Test
+                void tileIsntPresentInCache() {
+                    underTest.removeInstance(removedInstanceFamilyId, removedInstance);
+
+                    // The container should be removed
+                    APIContainer receivedContainer = underTest.getContainerById(removedInstanceFamilyId);
+                    assertThat(receivedContainer, is(nullValue()));
+                }
+            }
+
+            @Nested
+            class AndTileRemains {
+                InstanceInfo remainingInstance;
+
+                @Nested
+                class AndTheInstancesAreFromTheSameService {
+                    @BeforeEach
+                    void prepareTileWithMultipleInstancesOfSameService() {
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+
+                        Map<String, String> metadata = new HashMap<>();
+                        metadata.put(CATALOG_ID, "demoapp");
+                        metadata.put(CATALOG_TITLE, "Title");
+                        metadata.put(CATALOG_DESCRIPTION, "Description");
+                        metadata.put(CATALOG_VERSION, "1.0.0");
+                        metadata.put(SERVICE_TITLE, "sTitle");
+                        metadata.put(SERVICE_DESCRIPTION, "sDescription");
+                        remainingInstance = servicesBuilder.createInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, remainingInstance);
+                    }
+
+                    @Test
+                    void tileIsInCacheButServiceIsntInTile() {
+                        underTest.removeInstance(removedInstanceFamilyId, removedInstance);
+
+                        APIContainer result = underTest.getContainerById(removedInstanceFamilyId);
+                        assertThat(result, is(not(nullValue())));
+
+                        Set<APIService> remainingServices =  result.getServices();
+                        assertThat(remainingServices.size(), is(1));
+                        APIService remainingService = remainingServices.iterator().next();
+                        assertThat(remainingService.getInstances().size(), is(1));
+                        assertThat(remainingService.getInstances().get(0), is("service13"));
+                    }
+                }
+
+                @Nested
+                class AndTheInstancesAreFromDifferentService {
+                    @BeforeEach
+                    void prepareTileWithMultipleInstancesOfSameService() {
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, removedInstance);
+
+                        Map<String, String> metadata = new HashMap<>();
+                        metadata.put(CATALOG_ID, "demoapp");
+                        metadata.put(CATALOG_TITLE, "Title");
+                        metadata.put(CATALOG_DESCRIPTION, "Description");
+                        metadata.put(CATALOG_VERSION, "1.0.0");
+                        metadata.put(SERVICE_TITLE, "sTitle");
+                        metadata.put(SERVICE_DESCRIPTION, "sDescription");
+                        remainingInstance = servicesBuilder.createInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
+                        underTest.saveContainerFromInstance(removedInstanceFamilyId, remainingInstance);
+                    }
+
+                    @Test
+                    void tileIsInCacheButServiceIsntInTile() {
+                        underTest.removeInstance(removedInstanceFamilyId, removedInstance);
+
+                        APIContainer result = underTest.getContainerById(removedInstanceFamilyId);
+                        assertThat(result, is(not(nullValue())));
+
+                        Set<APIService> remainingServices =  result.getServices();
+                        assertThat(remainingServices.size(), is(1));
+
+                        APIService remainingService = remainingServices.iterator().next();
+                        assertThat(remainingService.getServiceId(), is("service2"));
+                    }
+                }
+            }
+
+            @Nested
+            class GivenRemovingNonExistentService {
+                @Test
+                void nothingHappens() {
+                    underTest.removeInstance("nonexistent", removedInstance);
+
+                    APIContainer result = underTest.getContainerById(removedInstanceFamilyId);
+                    assertThat(result, is(not(nullValue())));
+                }
+
+            }
+        }
     }
 
     @Nested
@@ -161,25 +280,26 @@ class CachedProductFamilyServiceTest {
 
                 Collection<APIContainer> containers = underTest.getRecentlyUpdatedContainers();
                 assertEquals(2, containers.size());
-            } 
+            }
         }
 
         @Nested
         class GivenOneTileIsTooOld {
             @Test
             void returnOnlyOneService() throws InterruptedException {
-                // To speed up the test, create instance which consider even 5 milliseconds as old.
+                // To speed up the test, create instance which consider even 5 milliseconds as
+                // old.
                 underTest = new CachedProductFamilyService(
-                    null,
-                    transformService,
-                    5);
+                        null,
+                        transformService,
+                        5);
                 // This is considered as old update.
                 underTest.saveContainerFromInstance("demoapp", servicesBuilder.instance1);
-    
+
                 Thread.sleep(10);
-    
+
                 underTest.saveContainerFromInstance("demoapp2", servicesBuilder.instance2);
-    
+
                 Collection<APIContainer> containers = underTest.getRecentlyUpdatedContainers();
                 assertEquals(1, containers.size());
             }
@@ -205,9 +325,9 @@ class CachedProductFamilyServiceTest {
                 when(cachedServicesService.getService("service1")).thenReturn(application1);
                 when(cachedServicesService.getService("service2")).thenReturn(application2);
                 underTest = new CachedProductFamilyService(
-                    cachedServicesService,
-                    transformService,
-                    cacheRefreshUpdateThresholdInMillis);
+                        cachedServicesService,
+                        transformService,
+                        cacheRefreshUpdateThresholdInMillis);
             }
 
             @Nested
@@ -259,22 +379,20 @@ class CachedProductFamilyServiceTest {
                     assertThatContainerHasValidState(container, "WARNING", 1);
                 }
             }
-    }
+        }
 
         @Nested
         class GivenMultipleApiIds {
             @Test
             void groupThem() {
                 Application application = servicesBuilder.createApp(
-                    SERVICE_ID,
-                    servicesBuilder.createInstance(SERVICE_ID, "catalog1",
-                        Pair.of("apiml.apiInfo.api-v1.apiId", "api1"),
-                        Pair.of("apiml.apiInfo.api-v1.version", "1.0.0"),
-                        Pair.of("apiml.apiInfo.api-v2.apiId", "api2"),
-                        Pair.of("apiml.apiInfo.api-v2.version", "2"),
-                        Pair.of("apiml.apiInfo.api-v3.apiId", "api3")
-                    )
-                );
+                        SERVICE_ID,
+                        servicesBuilder.createInstance(SERVICE_ID, "catalog1",
+                                Pair.of("apiml.apiInfo.api-v1.apiId", "api1"),
+                                Pair.of("apiml.apiInfo.api-v1.version", "1.0.0"),
+                                Pair.of("apiml.apiInfo.api-v2.apiId", "api2"),
+                                Pair.of("apiml.apiInfo.api-v2.version", "2"),
+                                Pair.of("apiml.apiInfo.api-v3.apiId", "api3")));
                 doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
                 APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
                 underTest.calculateContainerServiceValues(apiContainer);
@@ -296,10 +414,11 @@ class CachedProductFamilyServiceTest {
                 @Test
                 void returnNonSso() {
                     Application application = servicesBuilder.createApp(
-                        SERVICE_ID,
-                        servicesBuilder.createInstance(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "bypass")),
-                        servicesBuilder.createInstance(SERVICE_ID, "catalog2", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"))
-                    );
+                            SERVICE_ID,
+                            servicesBuilder.createInstance(SERVICE_ID, "catalog1",
+                                    Pair.of(AUTHENTICATION_SCHEME, "bypass")),
+                            servicesBuilder.createInstance(SERVICE_ID, "catalog2",
+                                    Pair.of(AUTHENTICATION_SCHEME, "zoweJwt")));
                     doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
 
                     APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
@@ -316,8 +435,10 @@ class CachedProductFamilyServiceTest {
             class GivenAllInstancesAreSso {
                 @Test
                 void returnSso() {
-                    InstanceInfo instanceInfo = servicesBuilder.createInstance(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
-                    doReturn(servicesBuilder.createApp(SERVICE_ID, instanceInfo)).when(cachedServicesService).getService(SERVICE_ID);
+                    InstanceInfo instanceInfo = servicesBuilder.createInstance(SERVICE_ID, "catalog1",
+                            Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
+                    doReturn(servicesBuilder.createApp(SERVICE_ID, instanceInfo)).when(cachedServicesService)
+                            .getService(SERVICE_ID);
                     APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
                     underTest.calculateContainerServiceValues(apiContainer);
 
