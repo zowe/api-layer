@@ -49,8 +49,8 @@ public class ApimlRoutingConfig {
     @ConditionalOnProperty(name = "apiml.routing.mode", havingValue = "new")
     @Autowired
     public DiscoveryClientRouteLocator apimlClientRouteLocator(DiscoveryClient discoveryClient,
-                                                ZuulProperties zuulProperties,
-                                                RoutedServicesNotifier routedServicesNotifier) {
+                                                               ZuulProperties zuulProperties,
+                                                               RoutedServicesNotifier routedServicesNotifier) {
         return new NewApimlRouteLocator("", zuulProperties, discoveryClient, routedServicesNotifier);
     }
 
