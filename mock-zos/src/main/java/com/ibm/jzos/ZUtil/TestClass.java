@@ -7,11 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml;
+package com.ibm.jzos.ZUtil;
 
-import org.zowe.apiml.eurekaservice.client.impl.ZUtil;
-
-public class TestClass implements ZUtil {
+public abstract class TestClass implements ZUtil {
     @Override
     public String getCurrentJobId() {
         return null;
