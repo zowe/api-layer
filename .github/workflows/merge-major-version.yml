@@ -22,6 +22,8 @@ jobs:
 
             - name: Prepare branch to merge
               run: |
+                  git config --global user.email "zowe-robot@users.noreply.github.com"
+                  git config --global user.name "Zowe Robot"
                   git checkout master
                   git checkout v2.x.x
                   git branch apiml/v2/merge
