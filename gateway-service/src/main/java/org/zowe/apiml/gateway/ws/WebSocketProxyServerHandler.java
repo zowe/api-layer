@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.retry.annotation.Backoff;
@@ -56,7 +55,6 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     private final Map<String, WebSocketRoutedSession> routedSessions;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
-    private final DiscoveryClient discovery;
     private final WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
     private final WebSocketClientFactory webSocketClientFactory;
     private static final String SEPARATOR = "/";
@@ -65,8 +63,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private WebSocketProxyServerHandler meAsProxy;
 
     @Autowired
-    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory, LoadBalancerClient lbCLient, ApplicationContext context) {
-        this.discovery = discovery;
+    public WebSocketProxyServerHandler(WebSocketClientFactory webSocketClientFactory, LoadBalancerClient lbCLient, ApplicationContext context) {
         this.webSocketClientFactory = webSocketClientFactory;
         this.routedSessions = new ConcurrentHashMap<>();  // Default
         this.webSocketRoutedSessionFactory = new WebSocketRoutedSessionFactoryImpl();
@@ -80,9 +77,8 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         meAsProxy = context.getBean(WebSocketProxyServerHandler.class);
     }
 
-    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory,
+    public WebSocketProxyServerHandler(WebSocketClientFactory webSocketClientFactory,
                                        Map<String, WebSocketRoutedSession> routedSessions, WebSocketRoutedSessionFactory webSocketRoutedSessionFactory, LoadBalancerClient lbCLient) {
-        this.discovery = discovery;
         this.webSocketClientFactory = webSocketClientFactory;
         this.routedSessions = routedSessions;
         this.webSocketRoutedSessionFactory = webSocketRoutedSessionFactory;
@@ -145,8 +141,8 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         try {
             meAsProxy.openConn(serviceId, service, webSocketSession, path);
-        } catch (Exception e) {
-            log.debug("Error opening WebSocket connection {}", e.getMessage());
+        } catch (WebSocketProxyError e) {
+            log.debug("Error opening WebSocket connection to: {}, {}", service.getServiceUrl(), e.getMessage());
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
         }
     }
