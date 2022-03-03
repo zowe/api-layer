@@ -15,6 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.context.ApplicationContext;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.SubProtocolCapable;
@@ -25,6 +28,7 @@ import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
@@ -56,16 +60,24 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private final WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
     private final WebSocketClientFactory webSocketClientFactory;
     private static final String SEPARATOR = "/";
-    private LoadBalancerClient lbCLient;
+    private final LoadBalancerClient lbCLient;
+    private ApplicationContext context;
+    private WebSocketProxyServerHandler meAsProxy;
 
     @Autowired
-    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory, LoadBalancerClient lbCLient) {
+    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory, LoadBalancerClient lbCLient, ApplicationContext context) {
         this.discovery = discovery;
         this.webSocketClientFactory = webSocketClientFactory;
         this.routedSessions = new ConcurrentHashMap<>();  // Default
         this.webSocketRoutedSessionFactory = new WebSocketRoutedSessionFactoryImpl();
         this.lbCLient = lbCLient;
+        this.context = context;
         log.debug("Creating WebSocketProxyServerHandler {} ", this);
+    }
+
+    @PostConstruct
+    private void initBean() {
+        meAsProxy = context.getBean(WebSocketProxyServerHandler.class);
     }
 
     public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory,
@@ -132,17 +144,14 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         }
 
         try {
-            openConn(serviceId, service, webSocketSession, path);
+            meAsProxy.openConn(serviceId, service, webSocketSession, path);
         } catch (Exception e) {
-            try {
-                openConn(serviceId, service, webSocketSession, path);
-            } catch (WebSocketProxyError we) {
-                log.debug("Error opening WebSocket connection {}", we.getMessage());
-                webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
-            }
+            log.debug("Error opening WebSocket connection {}", e.getMessage());
+            webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
         }
     }
 
+    @Retryable(value = WebSocketProxyError.class, backoff = @Backoff(value = 1000))
     void openConn(String serviceId, RoutedService service, WebSocketSession webSocketSession, String path) throws IOException {
         ServiceInstance serviceInstance = this.lbCLient.choose(serviceId);
         if (serviceInstance != null) {

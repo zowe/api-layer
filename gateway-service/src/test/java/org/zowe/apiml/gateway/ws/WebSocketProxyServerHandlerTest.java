@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -57,8 +58,8 @@ class WebSocketProxyServerHandlerTest {
             webSocketRoutedSessionFactory,
             lbClient
         );
+        ReflectionTestUtils.setField(underTest, "meAsProxy", underTest);
     }
-
 
 
     private ServiceInstance validServiceInstance() {
