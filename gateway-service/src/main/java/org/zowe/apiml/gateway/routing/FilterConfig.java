@@ -48,9 +48,7 @@ public class FilterConfig {
 
     @Bean
     public ServiceNotFoundFilter serviceNotFoundFilter() {
-        return new ServiceNotFoundFilter(
-            new RequestContextProviderThreadLocal()
-        );
+        return new ServiceNotFoundFilter();
     }
 
     @Bean

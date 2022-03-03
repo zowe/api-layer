@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +17,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.services.ServiceInstancesUtils;
 
 import java.util.List;
 
@@ -27,7 +25,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 @Component
 @RequiredArgsConstructor
-public class PerServiceIgnoreHeaderFilter extends ZuulFilter {
+public class PerServiceIgnoreHeaderFilter extends PreZuulFilter {
 
     private final DiscoveryClient discoveryClient;
     private final ProxyRequestHelper proxyRequestHelper;
@@ -36,11 +34,6 @@ public class PerServiceIgnoreHeaderFilter extends ZuulFilter {
     public PerServiceIgnoreHeaderFilter(DiscoveryClient discoveryClient, ZuulProperties zuulProperties) {
         this.discoveryClient = discoveryClient;
         this.proxyRequestHelper = new ProxyRequestHelper(zuulProperties);
-    }
-
-    @Override
-    public String filterType() {
-        return PRE_TYPE;
     }
 
     @Override
@@ -54,11 +47,8 @@ public class PerServiceIgnoreHeaderFilter extends ZuulFilter {
     }
 
     @Override
-    public Object run() throws ZuulException {
-        RequestContext context = RequestContext.getCurrentContext();
-        String serviceId = (String) context.get(SERVICE_ID_KEY);
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
-
+    public Object run() {
+        List<ServiceInstance> serviceInstances = ServiceInstancesUtils.getServiceInstancesFromDiscoveryClient(discoveryClient);
         if (serviceInstances != null && !serviceInstances.isEmpty()) {
             ServiceInstance serviceInstance = serviceInstances.get(0);
             String headersToIgnore = serviceInstance.getMetadata().get("apiml.headersToIgnore");
@@ -68,7 +58,6 @@ public class PerServiceIgnoreHeaderFilter extends ZuulFilter {
                 proxyRequestHelper.addIgnoredHeaders(headers);
             }
         }
-
         return null;
     }
 }
