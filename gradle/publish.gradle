@@ -17,7 +17,9 @@ ext.javaLibraries = [
     'discoverable-client',
     'certificate-analyser',
     'apiml-tomcat-common',
-    'apiml-sample-extension'
+    'apiml-sample-extension',
+    'mock-zos'
+
 ]
 
 ext.serviceJars = ['api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'metrics-service-package', 'apiml-common-lib-package', 'apiml-sample-extension-package']
