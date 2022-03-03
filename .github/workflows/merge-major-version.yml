@@ -18,8 +18,23 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
 
-            - name: Open PR
+            - name: Prepare branch to merge
               run: |
-                  cd scripts/create_pull_request
-                  npm install
-                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                  git checkout v2.x.x
+                  git branch apiml/v2/merge
+                  git cherry-pick master
+
+            - name: Create pull request
+              uses: actions/github-script@v5
+              with:
+                 github-token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+              script: |
+                await github.rest.pulls.create({
+                    owner: 'zowe',
+                    repo: 'api-layer',
+                    title: 'Automatic merge to v2 branch',
+                    body: 'Automatically prepared PR for merging into the V2 branch',
+                    head: 'master',
+                    base: 'apiml/v2/merge'
+                });
+            
