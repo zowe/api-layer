@@ -134,7 +134,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         try {
             openConn(serviceId, service, webSocketSession, path);
         } catch (Exception e) {
-            openConn(serviceId, service, webSocketSession, path);
+            try {
+                openConn(serviceId, service, webSocketSession, path);
+            } catch (WebSocketProxyError we) {
+                log.debug("Error opening WebSocket connection {}", we.getMessage());
+                webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
+            }
         }
     }
 
@@ -164,19 +169,16 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     private void openWebSocketConnection(RoutedService service, ServiceInstance serviceInstance, Object uri,
-                                         String path, WebSocketSession webSocketSession) throws IOException {
+                                         String path, WebSocketSession webSocketSession) {
         String serviceUrl = service.getServiceUrl();
         String targetUrl = getTargetUrl(serviceUrl, serviceInstance, path);
 
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, webSocketClientFactory, this));
-        try {
-            WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
-            routedSessions.put(webSocketSession.getId(), session);
 
-        } catch (WebSocketProxyError e) {
-            log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage());
-            webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
-        }
+        WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
+        routedSessions.put(webSocketSession.getId(), session);
+
+
     }
 
     @Override
