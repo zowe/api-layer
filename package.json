@@ -6,7 +6,7 @@
         "doc": "docs"
     },
     "scripts": {
-        "api-layer": "concurrently --names \"GS,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-services npm:caching-service",
+        "api-layer": "concurrently --names \"GS,DS,AC,DC,ZO,CS,MZ\" -c cyan,yellow,white,blue,green,magenta npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-services npm:caching-service npm:mock-zos",
         "api-layer-ci": "concurrently --names \"GS,DS,AC,DC,ZO,CS,NS\" -c cyan,yellow,white,blue,green,red npm:gateway-service-thin npm:discovery-service-thin npm:api-catalog-service-thin npm:discoverable-client npm:mock-services npm:caching-service npm:onboarding-enabler-nodejs-sample-app",
         "api-layer-core": "concurrently --names \"GW,DS,AC\" -c cyan,yellow,white npm:gateway-service npm:discovery-service npm:api-catalog-service",
         "api-layer-thin": "concurrently --names \"GW,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service-thin npm:discovery-service-thin npm:api-catalog-service-thin npm:discoverable-client npm:mock-services npm:caching-service",
@@ -41,6 +41,7 @@
         "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml",
         "mock-services": "java -jar mock-services/build/libs/mock-services.jar --spring.config.additional-location=file:./config/local/mock-services.yml",
         "mock-services-1": "java -jar mock-services/build/libs/mock-services.jar --spring.config.additional-location=file:./config/local-multi/mock-services.yml",
+        "mock-zos": "java -jar mock-zos/build/libs/mock-zos.jar --spring.config.additional-location=file:./config/local/mock-zos.yml",
         "test": "./gradlew runAllIntegrationTests",
         "test:local": "./gradlew runLocalIntegrationTests",
         "//": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\"",
