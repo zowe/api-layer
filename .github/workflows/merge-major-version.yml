@@ -25,16 +25,16 @@ jobs:
                   git cherry-pick master
 
             - name: Create pull request
-              uses: actions/github-script@v5
+              uses: actions/github-script@v6
               with:
-                 github-token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
-              script: |
-                await github.rest.pulls.create({
-                    owner: 'zowe',
-                    repo: 'api-layer',
-                    title: 'Automatic merge to v2 branch',
-                    body: 'Automatically prepared PR for merging into the V2 branch',
-                    head: 'master',
-                    base: 'apiml/v2/merge'
-                });
+                github-token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                script: |
+                    await github.rest.pulls.create({
+                        owner: 'zowe',
+                        repo: 'api-layer',
+                        title: 'Automatic merge to v2 branch',
+                        body: 'Automatically prepared PR for merging into the V2 branch',
+                        head: 'master',
+                        base: 'apiml/v2/merge'
+                    });
             
