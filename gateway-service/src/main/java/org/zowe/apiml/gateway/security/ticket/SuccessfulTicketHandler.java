@@ -15,9 +15,10 @@ import org.zowe.apiml.security.common.ticket.TicketResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;

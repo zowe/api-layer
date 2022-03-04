@@ -22,7 +22,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -39,7 +39,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
+import static com.ibm.eserver.zos.racf.IRRPassTicket.UNKNOWN_USER;
 
 class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 

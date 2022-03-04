@@ -7,26 +7,25 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.passticket;
+package com.ibm.eserver.zos.racf;
 
 /**
- * Exception on generation of passTicket
+ * Exception on evaluation of passTicket
  */
-public class IRRPassTicketGenerationException extends AbstractIRRPassTicketException {
+public class IRRPassTicketEvaluationException extends AbstractIRRPassTicketException {
 
-    private static final long serialVersionUID = -8944250582222779122L;
+    private static final long serialVersionUID = -7401871844111323433L;
 
-    public IRRPassTicketGenerationException(int safRc, int racfRc, int racfRsn) {
+    public IRRPassTicketEvaluationException(int safRc, int racfRc, int racfRsn) {
         super(safRc, racfRc, racfRsn);
     }
 
-    public IRRPassTicketGenerationException(ErrorCode errorCode) {
+    public IRRPassTicketEvaluationException(ErrorCode errorCode) {
         super(errorCode);
     }
 
     @Override
     public String getMessage() {
-        return getMessage("Error on generation of PassTicket:");
+        return getMessage("Error on evaluation of PassTicket:");
     }
-
 }

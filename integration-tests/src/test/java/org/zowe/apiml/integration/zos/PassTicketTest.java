@@ -26,13 +26,14 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 
+import com.ibm.eserver.zos.racf.IRRPassTicket;
+
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
@@ -201,7 +202,7 @@ class PassTicketTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
             void givenInvalidApplicationName(URI url) {
                 String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
-                TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
+                TicketRequest ticketRequest = new TicketRequest(IRRPassTicket.UNKNOWN_APPLID);
 
                 given()
                     .contentType(JSON)

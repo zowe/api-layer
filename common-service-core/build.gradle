@@ -1,4 +1,6 @@
 dependencies {
+    compileOnly(project(':mock-zos'))
+    
     compile(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
@@ -19,7 +21,6 @@ dependencies {
     compile libraries.jsr305
 
     compileOnly(libraries.javax_servlet_api)
-
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
