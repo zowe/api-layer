@@ -12,7 +12,9 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -48,7 +50,6 @@ class RequestHeaderPredicateTest {
     }
 
 
-
     @Nested
     class WhitHeader {
 
@@ -77,6 +78,17 @@ class RequestHeaderPredicateTest {
             assertFalse(predicate.apply(lbctx, server));
         }
 
+    }
+
+    @Nested
+    class NotZuulRequest {
+
+        @Test
+        void alwaysValid() {
+            RequestHeaderPredicate predicate = new RequestHeaderPredicate();
+            assertTrue(predicate.apply(new LoadBalancingContext("key", null), null));
+
+        }
     }
 
 }

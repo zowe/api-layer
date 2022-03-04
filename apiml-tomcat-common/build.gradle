@@ -7,6 +7,8 @@ dependencies {
     compile libraries.spring_context
     compile libraries.spring_core
     compile libraries.spring_expression
+    compile libraries.tomcat_embed_core
+    compile libraries.tomcat_embed_websocket
 
     testCompile libraries.mockito_core
     testCompile libraries.mockito_jupiter

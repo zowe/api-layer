@@ -139,7 +139,9 @@ class InstanceRefreshServiceTest {
                     
                     underTest.refreshCacheFromDiscovery();
 
-                    verify(cachedServicesService, times(1)).updateService(anyString(), any(Application.class));
+                    verify(cachedProductFamilyService, times(1))
+                        .removeInstance("api-three", changedInstanceOfService);
+                    verify(cachedServicesService, never()).updateService(anyString(), any(Application.class));
                     verify(cachedProductFamilyService, never()).saveContainerFromInstance("api-three", changedInstanceOfService);
                 }
 
