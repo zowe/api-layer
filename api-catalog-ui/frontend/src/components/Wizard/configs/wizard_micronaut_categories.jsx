@@ -15,14 +15,17 @@ export const micronautSpecificCategories = [
             apiId: {
                 value: '',
                 question: 'A unique identifier to the API in the API ML:',
+                tooltip: 'e.g. sampleservice',
             },
             version: {
                 value: '',
                 question: 'API version:',
+                tooltip: 'e.g. 1.0.0',
             },
             gatewayUrl: {
                 value: '',
                 question: 'The base path at the API Gateway where the API is available:',
+                tooltip: 'Format: /api/vX, Example: /api/v1',
             },
         },
     },
@@ -47,49 +50,58 @@ export const micronautSpecificCategories = [
                 value: '',
                 question: 'The alias used to address the private key in the keystore:',
                 dependencies: { enabled: true },
+                tooltip: '${fill.your.keyAlias}',
             },
             keyPassword: {
                 value: '',
                 question: 'The password associated with the private key:',
                 dependencies: { enabled: true },
                 type: 'password',
+                tooltip: '${fill.your.keyPassword}',
             },
             keyStore: {
                 value: '',
                 question: 'The keystore file used to store the private key (keyring: set to SAF keyring location):',
                 dependencies: { enabled: true },
+                tooltip: '${fill.your.keyStore}',
             },
             keyStorePassword: {
                 value: '',
                 question: 'The password used to unlock the keystore:',
                 dependencies: { enabled: true },
                 type: 'password',
+                tooltip: '${fill.your.keyStorePassword}',
             },
             keyStoreType: {
                 value: '',
                 question: 'Type of the keystore:',
                 dependencies: { enabled: true },
+                tooltip: '${fill.your.keystoretype}, e.g. PKCS12',
             },
             trustStore: {
                 value: '',
                 question: 'The truststore file used to keep other parties public keys and certificates:',
                 dependencies: { enabled: true },
+                tooltip: '${fill.your.trustStore}',
             },
             trustStorePassword: {
                 value: '',
                 question: 'The password used to unlock the truststore:',
                 dependencies: { enabled: true },
                 type: 'password',
+                tooltip: '${fill.your.trustStorePassword}',
             },
             trustStoreType: {
                 value: 'PKCS12',
                 question: 'Truststore type:',
                 dependencies: { enabled: true },
+                tooltip: 'Fill your trustStoreType',
             },
             ciphers: {
                 value: '',
                 question: 'SSL cipher suites:',
                 dependencies: { enabled: true },
+                tooltip: '${fill.your.ciphers}',
             },
         },
     },
@@ -99,6 +111,7 @@ export const micronautSpecificCategories = [
             name: {
                 value: '',
                 question: 'Application name:',
+                tooltip: 'e.g. Hello API ML',
             },
         },
     },
@@ -108,6 +121,7 @@ export const micronautSpecificCategories = [
             port: {
                 value: '',
                 question: 'The port to be used:',
+                tooltip: 'Port on which the service listens',
             },
             'context-path': {
                 value: '',
@@ -195,6 +209,7 @@ export const micronautSpecificCategories = [
             defaultZone: {
                 value: '',
                 question: 'Eureka default zone:',
+                tooltip: 'placeholder',
             },
         },
     },
@@ -204,6 +219,7 @@ export const micronautSpecificCategories = [
             'base-path': {
                 value: '',
                 question: 'Endpoint base-path:',
+                tooltip: 'placeholder',
             },
         },
     },
@@ -213,6 +229,7 @@ export const micronautSpecificCategories = [
             include: {
                 value: '',
                 question: 'Endpoint base-path:',
+                tooltip: 'placeholder',
             },
         },
     },
