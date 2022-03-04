@@ -9,17 +9,9 @@
  */
 package org.zowe.apiml.passticket;
 
-import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
-import org.zowe.apiml.util.ObjectUtil;
-import lombok.AllArgsConstructor;
-import lombok.Value;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import com.ibm.eserver.zos.racf.IRRPassTicket;
+import com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException;
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
 
 /**
  * This class allows to get a PassTicket from SAF.
@@ -29,14 +21,7 @@ public class PassTicketService {
     private IRRPassTicket irrPassTicket;
 
     public PassTicketService() {
-        this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
-            "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
-                IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn"),
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
-                IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
+        this.irrPassTicket = new IRRPassTicket();
     }
 
     public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
@@ -46,81 +31,4 @@ public class PassTicketService {
     public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
         return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
     }
-
-    public boolean isUsingSafImplementation() {
-        ClassOrDefaultProxyUtils.ClassOrDefaultProxyState stateInterface = (ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) irrPassTicket;
-        return stateInterface.isUsingBaseImplementation();
-    }
-
-    public static class DefaultPassTicketImpl implements IRRPassTicket {
-
-        private static int id = 0;
-
-        public static final String ZOWE_DUMMY_USERID = "USER";
-        public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZOWE_DUMMY_PASS_TICKET";
-
-        public static final String DUMMY_USER = "USER";
-        public static final String UNKNOWN_USER = "UNKNOWN_USER";
-        public static final String UNKNOWN_APPLID = "XBADAPPL";
-
-        private final Map<UserApp, Set<String>> userAppToPasstickets = new HashMap<>();
-
-        @Override
-        public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
-            ObjectUtil.requireNotNull(userId, "Parameter userId is empty");
-            ObjectUtil.requireNotNull(applId, "Parameter applId is empty");
-            ObjectUtil.requireNotNull(passTicket, "Parameter passTicket is empty");
-
-            if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
-                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
-            }
-
-            if (userId.equals(ZOWE_DUMMY_USERID) && passTicket.startsWith(ZOWE_DUMMY_PASS_TICKET_PREFIX)) {
-                return;
-            }
-
-            final Set<String> passTickets = userAppToPasstickets.get(new UserApp(userId, applId));
-
-            if ((passTickets == null) || !passTickets.contains(passTicket)) {
-                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32);
-            }
-        }
-
-        @Override
-        public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
-            if (StringUtils.equalsIgnoreCase(UNKNOWN_USER, userId)) {
-                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16);
-            }
-
-            if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
-                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
-            }
-
-            if (StringUtils.equalsIgnoreCase(DUMMY_USER, userId)) {
-                return ZOWE_DUMMY_PASS_TICKET_PREFIX;
-            }
-
-            final UserApp userApp = new UserApp(userId, applId);
-            final int currentId;
-            synchronized (DefaultPassTicketImpl.class) {
-                currentId = DefaultPassTicketImpl.id++;
-            }
-            final String passTicket = ZOWE_DUMMY_PASS_TICKET_PREFIX + "_" + applId + "_" + userId + "_" + currentId;
-
-            final Set<String> passTickets = userAppToPasstickets.computeIfAbsent(userApp, x -> new HashSet<>());
-            passTickets.add(passTicket);
-
-            return passTicket;
-        }
-
-        @AllArgsConstructor
-        @Value
-        private static class UserApp {
-
-            private final String userId;
-            private final String applId;
-
-        }
-    }
-
 }

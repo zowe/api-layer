@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.client.api;
 
-import org.zowe.apiml.passticket.IRRPassTicketEvaluationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -18,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import java.nio.charset.StandardCharsets;

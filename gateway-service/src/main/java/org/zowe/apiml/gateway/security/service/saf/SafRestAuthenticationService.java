@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.saf;
 
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
 import com.netflix.zuul.context.RequestContext;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
