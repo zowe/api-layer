@@ -40,7 +40,7 @@ import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.filter.ApimlX509Filter;
+import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
@@ -107,9 +107,9 @@ public class SecurityConfiguration {
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 if (isAttlsEnabled) {
                     http.x509()
-                        .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) // filter out API ML certificate
                         .userDetailsService(x509UserDetailsService())
                         .and()
+                        .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
                         .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 } else {
@@ -121,14 +121,6 @@ public class SecurityConfiguration {
 
         private UserDetailsService x509UserDetailsService() {
             return username -> new User(username, "", Collections.emptyList());
-        }
-
-        private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
-            ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
-            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            out.setAuthenticationManager(authenticationManager);
-            return out;
         }
     }
 
