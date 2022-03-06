@@ -14,6 +14,7 @@ import org.apache.http.HttpRequest;
 import org.zowe.apiml.cache.EntryExpiration;
 
 import java.io.Serializable;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 /**
  * This command represented a code, which distribute right access to a service. Gateway translates requests
@@ -57,6 +58,15 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
     public boolean isRequiredValidSource() {
         return false;
     }
+
+    /**
+     * This method validates authentication source based on command logic.
+     * <p>
+     * Default implementation of this method returns "false".
+     * @param authSource AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
+     * @return result of the validation of the authentication source, or "false" by default.
+     */
+    public boolean isValidSource(AuthSource authSource) { return false; }
 
     @Override
     public boolean isExpired() {

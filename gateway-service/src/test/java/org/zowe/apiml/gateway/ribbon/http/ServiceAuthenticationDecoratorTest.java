@@ -75,6 +75,7 @@ class ServiceAuthenticationDecoratorTest {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
         doReturn(true).when(authSourceService).isValid(any());
+        doReturn(true).when(universalCmd).isValidSource(any());
 
         decorator.process(request);
 

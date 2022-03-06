@@ -161,7 +161,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
                 // if authentication schema required valid authentication source, check it
                 if (cmd.isRequiredValidSource()) {
-                    rejected = (!authSource.isPresent()) || !authSourceService.isValid(authSource.get());
+                    rejected = (!authSource.isPresent()) || !cmd.isValidSource(authSource.get());
                 }
 
             } catch (AuthenticationException ae) {

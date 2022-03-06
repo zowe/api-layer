@@ -169,13 +169,16 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         AuthSourceService authSourceService = mock(AuthSourceService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
+        AuthSource authSource = new JwtAuthSource("token");
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, 1);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed("username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
-        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
+        when(authSourceService.parse(authSource)).thenReturn(parsedSource);
+        when(authSourceService.isValid(authSource)).thenReturn(true);
+        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, authSource);
         assertTrue(ac.isRequiredValidSource());
+        assertTrue(ac.isValidSource(authSource));
     }
 
     @Test

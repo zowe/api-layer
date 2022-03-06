@@ -91,7 +91,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class PassTicketCommand extends AuthenticationCommand {
+    public class PassTicketCommand extends AuthenticationCommand {
 
         private static final long serialVersionUID = 3941300386857998443L;
 
@@ -139,5 +139,9 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
             return true;
         }
 
+        @Override
+        public boolean isValidSource(AuthSource authSource) {
+            return authSourceService.isValid(authSource);
+        }
     }
 }

@@ -30,11 +30,6 @@ public class ByPassScheme implements AbstractAuthenticationScheme {
         private static final long serialVersionUID = -3351658649447418579L;
 
         @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
         public void apply(InstanceInfo instanceInfo) {
             RequestContext.getCurrentContext().put(AUTHENTICATION_SCHEME_BY_PASS_KEY, Boolean.TRUE);
         }
@@ -42,11 +37,6 @@ public class ByPassScheme implements AbstractAuthenticationScheme {
         @Override
         public void applyToRequest(HttpRequest request) {
             // do nothing
-        }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return false;
         }
     };
 

@@ -155,6 +155,10 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
             return true;
         }
 
+        @Override
+        public boolean isValidSource(AuthSource authSource) {
+            return authSourceService.isValid(authSource);
+        }
     }
 
 }

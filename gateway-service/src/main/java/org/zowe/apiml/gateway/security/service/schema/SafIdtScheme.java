@@ -78,5 +78,10 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         public boolean isRequiredValidSource() {
             return true;
         }
+
+        @Override
+        public boolean isValidSource(AuthSource authSource) {
+            return authSourceService.isValid(authSource);
+        }
     }
 }

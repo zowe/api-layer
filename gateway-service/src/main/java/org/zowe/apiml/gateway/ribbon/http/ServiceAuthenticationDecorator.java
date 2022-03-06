@@ -75,7 +75,7 @@ public class ServiceAuthenticationDecorator {
     }
 
     private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
-        return !cmd.isRequiredValidSource() || (authSource != null && authSourceService.isValid(authSource));
+        return !cmd.isRequiredValidSource() || (authSource != null && cmd.isValidSource(authSource));
     }
 }
 

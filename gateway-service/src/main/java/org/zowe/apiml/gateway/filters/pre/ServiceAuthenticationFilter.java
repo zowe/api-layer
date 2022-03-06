@@ -99,7 +99,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
     }
 
     private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
-        return !cmd.isRequiredValidSource() || authSourceService.isValid(authSource);
+        return !cmd.isRequiredValidSource() || cmd.isValidSource(authSource);
     }
 
 }

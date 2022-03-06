@@ -120,7 +120,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     void givenValidJwt_whenTokenRequired_thenCallThrought() {
         String jwtToken = "invalidJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
-        doReturn(false).when(authSourceService).isValid(any());
+        doReturn(false).when(cmd).isValidSource(any());
 
         serviceAuthenticationFilter.run();
 
@@ -133,7 +133,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     void givenValidJwt_whenTokenRequired_thenRejected() {
         String jwtToken = "validJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
-        doReturn(true).when(authSourceService).isValid(any());
+        doReturn(true).when(cmd).isValidSource(any());
 
         serviceAuthenticationFilter.run();
 
@@ -147,7 +147,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         String jwtToken = "validJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doThrow(new RuntimeException()).when(cmd).apply(null);
-        doReturn(true).when(authSourceService).isValid(any());
+        doReturn(true).when(cmd).isValidSource(any());
         CounterFactory.initialize(new CounterFactory() {
             @Override
             public void increment(String name) {
@@ -168,7 +168,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     void givenExpiredJwt_thenCallThrought() {
         String jwtToken = "expiredJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
-        doThrow(new TokenExpireException("Token is expired.")).when(authSourceService).isValid(any());
+        doThrow(new TokenExpireException("Token is expired.")).when(cmd).isValidSource(any());
 
         serviceAuthenticationFilter.run();
 
@@ -182,7 +182,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         String jwtToken = "unparsableJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         AuthenticationException ae = mock(AuthenticationException.class);
-        doThrow(ae).when(authSourceService).isValid(any());
+        doThrow(ae).when(cmd).isValidSource(any());
 
         serviceAuthenticationFilter.run();
 

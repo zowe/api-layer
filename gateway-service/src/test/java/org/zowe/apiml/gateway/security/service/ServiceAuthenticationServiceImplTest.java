@@ -405,7 +405,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         return springClass;
     }
 
-    private AuthenticationCommand testRequiredAuthentication(boolean requiredJwtValidation, String jwtToken) throws Exception {
+    private AuthenticationCommand testRequiredAuthentication(boolean requiredJwtValidation, boolean isJwtValid, String jwtToken) throws Exception {
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand =
             serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
@@ -427,6 +427,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
         doReturn(parsedSource).when(getUnProxy(authSourceService)).parse(new JwtAuthSource("validJwt"));
         doReturn(requiredJwtValidation).when(ac).isRequiredValidSource();
+        doReturn(isJwtValid).when(ac).isValidSource(any());
 
         universalAuthenticationCommand.apply(createInstanceInfo("id", authentication));
 
@@ -436,7 +437,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     @Test
     void givenMissingJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
         try {
-            testRequiredAuthentication(true, null);
+            testRequiredAuthentication(true, false, null);
             fail();
         } catch (ExecutionListener.AbortExecutionException aee) {
             assertTrue(aee.getMessage().contains("Invalid JWT token"));
@@ -446,7 +447,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     @Test
     void givenInvalidJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
         try {
-            testRequiredAuthentication(true, "invalidJwt");
+            testRequiredAuthentication(true, false, "invalidJwt");
             fail();
         } catch (ExecutionListener.AbortExecutionException aee) {
             assertTrue(aee.getMessage().contains("Invalid JWT token"));
@@ -459,7 +460,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             .when(getUnProxy(authSourceService)).isValid(any());
 
         try {
-            testRequiredAuthentication(true, "validJwt");
+            testRequiredAuthentication(true, false, "validJwt");
             fail();
         } catch (ExecutionListener.AbortExecutionException aee) {
             assertTrue(aee.getMessage().contains("Invalid JWT token"));
@@ -471,7 +472,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         doReturn(true)
             .when(getUnProxy(authSourceService)).isValid(any());
 
-        AuthenticationCommand ac = testRequiredAuthentication(true, "validJwt");
+        AuthenticationCommand ac = testRequiredAuthentication(true, true, "validJwt");
         verify(ac, times(1)).apply(any());
     }
 
@@ -519,12 +520,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         @Override
         public void apply(InstanceInfo instanceInfo) {
         }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return false;
-        }
-
     }
 
 }
