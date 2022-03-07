@@ -50,18 +50,23 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
-        return new ZosmfCommand(expirationTime);
+        return new ZosmfCommand(expirationTime, authSourceService);
     }
 
     @lombok.Value
     @EqualsAndHashCode(callSuper = false)
-    public class ZosmfCommand extends AuthenticationCommand {
+    public class ZosmfCommand extends AuthenticationCommandWithValidation {
 
         private static final long serialVersionUID = 2284037230674275720L;
 
         public static final String COOKIE_HEADER = "cookie";
 
         private final Long expireAt;
+
+        public ZosmfCommand(Long expirationTime, AuthSourceService authSourceService) {
+            super(authSourceService);
+            this.expireAt = expirationTime;
+        }
 
         private void createCookie(Cookies cookies, String name, String token) {
             HttpCookie jwtCookie = new HttpCookie(name, token);
@@ -149,16 +154,5 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
             return System.currentTimeMillis() > expireAt;
         }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return true;
-        }
-
-        @Override
-        public boolean isValidSource(AuthSource authSource) {
-            return authSourceService.isValid(authSource);
-        }
     }
-
 }

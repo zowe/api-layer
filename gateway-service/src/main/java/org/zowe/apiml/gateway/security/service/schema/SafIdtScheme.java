@@ -43,12 +43,16 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         final AuthSource.Parsed parsedSource = authSourceService.parse(authSource);
         final Date expiration = parsedSource == null ? null : parsedSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
-        return new SafIdtCommand(expirationTime);
+        return new SafIdtCommand(expirationTime, authSourceService);
     }
 
-    @RequiredArgsConstructor
-    public class SafIdtCommand extends AuthenticationCommand {
+    public class SafIdtCommand extends AuthenticationCommandWithValidation {
         private final Long expireAt;
+
+        public SafIdtCommand(Long expirationTime, AuthSourceService authSourceService) {
+            super(authSourceService);
+            this.expireAt = expirationTime;
+        }
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
@@ -72,16 +76,6 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
             if (expireAt == null) return false;
 
             return System.currentTimeMillis() > expireAt;
-        }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return true;
-        }
-
-        @Override
-        public boolean isValidSource(AuthSource authSource) {
-            return authSourceService.isValid(authSource);
         }
     }
 }
