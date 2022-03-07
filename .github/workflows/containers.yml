@@ -543,6 +543,7 @@ jobs:
             -   name: List Permisions
                 run: |
                     ls -all
+
             -   name: Run HA Tests
                 run: >
                     ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
@@ -553,6 +554,7 @@ jobs:
 
             -   name: List Permisions2
                 run: |
+                    chmod 755 -R .gradle
                     ls -all
             -   name: Store results
                 uses: actions/upload-artifact@v2
