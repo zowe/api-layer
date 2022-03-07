@@ -11,6 +11,9 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.JwtException;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
@@ -30,7 +33,6 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -259,7 +261,6 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void givenZosmfToken_whenApplyToRequest_thenTestJwtToken() {
         Calendar calendar = Calendar.getInstance();
-        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOSMF);
         AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
         when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
         when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
@@ -281,4 +282,53 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         assertEquals("cookie1=1;jwtToken=jwtToken2", httpRequest.getFirstHeader("cookie").getValue());
     }
 
+    @Test
+    void givenUnknownAuthentication_whenApply_thenDoNothing() {
+        Authentication authentication = new Authentication(AuthenticationScheme.X509, null);
+        HttpRequest httpRequest = prepareUnknownAuthenticationTest();
+        zosmfScheme.createCommand(authentication, new DummyX509AuthSource()).apply(null);
+
+        assertNull(httpRequest.getFirstHeader("cookie"));
+    }
+
+    @Test
+    void givenUnknownAuthentication_whenApplyToRequest_thenDoNothing() {
+        Authentication authentication = new Authentication(AuthenticationScheme.X509, null);
+        HttpRequest httpRequest = prepareUnknownAuthenticationTest();
+        zosmfScheme.createCommand(authentication, new DummyX509AuthSource()).applyToRequest(httpRequest);
+
+        assertNull(httpRequest.getFirstHeader("cookie"));
+    }
+
+    private HttpRequest prepareUnknownAuthenticationTest() {
+        RequestContext requestContext = spy(new RequestContext());
+        RequestContext.testSetCurrentContext(requestContext);
+
+        HttpRequest httpRequest = new HttpGet("/test/request");
+        HttpServletRequest request = new MockHttpServletRequest();
+        requestContext.setRequest(request);
+
+        AuthSource.Parsed parsedSourceDummy = new DummyX509AuthSource.Parsed("userId", new Date(), new Date(), Origin.X509);
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new DummyX509AuthSource()));
+        when(authSourceService.parse(any())).thenReturn(parsedSourceDummy);
+        return httpRequest;
+    }
+}
+
+class DummyX509AuthSource implements AuthSource {
+
+    @Override
+    public Object getRawSource() {
+        return null;
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    @EqualsAndHashCode
+    public static class Parsed implements AuthSource.Parsed {
+        private final String userId;
+        private final Date creation;
+        private final Date expiration;
+        private final Origin origin;
+    }
 }
