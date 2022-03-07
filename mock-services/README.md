@@ -28,6 +28,7 @@ The supported APARs are:
 * PH28507
 * PH28532
 * RSU2012
+* PH34912 - which mocks the password change functionality
 
 Multiple APARs can be set in `zosmf.appliedApars`. Conflicting functionality will result in only one functionality mocked, but it is not guaranteed which will be mocked. 
 

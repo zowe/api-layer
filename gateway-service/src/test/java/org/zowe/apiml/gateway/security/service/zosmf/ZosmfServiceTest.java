@@ -221,6 +221,29 @@ class ZosmfServiceTest {
                 assertEquals("jwtToken1", response.getTokens().get(ZosmfService.TokenType.JWT));
             }
         }
+
+        @Nested
+        class WhenChangingPassword {
+            @Test
+            void thenChangePasswordWithSuccess() {
+                LoginRequest loginRequest = new LoginRequest("username", "password", "newPassword");
+                Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
+                ZosmfService zosmfService = getZosmfServiceSpy();
+                when(authentication.getCredentials()).thenReturn(loginRequest);
+
+                ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", null, HttpStatus.OK);
+                doReturn(responseEntity).when(zosmfService).issueChangePasswordRequest(any(), any(), any());
+                doReturn(responseEntity).when(restTemplate).exchange(
+                    "http://zosmf:1433/zosmf/services/authenticate",
+                    HttpMethod.PUT,
+                    new HttpEntity<>(loginRequest, null),
+                    String.class
+                );
+                ResponseEntity response = zosmfService.changePassword(authentication);
+
+                assertTrue(response.getStatusCode().is2xxSuccessful());
+            }
+        }
     }
 
     @Nested

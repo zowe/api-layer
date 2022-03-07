@@ -24,7 +24,7 @@ class AuthenticationCommandTest {
 
     @Test
     void testIsRequiredValidJwt() {
-        assertFalse(AuthenticationCommand.EMPTY.isRequiredValidJwt());
+        assertFalse(AuthenticationCommand.EMPTY.isRequiredValidSource());
     }
 
 }

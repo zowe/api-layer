@@ -9,15 +9,12 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +30,10 @@ public class AuthenticationSchemeFactory {
     private final AbstractAuthenticationScheme defaultScheme;
     private final Map<AuthenticationScheme, AbstractAuthenticationScheme> map;
 
-    private AuthenticationService authenticationService;
+    private final AuthSourceService authSourceService;
 
-    public AuthenticationSchemeFactory(@Autowired AuthenticationService authenticationService, @Autowired List<AbstractAuthenticationScheme> schemes) {
-        this.authenticationService = authenticationService;
+    public AuthenticationSchemeFactory(@Autowired AuthSourceService authSourceService, @Autowired List<AbstractAuthenticationScheme> schemes) {
+        this.authSourceService = authSourceService;
 
         map = new EnumMap<>(AuthenticationScheme.class);
 
@@ -86,12 +83,7 @@ public class AuthenticationSchemeFactory {
             scheme = getSchema(authentication.getScheme());
         }
 
-        final HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
-        final QueryResponse jwtQr = authenticationService.getJwtTokenFromRequest(request)
-            .map(x -> authenticationService.parseJwtToken(x))
-            .orElse(null);
-
-        return scheme.createCommand(authentication, () -> jwtQr);
+        return scheme.createCommand(authentication, authSourceService.getAuthSourceFromRequest().orElse(null));
     }
 
 }

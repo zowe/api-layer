@@ -1,4 +1,4 @@
-name: Release new image version (snapshot)
+name: Image snapshot release
 
 on:
     push:

@@ -22,14 +22,17 @@ publish {
 dependencies {
     compile project(':apiml-utility')
     compile project(':onboarding-enabler-java')
-    compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    
+    compile libraries.spring_boot_starter_web
+    compile libraries.tomcat_embed_core
+    compile libraries.tomcat_embed_websocket
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     compileOnly libraries.javax_inject
 
-    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile libraries.spring_boot_starter_test
     testCompile libraries.json_smart
     testCompile libraries.mockito_core
 

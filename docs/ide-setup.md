@@ -41,7 +41,12 @@ For each of the available services:
     * For the Discovery service add Environment variable `spring.profiles.active` and it's value `https`
 5. Run the service Run -> Run... (Alt + Shift + F10 or Ctrl + Option + R)
 
-Repeat the above for the following application main classes and their service names as written above.    
+Repeat the above for the following application main classes and their service names as written above:
+- gateway-service
+- discovery-service
+- mock-services
+- api-catalog-services
+- discoverable-client
 
 ## Visual Studio Code setup
 
