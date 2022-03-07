@@ -1,14 +1,17 @@
-name: Image snapshot release
+name: Image specific release
 
 on:
-    push:
-        branches: [ master, v2.x.x ]
+    workflow_dispatch:
+        inputs:
+            release_version:
+                description: 'The version that is going to be release'
+                required: true
 
 jobs:
     publish-images:
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
-            forceNoRelease: true
+            version: ${{ github.event.inputs.release_version }}
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
             registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
