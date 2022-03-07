@@ -41,7 +41,7 @@ public class ConvertAuthTokenInUriToCookieFilter extends PostZuulFilter {
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
         HttpServletResponse servletResponse = context.getResponse();
-        AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
+        AuthConfigurationProperties.CookieProperties cp =  authConfigurationProperties.getCookieProperties();
 
         // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
         // so specify Set-Cookie header directly
@@ -59,7 +59,7 @@ public class ConvertAuthTokenInUriToCookieFilter extends PostZuulFilter {
 
         String url = context.getRequest().getRequestURL().toString();
         String newUrl;
-        if (url.endsWith("/apicatalog/ui/v1/")) {
+        if (url.endsWith("/apicatalog/")) {
             newUrl = url + "#/dashboard";
         } else {
             newUrl = url;
