@@ -50,7 +50,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
-        return new ZosmfCommand(expirationTime, authSourceService);
+        return new ZosmfCommand(expirationTime);
     }
 
     @lombok.Value
@@ -63,9 +63,9 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
         private final Long expireAt;
 
-        public ZosmfCommand(Long expirationTime, AuthSourceService authSourceService) {
-            super(authSourceService);
-            this.expireAt = expirationTime;
+        @Override
+        public AuthSourceService getAuthSourceService() {
+            return authSourceService;
         }
 
         private void createCookie(Cookies cookies, String name, String token) {

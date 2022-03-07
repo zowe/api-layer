@@ -9,15 +9,14 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 
 /**
  * This command extends {@link AuthenticationCommand} and keeps common validation logic for authentication source. */
-@RequiredArgsConstructor
 public abstract class AuthenticationCommandWithValidation extends AuthenticationCommand {
-    private final AuthSourceService authSourceService;
+
+    public abstract AuthSourceService getAuthSourceService();
 
     @Override
     public boolean isRequiredValidSource() {
@@ -26,6 +25,6 @@ public abstract class AuthenticationCommandWithValidation extends Authentication
 
     @Override
     public boolean isValidSource(AuthSource authSource) {
-        return authSourceService.isValid(authSource);
+        return getAuthSourceService().isValid(authSource);
     }
 }
