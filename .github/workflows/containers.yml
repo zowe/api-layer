@@ -463,10 +463,16 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: List Permisions
+                run: |
+                    ls -l
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: List Permisions 2
+                run: |
+                    ls -l
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -534,6 +540,9 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: List Permisions
+                run: |
+                    ls -l
             -   name: Run HA Tests
                 run: >
                     ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
@@ -542,6 +551,9 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: List Permisions2
+                run: |
+                    ls -l
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
