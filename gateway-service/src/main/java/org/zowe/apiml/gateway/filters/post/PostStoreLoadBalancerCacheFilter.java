@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.filters.post;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
@@ -33,6 +34,7 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
 
     private final RequestAuthenticationService authenticationService;
     private final LoadBalancerCache loadBalancerCache;
+    private final Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
 
     @Override
     public int filterOrder() {
@@ -41,30 +43,13 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-        return true;
+        return instance.isPresent() && metadataExists(instance.get()) &&
+            lbTypeExistsAuthenticationExistsInstanceIdExists(instance.get());
     }
 
     @Override
     @SuppressWarnings("squid:S3516") // We always have to return null
     public Object run() {
-        Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
-        if (!instance.isPresent()) {
-            return null;
-        }
-
-        InstanceInfo selectedInstance = instance.get();
-        Map<String, String> metadata = selectedInstance.getMetadata();
-        if (metadata == null) {
-            return null;
-        }
-        String lbType = metadata.get("apiml.lb.type");
-        if (lbType == null
-            || !lbType.equals("authentication")
-            || selectedInstance.getInstanceId() == null
-        ) {
-            return null;
-        }
-
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         Optional<String> principal = authenticationService.getPrincipalFromRequest(context.getRequest());
@@ -80,5 +65,18 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
         }
 
         return null;
+    }
+
+    private boolean metadataExists(InstanceInfo selectedInstance) {
+        Map<String, String> metadata = selectedInstance.getMetadata();
+        return metadata != null;
+    }
+
+    private boolean lbTypeExistsAuthenticationExistsInstanceIdExists(InstanceInfo selectedInstance) {
+        Map<String, String> metadata = selectedInstance.getMetadata();
+        String lbType = metadata.get("apiml.lb.type");
+        return (lbType != null
+            && lbType.equals("authentication")
+            && selectedInstance.getInstanceId() != null);
     }
 }

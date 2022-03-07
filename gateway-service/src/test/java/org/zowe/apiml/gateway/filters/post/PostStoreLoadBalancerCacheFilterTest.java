@@ -56,7 +56,6 @@ class PostStoreLoadBalancerCacheFilterTest {
 
     @Test
     void verifyFilterProperties() {
-        assertThat(underTest.shouldFilter(), is(true));
         assertThat(underTest.filterOrder(), is(SEND_RESPONSE_FILTER_ORDER - 1));
         assertThat(underTest.filterType(), is(POST_TYPE));
     }
@@ -73,8 +72,9 @@ class PostStoreLoadBalancerCacheFilterTest {
         class GivenAuthenticationAndInstanceInfo {
 
             @Test
-            void dontAddToCache() {
+            void dontAddToCache_WhenShouldFilter_False() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
+                assertThat(underTest.shouldFilter(), is(false));
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
@@ -129,7 +129,8 @@ class PostStoreLoadBalancerCacheFilterTest {
         class GivenAuthenticationButNoInstanceInfo {
 
             @Test
-            void dontStoreInstanceInfo() {
+            void dontStoreInstanceInfo_WhenShouldFilter_False() {
+                assertThat(underTest.shouldFilter(), is(false));
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
