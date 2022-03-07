@@ -372,7 +372,10 @@ public class NewSecurityConfiguration {
             if (isAttlsEnabled) {
                 http.x509()
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                    .userDetailsService(new SimpleUserDetailService());
+                    .userDetailsService(new SimpleUserDetailService())
+                    .and()
+                    // filter out API ML certificate
+                    .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
             } else {
                 http.x509() // default x509 filter, authenticates trusted cert
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
@@ -380,9 +383,15 @@ public class NewSecurityConfiguration {
             }
             http
                 // place the following filters before the x509 filter
-                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+        }
+
+        private CategorizeCertsFilter reversedCategorizeCertFilter() {
+            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64);
+            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            return out;
         }
 
         /**

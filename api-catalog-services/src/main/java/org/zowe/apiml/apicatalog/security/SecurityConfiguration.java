@@ -109,7 +109,7 @@ public class SecurityConfiguration {
                     http.x509()
                         .userDetailsService(x509UserDetailsService())
                         .and()
-                        .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
                         .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
                         .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 } else {
@@ -121,6 +121,13 @@ public class SecurityConfiguration {
 
         private UserDetailsService x509UserDetailsService() {
             return username -> new User(username, "", Collections.emptyList());
+        }
+
+        private CategorizeCertsFilter reversedCategorizeCertFilter() {
+            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64);
+            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            return out;
         }
     }
 
