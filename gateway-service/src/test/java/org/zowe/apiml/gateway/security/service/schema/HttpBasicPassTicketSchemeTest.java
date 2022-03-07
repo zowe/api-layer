@@ -43,7 +43,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 
 class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
@@ -76,6 +79,10 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
         assertNotNull(ac);
+
+        // test validation of the authentication source
+        ac.isValidSource(new JwtAuthSource("token"));
+        verify(authSourceService, times(1)).isValid(any());
 
         RequestContext requestContext = new RequestContext();
         HttpServletRequest request = new MockHttpServletRequest();

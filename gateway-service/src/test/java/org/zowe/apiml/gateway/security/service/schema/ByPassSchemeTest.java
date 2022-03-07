@@ -12,6 +12,7 @@ import com.netflix.zuul.context.RequestContext;
 import org.apache.http.HttpRequest;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,6 +32,7 @@ class ByPassSchemeTest {
         assertEquals(Boolean.TRUE, RequestContext.getCurrentContext().get("AuthenticationSchemeByPass"));
         assertFalse(cmd.isExpired());
         assertFalse(cmd.isRequiredValidSource());
+        assertFalse(cmd.isValidSource(new JwtAuthSource("token")));
     }
 
     @Test

@@ -287,4 +287,12 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         assertEquals("cookie1=1;jwtToken=jwtToken2", httpRequest.getFirstHeader("cookie").getValue());
     }
 
+    @Test
+    void testIsValidSource() {
+        AuthSource authSource = new JwtAuthSource("token");
+        AuthenticationCommand command = scheme.createCommand(null, null);
+        assertNotNull(command);
+        command.isValidSource(authSource);
+        verify(authSourceService, times(1)).isValid(authSource);
+    }
 }

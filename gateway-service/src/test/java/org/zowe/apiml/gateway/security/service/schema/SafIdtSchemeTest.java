@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.token.QueryResponse.Source;
@@ -27,6 +28,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SafIdtSchemeTest {
@@ -49,6 +52,13 @@ class SafIdtSchemeTest {
         void setCommandUnderTest() {
             JwtAuthSource authSource = mock(JwtAuthSource.class);
             commandUnderTest = underTest.createCommand(null, authSource);
+        }
+
+        @Test
+        void testIsValidSource() {
+            AuthSource authSource = new JwtAuthSource("token");
+            commandUnderTest.isValidSource(authSource);
+            verify(authSourceService, times(1)).isValid(authSource);
         }
 
         @Nested

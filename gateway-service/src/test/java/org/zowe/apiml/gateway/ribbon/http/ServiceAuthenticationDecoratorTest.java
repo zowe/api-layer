@@ -80,6 +80,7 @@ class ServiceAuthenticationDecoratorTest {
         decorator.process(request);
 
         verify(serviceAuthenticationService, atLeastOnce()).getAuthentication(info);
+        verify(universalCmd, times(1)).isValidSource(any());
         verify(universalCmd, times(1)).applyToRequest(request);
     }
 
