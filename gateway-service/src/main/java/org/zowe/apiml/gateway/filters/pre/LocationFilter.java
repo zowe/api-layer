@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -26,14 +25,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * Must be run after PreDecorationFilter. This will set Proxy, ServiceId and other variables in RequestContext
  */
 @Slf4j
-public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
+public class LocationFilter extends PreZuulFilter implements RoutedServicesUser {
 
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
-
-    @Override
-    public String filterType() {
-        return "pre";
-    }
 
     @Override
     public int filterOrder() {

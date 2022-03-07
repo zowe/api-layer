@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -30,7 +32,8 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
 
     @Test
     void doesNotDoAnythingWhenThereIsNoParam() {
-        this.filter.run();
+        boolean ignoreThisFilter = this.filter.shouldFilter();
+        assertThat(ignoreThisFilter, is(false));
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
     }
 
@@ -39,7 +42,8 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
         Map<String, List<String>> params = new HashMap<>();
         params.put("someParameter", Collections.singletonList("value"));
         ctx.setRequestQueryParams(params);
-        this.filter.run();
+        boolean ignoreThisFilter = this.filter.shouldFilter();
+        assertThat(ignoreThisFilter, is(false));
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
     }
 
@@ -50,6 +54,8 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
         params.put(authConfigurationProperties.getCookieProperties().getCookieName(),
                 Collections.singletonList("token"));
         ctx.setRequestQueryParams(params);
+        boolean ignoreThisFilter = this.filter.shouldFilter();
+        assertThat(ignoreThisFilter, is(true));
         this.filter.run();
         assertTrue(ctx.getResponse().getHeaders("Set-Cookie").toString().contains("apimlAuthenticationToken=token"));
         assertEquals("Location", ctx.getZuulResponseHeaders().get(0).first());
@@ -63,6 +69,8 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
         params.put(authConfigurationProperties.getCookieProperties().getCookieName(),
                 Collections.singletonList("token"));
         ctx.setRequestQueryParams(params);
+        boolean ignoreThisFilter = this.filter.shouldFilter();
+        assertThat(ignoreThisFilter, is(true));
         this.filter.run();
         assertTrue(ctx.getResponse().getHeaders("Set-Cookie").toString().contains("apimlAuthenticationToken=token"));
         assertEquals("Location", ctx.getZuulResponseHeaders().get(0).first());

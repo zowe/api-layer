@@ -9,29 +9,23 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.CookieUtil;
 
 import javax.servlet.http.HttpServletResponse;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
 
 /**
  * Uses the authentication token provided as a query parameter and puts it to
  * the expected place (cookie).
  */
-public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
+public class ConvertAuthTokenInUriToCookieFilter extends PostZuulFilter {
     private final AuthConfigurationProperties authConfigurationProperties;
 
     public ConvertAuthTokenInUriToCookieFilter(AuthConfigurationProperties authConfigurationProperties) {
         this.authConfigurationProperties = authConfigurationProperties;
-    }
-
-    public String filterType() {
-        return POST_TYPE;
     }
 
     public int filterOrder() {
@@ -39,39 +33,39 @@ public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
     }
 
     public boolean shouldFilter() {
-        return true;
+        RequestContext context = RequestContext.getCurrentContext();
+        AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
+        return context.getRequestQueryParams() != null && context.getRequestQueryParams().containsKey(cp.getCookieName());
     }
 
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
+        HttpServletResponse servletResponse = context.getResponse();
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
-        if ((context.getRequestQueryParams() != null) && context.getRequestQueryParams().containsKey(cp.getCookieName())) {
-            HttpServletResponse servletResponse = context.getResponse();
 
-            // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
-            // so specify Set-Cookie header directly
-            String cookieHeader = CookieUtil.setCookieHeader(
-                cp.getCookieName(),
-                context.getRequestQueryParams().get(cp.getCookieName()).get(0),
-                cp.getCookieComment(),
-                cp.getCookiePath(),
-                cp.getCookieSameSite().getValue(),
-                cp.getCookieMaxAge(),
-                true,
-                true
-            );
-            servletResponse.addHeader("Set-Cookie", cookieHeader);
+        // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
+        // so specify Set-Cookie header directly
+        String cookieHeader = CookieUtil.setCookieHeader(
+            cp.getCookieName(),
+            context.getRequestQueryParams().get(cp.getCookieName()).get(0),
+            cp.getCookieComment(),
+            cp.getCookiePath(),
+            cp.getCookieSameSite().getValue(),
+            cp.getCookieMaxAge(),
+            true,
+            true
+        );
+        servletResponse.addHeader("Set-Cookie", cookieHeader);
 
-            String url = context.getRequest().getRequestURL().toString();
-            String newUrl;
-            if (url.endsWith("/apicatalog/ui/v1/")) {
-                newUrl = url + "#/dashboard";
-            } else {
-                newUrl = url;
-            }
-            context.addZuulResponseHeader("Location", newUrl);
-            context.setResponseStatusCode(HttpServletResponse.SC_MOVED_TEMPORARILY);
+        String url = context.getRequest().getRequestURL().toString();
+        String newUrl;
+        if (url.endsWith("/apicatalog/ui/v1/")) {
+            newUrl = url + "#/dashboard";
+        } else {
+            newUrl = url;
         }
+        context.addZuulResponseHeader("Location", newUrl);
+        context.setResponseStatusCode(HttpServletResponse.SC_MOVED_TEMPORARILY);
         return null;
     }
 }
