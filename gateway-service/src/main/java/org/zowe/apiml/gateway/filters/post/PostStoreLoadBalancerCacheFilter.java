@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.filters.post;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
@@ -30,15 +29,10 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * if the user is authenticated and there is no instance in the cache stores the selected instance in the cache.
  */
 @RequiredArgsConstructor
-public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
+public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
 
     private final RequestAuthenticationService authenticationService;
     private final LoadBalancerCache loadBalancerCache;
-
-    @Override
-    public String filterType() {
-        return POST_TYPE;
-    }
 
     @Override
     public int filterOrder() {

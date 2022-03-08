@@ -12,15 +12,14 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.zowe.apiml.gateway.services.ServiceInstancesUtils;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
 import org.springframework.http.HttpStatus;
 
 import java.util.*;
@@ -38,18 +37,13 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 @RequiredArgsConstructor
 @Slf4j
-public class EncodedCharactersFilter extends ZuulFilter {
+public class EncodedCharactersFilter extends PreZuulFilter {
 
     private final DiscoveryClient discoveryClient;
     private final MessageService messageService;
     public static final String METADATA_KEY = "apiml.enableUrlEncodedCharacters";
     private static final List<String> PROHIBITED_CHARACTERS =
         Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
-
-    @Override
-    public String filterType() {
-        return FilterConstants.PRE_TYPE;
-    }
 
     @Override
     public int filterOrder() {
@@ -60,10 +54,7 @@ public class EncodedCharactersFilter extends ZuulFilter {
     public boolean shouldFilter() {
         boolean shouldFilter = true;
 
-        RequestContext context = RequestContext.getCurrentContext();
-        final String serviceId = (String) context.get(SERVICE_ID_KEY);
-
-        List<ServiceInstance> instanceList = discoveryClient.getInstances(serviceId);
+        List<ServiceInstance> instanceList = ServiceInstancesUtils.getServiceInstancesFromDiscoveryClient(discoveryClient);
 
         List<Map<String, String>> enabledList = instanceList.stream()
             .map(ServiceInstance::getMetadata)

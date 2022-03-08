@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.filters.post;
 
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -58,7 +57,7 @@ public class PerServiceAddResponseHeadersFilterTest {
     @Nested
     class WhenAddHeaders {
         @Test
-        void givenOneHeaderToAdd() throws ZuulException {
+        void givenOneHeaderToAdd() {
             metadata.put(METADATA_KEY, HEADER1 + HEADER_VALUE_SEPARATOR + HEADER1_VALUE);
             underTest.run();
 
@@ -66,7 +65,7 @@ public class PerServiceAddResponseHeadersFilterTest {
         }
 
         @Test
-        void givenMultipleHeadersToAdd() throws ZuulException {
+        void givenMultipleHeadersToAdd() {
             metadata.put(METADATA_KEY, HEADER1 + HEADER_VALUE_SEPARATOR + HEADER1_VALUE + HEADER_DELIMITER + HEADER2 + HEADER_VALUE_SEPARATOR + HEADER2_VALUE);
             underTest.run();
 
@@ -74,7 +73,7 @@ public class PerServiceAddResponseHeadersFilterTest {
         }
 
         @Test
-        void givenMultipleHeadersToAddWithWhitespace_thenWhitespaceIsTrimmed() throws ZuulException {
+        void givenMultipleHeadersToAddWithWhitespace_thenWhitespaceIsTrimmed() {
             metadata.put(METADATA_KEY, HEADER1 + HEADER_VALUE_SEPARATOR + HEADER1_VALUE + HEADER_DELIMITER + " " + HEADER2 + HEADER_VALUE_SEPARATOR + " " + HEADER2_VALUE);
             underTest.run();
 
@@ -82,7 +81,7 @@ public class PerServiceAddResponseHeadersFilterTest {
         }
 
         @Test
-        void givenHeaderWithNoValue() throws ZuulException {
+        void givenHeaderWithNoValue() {
             metadata.put(METADATA_KEY, HEADER1);
             underTest.run();
 
@@ -90,7 +89,7 @@ public class PerServiceAddResponseHeadersFilterTest {
         }
 
         @Test
-        void givenHeaderWithSeparatorInHeaderValue() throws ZuulException {
+        void givenHeaderWithSeparatorInHeaderValue() {
             String value = HEADER1_VALUE + HEADER_VALUE_SEPARATOR;
             metadata.put(METADATA_KEY, HEADER1 + HEADER_VALUE_SEPARATOR + value);
             underTest.run();
@@ -102,7 +101,7 @@ public class PerServiceAddResponseHeadersFilterTest {
     @Nested
     class WhenDontAddHeaders {
         @Test
-        void givenNullServiceInstances() throws ZuulException {
+        void givenNullServiceInstances() {
             when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(null);
             underTest.run();
 
@@ -110,7 +109,7 @@ public class PerServiceAddResponseHeadersFilterTest {
         }
 
         @Test
-        void givenNoServiceInstances() throws ZuulException {
+        void givenNoServiceInstances() {
             when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.emptyList());
             underTest.run();
 
@@ -118,7 +117,7 @@ public class PerServiceAddResponseHeadersFilterTest {
         }
 
         @Test
-        void givenNoResponseHeadersConfig() throws ZuulException {
+        void givenNoResponseHeadersConfig() {
             metadata.remove(METADATA_KEY);
             underTest.run();
 
@@ -126,7 +125,7 @@ public class PerServiceAddResponseHeadersFilterTest {
         }
 
         @Test
-        void givenEmptyResponseHeadersConfig() throws ZuulException {
+        void givenEmptyResponseHeadersConfig() {
             metadata.put(METADATA_KEY, "");
             underTest.run();
 
