@@ -75,7 +75,6 @@ class PostStoreLoadBalancerCacheFilterTest {
             void dontAddToCache_WhenShouldFilter_False() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
                 assertThat(underTest.shouldFilter(), is(false));
-                underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
         }
@@ -98,7 +97,7 @@ class PostStoreLoadBalancerCacheFilterTest {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
 
                 when(authenticationService.getPrincipalFromRequest(any())).thenReturn(Optional.of(VALID_USER));
-
+                assertThat(underTest.shouldFilter(), is(true));
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(not(nullValue())));
             }
@@ -107,7 +106,7 @@ class PostStoreLoadBalancerCacheFilterTest {
             void whenInCacheDoNothing() {
                 loadBalancerCache.store(VALID_USER, VALID_SERVICE_ID, new LoadBalancerCacheRecord(VALID_INSTANCE_ID));
                 when(info.getInstanceId()).thenReturn("nowhere");
-
+                assertThat(underTest.shouldFilter(), is(true));
                 underTest.run();
                 LoadBalancerCacheRecord record = loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID);
                 assertThat(record.getInstanceId(), is(VALID_INSTANCE_ID));
@@ -120,6 +119,7 @@ class PostStoreLoadBalancerCacheFilterTest {
             @Test
             void dontStoreInstanceInfo() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
+                assertThat(underTest.shouldFilter(), is(true));
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
@@ -131,7 +131,6 @@ class PostStoreLoadBalancerCacheFilterTest {
             @Test
             void dontStoreInstanceInfo_WhenShouldFilter_False() {
                 assertThat(underTest.shouldFilter(), is(false));
-                underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
         }

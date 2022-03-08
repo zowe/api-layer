@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.filters.post;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
@@ -34,7 +33,6 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
 
     private final RequestAuthenticationService authenticationService;
     private final LoadBalancerCache loadBalancerCache;
-    private final Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
 
     @Override
     public int filterOrder() {
@@ -43,13 +41,17 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-        return instance.isPresent() && metadataExists(instance.get()) &&
-            lbTypeExistsAuthenticationExistsInstanceIdExists(instance.get());
+        Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
+        return instance.isPresent() && metadataExists(instance.get()) && lbTypeExistsAuthenticationExistsInstanceIdExists(instance.get());
     }
 
     @Override
     @SuppressWarnings("squid:S3516") // We always have to return null
     public Object run() {
+        Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
+
+        if (!instance.isPresent()) return null;
+
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         Optional<String> principal = authenticationService.getPrincipalFromRequest(context.getRequest());

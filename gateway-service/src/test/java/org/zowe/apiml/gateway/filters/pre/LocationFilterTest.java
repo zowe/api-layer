@@ -20,6 +20,8 @@ import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.util.stream.Stream;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -52,13 +54,14 @@ class LocationFilterTest {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "service1");
         ctx.set(PROXY_KEY, "service1");
-        this.filter.run();
+        assertThat(this.filter.shouldFilter(), is(false));
         assertEquals("/path", ctx.get(REQUEST_URI_KEY));
     }
 
     @Test
     void urlDefinedInMetadataIsModified() {
         final RequestContext ctx = RequestContext.getCurrentContext();
+        assertThat(this.filter.shouldFilter(), is(true));
         this.filter.run();
         assertEquals("/service/v1/path", ctx.get(REQUEST_URI_KEY));
     }
@@ -85,7 +88,7 @@ class LocationFilterTest {
     void testContextKeyURLFiltering(String contextKey, String contextUrl, String requestUrl) {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(contextKey, contextUrl);
-        this.filter.run();
+        if (this.filter.shouldFilter()) this.filter.run();
         assertEquals(requestUrl, ctx.get(REQUEST_URI_KEY));
     }
 
@@ -93,12 +96,6 @@ class LocationFilterTest {
     void shouldReturnFilterType() {
         String filterType = this.filter.filterType();
         assertEquals("pre", filterType);
-    }
-
-    @Test
-    void shouldFilterShouldReturnTrue() {
-        Boolean filterFlag = this.filter.shouldFilter();
-        assertEquals(true, filterFlag);
     }
 
     @Test
