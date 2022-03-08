@@ -55,8 +55,9 @@ class InfinispanStorageTest {
 
         @Test
         void whenUpdate_thenExceptionIsThrown() {
+            KeyValue entry = new KeyValue("key", "value");
             when(cache.get(serviceId1)).thenReturn(keyValue);
-            assertThrows(StorageException.class, () -> storage.update(serviceId1, new KeyValue("key", "value")));
+            assertThrows(StorageException.class, () -> storage.update(serviceId1, entry));
         }
 
         @Test
@@ -112,7 +113,7 @@ class InfinispanStorageTest {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
             InfinispanStorage storage = new InfinispanStorage(cache);
             assertNull(storage.create(serviceId1, TO_CREATE));
-            assertEquals(storage.delete(serviceId1, TO_CREATE.getKey()), TO_CREATE);
+            assertEquals(TO_CREATE, storage.delete(serviceId1, TO_CREATE.getKey()));
         }
 
         @Test
@@ -121,7 +122,7 @@ class InfinispanStorageTest {
             InfinispanStorage storage = new InfinispanStorage(cache);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
-            assertEquals(storage.readForService(serviceId1).size(), 2);
+            assertEquals(2, storage.readForService(serviceId1).size());
         }
 
         @Test
@@ -130,9 +131,9 @@ class InfinispanStorageTest {
             InfinispanStorage storage = new InfinispanStorage(cache);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
-            assertEquals(storage.readForService(serviceId1).size(), 2);
+            assertEquals(2, storage.readForService(serviceId1).size());
             storage.deleteForService(serviceId1);
-            assertEquals(storage.readForService(serviceId1).size(), 0);
+            assertEquals(0, storage.readForService(serviceId1).size());
         }
 
     }
