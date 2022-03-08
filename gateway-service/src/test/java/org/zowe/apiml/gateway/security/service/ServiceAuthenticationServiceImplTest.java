@@ -37,12 +37,12 @@ import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
@@ -158,20 +158,10 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     @Test
     void testGetAuthenticationCommand() {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
-        // token1 - valid
-        QueryResponse qr1 = new QueryResponse("domain", "userId",
-            Date.valueOf(LocalDate.of(1900, 1, 1)),
-            Date.valueOf(LocalDate.of(2100, 1, 1)),
-            QueryResponse.Source.ZOWE
-        );
-        // token2 - expired
-        QueryResponse qr2 = new QueryResponse("domain", "userId",
-            Date.valueOf(LocalDate.of(1900, 1, 1)),
-            Date.valueOf(LocalDate.of(2000, 1, 1)),
-            QueryResponse.Source.ZOWE
-        );
-        AuthSource.Parsed parsedSource1 = new JwtAuthSource.Parsed(qr1.getUserId(), qr1.getCreation(), qr1.getExpiration(), qr1.getSource());
-        AuthSource.Parsed parsedSource2 = new JwtAuthSource.Parsed(qr2.getUserId(), qr2.getCreation(), qr2.getExpiration(), qr2.getSource());
+        // parsed token1 - valid
+        AuthSource.Parsed parsedSource1 = new JwtAuthSource.Parsed("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2100, 1, 1)), Origin.ZOWE);
+        // parsed token2 - expired
+        AuthSource.Parsed parsedSource2 = new JwtAuthSource.Parsed("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2000, 1, 1)), Origin.ZOWE);
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
 
