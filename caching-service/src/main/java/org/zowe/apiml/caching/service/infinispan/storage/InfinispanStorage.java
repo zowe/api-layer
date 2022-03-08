@@ -10,7 +10,6 @@
 package org.zowe.apiml.caching.service.infinispan.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.infinispan.Cache;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -18,14 +17,15 @@ import org.zowe.apiml.caching.service.StorageException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 public class InfinispanStorage implements Storage {
 
 
-    private final Cache<String, KeyValue> cache;
+    private final ConcurrentMap<String, KeyValue> cache;
 
-    public InfinispanStorage(Cache<String, KeyValue> cache) {
+    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache) {
         this.cache = cache;
     }
 

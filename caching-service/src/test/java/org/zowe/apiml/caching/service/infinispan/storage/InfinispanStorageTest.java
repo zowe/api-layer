@@ -16,8 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class InfinispanStorageTest {
@@ -52,6 +54,18 @@ class InfinispanStorageTest {
         }
 
         @Test
+        void whenUpdate_thenExceptionIsThrown() {
+            when(cache.get(serviceId1)).thenReturn(keyValue);
+            assertThrows(StorageException.class, () -> storage.update(serviceId1, new KeyValue("key", "value")));
+        }
+
+        @Test
+        void whenAddNew_returnNull() {
+            keyValue = new KeyValue("key", "value");
+            assertNull(storage.create(serviceId1, keyValue));
+        }
+
+        @Test
         void whenDelete_thenExceptionIsThrown() {
 
             String key = TO_CREATE.getKey();
@@ -72,25 +86,53 @@ class InfinispanStorageTest {
         }
 
         @Test
-        void whenCreate_thenExceptionIsThrown() {
+        void exceptionIsThrown() {
             when(cache.putIfAbsent(any(), any())).thenReturn(keyValue);
             assertThrows(StorageException.class, () -> storage.create(serviceId1, TO_CREATE));
         }
 
         @Test
-        void whenRead_thenEntryIsReturned() {
+        void entryIsReturned() {
             when(cache.get(serviceId1 + TO_CREATE.getKey())).thenReturn(TO_CREATE);
             KeyValue result = storage.read(serviceId1, TO_CREATE.getKey());
             assertEquals(TO_CREATE.getValue(), result.getValue());
         }
 
         @Test
-        void whenUpdate_thenCacheIsUpdated() {
+        void cacheIsUpdated() {
 
             when(cache.put(serviceId1 + TO_UPDATE.getKey(), TO_UPDATE)).thenReturn(TO_UPDATE);
             storage.update(serviceId1, TO_UPDATE);
             verify(cache, times(1)).put(serviceId1 + TO_UPDATE.getKey(), TO_UPDATE);
             assertEquals("val2", TO_UPDATE.getValue());
+        }
+
+        @Test
+        void itemIsDeleted() {
+            ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
+            InfinispanStorage storage = new InfinispanStorage(cache);
+            assertNull(storage.create(serviceId1, TO_CREATE));
+            assertEquals(storage.delete(serviceId1, TO_CREATE.getKey()), TO_CREATE);
+        }
+
+        @Test
+        void returnAll() {
+            ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
+            InfinispanStorage storage = new InfinispanStorage(cache);
+            storage.create(serviceId1, new KeyValue("key", "value"));
+            storage.create(serviceId1, new KeyValue("key2", "value2"));
+            assertEquals(storage.readForService(serviceId1).size(), 2);
+        }
+
+        @Test
+        void removeAll() {
+            ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
+            InfinispanStorage storage = new InfinispanStorage(cache);
+            storage.create(serviceId1, new KeyValue("key", "value"));
+            storage.create(serviceId1, new KeyValue("key2", "value2"));
+            assertEquals(storage.readForService(serviceId1).size(), 2);
+            storage.deleteForService(serviceId1);
+            assertEquals(storage.readForService(serviceId1).size(), 0);
         }
 
     }
