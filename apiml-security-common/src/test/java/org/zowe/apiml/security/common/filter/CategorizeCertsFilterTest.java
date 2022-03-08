@@ -93,6 +93,25 @@ class CategorizeCertsFilterTest {
 
                 verify(chain, times(1)).doFilter(request, response);
             }
+
+            @Test
+            void thenAllApimlCertificatesWithReversedLogic() throws IOException, ServletException {
+                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
+                filter.setNotCertificateForClientAuth(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
+
+                filter.doFilter(request, response, chain);
+
+                X509Certificate[] cientCerts = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+                assertNotNull(cientCerts);
+                assertEquals(0, cientCerts.length);
+
+                X509Certificate[] apimlCerts = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                assertNotNull(apimlCerts);
+                assertEquals(4, apimlCerts.length);
+                assertArrayEquals(certificates, apimlCerts);
+
+                verify(chain, times(1)).doFilter(request, response);
+            }
         }
     }
 
@@ -136,6 +155,28 @@ class CategorizeCertsFilterTest {
                 assertEquals(2, clientCerts.length);
                 assertSame(certificates[0], clientCerts[0]);
                 assertSame(certificates[2], clientCerts[1]);
+
+                verify(chain, times(1)).doFilter(request, response);
+            }
+
+            @Test
+            void thenCategorizedCertsWithReversedLogic() throws IOException, ServletException {
+                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
+                filter.setNotCertificateForClientAuth(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
+
+                filter.doFilter(request, response, chain);
+
+                X509Certificate[] clientCerts = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+                assertNotNull(clientCerts);
+                assertEquals(2, clientCerts.length);
+                assertSame(certificates[1], clientCerts[0]);
+                assertSame(certificates[3], clientCerts[1]);
+
+                X509Certificate[] apimlCerts = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                assertNotNull(apimlCerts);
+                assertEquals(2, apimlCerts.length);
+                assertSame(certificates[0], apimlCerts[0]);
+                assertSame(certificates[2], apimlCerts[1]);
 
                 verify(chain, times(1)).doFilter(request, response);
             }
