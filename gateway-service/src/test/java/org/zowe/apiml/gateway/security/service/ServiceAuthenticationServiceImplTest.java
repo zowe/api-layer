@@ -34,6 +34,8 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -67,7 +69,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     private AuthenticationSchemeFactory authenticationSchemeFactory;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private AuthSourceService authSourceService;
 
     @Autowired
     private ServiceAuthenticationService serviceAuthenticationService;
@@ -88,11 +90,12 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         serviceAuthenticationService.evictCacheAllService();
 
         serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(
-            discoveryClient,
-            new EurekaMetadataParser(),
-            authenticationSchemeFactory,
-            cacheManager,
-            new CacheUtils());
+                discoveryClient,
+                new EurekaMetadataParser(),
+                authenticationSchemeFactory,
+                authSourceService,
+                cacheManager,
+                new CacheUtils());
     }
 
     @AfterEach
@@ -148,25 +151,17 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     @Test
     void testGetAuthenticationCommand() {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
-        // token1 - valid
-        QueryResponse qr1 = new QueryResponse("domain", "userId",
-            Date.valueOf(LocalDate.of(1900, 1, 1)),
-            Date.valueOf(LocalDate.of(2100, 1, 1)),
-            QueryResponse.Source.ZOWE
-        );
-        // token2 - expired
-        QueryResponse qr2 = new QueryResponse("domain", "userId",
-            Date.valueOf(LocalDate.of(1900, 1, 1)),
-            Date.valueOf(LocalDate.of(2000, 1, 1)),
-            QueryResponse.Source.ZOWE
-        );
+        // parsed token1 - valid
+        AuthSource.Parsed parsedSource1 = new JwtAuthSource.Parsed("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2100, 1, 1)), Origin.ZOWE);
+        // parsed token2 - expired
+        AuthSource.Parsed parsedSource2 = new JwtAuthSource.Parsed("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2000, 1, 1)), Origin.ZOWE);
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
 
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET))
             .thenReturn(schemeBeanMock);
-        when(authenticationService.parseJwtToken("token1")).thenReturn(qr1);
-        when(authenticationService.parseJwtToken("token2")).thenReturn(qr2);
+        when(authSourceService.parse(new JwtAuthSource("token1"))).thenReturn(parsedSource1);
+        when(authSourceService.parse(new JwtAuthSource("token2"))).thenReturn(parsedSource2);
         when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token1"))).thenReturn(acValid);
         when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), new JwtAuthSource("token2"))).thenReturn(acExpired);
 

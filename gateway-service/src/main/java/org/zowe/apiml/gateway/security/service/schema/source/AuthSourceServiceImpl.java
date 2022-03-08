@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 /**
@@ -51,7 +52,7 @@ public class AuthSourceServiceImpl implements AuthSourceService {
             String jwtToken = ((JwtAuthSource)authSource).getRawSource();
             QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken);
             return queryResponse == null ? null : new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
-                queryResponse.getSource());
+                Origin.valueByIssuer(queryResponse.getSource().name()));
         }
         return null;
     }

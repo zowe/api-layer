@@ -13,7 +13,6 @@ import java.util.Date;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.zowe.apiml.security.common.token.QueryResponse.Source;
 
 /**
  * Implementation of JWT token source of authentication.
@@ -40,6 +39,6 @@ public class JwtAuthSource implements AuthSource {
         private final String userId;
         private final Date creation;
         private final Date expiration;
-        private final Source source;
+        private final Origin origin;
     }
 }
