@@ -9,14 +9,13 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.services.ServiceInstancesUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -28,14 +27,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  */
 @Component
 @RequiredArgsConstructor
-public class PerServiceAddResponseHeadersFilter extends ZuulFilter {
+public class PerServiceAddResponseHeadersFilter extends PostZuulFilter {
 
     private final DiscoveryClient discoveryClient;
-
-    @Override
-    public String filterType() {
-        return POST_TYPE;
-    }
 
     @Override
     public int filterOrder() {
@@ -48,15 +42,13 @@ public class PerServiceAddResponseHeadersFilter extends ZuulFilter {
     }
 
     @Override
-    public Object run() throws ZuulException {
-        RequestContext context = RequestContext.getCurrentContext();
-        String serviceId = (String) context.get(SERVICE_ID_KEY);
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
-
+    public Object run() {
+        List<ServiceInstance> serviceInstances = ServiceInstancesUtils.getServiceInstancesFromDiscoveryClient(discoveryClient);
         if (serviceInstances != null && !serviceInstances.isEmpty()) {
             ServiceInstance serviceInstance = serviceInstances.get(0);
             Map<String, String> metadata = serviceInstance.getMetadata();
 
+            RequestContext context = RequestContext.getCurrentContext();
             String headersToAdd = metadata.get("apiml.response.headers");
             if (headersToAdd != null && !headersToAdd.trim().isEmpty()) {
                 String[] headerValuePairs = StringUtils.stripAll(headersToAdd.split(","));
@@ -70,7 +62,6 @@ public class PerServiceAddResponseHeadersFilter extends ZuulFilter {
                 }
             }
         }
-
         return null;
     }
 }
