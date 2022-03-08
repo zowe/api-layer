@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,6 @@ import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
 
 /**
@@ -30,15 +28,10 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  */
 @Component
 @Slf4j
-public class DebugHeaderFilter extends ZuulFilter {
+public class DebugHeaderFilter extends PostZuulFilter {
 
     @Value("${zuul.debug.request.debugHeaderLimit:4096}")
     private int debugHeaderLimit;
-
-    @Override
-    public String filterType() {
-        return POST_TYPE;
-    }
 
     @Override
     public int filterOrder() {

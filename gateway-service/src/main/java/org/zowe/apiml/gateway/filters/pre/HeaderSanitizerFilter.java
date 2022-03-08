@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
 /**
  * Filter is used to clear values in request headers. Provide list of such headers in property source and they will
@@ -28,14 +26,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @Component
 @NoArgsConstructor
 @AllArgsConstructor
-public class HeaderSanitizerFilter extends ZuulFilter {
+public class HeaderSanitizerFilter extends PreZuulFilter {
     @Value(value = "${apiml.security.headersToBeCleared:}")
     private String[] headersToBeCleared;
-
-    @Override
-    public String filterType() {
-        return PRE_TYPE;
-    }
 
     @Override
     public int filterOrder() {

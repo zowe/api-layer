@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.zowe.apiml.util.UrlUtils;
 
@@ -21,7 +20,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 /**
  * Must be run after PreDecorationFilter. This will set Proxy, ServiceId and other variables in RequestContext
  */
-public class SlashFilter extends ZuulFilter {
+public class SlashFilter extends PreZuulFilter {
 
     private static final Pattern REGEX_CONTAINS_UI_PATH = Pattern.compile("(ui/)|(/ui)", Pattern.CASE_INSENSITIVE);
     private static final Pattern REGEX_END_WITH_UI_ROUTE = Pattern.compile(".*/ui(/v[0-9])?$", // Optional version after ui
@@ -41,11 +40,6 @@ public class SlashFilter extends ZuulFilter {
         boolean newPathFormatShouldFilter = checkProxy && REGEX_END_WITH_UI_ROUTE.matcher(url).find();
 
         return checkProxy && checkServiceId && (oldPathFormatShouldFilter || newPathFormatShouldFilter);
-    }
-
-    @Override
-    public String filterType() {
-        return "pre";
     }
 
     @Override
