@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.filters.post;
 
 import com.netflix.util.Pair;
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +36,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * </ul>
  */
 @RequiredArgsConstructor
-public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesUser {
+public class PageRedirectionFilter extends PostZuulFilter implements RoutedServicesUser {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
     private static final int MAX_ENTRIES = 1000;
@@ -64,11 +63,6 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
         RequestContext context = RequestContext.getCurrentContext();
         int status = context.getResponseStatusCode();
         return HttpStatus.valueOf(status).is3xxRedirection();
-    }
-
-    @Override
-    public String filterType() {
-        return POST_TYPE;
     }
 
     @Override
