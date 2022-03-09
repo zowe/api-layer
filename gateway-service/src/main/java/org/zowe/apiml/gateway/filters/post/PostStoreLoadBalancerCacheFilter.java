@@ -42,7 +42,10 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
     @Override
     public boolean shouldFilter() {
         Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
-        return instance.isPresent() && metadataExists(instance.get()) && lbTypeExistsAuthenticationExistsInstanceIdExists(instance.get());
+        return instance.isPresent() &&
+            metadataExists(instance.get()) &&
+            lbTypeIsAuthentication(instance.get()) &&
+            instance.get().getInstanceId() != null;
     }
 
     @Override
@@ -74,11 +77,9 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
         return metadata != null;
     }
 
-    private boolean lbTypeExistsAuthenticationExistsInstanceIdExists(InstanceInfo selectedInstance) {
+    private boolean lbTypeIsAuthentication(InstanceInfo selectedInstance) {
         Map<String, String> metadata = selectedInstance.getMetadata();
         String lbType = metadata.get("apiml.lb.type");
-        return (lbType != null
-            && lbType.equals("authentication")
-            && selectedInstance.getInstanceId() != null);
+        return lbType != null && lbType.equals("authentication");
     }
 }

@@ -50,7 +50,7 @@ class LocationFilterTest {
     }
 
     @Test
-    void urlNotDefinedInMetadataIsNotModified() {
+    void whenShouldFilterIsFalse_thenUrlNotDefinedInMetadataIsNotModified() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "service1");
         ctx.set(PROXY_KEY, "service1");
@@ -59,14 +59,14 @@ class LocationFilterTest {
     }
 
     @Test
-    void urlDefinedInMetadataIsModified() {
+    void whenShouldFilterIsTrue_thenUrlDefinedInMetadataIsModified() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         assertThat(this.filter.shouldFilter(), is(true));
         this.filter.run();
         assertEquals("/service/v1/path", ctx.get(REQUEST_URI_KEY));
     }
 
-    static private Stream<Arguments> arguments_testContextKeyURLFiltering() {
+    static private Stream<Arguments> shouldFilterIsTrue_arguments_testContextKeyURLFiltering() {
         return Stream.of(
             Arguments.of(PROXY_KEY, "api/v1/service", "/service/v1/path"),
             Arguments.of(REQUEST_URI_KEY, "path", "/service/v1/path"),
@@ -74,21 +74,36 @@ class LocationFilterTest {
             Arguments.of(PROXY_KEY, "/api/v2/service", "/service/v2/path"),
             Arguments.of(PROXY_KEY, "service/api/v2/", "/service/v2/path"),
             Arguments.of(PROXY_KEY, "api/v2/service/", "/service/v2/path"),
+            Arguments.of(PROXY_KEY, "", "/path"),
+            Arguments.of(REQUEST_URI_KEY, "", "/service/v1/")
+        );
+    }
+
+    static private Stream<Arguments> shouldFilterIsFalse_arguments_testContextKeyURLFiltering() {
+        return Stream.of(
             Arguments.of(SERVICE_ID_KEY, "", "/path"),
             Arguments.of(SERVICE_ID_KEY, null, "/path"),
-            Arguments.of(PROXY_KEY, "", "/path"),
             Arguments.of(PROXY_KEY, null, "/path"),
-            Arguments.of(REQUEST_URI_KEY, "", "/service/v1/"),
             Arguments.of(REQUEST_URI_KEY, null, null)
         );
     }
 
     @ParameterizedTest
-    @MethodSource("arguments_testContextKeyURLFiltering")
-    void testContextKeyURLFiltering(String contextKey, String contextUrl, String requestUrl) {
+    @MethodSource("shouldFilterIsTrue_arguments_testContextKeyURLFiltering")
+    void whenShouldFilterIsTrue_arguments_testContextKeyURLFiltering(String contextKey, String contextUrl, String requestUrl) {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(contextKey, contextUrl);
-        if (this.filter.shouldFilter()) this.filter.run();
+        assertThat(this.filter.shouldFilter(), is(true));
+        this.filter.run();
+        assertEquals(requestUrl, ctx.get(REQUEST_URI_KEY));
+    }
+
+    @ParameterizedTest
+    @MethodSource("shouldFilterIsFalse_arguments_testContextKeyURLFiltering")
+    void whenShouldFilterIsFalse_arguments_testContextKeyURLFiltering(String contextKey, String contextUrl, String requestUrl) {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(contextKey, contextUrl);
+        assertThat(this.filter.shouldFilter(), is(false));
         assertEquals(requestUrl, ctx.get(REQUEST_URI_KEY));
     }
 
