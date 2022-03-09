@@ -1,0 +1,12 @@
+
+
+{
+    "messages": [
+        {
+            "messageType": "ERROR",
+            "messageNumber": "ZWEAM700E",
+            "messageContent": "Request timeout, please try again later",
+            "messageKey": "org.zowe.apiml.common.serviceTimeout"
+        }
+    ]
+}
