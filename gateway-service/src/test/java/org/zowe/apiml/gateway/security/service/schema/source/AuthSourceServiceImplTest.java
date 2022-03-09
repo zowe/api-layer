@@ -26,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -141,7 +142,7 @@ class AuthSourceServiceImplTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenValidAuthSource_thenParseCorrectly() {
-        Parsed expectedParsedSource = new JwtAuthSource.Parsed("user", new Date(111), new Date(222), Source.ZOSMF);
+        Parsed expectedParsedSource = new JwtAuthSource.Parsed("user", new Date(111), new Date(222), Origin.ZOSMF);
         when(authenticationService.parseJwtToken(anyString())).thenReturn(new QueryResponse("domain", "user", new Date(111), new Date(222), Source.ZOSMF));
 
         Parsed parsedSource = serviceUnderTest.parse(new JwtAuthSource("jwtToken"));
