@@ -156,6 +156,7 @@ dependencies {
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok
 
+    testImplementation(testFixtures(project(":integration-tests")))
 
     runtime libraries.jjwt_impl
     runtime libraries.jjwt_jackson
