@@ -16,39 +16,23 @@ import java.util.Base64;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
-import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
 
 /**
- * Implementation of AuthSourceService interface which uses client certificate as an authentication source.
- * This implementation of service does not perform  mapping between common name from the client certificate and
- * the mainframe user and treats common name as user ID.
+ * Basic implementation of AuthSourceService interface which uses client certificate as an authentication source.
+ * This implementation relies on concrete implementation of {@link X509AbstractMapper} for validation and parsing of
+ * the client certificate.
  */
 @Slf4j
-@Service
-@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-@EnableAspectJAutoProxy(proxyTargetClass = true)
-public class X509AuthSourceService implements AuthSourceService {
-    private X509AbstractMapper mapper;
-
-    public X509AuthSourceService() {
-        mapper = new X509CommonNameUserMapper();
-    }
-
-    // Method for testing purpose only
-    protected void setMapper(X509AbstractMapper mapper) {
-        this.mapper = mapper;
-    }
-
+public abstract class AbstractX509AuthSourceService implements AuthSourceService {
     /**
-     * Returns client certificate from request or Optional.empty() if the certificate not found.
+     * Gets client certificate from request.
+     * <p>
      * In case of multiple certificates only the first one will be used.
-     * @return client certificate of Optional.empty()
+     * <p>
+     * @return Optional<AuthSource> with client certificate of Optional.empty()
      */
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest() {
@@ -61,11 +45,11 @@ public class X509AuthSourceService implements AuthSourceService {
     /**
      * Validates authentication source, check authentication source type and whether client certificate from the
      * authentication source has the extended key usage set correctly.
-     * @param authSource AuthSource object which hold original source of authentication - client certificate.
-     * @return true if client certificate has valid, false otherwise
+     * @param authSource {@link AuthSource} object which hold original source of authentication - client certificate.
+     * @param mapper instance of {@link X509AbstractMapper} to use for validation.
+     * @return true if client certificate is valid, false otherwise.
      */
-    @Override
-    public boolean isValid(AuthSource authSource) {
+    public boolean isValid(AuthSource authSource, X509AbstractMapper mapper) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate clientCert = (X509Certificate)authSource.getRawSource();
             return  clientCert != null && mapper.isClientAuthCertificate(clientCert);
@@ -74,16 +58,15 @@ public class X509AuthSourceService implements AuthSourceService {
     }
 
     /**
-     * Return authentication source in parsed form if source is of correct type and client certificate from the
-     * authentication source is not null.
-     * @param authSource AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
-     * @return parsed authentication source or null.
+     * Parse client certificate from authentication source.
+     * @param authSource {@link AuthSource} object which hold original source of authentication - client certificate.
+     * @param mapper instance of {@link X509AbstractMapper} to use for validation and parsing.
+     * @return parsed authentication source or null if error occurred during parsing.
      */
-    @Override
-    public AuthSource.Parsed parse(AuthSource authSource) {
+    public AuthSource.Parsed parse(AuthSource authSource, X509AbstractMapper mapper) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate clientCert = (X509Certificate)authSource.getRawSource();
-            return clientCert == null ? null : parseClientCert(clientCert);
+            return clientCert == null ? null : parseClientCert(clientCert, mapper);
         }
         return null;
     }
@@ -93,9 +76,17 @@ public class X509AuthSourceService implements AuthSourceService {
         throw new UnsupportedOperationException("Unsupported operation");
     }
 
+    // Gets client certificate from request
     private X509Certificate getCertificateFromRequest(HttpServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
-        return getOne(certs);
+        X509Certificate clientCert = getOne(certs);
+        // TODO: remove the attempt to get client certificate from "javax.servlet.request.X509Certificate" attribute
+        // once filtering of the certificates is implemented
+        if (clientCert == null) {
+            certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+            return getOne(certs);
+        }
+        return clientCert;
     }
 
     private X509Certificate getOne(X509Certificate[] certs) {
@@ -104,16 +95,22 @@ public class X509AuthSourceService implements AuthSourceService {
         } else return null;
     }
 
-    private Parsed parseClientCert(X509Certificate clientCert) {
+    /**
+     * Parse client certificate: get common name, distinguished name and encoded certificate value.
+     * @param clientCert {@link X509Certificate} client certificate to parse.
+     * @param mapper instance of {@link X509AbstractMapper} to use for parsing.
+     * @return parsed authentication source or null in case of CertificateEncodingException.
+     */
+    private Parsed parseClientCert(X509Certificate clientCert, X509AbstractMapper mapper) {
         try {
             String commonName = mapper.mapCertificateToMainframeUserId(clientCert);
             String encodedCert = Base64.getEncoder().encodeToString(clientCert.getEncoded());
             String distinguishedName = clientCert.getSubjectDN().toString();
             return new Parsed(commonName, clientCert.getNotBefore(), clientCert.getNotAfter(),
-                null, encodedCert, distinguishedName);
+                Origin.X509, encodedCert, distinguishedName);
         } catch (CertificateEncodingException e) {
             log.error("Exception parsing certificate", e);
+            return null;
         }
-        return null;
     }
 }

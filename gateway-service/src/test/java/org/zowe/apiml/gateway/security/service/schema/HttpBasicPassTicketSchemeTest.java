@@ -23,8 +23,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.DefaultAuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509MFAuthSourceService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -53,8 +55,11 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
     @BeforeEach
     void init() {
+        JwtAuthSourceService jwtAuthSourceService = mock(JwtAuthSourceService.class);
+        X509MFAuthSourceService x509MFAuthSourceService = mock(X509MFAuthSourceService.class);
+
         PassTicketService passTicketService = new PassTicketService();
-        AuthSourceService authSourceService = new AuthSourceServiceImpl();
+        AuthSourceService authSourceService = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
     }
 

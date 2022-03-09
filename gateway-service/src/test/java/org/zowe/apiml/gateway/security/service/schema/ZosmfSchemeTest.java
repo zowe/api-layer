@@ -260,7 +260,6 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenZosmfToken_whenApplyToRequest_thenTestJwtToken() {
-        Calendar calendar = Calendar.getInstance();
         AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
         when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
         when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
@@ -319,6 +318,11 @@ class DummyX509AuthSource implements AuthSource {
 
     @Override
     public Object getRawSource() {
+        return null;
+    }
+
+    @Override
+    public AuthSourceType getType() {
         return null;
     }
 

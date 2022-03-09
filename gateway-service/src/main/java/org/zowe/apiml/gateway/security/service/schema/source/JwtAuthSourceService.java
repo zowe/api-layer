@@ -14,7 +14,6 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
@@ -23,17 +22,22 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 /**
- * Main implementation of AuthSourceService, currently support only on type of authentication source - JWT token.
+ * Implementation of AuthSourceService which supports JWT token as authentication source.
  */
 @Slf4j
 @Service
-@Primary
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-public class AuthSourceServiceImpl implements AuthSourceService {
+public class JwtAuthSourceService implements AuthSourceService {
     @Autowired
     private AuthenticationService authenticationService;
 
+    /**
+     * Core method of the interface. Gets source of authentication (JWT token) from request.
+     * <p>
+     * @return Optional<AuthSource> which hold original source of authentication (JWT token)
+     * or Optional.empty() when no authentication source found.
+     */
     public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
 
@@ -41,6 +45,11 @@ public class AuthSourceServiceImpl implements AuthSourceService {
         return jwtToken.map(JwtAuthSource::new);
     }
 
+    /**
+     * Validates authentication source (JWT token) using method of {@link AuthenticationService}
+     * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token)
+     * @return true if token is valid, false otherwise
+     */
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource)authSource).getRawSource();
@@ -49,6 +58,11 @@ public class AuthSourceServiceImpl implements AuthSourceService {
         return false;
     }
 
+    /**
+     * Validates authentication source (JWT token) using method of {@link AuthenticationService}
+     * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token)
+     * @return authentication source in parsed form
+     */
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource)authSource).getRawSource();
@@ -59,6 +73,11 @@ public class AuthSourceServiceImpl implements AuthSourceService {
         return null;
     }
 
+    /**
+     * Generates LTPA token from current source of authentication (JWT token) using method of {@link AuthenticationService}
+     * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token)
+     * @return LTPA token
+     */
     public String getLtpaToken(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource)authSource).getRawSource();

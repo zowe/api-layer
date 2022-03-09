@@ -14,7 +14,6 @@ import java.util.Date;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.zowe.apiml.security.common.token.QueryResponse.Source;
 
 /**
  * Implementation of source of authentication based on client certificate.
@@ -23,6 +22,7 @@ import org.zowe.apiml.security.common.token.QueryResponse.Source;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class X509AuthSource implements AuthSource {
+    public static final AuthSourceType type = AuthSourceType.CLIENT_CERT;
     /**
      * X509 client certificate
      */
@@ -34,6 +34,11 @@ public class X509AuthSource implements AuthSource {
         return source;
     }
 
+    @Override
+    public AuthSourceType getType() {
+        return AuthSourceType.CLIENT_CERT;
+    }
+
     @RequiredArgsConstructor
     @Getter
     @EqualsAndHashCode
@@ -41,7 +46,7 @@ public class X509AuthSource implements AuthSource {
         private final String userId;
         private final Date creation;
         private final Date expiration;
-        private final Source source;
+        private final Origin origin;
         private final String publicKey;
         private final String distinguishedName;
 
