@@ -61,6 +61,9 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Dump jacoco result
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address localhost --port 6300 --destfile ./results/test.exec
             -   name: Store results
                 uses: actions/upload-artifact@v3
                 if: always()
@@ -68,7 +71,7 @@ jobs:
                     name: ContainerCITests
                     path: |
                         integration-tests/build/reports/**
-                        /results/test.exec
+                        results/test.exec
 
             -   uses: ./.github/actions/teardown
 
