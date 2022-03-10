@@ -988,12 +988,13 @@ jobs:
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsWithInfinispan
                     path: |
                         integration-tests/build/reports/**
+                        /results/**
 
             -   uses: ./.github/actions/teardown
 
