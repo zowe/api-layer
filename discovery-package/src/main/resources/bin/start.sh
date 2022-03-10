@@ -83,7 +83,7 @@ fi
 # fi
 
 # how to verifyCertificates
-verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | upper_case)
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
   verifySslCertificatesOfServices=false
   nonStrictVerifySslCertificatesOfServices=false
