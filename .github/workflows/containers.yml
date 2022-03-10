@@ -62,6 +62,7 @@ jobs:
                     ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Dump jacoco result
+                if: always()
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address localhost --port 6300 --destfile ./results/test.exec
             -   name: Store results
@@ -110,6 +111,10 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Dump jacoco result
+                if: always()
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address localhost --port 6300 --destfile ./results/test.exec
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -931,7 +936,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
                     - /api-defs:/api-defs
-                    - /results/api-catalog:/results
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
@@ -943,8 +947,6 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
-                volumes:
-                    - /results/caching-service:/results
 
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
@@ -957,27 +959,19 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
-                volumes:
-                    - /results/caching-service-2:/results
 
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /results/discoverable-client:/results
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /results:/results
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
-                volumes:
-                    - /results:/results
 
         steps:
             -   uses: actions/checkout@v2
@@ -997,7 +991,7 @@ jobs:
                     name: CITestsWithInfinispan
                     path: |
                         integration-tests/build/reports/**
-                        /results/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
