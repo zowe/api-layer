@@ -9,9 +9,18 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Applications;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
@@ -19,16 +28,6 @@ import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 import org.zowe.apiml.apicatalog.services.status.event.model.ContainerStatusChangeEvent;
 import org.zowe.apiml.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Applications;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,8 +105,10 @@ public class APIServiceStatusService {
             //Remove external stylesheet
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
             return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
-        } catch (NullPointerException | ApiDocNotFoundException e) {
-            throw new ApiDiffNotAvailableException(String.format("No Diff available for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2));
+        } catch (Exception e) {
+            String errorMessage = String.format("Error retrieving API diff for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2);
+            log.debug("{}. Cause: {}", errorMessage, e.getMessage());
+            throw new ApiDiffNotAvailableException(errorMessage);
         }
     }
 
