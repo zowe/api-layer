@@ -14,6 +14,7 @@ import com.netflix.zuul.context.RequestContext;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -106,6 +107,11 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         } catch (TokenNotValidException | TokenExpireException e) {
             throw new SafIdtException("Unable to parse Identity Token", e);
         }
+    }
+
+
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
     }
 
     @RequiredArgsConstructor

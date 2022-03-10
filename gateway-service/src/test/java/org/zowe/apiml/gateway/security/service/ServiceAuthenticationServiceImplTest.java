@@ -35,10 +35,10 @@ import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.sql.Date;

@@ -27,6 +27,7 @@ import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.util.List;
@@ -63,6 +64,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
+    private final AuthSourceService authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 

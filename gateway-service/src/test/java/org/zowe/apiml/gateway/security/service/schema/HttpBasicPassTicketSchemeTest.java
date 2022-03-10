@@ -107,31 +107,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
-        PassTicketService passTicketService = mock(PassTicketService.class);
-        AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
-
-        Calendar calendar = Calendar.getInstance();
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
-        AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
-        HttpRequest httpRequest = new HttpGet("/test/request");
-
-        RequestContext requestContext = new RequestContext();
-        RequestContext.testSetCurrentContext(requestContext);
-
-        doReturn("HI").when(passTicketService).generate(ArgumentMatchers.any(), ArgumentMatchers.any());
-
-        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
-        ac.applyToRequest(httpRequest);
-        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION).length, is(not(0)));
-        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION), hasItemInArray(hasToString(
-            "Authorization: Basic VVNFUk5BTUU6SEk=" // USERNAME:HI
-        )));
-    }
-
-    @Test
     void returnsCorrectScheme() {
         assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, httpBasicPassTicketScheme.getScheme());
     }
