@@ -124,10 +124,11 @@ class ApiServiceStatusServiceTest {
 
     @Test
     void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
-        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new NullPointerException());
-        assertThrows(ApiDiffNotAvailableException.class, () ->
+        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new RuntimeException());
+        Exception ex = assertThrows(ApiDiffNotAvailableException.class, () ->
             apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")
         );
+        assertEquals("Error retrieving API diff for service and versions v1 and v2", ex.getMessage());
     }
 
     @Test

@@ -106,8 +106,10 @@ public class APIServiceStatusService {
             //Remove external stylesheet
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
             return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
-        } catch (NullPointerException | ApiDocNotFoundException e) {
-            throw new ApiDiffNotAvailableException(String.format("No Diff available for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2));
+        } catch (Exception e) {
+            String errorMessage = String.format("Error retrieving API diff for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2);
+            log.debug("{}. Cause: {}", errorMessage, e.getMessage());
+            throw new ApiDiffNotAvailableException(errorMessage);
         }
     }
 
