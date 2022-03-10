@@ -64,7 +64,7 @@ jobs:
             -   name: Dump jacoco result
                 if: always()
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address localhost --port 6300 --destfile ./results/test.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/test.exec
             -   name: Store results
                 uses: actions/upload-artifact@v3
                 if: always()
@@ -116,7 +116,7 @@ jobs:
             -   name: Dump jacoco result
                 if: always()
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address localhost --port 6300 --destfile ./results/test.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/test.exec
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
