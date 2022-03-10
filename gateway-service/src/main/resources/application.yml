@@ -40,6 +40,10 @@ apiml:
         preferIpAddress: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
 
+    httpclient:
+        conn-pool:
+            requestConnectionTimeout: ${apiml.gateway.timeoutMillis}
+
     catalog:
         serviceId: apicatalog
     metrics:
@@ -131,8 +135,10 @@ zuul:
     semaphore:
         maxSemaphores: ${server.maxTotalConnections}
     ignoredPatterns:
-        - /**/ws/**
-        - /**/sse/**
+        - /ws/**
+        - /*/ws/**
+        - /sse/**
+        - /*/sse/**
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}

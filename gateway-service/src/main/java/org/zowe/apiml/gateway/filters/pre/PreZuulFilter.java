@@ -9,11 +9,13 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.ZuulFilter;
 
-public class RequestContextProviderThreadLocal implements RequestContextProvider {
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
+
+public abstract class PreZuulFilter extends ZuulFilter {
     @Override
-    public RequestContext context() {
-        return RequestContext.getCurrentContext();
+    public String filterType() {
+        return PRE_TYPE;
     }
 }

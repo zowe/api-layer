@@ -62,7 +62,7 @@ class ServiceErrorCheckTest {
         assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.common.endPointNotFound",
-            MessageType.ERROR, "ZWEAM104E", "The endpoint you are looking for 'serviceId' could not be located")));
+            MessageType.ERROR, "ZWEAM104E", "The endpoint you are looking for 'serviceId' could not be located", "Verify that the URL of the endpoint you are trying to reach is correct.", "The endpoint you are looking for could not be located.")));
     }
 
     @Test
@@ -77,6 +77,6 @@ class ServiceErrorCheckTest {
         assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.serviceUnavailable",
-            MessageType.ERROR, "ZWEAG709E", "Service is not available at URL 'null'. Error returned: 'null'")));
+            MessageType.ERROR, "ZWEAG709E", "Service is not available at URL 'null'. Error returned: 'null'", "Make sure that the service is running and is accessible by the URL provided in the message.", "The service is not available.")));
     }
 }

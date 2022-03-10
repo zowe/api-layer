@@ -129,7 +129,7 @@ public class InstanceInitializeService {
             String productFamilyId = instanceInfo.getMetadata().get(CATALOG_ID);
             if (productFamilyId != null) {
                 log.debug("Initialising product family (creating tile for) : " + productFamilyId);
-                cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
+                cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
             }
 
         });
@@ -139,7 +139,7 @@ public class InstanceInitializeService {
         String productFamilyId = apiCatalogInstance.getMetadata().get(CATALOG_ID);
         if (productFamilyId != null) {
             log.debug("Initialising product family (creating tile for) : " + productFamilyId);
-            cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance);
+            cachedProductFamilyService.saveContainerFromInstance(productFamilyId, apiCatalogInstance);
         }
 
         updateCacheWithAllInstances();

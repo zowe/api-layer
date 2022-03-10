@@ -16,29 +16,27 @@ import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 class ServiceNotFoundFilterTest {
     private ZuulFilter underTest;
-    private RequestContextProvider provider;
+    private RequestContext context;
 
     @BeforeEach
     public void prepareFilterUnderTest() {
-        provider = Mockito.mock(RequestContextProvider.class);
-        underTest = new ServiceNotFoundFilter(provider);
+        context = RequestContext.getCurrentContext();
+        context.clear();
+
+        underTest = new ServiceNotFoundFilter();
         MonitoringHelper.initMocks();
     }
 
     @Test
     void givenThereIsNoServiceId_whenTheUserRequestsThePath_then404IsProperlyReturned() {
-        when(provider.context()).thenReturn(new RequestContext());
-
         Boolean ignoreThisFilter = underTest.shouldFilter();
         assertThat(ignoreThisFilter, is(true));
 
@@ -50,9 +48,7 @@ class ServiceNotFoundFilterTest {
 
     @Test
     void givenThereIsValidServiceId_whenTheUserRequestsThePath_thenThisFilterIsIgnored() {
-        RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "validServiceId");
-        when(provider.context()).thenReturn(context);
 
         Boolean ignoreThisFilter = underTest.shouldFilter();
         assertThat(ignoreThisFilter, is(false));

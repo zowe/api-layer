@@ -14,6 +14,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
@@ -30,9 +31,10 @@ import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationSche
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -69,7 +71,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
-    private final AuthenticationService authenticationService;
+    private final AuthSourceService authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
@@ -77,22 +79,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
     }
 
-    /**
-     * This method is only for testing purpose, to be set authenticationService in inner classes
-     *
-     * @return reference for AuthenticationService
-     */
-    protected AuthenticationService getAuthenticationService() {
-        return authenticationService;
-    }
-
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
-        if (jwtToken == null) return scheme.createCommand(authentication, () -> null);
-        return scheme.createCommand(authentication, () -> authenticationService.parseJwtToken(jwtToken));
+        return scheme.createCommand(authentication, authSource);
     }
 
     @Override
@@ -103,7 +95,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, AuthSource authSource) {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
@@ -125,7 +117,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         // if no instance exist or no metadata found, do nothing
         if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
 
-        return getAuthenticationCommand(found, jwtToken);
+        return getAuthenticationCommand(found, authSource);
     }
 
     @Override
@@ -159,19 +151,17 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             if (instanceInfo == null) throw new NullPointerException("Argument instanceInfo is required");
 
             final Authentication auth = getAuthentication(instanceInfo);
-            final RequestContext requestContext = RequestContext.getCurrentContext();
-            final HttpServletRequest request = requestContext.getRequest();
 
             AuthenticationCommand cmd = null;
 
             boolean rejected = false;
             try {
-                final String jwtToken = getAuthenticationService().getJwtTokenFromRequest(request).orElse(null);
-                cmd = getAuthenticationCommand(auth, jwtToken);
+                final Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
+                cmd = getAuthenticationCommand(auth, authSource.orElse(null));
 
-                // if authentication schema required valid JWT, check it
-                if (cmd.isRequiredValidJwt()) {
-                    rejected = (jwtToken == null) || !authenticationService.validateJwtToken(jwtToken).isAuthenticated();
+                // if authentication schema required valid authentication source, check it
+                if (cmd.isRequiredValidSource()) {
+                    rejected = (!authSource.isPresent()) || !authSourceService.isValid(authSource.get());
                 }
 
             } catch (AuthenticationException ae) {
@@ -184,17 +174,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
             cmd.apply(null);
         }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidJwt() {
-            return false;
-        }
-
     }
 
     public class LoadBalancerAuthenticationCommand extends AuthenticationCommand {
@@ -210,17 +189,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         public void apply(InstanceInfo instanceInfo) {
             RequestContext.getCurrentContext().put(AUTHENTICATION_COMMAND_KEY, universal);
         }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidJwt() {
-            return false;
-        }
-
     }
 
 }

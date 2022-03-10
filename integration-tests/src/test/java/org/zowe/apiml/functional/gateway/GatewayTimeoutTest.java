@@ -9,9 +9,11 @@
  */
 package org.zowe.apiml.functional.gateway;
 
+import io.restassured.RestAssured;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.apache.http.message.BasicNameValuePair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,21 +36,27 @@ class GatewayTimeoutTest implements TestWithStartedInstances {
     private static final int SECOND = 1000;
     private static final int DEFAULT_TIMEOUT = 30 * SECOND;
 
+    @BeforeEach
+    void setUp() {
+        RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    }
+
     @Nested
     class GivenRequestTakesTooLong {
         @Nested
         class WhenCallingThroughGateway {
             @Test
             void returnGatewayTimeout() {
-                assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT + (5 * SECOND)), () -> {
+                assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 6 + (2 * SECOND)), () -> {
                     given()
-                    .when()
+                        .when()
                         .get(getUriFromGateway(API_V1_GREETING_URI,
-                            Collections.singletonList(
-                                new BasicNameValuePair("delayMs", String.valueOf(DEFAULT_TIMEOUT + SECOND)))
+                                Collections.singletonList(
+                                    new BasicNameValuePair("delayMs", String.valueOf(DEFAULT_TIMEOUT + SECOND)))
                             )
                         )
-                    .then()
+                        .then()
                         .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
                 });
             }

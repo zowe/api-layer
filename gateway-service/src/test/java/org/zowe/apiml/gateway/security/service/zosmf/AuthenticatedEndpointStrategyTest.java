@@ -18,7 +18,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,14 +30,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthenticatedEndpointStrategyTest {
 
-    private ZosmfService zosmfServiceMock = mock(ZosmfService.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
     private static final String ENDPOINT = "/mamma/mia";
     private AuthenticatedEndpointStrategy underTest = new AuthenticatedEndpointStrategy(restTemplate, ENDPOINT, HttpMethod.POST);
     private TokenValidationRequest dummyRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT, "TOKN", "zosmfurl", null);
 
     @Test
-    void canBeConstructedForSpecificEndpoint() throws URISyntaxException {
+    void canBeConstructedForSpecificEndpoint() {
         ResponseEntity re = mock(ResponseEntity.class);
         doReturn(HttpStatus.OK).when(re).getStatusCode();
         doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
