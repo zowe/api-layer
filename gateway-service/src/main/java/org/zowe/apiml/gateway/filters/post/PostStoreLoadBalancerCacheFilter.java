@@ -47,29 +47,19 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-        return true;
+        Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
+        return instance.isPresent() &&
+            metadataExists(instance.get()) &&
+            lbTypeIsAuthentication(instance.get()) &&
+            instance.get().getInstanceId() != null;
     }
 
     @Override
     @SuppressWarnings("squid:S3516") // We always have to return null
     public Object run() {
         Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
-        if (!instance.isPresent()) {
-            return null;
-        }
 
-        InstanceInfo selectedInstance = instance.get();
-        Map<String, String> metadata = selectedInstance.getMetadata();
-        if (metadata == null) {
-            return null;
-        }
-        String lbType = metadata.get("apiml.lb.type");
-        if (lbType == null
-            || !lbType.equals("authentication")
-            || selectedInstance.getInstanceId() == null
-        ) {
-            return null;
-        }
+        if (!instance.isPresent()) return null;
 
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
@@ -86,5 +76,16 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         }
 
         return null;
+    }
+
+    private boolean metadataExists(InstanceInfo selectedInstance) {
+        Map<String, String> metadata = selectedInstance.getMetadata();
+        return metadata != null;
+    }
+
+    private boolean lbTypeIsAuthentication(InstanceInfo selectedInstance) {
+        Map<String, String> metadata = selectedInstance.getMetadata();
+        String lbType = metadata.get("apiml.lb.type");
+        return lbType != null && lbType.equals("authentication");
     }
 }
