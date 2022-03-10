@@ -68,6 +68,7 @@ jobs:
                     name: ContainerCITests
                     path: |
                         integration-tests/build/reports/**
+                        /results/test.exec
 
             -   uses: ./.github/actions/teardown
 
@@ -113,6 +114,7 @@ jobs:
                     name: ContainerCITestsRegistration
                     path: |
                         integration-tests/build/reports/**
+                        /results/test.exec
 
             -   uses: ./.github/actions/teardown
 

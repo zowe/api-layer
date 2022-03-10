@@ -6,7 +6,7 @@ def setJib(componentName, debugPort) {
     jib.to.auth.username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
     jib.to.auth.password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
     jib.container.args = ['--spring.config.additional-location=file:/docker/' + componentName + '.yml', '--spring.profiles.include=dev,debug']
-    jib.container.jvmFlags = project.hasProperty("zowe.docker.debug") ? ['-javaagent:scripts/jacocoagent.jar=destfile=/results/test.exec', '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort]: ['-javaagent:scripts/jacocoagent.jar=destfile=/results/test.exec']
+    jib.container.jvmFlags = project.hasProperty("zowe.docker.debug") ? ['-javaagent:/jacocoagent.jar=destfile=/results/test.exec', '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort]: ['-javaagent:/jacocoagent.jar=destfile=/results/test.exec']
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
 }
 
