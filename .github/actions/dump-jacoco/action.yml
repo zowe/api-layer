@@ -1,0 +1,13 @@
+name: "Dump jacoco result action"
+description: "Dump and store code coverage for all core services from jacoco agent running in containers"
+
+runs:
+    using: "composite"
+    steps:
+        -   name: Dump jacoco result
+            shell: bash
+            run: |
+                java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/test.exec
+                java -jar ./scripts/jacococli.jar dump --address caching-service --port 6300 --destfile ./results/test.exec
+                java -jar ./scripts/jacococli.jar dump --address discovery-service --port 6300 --destfile ./results/test.exec
+                java -jar ./scripts/jacococli.jar dump --address api-catalog-services --port 6300 --destfile ./results/test.exec

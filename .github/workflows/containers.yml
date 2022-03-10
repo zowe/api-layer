@@ -61,10 +61,9 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Dump jacoco result
+            -   uses: ./.github/actions/dump-jacoco
                 if: always()
-                run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/test.exec
+
             -   name: Store results
                 uses: actions/upload-artifact@v3
                 if: always()
@@ -113,10 +112,9 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Dump jacoco result
+            -   uses: ./.github/actions/dump-jacoco
                 if: always()
-                run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/test.exec
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
