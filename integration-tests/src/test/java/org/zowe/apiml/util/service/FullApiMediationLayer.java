@@ -69,7 +69,11 @@ public class FullApiMediationLayer {
     }
 
     private void prepareGateway() {
-        gatewayService = new RunningService("gateway", "gateway-service/build/libs", null, null);
+        Map<String, String> before = new HashMap<>();
+        if (attlsEnabled) {
+            before.put("-Dloader.path", "mock-zos/build/libs/mock-zos-1.27.6-SNAPSHOT.jar");
+        }
+        gatewayService = new RunningService("gateway", "gateway-service/build/libs", before, null);
     }
 
     private void prepareCatalog() {
