@@ -60,21 +60,14 @@ class ApiServiceStatusServiceTest {
     private APIServiceStatusService apiServiceStatusService;
 
     @Test
-    void getCachedApplicationState() {
+    void givenCachedServices_whenGetCachedApplicationsState_thenReturnState() {
         when(cachedServicesService.getAllCachedServices()).thenReturn(new Applications());
         ResponseEntity<Applications> responseEntity = apiServiceStatusService.getCachedApplicationStateResponse();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    void addFirstContainer() {
-        when(cachedServicesService.getAllCachedServices()).thenReturn(new Applications());
-        ResponseEntity<Applications> responseEntity = apiServiceStatusService.getCachedApplicationStateResponse();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
-
-    @Test
-    void testGetContainerStatusAsEvents() {
+    void givenContainers_whenGetContainersStateEvents_thenReturnEvents() {
         List<APIContainer> containers = new ArrayList<>(createContainers());
         when(cachedProductFamilyService.getAllContainers()).thenReturn(containers);
         doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
@@ -102,7 +95,7 @@ class ApiServiceStatusServiceTest {
     }
 
     @Test
-    void testGetCachedApiDocInfoForService() {
+    void givenApiDoc_whenGetCachedApiDocForService_thenSuccessfulResponse() {
         String apiDoc = "this is the api doc";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
@@ -112,7 +105,7 @@ class ApiServiceStatusServiceTest {
     }
 
     @Test
-    void testGetCachedApiDiffForService() {
+    void givenCachedApiDoc_whenGetApiDiff_thenReturnsApiDiff() {
         String apiDoc = "{}";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
@@ -132,7 +125,7 @@ class ApiServiceStatusServiceTest {
     }
 
     @Test
-    void testGetRecentlyChangedEvents() {
+    void givenUpdatedContainers_whenGetRecentlyUpdatedContainers_thenUpdatedContainersAreReturned() {
         List<APIContainer> containers = createContainers();
         when(cachedProductFamilyService.getRecentlyUpdatedContainers()).thenReturn(containers);
         doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
