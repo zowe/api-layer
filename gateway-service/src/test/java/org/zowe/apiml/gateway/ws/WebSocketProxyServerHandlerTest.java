@@ -16,7 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -24,7 +25,6 @@ import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,24 +37,24 @@ import static org.mockito.Mockito.*;
 
 class WebSocketProxyServerHandlerTest {
     private WebSocketProxyServerHandler underTest;
-    private DiscoveryClient discoveryClient;
     private WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
     private Map<String, WebSocketRoutedSession> routedSessions;
+    private LoadBalancerClient lbClient;
 
     @BeforeEach
     public void setup() {
-        discoveryClient = mock(DiscoveryClient.class);
         routedSessions = new HashMap<>();
         webSocketRoutedSessionFactory = mock(WebSocketRoutedSessionFactory.class);
+        lbClient = mock(LoadBalancerClient.class);
 
         underTest = new WebSocketProxyServerHandler(
-            discoveryClient,
             mock(WebSocketClientFactory.class),
             routedSessions,
-            webSocketRoutedSessionFactory
+            webSocketRoutedSessionFactory,
+            lbClient
         );
+        ReflectionTestUtils.setField(underTest, "meAsProxy", underTest);
     }
-
 
 
     private ServiceInstance validServiceInstance() {
@@ -85,7 +85,6 @@ class WebSocketProxyServerHandlerTest {
                 when(routesForSpecificValidService.findServiceByGatewayUrl("ws/v1"))
                     .thenReturn(new RoutedService("ws-v1", "ws/v1", "/valid-service/ws/v1"));
                 ServiceInstance foundService = validServiceInstance();
-                when(discoveryClient.getInstances(serviceId)).thenReturn(Collections.singletonList(foundService));
 
                 underTest.addRoutedServices(serviceId, routesForSpecificValidService);
             }
@@ -104,7 +103,8 @@ class WebSocketProxyServerHandlerTest {
             @ValueSource(strings = {"wss://gatewayHost:1443/valid-service/ws/v1/valid-path", "wss://gatewayHost:1443/ws/v1/valid-service/valid-path"})
             void givenValidRoute(String path) throws Exception {
                 when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(mock(WebSocketRoutedSession.class));
-
+                ServiceInstance serviceInstance = mock(ServiceInstance.class);
+                when(lbClient.choose(any())).thenReturn(serviceInstance);
                 String establishedSessionId = "validAndUniqueId";
                 when(establishedSession.getId()).thenReturn(establishedSessionId);
                 when(establishedSession.getUri()).thenReturn(new URI(path));
@@ -173,7 +173,7 @@ class WebSocketProxyServerHandlerTest {
             @Test
             void givenNoInstanceOfTheServiceIsInTheRepository() throws Exception {
                 when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/service-without-instance/ws/v1/valid-path"));
-
+                when(lbClient.choose(any())).thenReturn(null);
                 RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
                 when(routesForSpecificValidService.findServiceByGatewayUrl("ws/v1"))
                     .thenReturn(new RoutedService("api-v1", "api/v1", "/api-v1/api/v1"));

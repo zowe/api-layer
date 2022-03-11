@@ -31,6 +31,9 @@
     },
     "devDependencies": {
         "axios-mock-adapter": "1.20.0",
+        "body-parser": "1.19.2",
+        "cors": "2.8.5",
+        "cross-env": "7.0.3",
         "cypress": "7.4.0",
         "enzyme": "3.11.0",
         "eslint-config-airbnb": "16.1.0",
@@ -41,17 +44,21 @@
         "eslint-plugin-jsx-a11y": "6.1.2",
         "eslint-plugin-prettier": "3.4.0",
         "eslint-plugin-react": "7.23.2",
+        "express": "4.17.3",
         "jest": "26.6.0",
         "jest-enzyme": "7.1.2",
         "jest-html-reporter": "3.4.0",
         "jest-mock": "26.6.2",
+        "nodemon": "2.0.15",
         "prettier": "2.3.0"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
         "build": "react-scripts build",
         "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --silent",
-        "start": "react-scripts start",
+        "start": "cross-env HTTPS=true react-scripts start",
+        "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
+        "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
         "cy:open": "cypress open",
         "cy:e2e": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless"
     },

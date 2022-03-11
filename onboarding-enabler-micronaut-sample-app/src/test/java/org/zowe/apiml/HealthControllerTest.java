@@ -13,7 +13,7 @@ package org.zowe.apiml;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.http.HttpRequest;
-import io.micronaut.http.client.RxHttpClient;
+import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class HealthControllerTest {
 
     @Inject
     @Client("/micronautdiscoverableclient/application")
-    RxHttpClient client;
+    HttpClient client;
 
     @Test
     void testHealth() throws JsonProcessingException {

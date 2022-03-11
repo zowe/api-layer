@@ -19,9 +19,9 @@ runs:
         -   name: Set gradle.properties version
             # images publish with the version in gradle.properties
             # if a version is provided, use that version to publish, else use value in gradle.properties
-            if: ${{ inputs.imageVersion != '' }}
+            if: ${{ inputs.versionOverride != '' }}
             shell: bash
-            run: sed -i 's/version=.*/version=${{ inputs.imageVersion }}/g' gradle.properties
+            run: sed -i 's/version=.*/version=${{ inputs.versionOverride }}/g' gradle.properties
 
         -   id: output-version
             shell: bash

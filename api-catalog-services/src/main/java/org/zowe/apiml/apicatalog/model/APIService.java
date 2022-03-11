@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +68,8 @@ public class APIService implements Serializable {
 
     @ApiModelProperty(notes = "The Gateway URLs used within this service")
     private Map<String, String> gatewayUrls;
+
+    private List<String> instances = new ArrayList<>();
 
     private APIService(String serviceId) {
         this.serviceId = serviceId;
@@ -132,6 +135,11 @@ public class APIService implements Serializable {
 
         public Builder gatewayUrls(Map<String, String> gatewayUrls) {
             apiService.gatewayUrls = gatewayUrls;
+            return this;
+        }
+
+        public Builder instanceId(String id) {
+            apiService.instances.add(id);
             return this;
         }
 

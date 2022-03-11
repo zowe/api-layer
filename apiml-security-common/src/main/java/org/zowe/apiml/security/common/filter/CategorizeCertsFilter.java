@@ -9,11 +9,14 @@
  */
 package org.zowe.apiml.security.common.filter;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -25,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class ApimlX509Filter extends X509AuthenticationFilter {
+public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
     private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
@@ -54,19 +57,17 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
     }
 
     /**
-     * ApimlX509AuthenticationFilter override methods {@link X509AuthenticationFilter#doFilter(ServletRequest, ServletResponse, FilterChain)}.
      * This filter removes all certificates in attribute "javax.servlet.request.X509Certificate" which has no relations
      * with private certificate of apiml and then call original implementation (without "foreign" certificates)
      *
      * @param request  request to process
      * @param response response of call
-     * @param chain    chain of filters to evaluate
+     * @param filterChain    chain of filters to evaluate
      **/
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-            categorizeCerts(request);
-        super.doFilter(request, response, chain);
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        categorizeCerts(request);
+        filterChain.doFilter(request, response);
     }
 
     private X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
