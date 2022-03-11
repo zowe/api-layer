@@ -61,7 +61,6 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/discovery-service:2
 # start container
 docker run -it --rm -p 7553:7553 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -v $(pwd)/keystore:/home/zowe/keystore \
     -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
@@ -95,7 +94,6 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:2
 # start container
 docker run -it --rm -p 7552:7552 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -v $(pwd)/keystore:/home/zowe/keystore \
     -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
@@ -128,7 +126,6 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/caching-service:2
 # start container
 docker run -it --rm -p 7555:7555 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -v $(pwd)/keystore:/home/zowe/keystore \
     -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
@@ -159,7 +156,6 @@ Example commands:
 docker pull zowe-docker-release.jfrog.io/ompzowe/metrics-service:2
 # start container
 docker run -it --rm -p 7551:7551 \
-    -v $(pwd)/keystore:/home/zowe/keystore \
     -v $(pwd)/keystore:/home/zowe/keystore \
     -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
