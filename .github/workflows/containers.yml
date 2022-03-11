@@ -112,8 +112,6 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   uses: ./.github/actions/dump-jacoco
-                if: always()
 
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -122,7 +120,6 @@ jobs:
                     name: ContainerCITestsRegistration
                     path: |
                         integration-tests/build/reports/**
-                        /results/test.exec
 
             -   uses: ./.github/actions/teardown
 
@@ -163,13 +160,18 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsZosmfRsu2012
                     path: |
                         integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -412,14 +414,18 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsWithRedis
                     path: |
                         integration-tests/build/reports/**
-
+                        results/**
             -   uses: ./.github/actions/teardown
 
     CITestsWithRedisWithoutSslVerification:
@@ -984,6 +990,10 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v3
                 if: always()
@@ -996,7 +1006,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests]
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis]
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1013,10 +1023,22 @@ jobs:
                 with:
                     name: ContainerCITests
                     path: containercitests
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CITestsWithInfinispan
+                    path: citestswithinfinispan
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsZosmfRsu2012
+                    path: containercitestszosmfrsu2012
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsWithRedis
+                    path: containercitestswithredis
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:

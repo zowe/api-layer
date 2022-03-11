@@ -63,14 +63,16 @@ task jacocoFullReport(type: JacocoReport) {
     )
 
     if(System.getProperty("results")) {
-        def names = []
-        fileTree(System.getProperty("results")).visit { FileVisitDetails details ->
-            names << details.file.path
-        }
+        for(dir in System.getProperty("results").split(",")){
+            def names = []
+            fileTree(dir).visit { FileVisitDetails details ->
+                names << details.file.path
+            }
 
-        getExecutionData().from(
-            files(names)
-        )
+            getExecutionData().from(
+                files(names)
+            )
+        }
     }
 
 
