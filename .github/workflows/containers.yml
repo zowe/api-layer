@@ -71,7 +71,7 @@ jobs:
                     name: ContainerCITests
                     path: |
                         integration-tests/build/reports/**
-                        results/test.exec
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
