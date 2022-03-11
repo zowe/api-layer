@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 /**
  * Basic implementation of AuthSourceService interface which uses client certificate as an authentication source.
@@ -52,7 +53,13 @@ public abstract class AbstractX509AuthSourceService implements AuthSourceService
     public boolean isValid(AuthSource authSource, X509AbstractMapper mapper) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate clientCert = (X509Certificate)authSource.getRawSource();
-            return  clientCert != null && mapper.isClientAuthCertificate(clientCert);
+            if (clientCert == null) {
+                return false;
+            }
+            if (!mapper.isClientAuthCertificate(clientCert)) {
+                throw new InvalidCertificateException("X509 certificate does contain the client certificate extended usage definition.");
+            }
+            return true;
         }
         return false;
     }
@@ -79,14 +86,7 @@ public abstract class AbstractX509AuthSourceService implements AuthSourceService
     // Gets client certificate from request
     private X509Certificate getCertificateFromRequest(HttpServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
-        X509Certificate clientCert = getOne(certs);
-        // TODO: remove the attempt to get client certificate from "javax.servlet.request.X509Certificate" attribute
-        // once filtering of the certificates is implemented
-        if (clientCert == null) {
-            certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-            return getOne(certs);
-        }
-        return clientCert;
+        return getOne(certs);
     }
 
     private X509Certificate getOne(X509Certificate[] certs) {

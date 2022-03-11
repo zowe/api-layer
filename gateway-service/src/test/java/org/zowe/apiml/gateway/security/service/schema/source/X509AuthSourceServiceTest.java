@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -37,6 +38,7 @@ import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 @ExtendWith(MockitoExtension.class)
 class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
@@ -63,27 +65,22 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             serviceUnderTest.setMapper(mapper);
         }
 
-        @Test
-        void givenClientCertInRequest_thenAuthSourceIsPresent() {
-            givenClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
-        }
-
-        @Test
-        void givenNoClientCertInRequest_thenAuthSourceIsNotPresent() {
-            givenNoClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
-        }
-
         @Nested
         class GivenNullAuthSource {
             @Test
-            void whenIsValid_thenFalse() {
+            void whenNoClientCertInRequest_thenAuthSourceIsNotPresent() {
+                givenNoClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
+            }
+
+            @Test
+            void whenValidate_thenFalse() {
                 Assertions.assertFalse(serviceUnderTest.isValid(null));
                 verifyNoInteractions(mapper);
             }
 
             @Test
             void whenParse_thenNull() {
-                Assertions.assertNull(serviceUnderTest.parse(null));
+                assertNull(serviceUnderTest.parse(null));
                 verifyNoInteractions(mapper);
             }
         }
@@ -91,7 +88,12 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         @Nested
         class GivenValidAuthSource {
             @Test
-            void whenIsValid_thenCorrect() {
+            void whenClientCertInRequest_thenAuthSourceIsPresent() {
+                givenClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
+            }
+
+            @Test
+            void whenValidate_thenCorrect() {
                 when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(true);
                 Assertions.assertTrue(serviceUnderTest.isValid(new X509AuthSource(x509Certificate)));
             }
@@ -110,21 +112,37 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             }
 
             @Test
-            void whenIsValid_thenFalse() {
-                when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(false);
-                Assertions.assertFalse(serviceUnderTest.isValid(new X509AuthSource(x509Certificate)));
+            void whenAuthenticationServiceException_thenThrowWhenValidate() {
+                AuthSource authSource = new X509AuthSource(x509Certificate);
+                when(mapper.isClientAuthCertificate(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
+                assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.isValid(authSource));
+                verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
             }
 
             @Test
             void whenUnknownAuthSource_thenParsedIsNull() {
-                Assertions.assertNull(serviceUnderTest.parse(new JwtAuthSource("")));
+                assertNull(serviceUnderTest.parse(new JwtAuthSource("")));
                 verifyNoInteractions(mapper);
             }
-        }
 
-        @Test
-        void givenAuthenticationServiceException_thenThrowWhenParse() {
-            givenAuthenticationServiceException_testParse(serviceUnderTest, mapper);
+            @Test
+            void whenAuthenticationServiceException_thenThrowWhenParse() {
+                AuthSource authSource = new X509AuthSource(x509Certificate);
+                when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
+                assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.parse(authSource));
+                verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+            }
+
+            @Nested
+            class WhenNotAClientCertificate {
+                @Test
+                void thenThrowWhenValidate() {
+                    AuthSource authSource = new X509AuthSource(x509Certificate);
+                    when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(false);
+                    assertThrows(InvalidCertificateException.class, () -> serviceUnderTest.isValid(authSource));
+                    verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
+                }
+            }
         }
     }
 
@@ -140,27 +158,22 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             serviceUnderTest = new X509MFAuthSourceService(mapper);
         }
 
-        @Test
-        void givenClientCertInRequest_thenAuthSourceIsPresent() {
-            givenClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
-        }
-
-        @Test
-        void givenNoClientCertInRequest_thenAuthSourceIsNotPresent() {
-            givenNoClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
-        }
-
         @Nested
         class GivenNullAuthSource {
             @Test
-            void whenIsValid_thenFalse() {
+            void whenNoClientCertInRequest_thenAuthSourceIsNotPresent() {
+                givenNoClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
+            }
+
+            @Test
+            void whenValidate_thenFalse() {
                 Assertions.assertFalse(serviceUnderTest.isValid(null));
                 verifyNoInteractions(mapper);
             }
 
             @Test
             void whenParse_thenNull() {
-                Assertions.assertNull(serviceUnderTest.parse(null));
+                assertNull(serviceUnderTest.parse(null));
                 verifyNoInteractions(mapper);
             }
         }
@@ -168,7 +181,12 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         @Nested
         class GivenValidAuthSource {
             @Test
-            void whenIsValid_thenCorrect() {
+            void whenClientCertInRequest_thenAuthSourceIsPresent() {
+                givenClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
+            }
+
+            @Test
+            void whenValidate_thenCorrect() {
                 when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(true);
                 Assertions.assertTrue(serviceUnderTest.isValid(new X509AuthSource(x509Certificate)));
             }
@@ -187,21 +205,37 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             }
 
             @Test
-            void whenIsValid_thenFalse() {
-                when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(false);
-                Assertions.assertFalse(serviceUnderTest.isValid(new X509AuthSource(x509Certificate)));
+            void whenAuthenticationServiceException_thenThrowWhenValidate() {
+                AuthSource authSource = new X509AuthSource(x509Certificate);
+                when(mapper.isClientAuthCertificate(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
+                assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.isValid(authSource));
+                verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
             }
 
             @Test
             void whenUnknownAuthSource_thenParsedIsNull() {
-                Assertions.assertNull(serviceUnderTest.parse(new JwtAuthSource("")));
+                assertNull(serviceUnderTest.parse(new JwtAuthSource("")));
                 verifyNoInteractions(mapper);
             }
-        }
 
-        @Test
-        void givenAuthenticationServiceException_thenThrowWhenParse() {
-            givenAuthenticationServiceException_testParse(serviceUnderTest, mapper);
+            @Test
+            void whenAuthenticationServiceException_thenThrowWhenParse() {
+                AuthSource authSource = new X509AuthSource(x509Certificate);
+                when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
+                assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.parse(authSource));
+                verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+            }
+
+            @Nested
+            class WhenNotAClientCertificate {
+                @Test
+                void thenThrowWhenValidate() {
+                    AuthSource authSource = new X509AuthSource(x509Certificate);
+                    when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(false);
+                    assertThrows(InvalidCertificateException.class, () -> serviceUnderTest.isValid(authSource));
+                    verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
+                }
+            }
         }
     }
 
@@ -250,13 +284,5 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
         Assertions.assertNotNull(parsedSource);
         Assertions.assertEquals(expectedParsedSource, parsedSource);
-    }
-
-    private void givenAuthenticationServiceException_testParse(AuthSourceService serviceUnderTest, X509AbstractMapper mapper) {
-        X509AuthSource authSource = new X509AuthSource(x509Certificate);
-        when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
-
-        assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.parse(authSource));
-        verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
     }
 }
