@@ -1016,7 +1016,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="/__w/api-layer/api-layer/containercitests/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
