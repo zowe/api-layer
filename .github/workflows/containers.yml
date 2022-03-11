@@ -998,7 +998,6 @@ jobs:
     PublishResults:
         needs: [CITests]
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         steps:
