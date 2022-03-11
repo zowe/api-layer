@@ -62,6 +62,15 @@ task jacocoFullReport(type: JacocoReport) {
         files(jacocoProjects.jacocoTestReport.executionData)
     )
 
+    def names = []
+    fileTree(System.getProperty("results")).visit { FileVisitDetails details ->
+        names << details.file.path
+    }
+
+    getExecutionData().from(
+        files(names)
+    )
+
     reports {
         html.enabled = true
         xml.enabled = true
