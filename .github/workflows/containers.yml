@@ -76,7 +76,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests, CITestsRegistration, CITestsZosmfRsu2012, CITestsZosmfPH34201, CITestsZosmfWithoutJwt, CITestsZosmfWithoutJwtWithAuthenticateEndpoint, CITestsInternalPort, CITestsWithRedis, CITestsWithRedisWithoutSslVerification, CITestsHA, HALoadBalancing, CITestsDiscoveryChaoticHA, CITestsGatewayChaoticHA, CITestsDicoverableClientChaoticHA, CITestsWebSocketChaoticHA, CITestsWithInfinispan]
+        needs: [CITests]
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 15
