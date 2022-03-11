@@ -62,14 +62,17 @@ task jacocoFullReport(type: JacocoReport) {
         files(jacocoProjects.jacocoTestReport.executionData)
     )
 
-    def names = []
-    fileTree(System.getProperty("results")).visit { FileVisitDetails details ->
-        names << details.file.path
+    if(System.getProperty("results")) {
+        def names = []
+        fileTree(System.getProperty("results")).visit { FileVisitDetails details ->
+            names << details.file.path
+        }
+
+        getExecutionData().from(
+            files(names)
+        )
     }
 
-    getExecutionData().from(
-        files(names)
-    )
 
     reports {
         html.enabled = true
