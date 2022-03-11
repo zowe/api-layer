@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import java.util.Optional;
@@ -32,18 +31,13 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * use the same authentication) it will modify immediately. Otherwise in request params will be set a command to
  * load balancer. The request will be modified after specific instance will be selected.
  */
-public class ServiceAuthenticationFilter extends ZuulFilter {
+public class ServiceAuthenticationFilter extends PreZuulFilter {
 
     @Autowired
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
 
     @Autowired
     private AuthSourceService authSourceService;
-
-    @Override
-    public String filterType() {
-        return PRE_TYPE;
-    }
 
     @Override
     public int filterOrder() {

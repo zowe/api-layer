@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -26,14 +25,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * Must be run after PreDecorationFilter. This will set Proxy, ServiceId and other variables in RequestContext
  */
 @Slf4j
-public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
+public class LocationFilter extends PreZuulFilter implements RoutedServicesUser {
 
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
-
-    @Override
-    public String filterType() {
-        return "pre";
-    }
 
     @Override
     public int filterOrder() {
@@ -42,7 +36,23 @@ public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
 
     @Override
     public boolean shouldFilter() {
-        return true;
+        RequestContext context = RequestContext.getCurrentContext();
+
+        final String serviceId = (String) context.get(SERVICE_ID_KEY);
+        final String proxy = UrlUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
+        final String requestPath = UrlUtils.addFirstSlash((String) context.get(REQUEST_URI_KEY));
+
+        if (!isRequestThatCanBeProcessed(serviceId, proxy, requestPath)) {
+            log.trace("Routing: Incorrect serviceId {}, proxy {} or requestPath {}.", serviceId, proxy, requestPath);
+            return false;
+        }
+        else if (routedServicesMap.get(serviceId) == null) {
+            log.trace("Routing: No routing metadata for service {} found.", serviceId);
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     @Override
@@ -52,24 +62,14 @@ public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         final String proxy = UrlUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
         final String requestPath = UrlUtils.addFirstSlash((String) context.get(REQUEST_URI_KEY));
+        RoutedServices routedServices = routedServicesMap.get(serviceId);
+        @SuppressWarnings("squid:S2259")
+        int i = proxy.lastIndexOf('/');
 
-        if (isRequestThatCanBeProcessed(serviceId, proxy, requestPath)) {
-            RoutedServices routedServices = routedServicesMap.get(serviceId);
-
-            if (routedServices != null) {
-                @SuppressWarnings("squid:S2259")
-                int i = proxy.lastIndexOf('/');
-
-                if (i > 0) {
-                    String originalPath = normalizeOriginalPath(getService(routedServices, proxy).getServiceUrl());
-                    context.set(REQUEST_URI_KEY, originalPath + requestPath);
-                    log.debug("Routing: The request was routed to {}", originalPath + requestPath);
-                }
-            } else {
-                log.trace("Routing: No routing metadata for service {} found.", serviceId);
-            }
-        } else {
-            log.trace("Routing: Incorrect serviceId {}, proxy {} or requestPath {}.", serviceId, proxy, requestPath);
+        if (i > 0) {
+            String originalPath = normalizeOriginalPath(getService(routedServices, proxy).getServiceUrl());
+            context.set(REQUEST_URI_KEY, originalPath + requestPath);
+            log.debug("Routing: The request was routed to {}", originalPath + requestPath);
         }
 
         return null;

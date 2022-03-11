@@ -7,13 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.filters.pre;
+package org.zowe.apiml.gateway.filters.post;
 
-import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.ZuulFilter;
 
-public class RequestContextProviderThreadLocal implements RequestContextProvider {
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
+
+public abstract class PostZuulFilter extends ZuulFilter {
     @Override
-    public RequestContext context() {
-        return RequestContext.getCurrentContext();
+    public String filterType() {
+        return POST_TYPE;
     }
 }
