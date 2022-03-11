@@ -88,8 +88,13 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Gather and prepare the results from jacoco
-                run: |
-                     fgfd
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITests
+                    path: path/to/artifacts
+
+            -   name: Display structure of downloaded files
+                run: ls -R
+                working-directory: path/to/artifacts
 
             -   uses: ./.github/actions/teardown
