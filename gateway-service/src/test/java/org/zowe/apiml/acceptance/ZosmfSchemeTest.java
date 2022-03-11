@@ -46,7 +46,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
 
             applicationRegistry.clearApplications();
             MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
-            defaultBuilder.withSafIdt();
+            defaultBuilder.withZosmf();
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
