@@ -61,10 +61,10 @@ public class DefaultAuthSourceService implements AuthSourceService {
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest() {
         AuthSourceService service = getService(AuthSourceType.JWT);
-        Optional<AuthSource> authSource = service != null ? service.getAuthSourceFromRequest() : Optional.empty();
+        Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
         if (!authSource.isPresent()) {
            service = getService(AuthSourceType.CLIENT_CERT);
-           authSource = service != null ? service.getAuthSourceFromRequest() : Optional.empty();
+           authSource = service.getAuthSourceFromRequest();
         }
         return authSource;
     }
