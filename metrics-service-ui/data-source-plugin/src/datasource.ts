@@ -35,7 +35,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         console.log(query);
 
         const eventSource = new EventSource(
-          'https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=' + query.cluster,
+          'https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=' + query.clusterName,
           { withCredentials: true }
         );
         eventSource.addEventListener('message', (event) => {

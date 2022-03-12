@@ -2,40 +2,69 @@ import defaults from 'lodash/defaults';
 
 import React, { ChangeEvent, PureComponent } from 'react';
 import { LegacyForms } from '@grafana/ui';
-import { QueryEditorProps } from '@grafana/data';
+import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from './datasource';
 import { defaultQuery, MyDataSourceOptions, MyQuery } from './types';
 
 const { FormField } = LegacyForms;
+const availableClustersEndpoint = 'https://localhost:10010/metrics-service/api/v1/clusters';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {
-  // onConstantChange = (event: ChangeEvent<HTMLInputElement>) => {
-  //   const { onChange, query, onRunQuery } = this.props;
-  //   onChange({ ...query, cluster: parseFloat(event.target.value) });
-  //   // executes the query
-  //   onRunQuery();
-  // };
-
   onQueryTextChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onChange, query } = this.props;
     onChange({ ...query, metricName: event.target.value });
   };
 
-  onClusterChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onClusterChange = (event: SelectableValue<HTMLInputElement>) => {
     const { onChange, query } = this.props;
-    onChange({ ...query, cluster: event.target.value });
+    onChange({ ...query, clusterName: event.target.value });
   };
+
+  async componentDidMount() {
+    fetch(availableClustersEndpoint)
+      .then((resp) => resp.json())
+      .then((clusters) => {
+        let items: JSX.Element[] = [];
+
+        // Add empty starting item to dropdown menu
+        items.push(<option key="" value="" />);
+
+        // Add clusters from rest call to dropdown menu
+        clusters.forEach((cluster: { name: string; link: string }) => {
+          items.push(
+            <option key={cluster.name} value={cluster.name}>
+              {cluster.name}
+            </option>
+          );
+        });
+
+        this.setState({ items });
+      });
+  }
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { cluster, metricName } = query;
+
+    let availableClusters = '';
+
+    if (this.state != null) {
+      // @ts-ignore
+      availableClusters = this.state.items;
+    }
 
     return (
       <div className="gf-form">
-        <FormField width={8} value={cluster || ''} onChange={this.onClusterChange} label="Cluster" />
-        <FormField labelWidth={8} value={metricName || ''} onChange={this.onQueryTextChange} label="Metric Name" />
+        <select onChange={this.onClusterChange} value={query.clusterName || ''}>
+          {availableClusters}
+        </select>
+        <FormField
+          labelWidth={8}
+          value={query.metricName || ''}
+          onChange={this.onQueryTextChange}
+          label="Metric Name"
+        />
       </div>
     );
   }

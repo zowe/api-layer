@@ -1,12 +1,12 @@
 import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
 export interface MyQuery extends DataQuery {
-  cluster: string;
+  clusterName: string;
   metricName: string;
 }
 
 export const defaultQuery: Partial<MyQuery> = {
-  cluster: '',
+  clusterName: '',
   metricName: '',
 };
 
