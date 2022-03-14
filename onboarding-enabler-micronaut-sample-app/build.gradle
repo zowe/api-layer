@@ -15,7 +15,7 @@ group "org.zowe.apiml"
 
 
 micronaut {
-    version = "2.5.13"
+    version = "3.3.3"
     runtime "netty"
     testRuntime "junit5"
     processing {

@@ -80,7 +80,7 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "The token has expired")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "The token has expired", "Obtain new token by performing an authentication request.", "The JWT token has expired.")));
     }
 
     @Test
@@ -99,7 +99,7 @@ class SecurityErrorCheckTest {
 
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid", "Provide a valid token.", "The JWT token is not valid.")));
     }
 
     @Test
@@ -119,7 +119,11 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.login.invalidCredentials",
-                MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'")));
+                MessageType.ERROR, "ZWEAG120E",
+                "Invalid username or password for URL 'null'",
+                "Provide a valid username and password.",
+                "The username and/or password are invalid."
+        )));
     }
 
     @Test
@@ -140,8 +144,11 @@ class SecurityErrorCheckTest {
         assertThat(actualMessageList, hasItem(new ApiMessage(
                 "org.zowe.apiml.security.idt.auth.failed",
                 MessageType.ERROR, "ZWEAG151E",
-                "SAF IDT is not generated because authentication or authorization failed. Reason: " + exceptionMessage + ". " + exception.getCause().getLocalizedMessage()))
-        );
+                "SAF IDT is not generated because authentication or authorization failed. Reason: " + exceptionMessage + ". " + exception.getCause().getLocalizedMessage(),
+                "Provide a valid username and password.",
+                "The SAF Verify Service rejected the user credentials. Review the reason in the error message."
+        )));
+
     }
 
     @Test
@@ -158,8 +165,13 @@ class SecurityErrorCheckTest {
 
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.idt.failed",
-                MessageType.ERROR, "ZWEAG150E", "SAF IDT generation failed. Reason: " + exceptionMessage + ". ")));
+        assertThat(actualMessageList, hasItem(new ApiMessage(
+                "org.zowe.apiml.security.idt.failed",
+                MessageType.ERROR, "ZWEAG150E",
+                "SAF IDT generation failed. Reason: " + exceptionMessage + ". ",
+                "Verify the Identity Token configuration.",
+                "An error occurred in the SAF Verify Service. Review the reason in the error message."
+        )));
     }
 
 }

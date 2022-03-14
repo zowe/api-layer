@@ -69,30 +69,7 @@ public class InstanceRefreshService {
 
         log.debug("Refreshing API Catalog with the latest state of discovery service");
 
-        Callable<Set<String>> callableTask = this::compareServices;
-
-        // run the comparison in a separate thread
-        ExecutorService executorService =
-            new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
-        Future<Set<String>> future = executorService.submit(callableTask);
-        executorService.shutdown();
-
-        try {
-            // get result of future, wait 20 secs for a result , if nothing then throw an exception but continue processing
-            final Set<String> containersUpdated = future.get(20, TimeUnit.SECONDS);
-            if (containersUpdated.isEmpty()) {
-                log.debug("No containers updated from discovered services.");
-            } else {
-                log.debug(containersUpdated.size() + " containers updated from discovered services.");
-                log.debug("Catalog status updates will occur for containers: " + containersUpdated.toString());
-            }
-        } catch (InterruptedException e) {
-            log.debug("Failed to update cache with discovered services: {}", e.getMessage());
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException | TimeoutException e) {
-            apimlLog.log("org.zowe.apiml.apicatalog.cacheUpdateError", e.getMessage());
-        }
+        this.compareServices();
     }
 
     /**
@@ -181,6 +158,11 @@ public class InstanceRefreshService {
         if (!InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             // update any containers which contain this service
             updateContainer(containersUpdated, instance);
+        }
+        if (InstanceInfo.ActionType.DELETED.equals(instance.getActionType())) {
+            // remove instance which isn't available anymore
+            cachedProductFamilyService.removeInstance(instance.getMetadata().get(CATALOG_ID), instance);
+            return;
         }
 
         // Update the service cache

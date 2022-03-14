@@ -64,7 +64,7 @@ The following list describes general conventions for contributing to api-layer:
 - Before implementing new functionality, reach out to squad members and discuss architecture and design.
 - Get in contact using Slack’s `#zowe-api` channel, attend squad meetings or create an `Enhancement` issue on GitHub.
 - Reuse logging and error handling patterns already in place.
-- Document your code with appropriate Javadoc and inline comments.
+- Document your code with appropriate Javadoc and inline comments. In JavaScript parts of the code please use JSDoc style comments. 
 - Create end-user documentation on [docs-site](https://github.com/zowe/docs-site) if needed.
 - Provide adequate logging to diagnose problems that happen at external customer sites.
 - Use sensible class, method, and variable names.
@@ -124,6 +124,7 @@ Lint rules are enforced through our [build process](#build-process-guidelines).
 - Add UI end to end tests where needed. The end to end tests are executed with [Github Actions](https://github.com/zowe/api-layer/actions) using the workflows defined in [.github/workflows](.github/workflows). Contact API Layer squad if you need triage.
 - Use meaningful test method names. We use the `given_when_then` pattern.
 - Leverage `@Nested` annotation for test method grouping where possible. It makes the tests more organized and readable. The test method names are generally shorter.
+- When adding tests to method not following `given_when_then` or not leveraging the `@Nested` annotation refactor the class before adding further tests.
 - Example of well written test: [CachingControllerTest.java](https://github.com/zowe/api-layer/blob/master/caching-service/src/test/java/org/zowe/apiml/caching/api/CachingControllerTest.java). It uses `@Nested` annotation to separate the test scenarios into groups, which are individually setup. The tests are short and clear and the method names clearly convey what is tested.
 - Some of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
 
