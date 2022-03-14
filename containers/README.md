@@ -9,14 +9,15 @@ Each image supports both `amd64` and `s390x` CPU architectures.
 
 ## Gateway Service Image
 
-Image `zowe-docker-release.jfrog.io/ompzowe/gateway-service:latest` should be able to run with minimal environment variables:
+Image `zowe-docker-release.jfrog.io/ompzowe/gateway-service:2` should be able to run with minimal environment variables:
 
-- `KEYSTORE`: path to keystore.
-- `KEY_ALIAS`: certificate alias stored in keystore.
-- `KEYSTORE_PASSWORD`: password of your keystore and truststore.
-- `TRUSTSTORE`: path to truststore.
+- `ZWE_configs_certificate_keystore_file`: path to keystore.
+- `ZWE_configs_certificate_keystore_alias`: certificate alias stored in keystore.
+- `ZWE_configs_certificate_keystore_password`: password of your keystore.
+- `ZWE_configs_certificate_truststore_file`: path to truststore.
+- `ZWE_configs_certificate_truststore_password`: password of your truststore.
 - `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
-- `WORKSPACE_DIR`: set to `/component`
+- `ZWE_zowe_workspaceDirectory`: set to `/component`
 
 Review the [Gateway package start script](../gateway-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
 
@@ -24,29 +25,31 @@ Example commands:
 
 ```
 # pull image
-docker pull zowe-docker-release.jfrog.io/ompzowe/gateway-service:latest
+docker pull zowe-docker-release.jfrog.io/ompzowe/gateway-service:2
 # start container
 docker run -it --rm -p 7554:7554 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e KEYSTORE=/home/zowe/keystore/localhost/localhost.keystore.p12 \
-    -e KEY_ALIAS=localhost \
-    -e KEYSTORE_PASSWORD=password \
-    -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_alias=localhost \
+    -e ZWE_configs_certificate_keystore_password=password \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
-    -e WORKSPACE_DIR=/component \
-    zowe-docker-release.jfrog.io/ompzowe/gateway-service:latest
+    -e ZWE_zowe_workspaceDirectory=/component \
+    zowe-docker-release.jfrog.io/ompzowe/gateway-service:2
 ```
 
 ## Discovery Service Image
 
-Image `zowe-docker-release.jfrog.io/ompzowe/discovery-service:latest` should be able to run with minimal environment variables:
+Image `zowe-docker-release.jfrog.io/ompzowe/discovery-service:2` should be able to run with minimal environment variables:
 
-- `KEYSTORE`: path to keystore.
-- `KEY_ALIAS`: certificate alias stored in keystore.
-- `KEYSTORE_PASSWORD`: password of your keystore and truststore.
-- `TRUSTSTORE`: path to truststore.
+- `ZWE_configs_certificate_keystore_file`: path to keystore.
+- `ZWE_configs_certificate_keystore_alias`: certificate alias stored in keystore.
+- `ZWE_configs_certificate_keystore_password`: password of your keystore.
+- `ZWE_configs_certificate_truststore_file`: path to truststore.
+- `ZWE_configs_certificate_truststore_password`: password of your truststore.
 - `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
-- `WORKSPACE_DIR`: set to `/component`
+- `ZWE_zowe_workspaceDirectory`: set to `/component`
 
 Review the [Discovery package start script](../discovery-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
 
@@ -54,30 +57,32 @@ Example commands:
 
 ```
 # pull image
-docker pull zowe-docker-release.jfrog.io/ompzowe/discovery-service:latest
+docker pull zowe-docker-release.jfrog.io/ompzowe/discovery-service:2
 # start container
 docker run -it --rm -p 7553:7553 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e KEYSTORE=/home/zowe/keystore/localhost/localhost.keystore.p12 \
-    -e KEY_ALIAS=localhost \
-    -e KEYSTORE_PASSWORD=password \
-    -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_alias=localhost \
+    -e ZWE_configs_certificate_keystore_password=password \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
-    -e WORKSPACE_DIR=/component \
-    zowe-docker-release.jfrog.io/ompzowe/discovery-service:latest
+    -e ZWE_zowe_workspaceDirectory=/component \
+    zowe-docker-release.jfrog.io/ompzowe/discovery-service:2
 ```
 
 ## API Catalog Image
 
-Image `zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:latest` should be able to run with minimal environment variables:
+Image `zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:2` should be able to run with minimal environment variables:
 
-- `KEYSTORE`: path to keystore.
-- `KEY_ALIAS`: certificate alias stored in keystore.
-- `KEYSTORE_PASSWORD`: password of your keystore and truststore.
-- `TRUSTSTORE`: path to truststore.
+- `ZWE_configs_certificate_keystore_file`: path to keystore.
+- `ZWE_configs_certificate_keystore_alias`: certificate alias stored in keystore.
+- `ZWE_configs_certificate_keystore_password`: password of your keystore.
+- `ZWE_configs_certificate_truststore_file`: path to truststore.
+- `ZWE_configs_certificate_truststore_password`: password of your truststore.
 - `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
-- `WORKSPACE_DIR`: set to `/component`
-- `GATEAY_HOST`: the host of the API Gateway
+- `ZWE_zowe_workspaceDirectory`: set to `/component`
+- `ZWE_GATEWAY_HOST`: the host of the API Gateway
 
 Review the [API Catalog package start script](../api-catalog-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
 
@@ -85,29 +90,31 @@ Example commands:
 
 ```
 # pull image
-docker pull zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:latest
+docker pull zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:2
 # start container
 docker run -it --rm -p 7552:7552 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e KEYSTORE=/home/zowe/keystore/localhost/localhost.keystore.p12 \
-    -e KEY_ALIAS=localhost \
-    -e KEYSTORE_PASSWORD=password \
-    -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_alias=localhost \
+    -e ZWE_configs_certificate_keystore_password=password \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
-    -e WORKSPACE_DIR=/component \
-    -e GATEWAY_HOST=gateway.com \
-    zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:latest
+    -e ZWE_zowe_workspaceDirectory=/component \
+    -e ZWE_GATEWAY_HOST=gateway.com \
+    zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:2
 ```
 
 ## Caching Service Image
 
-Image `zowe-docker-release.jfrog.io/ompzowe/caching-service:latest` should be able to run with minimal environment variables:
+Image `zowe-docker-release.jfrog.io/ompzowe/caching-service:2` should be able to run with minimal environment variables:
 
-- `KEYSTORE`: path to keystore.
-- `KEY_ALIAS`: certificate alias stored in keystore.
-- `KEYSTORE_PASSWORD`: password of your keystore and truststore.
-- `TRUSTSTORE`: path to truststore.
-- `WORKSPACE_DIR`: set to `/component`
+- `ZWE_configs_certificate_keystore_file`: path to keystore.
+- `ZWE_configs_certificate_keystore_alias`: certificate alias stored in keystore.
+- `ZWE_configs_certificate_keystore_password`: password of your keystore.
+- `ZWE_configs_certificate_truststore_file`: path to truststore.
+- `ZWE_configs_certificate_truststore_password`: password of your truststore.
+- `ZWE_zowe_workspaceDirectory`: set to `/component`
 
 Review the [Caching service package start script](../caching-service-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
 
@@ -115,29 +122,30 @@ Example commands:
 
 ```
 # pull image
-docker pull zowe-docker-release.jfrog.io/ompzowe/caching-service:latest
+docker pull zowe-docker-release.jfrog.io/ompzowe/caching-service:2
 # start container
 docker run -it --rm -p 7555:7555 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e KEYSTORE=/home/zowe/keystore/localhost/localhost.keystore.p12 \
-    -e KEY_ALIAS=localhost \
-    -e KEYSTORE_PASSWORD=password \
-    -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
-    -e WORKSPACE_DIR=/component \
-    zowe-docker-release.jfrog.io/ompzowe/caching-service:latest
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_alias=localhost \
+    -e ZWE_configs_certificate_keystore_password=password \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_password=password \
+    -e ZWE_zowe_workspaceDirectory=/component \
+    zowe-docker-release.jfrog.io/ompzowe/caching-service:2
 ```
 
 ## Metrics Service Image
 
-Image `zowe-docker-release.jfrog.io/ompzowe/metrics-service:latest` should be able to run with minimal environment variables:
+Image `zowe-docker-release.jfrog.io/ompzowe/metrics-service:2` should be able to run with minimal environment variables:
 
-- `KEYSTORE`: path to keystore.
-- `KEY_ALIAS`: certificate alias stored in keystore.
-- `KEYSTORE_PASSWORD`: password of your keystore and truststore.
-- `TRUSTSTORE`: path to truststore.
-- `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`.
-- `WORKSPACE_DIR`: set to `/component`.
-- `APIML_METRICS_ENBALED` set to `true`.
+- `ZWE_configs_certificate_keystore_file`: path to keystore.
+- `ZWE_configs_certificate_keystore_alias`: certificate alias stored in keystore.
+- `ZWE_configs_certificate_keystore_password`: password of your keystore.
+- `ZWE_configs_certificate_truststore_file`: path to truststore.
+- `ZWE_configs_certificate_truststore_password`: password of your truststore.
+- `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
+- `ZWE_zowe_workspaceDirectory`: set to `/component`
 
 Review the [Metrics Service package start script](../metrics-service-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
 
@@ -145,16 +153,16 @@ Example commands:
 
 ```
 # pull image
-docker pull zowe-docker-release.jfrog.io/ompzowe/metrics-service:latest
+docker pull zowe-docker-release.jfrog.io/ompzowe/metrics-service:2
 # start container
 docker run -it --rm -p 7551:7551 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e KEYSTORE=/home/zowe/keystore/localhost/localhost.keystore.p12 \
-    -e KEY_ALIAS=localhost \
-    -e KEYSTORE_PASSWORD=password \
-    -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_alias=localhost \
+    -e ZWE_configs_certificate_keystore_password=password \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
-    -e WORKSPACE_DIR=/component \
-    -e APIML_METRICS_ENABLED=true \
-    zowe-docker-release.jfrog.io/ompzowe/metrics-service:latest
+    -e ZWE_zowe_workspaceDirectory=/component \
+    zowe-docker-release.jfrog.io/ompzowe/metrics-service:2
 ```
