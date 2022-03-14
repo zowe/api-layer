@@ -155,6 +155,7 @@ project(":integration-tests") {
             property "sonar.exclusions", "nosonar/**/*"
             property "sonar.test", "src/test/java"
             property "sonar.java.binaries", "build/libs"
+            property "sonar.junit.reportPaths","build/test-results/test"
         }
     }
 }
