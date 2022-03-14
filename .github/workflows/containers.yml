@@ -1036,7 +1036,7 @@ jobs:
                     name: ContainerCITestsWithRedis
                     path: containercitestswithredis
 
-            -   name: Build with Gradle
+            -   name: Code coverage and publish results
                 run: >
                     ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
