@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -52,7 +51,7 @@ class PerServiceIgnoreHeaderFilterTest {
     @Nested
     class WhenIgnoreHeaders {
         @Test
-        void givenOneHeaderToIgnore() throws ZuulException {
+        void givenOneHeaderToIgnore() {
             metadata.put("apiml.headersToIgnore", HEADER1);
             underTest.run();
 
@@ -61,7 +60,7 @@ class PerServiceIgnoreHeaderFilterTest {
         }
 
         @Test
-        void givenMultipleHeadersToIgnore() throws ZuulException {
+        void givenMultipleHeadersToIgnore() {
             metadata.put("apiml.headersToIgnore", HEADER1 + "," + HEADER2);
             underTest.run();
 
@@ -70,7 +69,7 @@ class PerServiceIgnoreHeaderFilterTest {
         }
 
         @Test
-        void givenMultipleHeadersToIgnoreWithWhitespace() throws ZuulException {
+        void givenMultipleHeadersToIgnoreWithWhitespace() {
             metadata.put("apiml.headersToIgnore", " " + HEADER1 + ", " + HEADER2 + " ");
             underTest.run();
 
@@ -82,7 +81,7 @@ class PerServiceIgnoreHeaderFilterTest {
     @Nested
     class WhenDontIgnoreHeaders {
         @Test
-        void givenNoServiceInstance() throws ZuulException {
+        void givenNoServiceInstance() {
             when(discoveryClient.getInstances(anyString())).thenReturn(Collections.emptyList());
             underTest.run();
 
@@ -90,7 +89,7 @@ class PerServiceIgnoreHeaderFilterTest {
         }
 
         @Test
-        void givenNullHeadersToIgnore() throws ZuulException {
+        void givenNullHeadersToIgnore() {
             metadata.put("apiml.headersToIgnore", null);
             underTest.run();
 
@@ -98,7 +97,7 @@ class PerServiceIgnoreHeaderFilterTest {
         }
 
         @Test
-        void givenEmptyHeadersToIgnore() throws ZuulException {
+        void givenEmptyHeadersToIgnore() {
             metadata.put("apiml.headersToIgnore", "");
             underTest.run();
 

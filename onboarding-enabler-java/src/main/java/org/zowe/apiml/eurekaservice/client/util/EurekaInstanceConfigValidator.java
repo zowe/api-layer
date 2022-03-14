@@ -87,7 +87,7 @@ public class EurekaInstanceConfigValidator {
             addParameterToProblemsList("keyStore", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyAlias())) {
-            addParameterToProblemsList("keyAlias", missingSslParameters);
+            log.warn("Key alias is missing in the SSL configuration");
         }
         if (isInvalid(ssl.getKeyStoreType())) {
             addParameterToProblemsList("keyStoreType", missingSslParameters);

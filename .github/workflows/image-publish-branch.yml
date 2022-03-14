@@ -1,6 +1,6 @@
 # This workflow will create images for api-layer services
 # This workflow is used to expose build-conformant-images.yml in a way that doesn't give users the option to release.
-name: Create Image Only (No Release)
+name: Image publish branch
 
 on:
     workflow_dispatch:

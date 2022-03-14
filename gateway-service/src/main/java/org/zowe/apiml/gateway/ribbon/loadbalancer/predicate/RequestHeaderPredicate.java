@@ -24,11 +24,14 @@ public class RequestHeaderPredicate extends RequestAwarePredicate {
 
     @Override
     public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server) {
-        String targetServer = context.getRequestContext().getRequest().getHeader(REQUEST_HEADER_NAME);
-        if (StringUtils.isEmpty(targetServer)) {
-            return true;
+        if (context.getRequestContext().getRequest() != null) {
+            String targetServer = context.getRequestContext().getRequest().getHeader(REQUEST_HEADER_NAME);
+            if (StringUtils.isEmpty(targetServer)) {
+                return true;
+            }
+            return server.getInstanceInfo().getInstanceId().equalsIgnoreCase(targetServer);
         }
-        return server.getInstanceInfo().getInstanceId().equalsIgnoreCase(targetServer);
+        return true;
     }
 
     @Override
