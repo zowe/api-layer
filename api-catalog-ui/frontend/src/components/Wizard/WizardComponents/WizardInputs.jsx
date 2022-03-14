@@ -156,38 +156,41 @@ class WizardInputs extends Component {
                 arr[arrIndex] = {
                     ...arr[arrIndex],
                 };
-                if (objectToChange.content.length <= arrIndex) {
-                    objectToChange.content.push({ ...objectToChange.content[0] });
-                }
-                targets.forEach((target) => {
-                    const { name, checked } = target;
-                    let { value } = target;
-                    const { maxLength, lowercase, regexRestriction, validUrl } =
-                        objectToChange.content.length > arrIndex
-                            ? objectToChange.content[arrIndex][name]
-                            : objectToChange.content[0][name];
-                    const prevValue = objectToChange.content[arrIndex][name].value;
-                    if (name === 'serviceId') {
-                        this.props.updateServiceId(value);
-                    }
-                    // if prevValues was a boolean then we are handling a checkbox
-                    if (typeof prevValue === 'boolean') {
-                        value = checked;
-                    } else {
-                        value = this.applyRestrictions(maxLength, value, lowercase);
-                        if (value.length > 0) {
-                            objectToChange.content[arrIndex][name].empty = false;
+                if (objectToChange.content.length > arrIndex) {
+                    targets.forEach((target) => {
+                        const { name, checked } = target;
+                        let { value } = target;
+                        const { maxLength, lowercase, regexRestriction, validUrl } =
+                            objectToChange.content.length > arrIndex
+                                ? objectToChange.content[arrIndex][name]
+                                : objectToChange.content[0][name];
+                        const prevValue = objectToChange.content[arrIndex][name].value;
+                        if (name === 'serviceId') {
+                            this.props.updateServiceId(value);
                         }
-                        objectToChange.content[arrIndex][name].problem = this.checkRestrictions(
-                            objectToChange.content[arrIndex][name],
+                        // if prevValues was a boolean then we are handling a checkbox
+                        if (typeof prevValue === 'boolean') {
+                            value = checked;
+                        } else {
+                            value = this.applyRestrictions(maxLength, value, lowercase);
+                            if (value.length > 0) {
+                                objectToChange.content[arrIndex][name].empty = false;
+                            }
+                            objectToChange.content[arrIndex][name].problem = this.checkRestrictions(
+                                objectToChange.content[arrIndex][name],
+                                value,
+                                regexRestriction,
+                                validUrl
+                            );
+                        }
+                        arr[arrIndex][name] = {
+                            ...objectToChange.content[arrIndex][name],
                             value,
-                            regexRestriction,
-                            validUrl
-                        );
-                    }
-                    arr[arrIndex][name] = { ...objectToChange.content[arrIndex][name], value, interactedWith: true };
-                    this.propagateToMinions(name, value, arrIndex);
-                });
+                            interactedWith: true,
+                        };
+                        this.propagateToMinions(name, value, arrIndex);
+                    });
+                }
             });
             this.updateDataWithNewContent(objectToChange, arr);
             this.props.validateInput(objectToChange.nav, true);
