@@ -119,6 +119,8 @@ dependencies {
     implementation libraries.netty_transport_rxtx
     implementation libraries.netty_transport_sctp
     implementation libraries.netty_transport_udt
+    implementation libraries.thymeleaf
+    implementation libraries.thymeleafSpring
 
     implementation libraries.commons_io
     implementation libraries.guava
@@ -152,6 +154,7 @@ dependencies {
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok
 
+    testImplementation(testFixtures(project(":integration-tests")))
 
     runtime libraries.jjwt_impl
     runtime libraries.jjwt_jackson

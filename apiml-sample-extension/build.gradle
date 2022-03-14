@@ -25,6 +25,7 @@ dependencies {
 
     implementation libraries.springFox
     implementation libraries.spring_webmvc
+    implementation libraries.guava
 
 }
 

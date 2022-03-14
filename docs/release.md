@@ -49,7 +49,7 @@ causing failures that shouldn't impact the binary release.
   - https://github.com/zowe/api-layer/actions/workflows/binary-snapshot-release.yml
   - https://github.com/zowe/api-layer/actions/workflows/image-snapshot-release.yml
 - **Automated release** (patch, minor, major) - runs every Friday to create a patch release, or manually to create a patch, minor, or major release
-  - https://github.com/zowe/api-layer/actions/workflows/release.yml
+  - https://github.com/zowe/api-layer/actions/workflows/automated-release.yml
 - **Specific release** - manually run to create a new release from the target branch the workflow is run from 
   - https://github.com/zowe/api-layer/actions/workflows/binary-specific-release.yml
   - https://github.com/zowe/api-layer/actions/workflows/image-specific-release.yml
