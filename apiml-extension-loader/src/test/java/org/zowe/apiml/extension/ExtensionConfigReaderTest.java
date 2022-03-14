@@ -49,7 +49,7 @@ class ExtensionConfigReaderTest {
         class GivenNoManifestIsAvailable {
             @Test
             void itReturnsNoPackagesToScan() {
-                when(environment.getExtensionDirectory()).thenReturn(".");
+                when(environment.getWorkspaceDirectory()).thenReturn(".");
                 when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
                 when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 
@@ -61,7 +61,7 @@ class ExtensionConfigReaderTest {
         class GivenAnExtensionIsDefined {
             @Test
             void itReturnsPackageNameToScan() {
-                when(environment.getExtensionDirectory()).thenReturn(getTestResourcesPath());
+                when(environment.getWorkspaceDirectory()).thenReturn(getTestResourcesPath());
                 when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
                 when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
 

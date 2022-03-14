@@ -56,9 +56,9 @@ public class ExtensionConfigReader {
 
         for (String installedComponent : installedComponents) {
             if (enabledComponents.contains(installedComponent)) {
-                String parentPath = environment.getExtensionDirectory() + File.separator + installedComponent;
-                Path manifestYamlPath = Paths.get(parentPath + "/manifest.yaml");
-                Path manifestJsonPath = Paths.get(parentPath + "/manifest.json");
+                String parentPath = environment.getWorkspaceDirectory() + File.separator + installedComponent;
+                Path manifestYamlPath = Paths.get(parentPath + File.separator + "manifest.yaml");
+                Path manifestJsonPath = Paths.get(parentPath + File.separator + "manifest.json");
                 try {
                     if (Files.exists(manifestYamlPath)) {
                         extensions.add(yamlMapper.readValue(Files.readAllBytes(manifestYamlPath), ExtensionDefinition.class));
