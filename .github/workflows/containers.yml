@@ -1037,7 +1037,7 @@ jobs:
                     name: ContainerCITestsWithRedis
                     path: containercitestswithredis
             -   name: Copy test reports
-                run: >
+                run: |
                     mkdir -p integration-tests/build/test-results
                     cp -R containercitests/integration-tests/build/test-results/runContainerTests integration-tests/build/test-results
             -   name: Code coverage and publish results
