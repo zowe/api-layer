@@ -72,6 +72,7 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         results/**
+                        integration-tests/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
