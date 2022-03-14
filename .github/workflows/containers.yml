@@ -1036,7 +1036,10 @@ jobs:
                 with:
                     name: ContainerCITestsWithRedis
                     path: containercitestswithredis
-
+            -   name: Copy test reports
+                run: >
+                    mkdir -p integration-tests/build/test-results
+                    cp -R containercitests/integration-tests/build/test-results/runContainerTests integration-tests/build/test-results
             -   name: Code coverage and publish results
                 run: >
                     ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results"
