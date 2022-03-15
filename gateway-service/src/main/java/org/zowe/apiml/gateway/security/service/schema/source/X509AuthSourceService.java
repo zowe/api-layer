@@ -15,6 +15,7 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
@@ -27,7 +28,9 @@ import org.zowe.apiml.security.common.error.InvalidCertificateException;
  * the client certificate.
  */
 @Slf4j
-public abstract class AbstractX509AuthSourceService implements AuthSourceService {
+@RequiredArgsConstructor
+public class X509AuthSourceService implements AuthSourceService {
+    private final X509AbstractMapper mapper;
     /**
      * Gets client certificate from request.
      * <p>
@@ -47,10 +50,9 @@ public abstract class AbstractX509AuthSourceService implements AuthSourceService
      * Validates authentication source, check authentication source type and whether client certificate from the
      * authentication source has the extended key usage set correctly.
      * @param authSource {@link AuthSource} object which hold original source of authentication - client certificate.
-     * @param mapper instance of {@link X509AbstractMapper} to use for validation.
      * @return true if client certificate is valid, false otherwise.
      */
-    public boolean isValid(AuthSource authSource, X509AbstractMapper mapper) {
+    public boolean isValid(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate clientCert = (X509Certificate)authSource.getRawSource();
             if (clientCert == null) {
@@ -67,10 +69,9 @@ public abstract class AbstractX509AuthSourceService implements AuthSourceService
     /**
      * Parse client certificate from authentication source.
      * @param authSource {@link AuthSource} object which hold original source of authentication - client certificate.
-     * @param mapper instance of {@link X509AbstractMapper} to use for validation and parsing.
      * @return parsed authentication source or null if error occurred during parsing.
      */
-    public AuthSource.Parsed parse(AuthSource authSource, X509AbstractMapper mapper) {
+    public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate clientCert = (X509Certificate)authSource.getRawSource();
             return clientCert == null ? null : parseClientCert(clientCert, mapper);

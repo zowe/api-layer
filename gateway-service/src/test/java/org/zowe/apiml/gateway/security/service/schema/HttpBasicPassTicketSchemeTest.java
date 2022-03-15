@@ -26,7 +26,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.DefaultAuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.X509MFAuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -56,7 +56,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     @BeforeEach
     void init() {
         JwtAuthSourceService jwtAuthSourceService = mock(JwtAuthSourceService.class);
-        X509MFAuthSourceService x509MFAuthSourceService = mock(X509MFAuthSourceService.class);
+        X509AuthSourceService x509MFAuthSourceService = mock(X509AuthSourceService.class);
 
         PassTicketService passTicketService = new PassTicketService();
         AuthSourceService authSourceService = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService);

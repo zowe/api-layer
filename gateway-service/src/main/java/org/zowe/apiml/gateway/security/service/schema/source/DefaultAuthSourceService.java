@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -27,7 +28,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
  * <p>
  * Service keeps a map of the specific implementations of {@link AuthSourceService} which are responsible to perform operations defined by an interface
  * for a particular authentication source. {@link JwtAuthSourceService} is responsible for processing of the authentication source based on JWT token;
- * {@link X509MFAuthSourceService} is responsible for processing of the authentication source based on client certificate.
+ * @Qualifier("x509MFAuthSourceService") {@link X509AuthSourceService} is responsible for processing of the authentication source based on client certificate.
  * The key for the map is {@link AuthSourceType}.
  */
 @Slf4j
@@ -41,11 +42,11 @@ public class DefaultAuthSourceService implements AuthSourceService {
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
      * @param jwtAuthSourceService {@link JwtAuthSourceService} service which process authentication source of type JWT
-     * @param x509MFAuthSourceService {@link X509MFAuthSourceService} service which process authentication source of type client certificate
+     * @param x509AuthSourceService {@link X509AuthSourceService} service which process authentication source of type client certificate
      */
-    public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService, @Autowired X509MFAuthSourceService x509MFAuthSourceService) {
+    public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService, @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService) {
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
-        map.put(AuthSourceType.CLIENT_CERT, x509MFAuthSourceService);
+        map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
     }
 
     /**
