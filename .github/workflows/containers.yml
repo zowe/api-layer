@@ -6,6 +6,9 @@ on:
     pull_request:
         branches: [ master, v2.x.x ]
 
+env:
+    JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
+
 jobs:
     PublishJibContainers:
         runs-on: ubuntu-latest
@@ -67,7 +70,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: ContainerCITests
+                    name: ContainerCITests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -114,7 +117,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsRegistration
+                    name: ContainerCITestsRegistration-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -165,7 +168,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: ContainerCITestsZosmfRsu2012
+                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -214,7 +217,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsZosmfPH34201
+                    name: CITestsZosmfPH34201-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -262,7 +265,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsZosmfWithoutJwt
+                    name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -311,7 +314,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint
+                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -362,7 +365,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsInternalPort
+                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -427,7 +430,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: ContainerCITestsWithRedis
+                    name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -493,7 +496,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsWithRedisWithoutSslVerification
+                    name: ContainerCITestsWithRedisWithoutSslVerification-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -572,7 +575,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsHA
+                    name: CITestsHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -662,12 +665,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: LbHaTests
+                    name: LbHaTests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -732,12 +736,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsDiscoveryChaoticHA
+                    name: CITestsDiscoveryChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -802,12 +807,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsGatewayChaoticHA
+                    name: CITestsGatewayChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -876,12 +882,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsDicoverableClientChaoticHA
+                    name: CITestsDicoverableClientChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -950,12 +957,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsWebSocketChaoticHA
+                    name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -1028,7 +1036,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: CITestsWithInfinispan
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -1051,23 +1059,23 @@ jobs:
 
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITests
+                    name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
             -   uses: actions/download-artifact@v3
                 with:
-                    name: CITestsWithInfinispan
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: citestswithinfinispan
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsZosmfRsu2012
+                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: containercitestszosmfrsu2012
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsWithRedis
+                    name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
                     path: containercitestswithredis
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsInternalPort
+                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
             -   name: Code coverage and publish results
                 run: >
