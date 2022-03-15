@@ -665,7 +665,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -736,7 +736,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -1059,23 +1059,23 @@ jobs:
 
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITests
+                    name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
             -   uses: actions/download-artifact@v3
                 with:
-                    name: CITestsWithInfinispan
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: citestswithinfinispan
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsZosmfRsu2012
+                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: containercitestszosmfrsu2012
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsWithRedis
+                    name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
                     path: containercitestswithredis
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsInternalPort
+                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
             -   name: Code coverage and publish results
                 run: >
