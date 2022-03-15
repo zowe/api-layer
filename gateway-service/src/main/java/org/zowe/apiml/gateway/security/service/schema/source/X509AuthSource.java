@@ -9,43 +9,55 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import java.security.cert.X509Certificate;
 import java.util.Date;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Implementation of JWT token source of authentication.
+ * Implementation of source of authentication based on client certificate.
  */
 @RequiredArgsConstructor
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class JwtAuthSource implements AuthSource {
-    public static final AuthSourceType type = AuthSourceType.JWT;
-
+public class X509AuthSource implements AuthSource {
+    public static final AuthSourceType type = AuthSourceType.CLIENT_CERT;
     /**
-     * JWT token
+     * X509 client certificate
      */
     @EqualsAndHashCode.Include
-    private final String source;
+    private final X509Certificate source;
 
     @Override
-    public String getRawSource() {
+    public X509Certificate getRawSource() {
         return source;
     }
 
     @Override
     public AuthSourceType getType() {
-        return type;
+        return AuthSourceType.CLIENT_CERT;
     }
 
     @RequiredArgsConstructor
     @Getter
     @EqualsAndHashCode
-    public static class Parsed implements AuthSource.Parsed {
+    public static class Parsed implements AuthSource.Parsed, X509Parsed {
         private final String userId;
         private final Date creation;
         private final Date expiration;
         private final Origin origin;
+        private final String publicKey;
+        private final String distinguishedName;
+
+        public String getCommonName() {
+            return userId;
+        }
+    }
+
+    public interface X509Parsed {
+        String getCommonName();
+        String getPublicKey();
+        String getDistinguishedName();
     }
 }

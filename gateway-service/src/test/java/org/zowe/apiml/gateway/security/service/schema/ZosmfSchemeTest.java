@@ -25,6 +25,8 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -54,6 +56,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     private Authentication authentication;
     private AuthSource.Parsed parsedSourceZowe;
     private AuthSource.Parsed parsedSourceZosmf;
+    private AuthSource.Parsed parsedSourceX509;
     private RequestContext requestContext;
     private HttpServletRequest request;
     private ZosmfScheme scheme;
@@ -64,6 +67,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         parsedSourceZowe = new JwtAuthSource.Parsed("username", calendar.getTime(), calendar.getTime(), Origin.ZOWE);
         parsedSourceZosmf = new JwtAuthSource.Parsed("username", calendar.getTime(), calendar.getTime(), Origin.ZOSMF);
+        parsedSourceX509 = new Parsed("username", calendar.getTime(), calendar.getTime(), Origin.X509, "encoded", "distName");
         requestContext = spy(new RequestContext());
         RequestContext.testSetCurrentContext(requestContext);
 
@@ -105,6 +109,17 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken2")).apply(null);
 
         assertEquals("cookie1=1;LtpaToken2=ltpa2", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
+    }
+
+    @Test
+    void givenClientCertificate_whenCreateCommand_thenDontAddZuulHeader() {
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new X509AuthSource(mock(
+            X509Certificate.class))));
+        when(authSourceService.parse(any())).thenReturn(parsedSourceX509);
+
+        zosmfScheme.createCommand(authentication, null).apply(null);
+
+        verify(requestContext, never()).addZuulRequestHeader(anyString(), anyString());
     }
 
     @Test
