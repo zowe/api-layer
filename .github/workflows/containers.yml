@@ -61,6 +61,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -640,7 +641,7 @@ jobs:
                     docker ps -q | xargs -L 1 docker logs
             -   name: Correct Permisions
                 run: |
-                    chmod 755 -R .gradle                    
+                    chmod 755 -R .gradle
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -710,7 +711,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -780,7 +781,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -854,7 +855,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -928,7 +929,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
