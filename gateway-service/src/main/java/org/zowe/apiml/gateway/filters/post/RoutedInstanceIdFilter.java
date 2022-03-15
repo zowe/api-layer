@@ -10,20 +10,13 @@
 
 package org.zowe.apiml.gateway.filters.post;
 
-import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
 
-public class RoutedInstanceIdFilter extends ZuulFilter {
-    @Override
-    public String filterType() {
-        return POST_TYPE;
-    }
-
+public class RoutedInstanceIdFilter extends PostZuulFilter {
     @Override
     public int filterOrder() {
         return SEND_RESPONSE_FILTER_ORDER - 1;
