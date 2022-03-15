@@ -1036,7 +1036,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis,ContainerCITestsInternalPort]
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis,CITestsInternalPort]
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
