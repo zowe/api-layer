@@ -5,5 +5,5 @@ import { QueryEditor } from './QueryEditor';
 import { MyQuery, MyDataSourceOptions } from './types';
 
 export const plugin = new DataSourcePlugin<DataSource, MyQuery, MyDataSourceOptions>(DataSource)
-  .setConfigEditor(ConfigEditor)
-  .setQueryEditor(QueryEditor);
+    .setConfigEditor(ConfigEditor)
+    .setQueryEditor(QueryEditor);

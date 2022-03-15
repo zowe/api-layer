@@ -1,5 +1,5 @@
 import defaults from 'lodash/defaults';
-import {Observable, merge} from 'rxjs';
+import { Observable, merge } from 'rxjs';
 
 import {
     DataQueryRequest,
@@ -11,7 +11,7 @@ import {
     LoadingState,
 } from '@grafana/data';
 
-import {MyQuery, MyDataSourceOptions, defaultQuery} from './types';
+import { MyQuery, MyDataSourceOptions, defaultQuery } from './types';
 
 const config = require('../config/default.json');
 const metricsServiceEndpoint = config.metricsServiceEndpoint;
@@ -32,16 +32,16 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 });
 
                 frame.refId = query.refId;
-                frame.addField({name: 'time', type: FieldType.time});
-                frame.addField({name: 'value', type: FieldType.number});
+                frame.addField({ name: 'time', type: FieldType.time });
+                frame.addField({ name: 'value', type: FieldType.number });
 
-                let metricClusterUrl = metricsServiceEndpoint + '/sse/v1/turbine.stream?cluster=' + query.clusterName;
+                const metricClusterUrl = metricsServiceEndpoint + '/sse/v1/turbine.stream?cluster=' + query.clusterName;
 
-                const eventSource = new EventSource(metricClusterUrl, {withCredentials: true});
+                const eventSource = new EventSource(metricClusterUrl, { withCredentials: true });
                 eventSource.addEventListener('message', (event) => {
                     // "event.data" is a string
                     const data = JSON.parse(event.data);
-                    frame.add({time: Date.now(), value: data[query.metricName]});
+                    frame.add({ time: Date.now(), value: data[query.metricName] });
                     subscriber.next({
                         data: [frame],
                         key: query.refId,
