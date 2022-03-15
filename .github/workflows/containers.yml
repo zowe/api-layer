@@ -97,8 +97,6 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                ports:
-                    - 6300:6300
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
 
