@@ -63,7 +63,6 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
-
             -   name: Store results
                 uses: actions/upload-artifact@v3
                 if: always()
