@@ -1,0 +1,4 @@
+{
+    "availableClustersEndpoint": "https://localhost:10010/metrics-service/api/v1/clusters",
+    "metricsServiceEndpoint": "https://localhost:10010/metrics-service"
+}
