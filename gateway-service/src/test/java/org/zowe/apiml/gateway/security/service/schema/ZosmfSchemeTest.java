@@ -11,9 +11,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.JwtException;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.security.cert.X509Certificate;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
@@ -31,6 +29,8 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -60,6 +60,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     private Authentication authentication;
     private AuthSource.Parsed parsedSourceZowe;
     private AuthSource.Parsed parsedSourceZosmf;
+    private AuthSource.Parsed parsedSourceX509;
     private RequestContext requestContext;
     private HttpServletRequest request;
     private ZosmfScheme scheme;
@@ -70,6 +71,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         parsedSourceZowe = new JwtAuthSource.Parsed("username", calendar.getTime(), calendar.getTime(), Origin.ZOWE);
         parsedSourceZosmf = new JwtAuthSource.Parsed("username", calendar.getTime(), calendar.getTime(), Origin.ZOSMF);
+        parsedSourceX509 = new Parsed("username", calendar.getTime(), calendar.getTime(), Origin.X509, "encoded", "distName");
         requestContext = spy(new RequestContext());
         RequestContext.testSetCurrentContext(requestContext);
 
@@ -111,6 +113,17 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken2")).apply(null);
 
         assertEquals("cookie1=1;LtpaToken2=ltpa2", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
+    }
+
+    @Test
+    void givenClientCertificate_whenCreateCommand_thenDontAddZuulHeader() {
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new X509AuthSource(mock(
+            X509Certificate.class))));
+        when(authSourceService.parse(any())).thenReturn(parsedSourceX509);
+
+        zosmfScheme.createCommand(authentication, null).apply(null);
+
+        verify(requestContext, never()).addZuulRequestHeader(anyString(), anyString());
     }
 
     @Test
@@ -249,6 +262,17 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
+    void givenClientCertificate_whenApplyToRequest_thenDontAddZuulHeader() {
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new X509AuthSource(mock(
+            X509Certificate.class))));
+        when(authSourceService.parse(any())).thenReturn(parsedSourceX509);
+
+        zosmfScheme.createCommand(authentication, null).applyToRequest(null);
+
+        verify(requestContext, never()).addZuulRequestHeader(anyString(), anyString());
+    }
+
+    @Test
     void givenRequest_whenApplyToRequest_thenSetAuthHeaderToNull() {
         HttpRequest httpRequest = new HttpGet("/test/request");
         prepareAuthenticationService("ltpa1");
@@ -260,7 +284,6 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     void givenZosmfToken_whenApplyToRequest_thenTestJwtToken() {
-        Calendar calendar = Calendar.getInstance();
         AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
         when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
         when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
@@ -282,53 +305,4 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         assertEquals("cookie1=1;jwtToken=jwtToken2", httpRequest.getFirstHeader("cookie").getValue());
     }
 
-    @Test
-    void givenUnknownAuthentication_whenApply_thenDoNothing() {
-        Authentication authentication = new Authentication(AuthenticationScheme.X509, null);
-        HttpRequest httpRequest = prepareUnknownAuthenticationTest();
-        zosmfScheme.createCommand(authentication, new DummyX509AuthSource()).apply(null);
-
-        assertNull(httpRequest.getFirstHeader("cookie"));
-    }
-
-    @Test
-    void givenUnknownAuthentication_whenApplyToRequest_thenDoNothing() {
-        Authentication authentication = new Authentication(AuthenticationScheme.X509, null);
-        HttpRequest httpRequest = prepareUnknownAuthenticationTest();
-        zosmfScheme.createCommand(authentication, new DummyX509AuthSource()).applyToRequest(httpRequest);
-
-        assertNull(httpRequest.getFirstHeader("cookie"));
-    }
-
-    private HttpRequest prepareUnknownAuthenticationTest() {
-        RequestContext requestContext = spy(new RequestContext());
-        RequestContext.testSetCurrentContext(requestContext);
-
-        HttpRequest httpRequest = new HttpGet("/test/request");
-        HttpServletRequest request = new MockHttpServletRequest();
-        requestContext.setRequest(request);
-
-        AuthSource.Parsed parsedSourceDummy = new DummyX509AuthSource.Parsed("userId", new Date(), new Date(), Origin.X509);
-        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new DummyX509AuthSource()));
-        when(authSourceService.parse(any())).thenReturn(parsedSourceDummy);
-        return httpRequest;
-    }
-}
-
-class DummyX509AuthSource implements AuthSource {
-
-    @Override
-    public Object getRawSource() {
-        return null;
-    }
-
-    @RequiredArgsConstructor
-    @Getter
-    @EqualsAndHashCode
-    public static class Parsed implements AuthSource.Parsed {
-        private final String userId;
-        private final Date creation;
-        private final Date expiration;
-        private final Origin origin;
-    }
 }

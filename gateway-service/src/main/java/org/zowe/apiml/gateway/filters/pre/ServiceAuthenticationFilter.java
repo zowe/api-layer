@@ -20,8 +20,10 @@ import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -54,6 +56,7 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
         final RequestContext context = RequestContext.getCurrentContext();
 
         boolean rejected = false;
+        boolean badRequest = false;
         AuthenticationCommand cmd = null;
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
@@ -67,6 +70,9 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
             }
         } catch (TokenExpireException tee) {
             cmd = null;
+        } catch (InvalidCertificateException ice) {
+            rejected = true;
+            badRequest = true;
         } catch (AuthenticationException ae) {
             rejected = true;
         } catch (Exception e) {
@@ -77,7 +83,7 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
 
         if (rejected) {
             context.setSendZuulResponse(false);
-            context.setResponseStatusCode(SC_UNAUTHORIZED);
+            context.setResponseStatusCode(badRequest ? SC_BAD_REQUEST : SC_UNAUTHORIZED);
         } else if (cmd != null) {
             try {
                 // Update ZUUL context by authentication schema
