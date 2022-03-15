@@ -64,13 +64,18 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        results/**
+                        integration-tests/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -109,6 +114,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -156,13 +162,18 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -405,14 +416,18 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
-
+                        results/**
             -   uses: ./.github/actions/teardown
 
     CITestsWithRedisWithoutSslVerification:
@@ -1001,12 +1016,65 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
+    PublishResults:
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis]
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 11
+
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITests
+                    path: containercitests
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CITestsWithInfinispan
+                    path: citestswithinfinispan
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsZosmfRsu2012
+                    path: containercitestszosmfrsu2012
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsWithRedis
+                    path: containercitestswithredis
+            -   name: Copy test reports
+                run: |
+                    mkdir -p integration-tests/build/test-results
+                    cp -R containercitests/integration-tests/build/test-results/runContainerTests integration-tests/build/test-results
+            -   name: Code coverage and publish results
+                run: >
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results"
+                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             -   uses: ./.github/actions/teardown
