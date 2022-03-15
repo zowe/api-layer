@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.content;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -50,98 +51,121 @@ class BearerContentFilterTest {
             resourceAccessExceptionHandler);
     }
 
-    @Test
-    void authenticationWithBearerAuthHeader() throws ServletException, IOException {
-        String token = "token";
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-        request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
+    @Nested
+    class GivenValidBearerHeader {
+        @Nested
+        class WhenAuthenticate {
+            @Test
+            void thenSuccess() throws ServletException, IOException {
+                String token = "token";
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+                request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
 
-        bearerContentFilter.doFilter(request, response, filterChain);
+                bearerContentFilter.doFilter(request, response, filterChain);
 
-        verify(authenticationManager).authenticate(tokenAuthentication);
-        verify(filterChain).doFilter(request, response);
-        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+                verify(authenticationManager).authenticate(tokenAuthentication);
+                verify(filterChain).doFilter(request, response);
+                verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+                verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+            }
+        }
+
+        @Nested
+        class whenAuthenticateWithNoGateway {
+            @Test
+            void thenAuthenticationFails() throws ServletException, IOException {
+                String token = "token";
+                RuntimeException exception = new RuntimeException("No Gateway");
+
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+                request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
+                when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
+
+                bearerContentFilter.doFilter(request, response, filterChain);
+
+                verify(authenticationManager).authenticate(tokenAuthentication);
+                verify(filterChain, never()).doFilter(any(), any());
+                verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+                verify(resourceAccessExceptionHandler).handleException(request, response, exception);
+            }
+        }
     }
 
-    @Test
-    void shouldSkipFilter() throws ServletException, IOException {
-        String[] endpoints = {"/gateway"};
+    @Nested
+    class WhenGatewayEndpoint {
+        @Test
+        void thenSkipFilter() throws ServletException, IOException {
+            String[] endpoints = {"/gateway"};
 
-        request.setContextPath(endpoints[0]);
+            request.setContextPath(endpoints[0]);
 
-        BearerContentFilter bearerContentFilter = new BearerContentFilter(authenticationManager,
-            authenticationFailureHandler,
-            resourceAccessExceptionHandler,
-            endpoints);
+            BearerContentFilter bearerContentFilter = new BearerContentFilter(authenticationManager,
+                authenticationFailureHandler,
+                resourceAccessExceptionHandler,
+                endpoints);
 
-        bearerContentFilter.doFilter(request, response, filterChain);
+            bearerContentFilter.doFilter(request, response, filterChain);
 
-        verify(authenticationManager, never()).authenticate(any());
-        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+            verify(authenticationManager, never()).authenticate(any());
+            verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+            verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        }
     }
 
-    @Test
-    void shouldNotAuthenticateWithInvalidToken() throws ServletException, IOException {
-        String token = "token";
-        AuthenticationException exception = new BadCredentialsException("Token not valid");
+    @Nested
+    class GivenInValidToken {
+        @Nested
+        class WhenAuthenticate {
+            @Test
+            void thenAuthenticationFails() throws ServletException, IOException {
+                String token = "token";
+                AuthenticationException exception = new BadCredentialsException("Token not valid");
 
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-        request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
-        when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+                request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
+                when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
 
-        bearerContentFilter.doFilter(request, response, filterChain);
+                bearerContentFilter.doFilter(request, response, filterChain);
 
-        verify(authenticationManager).authenticate(tokenAuthentication);
-        verify(filterChain, never()).doFilter(any(), any());
-        verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+                verify(authenticationManager).authenticate(tokenAuthentication);
+                verify(filterChain, never()).doFilter(any(), any());
+                verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
+                verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+            }
+        }
     }
 
-    @Test
-    void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
-        String token = "token";
-        RuntimeException exception = new RuntimeException("No Gateway");
+    @Nested
+    class WhenNoBearerHeader {
+        @Test
+        void thenNotFilter() throws ServletException, IOException {
+            bearerContentFilter.doFilter(request, response, filterChain);
 
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-        request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
-        when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
+            verify(authenticationManager, never()).authenticate(any());
+            verify(filterChain).doFilter(request, response);
+            verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+            verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        }
 
-        bearerContentFilter.doFilter(request, response, filterChain);
+        @Test
+        void thenReturnEmpty() {
+            Optional<AbstractAuthenticationToken> content = bearerContentFilter.extractContent(request);
 
-        verify(authenticationManager).authenticate(tokenAuthentication);
-        verify(filterChain, never()).doFilter(any(), any());
-        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler).handleException(request, response, exception);
+            assertEquals(Optional.empty(), content);
+        }
     }
 
-    @Test
-    void shouldNotFilterWithNoBearerHeader() throws ServletException, IOException {
-        bearerContentFilter.doFilter(request, response, filterChain);
+    @Nested
+    class WhenBearerHeader {
+        @Test
+        void thenExtractContent() {
+            request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
+            Optional<AbstractAuthenticationToken> content = bearerContentFilter.extractContent(request);
 
-        verify(authenticationManager, never()).authenticate(any());
-        verify(filterChain).doFilter(request, response);
-        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+            TokenAuthentication actualToken = new TokenAuthentication("token");
+
+            assertTrue(content.isPresent());
+            assertEquals(actualToken, content.get());
+        }
     }
-
-    @Test
-    void shouldReturnEmptyIfNoBearerHeader() {
-        Optional<AbstractAuthenticationToken> content = bearerContentFilter.extractContent(request);
-
-        assertEquals(Optional.empty(), content);
-    }
-
-    @Test
-    void shouldExtractContent() {
-        request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
-        Optional<AbstractAuthenticationToken> content = bearerContentFilter.extractContent(request);
-
-        TokenAuthentication actualToken = new TokenAuthentication("token");
-
-        assertTrue(content.isPresent());
-        assertEquals(actualToken, content.get());
-    }
-
 }
