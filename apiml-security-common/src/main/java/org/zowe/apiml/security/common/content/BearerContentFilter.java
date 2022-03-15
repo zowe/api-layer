@@ -12,9 +12,9 @@ package org.zowe.apiml.security.common.content;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,13 +26,13 @@ import java.util.Optional;
 public class BearerContentFilter extends AbstractSecureContentFilter {
 
     public BearerContentFilter(AuthenticationManager authenticationManager,
-                               FailedAuthenticationHandler failureHandler,
+                               AuthenticationFailureHandler failureHandler,
                                ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
         super(authenticationManager, failureHandler, resourceAccessExceptionHandler, new String[0]);
     }
 
     public BearerContentFilter(AuthenticationManager authenticationManager,
-                               FailedAuthenticationHandler failureHandler,
+                               AuthenticationFailureHandler failureHandler,
                                ResourceAccessExceptionHandler resourceAccessExceptionHandler,
                                String[] endpoints) {
         super(authenticationManager, failureHandler, resourceAccessExceptionHandler, endpoints);
