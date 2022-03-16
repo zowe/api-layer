@@ -7,16 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional.gateway;
+package org.zowe.apiml.functional.discovery;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.http.HttpRequestUtils;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -25,16 +27,16 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
 @GeneralAuthenticationTest
-class GatewayAuthenticationTest {
+class DiscoveryServiceAuthenticationTest {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private static final String ACTUATOR_ENDPOINT = "/application";
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
     @Nested
@@ -44,11 +46,10 @@ class GatewayAuthenticationTest {
             @Test
             void thenAuthenticate() {
                 String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
-                // Gateway request to url
                 given()
                     .header("Authorization", "Bearer " + token)
                     .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ACTUATOR_ENDPOINT))
+                    .get(DiscoveryUtils.getDiscoveryUrl() + ACTUATOR_ENDPOINT)
                     .then()
                     .statusCode(is(SC_OK));
             }
@@ -62,16 +63,15 @@ class GatewayAuthenticationTest {
             @Test
             void thenReturnUnauthorized() {
                 String expectedMessage = "Token is not valid for URL '" + ACTUATOR_ENDPOINT + "'";
-                // Gateway request to url
                 given()
                     .header("Authorization", "Bearer invalidToken")
                     .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ACTUATOR_ENDPOINT))
+                    .get(DiscoveryUtils.getDiscoveryUrl() + ACTUATOR_ENDPOINT)
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
-                 .body(
-                    "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-                );
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+                    );
             }
         }
     }
