@@ -32,6 +32,7 @@ import org.zowe.apiml.security.client.token.GatewayTokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 
 import java.util.Collections;
@@ -79,6 +80,7 @@ public class HttpsWebSecurityConfig {
                 .and())
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(bearerContentFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/**").authenticated()
                 .and()
@@ -165,6 +167,7 @@ public class HttpsWebSecurityConfig {
             baseConfigure(http.antMatcher("/discovery/**"))
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(bearerContentFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .httpBasic().realmName(DISCOVERY_REALM);
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 http.authorizeRequests().anyRequest().authenticated().and()
@@ -191,6 +194,17 @@ public class HttpsWebSecurityConfig {
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             securityConfigurationProperties);
+    }
+
+    /**
+     * Secures content with a Bearer token
+     */
+    private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+        return new BearerContentFilter(
+            authenticationManager,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler()
+        );
     }
 
     private UserDetailsService x509UserDetailsService() {
