@@ -432,7 +432,7 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * fallback filterchain for all other requests
+     * Fallback filterchain for all other requests
      * All Routing goes through here
      * The filterchain does not require authentication
      * Web security is configured here and only here
