@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.zuul.context.RequestContext;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -26,6 +28,17 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         return AuthenticationCommand.EMPTY;
+    }
+
+    public class ZoweJwtAuthCommand extends AuthenticationCommand {
+
+        public static final long serialVersionUID = -885301934611866658L;
+        public static final String COOKIE_HEADER = "cookie";
+        @Override
+        public void apply(InstanceInfo instanceInfo) {
+            final RequestContext context = RequestContext.getCurrentContext();
+
+        }
     }
 
 }
