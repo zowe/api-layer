@@ -6,6 +6,9 @@ on:
     pull_request:
         branches: [ master, v2.x.x ]
 
+env:
+    JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
+
 jobs:
     PublishJibContainers:
         runs-on: ubuntu-latest
@@ -63,16 +66,14 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
-
             -   name: Store results
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: ContainerCITests
+                    name: ContainerCITests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
-                        integration-tests/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -111,12 +112,12 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsRegistration
+                    name: ContainerCITestsRegistration-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -167,7 +168,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: ContainerCITestsZosmfRsu2012
+                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -211,11 +212,12 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsZosmfPH34201
+                    name: CITestsZosmfPH34201-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -258,11 +260,12 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsZosmfWithoutJwt
+                    name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -306,11 +309,12 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint
+                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -353,13 +357,18 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsInternalPort
+                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -421,7 +430,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: ContainerCITestsWithRedis
+                    name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -482,12 +491,12 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsWithRedisWithoutSslVerification
+                    name: ContainerCITestsWithRedisWithoutSslVerification-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -561,12 +570,12 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsHA
+                    name: CITestsHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -655,12 +664,14 @@ jobs:
                     docker ps -q | xargs -L 1 docker logs
             -   name: Correct Permisions
                 run: |
-                    chmod 755 -R .gradle                    
+                    chmod 755 -R .gradle
+
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: LbHaTests
+                    name: LbHaTests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -725,12 +736,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsDiscoveryChaoticHA
+                    name: CITestsDiscoveryChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -795,12 +807,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsGatewayChaoticHA
+                    name: CITestsGatewayChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -869,12 +882,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsDicoverableClientChaoticHA
+                    name: CITestsDicoverableClientChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -943,12 +957,13 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-                    
+
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsWebSocketChaoticHA
+                    name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -1021,7 +1036,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: CITestsWithInfinispan
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -1029,7 +1044,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis]
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis,CITestsInternalPort]
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1044,27 +1059,27 @@ jobs:
 
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITests
+                    name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
             -   uses: actions/download-artifact@v3
                 with:
-                    name: CITestsWithInfinispan
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: citestswithinfinispan
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsZosmfRsu2012
+                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: containercitestszosmfrsu2012
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsWithRedis
+                    name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
                     path: containercitestswithredis
-            -   name: Copy test reports
-                run: |
-                    mkdir -p integration-tests/build/test-results
-                    cp -R containercitests/integration-tests/build/test-results/runContainerTests integration-tests/build/test-results
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
+                    path: containercitestsinternalport
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results,containercitestsinternalport/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:

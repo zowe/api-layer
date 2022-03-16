@@ -12,19 +12,25 @@ package org.zowe.apiml.gateway.ribbon.http;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.security.cert.X509Certificate;
+import java.util.stream.Stream;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 
 import java.util.Optional;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -58,11 +64,12 @@ class ServiceAuthenticationDecoratorTest {
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
     }
 
-    @Test
-    void givenContextWithAnyOtherCommand_whenProcess_thenNoAction() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenContextWithAnyOtherCommand_whenProcess_thenNoAction(AuthSource authSource) {
         HttpRequest request = new HttpGet("/");
         AuthenticationCommand cmd = mock(ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand.class);
-        prepareContext(cmd);
+        prepareContext(cmd, authSource);
 
         decorator.process(request);
 
@@ -70,10 +77,11 @@ class ServiceAuthenticationDecoratorTest {
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
     }
 
-    @Test
-    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand(AuthSource authSource) {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
-        prepareContext(universalCmd);
+        prepareContext(universalCmd, authSource);
         doReturn(true).when(authSourceService).isValid(any());
 
         decorator.process(request);
@@ -91,10 +99,11 @@ class ServiceAuthenticationDecoratorTest {
             "Should fail on RequestContext without InstanceInfo set by LoadBalancer impl.");
     }
 
-    @Test
-    void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort(AuthSource authSource) {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
-        prepareContext(universalCmd);
+        prepareContext(universalCmd, authSource);
         when(authSourceService.isValid(any())).thenReturn(false);
 
         assertThrows(RequestAbortException.class, () ->
@@ -103,10 +112,11 @@ class ServiceAuthenticationDecoratorTest {
         verify(universalCmd, times(0)).applyToRequest(request);
     }
 
-    @Test
-    void givenContextWithCorrectKeyAndJWT_whenAuthenticationThrows_thenShouldAbort() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenContextWithCorrectKeyAndJWT_whenAuthenticationThrows_thenShouldAbort(AuthSource authSource) {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
-        prepareContext(universalCmd);
+        prepareContext(universalCmd, authSource);
         AuthenticationException ae = mock(AuthenticationException.class);
         doThrow(ae).when(authSourceService).isValid(any());
 
@@ -116,10 +126,11 @@ class ServiceAuthenticationDecoratorTest {
         verify(universalCmd, times(0)).applyToRequest(request);
     }
 
-    @Test
-    void givenWrongContext_whenProcess_thenReturnWhenCmdIsNull() throws RequestAbortException {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenWrongContext_whenProcess_thenReturnWhenCmdIsNull(AuthSource authSource) throws RequestAbortException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
-        prepareWrongContextForCmdNull(universalCmd);
+        prepareWrongContextForCmdNull(universalCmd, authSource);
 
         decorator.process(request);
 
@@ -127,8 +138,7 @@ class ServiceAuthenticationDecoratorTest {
         verify(universalCmd, times(0)).applyToRequest(request);
     }
 
-    private void prepareContext(AuthenticationCommand command) {
-        JwtAuthSource authSource = new JwtAuthSource("jwtToken");
+    private void prepareContext(AuthenticationCommand command, AuthSource authSource) {
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
         doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
@@ -139,8 +149,7 @@ class ServiceAuthenticationDecoratorTest {
         doReturn(true).when(command).isRequiredValidSource();
     }
 
-    private void prepareWrongContextForCmdNull(AuthenticationCommand command) {
-        JwtAuthSource authSource = new JwtAuthSource("jwtToken");
+    private void prepareWrongContextForCmdNull(AuthenticationCommand command, AuthSource authSource) {
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
         doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
@@ -149,5 +158,12 @@ class ServiceAuthenticationDecoratorTest {
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
         when(serviceAuthenticationService.getAuthenticationCommand(authentication, authSource)).thenReturn(null);
         doReturn(true).when(command).isRequiredValidSource();
+    }
+
+    private static Stream<AuthSource> provideAuthSources() {
+        return Stream.of(
+            new JwtAuthSource("token"),
+            new X509AuthSource(mock(X509Certificate.class))
+        );
     }
 }

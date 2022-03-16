@@ -12,8 +12,12 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.CounterFactory;
+import java.security.cert.X509Certificate;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -23,8 +27,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
@@ -57,8 +63,16 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         assertTrue(serviceAuthenticationFilter.shouldFilter());
     }
 
-    @Test
-    void testRun() {
+    private static Stream<AuthSource> provideAuthSources() {
+        return Stream.of(
+            new JwtAuthSource("token"),
+            new X509AuthSource(mock(X509Certificate.class))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void testRun(AuthSource authSource) {
         Mockito.when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
 
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -68,7 +82,6 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
 
-        JwtAuthSource authSource = new JwtAuthSource("token");
         when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
 
         serviceAuthenticationFilter.run();
@@ -88,7 +101,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
             }
         });
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("error");
-        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("token")));
+        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
         when(serviceAuthenticationService.getAuthenticationCommand(eq("error"), any()))
             .thenThrow(new RuntimeException("Potential exception"));
         try {
@@ -102,8 +115,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         }
     }
 
-    private AuthenticationCommand createJwtValidationCommand(String jwtToken) {
-        JwtAuthSource authSource = new JwtAuthSource(jwtToken);
+    private AuthenticationCommand createValidationCommand(AuthSource authSource) {
         RequestContext requestContext = mock(RequestContext.class);
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
@@ -116,10 +128,10 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         return cmd;
     }
 
-    @Test
-    void givenValidJwt_whenTokenRequired_thenCallThrought() {
-        String jwtToken = "invalidJwtToken";
-        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenValidAuthSource_whenAuthSourceRequired_thenCallThrought(AuthSource authSource) {
+        AuthenticationCommand cmd = createValidationCommand(authSource);
         doReturn(false).when(authSourceService).isValid(any());
 
         serviceAuthenticationFilter.run();
@@ -129,10 +141,10 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         verify(cmd, never()).apply(any());
     }
 
-    @Test
-    void givenValidJwt_whenTokenRequired_thenRejected() {
-        String jwtToken = "validJwtToken";
-        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenValidAuthSource_whenAuthSourceRequired_thenRejected(AuthSource authSource) {
+        AuthenticationCommand cmd = createValidationCommand(authSource);
         doReturn(true).when(authSourceService).isValid(any());
 
         serviceAuthenticationFilter.run();
@@ -142,10 +154,10 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         verify(cmd, times(1)).apply(null);
     }
 
-    @Test
-    void givenValidJwt_whenCommandFailed_thenInternalError() {
-        String jwtToken = "validJwtToken";
-        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenValidAuthSource_whenCommandFailed_thenInternalError(AuthSource authSource) {
+        AuthenticationCommand cmd = createValidationCommand(authSource);
         doThrow(new RuntimeException()).when(cmd).apply(null);
         doReturn(true).when(authSourceService).isValid(any());
         CounterFactory.initialize(new CounterFactory() {
@@ -164,10 +176,10 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         }
     }
 
-    @Test
-    void givenExpiredJwt_thenCallThrought() {
-        String jwtToken = "expiredJwtToken";
-        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenExpiredJwt_thenCallThrought(AuthSource authSource) {
+        AuthenticationCommand cmd = createValidationCommand(authSource);
         doThrow(new TokenExpireException("Token is expired.")).when(authSourceService).isValid(any());
 
         serviceAuthenticationFilter.run();
@@ -177,10 +189,10 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         verify(cmd, never()).apply(any());
     }
 
-    @Test
-    void givenInvalidJwt_whenAuthenticationException_thenReject() {
-        String jwtToken = "unparsableJwtToken";
-        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenInvalidAuthSource_whenAuthenticationException_thenReject(AuthSource authSource) {
+        AuthenticationCommand cmd = createValidationCommand(authSource);
         AuthenticationException ae = mock(AuthenticationException.class);
         doThrow(ae).when(authSourceService).isValid(any());
 
