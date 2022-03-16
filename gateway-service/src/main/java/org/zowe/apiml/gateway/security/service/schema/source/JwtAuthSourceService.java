@@ -85,4 +85,9 @@ public class JwtAuthSourceService implements AuthSourceService {
         }
         return null;
     }
+
+    @Override
+    public String getJWT(AuthSource authSource) {
+        return ((JwtAuthSource)authSource).getRawSource();
+    }
 }

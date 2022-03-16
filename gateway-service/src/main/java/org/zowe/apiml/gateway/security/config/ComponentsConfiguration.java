@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +17,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -67,7 +68,7 @@ public class ComponentsConfiguration {
      */
     @Bean
     @Qualifier("x509MFAuthSourceService")
-    public X509AuthSourceService getX509MFAuthSourceService(@Autowired X509AbstractMapper mapper) {
-        return new X509AuthSourceService(mapper);
+    public X509AuthSourceService getX509MFAuthSourceService(X509AbstractMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
+        return new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
     }
 }

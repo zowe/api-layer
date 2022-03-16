@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
@@ -31,11 +33,15 @@ import org.zowe.apiml.security.common.error.InvalidCertificateException;
 @RequiredArgsConstructor
 public class X509AuthSourceService implements AuthSourceService {
     private final X509AbstractMapper mapper;
+    private final TokenCreationService tokenService;
+    private final AuthenticationService authenticationService;
+
     /**
      * Gets client certificate from request.
      * <p>
      * In case of multiple certificates only the first one will be used.
      * <p>
+     *
      * @return Optional<AuthSource> with client certificate of Optional.empty()
      */
     @Override
@@ -49,12 +55,13 @@ public class X509AuthSourceService implements AuthSourceService {
     /**
      * Validates authentication source, check authentication source type and whether client certificate from the
      * authentication source has the extended key usage set correctly.
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication - client certificate.
      * @return true if client certificate is valid, false otherwise.
      */
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
-            X509Certificate clientCert = (X509Certificate)authSource.getRawSource();
+            X509Certificate clientCert = (X509Certificate) authSource.getRawSource();
             if (clientCert == null) {
                 return false;
             }
@@ -68,12 +75,13 @@ public class X509AuthSourceService implements AuthSourceService {
 
     /**
      * Parse client certificate from authentication source.
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication - client certificate.
      * @return parsed authentication source or null if error occurred during parsing.
      */
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
-            X509Certificate clientCert = (X509Certificate)authSource.getRawSource();
+            X509Certificate clientCert = (X509Certificate) authSource.getRawSource();
             return clientCert == null ? null : parseClientCert(clientCert, mapper);
         }
         return null;
@@ -81,7 +89,8 @@ public class X509AuthSourceService implements AuthSourceService {
 
     @Override
     public String getLtpaToken(AuthSource authSource) {
-        throw new UnsupportedOperationException("Unsupported operation");
+        String jwt = getJWT(authSource);
+        return authenticationService.getLtpaToken(jwt);
     }
 
     // Gets client certificate from request
@@ -98,8 +107,9 @@ public class X509AuthSourceService implements AuthSourceService {
 
     /**
      * Parse client certificate: get common name, distinguished name and encoded certificate value.
+     *
      * @param clientCert {@link X509Certificate} client certificate to parse.
-     * @param mapper instance of {@link X509AbstractMapper} to use for parsing.
+     * @param mapper     instance of {@link X509AbstractMapper} to use for parsing.
      * @return parsed authentication source or null in case of CertificateEncodingException.
      */
     private Parsed parseClientCert(X509Certificate clientCert, X509AbstractMapper mapper) {
@@ -113,5 +123,14 @@ public class X509AuthSourceService implements AuthSourceService {
             log.error("Exception parsing certificate", e);
             return null;
         }
+    }
+
+    @Override
+    public String getJWT(AuthSource authSource) {
+        if (authSource instanceof X509AuthSource) {
+            String userId = mapper.mapCertificateToMainframeUserId((X509Certificate) authSource.getRawSource());
+            return tokenService.createJwtTokenWithoutCredentials(userId);
+        }
+        return null;
     }
 }
