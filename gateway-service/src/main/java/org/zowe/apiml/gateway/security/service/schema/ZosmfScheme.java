@@ -100,8 +100,9 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
                 // parse authentication source to detect the source (z/OSMF / Zowe)
                 AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
-                if(AuthSource.Origin.X509.equals(parsedAuthSource.getOrigin())) {
-                  parsedAuthSource = authSourceService.parse(new JwtAuthSource(authSourceService.getJWT(authSource)));
+                if (AuthSource.Origin.X509.equals(parsedAuthSource.getOrigin())) {
+                    authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
+                    parsedAuthSource = authSourceService.parse(authSource);
                 }
                 switch (parsedAuthSource.getOrigin()) {
                     case ZOSMF:
