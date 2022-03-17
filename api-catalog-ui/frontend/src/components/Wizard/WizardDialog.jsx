@@ -118,12 +118,8 @@ export default class WizardDialog extends Component {
                         <DialogContentText>
                             This wizard will guide you through creating a correct YAML for your application.
                         </DialogContentText>
-                    <DialogHeader>
-                        <DialogTitle>Onboard a New API Using {enablerName}</DialogTitle>
-                    </DialogHeader>
-                        <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
                         <div className="yaml-file-browser">
-                            <Text>Select your YAML configuration file to prefill the fields:</Text>
+                            <div>Select your YAML configuration file to prefill the fields:</div>
                             <input id="yaml-browser" type="file" onChange={this.showFile} />
                         </div>
                         <WizardNavigationContainer />
