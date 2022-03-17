@@ -15,8 +15,12 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,6 +46,7 @@ import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -120,7 +125,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenClientCertificate_whenCreateCommand_thenAddZuulHeader() {
+    void givenClientCertificate_thenAddZuulHeader() {
         when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new X509AuthSource(mock(
             X509Certificate.class))));
         when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(parsedSourceX509);
@@ -135,6 +140,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         verify(requestContext, times(1)).addZuulRequestHeader(anyString(), anyString());
     }
+
 
     @Test
     void givenNotValidToken_whenCreateCommand_thenThrowTokenNotValidException() {
@@ -292,27 +298,41 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         assertNull(httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION));
     }
 
-    @Test
-    void givenZosmfToken_whenApplyToRequest_thenTestJwtToken() {
-        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
-        when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
-        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
-        RequestContext requestContext = spy(new RequestContext());
-        RequestContext.testSetCurrentContext(requestContext);
 
-        HttpRequest httpRequest = new HttpGet("/test/request");
-        httpRequest.setHeader(COOKIE_HEADER, "cookie1=1");
-        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
-        HttpServletRequest request = new MockHttpServletRequest();
-        requestContext.setRequest(request);
+    static Stream<Arguments> authSources() {
+        return Stream.of(Arguments.of(new JwtAuthSource("jwtToken2")), Arguments.of(new X509AuthSource(mock(
+            X509Certificate.class))));
+    }
 
-        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
-        when(authSourceService.parse(any())).thenReturn(parsedSourceZosmf);
-        when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn("apimlAuthenticationToken");
-        when(authSourceService.getJWT(any(JwtAuthSource.class))).thenReturn("jwtToken2");
-        zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken")).applyToRequest(httpRequest);
+    @Nested
+    class ValidAuthSourceTest {
 
-        assertEquals("cookie1=1;jwtToken=jwtToken2", httpRequest.getFirstHeader("cookie").getValue());
+        @ParameterizedTest(name = "whenApplyToRequest_thenTestJwtToken")
+        @MethodSource("org.zowe.apiml.gateway.security.service.schema.ZosmfSchemeTest#authSources")
+        void givenZosmfToken_whenApplyToRequest_thenTestJwtToken(AuthSource authSource) {
+            AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+            when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
+            when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
+            RequestContext requestContext = spy(new RequestContext());
+            RequestContext.testSetCurrentContext(requestContext);
+
+            HttpRequest httpRequest = new HttpGet("/test/request");
+            httpRequest.setHeader(COOKIE_HEADER, "cookie1=1");
+            Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
+            HttpServletRequest request = new MockHttpServletRequest();
+            requestContext.setRequest(request);
+
+            when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
+            when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(parsedSourceX509);
+            when(authSourceService.parse(any(JwtAuthSource.class))).thenReturn(parsedSourceZosmf);
+            when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn("apimlAuthenticationToken");
+            when(authSourceService.getJWT(any(JwtAuthSource.class))).thenReturn("jwtToken2");
+            when(authSourceService.getJWT(any(X509AuthSource.class))).thenReturn("jwtToken2");
+            zosmfScheme.createCommand(authentication, authSource).applyToRequest(httpRequest);
+
+            assertEquals("cookie1=1;jwtToken=jwtToken2", httpRequest.getFirstHeader("cookie").getValue());
+        }
+
     }
 
 }

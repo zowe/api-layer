@@ -136,6 +136,11 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
             authSourceOptional.ifPresent(authSource -> {
                 // parse JWT token to detect the source (z/OSMF / Zowe)
                 AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+                // translate to JWT auth source
+                if (AuthSource.Origin.X509.equals(parsedAuthSource.getOrigin())) {
+                    authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
+                    parsedAuthSource = authSourceService.parse(authSource);
+                }
                 switch (parsedAuthSource.getOrigin()) {
                     case ZOSMF:
                         cookies.remove(authConfigurationProperties.getCookieProperties().getCookieName());
