@@ -15,16 +15,22 @@ import java.security.cert.X509Certificate;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
+import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.JwtUtils;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
@@ -32,6 +38,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.gateway.utils.X509Utils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -46,6 +53,7 @@ import static org.mockito.Mockito.*;
 import static org.zowe.apiml.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Mock
@@ -116,14 +124,20 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenClientCertificate_whenCreateCommand_thenDontAddZuulHeader() {
+    void givenClientCertificate_whenCreateCommand_thenAddZuulHeader() {
         when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new X509AuthSource(mock(
             X509Certificate.class))));
-        when(authSourceService.parse(any())).thenReturn(parsedSourceX509);
+        when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(parsedSourceX509);
+        when(authSourceService.getJWT(any())).thenReturn("jwt");
+        when(authSourceService.parse(any(JwtAuthSource.class))).thenReturn(parsedSourceZosmf);
+        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+        when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
+        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
+        X509Certificate certificate = X509Utils.getCertificate("zowe");
+        X509AuthSource authSource = new X509AuthSource(certificate);
+        zosmfScheme.createCommand(authentication, authSource).apply(null);
 
-        zosmfScheme.createCommand(authentication, null).apply(null);
-
-        verify(requestContext, never()).addZuulRequestHeader(anyString(), anyString());
+        verify(requestContext,times(1)).addZuulRequestHeader(anyString(), anyString());
     }
 
     @Test
@@ -299,7 +313,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken2")));
         when(authSourceService.parse(any())).thenReturn(parsedSourceZosmf);
         when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn("apimlAuthenticationToken");
-
+        when(authSourceService.getJWT(any(JwtAuthSource.class))).thenReturn("jwtToken2");
         zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken")).applyToRequest(httpRequest);
 
         assertEquals("cookie1=1;jwtToken=jwtToken2", httpRequest.getFirstHeader("cookie").getValue());

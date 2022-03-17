@@ -11,23 +11,24 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
-import java.util.Date;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.util.Cookies;
 
 import java.net.HttpCookie;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -35,11 +36,13 @@ import java.util.Optional;
  * and distribute it as cookie.
  */
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ZosmfScheme implements AbstractAuthenticationScheme {
 
     private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;
+    @Value("${apiml.security.auth.provider}")
+    private String authProvider;
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -100,6 +103,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
                 // parse authentication source to detect the source (z/OSMF / Zowe)
                 AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+                // translate to JWT auth source
                 if (AuthSource.Origin.X509.equals(parsedAuthSource.getOrigin())) {
                     authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
                     parsedAuthSource = authSourceService.parse(authSource);
