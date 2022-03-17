@@ -36,61 +36,65 @@ class WizardInputs extends Component {
         this.state = {
             uploaded_yaml: upYaml,
         };
-        this.props.data.content.forEach((property, index) => {
-            let path = '';
-            if (this.props.data.indentation) {
-                path = this.props.data.indentation.split('/');
-            }
-            Object.keys(property).forEach((propertyKey) => {
-                let value = this.state.uploaded_yaml;
-                let found = true;
-                if (path.length > 0) {
-                    path.forEach((indent) => {
-                        if (found && value[indent]) {
-                            value = value[indent];
-                        } else {
-                            found = false;
-                        }
-                    });
+        if (this.props.data.content) {
+            this.props.data.content.forEach((property, index) => {
+                let path = '';
+                if (this.props.data.indentation) {
+                    path = this.props.data.indentation.split('/');
                 }
-                if (found && this.props.data.multiple && this.props.data.multiple === true) {
-                    value.forEach((individualValue, individualIndex) => {
-                        if (
-                            this.props.data.noKey &&
-                            this.props.data.noKey === true &&
-                            individualValue[individualIndex]
-                        ) {
-                            if (!targets[individualIndex]) {
-                                targets[individualIndex] = [];
-                            }
-                            targets[individualIndex].push({
-                                name: propertyKey,
-                                value: individualValue[individualIndex],
-                                checked: individualValue[individualIndex],
-                            });
-                        } else if (individualValue[propertyKey]) {
-                            if (!targets[individualIndex]) {
-                                targets[individualIndex] = [];
-                            }
-                            targets[individualIndex].push({
-                                name: propertyKey,
-                                value: individualValue[propertyKey],
-                                checked: individualValue[propertyKey],
+                Object.keys(property).forEach((propertyKey) => {
+                    if (this.state.uploaded_yaml) {
+                        let value = this.state.uploaded_yaml;
+                        let found = true;
+                        if (path.length > 0) {
+                            path.forEach((indent) => {
+                                if (found && value[indent]) {
+                                    value = value[indent];
+                                } else {
+                                    found = false;
+                                }
                             });
                         }
-                    });
-                } else if (found && value[propertyKey]) {
-                    if (!targets[index]) {
-                        targets[index] = [];
+                        if (found && this.props.data.multiple && this.props.data.multiple === true) {
+                            value.forEach((individualValue, individualIndex) => {
+                                if (
+                                    this.props.data.noKey &&
+                                    this.props.data.noKey === true &&
+                                    individualValue[individualIndex]
+                                ) {
+                                    if (!targets[individualIndex]) {
+                                        targets[individualIndex] = [];
+                                    }
+                                    targets[individualIndex].push({
+                                        name: propertyKey,
+                                        value: individualValue[individualIndex],
+                                        checked: individualValue[individualIndex],
+                                    });
+                                } else if (individualValue[propertyKey]) {
+                                    if (!targets[individualIndex]) {
+                                        targets[individualIndex] = [];
+                                    }
+                                    targets[individualIndex].push({
+                                        name: propertyKey,
+                                        value: individualValue[propertyKey],
+                                        checked: individualValue[propertyKey],
+                                    });
+                                }
+                            });
+                        } else if (found && value[propertyKey]) {
+                            if (!targets[index]) {
+                                targets[index] = [];
+                            }
+                            targets[index].push({
+                                name: propertyKey,
+                                value: value[propertyKey],
+                                checked: value[propertyKey],
+                            });
+                        }
                     }
-                    targets[index].push({
-                        name: propertyKey,
-                        value: value[propertyKey],
-                        checked: value[propertyKey],
-                    });
-                }
+                });
             });
-        });
+        }
         this.handleMultipleInputChange({
             targets,
         });
