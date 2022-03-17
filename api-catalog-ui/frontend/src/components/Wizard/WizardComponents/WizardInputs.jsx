@@ -32,7 +32,6 @@ class WizardInputs extends Component {
         } else {
             upYaml = localStorage.getItem('uploaded_yaml');
         }
-        
         this.state = {
             uploaded_yaml: upYaml,
         };
