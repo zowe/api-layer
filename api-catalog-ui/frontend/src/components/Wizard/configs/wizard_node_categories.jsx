@@ -15,17 +15,17 @@ export const nodeSpecificCategories = [
             certificate: {
                 value: '',
                 question: 'Certificate:',
-                tooltip: 'e.g. ssl/localhost.keystore.cer',
+                tooltip: 'Example: ssl/localhost.keystore.cer',
             },
             keyStore: {
                 value: '',
                 question: 'The keystore file used to store the private key (keyring: set to SAF keyring location):',
-                tooltip: 'e.g. ssl/localhost.keystore.key',
+                tooltip: 'Example: ssl/localhost.keystore.key',
             },
             caFile: {
                 value: '',
                 question: 'Certificate Authority file:',
-                tooltip: 'e.g. ssl/localhost.pem',
+                tooltip: 'Example: ssl/localhost.pem',
             },
             keyPassword: {
                 value: '',
@@ -45,40 +45,40 @@ export const nodeSpecificCategories = [
             host: {
                 value: '',
                 question: 'The host to be used:',
-                tooltip: 'e.g. localhost',
+                tooltip: 'Example: localhost',
             },
             ipAddress: {
                 value: '',
                 question: 'The IP address to be used:',
-                tooltip: 'e.g. 127.0.0.1',
+                tooltip: 'Example: 127.0.0.1',
             },
             port: {
                 value: '',
                 question: 'The port to be used:',
-                tooltip: 'e.g. 10011',
+                tooltip: 'Example: 10011',
             },
             servicePath: {
                 value: '',
                 question: 'The service path:',
-                tooltip: 'e.g. /eureka/apps/',
+                tooltip: 'Example: /eureka/apps/',
             },
             maxRetries: {
                 value: '',
                 question: 'The maximum number of retries:',
                 hide: true,
-                tooltip: 'e.g. 30',
+                tooltip: 'Number of retries before failing. Example: 30',
             },
             requestRetryDelay: {
                 value: '',
                 question: 'The request retry delay:',
                 hide: true,
-                tooltip: 'e.g. 1000',
+                tooltip: 'Milliseconds to wait between retries. Example: 1000',
             },
             registryFetchInterval: {
                 value: '',
                 question: 'The interval for registry interval:',
                 hide: true,
-                tooltip: 'e.g. 5',
+                tooltip: 'How often does Eureka client pull the service list from Eureka server. The default is 30 seconds. Example: 5',
             },
         },
     },
@@ -88,37 +88,37 @@ export const nodeSpecificCategories = [
             app: {
                 value: '',
                 question: 'App ID:',
-                tooltip: 'e.g. hwexpress',
+                tooltip: 'Example: hwexpress',
             },
             vipAddress: {
                 value: '',
                 question: 'Virtual IP address:',
-                tooltip: 'e.g. hwexpress',
+                tooltip: 'Example: hwexpress',
             },
             instanceId: {
                 value: '',
                 question: 'Instance ID:',
-                tooltip: 'e.g. localhost:hwexpress:10020',
+                tooltip: 'Example: localhost:hwexpress:10020',
             },
             homePageUrl: {
                 value: '',
                 question: 'The URL of the home page:',
-                tooltip: 'e.g. https://localhost:10020/',
+                tooltip: 'Example: https://localhost:10020/',
             },
             hostname: {
                 value: '',
                 question: 'Host name:',
-                tooltip: 'e.g. localhost',
+                tooltip: 'Example: localhost',
             },
             ipAddr: {
                 value: '',
                 question: 'IP address:',
-                tooltip: 'e.g. 127.0.0.1',
+                tooltip: 'Example: 127.0.0.1',
             },
             secureVipAddress: {
                 value: '',
                 question: 'Secure virtual IP address:',
-                tooltip: 'e.g. hwexpress',
+                tooltip: 'Example: hwexpress',
             },
         },
     },
@@ -128,7 +128,7 @@ export const nodeSpecificCategories = [
             $: {
                 value: '',
                 question: 'Port:',
-                tooltip: 'e.g. 10020',
+                tooltip: 'Example: 10020',
             },
             '@enabled': {
                 value: false,
@@ -142,7 +142,7 @@ export const nodeSpecificCategories = [
             $: {
                 value: '',
                 question: 'Security port:',
-                tooltip: 'e.g. 10020',
+                tooltip: 'Example: 10020',
             },
             '@enabled': {
                 value: true,
@@ -156,12 +156,12 @@ export const nodeSpecificCategories = [
             '@class': {
                 value: '',
                 question: 'Class:',
-                tooltip: 'e.g. com.netflix.appinfo. InstanceInfo$DefaultDataCenterInfo',
+                tooltip: 'Example: com.netflix.appinfo. InstanceInfo$DefaultDataCenterInfo',
             },
             name: {
                 value: '',
                 question: 'Name:',
-                tooltip: 'e.g. MyOwn',
+                tooltip: 'Example: MyOwn',
             },
         },
     },
@@ -171,58 +171,58 @@ export const nodeSpecificCategories = [
             'apiml.catalog.tile.id': {
                 value: '',
                 question: 'Tile ID for the API ML catalog:',
-                tooltip: 'e.g. samplenodeservice',
+                tooltip: 'Example: samplenodeservice',
             },
             'apiml.catalog.tile.title': {
                 value: '',
                 question: 'Tile title for the API ML catalog:',
-                tooltip: 'e.g. Zowe Sample Node Service',
+                tooltip: 'Example: Zowe Sample Node Service',
             },
             'apiml.catalog.tile.description': {
                 value: '',
                 question: 'Tile description for the API ML catalog:',
-                tooltip: 'e.g. NodeJS Sample service running',
+                tooltip: 'Example: NodeJS Sample service running',
             },
             'apiml.catalog.tile.version': {
                 value: '',
                 question: 'Tile version for the API ML catalog:',
-                tooltip: 'e.g. 1.0.0',
+                tooltip: 'Example: 1.0.0',
             },
             'apiml.routes.api_v1.gatewayUrl': {
                 value: '',
                 question: 'API gateway URL:',
-                tooltip: 'e.g. api/v1',
+                tooltip: 'Example: api/v1',
             },
             'apiml.routes.api_v1.serviceUrl': {
                 value: '',
                 question: 'API service URL:',
-                tooltip: 'e.g. /api/v1',
+                tooltip: 'Example: /api/v1',
             },
             'apiml.apiInfo.0.apiId': {
                 value: '',
                 question: 'A unique identifier to the API in the API ML:',
-                tooltip: 'e.g. zowe.apiml.hwexpress',
+                tooltip: 'Example: zowe.apiml.hwexpress',
             },
             'apiml.apiInfo.0.gatewayUrl': {
                 value: '',
                 question: 'The base path at the API Gateway where the API is available:',
-                tooltip: 'e.g. api/v1',
+                tooltip: 'Example: api/v1',
             },
             'apiml.apiInfo.0.swaggerUrl': {
                 value: '',
                 question: 'The base path at the API Gateway where the API is available:',
-                tooltip: 'e.g. https://localhost:10020/ swagger.json',
+                tooltip: 'Example: https://localhost:10020/ swagger.json',
             },
             'apiml.service.title': {
                 value: '',
                 question: 'Service title:',
-                tooltip: 'e.g. Zowe Sample Node Service',
+                tooltip: 'Example: Zowe Sample Node Service',
             },
             'apiml.service.description': {
                 value: '',
                 question: 'Service description:',
                 tooltip:
-                    'e.g. The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.',
+                    'Example: The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.',
             },
         },
     },

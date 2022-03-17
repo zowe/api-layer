@@ -17,7 +17,7 @@ export const staticSpecificCategories = [
             instanceBaseUrls: {
                 value: '',
                 question: 'The base URL of the instance (the consistent part of the web address):',
-                tooltip: 'e.g. http://localhost:8080',
+                tooltip: 'Example: http://localhost:8080',
             },
         },
         multiple: false,
@@ -35,7 +35,7 @@ export const staticSpecificCategories = [
             serviceRelativeUrl: {
                 value: '',
                 question: 'Service API common context path:',
-                tooltip: 'e.g. /sampleservice/api/v1',
+                tooltip: 'Example: /sampleservice/api/v1',
             },
         },
         help: 'For service: <service>/allOfMyEndpointsAreHere/** exposed on Gateway under <gateway>/<serviceid>/api/v1/**\nFill in:\ngatewayUrl: /api/v1\nserviceUrl: /allOfMyEndpointsAreHere',
@@ -55,7 +55,7 @@ export const staticSpecificCategories = [
                 question: 'The id of the catalog tile:',
                 regexRestriction: [wizRegex.noWhiteSpaces],
                 dependencies: { type: 'Custom' },
-                tooltip: 'e.g. static',
+                tooltip: 'Example: static',
             },
         },
         interference: 'staticCatalog',
@@ -66,13 +66,13 @@ export const staticSpecificCategories = [
             title: {
                 value: '',
                 question: 'The title of the API services product family:',
-                tooltip: 'e.g. Static API services',
+                tooltip: 'Example: Static API services',
             },
             description: {
                 value: '',
                 question: 'The detailed description of the API Catalog UI dashboard tile:',
                 tooltip:
-                    'e.g. Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions',
+                    'Example: Services which demonstrate how to make an API service discoverable in the API ML ecosystem using YAML definitions',
             },
         },
         indentationDependency: 'catalogUiTileId',
