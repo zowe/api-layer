@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
@@ -51,6 +52,9 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        if (!LoginProvider.ZOSMF.getValue().equals(authProvider)) {
+            throw new AuthenticationSchemeNotSupportedException("ZOSMF authentication scheme is not supported for this API ML instance.");
+        }
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();

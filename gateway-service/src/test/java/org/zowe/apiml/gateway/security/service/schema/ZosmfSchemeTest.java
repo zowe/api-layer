@@ -86,8 +86,9 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         request = new MockHttpServletRequest();
         requestContext.setRequest(request);
-
         scheme = new ZosmfScheme(authSourceService, authConfigurationProperties);
+        ReflectionTestUtils.setField(zosmfScheme, "authProvider", "zosmf");
+        ReflectionTestUtils.setField(scheme, "authProvider", "zosmf");
     }
 
     @Test
@@ -233,7 +234,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         ZosmfScheme scheme = new ZosmfScheme(authSourceService, authConfigurationProperties);
         when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtTokenZosmf")));
         when(authSourceService.parse(new JwtAuthSource("jwtTokenZosmf"))).thenReturn(parsedSourceZosmf);
-
+        ReflectionTestUtils.setField(scheme, "authProvider", "zosmf");
         AuthenticationCommand command = scheme.createCommand(new Authentication(AuthenticationScheme.ZOSMF, null), new JwtAuthSource("jwtTokenZosmf"));
 
         command.apply(null);

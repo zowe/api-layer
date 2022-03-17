@@ -9,27 +9,30 @@
  */
 package org.zowe.apiml.acceptance;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.reset;
-
-import java.io.IOException;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
+import java.io.IOException;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.reset;
+
 /**
  * This test verifies that the token or client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
  * The output to be tested is the Zosmf token.
  */
 @AcceptanceTest
+@TestPropertySource(properties = {"apiml.security.auth.provider=zosmf", "spring.profiles.active=debug", "apiml.security.x509.externalMapperUrl="})
 class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;
@@ -43,13 +46,11 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
         void setUp() throws Exception {
             SslContextConfigurer configurer = new SslContextConfigurer(keystorePassword, clientKeystore, keystore);
             SslContext.prepareSslAuthentication(configurer);
-
             applicationRegistry.clearApplications();
             MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
             defaultBuilder.withZosmf();
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
-
             reset(mockClient);
         }
 
@@ -58,6 +59,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             // TODO: add checks for transformation once X509 -> zosmf is implemented
             @Test
             void thenOk() throws IOException {
+
                 mockValid200HttpResponse();
                 given()
                     .config(SslContext.clientCertUser)
