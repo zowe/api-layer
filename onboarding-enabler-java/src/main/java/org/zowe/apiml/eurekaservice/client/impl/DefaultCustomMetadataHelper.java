@@ -33,11 +33,7 @@ public class DefaultCustomMetadataHelper {
     private ZUtil zUtil;
 
     public DefaultCustomMetadataHelper() {
-        if (isRunningOnZos()) {
-            zUtil = ClassOrDefaultProxyUtils.createProxy(ZUtil.class, "com.ibm.jzos.ZUtil", ZUtilDummy::new);
-        } else {
-            zUtil = new ZUtil();
-        }
+        zUtil = new ZUtil();
     }
 
     protected boolean isRunningOnZos() {
