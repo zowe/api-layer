@@ -13,19 +13,27 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.gateway.utils.JWTUtils;
+import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 /**
  * This test verifies that the token or client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
@@ -39,6 +47,11 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStore}")
     private String keystore;
     private final String clientKeystore = "../keystore/client_cert/client-certs.p12";
+    @Value("${server.ssl.keyAlias:#{null}}")
+    private String keyAlias;
+
+    @Autowired
+    public ZosmfService zosmfService;
 
     @Nested
     class GivenClientCertificate {
@@ -52,6 +65,13 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             reset(mockClient);
+
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<>();
+            HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
+            String jwt = JWTUtils.createJwtToken("user", "zosmf", null, config);
+            tokens.put(ZosmfService.TokenType.JWT, jwt);
+            ZosmfService.AuthenticationResponse response = new ZosmfService.AuthenticationResponse("zosmf", tokens);
+            when(zosmfService.authenticate(any())).thenReturn(response);
         }
 
         @Nested

@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
@@ -36,6 +37,7 @@ import static org.mockito.Mockito.mock;
 
 @AcceptanceTest
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
+
     @Autowired
     @Qualifier("mockProxy")
     protected CloseableHttpClient mockClient;
@@ -43,6 +45,8 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     protected ApimlDiscoveryClientStub discoveryClient;
     @Autowired
     protected ApplicationRegistry applicationRegistry;
+    @Autowired
+    protected RestTemplate restTemplateWithoutKeystore;
     @Mock
     protected HttpEntity httpEntity;
 
@@ -52,8 +56,8 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(),false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(),false);
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(), false);
     }
 
     protected void mockValid200HttpResponse() throws IOException {
@@ -68,6 +72,7 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
             new BasicHeader("Access-Control-Allow-Credentials", "true"),
         });
     }
+
 
     protected void mockValid200HttpResponseWithHeaders(org.apache.http.Header[] headers) throws IOException {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
@@ -89,57 +94,57 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     }
 }
 
-    class HttpEntityImpl implements HttpEntity {
+class HttpEntityImpl implements HttpEntity {
 
-        byte [] bytes;
+    byte[] bytes;
 
-        public HttpEntityImpl(byte[] bytes) {
-            this.bytes = bytes;
-        }
-
-        @Override
-        public boolean isRepeatable() {
-            return false;
-        }
-
-        @Override
-        public boolean isChunked() {
-            return false;
-        }
-
-        @Override
-        public long getContentLength() {
-            return bytes.length;
-        }
-
-        @Override
-        public Header getContentType() {
-            return null;
-        }
-
-        @Override
-        public Header getContentEncoding() {
-            return null;
-        }
-
-        @Override
-        public InputStream getContent() throws IOException, UnsupportedOperationException {
-            InputStream is = new ByteArrayInputStream(bytes);
-            return is;
-        }
-
-        @Override
-        public void writeTo(OutputStream outStream) throws IOException {
-
-        }
-
-        @Override
-        public boolean isStreaming() {
-            return false;
-        }
-
-        @Override
-        public void consumeContent() throws IOException {
-
-        }
+    public HttpEntityImpl(byte[] bytes) {
+        this.bytes = bytes;
     }
+
+    @Override
+    public boolean isRepeatable() {
+        return false;
+    }
+
+    @Override
+    public boolean isChunked() {
+        return false;
+    }
+
+    @Override
+    public long getContentLength() {
+        return bytes.length;
+    }
+
+    @Override
+    public Header getContentType() {
+        return null;
+    }
+
+    @Override
+    public Header getContentEncoding() {
+        return null;
+    }
+
+    @Override
+    public InputStream getContent() throws IOException, UnsupportedOperationException {
+        InputStream is = new ByteArrayInputStream(bytes);
+        return is;
+    }
+
+    @Override
+    public void writeTo(OutputStream outStream) throws IOException {
+
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return false;
+    }
+
+    @Override
+    public void consumeContent() throws IOException {
+
+    }
+}
