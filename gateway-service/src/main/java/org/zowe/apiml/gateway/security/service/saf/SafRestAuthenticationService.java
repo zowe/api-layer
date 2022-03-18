@@ -18,6 +18,8 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
 
 import java.net.URI;
 import java.util.Collections;
@@ -37,7 +39,8 @@ import static org.springframework.util.StringUtils.isEmpty;
 public class SafRestAuthenticationService implements SafIdtProvider {
 
     private final RestTemplate restTemplate;
-
+    private final PassTicketService passTicketService;
+    
     static final HttpHeaders HEADERS = new HttpHeaders();
 
     static {
@@ -49,16 +52,18 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     String authenticationUrl;
     @Value("${apiml.security.saf.urls.verify}")
     String verifyUrl;
+    @Value("${apiml.security.zosmf.applid:IZUDFLT}")
+    String zosmfApplId;
 
     @Override
     public String generate(String username, char[] password, String applId) {
-        Authentication authentication = Authentication.builder()
-                .username(username)
-                .pass(password)
-                .appl(applId)
-                .build();
-
         try {
+            char[] passTicket = passTicketService.generate(username, zosmfApplId).toCharArray();
+            Authentication authentication = Authentication.builder()
+                    .username(username)
+                    .pass(passTicket)
+                    .build();
+
             ResponseEntity<Token> response = restTemplate.exchange(
                     URI.create(authenticationUrl),
                     HttpMethod.POST,
@@ -71,7 +76,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             }
 
             return responseBody.getJwt();
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden e) {
+        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden | IRRPassTicketGenerationException e) {
             throw new SafIdtAuthException("Authentication to ZSS failed", e);
         }
     }
@@ -86,7 +91,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             ResponseEntity<Void> response = restTemplate.exchange(
                     URI.create(verifyUrl),
                     HttpMethod.POST,
-                    new HttpEntity<>(new Token(safToken, applid), HEADERS),
+                    new HttpEntity<>(new Token(safToken), HEADERS),
                     Void.class);
 
             return response.getStatusCode().is2xxSuccessful();
@@ -101,6 +106,11 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     public static class Token {
         String jwt;
         String appl;
+
+        Token(String jwt) {
+            this.jwt = jwt;
+            this.appl = "";
+        }
     }
 
     @lombok.Value

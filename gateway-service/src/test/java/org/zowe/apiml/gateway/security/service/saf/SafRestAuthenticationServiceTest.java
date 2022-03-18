@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.passticket.PassTicketService;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,6 +37,8 @@ class SafRestAuthenticationServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
+    @Mock
+    private PassTicketService passTicketService;
 
     private SafRestAuthenticationService underTest;
 
@@ -43,7 +46,7 @@ class SafRestAuthenticationServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SafRestAuthenticationService(restTemplate);
+        underTest = new SafRestAuthenticationService(restTemplate, passTicketService);
         underTest.authenticationUrl = "https://localhost:10013/zss/saf/generate";
         underTest.verifyUrl = "https://localhost:10013/zss/saf/verify";
     }
@@ -61,7 +64,7 @@ class SafRestAuthenticationServiceTest {
             class ReturnValidTokenTest {
 
                 @Test
-                void givenValidResponse() {
+                void givenValidResponse() throws Exception {
                     String validSafToken = "validSafToken";
 
                     SafRestAuthenticationService.Token responseBody =
@@ -70,6 +73,7 @@ class SafRestAuthenticationServiceTest {
                             new ResponseEntity<>(responseBody, HttpStatus.CREATED);
                     when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
                             .thenReturn(response);
+                    when(passTicketService.generate(any(), any())).thenReturn("password");
 
                     String token = underTest.generate(VALID_USERNAME, "password".toCharArray(), "ANYAPPL");
 
@@ -82,22 +86,24 @@ class SafRestAuthenticationServiceTest {
             class ReturnExceptionTest {
 
                 @Test
-                void givenUnauthorizedResponse() {
+                void givenUnauthorizedResponse() throws Exception {
                     HttpClientErrorException exception =
                             HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
                     when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
                             .thenThrow(exception);
+                    when(passTicketService.generate(any(), any())).thenReturn("password");
 
                     assertThrows(SafIdtAuthException.class,
                             () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
                 }
 
                 @Test
-                void givenBadResponse() {
+                void givenBadResponse() throws Exception {
                     ResponseEntity<SafRestAuthenticationService.Token> response =
                             new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
                     when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
                             .thenReturn(response);
+                    when(passTicketService.generate(any(), any())).thenReturn("password");
 
                     assertThrows(SafIdtException.class,
                             () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
