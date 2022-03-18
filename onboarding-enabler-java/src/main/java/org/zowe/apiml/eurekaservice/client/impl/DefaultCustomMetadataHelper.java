@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
+import com.ibm.jzos.ZUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class DefaultCustomMetadataHelper {
         if (isRunningOnZos()) {
             zUtil = ClassOrDefaultProxyUtils.createProxy(ZUtil.class, "com.ibm.jzos.ZUtil", ZUtilDummy::new);
         } else {
-            zUtil = new ZUtilDummy();
+            zUtil = new ZUtil();
         }
     }
 
