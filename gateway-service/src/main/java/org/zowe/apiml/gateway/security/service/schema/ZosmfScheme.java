@@ -123,8 +123,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                         final String ltpaToken = authSourceService.getLtpaToken(authSource);
                         setCookie(context, ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
                         break;
-                    default:
-                        return;
                 }
 
                 // remove authentication part
@@ -154,8 +152,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                         final String ltpaToken = authSourceService.getLtpaToken(authSource);
                         createCookie(cookies, ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
                         break;
-                    default:
-                        return;
                 }
                 // remove authentication part
                 request.removeHeaders(HttpHeaders.AUTHORIZATION);

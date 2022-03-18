@@ -63,6 +63,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             SslContextConfigurer configurer = new SslContextConfigurer(keystorePassword, clientKeystore, keystore);
             SslContext.prepareSslAuthentication(configurer);
             applicationRegistry.clearApplications();
+
             MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
             defaultBuilder.withZosmf();
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
