@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class JWTUtils {
 
-    public static String createJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
+    public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
         long now = System.currentTimeMillis();
         long expiration = now + 100_000L;
         Key jwtSecret = SecurityUtils.loadKey(config);
@@ -32,6 +32,22 @@ public class JWTUtils {
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
             .setIssuer("APIML")
+            .setId(UUID.randomUUID().toString())
+            .signWith(jwtSecret, SignatureAlgorithm.RS256)
+            .compact();
+    }
+
+    public static String createZosmfJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
+        long now = System.currentTimeMillis();
+        long expiration = now + 100_000L;
+        Key jwtSecret = SecurityUtils.loadKey(config);
+        return Jwts.builder()
+            .setSubject(username)
+            .claim("dom", domain)
+            .claim("ltpa", ltpaToken)
+            .setIssuedAt(new Date(now))
+            .setExpiration(new Date(expiration))
+            .setIssuer("zOSMF")
             .setId(UUID.randomUUID().toString())
             .signWith(jwtSecret, SignatureAlgorithm.RS256)
             .compact();

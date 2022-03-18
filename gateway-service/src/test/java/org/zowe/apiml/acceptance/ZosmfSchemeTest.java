@@ -9,10 +9,14 @@
  */
 package org.zowe.apiml.acceptance;
 
+import org.apache.http.Header;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
@@ -32,8 +36,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * This test verifies that the token or client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
@@ -65,28 +68,79 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             reset(mockClient);
-
-            Map<ZosmfService.TokenType, String> tokens = new HashMap<>();
-            HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
-            String jwt = JWTUtils.createJwtToken("user", "zosmf", null, config);
-            tokens.put(ZosmfService.TokenType.JWT, jwt);
-            ZosmfService.AuthenticationResponse response = new ZosmfService.AuthenticationResponse("zosmf", tokens);
-            when(zosmfService.authenticate(any())).thenReturn(response);
         }
 
         @Nested
         class WhenClientAuthInExtendedKeyUsage {
-            // TODO: add checks for transformation once X509 -> zosmf is implemented
-            @Test
-            void thenOk() throws IOException {
 
-                mockValid200HttpResponse();
-                given()
-                    .config(SslContext.clientCertUser)
-                    .when()
-                    .get(basePath + serviceWithDefaultConfiguration.getPath())
-                    .then()
-                    .statusCode(is(HttpStatus.SC_OK));
+            @Nested
+            class WhenZosmfAuthenticateResponseLTPA {
+
+                @BeforeEach
+                void setZosmfResponse() {
+                    Map<ZosmfService.TokenType, String> tokens = new HashMap<>();
+                    HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
+                    String jwt = JWTUtils.createZoweJwtToken("user", "zosmf", "LTPA_token_from_zosmf", config);
+                    tokens.put(ZosmfService.TokenType.JWT, jwt);
+                    ZosmfService.AuthenticationResponse response = new ZosmfService.AuthenticationResponse("zosmf", tokens);
+                    when(zosmfService.authenticate(any())).thenReturn(response);
+                }
+
+                @Test
+                void thenOk() throws IOException {
+
+                    mockValid200HttpResponse();
+                    given()
+                        .config(SslContext.clientCertUser)
+                        .when()
+                        .get(basePath + serviceWithDefaultConfiguration.getPath())
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK));
+
+                    ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+                    verify(mockClient, times(1)).execute(captor.capture());
+
+                    HttpUriRequest toVerify = captor.getValue();
+                    Header cookie = toVerify.getFirstHeader("cookie");
+                    Assertions.assertNotNull(cookie);
+                    Assertions.assertEquals("LtpaToken2=LTPA_token_from_zosmf", cookie.getValue());
+                }
+            }
+
+            @Nested
+            class WhenZosmfAuthenticateResponseJWT {
+
+                String zosmfJwtToken;
+
+                @BeforeEach
+                void setZosmfResponse() {
+                    Map<ZosmfService.TokenType, String> tokens = new HashMap<>();
+                    HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
+                    zosmfJwtToken = JWTUtils.createZosmfJwtToken("user", "zosmf", "LTPA_token_from_zosmf", config);
+                    tokens.put(ZosmfService.TokenType.JWT, zosmfJwtToken);
+                    ZosmfService.AuthenticationResponse response = new ZosmfService.AuthenticationResponse("zosmf", tokens);
+                    when(zosmfService.authenticate(any())).thenReturn(response);
+                }
+
+                @Test
+                void thenOk() throws IOException {
+
+                    mockValid200HttpResponse();
+                    given()
+                        .config(SslContext.clientCertUser)
+                        .when()
+                        .get(basePath + serviceWithDefaultConfiguration.getPath())
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK));
+
+                    ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+                    verify(mockClient, times(1)).execute(captor.capture());
+
+                    HttpUriRequest toVerify = captor.getValue();
+                    Header cookie = toVerify.getFirstHeader("cookie");
+                    Assertions.assertNotNull(cookie);
+                    Assertions.assertEquals("jwtToken=" + zosmfJwtToken, cookie.getValue());
+                }
             }
         }
 
