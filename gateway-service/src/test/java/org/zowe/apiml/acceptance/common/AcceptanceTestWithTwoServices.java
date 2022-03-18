@@ -19,6 +19,8 @@ import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.client.RestTemplate;
@@ -81,7 +83,6 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         Mockito.when(response.getEntity()).thenReturn(new HttpEntityImpl("Hello worlds!".getBytes()));
         Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
-
 
     protected void mockUnavailableHttpResponseWithEntity(int statusCode) throws IOException {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);

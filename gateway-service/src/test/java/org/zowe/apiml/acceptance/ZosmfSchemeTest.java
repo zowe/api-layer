@@ -32,8 +32,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * This test verifies that the token or client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
@@ -60,11 +59,11 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             SslContextConfigurer configurer = new SslContextConfigurer(keystorePassword, clientKeystore, keystore);
             SslContext.prepareSslAuthentication(configurer);
             applicationRegistry.clearApplications();
+
             MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
             defaultBuilder.withZosmf();
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
-            reset(mockClient);
 
             Map<ZosmfService.TokenType, String> tokens = new HashMap<>();
             HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
@@ -87,6 +86,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                     .then()
                     .statusCode(is(HttpStatus.SC_OK));
+
             }
         }
 
