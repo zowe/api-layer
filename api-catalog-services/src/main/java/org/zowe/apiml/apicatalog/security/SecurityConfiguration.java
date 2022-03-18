@@ -39,6 +39,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
@@ -228,7 +229,8 @@ public class SecurityConfiguration {
             // endpoints protection
             .and()
             .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
         return http;
     }
@@ -264,6 +266,17 @@ public class SecurityConfiguration {
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties);
+    }
+
+    /**
+     * Secures content with a Bearer token
+     */
+    private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+        return new BearerContentFilter(
+            authenticationManager,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler()
+        );
     }
 
     @Bean
