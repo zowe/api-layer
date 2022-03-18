@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(':mock-zos'))
+    compileOnly(project(':mock-zos'))
     compile(project(':common-service-core'))
     compile(project(':apiml-utility'))
     compile libraries.jaxb_api
