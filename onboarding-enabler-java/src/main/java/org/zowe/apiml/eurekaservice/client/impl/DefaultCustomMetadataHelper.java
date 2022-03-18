@@ -12,7 +12,6 @@ package org.zowe.apiml.eurekaservice.client.impl;
 import lombok.AccessLevel;
 import lombok.Setter;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
-import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import com.ibm.jzos.ZUtil;
 
 import java.util.HashMap;
