@@ -111,14 +111,14 @@ messages:
       number: ZWEAG713
       type: ERROR
       text: "Configuration error when trying to establish JWT producer. Events: %s"
-      reason: "A problem occurred while trying to make sure that there is a valid JWT producer avaliable."
+      reason: "A problem occurred while trying to make sure that there is a valid JWT producer available."
       action: "Based on the specific information in the message, verify that the key configuration is correct, or alternatively, that z/OSMF is available."
 
     - key: org.zowe.apiml.gateway.keys.unknown
       number: ZWEAG714
       type: ERROR
       text: "Unknown error occurred while retrieving the used public key"
-      reason: "An unknown problem occured when retrieving the used public key. This should never occur."
+      reason: "An unknown problem occurred when retrieving the used public key. This should never occur."
       action: "Try again later."
 
     - key: org.zowe.apiml.gateway.keys.wrongAmount
@@ -251,7 +251,7 @@ messages:
       reason: "No authorization token is provided."
       action: "Provide a valid authorization token."
 
-    # Ticket messages (140 - 150)
+    # Ticket messages (140 - 149)
     - key: org.zowe.apiml.security.ticket.invalidApplicationName
       number: ZWEAG140
       type: ERROR
@@ -266,3 +266,17 @@ messages:
       reason: "An error occurred in the SAF Auth Service. Review the reason in the error message."
       action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
 
+    # IDT messages (150 - 159)
+    - key: org.zowe.apiml.security.idt.failed
+      number: ZWEAG150
+      type: ERROR
+      text: "SAF IDT generation failed. Reason: %s"
+      reason: "An error occurred in the SAF Verify Service. Review the reason in the error message."
+      action: "Verify the Identity Token configuration."
+
+    - key: org.zowe.apiml.security.idt.auth.failed
+      number: ZWEAG151
+      type: ERROR
+      text: "SAF IDT is not generated because authentication or authorization failed. Reason: %s"
+      reason: "The SAF Verify Service rejected the user credentials. Review the reason in the error message."
+      action: "Provide a valid username and password."
