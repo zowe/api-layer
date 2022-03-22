@@ -243,5 +243,5 @@ messages:
       number: ZWEAG151
       type: ERROR
       text: "SAF IDT is not generated because authentication or authorization failed. Reason: %s"
-      reason: "The SAF Verify Service rejected the user credentials. Review the reason in the error message."
+      reason: "The user credentials were rejected during SAF verification. Review the reason in the error message."
       action: "Provide a valid username and password."
