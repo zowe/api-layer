@@ -7,19 +7,20 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service;
+package org.zowe.apiml.gateway.security.service.saf;
 
 import org.springframework.security.access.AccessDeniedException;
 
-public class PassTicketException extends AccessDeniedException {
+public class SafIdtException extends AccessDeniedException {
 
-    private static final long serialVersionUID = -5152411541425940337L;
+    private static final long serialVersionUID = 8144117709741703975L;
 
-    public PassTicketException(String message, Throwable cause) {
+    public SafIdtException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public PassTicketException(String message) {
+    public SafIdtException(String message) {
         super(message);
     }
+
 }
