@@ -236,7 +236,7 @@ messages:
       number: ZWEAG150
       type: ERROR
       text: "SAF IDT generation failed. Reason: %s"
-      reason: "An error occurred in the SAF Verify Service. Review the reason in the error message."
+      reason: "An error occurred during SAF verification. Review the reason in the error message."
       action: "Verify the Identity Token configuration."
 
     - key: org.zowe.apiml.security.idt.auth.failed
