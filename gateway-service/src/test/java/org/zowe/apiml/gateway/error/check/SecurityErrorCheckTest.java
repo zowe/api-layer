@@ -146,7 +146,7 @@ class SecurityErrorCheckTest {
                 MessageType.ERROR, "ZWEAG151E",
                 "SAF IDT is not generated because authentication or authorization failed. Reason: " + exceptionMessage + ". " + exception.getCause().getLocalizedMessage(),
                 "Provide a valid username and password.",
-                "The SAF Verify Service rejected the user credentials. Review the reason in the error message."
+                "The user credentials were rejected during SAF verification. Review the reason in the error message."
         )));
 
     }
@@ -170,7 +170,7 @@ class SecurityErrorCheckTest {
                 MessageType.ERROR, "ZWEAG150E",
                 "SAF IDT generation failed. Reason: " + exceptionMessage + ". ",
                 "Verify the Identity Token configuration.",
-                "An error occurred in the SAF Verify Service. Review the reason in the error message."
+                "An error occurred during SAF verification. Review the reason in the error message."
         )));
     }
 
