@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
@@ -93,8 +92,8 @@ class SafRestAuthenticationServiceTest {
                     HttpClientErrorException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
                     when(restTemplate.postForEntity(any(), any(), any())).thenThrow(exception);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
-                    assertThat(token.isPresent(), is(false));
+                    assertThrows(SafIdtAuthException.class,
+                        () -> underTest.generate(VALID_USERNAME), "Exception is not AuthenticationTokenException");
                 }
 
                 @Test
@@ -133,7 +132,7 @@ class SafRestAuthenticationServiceTest {
                     when(response.getBody()).thenReturn(responseBody);
 
                     when(passTicketService.generate(any(), any())).thenThrow(new IRRPassTicketGenerationException(1, 2, 3));
-                    assertThrows(AuthenticationTokenException.class,
+                    assertThrows(SafIdtAuthException.class,
                         () -> underTest.generate(VALID_USERNAME), "Exception is not AuthenticationTokenException");
                 }
             }

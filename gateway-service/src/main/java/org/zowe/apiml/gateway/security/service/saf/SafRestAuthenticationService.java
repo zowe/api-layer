@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.net.URI;
@@ -84,11 +83,8 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             }
 
             return Optional.of(responseBody.getJwt());
-        } catch (HttpClientErrorException.Unauthorized e) {
-            return Optional.empty();
-        }
-        catch (IRRPassTicketGenerationException e) {
-            throw new AuthenticationTokenException("Problem with generating PassTicket");
+        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden | IRRPassTicketGenerationException e) {
+            throw new SafIdtAuthException("Authentication to ZSS failed", e);
         }
     }
 
