@@ -24,13 +24,13 @@ export default function Dashboard() {
     function setMetricsDisplay(cluster) {
         setCurrentCluster(cluster);
         window.addStreams(
-            `${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`,
+            `${process.env.REACT_APP_GATEWAY_URL}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`,
             cluster
         );
     }
 
     function retrieveAvailableClusters(callback) {
-        axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) => {
+        axios.get(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_METRICS_HOME}/clusters`).then((res) => {
             callback(res);
         });
     }

@@ -11,9 +11,8 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
-import java.util.function.Supplier;
 
 /**
  * This is abstract class for any processor which support service's authentication. They are called from ZUUL filters
@@ -32,9 +31,9 @@ public interface AbstractAuthenticationScheme {
      * This method decorate the request for target service
      *
      * @param authentication DTO describing details about authentication
-     * @param token User's parsed (Zowe's) JWT token, evaluated only, if needed
+     * @param authSource User's parsed authentication source (Zowe's JWT token, client certificate, etc.), evaluated only, if needed
      */
-    AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token);
+    AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource);
 
     /**
      * Define implementation, which will be use in case no scheme is defined.

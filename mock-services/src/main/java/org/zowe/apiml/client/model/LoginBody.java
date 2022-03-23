@@ -7,10 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.filters.pre;
+package org.zowe.apiml.client.model;
 
-import com.netflix.zuul.context.RequestContext;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-public interface RequestContextProvider {
-    RequestContext context();
+@Data
+@AllArgsConstructor
+public class LoginBody {
+    private String userID;
+    private String oldPwd;
+    private String newPwd;
 }

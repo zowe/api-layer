@@ -4,7 +4,7 @@ on:
     push:
         branches: [ master, v2.x.x ]
     pull_request:
-        branches: [ master, v2.x.x ]
+        branches: [ master, v2.x.x, mentee-group/testing ]
 
 jobs:
     PublishJibContainers:
@@ -467,6 +467,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -541,6 +542,10 @@ jobs:
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
 
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -633,6 +638,9 @@ jobs:
                 run: |
                     docker ps -a
                     docker ps -q | xargs -L 1 docker logs
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle                    
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -699,6 +707,10 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+                    
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -765,6 +777,10 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+                    
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -835,6 +851,10 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+                    
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -905,6 +925,10 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+                    
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
