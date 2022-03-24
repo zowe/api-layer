@@ -107,7 +107,8 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @Test
     void givenAuthSource_whenZosmfIsNotSetAsAuthProvider_thenThrowException() {
         ZosmfScheme zosmfScheme = new ZosmfScheme(authSourceService, null);
-        assertThrows(AuthenticationSchemeNotSupportedException.class, () -> zosmfScheme.createCommand(null, new JwtAuthSource("jwt")));
+        JwtAuthSource authSource = new JwtAuthSource("jwt");
+        assertThrows(AuthenticationSchemeNotSupportedException.class, () -> zosmfScheme.createCommand(null, authSource));
     }
 
     @Nested
