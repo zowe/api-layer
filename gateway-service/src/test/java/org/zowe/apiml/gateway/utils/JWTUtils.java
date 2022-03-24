@@ -22,22 +22,14 @@ import java.util.UUID;
 public class JWTUtils {
 
     public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        long now = System.currentTimeMillis();
-        long expiration = now + 100_000L;
-        Key jwtSecret = SecurityUtils.loadKey(config);
-        return Jwts.builder()
-            .setSubject(username)
-            .claim("dom", domain)
-            .claim("ltpa", ltpaToken)
-            .setIssuedAt(new Date(now))
-            .setExpiration(new Date(expiration))
-            .setIssuer("APIML")
-            .setId(UUID.randomUUID().toString())
-            .signWith(jwtSecret, SignatureAlgorithm.RS256)
-            .compact();
+        return createToken(username, domain, ltpaToken, config, "APIML");
     }
 
     public static String createZosmfJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
+        return createToken(username, domain, ltpaToken, config, "zOSMF");
+    }
+
+    public static String createToken(String username, String domain, String ltpaToken, HttpsConfig config, String issuer) {
         long now = System.currentTimeMillis();
         long expiration = now + 100_000L;
         Key jwtSecret = SecurityUtils.loadKey(config);
@@ -47,7 +39,7 @@ public class JWTUtils {
             .claim("ltpa", ltpaToken)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
-            .setIssuer("zOSMF")
+            .setIssuer(issuer)
             .setId(UUID.randomUUID().toString())
             .signWith(jwtSecret, SignatureAlgorithm.RS256)
             .compact();
