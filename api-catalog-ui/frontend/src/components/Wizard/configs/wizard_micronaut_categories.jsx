@@ -209,7 +209,7 @@ export const micronautSpecificCategories = [
             defaultZone: {
                 value: '',
                 question: 'Eureka default zone:',
-                tooltip: 'placeholder',
+                tooltip: 'Example: https://localhost:10011/eureka/',
             },
         },
     },
@@ -219,7 +219,7 @@ export const micronautSpecificCategories = [
             'base-path': {
                 value: '',
                 question: 'Endpoint base-path:',
-                tooltip: 'placeholder',
+                tooltip: 'Example: /application',
             },
         },
     },
@@ -229,7 +229,7 @@ export const micronautSpecificCategories = [
             include: {
                 value: '',
                 question: 'Endpoint base-path:',
-                tooltip: 'placeholder',
+                tooltip: 'Example: health,info',
             },
         },
     },
