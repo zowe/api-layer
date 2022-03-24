@@ -9,12 +9,16 @@
  */
 package org.zowe.apiml.zss.services;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.zss.model.Authentication;
 import org.zowe.apiml.zss.model.Token;
 
+import io.jsonwebtoken.Jwts;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -60,10 +64,13 @@ public class SafIdtProviderTest {
         class GivenExistingToken {
             @Test
             void tokenIsVerified() {
-                Token token = new Token();
-                token.setJwt("username;validJwt");
+                String jwt = Jwts.builder()
+                        .setSubject("username")
+                        .setExpiration(DateUtils.addMinutes(new Date(), 10))
+                        .compact();
+                Token token = new Token(jwt);
 
-                tokens.put("username", token.getJwt());
+                tokens.put("username", jwt);
 
                 assertThat(underTest.verify(token), is(true));
             }
