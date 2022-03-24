@@ -12,12 +12,14 @@ package org.zowe.apiml.extension;
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,25 +53,44 @@ public class ExtensionConfigReader {
         List<String> installedComponents = environment.getInstalledComponents();
         List<String> enabledComponents = environment.getEnabledComponents();
         List<ExtensionDefinition> extensions = new ArrayList<>();
-        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()).configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-        ObjectMapper jsonMapper = new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         for (String installedComponent : installedComponents) {
             if (enabledComponents.contains(installedComponent)) {
-                String parentPath = environment.getWorkspaceDirectory() + File.separator + installedComponent;
-                Path manifestYamlPath = Paths.get(parentPath + File.separator + "manifest.yaml");
-                Path manifestJsonPath = Paths.get(parentPath + File.separator + "manifest.json");
                 try {
-                    if (Files.exists(manifestYamlPath)) {
-                        extensions.add(yamlMapper.readValue(Files.readAllBytes(manifestYamlPath), ExtensionDefinition.class));
-                    } else if (Files.exists(manifestJsonPath)) {
-                        extensions.add(jsonMapper.readValue(Files.readAllBytes(manifestJsonPath), ExtensionDefinition.class));
-                    }
+                    extensions.add(readComponentManifest(installedComponent));
                 } catch (Exception e) {
-                    log.error("Failed reading component manifests", e);
+                    log.error("Failed reading component {} manifest", installedComponent, e);
                 }
             }
         }
         return extensions;
+    }
+
+    private ExtensionDefinition readComponentManifest(String installedComponent) {
+        String parentPath = environment.getWorkspaceDirectory() + File.separator + installedComponent;
+        Path manifestYamlPath = Paths.get(parentPath + File.separator + "manifest.yaml");
+        Path manifestJsonPath = Paths.get(parentPath + File.separator + "manifest.json");
+        Optional<ExtensionDefinition> definition = readComponentManifestWithCharset(Charset.defaultCharset(), manifestYamlPath, manifestJsonPath);
+        if (definition.isPresent()) {
+            return definition.get();
+        } else {
+            return readComponentManifestWithCharset(Charset.forName("IBM1047"), manifestYamlPath, manifestJsonPath).orElseThrow(() -> new RuntimeException(""));
+        }
+    }
+
+    private Optional<ExtensionDefinition> readComponentManifestWithCharset(Charset charset, Path yamlPath, Path jsonPath) {
+        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()).configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper jsonMapper = new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+        try {
+            if (Files.exists(yamlPath)) {
+                return Optional.ofNullable(yamlMapper.readValue(new String(Files.readAllBytes(yamlPath), charset), ExtensionDefinition.class));
+            } else if (Files.exists(jsonPath)) {
+                return Optional.ofNullable(jsonMapper.readValue(new String(Files.readAllBytes(jsonPath), charset), ExtensionDefinition.class));
+            } else {
+                return Optional.empty();
+            }
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

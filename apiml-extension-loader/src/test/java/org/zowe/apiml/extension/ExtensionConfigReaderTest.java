@@ -13,6 +13,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 
 import com.google.common.io.Resources;
@@ -27,6 +28,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ExtensionConfigReaderTest {
 
+    private static final String EXTESION_IBM1047 = "apimlextension-ibm1047";
+    private static final String EXTENSION_UTF8 = "apimlextension-utf8";
+
     @Mock
     private ZoweRuntimeEnvironment environment;
 
@@ -37,8 +41,13 @@ class ExtensionConfigReaderTest {
         this.configReader = new ExtensionConfigReader(environment);
     }
 
-    private String getTestResourcesPath() {
-        String path = Resources.getResource("apimlextension").getPath();
+    private String getTestResourcesPath(Charset charset) {
+        String path;
+        if (charset.equals(Charset.forName("IBM1047"))) {
+            path = Resources.getResource(EXTESION_IBM1047).getPath();
+        } else {
+            path = Resources.getResource(EXTENSION_UTF8).getPath();
+        }
         return path.substring(0, path.lastIndexOf('/'));
     }
 
@@ -50,10 +59,22 @@ class ExtensionConfigReaderTest {
             @Test
             void itReturnsNoPackagesToScan() {
                 when(environment.getWorkspaceDirectory()).thenReturn(".");
-                when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
-                when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
+                when(environment.getInstalledComponents()).thenReturn(singletonList(EXTENSION_UTF8));
+                when(environment.getEnabledComponents()).thenReturn(singletonList(EXTENSION_UTF8));
 
                 assertArrayEquals(new String[]{}, configReader.getBasePackages());
+            }
+        }
+
+        @Nested
+        class GivenEncodingIsEbcdic {
+            @Test
+            void itReturnsPackageNameToScan() {
+                when(environment.getWorkspaceDirectory()).thenReturn(getTestResourcesPath(Charset.forName("IBM1047")));
+                when(environment.getInstalledComponents()).thenReturn(singletonList(EXTESION_IBM1047));
+                when(environment.getEnabledComponents()).thenReturn(singletonList(EXTESION_IBM1047));
+
+                assertArrayEquals(new String[]{ "org.zowe" }, configReader.getBasePackages());
             }
         }
 
@@ -61,9 +82,9 @@ class ExtensionConfigReaderTest {
         class GivenAnExtensionIsDefined {
             @Test
             void itReturnsPackageNameToScan() {
-                when(environment.getWorkspaceDirectory()).thenReturn(getTestResourcesPath());
-                when(environment.getInstalledComponents()).thenReturn(singletonList("apimlextension"));
-                when(environment.getEnabledComponents()).thenReturn(singletonList("apimlextension"));
+                when(environment.getWorkspaceDirectory()).thenReturn(getTestResourcesPath(Charset.forName("UTF-8")));
+                when(environment.getInstalledComponents()).thenReturn(singletonList(EXTENSION_UTF8));
+                when(environment.getEnabledComponents()).thenReturn(singletonList(EXTENSION_UTF8));
 
                 assertArrayEquals(new String[]{ "org.zowe" }, configReader.getBasePackages());
             }
