@@ -45,6 +45,21 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         x509Certificate = mock(X509Certificate.class);
     }
 
+    @Test
+    void givenNullSource_returnNullLtpa() {
+        AuthenticationService authenticationService = mock(AuthenticationService.class);
+        X509AuthSourceService service = new X509AuthSourceService(null, null, authenticationService);
+        assertNull(service.getLtpaToken(null));
+    }
+
+    @Test
+    void givenX509Source_returnNullLtpa() {
+        AuthenticationService authenticationService = mock(AuthenticationService.class);
+        TokenCreationService tokenCreationService = mock(TokenCreationService.class);
+        X509AuthSourceService service = new X509AuthSourceService(mock(X509AbstractMapper.class), tokenCreationService, authenticationService);
+        assertNull(service.getLtpaToken(new X509AuthSource(null)));
+    }
+
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class X509MFAuthSourceServiceTest {
@@ -76,6 +91,14 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             void whenParse_thenNull() {
                 assertNull(serviceUnderTest.parse(null));
                 verifyNoInteractions(mapper);
+            }
+        }
+
+        @Nested
+        class GiveNullRawSource {
+            @Test
+            void whenValidate_thenCorrect() {
+                Assertions.assertFalse(serviceUnderTest.isValid(new X509AuthSource(null)));
             }
         }
 
@@ -125,6 +148,13 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
                 when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
                 assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.parse(authSource));
                 verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+            }
+
+            @Test
+            void returnNullWhenCertificateEncodingExceptionIsThrown() throws CertificateEncodingException {
+                AuthSource authSource = new X509AuthSource(x509Certificate);
+                when(x509Certificate.getEncoded()).thenThrow(new CertificateEncodingException(""));
+                assertNull(serviceUnderTest.parse(authSource));
             }
 
             @Nested

@@ -10,11 +10,6 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Base64;
-import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
@@ -23,6 +18,12 @@ import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
+
+import javax.servlet.http.HttpServletRequest;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
+import java.util.Optional;
 
 /**
  * Basic implementation of AuthSourceService interface which uses client certificate as an authentication source.
