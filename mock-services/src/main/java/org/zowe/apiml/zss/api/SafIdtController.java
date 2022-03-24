@@ -41,7 +41,7 @@ public class SafIdtController {
     public ResponseEntity<Token> authenticate(
         @RequestBody Authentication authentication
     ) {
-        if (StringUtils.isEmpty(authentication.getJwt()) || StringUtils.isEmpty(authentication.getUsername())) {
+        if (StringUtils.isEmpty(authentication.getPass()) || StringUtils.isEmpty(authentication.getUsername())) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
