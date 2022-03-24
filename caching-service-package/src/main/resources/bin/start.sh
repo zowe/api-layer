@@ -73,6 +73,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=/tmp \
+  -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
   -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
   -Dspring.profiles.include=$LOG_LEVEL \
   -Dapiml.service.port=${ZWE_CACHING_SERVICE_PORT:-7555} \
