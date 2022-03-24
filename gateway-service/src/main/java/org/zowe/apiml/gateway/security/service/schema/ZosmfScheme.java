@@ -104,7 +104,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
             Optional<AuthSource> authSourceOptional = authSourceService.getAuthSourceFromRequest();
             authSourceOptional.ifPresent(authSource -> {
-                // translate to JWT auth source
+                // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
                 if (authSource.getType().equals(AuthSource.AuthSourceType.CLIENT_CERT)) {
                     authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
                 }
@@ -132,7 +132,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
             Optional<AuthSource> authSourceOptional = authSourceService.getAuthSourceFromRequest();
             authSourceOptional.ifPresent(authSource -> {
-                // translate to JWT auth source
+                // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
                 if (authSource.getType().equals(AuthSource.AuthSourceType.CLIENT_CERT)) {
                     authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
                 }
