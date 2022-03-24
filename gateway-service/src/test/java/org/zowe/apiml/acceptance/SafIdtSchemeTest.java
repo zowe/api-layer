@@ -9,7 +9,12 @@
  */
 package org.zowe.apiml.acceptance;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import io.restassured.http.Cookie;
+
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +33,8 @@ import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 
 import java.io.IOException;
+import java.util.Date;
+
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
@@ -88,11 +96,14 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             // Valid token is provided within the headers.
             @Test
             void thenValidTokenIsProvided() throws IOException {
-                String resultSafToken = "resultSafToken";
+                String resultSafToken = Jwts.builder()
+                    .setExpiration(DateUtils.addMinutes(new Date(), 10))
+                    .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256))
+                    .compact();
 
-                ResponseEntity<Object> response = mock(ResponseEntity.class);
-                when(mockTemplate.postForEntity(any(), any(), any())).thenReturn(response);
-                when(response.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.CREATED);
+                ResponseEntity<SafRestAuthenticationService.Token> response = mock(ResponseEntity.class);
+                when(mockTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                        .thenReturn(response);
                 SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
                 responseBody.setJwt(resultSafToken);
                 when(response.getBody()).thenReturn(responseBody);
@@ -118,6 +129,8 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
         class WhenSafIdtRequestedByService {
             @BeforeEach
             void prepareService() throws IOException {
+                MetadataBuilder metadataBuilder = MetadataBuilder.defaultInstance().withSafIdt();
+                applicationRegistry.addApplication(serviceWithDefaultConfiguration, metadataBuilder, false);
                 applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
                 reset(mockClient);
@@ -128,14 +141,17 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             void givenInvalidJwtToken() {
                 Cookie withInvalidToken = new Cookie.Builder("apimlAuthenticationToken=invalidValue").build();
 
+                //@formatter:off
                 given()
                     .cookie(withInvalidToken)
-                    .when()
+                .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                    .then()
-                    .statusCode(is(HttpStatus.SC_OK));
+                .then()
+                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                //@formatter:on
 
-                verify(mockTemplate, times(0)).postForEntity(any(), any(), any());
+                verify(mockTemplate, times(0))
+                        .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
             }
         }
     }
