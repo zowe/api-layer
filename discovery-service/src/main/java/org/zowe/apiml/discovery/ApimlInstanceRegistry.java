@@ -16,9 +16,11 @@ import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.registry.AbstractInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -37,6 +39,7 @@ import java.lang.reflect.Method;
  * #2659 Race condition with registration events in Eureka server
  * https://github.com/spring-cloud/spring-cloud-netflix/issues/2659
  */
+@Slf4j
 public class ApimlInstanceRegistry extends InstanceRegistry {
 
     private static final String EXCEPTION_MESSAGE = "Implementation of InstanceRegistry changed, please verify fix of order sending events";
@@ -143,6 +146,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
+        String regex = System.getProperty("discovery.serviceIdPrefixReplacer");
+        if (StringUtils.isNotEmpty(regex) && isValidRegex(regex)) {
+            info = changeServiceId(info, regex);
+        }
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
             handleRegistrationMethod.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -156,7 +163,11 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     }
 
     @Override
-    public void register(final InstanceInfo info, final boolean isReplication) {
+    public void register(InstanceInfo info, final boolean isReplication) {
+        String regex = System.getProperty("discovery.serviceIdPrefixReplacer");
+        if (StringUtils.isNotEmpty(regex) && isValidRegex(regex)) {
+            info = changeServiceId(info, regex);
+        }
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
             handleRegistrationMethod.invokeWithArguments(this, info, resolveInstanceLeaseDurationRewritten(info), isReplication);
@@ -189,5 +200,41 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         boolean isUpdated = super.statusUpdate(appName, instanceId, newStatus, lastDirtyTimestamp, isReplication);
         this.appCntx.publishEvent(new EurekaStatusUpdateEvent(this, appName, instanceId));
         return isUpdated;
+    }
+
+    /**
+     * Change the service ID prefix according to the regex before the service registers to Eureka.
+     * @param info the instance info
+     * @param regex the regex
+     * @return instance info with the modified service ID
+     */
+    private InstanceInfo changeServiceId(final InstanceInfo info, String regex) {
+        String servicePrefix = regex.split(",")[0];
+        String targetValue = regex.split(",")[1];
+        String instanceId = info.getInstanceId();
+        if (instanceId.contains(servicePrefix)) {
+            String appName = info.getAppName();
+            instanceId = instanceId.replace(servicePrefix, targetValue);
+            appName = appName.replace(servicePrefix.toUpperCase(), targetValue.toUpperCase());
+            log.debug("The instance ID of {} service has been changed to {}.", info.getAppName(), instanceId);
+            return new InstanceInfo.Builder(info)
+                .setInstanceId(instanceId)
+                .setAppGroupName(appName)
+                .setAppName(appName)
+                .setVIPAddress(appName)
+                .build();
+        }
+        return info;
+    }
+
+    private boolean isValidRegex(String regex) {
+        String servicePrefix = regex.split(",")[0];
+        String targetValue = regex.split(",")[1];
+        if (StringUtils.isNotEmpty(servicePrefix) &&
+            StringUtils.isNotEmpty(targetValue) &&
+            !servicePrefix.equals(targetValue)) {
+            return true;
+        }
+        return false;
     }
 }
