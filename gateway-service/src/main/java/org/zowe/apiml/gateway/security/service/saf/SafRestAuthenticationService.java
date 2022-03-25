@@ -51,16 +51,16 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     protected String zosmfApplId;
 
     @Override
-    public Optional<String> generate(String username) {
+    public String generate(String username, char[] password, String applId) {
         final RequestContext context = RequestContext.getCurrentContext();
         Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
         if (!jwtToken.isPresent()) {
-            return Optional.empty();
+            throw new SafIdtException("Provided no JWT token");
         }
 
         TokenAuthentication tokenAuthentication = authenticationService.validateJwtToken(jwtToken.get());
         if (!tokenAuthentication.isAuthenticated()) {
-            return Optional.empty();
+            throw new SafIdtException("Provided invalid JWT token");
         }
 
         try {
@@ -74,22 +74,22 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             ResponseEntity<Token> re = restTemplate.postForEntity(URI.create(authenticationUrl), authentication, Token.class);
 
             if (!re.getStatusCode().is2xxSuccessful()) {
-                return Optional.empty();
+                throw new SafIdtException("ZSS authentication service has not returned the Identity token");
             }
 
             Token responseBody = re.getBody();
             if (responseBody == null) {
-                return Optional.empty();
+                throw new SafIdtException("ZSS authentication service has not returned the Identity token");
             }
 
-            return Optional.of(responseBody.getJwt());
+            return responseBody.getJwt();
         } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden | IRRPassTicketGenerationException e) {
             throw new SafIdtAuthException("Authentication to ZSS failed", e);
         }
     }
 
     @Override
-    public boolean verify(String safToken) {
+    public boolean verify(String safToken, String applId) {
         if (isEmpty(safToken)) {
             return false;
         }

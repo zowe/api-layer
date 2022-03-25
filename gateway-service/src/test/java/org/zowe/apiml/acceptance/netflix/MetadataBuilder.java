@@ -48,6 +48,7 @@ public class MetadataBuilder {
 
     public MetadataBuilder withSafIdt() {
         metadata.put("apiml.authentication.scheme", "safIdt");
+        metadata.put("apiml.authentication.applid", "ZOWEAPPL");
 
         return this;
     }
