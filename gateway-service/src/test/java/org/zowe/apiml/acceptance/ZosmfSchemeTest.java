@@ -56,8 +56,12 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
     @Autowired
     public ZosmfService zosmfService;
 
+
     @Nested
     class GivenClientCertificate {
+
+        public HttpsConfig config;
+
         @BeforeEach
         void setUp() throws Exception {
             SslContextConfigurer configurer = new SslContextConfigurer(keystorePassword, clientKeystore, keystore);
@@ -69,10 +73,21 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             reset(mockClient);
+            config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
         }
 
         @Nested
         class WhenClientAuthInExtendedKeyUsage {
+
+            void assertResult(String expected) throws IOException {
+                ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+                verify(mockClient, times(1)).execute(captor.capture());
+
+                HttpUriRequest toVerify = captor.getValue();
+                Header cookie = toVerify.getFirstHeader("cookie");
+                Assertions.assertNotNull(cookie);
+                Assertions.assertEquals(expected, cookie.getValue());
+            }
 
             @Nested
             class WhenZosmfAuthenticateResponseLTPA {
@@ -80,7 +95,6 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
                 @BeforeEach
                 void setZosmfResponse() {
                     Map<ZosmfService.TokenType, String> tokens = new HashMap<>();
-                    HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
                     String jwt = JWTUtils.createZoweJwtToken("user", "zosmf", "LTPA_token_from_zosmf", config);
                     tokens.put(ZosmfService.TokenType.JWT, jwt);
                     ZosmfService.AuthenticationResponse response = new ZosmfService.AuthenticationResponse("zosmf", tokens);
@@ -97,14 +111,8 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
                         .get(basePath + serviceWithDefaultConfiguration.getPath())
                         .then()
                         .statusCode(is(HttpStatus.SC_OK));
+                    assertResult("LtpaToken2=LTPA_token_from_zosmf");
 
-                    ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
-                    verify(mockClient, times(1)).execute(captor.capture());
-
-                    HttpUriRequest toVerify = captor.getValue();
-                    Header cookie = toVerify.getFirstHeader("cookie");
-                    Assertions.assertNotNull(cookie);
-                    Assertions.assertEquals("LtpaToken2=LTPA_token_from_zosmf", cookie.getValue());
                 }
             }
 
@@ -116,7 +124,6 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
                 @BeforeEach
                 void setZosmfResponse() {
                     Map<ZosmfService.TokenType, String> tokens = new HashMap<>();
-                    HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
                     zosmfJwtToken = JWTUtils.createZosmfJwtToken("user", "zosmf", "LTPA_token_from_zosmf", config);
                     tokens.put(ZosmfService.TokenType.JWT, zosmfJwtToken);
                     ZosmfService.AuthenticationResponse response = new ZosmfService.AuthenticationResponse("zosmf", tokens);
@@ -133,14 +140,8 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
                         .get(basePath + serviceWithDefaultConfiguration.getPath())
                         .then()
                         .statusCode(is(HttpStatus.SC_OK));
+                    assertResult("jwtToken=" + zosmfJwtToken);
 
-                    ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
-                    verify(mockClient, times(1)).execute(captor.capture());
-
-                    HttpUriRequest toVerify = captor.getValue();
-                    Header cookie = toVerify.getFirstHeader("cookie");
-                    Assertions.assertNotNull(cookie);
-                    Assertions.assertEquals("jwtToken=" + zosmfJwtToken, cookie.getValue());
                 }
             }
         }
