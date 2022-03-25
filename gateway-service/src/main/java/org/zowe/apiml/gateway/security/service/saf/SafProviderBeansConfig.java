@@ -22,11 +22,7 @@ import org.zowe.apiml.passticket.PassTicketService;
 public class SafProviderBeansConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
-    public SafIdtProvider restSafProvider(
-        RestTemplate restTemplate,
-        AuthenticationService authenticationService,
-        PassTicketService passTicketService
-    ) {
-        return new SafRestAuthenticationService(restTemplate, authenticationService, passTicketService);
+    public SafIdtProvider restSafProvider(RestTemplate restTemplate, PassTicketService passTicketService) {
+        return new SafRestAuthenticationService(restTemplate, passTicketService);
     }
 }
