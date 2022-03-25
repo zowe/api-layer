@@ -90,6 +90,8 @@ dependencies {
     implementation libraries.spring_websocket
     implementation libraries.bcprov;
     implementation libraries.bcpkix;
+    implementation libraries.jackson_databind
+    implementation libraries.jackson_annotations
 
     implementation libraries.netty
     implementation libraries.netty_buffer
