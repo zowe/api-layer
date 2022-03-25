@@ -33,8 +33,6 @@ import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 
 import java.io.IOException;
-import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.SslContextConfigurer;
 import java.util.Date;
 
 import static io.restassured.RestAssured.given;
@@ -153,6 +151,8 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             }
         }
     }
+    */
+
 
     /*
     @Nested
@@ -208,57 +208,6 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
         }
     }
     */
-
-    @Nested
-    class GivenClientCertificate {
-        @BeforeEach
-        void setUp() throws Exception {
-            SslContextConfigurer configurer = new SslContextConfigurer(keystorePassword, clientKeystore, keystore);
-            SslContext.prepareSslAuthentication(configurer);
-
-            applicationRegistry.clearApplications();
-            MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
-            defaultBuilder.withSafIdt();
-            applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
-            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
-
-            reset(mockClient);
-        }
-
-        @Nested
-        class WhenClientAuthInExtendedKeyUsage {
-            // TODO: add checks for transformation once X509 -> SafIdt is implemented
-            @Test
-            void thenOk() throws IOException {
-                mockValid200HttpResponse();
-
-                given()
-                    .config(SslContext.clientCertUser)
-                    .when()
-                    .get(basePath + serviceWithDefaultConfiguration.getPath())
-                    .then()
-                    .statusCode(is(HttpStatus.SC_OK));
-            }
-        }
-
-        /**
-         * When client certificate from request does not have extended key usage set correctly and can't be used for
-         * client authentication then request fails with response code 400 - BAD REQUEST
-         */
-        @Nested
-        class WhenNoClientAuthInExtendedKeyUsage {
-            @Test
-            void thenBadRequest() {
-
-                given()
-                    .config(SslContext.apimlRootCert)
-                    .when()
-                    .get(basePath + serviceWithDefaultConfiguration.getPath())
-                    .then()
-                    .statusCode(is(HttpStatus.SC_BAD_REQUEST));
-            }
-        }
-    }
 
     private void assertHeaderWithValue(HttpUriRequest request, String header, String value) {
         assertThat(request.getHeaders(header).length, is(1));

@@ -26,6 +26,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import java.util.Date;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -33,6 +34,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
+
 import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
 
 class SafIdtSchemeTest {
