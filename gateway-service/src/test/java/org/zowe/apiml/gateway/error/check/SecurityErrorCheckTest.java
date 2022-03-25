@@ -12,18 +12,24 @@ package org.zowe.apiml.gateway.error.check;
 
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.HttpClientErrorException;
 import org.zowe.apiml.config.error.check.MessageServiceConfiguration;
 import org.zowe.apiml.gateway.error.ErrorUtils;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
@@ -34,7 +40,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -43,6 +49,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class SecurityErrorCheckTest {
 
     private static SecurityErrorCheck securityErrorCheck;
+
+    private final MockHttpServletRequest request = new MockHttpServletRequest();
 
     @Autowired
     private MessageService messageService;
@@ -60,7 +68,6 @@ class SecurityErrorCheckTest {
 
     @Test
     void shouldReturnCauseMessageWhenTokenExpireException() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
         TokenExpireException tokenExpireException = new TokenExpireException("TOKEN_EXPIRE");
 
         AuthenticationException exception = new TokenExpireException(tokenExpireException.getMessage(), tokenExpireException);
@@ -73,12 +80,11 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "The token has expired","Obtain new token by performing an authentication request.", "The JWT token has expired.")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "The token has expired", "Obtain new token by performing an authentication request.", "The JWT token has expired.")));
     }
 
     @Test
     void shouldReturnCauseMessageWhenTokenNotValidException() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
         TokenNotValidException tokenNotValidException = new TokenNotValidException("TOKEN_NOT_VALID");
 
         AuthenticationException exception = new TokenNotValidException(tokenNotValidException.getMessage(), tokenNotValidException);
@@ -98,7 +104,6 @@ class SecurityErrorCheckTest {
 
     @Test
     void shouldReturnCauseMessageWhenBadCredentialsException() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
         BadCredentialsException badCredentialsException = new BadCredentialsException("CREDENTIALS_NOT_VALID");
 
         AuthenticationException exception = new BadCredentialsException(badCredentialsException.getMessage(), badCredentialsException);
@@ -114,7 +119,60 @@ class SecurityErrorCheckTest {
         assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.login.invalidCredentials",
-            MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'", "Provide a valid username and password.", "The username and/or password are invalid.")));
+                MessageType.ERROR, "ZWEAG120E",
+                "Invalid username or password for URL 'null'",
+                "Provide a valid username and password.",
+                "The username and/or password are invalid."
+        )));
     }
+
+    @Test
+    void shouldReturnCauseMessageWhenSafIdtAuthException() {
+        String exceptionMessage = "ZSS auth failed";
+
+        HttpClientErrorException serviceException = new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
+        AuthenticationException exception = new SafIdtAuthException(exceptionMessage, serviceException);
+        ZuulException exc = new ZuulException(exception, 8, exception.getLocalizedMessage());
+
+        ResponseEntity<ApiMessageView> actualResponse = securityErrorCheck.checkError(request, exc);
+
+        assertNotNull(actualResponse);
+        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
+
+        assertNotNull(actualResponse.getBody());
+        List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
+        assertThat(actualMessageList, hasItem(new ApiMessage(
+                "org.zowe.apiml.security.idt.auth.failed",
+                MessageType.ERROR, "ZWEAG151E",
+                "SAF IDT is not generated because authentication or authorization failed. Reason: " + exceptionMessage + ". " + exception.getCause().getLocalizedMessage(),
+                "Provide a valid username and password.",
+                "The user credentials were rejected during SAF verification. Review the reason in the error message."
+        )));
+
+    }
+
+    @Test
+    void shouldReturnCauseMessageWhenSafIdtException() {
+        String exceptionMessage = "ZSS failed";
+
+        AccessDeniedException exception = new SafIdtException(exceptionMessage);
+        ZuulException exc = new ZuulException(exception, 8, exception.getLocalizedMessage());
+
+        ResponseEntity<ApiMessageView> actualResponse = securityErrorCheck.checkError(request, exc);
+
+        assertNotNull(actualResponse);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+
+        assertNotNull(actualResponse.getBody());
+        List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
+        assertThat(actualMessageList, hasItem(new ApiMessage(
+                "org.zowe.apiml.security.idt.failed",
+                MessageType.ERROR, "ZWEAG150E",
+                "SAF IDT generation failed. Reason: " + exceptionMessage + ". ",
+                "Verify the Identity Token configuration.",
+                "An error occurred during SAF verification. Review the reason in the error message."
+        )));
+    }
+
 }
 
