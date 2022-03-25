@@ -108,6 +108,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Djava.io.tmpdir=/tmp \
   -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
   -Dspring.profiles.include=$LOG_LEVEL \
+  -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
   -Dapiml.service.port=${ZWE_configs_port:-7555} \
   -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
