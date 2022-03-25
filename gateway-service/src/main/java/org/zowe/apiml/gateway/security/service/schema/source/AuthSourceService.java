@@ -43,4 +43,6 @@ public interface AuthSourceService {
      * @return LTPA token
      */
     String getLtpaToken(AuthSource authSource);
+
+    String getJWT(AuthSource authSource);
 }
