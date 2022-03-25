@@ -9,66 +9,109 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Date;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.security.common.token.QueryResponse.Source;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
-import java.util.Optional;
+import io.jsonwebtoken.Jwts;
 
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
+
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
+    private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+    private final JwtAuthSource authSource = new JwtAuthSource("token");
+    
     private AuthSourceService authSourceService;
-    private SafRestAuthenticationService safAuthenticationService;
+    private PassTicketService passTicketService;
+    private SafIdtProvider safIdtProvider;
 
     @BeforeEach
     void setUp() {
         authSourceService = mock(AuthSourceService.class);
-        safAuthenticationService = mock(SafRestAuthenticationService.class);
-        underTest = new SafIdtScheme(authSourceService, safAuthenticationService);
+        passTicketService = mock(PassTicketService.class);
+        safIdtProvider = mock(SafIdtProvider.class);
+
+        underTest = new SafIdtScheme(authConfigurationProperties, authSourceService, passTicketService, safIdtProvider);
+        underTest.initCookieName();
+        underTest.defaultIdtExpiration = 10;
     }
 
     @Nested
     class WhenTokenIsRequested {
-        AuthenticationCommand commandUnderTest;
+        private static final String USERNAME = "USERNAME";
+        private static final String APPLID = "ANYAPPL";
+        private static final String PASSTICKET = "PASSTICKET";
 
-        @BeforeEach
-        void setCommandUnderTest() {
-            JwtAuthSource authSource = mock(JwtAuthSource.class);
-            commandUnderTest = underTest.createCommand(null, authSource);
-        }
+        private final Authentication auth = new Authentication(SAF_IDT, APPLID);
+        private final JwtAuthSource.Parsed parsedAuthSource = new JwtAuthSource.Parsed(
+                USERNAME,
+                null,
+                null,
+                null
+        );
 
         @Nested
         class ThenValidSafTokenIsProduced {
-            @Test
-            void givenAuthenticatedJwtToken() {
-                InstanceInfo info = mock(InstanceInfo.class);
+            @BeforeEach
+            void setUp() throws IRRPassTicketGenerationException {
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
+                when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
+            }
+            
+            @Nested
+            class WhenApply {
 
-                String validUsername = "hg679853";
-                TokenAuthentication authentication = new TokenAuthentication(validUsername, "validJwtToken");
-                authentication.setAuthenticated(true);
+                @Test
+                void givenAuthenticatedJwtToken() {
+                    String safIdt = Jwts.builder()
+                            .setExpiration(new Date(System.currentTimeMillis() + 1000000))
+                            .compact();
 
-                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("validJwtToken")));
-                when(authSourceService.isValid(new JwtAuthSource("validJwtToken"))).thenReturn(true);
-                when(authSourceService.parse(new JwtAuthSource("validJwtToken"))).thenReturn(new JwtAuthSource.Parsed(validUsername, new Date(), new Date(), Source.ZOWE));
-                when(safAuthenticationService.generate(validUsername)).thenReturn(Optional.of("validTokenValidJwtToken"));
+                    when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
+                    
+                    AuthenticationCommand ac = underTest.createCommand(auth, authSource);
+                    assertNotNull(ac);
+                    assertFalse(ac.isExpired());
+                    assertTrue(ac.isRequiredValidSource());
 
-                commandUnderTest.apply(info);
+                    ac.apply(null);
+                    assertThat(getValueOfZuulHeader(), is(safIdt));
+                }
 
-                assertThat(getValueOfZuulHeader(), is("validTokenValidJwtToken"));
+                @Test
+                void givenIdtWithoutExpiration() {
+                    String safIdt = Jwts.builder()
+                        .setSubject(USERNAME)
+                        .compact();
+
+                    when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
+
+                    AuthenticationCommand ac = underTest.createCommand(auth, authSource);
+                    assertNotNull(ac);
+                    assertFalse(ac.isExpired());
+                }
             }
         }
 
@@ -76,25 +119,19 @@ class SafIdtSchemeTest {
         class ThenNoTokenIsProduced {
             @Test
             void givenNoJwtToken() {
-                InstanceInfo info = mock(InstanceInfo.class);
-
-                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
-
-                commandUnderTest.apply(info);
-
-                assertThat(getValueOfZuulHeader(), is(nullValue()));
+                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
+                assertThat(ac, is(AuthenticationCommand.EMPTY));
             }
 
             @Test
-            void givenInvalidJwtToken() {
-                InstanceInfo info = mock(InstanceInfo.class);
+            void givenInvalidJwtToken() throws IRRPassTicketGenerationException {
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
+                when(passTicketService.generate(USERNAME, APPLID))
+                        .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
 
-                when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("invalidJwtToken")));
-                when(authSourceService.isValid(new JwtAuthSource("invalidJwtToken"))).thenReturn(false);
-
-                commandUnderTest.apply(info);
-
-                assertThat(getValueOfZuulHeader(), is(nullValue()));
+                PassTicketException ex = assertThrows(PassTicketException.class,
+                        () -> underTest.createCommand(auth, authSource));
+                assertThat(ex.getMessage(), allOf(containsString(USERNAME), containsString(APPLID)));
             }
         }
     }
