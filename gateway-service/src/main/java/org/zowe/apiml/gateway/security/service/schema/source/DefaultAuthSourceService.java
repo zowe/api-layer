@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,11 +20,16 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.AuthSourceType;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Optional;
+
 /**
  * Main implementation of AuthSourceService, supports two types of authentication source - JWT token and client certificate.
  * <p>
  * Service keeps a map of the specific implementations of {@link AuthSourceService} which are responsible to perform operations defined by an interface
  * for a particular authentication source. {@link JwtAuthSourceService} is responsible for processing of the authentication source based on JWT token;
+ *
  * @Qualifier("x509MFAuthSourceService") {@link X509AuthSourceService} is responsible for processing of the authentication source based on client certificate.
  * The key for the map is {@link AuthSourceType}.
  */
@@ -41,7 +43,8 @@ public class DefaultAuthSourceService implements AuthSourceService {
 
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
-     * @param jwtAuthSourceService {@link JwtAuthSourceService} service which process authentication source of type JWT
+     *
+     * @param jwtAuthSourceService  {@link JwtAuthSourceService} service which process authentication source of type JWT
      * @param x509AuthSourceService {@link X509AuthSourceService} service which process authentication source of type client certificate
      */
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService, @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService) {
@@ -56,6 +59,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
      * 1) JWT token
      * 2) Client certificate
      * <p>
+     *
      * @return Optional<AuthSource> which hold original source of authentication (JWT token, client certificate etc.)
      * or Optional.empty() when no authentication source found.
      */
@@ -64,14 +68,15 @@ public class DefaultAuthSourceService implements AuthSourceService {
         AuthSourceService service = getService(AuthSourceType.JWT);
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
         if (!authSource.isPresent()) {
-           service = getService(AuthSourceType.CLIENT_CERT);
-           authSource = service.getAuthSourceFromRequest();
+            service = getService(AuthSourceType.CLIENT_CERT);
+            authSource = service.getAuthSourceFromRequest();
         }
         return authSource;
     }
 
     /**
      * Delegates the validation of the authentication source to a corresponding service.
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token, client certificate etc.)
      * @return true is authentication source is valid, false otherwise
      */
@@ -83,6 +88,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
 
     /**
      * Delegates the parsing of the authentication source to a corresponding service.
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token, client certificate etc.)
      * @return authentication source in parsed form
      */
@@ -94,6 +100,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
 
     /**
      * Delegates the generation of the LTPA token based on the authentication source to a corresponding service.
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token, client certificate etc.)
      * @return LPTA token
      */
@@ -105,6 +112,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
 
     /**
      * Choose a service to process authentication source from the map of available services.
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token, client certificate etc.)
      * @return implementation of {@link AuthSourceService} or null if service not found
      */
@@ -114,6 +122,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
 
     /**
      * Choose a service to process authentication source of specific type from the map of available services.
+     *
      * @param authSourceType {@link AuthSourceType} type of the authentication source
      * @return implementation of {@link AuthSourceService} or null if service not found
      */
@@ -123,5 +132,11 @@ public class DefaultAuthSourceService implements AuthSourceService {
             throw new IllegalArgumentException("Unknown authentication source");
         }
         return service;
+    }
+
+    @Override
+    public String getJWT(AuthSource authSource) {
+        AuthSourceService service = getService(authSource);
+        return service != null ? service.getJWT(authSource) : null;
     }
 }
