@@ -14,8 +14,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.passticket.PassTicketService;
 
 @Configuration
 @RequiredArgsConstructor
