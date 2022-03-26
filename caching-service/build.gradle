@@ -121,6 +121,7 @@ dependencies {
 
     implementation libraries.guava
     implementation libraries.gson
+    implementation libraries.janino
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 

@@ -12,6 +12,7 @@ dependencies {
     compile(libraries.slf4j_api)
     compile(libraries.snakeyaml)
 
+    compile libraries.apache_commons_codec
     compile libraries.apache_commons_lang3
     compile libraries.apache_commons_text
     compile libraries.xstream

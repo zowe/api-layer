@@ -14,10 +14,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.error.ErrorUtils;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -41,26 +44,55 @@ public class SecurityErrorCheck implements ErrorCheck {
      */
     @Override
     public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
-        if (exc instanceof ZuulException && (exc.getCause() instanceof AuthenticationException)) {
-            ApiMessageView messageView = null;
-            Throwable cause = exc.getCause();
+        if (!(exc instanceof ZuulException)) return null;
+
+        Throwable cause = exc.getCause();
+        ApiMessageView messageView = null;
+
+        if (cause instanceof AuthenticationException) {
+            HttpStatus status = HttpStatus.UNAUTHORIZED;
+
             if (cause instanceof TokenExpireException) {
                 messageView = messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToView();
             } else if (cause instanceof TokenNotValidException) {
                 messageView = messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToView();
             } else if (cause instanceof BadCredentialsException) {
                 messageView = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials",
-                    ErrorUtils.getGatewayUri(request)
+                        ErrorUtils.getGatewayUri(request)
+                ).mapToView();
+            } else if (cause instanceof SafIdtAuthException) {
+                messageView = messageService.createMessage("org.zowe.apiml.security.idt.auth.failed",
+                        cause.getLocalizedMessage() + ". " + getPreviousCause(cause)
+                ).mapToView();
+            }
+
+            return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(messageView);
+        }
+
+        if (cause instanceof AccessDeniedException) {
+            HttpStatus status = HttpStatus.FORBIDDEN;
+
+            if (cause instanceof SafIdtException) {
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
+                messageView = messageService.createMessage("org.zowe.apiml.security.idt.failed",
+                        cause.getLocalizedMessage() + ". " + getPreviousCause(cause)
                 ).mapToView();
             } else if (cause instanceof PassTicketException) {
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
                 messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-                    cause.getMessage() + ". " + cause.getCause()
+                    cause.getLocalizedMessage() + ". " + getPreviousCause(cause)
                 ).mapToView();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(messageView);
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON).body(messageView);
+
+            return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(messageView);
         }
 
         return null;
     }
+
+    private static String getPreviousCause(Throwable cause) {
+        Throwable t = cause.getCause();
+        return t == null ? "" : t.getMessage();
+    }
+
 }
