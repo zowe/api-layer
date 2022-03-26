@@ -20,7 +20,6 @@ import WizardInputs from './WizardInputs';
 const mapStateToProps = (state) => ({
     inputData: state.wizardReducer.inputData,
     tiles: state.tilesReducer.tiles,
-    uploaded_yaml: state.wizardReducer.uploaded_yaml,
 });
 
 const mapDispatchToProps = {

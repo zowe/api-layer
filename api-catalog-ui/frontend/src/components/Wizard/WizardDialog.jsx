@@ -20,6 +20,7 @@ export default class WizardDialog extends Component {
         super(props);
         this.nextSave = this.nextSave.bind(this);
         this.showFile = this.showFile.bind(this);
+        this.fillInputs = this.fillInputs.bind(this);
         this.renderDoneButtonText = this.renderDoneButtonText.bind(this);
     }
 
@@ -79,7 +80,9 @@ export default class WizardDialog extends Component {
         }
     };
 
-    // Convert an uploaded yaml file to JSON and save in local storage
+    /**
+     * Convert an uploaded yaml file to JSON and save in local storage
+     */
     showFile = (e) => {
         e.preventDefault();
         const reader = new FileReader();
@@ -87,7 +90,7 @@ export default class WizardDialog extends Component {
             const text = event.target.result;
             try {
                 const obj = yaml.load(text);
-                this.props.storeUploadedYaml(obj);
+                this.fillInputs(obj);
             } catch {
                 document.getElementById('yaml-browser').value = null;
                 toast.warn('Please make sure the file you are uploading is in valid YAML format!', {
@@ -97,6 +100,64 @@ export default class WizardDialog extends Component {
             }
         };
         reader.readAsText(e.target.files[0]);
+    };
+
+    /**
+     * Go through the uploaded yaml file and create "targets". "targets" is an object representing the
+     * input fields and what they should be changed to.
+     */
+    fillInputs = (uploadedYaml) => {
+        const targets = {};
+        if (this.props.inputData) {
+            // Loop through all input groups (tabs/sections)
+            this.props.inputData.forEach((obj) => {
+                const { content } = obj;
+                const objResult = { ...obj };
+                if (content) {
+                    // Loop through all possible replicas of an input group (e.g. Routes 1 (field1, field2), Routes 2 (field1, field2))
+                    content.forEach((property, index) => {
+                        let path = '';
+                        // Get indentation to mimic hierarchy of yaml
+                        if (obj.indentation) {
+                            path = obj.indentation.split('/');
+                        }
+                        // Loop through each input in an input group replica
+                        Object.keys(property).forEach((propertyKey) => {
+                            let value = uploadedYaml;
+                            let found = true;
+                            // Navigate down Yaml hierarchy to find desired value to change to
+                            if (path.length > 0) {
+                                path.forEach((indent) => {
+                                    if (found && value[indent]) {
+                                        value = value[indent];
+                                    } else {
+                                        found = false;
+                                    }
+                                });
+                            }
+                            // If this path exists in the uploaded yaml and its a field that has potential replicas
+                            if (found && obj.multiple && obj.multiple === true) {
+                                value.forEach((individualValue, individualIndex) => {
+                                    if (objResult.content.length <= individualIndex) {
+                                        objResult.content.push(JSON.parse(JSON.stringify(obj.content[0])));
+                                    }
+                                    if (obj.noKey && obj.noKey === true && individualValue) {
+                                        objResult.content[individualIndex][propertyKey].value = individualValue;
+                                    } else if (individualValue[propertyKey]) {
+                                        objResult.content[individualIndex][propertyKey].value =
+                                            individualValue[propertyKey];
+                                    }
+                                });
+                            } else if (found && value[propertyKey]) {
+                                objResult.content[index][propertyKey].value = value[propertyKey];
+                            }
+                        });
+                    });
+                }
+                this.props.updateWizardData(objResult);
+            });
+        }
+        return targets;
     };
 
     renderDoneButtonText() {

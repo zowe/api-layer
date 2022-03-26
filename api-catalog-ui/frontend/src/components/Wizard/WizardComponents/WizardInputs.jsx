@@ -25,100 +25,12 @@ import DeleteIcon from '@material-ui/icons/Delete';
 class WizardInputs extends Component {
     constructor(props) {
         super(props);
-        this.setupUploadedYaml();
-        const targets = this.createTargets();
-        this.handleMultipleInputChange({
-            targets,
-        });
+        this.state = {};
         this.handleInputChange = this.handleInputChange.bind(this);
         this.addFields = this.addFields.bind(this);
         this.addFieldsToCurrentCategory = this.addFieldsToCurrentCategory.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
     }
-
-    /**
-     * Store the uploaded yaml file (as a JSON) in state either from props or local storage.
-     */
-    setupUploadedYaml = () => {
-        let upYaml;
-        if (this.props.uploaded_yaml) {
-            upYaml = this.props.uploaded_yaml;
-            localStorage.setItem('uploaded_yaml', JSON.stringify(upYaml));
-        } else {
-            upYaml = JSON.parse(localStorage.getItem('uploaded_yaml'));
-        }
-        this.state = {
-            uploaded_yaml: upYaml,
-        };
-    };
-
-    /**
-     * Go through the uploaded yaml file and create "targets". "targets" is an object representing the
-     * input fields and what they should be changed to.
-     */
-    createTargets = () => {
-        const targets = {};
-        if (this.props.data.content) {
-            this.props.data.content.forEach((property, index) => {
-                let path = '';
-                if (this.props.data.indentation) {
-                    path = this.props.data.indentation.split('/');
-                }
-                Object.keys(property).forEach((propertyKey) => {
-                    if (this.state.uploaded_yaml) {
-                        let value = this.state.uploaded_yaml;
-                        let found = true;
-                        if (path.length > 0) {
-                            path.forEach((indent) => {
-                                if (found && value[indent]) {
-                                    value = value[indent];
-                                } else {
-                                    found = false;
-                                }
-                            });
-                        }
-                        if (found && this.props.data.multiple && this.props.data.multiple === true) {
-                            value.forEach((individualValue, individualIndex) => {
-                                if (
-                                    this.props.data.noKey &&
-                                    this.props.data.noKey === true &&
-                                    individualValue[individualIndex]
-                                ) {
-                                    if (!targets[individualIndex]) {
-                                        targets[individualIndex] = [];
-                                    }
-                                    targets[individualIndex].push({
-                                        name: propertyKey,
-                                        value: individualValue[individualIndex],
-                                        checked: individualValue[individualIndex],
-                                    });
-                                } else if (individualValue[propertyKey]) {
-                                    if (!targets[individualIndex]) {
-                                        targets[individualIndex] = [];
-                                    }
-                                    targets[individualIndex].push({
-                                        name: propertyKey,
-                                        value: individualValue[propertyKey],
-                                        checked: individualValue[propertyKey],
-                                    });
-                                }
-                            });
-                        } else if (found && value[propertyKey]) {
-                            if (!targets[index]) {
-                                targets[index] = [];
-                            }
-                            targets[index].push({
-                                name: propertyKey,
-                                value: value[propertyKey],
-                                checked: value[propertyKey],
-                            });
-                        }
-                    }
-                });
-            });
-        }
-        return targets;
-    };
 
     /**
      * When users fills out an input the inputData object is updated with the new information
@@ -157,60 +69,6 @@ class WizardInputs extends Component {
         this.updateDataWithNewContent(objectToChange, arr);
         this.propagateToMinions(name, value, arrIndex);
         this.props.validateInput(objectToChange.nav, true);
-    };
-
-    /**
-     * When multiple inputs are changed the inputData object is updated with the new information
-     * @param event object containing input's name, value and its data-index attr.
-     */
-    handleMultipleInputChange = (event) => {
-        if (Object.keys(event.targets).length > 0) {
-            const objectToChange = this.props.data;
-            const arr = [...objectToChange.content];
-            Object.entries(event.targets).forEach(([key, targets]) => {
-                const arrIndex = key;
-                arr[arrIndex] = {
-                    ...arr[arrIndex],
-                };
-                if (objectToChange.content.length > arrIndex) {
-                    targets.forEach((target) => {
-                        const { name, checked } = target;
-                        let { value } = target;
-                        const { maxLength, lowercase, regexRestriction, validUrl } =
-                            objectToChange.content.length > arrIndex
-                                ? objectToChange.content[arrIndex][name]
-                                : objectToChange.content[0][name];
-                        const prevValue = objectToChange.content[arrIndex][name].value;
-                        if (name === 'serviceId') {
-                            this.props.updateServiceId(value);
-                        }
-                        // if prevValues was a boolean then we are handling a checkbox
-                        if (typeof prevValue === 'boolean') {
-                            value = checked;
-                        } else {
-                            value = this.applyRestrictions(maxLength, value, lowercase);
-                            if (value.length > 0) {
-                                objectToChange.content[arrIndex][name].empty = false;
-                            }
-                            objectToChange.content[arrIndex][name].problem = this.checkRestrictions(
-                                objectToChange.content[arrIndex][name],
-                                value,
-                                regexRestriction,
-                                validUrl
-                            );
-                        }
-                        arr[arrIndex][name] = {
-                            ...objectToChange.content[arrIndex][name],
-                            value,
-                            interactedWith: true,
-                        };
-                        this.propagateToMinions(name, value, arrIndex);
-                    });
-                }
-            });
-            this.updateDataWithNewContent(objectToChange, arr);
-            this.props.validateInput(objectToChange.nav, true);
-        }
     };
 
     /**
