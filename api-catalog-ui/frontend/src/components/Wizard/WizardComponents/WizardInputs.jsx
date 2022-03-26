@@ -25,8 +25,22 @@ import DeleteIcon from '@material-ui/icons/Delete';
 class WizardInputs extends Component {
     constructor(props) {
         super(props);
+        this.setupUploadedYaml();
+        const targets = this.createTargets();
+        this.handleMultipleInputChange({
+            targets,
+        });
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.addFields = this.addFields.bind(this);
+        this.addFieldsToCurrentCategory = this.addFieldsToCurrentCategory.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
+    }
+
+    /**
+     * Store the uploaded yaml file (as a JSON) in state either from props or local storage.
+     */
+    setupUploadedYaml = () => {
         let upYaml;
-        const targets = {};
         if (this.props.uploaded_yaml) {
             upYaml = this.props.uploaded_yaml;
             localStorage.setItem('uploaded_yaml', JSON.stringify(upYaml));
@@ -36,6 +50,14 @@ class WizardInputs extends Component {
         this.state = {
             uploaded_yaml: upYaml,
         };
+    };
+
+    /**
+     * Go through the uploaded yaml file and create "targets". "targets" is an object representing the
+     * input fields and what they should be changed to.
+     */
+    createTargets = () => {
+        const targets = {};
         if (this.props.data.content) {
             this.props.data.content.forEach((property, index) => {
                 let path = '';
@@ -95,14 +117,8 @@ class WizardInputs extends Component {
                 });
             });
         }
-        this.handleMultipleInputChange({
-            targets,
-        });
-        this.handleInputChange = this.handleInputChange.bind(this);
-        this.addFields = this.addFields.bind(this);
-        this.addFieldsToCurrentCategory = this.addFieldsToCurrentCategory.bind(this);
-        this.handleDelete = this.handleDelete.bind(this);
-    }
+        return targets;
+    };
 
     /**
      * When users fills out an input the inputData object is updated with the new information
