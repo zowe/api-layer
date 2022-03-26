@@ -104,7 +104,8 @@ export const baseCategories = [
                 question: 'The relative path to the home page of the service:',
                 optional: true,
                 regexRestriction: [wizRegex.validRelativeUrl],
-                tooltip: 'Normally used for informational purposes for other services to use it as a landing page. Example: /home',
+                tooltip:
+                    'Normally used for informational purposes for other services to use it as a landing page. Example: /home',
             },
             statusPageRelativeUrl: {
                 value: '',
@@ -205,7 +206,8 @@ export const baseCategories = [
                 value: '',
                 question: 'The Http or Https address where the Swagger JSON document is available:',
                 optional: true,
-                tooltip: 'Example: http://${sampleServiceSwaggerHost}:${sampleServiceSwaggerPort}/sampleservice/api-doc',
+                tooltip:
+                    'Example: http://${sampleServiceSwaggerHost}:${sampleServiceSwaggerPort}/sampleservice/api-doc',
             },
             documentationUrl: {
                 value: '',

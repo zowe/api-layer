@@ -101,7 +101,8 @@ export const micronautSpecificCategories = [
                 value: '',
                 question: 'SSL cipher suites:',
                 dependencies: { enabled: true },
-                tooltip: 'Ciphers that are used by the HTTPS servers in API ML services and can be externalized by specifying -Dapiml.security.ciphers command line parameter.',
+                tooltip:
+                    'Ciphers that are used by the HTTPS servers in API ML services and can be externalized by specifying -Dapiml.security.ciphers command line parameter.',
             },
         },
     },

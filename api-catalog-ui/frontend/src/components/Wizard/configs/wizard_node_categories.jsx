@@ -78,7 +78,8 @@ export const nodeSpecificCategories = [
                 value: '',
                 question: 'The interval for registry interval:',
                 hide: true,
-                tooltip: 'How often does Eureka client pull the service list from Eureka server. The default is 30 seconds. Example: 5',
+                tooltip:
+                    'How often does Eureka client pull the service list from Eureka server. The default is 30 seconds. Example: 5',
             },
         },
     },
