@@ -146,7 +146,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        String regex = System.getProperty("discovery.serviceIdPrefixReplacer");
+        String regex = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
         if (StringUtils.isNotEmpty(regex) && isValidRegex(regex)) {
             info = changeServiceId(info, regex);
         }
@@ -164,7 +164,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        String regex = System.getProperty("discovery.serviceIdPrefixReplacer");
+        String regex = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
         if (StringUtils.isNotEmpty(regex) && isValidRegex(regex)) {
             info = changeServiceId(info, regex);
         }
@@ -208,7 +208,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * @param regex the regex
      * @return instance info with the modified service ID
      */
-    private InstanceInfo changeServiceId(final InstanceInfo info, String regex) {
+    protected InstanceInfo changeServiceId(final InstanceInfo info, String regex) {
         String servicePrefix = regex.split(",")[0];
         String targetValue = regex.split(",")[1];
         String instanceId = info.getInstanceId();
