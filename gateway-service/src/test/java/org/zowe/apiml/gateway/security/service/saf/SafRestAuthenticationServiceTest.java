@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
@@ -79,10 +78,9 @@ class SafRestAuthenticationServiceTest {
                     responseBody.setJwt(validSafToken);
                     when(response.getBody()).thenReturn(responseBody);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
+                    String token = underTest.generate(VALID_USERNAME, null, null);
 
-                    assertThat(token.isPresent(), is(true));
-                    assertThat(token.get(), is(validSafToken));
+                    assertThat(token, is(validSafToken));
                 }
             }
 
@@ -93,8 +91,8 @@ class SafRestAuthenticationServiceTest {
                     HttpClientErrorException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
                     when(restTemplate.postForEntity(any(), any(), any())).thenThrow(exception);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
-                    assertThat(token.isPresent(), is(false));
+                    assertThrows(SafIdtAuthException.class,
+                        () -> underTest.generate(VALID_USERNAME, null, null), "Exception is not AuthenticationTokenException");
                 }
 
                 @Test
@@ -103,8 +101,8 @@ class SafRestAuthenticationServiceTest {
                     when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
                     when(response.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
-                    assertThat(token.isPresent(), is(false));
+                    assertThrows(SafIdtException.class,
+                        () -> underTest.generate(VALID_USERNAME, null, null), "Exception is not AuthenticationTokenException");
                 }
 
                 @Test
@@ -114,8 +112,8 @@ class SafRestAuthenticationServiceTest {
                     when(response.getStatusCode()).thenReturn(HttpStatus.CREATED);
                     when(response.getBody()).thenReturn(null);
 
-                    Optional<String> token = underTest.generate(VALID_USERNAME);
-                    assertThat(token.isPresent(), is(false));
+                    assertThrows(SafIdtException.class,
+                        () -> underTest.generate(VALID_USERNAME, null, null), "Exception is not AuthenticationTokenException");
                 }
             }
 
@@ -133,8 +131,8 @@ class SafRestAuthenticationServiceTest {
                     when(response.getBody()).thenReturn(responseBody);
 
                     when(passTicketService.generate(any(), any())).thenThrow(new IRRPassTicketGenerationException(1, 2, 3));
-                    assertThrows(AuthenticationTokenException.class,
-                        () -> underTest.generate(VALID_USERNAME), "Exception is not AuthenticationTokenException");
+                    assertThrows(SafIdtAuthException.class,
+                        () -> underTest.generate(VALID_USERNAME, null, null), "Exception is not AuthenticationTokenException");
                 }
             }
         }
@@ -145,9 +143,8 @@ class SafRestAuthenticationServiceTest {
             void givenNoJwtToken() {
                 when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
 
-                Optional<String> token = underTest.generate(VALID_USERNAME);
-                assertThat(token.isPresent(), is(false));
-            }
+                assertThrows(SafIdtException.class,
+                        () -> underTest.generate(VALID_USERNAME, null, null), "Exception is not AuthenticationTokenException");        }
 
             @Test
             void givenInvalidJwtToken() {
@@ -158,8 +155,8 @@ class SafRestAuthenticationServiceTest {
                 when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(invalidToken));
                 when(authenticationService.validateJwtToken(invalidToken)).thenReturn(unauthenticated);
 
-                Optional<String> token = underTest.generate(VALID_USERNAME);
-                assertThat(token.isPresent(), is(false));
+                assertThrows(SafIdtException.class,
+                        () -> underTest.generate(VALID_USERNAME, null, null), "Exception is not AuthenticationTokenException");
             }
 
         }
@@ -171,7 +168,7 @@ class SafRestAuthenticationServiceTest {
         class ReturnFalse {
             @Test
             void givenNoSafToken() {
-                assertThat(underTest.verify(null), is(false));
+                assertThat(underTest.verify(null, null), is(false));
             }
 
             @Test
@@ -179,7 +176,7 @@ class SafRestAuthenticationServiceTest {
                 HttpClientErrorException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "statusText", new HttpHeaders(), new byte[]{}, null);
                 when(restTemplate.postForEntity(any(), any(), any())).thenThrow(exception);
 
-                assertThat(underTest.verify("validSafToken"), is(false));
+                assertThat(underTest.verify("validSafToken", null), is(false));
             }
 
             @Test
@@ -188,7 +185,7 @@ class SafRestAuthenticationServiceTest {
                 when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
                 when(response.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
 
-                assertThat(underTest.verify("validSafToken"), is(false));
+                assertThat(underTest.verify("validSafToken", null), is(false));
             }
         }
 
@@ -200,7 +197,7 @@ class SafRestAuthenticationServiceTest {
                 when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
                 when(response.getStatusCode()).thenReturn(HttpStatus.OK);
 
-                assertThat(underTest.verify("validSafToken"), is(true));
+                assertThat(underTest.verify("validSafToken", null), is(true));
             }
         }
     }
