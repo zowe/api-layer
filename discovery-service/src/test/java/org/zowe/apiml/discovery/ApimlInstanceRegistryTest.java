@@ -23,6 +23,9 @@ import org.junit.jupiter.api.Nested;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Field;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ApimlInstanceRegistryTest {
@@ -36,30 +39,42 @@ class ApimlInstanceRegistryTest {
     private ApplicationContext appCntx;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
         serverConfig = new DefaultEurekaServerConfig();
         clientConfig = mock(EurekaClientConfig.class);
         serverCodecs = mock(ServerCodecs.class);
         eurekaClient = mock(DiscoveryClient.class);
         instanceRegistryProperties = mock(InstanceRegistryProperties.class);
         appCntx = mock(ApplicationContext.class);
-        apimlInstanceRegistry = new ApimlInstanceRegistry(
+        apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
             serverCodecs,
             eurekaClient,
             instanceRegistryProperties,
-            appCntx);
+            appCntx));
+
+        MethodHandle methodHandle = mock(MethodHandle.class);
+        Field declaredField = ApimlInstanceRegistry.class.getDeclaredField("handleRegistrationMethod");
+        Field declaredField2 = ApimlInstanceRegistry.class.getDeclaredField("register2ArgsMethodHandle");
+        Field declaredField3 = ApimlInstanceRegistry.class.getDeclaredField("register3ArgsMethodHandle");
+
+        declaredField.setAccessible(true);
+        declaredField.set(apimlInstanceRegistry, methodHandle);
+        declaredField2.setAccessible(true);
+        declaredField2.set(apimlInstanceRegistry, methodHandle);
+        declaredField3.setAccessible(true);
+        declaredField3.set(apimlInstanceRegistry, methodHandle);
     }
 
     @Nested
-    class GivenRegexReplacer {
+    class GivenReplacerTuple {
         @Nested
         class WhenChangeServiceId {
             @Test
             void thenChangeServicePrefix() {
-                String regex = "service,hello";
-                InstanceInfo info = apimlInstanceRegistry.changeServiceId(getStandardInstance(), regex);
+                String tuple = "service,hello";
+                InstanceInfo info = apimlInstanceRegistry.changeServiceId(getStandardInstance(), tuple);
                 assertEquals("hello", info.getInstanceId());
                 assertEquals("HELLO", info.getAppName());
                 assertEquals("HELLO", info.getVIPAddress());
@@ -72,15 +87,38 @@ class ApimlInstanceRegistryTest {
         }
 
         @Nested
-        class WhenInstanceIdIsDifferentFromRegex {
+        class WhenInstanceIdIsDifferentFromTuple {
             @Test
             void thenDontChangeServicePrefix() {
-                String regex = "differentService,hello";
-                InstanceInfo info = apimlInstanceRegistry.changeServiceId(getStandardInstance(), regex);
+                String tuple = "differentService,hello";
+                InstanceInfo info = apimlInstanceRegistry.changeServiceId(getStandardInstance(), tuple);
                 assertEquals("service", info.getInstanceId());
                 assertEquals("SERVICE", info.getAppName());
                 assertEquals("SERVICE", info.getVIPAddress());
                 assertEquals("SERVICE", info.getAppGroupName());
+            }
+        }
+    }
+
+    @Nested
+    class WhenRegisterInstance {
+        @Nested
+        class WhenReplaceTupleIsCorrect {
+            @Test
+            void thenInvokeChangeServiceId() {
+                System.setProperty("apiml.discovery.serviceIdPrefixReplacer", "service,hello");
+                apimlInstanceRegistry.register(getStandardInstance(), false);
+                verify(apimlInstanceRegistry, times(1)).changeServiceId(any(), any());
+            }
+        }
+
+        @Nested
+        class WhenReplaceTupleIsNotCorrect {
+            @Test
+            void thenDontInvokeServicePrefix() {
+                System.setProperty("apiml.discovery.serviceIdPrefixReplacer", "service");
+                apimlInstanceRegistry.register(getStandardInstance(), false);
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
         }
     }

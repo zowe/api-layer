@@ -146,9 +146,11 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        String regex = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
-        if (StringUtils.isNotEmpty(regex) && isValidRegex(regex)) {
-            info = changeServiceId(info, regex);
+        String tuple = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
+        if (StringUtils.isNotEmpty(tuple) &&
+            tuple.contains(",") &&
+            isValidTuple(tuple)) {
+            info = changeServiceId(info, tuple);
         }
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -164,9 +166,11 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        String regex = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
-        if (StringUtils.isNotEmpty(regex) && isValidRegex(regex)) {
-            info = changeServiceId(info, regex);
+        String tuple = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
+        if (StringUtils.isNotEmpty(tuple) &&
+            tuple.contains(",") &&
+            isValidTuple(tuple)) {
+            info = changeServiceId(info, tuple);
         }
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
@@ -203,14 +207,14 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     }
 
     /**
-     * Change the service ID prefix according to the regex before the service registers to Eureka.
+     * Change the service ID prefix according to the mapper before the service registers to Eureka.
      * @param info the instance info
-     * @param regex the regex
+     * @param tuple the mapper
      * @return instance info with the modified service ID
      */
-    protected InstanceInfo changeServiceId(final InstanceInfo info, String regex) {
-        String servicePrefix = regex.split(",")[0];
-        String targetValue = regex.split(",")[1];
+    protected InstanceInfo changeServiceId(final InstanceInfo info, String tuple) {
+        String servicePrefix = tuple.split(",")[0];
+        String targetValue = tuple.split(",")[1];
         String instanceId = info.getInstanceId();
         if (instanceId.contains(servicePrefix)) {
             String appName = info.getAppName();
@@ -227,14 +231,11 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         return info;
     }
 
-    private boolean isValidRegex(String regex) {
-        String servicePrefix = regex.split(",")[0];
-        String targetValue = regex.split(",")[1];
-        if (StringUtils.isNotEmpty(servicePrefix) &&
+    private boolean isValidTuple(String tuple) {
+        String servicePrefix = tuple.split(",")[0];
+        String targetValue = tuple.split(",")[1];
+        return StringUtils.isNotEmpty(servicePrefix) &&
             StringUtils.isNotEmpty(targetValue) &&
-            !servicePrefix.equals(targetValue)) {
-            return true;
-        }
-        return false;
+            !servicePrefix.equals(targetValue);
     }
 }
