@@ -7,15 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zss.model;
+package org.zowe.apiml.gateway.security.service.schema;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.security.core.AuthenticationException;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Token {
-    private String jwt;
+public class AuthenticationSchemeNotSupportedException extends AuthenticationException {
+
+    public AuthenticationSchemeNotSupportedException(String msg) {
+        super(msg);
+    }
 }

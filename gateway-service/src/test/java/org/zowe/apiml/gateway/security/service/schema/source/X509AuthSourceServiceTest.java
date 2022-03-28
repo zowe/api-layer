@@ -9,35 +9,29 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import com.netflix.zuul.context.RequestContext;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
+import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
+
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
-import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import org.zowe.apiml.security.common.error.InvalidCertificateException;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
@@ -51,16 +45,33 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         x509Certificate = mock(X509Certificate.class);
     }
 
+    @Test
+    void givenNullSource_returnNullLtpa() {
+        AuthenticationService authenticationService = mock(AuthenticationService.class);
+        X509AuthSourceService service = new X509AuthSourceService(null, null, authenticationService);
+        assertNull(service.getLtpaToken(null));
+    }
+
+    @Test
+    void givenX509Source_returnNullLtpa() {
+        AuthenticationService authenticationService = mock(AuthenticationService.class);
+        TokenCreationService tokenCreationService = mock(TokenCreationService.class);
+        X509AuthSourceService service = new X509AuthSourceService(mock(X509AbstractMapper.class), tokenCreationService, authenticationService);
+        assertNull(service.getLtpaToken(new X509AuthSource(null)));
+    }
+
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class X509MFAuthSourceServiceTest {
         private X509AbstractMapper mapper;
         private X509AuthSourceService serviceUnderTest;
+        private TokenCreationService tokenCreationService;
+        private AuthenticationService authenticationService;
 
         @BeforeEach
         void init() {
             mapper = mock(X509AbstractMapper.class);
-            serviceUnderTest = new X509AuthSourceService(mapper);
+            serviceUnderTest = new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
         }
 
         @Nested
@@ -80,6 +91,14 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             void whenParse_thenNull() {
                 assertNull(serviceUnderTest.parse(null));
                 verifyNoInteractions(mapper);
+            }
+        }
+
+        @Nested
+        class GiveNullRawSource {
+            @Test
+            void whenValidate_thenCorrect() {
+                Assertions.assertFalse(serviceUnderTest.isValid(new X509AuthSource(null)));
             }
         }
 
@@ -129,6 +148,13 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
                 when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
                 assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.parse(authSource));
                 verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+            }
+
+            @Test
+            void returnNullWhenCertificateEncodingExceptionIsThrown() throws CertificateEncodingException {
+                AuthSource authSource = new X509AuthSource(x509Certificate);
+                when(x509Certificate.getEncoded()).thenThrow(new CertificateEncodingException(""));
+                assertNull(serviceUnderTest.parse(authSource));
             }
 
             @Nested

@@ -299,7 +299,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
         )).when(authService).parseJwtToken(jwtToken);
         doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
-
         when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
         assertFalse(authService.invalidateJwtToken(jwtToken, true));
 
@@ -493,6 +492,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         doReturn(new QueryResponse(
             "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOWE
         )).when(authService).parseJwtToken(jwtToken);
+
         doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-CSRF-ZOSMF-HEADER", "");
