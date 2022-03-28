@@ -11,14 +11,28 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+
+import java.util.Date;
 
 
 @Component
+@AllArgsConstructor
 public class ZoweJwtScheme implements AbstractAuthenticationScheme {
+
+    private AuthSourceService authSourceService;
+    private AuthConfigurationProperties configurationProperties;
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -27,17 +41,30 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        return AuthenticationCommand.EMPTY;
+        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+        final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
+        final Long expirationTime = expiration == null ? null : expiration.getTime();
+        return new ZoweJwtAuthCommand(expirationTime);
     }
 
-    public class ZoweJwtAuthCommand extends AuthenticationCommand {
+    @lombok.Value
+    @EqualsAndHashCode(callSuper = false)
+    public class ZoweJwtAuthCommand extends JwtCommand {
 
         public static final long serialVersionUID = -885301934611866658L;
-        public static final String COOKIE_HEADER = "cookie";
+        Long expireAt;
+
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
-
+            authSourceService.getAuthSourceFromRequest().ifPresent(authSource -> {
+                // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
+                if (authSource.getType().equals(AuthSource.AuthSourceType.CLIENT_CERT)) {
+                    authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
+                    AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
+                    setCookie(context,properties.getCookieName(),(String)authSource.getRawSource());
+                }
+            });
         }
     }
 

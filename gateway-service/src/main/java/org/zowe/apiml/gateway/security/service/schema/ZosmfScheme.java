@@ -63,40 +63,13 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
     @lombok.Value
     @EqualsAndHashCode(callSuper = false)
-    public class ZosmfCommand extends AuthenticationCommand {
+    public class ZosmfCommand extends JwtCommand {
 
         private static final long serialVersionUID = 2284037230674275720L;
 
         public static final String COOKIE_HEADER = "cookie";
 
-        private final Long expireAt;
-
-        private void createCookie(Cookies cookies, String name, String token) {
-            HttpCookie jwtCookie = new HttpCookie(name, token);
-            jwtCookie.setSecure(true);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setVersion(0);
-            cookies.set(jwtCookie);
-        }
-
-        private void setCookie(RequestContext context, String name, String value) {
-            context.addZuulRequestHeader(COOKIE_HEADER,
-                CookieUtil.setCookie(
-                    context.getZuulRequestHeaders().get(COOKIE_HEADER),
-                    name,
-                    value
-                )
-            );
-        }
-
-        private void removeCookie(RequestContext context, String name) {
-            context.addZuulRequestHeader(COOKIE_HEADER,
-                CookieUtil.removeCookie(
-                    context.getZuulRequestHeaders().get(COOKIE_HEADER),
-                    name
-                )
-            );
-        }
+        Long expireAt;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
@@ -162,6 +135,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         public boolean isRequiredValidSource() {
             return true;
         }
+
 
     }
 
