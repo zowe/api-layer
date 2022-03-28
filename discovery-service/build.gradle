@@ -68,6 +68,7 @@ dependencies {
     }
     
     implementation libraries.jackson_annotations
+    implementation libraries.jackson_core
     implementation libraries.jackson_dataformat_yaml
     implementation libraries.jackson_databind
     implementation libraries.jetty_client
