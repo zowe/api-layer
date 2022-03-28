@@ -52,6 +52,7 @@ public class DefaultZaasClientConfiguration {
         ConfigProperties configProperties = new ConfigProperties();
         configProperties.setApimlHost(host);
         configProperties.setApimlPort(port);
+        configProperties.setApimlBaseUrl(baseUrl);
         configProperties.setKeyStorePath(keyStorePath);
         configProperties.setKeyStorePassword(keyStorePassword);
         configProperties.setKeyStoreType(keyStoreType);
@@ -59,15 +60,6 @@ public class DefaultZaasClientConfiguration {
         configProperties.setTrustStorePassword(trustStorePassword);
         configProperties.setTrustStoreType(trustStoreType);
         configProperties.setNonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices);
-
-        String updatedBaseUrl;
-        if (!baseUrl.startsWith("/gateway")) {
-            // rearrange path to match new base url format - {service id}/{type}/{api version} - both paths supported until March 2023
-            updatedBaseUrl = "/gateway" + baseUrl.substring(0, baseUrl.indexOf("/gateway")) + "/auth";
-        } else {
-            updatedBaseUrl = baseUrl;
-        }
-        configProperties.setApimlBaseUrl(updatedBaseUrl);
         return configProperties;
     }
 
