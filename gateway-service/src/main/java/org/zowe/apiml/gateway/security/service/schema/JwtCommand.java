@@ -19,7 +19,7 @@ public abstract class JwtCommand extends AuthenticationCommand {
 
     public static final String COOKIE_HEADER = "cookie";
 
-    public void createCookie(Cookies cookies, String name, String token) {
+    public static void createCookie(Cookies cookies, String name, String token) {
         HttpCookie jwtCookie = new HttpCookie(name, token);
         jwtCookie.setSecure(true);
         jwtCookie.setHttpOnly(true);
@@ -27,7 +27,7 @@ public abstract class JwtCommand extends AuthenticationCommand {
         cookies.set(jwtCookie);
     }
 
-    public void setCookie(RequestContext context, String name, String value) {
+    public static void setCookie(RequestContext context, String name, String value) {
         context.addZuulRequestHeader(COOKIE_HEADER,
             CookieUtil.setCookie(
                 context.getZuulRequestHeaders().get(COOKIE_HEADER),

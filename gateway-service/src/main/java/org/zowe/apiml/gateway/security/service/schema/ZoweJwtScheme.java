@@ -13,18 +13,18 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequest;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.util.Cookies;
 
 import java.util.Date;
+import java.util.function.BiConsumer;
 
 
 @Component
@@ -49,22 +49,35 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
     @lombok.Value
     @EqualsAndHashCode(callSuper = false)
-    public class ZoweJwtAuthCommand extends JwtCommand {
+    public class ZoweJwtAuthCommand extends AuthenticationCommand {
 
         public static final long serialVersionUID = -885301934611866658L;
         Long expireAt;
+        public static final String COOKIE_HEADER = "cookie";
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
+            // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
+            authSourceService.getAuthSourceFromRequest().ifPresent(authSource ->
+                updateRequest(authSource, (name, token) -> JwtCommand.setCookie(context, name, token))
+            );
+        }
+
+        @Override
+        public void applyToRequest(HttpRequest request) {
+            Cookies cookies = Cookies.of(request);
             authSourceService.getAuthSourceFromRequest().ifPresent(authSource -> {
-                // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
-                if (authSource.getType().equals(AuthSource.AuthSourceType.CLIENT_CERT)) {
-                    authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
-                    AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
-                    setCookie(context,properties.getCookieName(),(String)authSource.getRawSource());
-                }
+                updateRequest(authSource, (name, token) -> JwtCommand.createCookie(cookies, name, token));
             });
+        }
+
+        void updateRequest(AuthSource authSource, BiConsumer<String, String> triConsumer) {
+            if (AuthSource.AuthSourceType.CLIENT_CERT.equals(authSource.getType())) {
+                authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
+                AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
+                triConsumer.accept(properties.getCookieName(), (String) authSource.getRawSource());
+            }
         }
     }
 
