@@ -5,7 +5,7 @@ on:
         branches: [ master, v2.x.x ]
     pull_request:
         branches: [ master, v2.x.x, mentee-group/testing ]
-
+    workflow_dispatch:
 jobs:
     PublishJibContainers:
         runs-on: ubuntu-latest
