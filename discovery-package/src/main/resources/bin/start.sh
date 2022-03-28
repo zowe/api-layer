@@ -104,6 +104,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
     -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
+    -Dapiml.discovery.serviceIdPrefixReplacer=${APIML_SERVICE_PREFIX_REPLACER} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
