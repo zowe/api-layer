@@ -61,7 +61,7 @@ class ServiceAuthenticationDecoratorTest {
         decorator.process(request);
 
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
-        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any(Authentication.class), any());
     }
 
     @ParameterizedTest
@@ -74,7 +74,7 @@ class ServiceAuthenticationDecoratorTest {
         decorator.process(request);
 
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
-        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any(Authentication.class), any());
     }
 
     @ParameterizedTest
