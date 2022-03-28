@@ -10,7 +10,6 @@
 
 package com.ibm.eserver.zos.racf;
 
-//New Line
 import com.ibm.eserver.zos.racf.IRRPassTicket;
 import com.ibm.eserver.zos.racf.IRRPassTicket.*;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
@@ -185,5 +184,4 @@ class PassTicketServiceTest {
         }
 
     }
-    // TODO: Reimplement tests
 }
