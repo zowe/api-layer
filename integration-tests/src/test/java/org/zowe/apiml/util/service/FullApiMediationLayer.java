@@ -38,7 +38,7 @@ public class FullApiMediationLayer {
     private boolean firstCheck = true;
     private final Map<String, String> env;
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
-    private static final boolean servicePrefixMapperEnabled = "true".equals(System.getProperty("prefixReplacer"));
+    private static final boolean servicePrefixMapperEnabled = "true".equals(System.getProperty("environment.prefixReplacer"));
 
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
