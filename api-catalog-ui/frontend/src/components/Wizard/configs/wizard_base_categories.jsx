@@ -280,6 +280,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The password used to unlock the keystore:',
                 type: 'password',
+                tooltip: 'Your keystore password',
             },
             keyStoreType: {
                 value: 'PKCS12',
@@ -295,6 +296,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The password used to unlock the truststore:',
                 type: 'password',
+                tooltip: 'Your truststore password.',
             },
             trustStoreType: {
                 value: 'PKCS12',

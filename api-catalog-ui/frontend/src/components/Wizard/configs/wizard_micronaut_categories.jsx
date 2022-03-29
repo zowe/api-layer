@@ -181,6 +181,7 @@ export const micronautSpecificCategories = [
                 value: '',
                 question: 'The password used to unlock the truststore:',
                 type: 'password',
+                tooltip: 'Your truststore password.',
             },
             path: {
                 value: '',
