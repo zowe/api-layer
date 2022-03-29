@@ -48,6 +48,7 @@ gitProperties {
 }
 
 dependencies {
+    compileOnly(project(':mock-zos'))
     implementation project(':onboarding-enabler-spring')
     implementation project(':zaas-client')
     implementation libraries.springFox
@@ -73,6 +74,7 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
+    testImplementation(project(':mock-zos'))
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart
 }
