@@ -1082,7 +1082,7 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
                 env:
-                    ZWE_components_discovery_server_prefix_replacer: discoverable,sample
+                    APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: discoverable,sample
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
         steps:
