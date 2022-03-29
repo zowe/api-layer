@@ -38,7 +38,6 @@ public class FullApiMediationLayer {
     private boolean firstCheck = true;
     private final Map<String, String> env;
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
-    private static final boolean servicePrefixMapperEnabled = "true".equals(System.getProperty("environment.prefixReplacer"));
 
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
@@ -68,11 +67,7 @@ public class FullApiMediationLayer {
     }
 
     private void prepareDiscovery() {
-        Map<String, String> before = new HashMap<>();
-        if (servicePrefixMapperEnabled) {
-            before.put("-Dapiml.discovery.serviceIdPrefixReplacer", "discoverable,sample");
-        }
-        discoveryService = new RunningService("discovery", "discovery-service/build/libs", before, null);
+        discoveryService = new RunningService("discovery", "discovery-service/build/libs", null, null);
     }
 
     private void prepareGateway() {
@@ -105,7 +100,7 @@ public class FullApiMediationLayer {
 
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
 
-        discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
+        discoverableClientService = new RunningService("sampleclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
     }
 
     public static FullApiMediationLayer getInstance() {
