@@ -18,8 +18,7 @@ export const springSpecificCategories = [
             },
             enableUrlEncodedCharacters: {
                 value: false,
-                question:
-                    'When the value is true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway. The default setting of false is the recommended setting. Change this setting to true only if you expect certain encoded characters in your application\'s requests',
+                question: `When the value is true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway. The default setting of false is the recommended setting. Change this setting to true only if you expect certain encoded characters in your application's requests`,
             },
         },
     },
