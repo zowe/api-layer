@@ -1073,7 +1073,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
                     - /api-defs:/api-defs
-            sample-client:
+            discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
