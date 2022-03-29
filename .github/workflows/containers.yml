@@ -1075,8 +1075,6 @@ jobs:
                     - /api-defs:/api-defs
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
@@ -1085,6 +1083,8 @@ jobs:
                     APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable,sample"
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
         steps:
             -   uses: actions/checkout@v2
                 with:
