@@ -64,9 +64,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
     public class ZosmfCommand extends JwtCommand {
 
         private static final long serialVersionUID = 2284037230674275720L;
-
-        public static final String COOKIE_HEADER = "cookie";
-
         Long expireAt;
 
         @Override
@@ -121,19 +118,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                 request.removeHeaders(HttpHeaders.AUTHORIZATION);
             });
         }
-
-        @Override
-        public boolean isExpired() {
-            if (expireAt == null) return false;
-
-            return System.currentTimeMillis() > expireAt;
-        }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return true;
-        }
-
 
     }
 

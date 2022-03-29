@@ -53,32 +53,28 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
         public static final long serialVersionUID = -885301934611866658L;
         Long expireAt;
-        public static final String COOKIE_HEADER = "cookie";
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
-            // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
-            authSourceService.getAuthSourceFromRequest().ifPresent(authSource ->
-                updateRequest(authSource, (name, token) -> JwtCommand.setCookie(context, name, token))
-            );
+            updateRequest((name, token) -> JwtCommand.setCookie(context, name, token));
         }
 
         @Override
         public void applyToRequest(HttpRequest request) {
             Cookies cookies = Cookies.of(request);
-            authSourceService.getAuthSourceFromRequest().ifPresent(authSource -> {
-                updateRequest(authSource, (name, token) -> JwtCommand.createCookie(cookies, name, token));
-            });
+            updateRequest((name, token) -> JwtCommand.createCookie(cookies, name, token));
         }
 
-        void updateRequest(AuthSource authSource, BiConsumer<String, String> biConsumer) {
-            String jwt = authSourceService.getJWT(authSource);
-            if (jwt == null) {
-                throw new AccessDeniedException("Not able to create JWT from client certificate");
-            }
-            AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
-            biConsumer.accept(properties.getCookieName(), jwt);
+        void updateRequest(BiConsumer<String, String> biConsumer) {
+            authSourceService.getAuthSourceFromRequest().ifPresent(authSource -> {
+                String jwt = authSourceService.getJWT(authSource);
+                if (jwt == null) {
+                    throw new AccessDeniedException("Not able to create JWT from client certificate");
+                }
+                AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
+                biConsumer.accept(properties.getCookieName(), jwt);
+            });
         }
     }
 
