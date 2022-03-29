@@ -56,17 +56,31 @@ class ZoweJwtSchemeTest {
 
     @Nested
     class GivenJWTAuthSourceTest {
-        @Test
-        void whenValidJWTAuthSource_thenUpdateZuulHeaderWithJWToken() {
+        AuthenticationCommand command;
+
+        @BeforeEach
+        void setup() {
             Optional<AuthSource> authSource = Optional.of(new JwtAuthSource("jwtToken"));
             when(authSourceService.getAuthSourceFromRequest()).thenReturn(authSource);
-
+            when(authSourceService.getJWT(authSource.get())).thenReturn("jwtToken");
             ZoweJwtScheme scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
             assertFalse(scheme.isDefault());
             assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());
-            AuthenticationCommand command = scheme.createCommand(null, null);
+            command = scheme.createCommand(null, null);
+        }
+
+        @Test
+        void whenValidJWTAuthSource_thenUpdateZuulHeaderWithJWToken() {
             command.apply(null);
-            verify(requestContext, times(0)).addZuulRequestHeader(any(), any());
+            verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
+        }
+
+        @Test
+        void whenValidJWTAuthSource_thenUpdateCookieWithJWToken() {
+            HttpRequest httpRequest = new HttpGet("api/v1/files");
+            httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
+            command.applyToRequest(httpRequest);
+            assertEquals("apimlAuthenticationToken=jwtToken", httpRequest.getFirstHeader("cookie").getValue());
         }
     }
 
