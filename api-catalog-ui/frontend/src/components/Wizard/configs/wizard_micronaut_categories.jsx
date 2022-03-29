@@ -15,7 +15,7 @@ export const micronautSpecificCategories = [
             apiId: {
                 value: '',
                 question: 'A unique identifier to the API in the API ML:',
-                tooltip: 'Example: sampleservice',
+                tooltip: 'Example: zowe.apiml.sampleservice',
             },
             version: {
                 value: '',
@@ -82,7 +82,7 @@ export const micronautSpecificCategories = [
                 value: '',
                 question: 'The truststore file used to keep other parties public keys and certificates:',
                 dependencies: { enabled: true },
-                tooltip: 'Your truststore.',
+                tooltip: 'Example: keystore/localhost.truststore.p12',
             },
             trustStorePassword: {
                 value: '',
@@ -145,14 +145,17 @@ export const micronautSpecificCategories = [
             password: {
                 value: '',
                 question: 'The password associated with the private key:',
+                tooltip: 'password',
             },
             type: {
                 value: '',
-                question: 'The type of key store:',
+                question: 'Type of the keystore:',
+                tooltip: 'Your keystore type: example: PKCS12',
             },
             path: {
                 value: '',
                 question: 'The keystore file used to store the private key:',
+                tooltip: 'Example: ssl/localhost.keystore.key',
             },
         },
     },
@@ -162,10 +165,12 @@ export const micronautSpecificCategories = [
             alias: {
                 value: '',
                 question: 'The alias used to address the private key in the keystore:',
+                tooltip: 'Your key alias',
             },
             password: {
                 value: '',
                 question: 'The password associated with the private key:',
+                tooltip: 'password',
             },
         },
     },
@@ -180,6 +185,7 @@ export const micronautSpecificCategories = [
             path: {
                 value: '',
                 question: 'The truststore file used to keep other parties public keys and certificates:',
+                tooltip: 'Example: keystore/localhost.truststore.p12',
             },
             type: {
                 value: '',

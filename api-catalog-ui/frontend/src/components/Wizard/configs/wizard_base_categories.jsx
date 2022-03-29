@@ -193,7 +193,7 @@ export const baseCategories = [
             version: {
                 value: '',
                 question: 'API version:',
-                tooltip: 'API version',
+                tooltip: 'Example: 1.0.0',
                 regexRestriction: [wizRegex.version],
             },
             gatewayUrl: {
@@ -269,6 +269,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The password associated with the private key:',
                 type: 'password',
+                tooltip: 'password',
             },
             keyStore: {
                 value: '',
