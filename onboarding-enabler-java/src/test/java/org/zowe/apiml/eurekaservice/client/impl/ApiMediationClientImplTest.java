@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import com.ibm.jzos.ZUtil;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
@@ -189,7 +191,7 @@ class ApiMediationClientImplTest {
     }
 
     private ZUtil getZUtilZosValue() {
-        ZUtilDummy zutil = mock(ZUtilDummy.class);
+        ZUtil zutil = mock(ZUtil.class);
         doReturn("jobId").when(zutil).getCurrentJobId();
         doReturn("jobName").when(zutil).getCurrentJobname();
         doReturn("userId").when(zutil).getCurrentUser();
