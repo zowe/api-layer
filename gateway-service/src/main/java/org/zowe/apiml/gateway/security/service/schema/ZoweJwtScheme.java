@@ -14,12 +14,12 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.Cookies;
 
@@ -72,12 +72,13 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
             });
         }
 
-        void updateRequest(AuthSource authSource, BiConsumer<String, String> triConsumer) {
-            if (AuthSource.AuthSourceType.CLIENT_CERT.equals(authSource.getType())) {
-                authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
-                AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
-                triConsumer.accept(properties.getCookieName(), (String) authSource.getRawSource());
+        void updateRequest(AuthSource authSource, BiConsumer<String, String> biConsumer) {
+            String jwt = authSourceService.getJWT(authSource);
+            if (jwt == null) {
+                throw new AccessDeniedException("Not able to create JWT from client certificate");
             }
+            AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
+            biConsumer.accept(properties.getCookieName(), jwt);
         }
     }
 
