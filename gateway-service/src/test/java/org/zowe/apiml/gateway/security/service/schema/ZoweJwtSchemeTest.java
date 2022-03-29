@@ -36,6 +36,7 @@ import static org.mockito.Mockito.*;
 
 class ZoweJwtSchemeTest {
 
+    public static final String EXPECTED_TOKEN_RESULT = "apimlAuthenticationToken=jwtToken";
     RequestContext requestContext;
     HttpServletRequest request;
     AuthSourceService authSourceService;
@@ -80,7 +81,11 @@ class ZoweJwtSchemeTest {
             HttpRequest httpRequest = new HttpGet("api/v1/files");
             httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
             command.applyToRequest(httpRequest);
-            assertEquals("apimlAuthenticationToken=jwtToken", httpRequest.getFirstHeader("cookie").getValue());
+            assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
+        }
+
+        void throwException() {
+//            when(authSourceService.getJWT(any())).thenThrow(new Au)
         }
     }
 
@@ -105,7 +110,7 @@ class ZoweJwtSchemeTest {
 
             command.apply(null);
             verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
-            assertEquals("apimlAuthenticationToken=jwtToken", requestContext.getZuulRequestHeaders().get("cookie"));
+            assertEquals(EXPECTED_TOKEN_RESULT, requestContext.getZuulRequestHeaders().get("cookie"));
         }
 
         @Test
@@ -113,7 +118,7 @@ class ZoweJwtSchemeTest {
             HttpRequest httpRequest = new HttpGet("api/v1/files");
             httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
             command.applyToRequest(httpRequest);
-            assertEquals("apimlAuthenticationToken=jwtToken", httpRequest.getFirstHeader("cookie").getValue());
+            assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
         }
 
         @Test
