@@ -44,7 +44,11 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
-        return new ZoweJwtAuthCommand(expirationTime);
+        String jwt = authSourceService.getJWT(authSource);
+        if (jwt == null) {
+            throw new AccessDeniedException("Not able to create JWT from client certificate");
+        }
+        return new ZoweJwtAuthCommand(expirationTime, jwt);
     }
 
     @lombok.Value
@@ -53,6 +57,7 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
         public static final long serialVersionUID = -885301934611866658L;
         Long expireAt;
+        String jwt;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
@@ -67,14 +72,8 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
         }
 
         void updateRequest(BiConsumer<String, String> biConsumer) {
-            authSourceService.getAuthSourceFromRequest().ifPresent(authSource -> {
-                String jwt = authSourceService.getJWT(authSource);
-                if (jwt == null) {
-                    throw new AccessDeniedException("Not able to create JWT from client certificate");
-                }
-                AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
-                biConsumer.accept(properties.getCookieName(), jwt);
-            });
+            AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
+            biConsumer.accept(properties.getCookieName(), jwt);
         }
     }
 

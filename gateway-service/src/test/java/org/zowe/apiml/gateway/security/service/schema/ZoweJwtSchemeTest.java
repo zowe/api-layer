@@ -41,6 +41,7 @@ class ZoweJwtSchemeTest {
     HttpServletRequest request;
     AuthSourceService authSourceService;
     AuthConfigurationProperties configurationProperties;
+    ZoweJwtScheme scheme;
 
     @BeforeEach
     void setup() {
@@ -58,20 +59,22 @@ class ZoweJwtSchemeTest {
     @Nested
     class GivenJWTAuthSourceTest {
         AuthenticationCommand command;
+        Optional<AuthSource> authSource = Optional.of(new JwtAuthSource("jwtToken"));
 
         @BeforeEach
         void setup() {
-            Optional<AuthSource> authSource = Optional.of(new JwtAuthSource("jwtToken"));
+
             when(authSourceService.getAuthSourceFromRequest()).thenReturn(authSource);
             when(authSourceService.getJWT(authSource.get())).thenReturn("jwtToken");
-            ZoweJwtScheme scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
+            scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
             assertFalse(scheme.isDefault());
             assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());
-            command = scheme.createCommand(null, null);
+
         }
 
         @Test
         void whenValidJWTAuthSource_thenUpdateZuulHeaderWithJWToken() {
+            command = scheme.createCommand(null, authSource.get());
             command.apply(null);
             verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
         }
@@ -80,12 +83,9 @@ class ZoweJwtSchemeTest {
         void whenValidJWTAuthSource_thenUpdateCookieWithJWToken() {
             HttpRequest httpRequest = new HttpGet("api/v1/files");
             httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
+            command = scheme.createCommand(null, authSource.get());
             command.applyToRequest(httpRequest);
             assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
-        }
-
-        void throwException() {
-//            when(authSourceService.getJWT(any())).thenThrow(new Au)
         }
     }
 
@@ -93,21 +93,23 @@ class ZoweJwtSchemeTest {
     class GivenX509AuthSourceTest {
 
         private AuthenticationCommand command;
+        Optional<AuthSource> authSource;
+        ZoweJwtScheme scheme;
 
         @BeforeEach
         void setup() {
             X509Certificate cert = mock(X509Certificate.class);
-            Optional<AuthSource> authSource = Optional.of(new X509AuthSource(cert));
+            authSource = Optional.of(new X509AuthSource(cert));
             when(authSourceService.getAuthSourceFromRequest()).thenReturn(authSource);
             when(authSourceService.getJWT(authSource.get())).thenReturn("jwtToken");
 
-            ZoweJwtScheme scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
-            command = scheme.createCommand(null, null);
+            scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
+
         }
 
         @Test
         void whenValid_thenUpdateZuulHeaderWithJWToken() {
-
+            command = scheme.createCommand(null, authSource.get());
             command.apply(null);
             verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
             assertEquals(EXPECTED_TOKEN_RESULT, requestContext.getZuulRequestHeaders().get("cookie"));
@@ -115,6 +117,7 @@ class ZoweJwtSchemeTest {
 
         @Test
         void whenValid_thenUpdateCookiesWithJWToken() {
+            command = scheme.createCommand(null, authSource.get());
             HttpRequest httpRequest = new HttpGet("api/v1/files");
             httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
             command.applyToRequest(httpRequest);
@@ -123,14 +126,9 @@ class ZoweJwtSchemeTest {
 
         @Test
         void whenNoJWTReturned_thenUpdateZuulHeaderWithJWToken() {
-            X509Certificate cert = mock(X509Certificate.class);
-            Optional<AuthSource> authSource = Optional.of(new X509AuthSource(cert));
-            when(authSourceService.getAuthSourceFromRequest()).thenReturn(authSource);
             when(authSourceService.getJWT(authSource.get())).thenReturn(null);
 
-            ZoweJwtScheme scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
-            AuthenticationCommand command = scheme.createCommand(null, null);
-            assertThrows(AccessDeniedException.class, () -> command.apply(null));
+            assertThrows(AccessDeniedException.class, () -> scheme.createCommand(null, null));
         }
 
     }
