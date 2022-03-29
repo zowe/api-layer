@@ -10,20 +10,14 @@
 
 package com.ibm.eserver.zos.racf;
 
-import com.ibm.eserver.zos.racf.IRRPassTicket;
-import com.ibm.eserver.zos.racf.IRRPassTicket.*;
-import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 
 class PassTicketServiceTest {
@@ -31,55 +25,11 @@ class PassTicketServiceTest {
     private static final String TEST_USERID = "userId";
 
     private IRRPassTicket passTicketService;
-    private static String evaluated;
 
     @BeforeEach
     void setUp() {
         passTicketService = new IRRPassTicket();
 
-    }
-
-    @Test
-    void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
-        IRRPassTicket passTicketService = new IRRPassTicket();
-        ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
-            
-            public void evaluate(String userId, String applId, String passTicket) {
-                evaluated = userId + "-" + applId + "-" + passTicket;
-            }
-
-            
-            public String generate(String userId, String applId) {
-                return userId + "-" + applId;
-            }
-        });
-
-        evaluated = null;
-        passTicketService.evaluate("userId", "applId", "passTicket");
-        assertEquals("USERID-APPLID-PASSTICKET", evaluated);
-        passTicketService.evaluate("1", "2", "3");
-        assertEquals("1-2-3", evaluated);
-
-        assertEquals("USERID-APPLID", passTicketService.generate("userId", "applId"));
-        assertEquals("1-2", passTicketService.generate("1", "2"));
-    }
-
-    @Test
-    void testProxy() throws IRRPassTicketGenerationException {
-        IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
-            IRRPassTicket.class,
-            "notExistingClass",
-            Impl::new
-        );
-
-        try {
-            irrPassTicket.evaluate(TEST_USERID, "applId", "passTicket");
-            fail();
-        } catch (Exception e) {
-            assertEquals("Dummy implementation of evaluate : userId x applId x passTicket", e.getMessage());
-        }
-
-        assertEquals("success", irrPassTicket.generate(TEST_USERID, "applId"));
     }
 
     @Test

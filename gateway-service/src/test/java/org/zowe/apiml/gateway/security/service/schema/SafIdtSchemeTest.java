@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Date;
 
@@ -20,7 +21,6 @@ import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 

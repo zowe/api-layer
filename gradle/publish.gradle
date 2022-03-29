@@ -14,7 +14,8 @@ ext.javaLibraries = [
     'security-service-client-spring',
     'zaas-client',
     'apiml-sample-extension',
-    'apiml-sample-extension-package'
+    'apiml-sample-extension-package',
+    'mock-zos'
 ]
 
 ext.servicesToPublish = [
@@ -28,15 +29,7 @@ ext.servicesToPublish = [
     'discovery-service',
     'discovery-package',
     'gateway-service',
-    'gateway-package',
-    'security-service-client-spring',
-    'zaas-client',
-    'discoverable-client',
-    'certificate-analyser',
-    'apiml-tomcat-common',
-    'apiml-sample-extension',
-    'mock-zos'
-
+    'gateway-package'
 ]
 
 ext.sdksToPublish = ext.enablers + ext.javaLibraries
