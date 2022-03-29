@@ -87,6 +87,7 @@ logs/
 # Caches
 .sts4-cache
 .cache
+caching-service/index/zoweCache/index/
 
 # Gradle
 .gradle/
