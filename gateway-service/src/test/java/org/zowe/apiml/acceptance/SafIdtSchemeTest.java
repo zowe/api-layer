@@ -13,7 +13,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.http.Cookie;
-
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -100,7 +99,8 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
 
                 ResponseEntity<Object> response = mock(ResponseEntity.class);
                 when(mockTemplate.postForEntity(any(), any(), any())).thenReturn(response);
-                when(response.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.CREATED);SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
+                when(response.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.CREATED);
+                SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
                 responseBody.setJwt(resultSafToken);
                 when(response.getBody()).thenReturn(responseBody);
 
@@ -140,18 +140,17 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 //@formatter:off
                 given()
                     .cookie(withInvalidToken)
-                .when()
+                    .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
+                    .then()
                     .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
                 //@formatter:on
 
                 verify(mockTemplate, times(0))
-                        .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
+                    .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
             }
         }
     }
-    */
 
 
     /*
