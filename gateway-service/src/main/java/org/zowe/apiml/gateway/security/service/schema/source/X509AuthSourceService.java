@@ -130,6 +130,9 @@ public class X509AuthSourceService implements AuthSourceService {
     public String getJWT(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             String userId = mapper.mapCertificateToMainframeUserId((X509Certificate) authSource.getRawSource());
+            if (userId == null) {
+                return null;
+            }
             return tokenService.createJwtTokenWithoutCredentials(userId);
         }
         return null;

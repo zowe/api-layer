@@ -47,7 +47,9 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
         String jwt = authSourceService.getJWT(authSource);
-
+        if (jwt == null) {
+            return AuthenticationCommand.EMPTY;
+        }
         return new ZoweJwtAuthCommand(expirationTime, jwt);
     }
 
