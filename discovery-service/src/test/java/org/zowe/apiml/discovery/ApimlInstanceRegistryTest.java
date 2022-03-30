@@ -222,11 +222,22 @@ class ApimlInstanceRegistryTest {
         @Nested
         class WhenSecondMethodRegistrationFails {
             @Test
-            void thenThrowException() throws Throwable {
+            void thenThrowIllegalArgumentException() throws Throwable {
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(new WrongMethodTypeException());
+                assertThrows(IllegalArgumentException.class, () -> {
+                    apimlInstanceRegistry.register(standardInstance, 1, false);
+                });
+            }
+
+            @Test
+            void thenThrowIllegalArgumentException2() throws Throwable {
+                MethodHandle methodHandle = mock(MethodHandle.class);
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
+                ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
+                when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(new Throwable());
                 assertThrows(IllegalArgumentException.class, () -> {
                     apimlInstanceRegistry.register(standardInstance, 1, false);
                 });
@@ -263,6 +274,17 @@ class ApimlInstanceRegistryTest {
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(new WrongMethodTypeException());
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
+                assertThrows(IllegalArgumentException.class, () -> {
+                    apimlInstanceRegistry.cancel("HELLO", "hello", false);
+                });
+            }
+
+            @Test
+            void thenThrowIllegalArgumentException2() throws Throwable {
+                MethodHandle methodHandle = mock(MethodHandle.class);
+                ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
+                when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(new Throwable());
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
                 assertThrows(IllegalArgumentException.class, () -> {
                     apimlInstanceRegistry.cancel("HELLO", "hello", false);
