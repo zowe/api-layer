@@ -43,7 +43,7 @@ import java.lang.reflect.Method;
 @Slf4j
 public class ApimlInstanceRegistry extends InstanceRegistry {
 
-    @Value("${apiml.discovery.serviceIdPrefixReplacer}")
+    @Value("${apiml.discovery.serviceIdPrefixReplacer:#{null}}")
     private String tuple;
 
     private static final String EXCEPTION_MESSAGE = "Implementation of InstanceRegistry changed, please verify fix of order sending events";
