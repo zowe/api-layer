@@ -18,9 +18,7 @@ import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
-import org.zowe.apiml.zfile.ZFile;
-import org.zowe.apiml.zfile.ZFileConstants;
-import org.zowe.apiml.zfile.ZFileException;
+import com.ibm.jzos.*;
 
 import java.util.Optional;
 

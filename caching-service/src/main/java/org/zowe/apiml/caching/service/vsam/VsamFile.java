@@ -14,12 +14,11 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.zfile.ZFile;
-import org.zowe.apiml.zfile.ZFileConstants;
-import org.zowe.apiml.zfile.ZFileException;
+import com.ibm.jzos.*;
 
 import java.io.Closeable;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -309,7 +308,7 @@ public class VsamFile implements Closeable {
     }
 
     @SuppressWarnings({"squid:S1130", "squid:S1192"})
-    private ZFile openZfile() throws VsamRecordException {
+    private ZFile openZfile() throws VsamRecordException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
         return zFileProducer.openZfile();
     }
 

@@ -14,8 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.service.EvictionStrategy;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
-import org.zowe.apiml.zfile.ZFileConstants;
-import org.zowe.apiml.zfile.ZFileException;
+import com.ibm.jzos.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Optional;

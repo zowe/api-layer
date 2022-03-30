@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
-import org.zowe.apiml.zfile.ZFileConstants;
+import com.ibm.jzos.*;
 
 import java.io.UnsupportedEncodingException;
 

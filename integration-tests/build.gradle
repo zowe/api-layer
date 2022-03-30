@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    testCompile(project(':mock-zos'))
     testCompile libraries.http_client
     testCompile libraries.eureka_client
     testCompile libraries.jackson_dataformat_yaml
