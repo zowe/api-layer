@@ -1,0 +1,528 @@
+Initialized native services in: /home/jb892003/.gradle/native
+To honour the JVM settings for this build a single-use Daemon process will be forked. See https://docs.gradle.org/6.8.3/userguide/gradle_daemon.html#sec:disabling_the_daemon.
+Starting process 'Gradle build daemon'. Working directory: /home/jb892003/.gradle/daemon/6.8.3 Command: /home/jb892003/.jabba/jdk/zulu@1.8.282/bin/java -Xmx1536m -Dfile.encoding=UTF-8 -Duser.country -Duser.language=en -Duser.variant -cp /home/jb892003/.gradle/wrapper/dists/gradle-6.8.3-bin/7ykxq50lst7lb7wx1nijpicxn/gradle-6.8.3/lib/gradle-launcher-6.8.3.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 6.8.3
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 0.968 secs.
+The client will now receive all logging from the daemon (pid: 9392). The daemon log file: /home/jb892003/.gradle/daemon/6.8.3/daemon-9392.out.log
+Daemon will be stopped at the end of the build 
+Using 16 worker leases.
+Watching the file system is disabled
+Starting Build
+Settings evaluated using settings file '/home/jb892003/api-layer/settings.gradle'.
+Using local directory build cache for the root build (location = /home/jb892003/.gradle/caches/build-cache-1, removeUnusedEntriesAfter = 7 days).
+Using remote HTTP build cache for the root build (allowInsecureProtocol = false, allowUntrustedServer = false, authenticated = true, url = https://zowe.jfrog.io/zowe/cache/).
+Projects loaded. Root project using build file '/home/jb892003/api-layer/build.gradle'.
+Included projects: [root project 'api-layer', project ':api-catalog-package', project ':api-catalog-services', project ':api-catalog-ui', project ':apiml-common', project ':apiml-common-lib-package', project ':apiml-extension-loader', project ':apiml-sample-extension', project ':apiml-sample-extension-package', project ':apiml-security-common', project ':apiml-tomcat-common', project ':apiml-utility', project ':caching-service', project ':caching-service-package', project ':certificate-analyser', project ':common-service-core', project ':discoverable-client', project ':discovery-package', project ':discovery-service', project ':gateway-package', project ':gateway-service', project ':integration-tests', project ':metrics-service', project ':metrics-service-package', project ':metrics-service-ui', project ':mock-services', project ':mock-zos', project ':onboarding-enabler-java', project ':onboarding-enabler-java-sample-app', project ':onboarding-enabler-java-sample-app-plain-java', project ':onboarding-enabler-micronaut', project ':onboarding-enabler-micronaut-sample-app', project ':onboarding-enabler-nodejs', project ':onboarding-enabler-nodejs-sample-app', project ':onboarding-enabler-spring', project ':onboarding-enabler-spring-sample-app', project ':security-service-client-spring', project ':zaas-client']
+
+> Configure project :
+Evaluating root project 'api-layer' using build file '/home/jb892003/api-layer/build.gradle'.
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :api-catalog-package:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :api-catalog-services:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :api-catalog-ui:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-common:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-common-lib-package:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-extension-loader:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-sample-extension:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-sample-extension-package:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-security-common:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-tomcat-common:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :apiml-utility:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :caching-service:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :caching-service-package:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :certificate-analyser:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :common-service-core:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :discoverable-client:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :discovery-package:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :discovery-service:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :gateway-package:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :gateway-service:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :integration-tests:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :metrics-service:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :metrics-service-package:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :metrics-service-ui:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :mock-services:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :mock-zos:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-java:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-java-sample-app:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-java-sample-app-plain-java:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-micronaut:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-micronaut-sample-app:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-nodejs:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-nodejs-sample-app:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-spring:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :onboarding-enabler-spring-sample-app:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :security-service-client-spring:downloadLicenses
+Adding license extension
+Adding download licenses extension
+Adding license extension rule
+Applying defaults to download task: :zaas-client:downloadLicenses
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :licenseMain
+Applying license defaults to task: :licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :licenseTest
+Applying license defaults to task: :licenseFormatTest
+
+> Configure project :api-catalog-package
+Evaluating project ':api-catalog-package' using build file '/home/jb892003/api-layer/api-catalog-package/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :api-catalog-package:licenseMain
+Applying license defaults to task: :api-catalog-package:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :api-catalog-package:licenseTest
+Applying license defaults to task: :api-catalog-package:licenseFormatTest
+
+> Configure project :api-catalog-services
+Evaluating project ':api-catalog-services' using build file '/home/jb892003/api-layer/api-catalog-services/build.gradle'.
+Applying dependency management to configuration 'annotationProcessor' in project 'api-catalog-services'
+Applying dependency management to configuration 'apiElements' in project 'api-catalog-services'
+Applying dependency management to configuration 'archives' in project 'api-catalog-services'
+Applying dependency management to configuration 'bootArchives' in project 'api-catalog-services'
+Applying dependency management to configuration 'checkstyle' in project 'api-catalog-services'
+Applying dependency management to configuration 'compile' in project 'api-catalog-services'
+Applying dependency management to configuration 'compileClasspath' in project 'api-catalog-services'
+Applying dependency management to configuration 'compileOnly' in project 'api-catalog-services'
+Applying dependency management to configuration 'default' in project 'api-catalog-services'
+Applying dependency management to configuration 'developmentOnly' in project 'api-catalog-services'
+Applying dependency management to configuration 'implementation' in project 'api-catalog-services'
+Applying dependency management to configuration 'jacocoAgent' in project 'api-catalog-services'
+Applying dependency management to configuration 'jacocoAnt' in project 'api-catalog-services'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'api-catalog-services'
+Applying dependency management to configuration 'runtime' in project 'api-catalog-services'
+Applying dependency management to configuration 'runtimeClasspath' in project 'api-catalog-services'
+Applying dependency management to configuration 'runtimeElements' in project 'api-catalog-services'
+Applying dependency management to configuration 'runtimeOnly' in project 'api-catalog-services'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'api-catalog-services'
+Applying dependency management to configuration 'testCompile' in project 'api-catalog-services'
+Applying dependency management to configuration 'testCompileClasspath' in project 'api-catalog-services'
+Applying dependency management to configuration 'testCompileOnly' in project 'api-catalog-services'
+Applying dependency management to configuration 'testImplementation' in project 'api-catalog-services'
+Applying dependency management to configuration 'testRuntime' in project 'api-catalog-services'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'api-catalog-services'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'api-catalog-services'
+Applying dependency management to configuration 'liteJarConfiguration' in project 'api-catalog-services'
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :api-catalog-services:licenseMain
+Applying license defaults to task: :api-catalog-services:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :api-catalog-services:licenseTest
+Applying license defaults to task: :api-catalog-services:licenseFormatTest
+
+> Configure project :api-catalog-ui
+Evaluating project ':api-catalog-ui' using build file '/home/jb892003/api-layer/api-catalog-ui/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :api-catalog-ui:licenseMain
+Applying license defaults to task: :api-catalog-ui:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :api-catalog-ui:licenseTest
+Applying license defaults to task: :api-catalog-ui:licenseFormatTest
+
+> Configure project :apiml-common
+Evaluating project ':apiml-common' using build file '/home/jb892003/api-layer/apiml-common/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-common:licenseMain
+Applying license defaults to task: :apiml-common:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-common:licenseTest
+Applying license defaults to task: :apiml-common:licenseFormatTest
+
+> Configure project :apiml-common-lib-package
+Evaluating project ':apiml-common-lib-package' using build file '/home/jb892003/api-layer/apiml-common-lib-package/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-common-lib-package:licenseMain
+Applying license defaults to task: :apiml-common-lib-package:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-common-lib-package:licenseTest
+Applying license defaults to task: :apiml-common-lib-package:licenseFormatTest
+
+> Configure project :apiml-extension-loader
+Evaluating project ':apiml-extension-loader' using build file '/home/jb892003/api-layer/apiml-extension-loader/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-extension-loader:licenseMain
+Applying license defaults to task: :apiml-extension-loader:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-extension-loader:licenseTest
+Applying license defaults to task: :apiml-extension-loader:licenseFormatTest
+
+> Configure project :apiml-sample-extension
+Evaluating project ':apiml-sample-extension' using build file '/home/jb892003/api-layer/apiml-sample-extension/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-sample-extension:licenseMain
+Applying license defaults to task: :apiml-sample-extension:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-sample-extension:licenseTest
+Applying license defaults to task: :apiml-sample-extension:licenseFormatTest
+
+> Configure project :apiml-sample-extension-package
+Evaluating project ':apiml-sample-extension-package' using build file '/home/jb892003/api-layer/apiml-sample-extension-package/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-sample-extension-package:licenseMain
+Applying license defaults to task: :apiml-sample-extension-package:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-sample-extension-package:licenseTest
+Applying license defaults to task: :apiml-sample-extension-package:licenseFormatTest
+
+> Configure project :apiml-security-common
+Evaluating project ':apiml-security-common' using build file '/home/jb892003/api-layer/apiml-security-common/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-security-common:licenseMain
+Applying license defaults to task: :apiml-security-common:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-security-common:licenseTest
+Applying license defaults to task: :apiml-security-common:licenseFormatTest
+
+> Configure project :apiml-tomcat-common
+Evaluating project ':apiml-tomcat-common' using build file '/home/jb892003/api-layer/apiml-tomcat-common/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-tomcat-common:licenseMain
+Applying license defaults to task: :apiml-tomcat-common:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-tomcat-common:licenseTest
+Applying license defaults to task: :apiml-tomcat-common:licenseFormatTest
+
+> Configure project :apiml-utility
+Evaluating project ':apiml-utility' using build file '/home/jb892003/api-layer/apiml-utility/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :apiml-utility:licenseMain
+Applying license defaults to task: :apiml-utility:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :apiml-utility:licenseTest
+Applying license defaults to task: :apiml-utility:licenseFormatTest
+
+> Configure project :caching-service
+Evaluating project ':caching-service' using build file '/home/jb892003/api-layer/caching-service/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :caching-service:licenseMain
+Applying license defaults to task: :caching-service:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :caching-service:licenseTest
+Applying license defaults to task: :caching-service:licenseFormatTest
+
+> Configure project :caching-service-package
+Evaluating project ':caching-service-package' using build file '/home/jb892003/api-layer/caching-service-package/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :caching-service-package:licenseMain
+Applying license defaults to task: :caching-service-package:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :caching-service-package:licenseTest
+Applying license defaults to task: :caching-service-package:licenseFormatTest
+
+> Configure project :certificate-analyser
+Evaluating project ':certificate-analyser' using build file '/home/jb892003/api-layer/certificate-analyser/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :certificate-analyser:licenseMain
+Applying license defaults to task: :certificate-analyser:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :certificate-analyser:licenseTest
+Applying license defaults to task: :certificate-analyser:licenseFormatTest
+
+> Configure project :common-service-core
+Evaluating project ':common-service-core' using build file '/home/jb892003/api-layer/common-service-core/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :common-service-core:licenseMain
+Applying license defaults to task: :common-service-core:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :common-service-core:licenseTest
+Applying license defaults to task: :common-service-core:licenseFormatTest
+
+> Configure project :discoverable-client
+Evaluating project ':discoverable-client' using build file '/home/jb892003/api-layer/discoverable-client/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :discoverable-client:licenseMain
+Applying license defaults to task: :discoverable-client:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :discoverable-client:licenseTest
+Applying license defaults to task: :discoverable-client:licenseFormatTest
+
+> Configure project :discovery-package
+Evaluating project ':discovery-package' using build file '/home/jb892003/api-layer/discovery-package/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :discovery-package:licenseMain
+Applying license defaults to task: :discovery-package:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :discovery-package:licenseTest
+Applying license defaults to task: :discovery-package:licenseFormatTest
+
+> Configure project :discovery-service
+Evaluating project ':discovery-service' using build file '/home/jb892003/api-layer/discovery-service/build.gradle'.
+Applying dependency management to configuration 'annotationProcessor' in project 'discovery-service'
+Applying dependency management to configuration 'apiElements' in project 'discovery-service'
+Applying dependency management to configuration 'archives' in project 'discovery-service'
+Applying dependency management to configuration 'bootArchives' in project 'discovery-service'
+Applying dependency management to configuration 'checkstyle' in project 'discovery-service'
+Applying dependency management to configuration 'compile' in project 'discovery-service'
+Applying dependency management to configuration 'compileClasspath' in project 'discovery-service'
+Applying dependency management to configuration 'compileOnly' in project 'discovery-service'
+Applying dependency management to configuration 'default' in project 'discovery-service'
+Applying dependency management to configuration 'developmentOnly' in project 'discovery-service'
+Applying dependency management to configuration 'implementation' in project 'discovery-service'
+Applying dependency management to configuration 'jacocoAgent' in project 'discovery-service'
+Applying dependency management to configuration 'jacocoAnt' in project 'discovery-service'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'discovery-service'
+Applying dependency management to configuration 'runtime' in project 'discovery-service'
+Applying dependency management to configuration 'runtimeClasspath' in project 'discovery-service'
+Applying dependency management to configuration 'runtimeElements' in project 'discovery-service'
+Applying dependency management to configuration 'runtimeOnly' in project 'discovery-service'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'discovery-service'
+Applying dependency management to configuration 'testCompile' in project 'discovery-service'
+Applying dependency management to configuration 'testCompileClasspath' in project 'discovery-service'
+Applying dependency management to configuration 'testCompileOnly' in project 'discovery-service'
+Applying dependency management to configuration 'testImplementation' in project 'discovery-service'
+Applying dependency management to configuration 'testRuntime' in project 'discovery-service'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'discovery-service'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'discovery-service'
+Applying dependency management to configuration 'liteJarConfiguration' in project 'discovery-service'
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :discovery-service:licenseMain
+Applying license defaults to task: :discovery-service:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :discovery-service:licenseTest
+Applying license defaults to task: :discovery-service:licenseFormatTest
+
+> Configure project :gateway-package
+Evaluating project ':gateway-package' using build file '/home/jb892003/api-layer/gateway-package/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :gateway-package:licenseMain
+Applying license defaults to task: :gateway-package:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :gateway-package:licenseTest
+Applying license defaults to task: :gateway-package:licenseFormatTest
+
+> Configure project :gateway-service
+Evaluating project ':gateway-service' using build file '/home/jb892003/api-layer/gateway-service/build.gradle'.
+Applying dependency management to configuration 'annotationProcessor' in project 'gateway-service'
+Applying dependency management to configuration 'apiElements' in project 'gateway-service'
+Applying dependency management to configuration 'archives' in project 'gateway-service'
+Applying dependency management to configuration 'bootArchives' in project 'gateway-service'
+Applying dependency management to configuration 'checkstyle' in project 'gateway-service'
+Applying dependency management to configuration 'compile' in project 'gateway-service'
+Applying dependency management to configuration 'compileClasspath' in project 'gateway-service'
+Applying dependency management to configuration 'compileOnly' in project 'gateway-service'
+Applying dependency management to configuration 'default' in project 'gateway-service'
+Applying dependency management to configuration 'developmentOnly' in project 'gateway-service'
+Applying dependency management to configuration 'implementation' in project 'gateway-service'
+Applying dependency management to configuration 'jacocoAgent' in project 'gateway-service'
+Applying dependency management to configuration 'jacocoAnt' in project 'gateway-service'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'gateway-service'
+Applying dependency management to configuration 'runtime' in project 'gateway-service'
+Applying dependency management to configuration 'runtimeClasspath' in project 'gateway-service'
+Applying dependency management to configuration 'runtimeElements' in project 'gateway-service'
+Applying dependency management to configuration 'runtimeOnly' in project 'gateway-service'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'gateway-service'
+Applying dependency management to configuration 'testCompile' in project 'gateway-service'
+Applying dependency management to configuration 'testCompileClasspath' in project 'gateway-service'
+Applying dependency management to configuration 'testCompileOnly' in project 'gateway-service'
+Applying dependency management to configuration 'testImplementation' in project 'gateway-service'
+Applying dependency management to configuration 'testRuntime' in project 'gateway-service'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'gateway-service'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'gateway-service'
+Applying dependency management to configuration 'liteJarConfiguration' in project 'gateway-service'
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :gateway-service:licenseMain
+Applying license defaults to task: :gateway-service:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :gateway-service:licenseTest
+Applying license defaults to task: :gateway-service:licenseFormatTest
+
+> Configure project :integration-tests
+Evaluating project ':integration-tests' using build file '/home/jb892003/api-layer/integration-tests/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :integration-tests:licenseMain
+Applying license defaults to task: :integration-tests:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :integration-tests:licenseTest
+Applying license defaults to task: :integration-tests:licenseFormatTest
+Adding license tasks for sourceSet licenseTestFixtures
+Applying license defaults to task: :integration-tests:licenseTestFixtures
+Applying license defaults to task: :integration-tests:licenseFormatTestFixtures
+
+> Configure project :metrics-service
+Evaluating project ':metrics-service' using build file '/home/jb892003/api-layer/metrics-service/build.gradle'.
+Applying dependency management to configuration 'annotationProcessor' in project 'metrics-service'
+Applying dependency management to configuration 'apiElements' in project 'metrics-service'
+Applying dependency management to configuration 'archives' in project 'metrics-service'
+Applying dependency management to configuration 'bootArchives' in project 'metrics-service'
+Applying dependency management to configuration 'checkstyle' in project 'metrics-service'
+Applying dependency management to configuration 'compile' in project 'metrics-service'
+Applying dependency management to configuration 'compileClasspath' in project 'metrics-service'
+Applying dependency management to configuration 'compileOnly' in project 'metrics-service'
+Applying dependency management to configuration 'default' in project 'metrics-service'
+Applying dependency management to configuration 'developmentOnly' in project 'metrics-service'
+Applying dependency management to configuration 'implementation' in project 'metrics-service'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'metrics-service'
+Applying dependency management to configuration 'runtime' in project 'metrics-service'
+Applying dependency management to configuration 'runtimeClasspath' in project 'metrics-service'
+Applying dependency management to configuration 'runtimeElements' in project 'metrics-service'
+Applying dependency management to configuration 'runtimeOnly' in project 'metrics-service'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'metrics-service'
+Applying dependency management to configuration 'testCompile' in project 'metrics-service'
+Applying dependency management to configuration 'testCompileClasspath' in project 'metrics-service'
+Applying dependency management to configuration 'testCompileOnly' in project 'metrics-service'
+Applying dependency management to configuration 'testImplementation' in project 'metrics-service'
+Applying dependency management to configuration 'testRuntime' in project 'metrics-service'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'metrics-service'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'metrics-service'
+Applying dependency management to configuration 'liteJarConfiguration' in project 'metrics-service'
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :metrics-service:licenseMain
+Applying license defaults to task: :metrics-service:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :metrics-service:licenseTest
+Applying license defaults to task: :metrics-service:licenseFormatTest
+
+> Configure project :metrics-service-package
+Evaluating project ':metrics-service-package' using build file '/home/jb892003/api-layer/metrics-service-package/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :metrics-service-package:licenseMain
+Applying license defaults to task: :metrics-service-package:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :metrics-service-package:licenseTest
+Applying license defaults to task: :metrics-service-package:licenseFormatTest
+
+> Configure project :metrics-service-ui
+Evaluating project ':metrics-service-ui' using build file '/home/jb892003/api-layer/metrics-service-ui/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :metrics-service-ui:licenseMain
+Applying license defaults to task: :metrics-service-ui:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :metrics-service-ui:licenseTest
+Applying license defaults to task: :metrics-service-ui:licenseFormatTest
+
+> Configure project :mock-services
+Evaluating project ':mock-services' using build file '/home/jb892003/api-layer/mock-services/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :mock-services:licenseMain
+Applying license defaults to task: :mock-services:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :mock-services:licenseTest
+Applying license defaults to task: :mock-services:licenseFormatTest
+
+> Configure project :mock-zos
+Evaluating project ':mock-zos' using build file '/home/jb892003/api-layer/mock-zos/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :mock-zos:licenseMain
+Applying license defaults to task: :mock-zos:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :mock-zos:licenseTest
+Applying license defaults to task: :mock-zos:licenseFormatTest
+
+> Configure project :onboarding-enabler-java
+Evaluating project ':onboarding-enabler-java' using build file '/home/jb892003/api-layer/onboarding-enabler-java/build.gradle'.
+Adding license tasks for sourceSet licenseMain
+Applying license defaults to task: :onboarding-enabler-java:licenseMain
+Applying license defaults to task: :onboarding-enabler-java:licenseFormatMain
+Adding license tasks for sourceSet licenseTest
+Applying license defaults to task: :onboarding-enabler-java:licenseTest
+Applying license defaults to task: :onboarding-enabler-java:licenseFormatTest

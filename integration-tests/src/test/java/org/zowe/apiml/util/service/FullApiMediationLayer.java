@@ -72,8 +72,9 @@ public class FullApiMediationLayer {
 
     private void prepareGateway() {
         Map<String, String> before = new HashMap<>();
+        before.put("-Dloader.path", "mock-zos/build/libs/mock-zos-2.0.8-SNAPSHOT.jar");
         if (attlsEnabled) {
-            before.put("-Dloader.path", "mock-zos/build/libs/mock-zos-2.0.8-SNAPSHOT.jar");
+            before.put("-Dspring.profiles.active", "attls");
         }
         gatewayService = new RunningService("gateway", "gateway-service/build/libs", before, null);
     }
