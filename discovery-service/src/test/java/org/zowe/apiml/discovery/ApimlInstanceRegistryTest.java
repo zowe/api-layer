@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Nested;
 
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
@@ -106,7 +107,7 @@ class ApimlInstanceRegistryTest {
         class WhenReplaceTupleIsCorrect {
             @Test
             void thenInvokeChangeServiceId() {
-                System.setProperty("apiml.discovery.serviceIdPrefixReplacer", "service,hello");
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
                 apimlInstanceRegistry.register(getStandardInstance(), false);
                 verify(apimlInstanceRegistry, times(1)).changeServiceId(any(), any());
             }
@@ -116,7 +117,7 @@ class ApimlInstanceRegistryTest {
         class WhenReplaceTupleIsNotCorrect {
             @Test
             void thenDontInvokeServicePrefix() {
-                System.setProperty("apiml.discovery.serviceIdPrefixReplacer", "service");
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service");
                 apimlInstanceRegistry.register(getStandardInstance(), false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
