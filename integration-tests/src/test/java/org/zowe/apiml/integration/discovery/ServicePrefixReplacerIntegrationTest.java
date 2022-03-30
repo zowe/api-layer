@@ -62,7 +62,7 @@ class ServicePrefixReplacerIntegrationTest implements TestWithStartedInstances {
     private void isRegistered(boolean expectedRegistrationState, URI uri) {
         // It can take some time for (un)registration to complete
         await()
-            .atMost(5, MINUTES)
+            .atMost(10, MINUTES)
             .pollDelay(0, SECONDS)
             .pollInterval(1, SECONDS)
             .until(() -> registeredStateAsExpected(expectedRegistrationState, uri));
