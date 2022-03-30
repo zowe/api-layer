@@ -27,8 +27,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import java.io.UnsupportedEncodingException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
-import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
+import static com.ibm.eserver.zos.racf.IRRPassTicket.UNKNOWN_APPLID;
+import static com.ibm.eserver.zos.racf.IRRPassTicket.ZOWE_DUMMY_PASS_TICKET_PREFIX;
 
 
 class SuccessfulTicketHandlerTest {

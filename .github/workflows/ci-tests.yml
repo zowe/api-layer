@@ -9,7 +9,6 @@ on:
 
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
-
 jobs:
     BuildAndTest:
         runs-on: ubuntu-latest

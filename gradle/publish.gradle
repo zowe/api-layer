@@ -14,7 +14,8 @@ ext.javaLibraries = [
     'security-service-client-spring',
     'zaas-client',
     'apiml-sample-extension',
-    'apiml-sample-extension-package'
+    'apiml-sample-extension-package',
+    'mock-zos'
 ]
 
 ext.servicesToPublish = [

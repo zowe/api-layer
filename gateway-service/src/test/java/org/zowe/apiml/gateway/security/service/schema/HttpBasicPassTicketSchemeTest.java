@@ -36,7 +36,7 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
+import static com.ibm.eserver.zos.racf.IRRPassTicket.UNKNOWN_USER;
 
 class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 

@@ -57,6 +57,9 @@ configurations.all {
 }
 
 dependencies {
+    compileOnly(project(':mock-zos'))
+    testImplementation(project(':mock-zos'))
+    
     implementation(project(':apiml-security-common'))
     implementation(project(':apiml-extension-loader'))
     implementation libraries.spring_boot_starter_webflux
