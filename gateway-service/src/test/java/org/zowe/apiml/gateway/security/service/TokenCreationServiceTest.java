@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;

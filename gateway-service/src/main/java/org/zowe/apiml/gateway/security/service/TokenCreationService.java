@@ -11,13 +11,15 @@ package org.zowe.apiml.gateway.security.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;

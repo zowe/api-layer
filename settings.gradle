@@ -14,7 +14,7 @@ buildCache {
         push = isPush
     }
 }
-
+include 'mock-zos'
 include 'discovery-service'
 include 'discovery-package'
 include 'apiml-utility'

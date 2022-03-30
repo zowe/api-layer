@@ -48,7 +48,9 @@ gitProperties {
 }
 
 dependencies {
-    compileOnly(project(':mock-zos'))
+    implementation(project(':mock-zos'))
+    testImplementation(project(':mock-zos'))
+    
     implementation project(':onboarding-enabler-spring')
     implementation project(':zaas-client')
     implementation libraries.springFox

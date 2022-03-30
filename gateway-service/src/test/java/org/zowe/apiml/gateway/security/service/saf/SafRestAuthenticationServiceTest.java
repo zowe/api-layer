@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
