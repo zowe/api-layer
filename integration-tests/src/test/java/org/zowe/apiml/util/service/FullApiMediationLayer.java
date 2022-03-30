@@ -100,7 +100,7 @@ public class FullApiMediationLayer {
 
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
 
-        discoverableClientService = new RunningService("sampleclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
+        discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
     }
 
     public static FullApiMediationLayer getInstance() {
