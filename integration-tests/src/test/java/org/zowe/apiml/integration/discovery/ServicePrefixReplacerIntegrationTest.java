@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.categories.RegistrationTest;
+import org.zowe.apiml.util.categories.ServiceIdPrefixReplacerTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.is;
  * Tests the service ID prefix replacer mechanism
  */
 @DiscoverableClientDependentTest
-@RegistrationTest
+@ServiceIdPrefixReplacerTest
 class ServicePrefixReplacerIntegrationTest implements TestWithStartedInstances {
     public final static String GREETING = "/sampleclient/api/v1/greeting";
 
