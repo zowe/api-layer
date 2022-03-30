@@ -1,7 +1,7 @@
 dependencies {
     implementation libraries.lombok
     implementation libraries.apache_commons_text
-    
+
     annotationProcessor libraries.lombok
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
