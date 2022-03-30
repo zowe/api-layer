@@ -150,11 +150,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        if (StringUtils.isNotEmpty(tuple) &&
-            tuple.contains(",") &&
-            tuple.split(",").length > 1 &&
-            isValidTuple(tuple)) {
-            info = changeServiceId(info, tuple);
+        if (isValidTuple()) {
+            info = changeServiceId(info, tuple.split(","));
         }
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -170,11 +167,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        if (StringUtils.isNotEmpty(tuple) &&
-            tuple.contains(",") &&
-            tuple.split(",").length > 1 &&
-            isValidTuple(tuple)) {
-            info = changeServiceId(info, tuple);
+        if (isValidTuple()) {
+            info = changeServiceId(info, tuple.split(","));
         }
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
@@ -204,7 +198,26 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     }
 
     @Override
+    public boolean renew(String appName, String serverId, boolean isReplication) {
+        if (isValidTuple()) {
+            String[] replacer = tuple.split(",");
+            String servicePrefix = replacer[0];
+            String targetValue = replacer[1];
+            serverId = serverId.replace(servicePrefix, targetValue);
+            appName = appName.replace(servicePrefix.toUpperCase(), targetValue.toUpperCase());
+        }
+        return super.renew(appName, serverId, isReplication);
+    }
+
+    @Override
     public boolean statusUpdate(String appName, String instanceId, InstanceInfo.InstanceStatus newStatus, String lastDirtyTimestamp, boolean isReplication) {
+        if (isValidTuple()) {
+            String[] replacer = tuple.split(",");
+            String servicePrefix = replacer[0];
+            String targetValue = replacer[1];
+            instanceId = instanceId.replace(servicePrefix, targetValue);
+            appName = appName.replace(servicePrefix.toUpperCase(), targetValue.toUpperCase());
+        }
         boolean isUpdated = super.statusUpdate(appName, instanceId, newStatus, lastDirtyTimestamp, isReplication);
         this.appCntx.publishEvent(new EurekaStatusUpdateEvent(this, appName, instanceId));
         return isUpdated;
@@ -216,9 +229,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * @param tuple the mapper
      * @return instance info with the modified service ID
      */
-    protected InstanceInfo changeServiceId(final InstanceInfo info, String tuple) {
-        String servicePrefix = tuple.split(",")[0];
-        String targetValue = tuple.split(",")[1];
+    protected InstanceInfo changeServiceId(final InstanceInfo info, String[] tuple) {
+        String servicePrefix = tuple[0];
+        String targetValue = tuple[1];
         String instanceId = info.getInstanceId();
         if (instanceId.contains(servicePrefix)) {
             String appName = info.getAppName();
@@ -235,11 +248,17 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         return info;
     }
 
-    private boolean isValidTuple(String tuple) {
-        String servicePrefix = tuple.split(",")[0];
-        String targetValue = tuple.split(",")[1];
-        return StringUtils.isNotEmpty(servicePrefix) &&
-            StringUtils.isNotEmpty(targetValue) &&
-            !servicePrefix.equals(targetValue);
+    private boolean isValidTuple() {
+        if (StringUtils.isNotEmpty(tuple)) {
+            String[] replacer = tuple.split(",");
+            if (replacer.length > 1 &&
+                StringUtils.isNotEmpty(replacer[0]) &&
+                StringUtils.isNotEmpty(replacer[1]) &&
+                !replacer[0].equals(replacer[1])) {
+                return true;
+            }
+        }
+        return false;
     }
+
 }
