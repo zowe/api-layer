@@ -49,7 +49,7 @@ class ServicePrefixReplacerIntegrationTest implements TestWithStartedInstances {
             @Test
             void verifyRoutingThroughGateway() {
                 await()
-                    .atMost(10, MINUTES)
+                    .atMost(5, MINUTES)
                     .pollDelay(0, SECONDS)
                     .pollInterval(1, SECONDS)
                     .until(ServicePrefixReplacerIntegrationTest.this::routingThroughGateway);
