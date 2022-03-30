@@ -17,6 +17,7 @@ import com.netflix.eureka.registry.AbstractInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
@@ -41,6 +42,9 @@ import java.lang.reflect.Method;
  */
 @Slf4j
 public class ApimlInstanceRegistry extends InstanceRegistry {
+
+    @Value("${apiml.discovery.serviceIdPrefixReplacer}")
+    private String tuple;
 
     private static final String EXCEPTION_MESSAGE = "Implementation of InstanceRegistry changed, please verify fix of order sending events";
 
@@ -146,7 +150,6 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        String tuple = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
         if (StringUtils.isNotEmpty(tuple) &&
             tuple.contains(",") &&
             isValidTuple(tuple)) {
@@ -166,7 +169,6 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        String tuple = System.getProperty("apiml.discovery.serviceIdPrefixReplacer");
         if (StringUtils.isNotEmpty(tuple) &&
             tuple.contains(",") &&
             isValidTuple(tuple)) {
