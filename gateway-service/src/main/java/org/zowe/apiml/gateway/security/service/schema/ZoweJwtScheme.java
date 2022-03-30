@@ -14,7 +14,6 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpRequest;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -42,12 +41,13 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+        if (authSource == null || authSource.getRawSource() == null) {
+            return AuthenticationCommand.EMPTY;
+        }
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
         String jwt = authSourceService.getJWT(authSource);
-        if (jwt == null) {
-            throw new AccessDeniedException("Not able to create JWT from client certificate");
-        }
+
         return new ZoweJwtAuthCommand(expirationTime, jwt);
     }
 
@@ -61,6 +61,7 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
+
             final RequestContext context = RequestContext.getCurrentContext();
             updateRequest((name, token) -> JwtCommand.setCookie(context, name, token));
         }

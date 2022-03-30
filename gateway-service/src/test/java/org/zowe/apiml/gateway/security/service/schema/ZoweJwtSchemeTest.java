@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.access.AccessDeniedException;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
@@ -30,7 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 
 
@@ -128,7 +128,7 @@ class ZoweJwtSchemeTest {
         void whenNoJWTReturned_thenUpdateZuulHeaderWithJWToken() {
             when(authSourceService.getJWT(authSource.get())).thenReturn(null);
 
-            assertThrows(AccessDeniedException.class, () -> scheme.createCommand(null, null));
+            assertEquals(AuthenticationCommand.EMPTY, scheme.createCommand(null, null));
         }
 
     }
