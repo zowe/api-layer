@@ -133,7 +133,11 @@ public class X509AuthSourceService implements AuthSourceService {
             if (userId == null) {
                 return null;
             }
-            return tokenService.createJwtTokenWithoutCredentials(userId);
+            try {
+                return tokenService.createJwtTokenWithoutCredentials(userId);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not create token for user: " + userId + " Error message: " + e.getMessage(), e);
+            }
         }
         return null;
     }
