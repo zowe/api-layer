@@ -39,9 +39,11 @@ class ApimlInstanceRegistryTest {
     private EurekaClient eurekaClient;
     private InstanceRegistryProperties instanceRegistryProperties;
     private ApplicationContext appCntx;
+    private InstanceInfo standardInstance;
 
     @BeforeEach
     void setUp() throws Throwable {
+        standardInstance = getStandardInstance();
         serverConfig = new DefaultEurekaServerConfig();
         clientConfig = mock(EurekaClientConfig.class);
         serverCodecs = mock(ServerCodecs.class);
@@ -79,7 +81,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenChangeServicePrefix() {
                 String tuple = "service,hello";
-                InstanceInfo info = apimlInstanceRegistry.changeServiceId(getStandardInstance(), tuple.split(","));
+                InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance, tuple.split(","));
                 assertEquals("hello", info.getInstanceId());
                 assertEquals("HELLO", info.getAppName());
                 assertEquals("HELLO", info.getVIPAddress());
@@ -96,7 +98,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenDontChangeServicePrefix() {
                 String tuple = "differentService,hello";
-                InstanceInfo info = apimlInstanceRegistry.changeServiceId(getStandardInstance(), tuple.split(","));
+                InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance, tuple.split(","));
                 assertEquals("service", info.getInstanceId());
                 assertEquals("SERVICE", info.getAppName());
                 assertEquals("SERVICE", info.getVIPAddress());
@@ -112,7 +114,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenInvokeChangeServiceId() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
-                apimlInstanceRegistry.register(getStandardInstance(), false);
+                apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(1)).changeServiceId(any(), any());
             }
         }
@@ -122,7 +124,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenInvokeChangeServiceId() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,service");
-                apimlInstanceRegistry.register(getStandardInstance(), false);
+                apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
         }
@@ -132,7 +134,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service");
-                apimlInstanceRegistry.register(getStandardInstance(), false);
+                apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
         }
@@ -142,9 +144,9 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple",null);
-                apimlInstanceRegistry.register(getStandardInstance(), false);
+                apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
-                apimlInstanceRegistry.register(getStandardInstance(), 1, false);
+                apimlInstanceRegistry.register(standardInstance, 1, false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
         }
@@ -154,7 +156,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,");
-                apimlInstanceRegistry.register(getStandardInstance(), false);
+                apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
         }
@@ -164,7 +166,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple",",service");
-                apimlInstanceRegistry.register(getStandardInstance(), false);
+                apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
         }
@@ -178,7 +180,7 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new WrongMethodTypeException());
                 assertThrows(IllegalArgumentException.class, () -> {
-                    apimlInstanceRegistry.register(getStandardInstance(), false);
+                    apimlInstanceRegistry.register(standardInstance, false);
                 });
             }
 
@@ -189,7 +191,7 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
                 assertThrows(RuntimeException.class, () -> {
-                    apimlInstanceRegistry.register(getStandardInstance(), false);
+                    apimlInstanceRegistry.register(standardInstance, false);
                 });
             }
         }
@@ -202,7 +204,7 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "handlerResolveInstanceLeaseDurationMethod", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any())).thenThrow(new WrongMethodTypeException());
                 assertThrows(IllegalArgumentException.class, () -> {
-                    apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(getStandardInstance());
+                    apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(standardInstance);
                 });
             }
 
@@ -212,7 +214,7 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "handlerResolveInstanceLeaseDurationMethod", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any())).thenThrow(new RuntimeException());
                 assertThrows(RuntimeException.class, () -> {
-                    apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(getStandardInstance());
+                    apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(standardInstance);
                 });
             }
         }
@@ -226,7 +228,7 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(new WrongMethodTypeException());
                 assertThrows(IllegalArgumentException.class, () -> {
-                    apimlInstanceRegistry.register(getStandardInstance(), 1, false);
+                    apimlInstanceRegistry.register(standardInstance, 1, false);
                 });
             }
 
@@ -237,7 +239,7 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
                 assertThrows(RuntimeException.class, () -> {
-                    apimlInstanceRegistry.register(getStandardInstance(), false);
+                    apimlInstanceRegistry.register(standardInstance, false);
                 });
             }
         }
@@ -250,7 +252,7 @@ class ApimlInstanceRegistryTest {
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenReturn(true);
-                apimlInstanceRegistry.register(getStandardInstance(), false);
+                apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(1)).changeServiceId(any(), any());
                 boolean isCancelled = apimlInstanceRegistry.cancel("HELLO", "hello", false);
                 assertTrue(isCancelled);
