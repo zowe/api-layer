@@ -33,9 +33,9 @@ import static org.hamcrest.Matchers.is;
 @DiscoverableClientDependentTest
 @RegistrationTest
 class ServicePrefixReplacerIntegrationTest implements TestWithStartedInstances {
-    public final static String SAMPLE_URI = "/sampleclient/api/v1/apiMediationClient";
+    public final static String GREETING = "/sampleclient/api/v1/greeting";
 
-    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(SAMPLE_URI);
+    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(GREETING);
 
     @BeforeAll
     static void beforeClass() {
@@ -47,54 +47,27 @@ class ServicePrefixReplacerIntegrationTest implements TestWithStartedInstances {
         @Nested
         class GivenValidService {
             @Test
-            void verifyRegistrationAndUnregistration() {
-                isRegistered(false, MEDIATION_CLIENT_URI);
-
-                register(MEDIATION_CLIENT_URI);
-                isRegistered(true, MEDIATION_CLIENT_URI);
-
-                unregister(MEDIATION_CLIENT_URI);
-                isRegistered(false, MEDIATION_CLIENT_URI);
+            void verifyRoutingThroughGateway() {
+                await()
+                    .atMost(10, MINUTES)
+                    .pollDelay(0, SECONDS)
+                    .pollInterval(1, SECONDS)
+                    .until(ServicePrefixReplacerIntegrationTest.this::routingThroughGateway);
             }
         }
     }
 
-    private void isRegistered(boolean expectedRegistrationState, URI uri) {
-        // It can take some time for (un)registration to complete
-        await()
-            .atMost(10, MINUTES)
-            .pollDelay(0, SECONDS)
-            .pollInterval(1, SECONDS)
-            .until(() -> registeredStateAsExpected(expectedRegistrationState, uri));
-    }
-
-    private boolean registeredStateAsExpected(boolean expectedRegistrationState, URI uri) {
+    private boolean routingThroughGateway() {
         try {
             given()
                 .when()
-                .get(uri)
+                .get(ServicePrefixReplacerIntegrationTest.MEDIATION_CLIENT_URI)
                 .then()
                 .statusCode(is(SC_OK))
-                .body("isRegistered", is(expectedRegistrationState));
+                .body("content",is("Hello, world!"));
             return true;
         } catch (AssertionError e) {
             return false;
         }
-    }
-
-    private void register(URI uri) {
-        given()
-            .when()
-            .post(uri)
-            .then()
-            .statusCode(is(SC_OK));
-    }
-
-    private void unregister(URI uri) {
-        given()
-            .when()
-            .delete(uri)
-            .then()
-            .statusCode(is(SC_OK));
     }
 }
