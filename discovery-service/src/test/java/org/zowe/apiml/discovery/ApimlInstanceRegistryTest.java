@@ -40,7 +40,7 @@ class ApimlInstanceRegistryTest {
     private ApplicationContext appCntx;
 
     @BeforeEach
-    void setUp() throws NoSuchFieldException, IllegalAccessException {
+    void setUp() throws Throwable {
         serverConfig = new DefaultEurekaServerConfig();
         clientConfig = mock(EurekaClientConfig.class);
         serverCodecs = mock(ServerCodecs.class);
@@ -59,6 +59,7 @@ class ApimlInstanceRegistryTest {
         Field declaredField = ApimlInstanceRegistry.class.getDeclaredField("handleRegistrationMethod");
         Field declaredField2 = ApimlInstanceRegistry.class.getDeclaredField("register2ArgsMethodHandle");
         Field declaredField3 = ApimlInstanceRegistry.class.getDeclaredField("register3ArgsMethodHandle");
+        Field declaredField4 = ApimlInstanceRegistry.class.getDeclaredField("handleCancelationMethod");
 
         declaredField.setAccessible(true);
         declaredField.set(apimlInstanceRegistry, methodHandle);
@@ -66,6 +67,8 @@ class ApimlInstanceRegistryTest {
         declaredField2.set(apimlInstanceRegistry, methodHandle);
         declaredField3.setAccessible(true);
         declaredField3.set(apimlInstanceRegistry, methodHandle);
+        declaredField4.setAccessible(true);
+        declaredField4.set(apimlInstanceRegistry, methodHandle);
     }
 
     @Nested
@@ -102,7 +105,7 @@ class ApimlInstanceRegistryTest {
     }
 
     @Nested
-    class WhenRegisterInstance {
+    class GivenInstanceInfo {
         @Nested
         class WhenReplaceTupleIsCorrect {
             @Test
@@ -120,6 +123,41 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service");
                 apimlInstanceRegistry.register(getStandardInstance(), false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+            }
+        }
+
+        @Nested
+        class WhenReplaceTupleIsEmpty {
+            @Test
+            void thenDontInvokeServicePrefix() {
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple",null);
+                apimlInstanceRegistry.register(getStandardInstance(), false);
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+            }
+        }
+
+        @Nested
+        class WhenReplaceTupleMissesSecondValue {
+            @Test
+            void thenDontInvokeServicePrefix() {
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,");
+                apimlInstanceRegistry.register(getStandardInstance(), false);
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+            }
+        }
+
+        @Nested
+        class WhenCancelRegistration {
+            @Test
+            void thenIsSuccessful() throws Throwable {
+                MethodHandle methodHandle = mock(MethodHandle.class);
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
+                ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
+                when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenReturn(true);
+                apimlInstanceRegistry.register(getStandardInstance(), false);
+                verify(apimlInstanceRegistry, times(1)).changeServiceId(any(), any());
+                boolean isCancelled = apimlInstanceRegistry.cancel("HELLO", "hello", false);
+                assertTrue(isCancelled);
             }
         }
     }

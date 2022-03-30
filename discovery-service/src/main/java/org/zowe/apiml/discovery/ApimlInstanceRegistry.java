@@ -152,6 +152,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
         if (StringUtils.isNotEmpty(tuple) &&
             tuple.contains(",") &&
+            tuple.split(",").length > 1 &&
             isValidTuple(tuple)) {
             info = changeServiceId(info, tuple);
         }
@@ -171,6 +172,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     public void register(InstanceInfo info, final boolean isReplication) {
         if (StringUtils.isNotEmpty(tuple) &&
             tuple.contains(",") &&
+            tuple.split(",").length > 1 &&
             isValidTuple(tuple)) {
             info = changeServiceId(info, tuple);
         }
