@@ -132,7 +132,7 @@ if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
     GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 else
-    GATEWAY_LOADER_PATH=${COMMON_LIB}
+    GATEWAY_LOADER_PATH=${COMMON_LIB},mock-zos/build/libs/mock-zos-2.0.8-SNAPSHOT.jar
 fi
 
 # Check if the directory containing the Gateway shared JARs was set and append it to the GW loader path
