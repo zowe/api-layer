@@ -29,5 +29,9 @@ apimlServices:
   static:
     - file: zosmf-static-definition.yaml.template
 configs:
+    # server.prefix.replacer is used to replace service ID prefix non-conformant with v2
+  server:
+    prefix:
+        replacer: ""
   port: 7553
   debug: false
