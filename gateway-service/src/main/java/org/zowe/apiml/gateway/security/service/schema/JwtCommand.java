@@ -41,6 +41,7 @@ public abstract class JwtCommand extends AuthenticationCommand {
 
     public static void setErrorHeader(RequestContext context, String value) {
         context.addZuulRequestHeader(AUTH_FAIL_HEADER, value);
+        context.addZuulResponseHeader(AUTH_FAIL_HEADER, value);
     }
 
     public static void addErrorHeader(HttpRequest request, String value) {

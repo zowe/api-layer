@@ -58,6 +58,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .get(URL)
             .then()
             .body("headers.x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
+            .header("x-zowe-auth-failure",is("ZWEAG160E No authentication provided in the request"))
             .statusCode(200);
     }
 
