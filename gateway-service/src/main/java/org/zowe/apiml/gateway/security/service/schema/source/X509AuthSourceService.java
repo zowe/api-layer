@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -133,7 +132,7 @@ public class X509AuthSourceService implements AuthSourceService {
         if (authSource instanceof X509AuthSource) {
             String userId = mapper.mapCertificateToMainframeUserId((X509Certificate) authSource.getRawSource());
             if (userId == null) {
-                throw new UsernameNotFoundException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
+                throw new UserNotMappedException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
             }
             try {
                 return tokenService.createJwtTokenWithoutCredentials(userId);

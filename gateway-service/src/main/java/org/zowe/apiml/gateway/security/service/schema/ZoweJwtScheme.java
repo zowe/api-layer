@@ -14,19 +14,18 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpRequest;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.UserNotMappedException;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.util.Cookies;
 
 import java.util.Date;
-import java.util.Optional;
 
 
 @Component
@@ -54,11 +53,11 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
         final Long expirationTime = expiration == null ? null : expiration.getTime();
         try {
             jwt = authSourceService.getJWT(authSource);
-        } catch (UsernameNotFoundException | AuthenticationTokenException e) {
+        } catch (UserNotMappedException | AuthenticationTokenException e) {
             error = this.messageService.createMessage(e.getMessage()).mapToLogMessage();
         }
 
-        return new ZoweJwtAuthCommand(expirationTime, Optional.ofNullable(jwt), error);
+        return new ZoweJwtAuthCommand(expirationTime, jwt, error);
     }
 
     @lombok.Value
@@ -67,29 +66,25 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
         public static final long serialVersionUID = -885301934611866658L;
         Long expireAt;
-        Optional<String> jwt;
+        String jwt;
         String errorHeader;
-        AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
-
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
 
             final RequestContext context = RequestContext.getCurrentContext();
-            if (jwt.isPresent()) {
-                JwtCommand.setCookie(context, properties.getCookieName(), jwt.get());
+            if (jwt != null) {
+                JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
             } else {
                 JwtCommand.setErrorHeader(context, errorHeader);
             }
-
-
         }
 
         @Override
         public void applyToRequest(HttpRequest request) {
             Cookies cookies = Cookies.of(request);
-            if (jwt.isPresent()) {
-                JwtCommand.createCookie(cookies, properties.getCookieName(), jwt.get());
+            if (jwt != null) {
+                JwtCommand.createCookie(cookies, configurationProperties.getCookieProperties().getCookieName(), jwt);
             } else {
                 JwtCommand.addErrorHeader(request, errorHeader);
             }

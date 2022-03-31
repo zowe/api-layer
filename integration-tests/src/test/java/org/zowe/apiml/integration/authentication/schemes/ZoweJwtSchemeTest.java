@@ -29,7 +29,7 @@ import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 
 @zOSMFAuthTest
 @DiscoverableClientDependentTest
-public class ZoweJwtSchemeTest implements TestWithStartedInstances {
+class ZoweJwtSchemeTest implements TestWithStartedInstances {
 
     private static URI URL;
 

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -58,7 +57,8 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         AuthenticationService authenticationService = mock(AuthenticationService.class);
         TokenCreationService tokenCreationService = mock(TokenCreationService.class);
         X509AuthSourceService service = new X509AuthSourceService(mock(X509AbstractMapper.class), tokenCreationService, authenticationService);
-        assertThrows(UsernameNotFoundException.class, () -> service.getLtpaToken(new X509AuthSource(null)));
+        X509AuthSource source = new X509AuthSource(null);
+        assertThrows(UserNotMappedException.class, () -> service.getLtpaToken(source));
     }
 
     @Nested
