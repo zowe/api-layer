@@ -58,7 +58,7 @@ public class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .when()
             .get(URL)
             .then()
-            .body("headers.cookie", IsEmptyString.isEmptyOrNullString())
+            .body("headers.x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
             .statusCode(200);
     }
 

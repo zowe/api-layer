@@ -23,14 +23,15 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
@@ -42,6 +43,7 @@ class ZoweJwtSchemeTest {
     AuthSourceService authSourceService;
     AuthConfigurationProperties configurationProperties;
     ZoweJwtScheme scheme;
+    MessageService messageService = YamlMessageServiceInstance.getInstance();
 
     @BeforeEach
     void setup() {
@@ -66,7 +68,7 @@ class ZoweJwtSchemeTest {
 
             when(authSourceService.getAuthSourceFromRequest()).thenReturn(authSource);
             when(authSourceService.getJWT(authSource.get())).thenReturn("jwtToken");
-            scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
+            scheme = new ZoweJwtScheme(authSourceService, configurationProperties, messageService);
             assertFalse(scheme.isDefault());
             assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());
 
@@ -103,7 +105,7 @@ class ZoweJwtSchemeTest {
             when(authSourceService.getAuthSourceFromRequest()).thenReturn(authSource);
             when(authSourceService.getJWT(authSource.get())).thenReturn("jwtToken");
 
-            scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
+            scheme = new ZoweJwtScheme(authSourceService, configurationProperties, messageService);
 
         }
 
@@ -127,8 +129,10 @@ class ZoweJwtSchemeTest {
         @Test
         void whenNoJWTReturned_thenUpdateZuulHeaderWithJWToken() {
             when(authSourceService.getJWT(authSource.get())).thenReturn(null);
+            AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
 
-            assertEquals(AuthenticationCommand.EMPTY, scheme.createCommand(null, null));
+            assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
+            assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
         }
 
     }

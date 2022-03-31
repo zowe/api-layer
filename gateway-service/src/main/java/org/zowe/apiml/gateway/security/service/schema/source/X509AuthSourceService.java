@@ -12,11 +12,13 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -131,12 +133,12 @@ public class X509AuthSourceService implements AuthSourceService {
         if (authSource instanceof X509AuthSource) {
             String userId = mapper.mapCertificateToMainframeUserId((X509Certificate) authSource.getRawSource());
             if (userId == null) {
-                return null;
+                throw new UsernameNotFoundException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
             }
             try {
                 return tokenService.createJwtTokenWithoutCredentials(userId);
             } catch (Exception e) {
-                throw new RuntimeException("Could not create token for user: " + userId + " Error message: " + e.getMessage(), e);
+                throw new AuthenticationTokenException("org.zowe.apiml.gateway.security.token.authenticationFailed");
             }
         }
         return null;

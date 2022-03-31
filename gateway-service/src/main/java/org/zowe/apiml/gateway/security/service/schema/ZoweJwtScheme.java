@@ -14,16 +14,19 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpRequest;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.util.Cookies;
 
 import java.util.Date;
-import java.util.function.BiConsumer;
+import java.util.Optional;
 
 
 @Component
@@ -32,6 +35,7 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
     private AuthSourceService authSourceService;
     private AuthConfigurationProperties configurationProperties;
+    private MessageService messageService;
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -41,16 +45,20 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+        String error = null;
+        String jwt = null;
         if (authSource == null || authSource.getRawSource() == null) {
-            return AuthenticationCommand.EMPTY;
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
         }
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
-        String jwt = authSourceService.getJWT(authSource);
-        if (jwt == null) {
-            return AuthenticationCommand.EMPTY;
+        try {
+            jwt = authSourceService.getJWT(authSource);
+        } catch (UsernameNotFoundException | AuthenticationTokenException e) {
+            error = this.messageService.createMessage(e.getMessage()).mapToLogMessage();
         }
-        return new ZoweJwtAuthCommand(expirationTime, jwt);
+
+        return new ZoweJwtAuthCommand(expirationTime, Optional.ofNullable(jwt), error);
     }
 
     @lombok.Value
@@ -59,25 +67,32 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
         public static final long serialVersionUID = -885301934611866658L;
         Long expireAt;
-        String jwt;
+        Optional<String> jwt;
+        String errorHeader;
+        AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
+
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
 
             final RequestContext context = RequestContext.getCurrentContext();
-            updateRequest((name, token) -> JwtCommand.setCookie(context, name, token));
+            if (jwt.isPresent()) {
+                JwtCommand.setCookie(context, properties.getCookieName(), jwt.get());
+            } else {
+                JwtCommand.setErrorHeader(context, errorHeader);
+            }
+
+
         }
 
         @Override
         public void applyToRequest(HttpRequest request) {
             Cookies cookies = Cookies.of(request);
-            updateRequest((name, token) -> JwtCommand.createCookie(cookies, name, token));
-        }
-
-        void updateRequest(BiConsumer<String, String> biConsumer) {
-            AuthConfigurationProperties.CookieProperties properties = configurationProperties.getCookieProperties();
-            biConsumer.accept(properties.getCookieName(), jwt);
+            if (jwt.isPresent()) {
+                JwtCommand.createCookie(cookies, properties.getCookieName(), jwt.get());
+            } else {
+                JwtCommand.addErrorHeader(request, errorHeader);
+            }
         }
     }
-
 }
