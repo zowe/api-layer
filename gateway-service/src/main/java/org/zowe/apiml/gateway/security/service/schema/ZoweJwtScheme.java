@@ -26,6 +26,7 @@ import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.util.Cookies;
 
 import java.util.Date;
+import java.util.Optional;
 
 
 @Component
@@ -42,12 +43,18 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
+    }
+
+    @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
         String error = null;
         String jwt = null;
         if (authSource == null || authSource.getRawSource() == null) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
+            return new ZoweJwtAuthCommand(null, null, error);
         }
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
