@@ -71,6 +71,7 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * In that case, the filter applies {@link org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand}
      * and defers the processing to happen during Ribbon's Retry.
      */
+    @Deprecated
     public void applyToRequest(HttpRequest request) {
         throw new UnsupportedOperationException();
     }
