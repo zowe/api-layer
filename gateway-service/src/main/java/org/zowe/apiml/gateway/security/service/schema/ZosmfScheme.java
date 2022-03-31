@@ -61,6 +61,11 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         return new ZosmfCommand(expirationTime);
     }
 
+    @Override
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
+    }
+
     @lombok.Value
     @EqualsAndHashCode(callSuper = false)
     public class ZosmfCommand extends AuthenticationCommand {
