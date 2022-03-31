@@ -16,7 +16,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 
 @Component
-public class ZoweJwtScheme implements AbstractAuthenticationScheme {
+public class ZoweJwtScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationScheme getScheme() {

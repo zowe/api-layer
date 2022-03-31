@@ -29,8 +29,8 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     private static final AuthenticationCommand COMMAND = mock(AuthenticationCommand.class);
 
-    private AbstractAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault) {
-        return new AbstractAuthenticationScheme() {
+    private IAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault) {
+        return new IAuthenticationScheme() {
             @Override
             public AuthenticationScheme getScheme() {
                 return scheme;
@@ -64,7 +64,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     @Test
     void testInit_NoDefault() {
-        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+        List<IAuthenticationScheme> schemes = Arrays.asList(
             createScheme(AuthenticationScheme.BYPASS, false),
             createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
             createScheme(AuthenticationScheme.ZOWE_JWT, false)
@@ -79,7 +79,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     @Test
     void testInit_MultipleDefaults() {
-        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+        List<IAuthenticationScheme> schemes = Arrays.asList(
             createScheme(AuthenticationScheme.BYPASS, true),
             createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, true),
             createScheme(AuthenticationScheme.ZOWE_JWT, false)
@@ -95,7 +95,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     @Test
     void testInit_MultipleSameScheme() {
-        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+        List<IAuthenticationScheme> schemes = Arrays.asList(
             createScheme(AuthenticationScheme.BYPASS, true),
             createScheme(AuthenticationScheme.BYPASS, false));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -125,8 +125,8 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     @Test
     void testGetAuthenticationCommand() {
-        final AbstractAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
-        final AbstractAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
+        final IAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
+        final IAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
 
         AuthSourceService as = mock(AuthSourceService.class);
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(as, Arrays.asList(byPass, passTicket));
