@@ -158,6 +158,8 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,");
                 apimlInstanceRegistry.register(standardInstance, false);
                 verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                apimlInstanceRegistry.register(standardInstance, 1, false);
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
             }
         }
 
@@ -179,6 +181,17 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new WrongMethodTypeException());
+                assertThrows(IllegalArgumentException.class, () -> {
+                    apimlInstanceRegistry.register(standardInstance, false);
+                });
+            }
+
+            @Test
+            void thenThrowIllegalArgumentException2() throws Throwable {
+                MethodHandle methodHandle = mock(MethodHandle.class);
+                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
+                ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
+                when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new Throwable());
                 assertThrows(IllegalArgumentException.class, () -> {
                     apimlInstanceRegistry.register(standardInstance, false);
                 });
@@ -213,6 +226,16 @@ class ApimlInstanceRegistryTest {
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "handlerResolveInstanceLeaseDurationMethod", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any())).thenThrow(new RuntimeException());
+                assertThrows(RuntimeException.class, () -> {
+                    apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(standardInstance);
+                });
+            }
+
+            @Test
+            void thenThrowIllegalArgumentException2() throws Throwable {
+                MethodHandle methodHandle = mock(MethodHandle.class);
+                ReflectionTestUtils.setField(apimlInstanceRegistry, "handlerResolveInstanceLeaseDurationMethod", methodHandle);
+                when(methodHandle.invokeWithArguments(any(), any())).thenThrow(new Throwable());
                 assertThrows(RuntimeException.class, () -> {
                     apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(standardInstance);
                 });
