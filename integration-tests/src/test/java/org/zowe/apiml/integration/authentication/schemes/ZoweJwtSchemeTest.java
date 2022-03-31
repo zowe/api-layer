@@ -10,7 +10,6 @@
 package org.zowe.apiml.integration.authentication.schemes;
 
 import org.apache.http.HttpHeaders;
-import org.hamcrest.text.IsEmptyString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -70,7 +69,7 @@ public class ZoweJwtSchemeTest implements TestWithStartedInstances {
             String jwt = gatewayToken();
             given()
                 .config(SslContext.tlsWithoutCert)
-                .header(HttpHeaders.AUTHORIZATION,"Bearer " + jwt)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                 .when()
                 .get(URL)
                 .then()
