@@ -100,6 +100,14 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
+    void testGetAuthSource() {
+        doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+        zosmfScheme.getAuthSource();
+        verify(authSourceService, times(1)).getAuthSourceFromRequest();
+    }
+
+    @Test
     void givenAuthSource_whenZosmfIsNotSetAsAuthProvider_thenThrowException() {
         ZosmfScheme zosmfScheme = new ZosmfScheme(authSourceService, null);
         JwtAuthSource authSource = new JwtAuthSource("jwt");

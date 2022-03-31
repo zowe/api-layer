@@ -109,7 +109,7 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         }
     }
 
-
+    @Override
     public Optional<AuthSource> getAuthSource() {
         return authSourceService.getAuthSourceFromRequest();
     }

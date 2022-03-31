@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
+import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -61,8 +62,9 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         try {
-            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
-            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authSource.orElse(null));
+            Authentication authentication = serviceAuthenticationService.getAuthentication(serviceId);
+            Optional<AuthSource> authSource = serviceAuthenticationService.getAuthSourceByAuthentication(authentication);
+            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authentication, authSource.orElse(null));
 
             // Verify authentication source validity if it is required for the schema
             if (authSource.isPresent() && !isSourceValidForCommand(authSource.get(), cmd)) {

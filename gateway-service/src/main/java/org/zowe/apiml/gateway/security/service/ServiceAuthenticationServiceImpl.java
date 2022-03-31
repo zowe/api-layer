@@ -106,6 +106,14 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         return getAuthenticationCommand(auth, authSource);
     }
 
+    public Optional<AuthSource> getAuthSourceByAuthentication(Authentication authentication) {
+        if (authentication == null || authentication.isEmpty() || authentication instanceof LoadBalancerAuthentication) {
+            return Optional.empty();
+        }
+        final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
+        return scheme.getAuthSource();
+    }
+
     @Override
     @CacheEvict(value = CACHE_BY_SERVICE_ID, allEntries = true)
     public void evictCacheAllService() {

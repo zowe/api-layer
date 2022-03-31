@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.apache.http.HttpHeaders;
@@ -84,6 +85,11 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
             parsedAuthSource.getExpiration().getTime());
 
         return new PassTicketCommand(value, cookieName, expiredAt);
+    }
+
+    @Override
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
     }
 
     @Value
