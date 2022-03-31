@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
+import java.util.Optional;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -52,4 +53,5 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      */
     Authentication getAuthentication(String serviceId);
 
+    Optional<AuthSource> getAuthSourceByAuthentication(Authentication authentication);
 }
