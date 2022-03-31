@@ -51,8 +51,8 @@ public class EurekaConfig {
         String oldPrefix;
         String newPrefix;
 
-        public Tuple(String tuple){
-            if(isValidTuple(tuple)){
+        public Tuple(String tuple) {
+            if (isValidTuple(tuple)) {
                 String[] prefixes = tuple.split(",");
                 this.oldPrefix = prefixes[0];
                 this.newPrefix = prefixes[1];

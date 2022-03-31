@@ -17,11 +17,9 @@ import com.netflix.eureka.registry.AbstractInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
-import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 
 import java.lang.invoke.MethodHandle;
@@ -209,7 +207,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         return isUpdated;
     }
 
-    private String[] replaceValues(String appName, String instanceId){
+    private String[] replaceValues(String appName, String instanceId) {
         if (tuple.isValid()) {
             String servicePrefix = tuple.getOldPrefix();
             String targetValue = tuple.getNewPrefix();
@@ -225,7 +223,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * @return instance info with the modified service ID
      */
     protected InstanceInfo changeServiceId(final InstanceInfo info) {
-        if(tuple.isValid()){
+        if (tuple.isValid()) {
             String servicePrefix = tuple.getOldPrefix();
             String instanceId = info.getInstanceId();
             if (instanceId.contains(servicePrefix)) {
@@ -243,6 +241,5 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
         return info;
     }
-
 
 }
