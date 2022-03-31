@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Date;
 
+import java.util.Optional;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,10 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
@@ -44,7 +48,7 @@ class SafIdtSchemeTest {
     private SafIdtScheme underTest;
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private final JwtAuthSource authSource = new JwtAuthSource("token");
-    
+
     private AuthSourceService authSourceService;
     private PassTicketService passTicketService;
     private SafIdtProvider safIdtProvider;
@@ -58,6 +62,14 @@ class SafIdtSchemeTest {
         underTest = new SafIdtScheme(authConfigurationProperties, authSourceService, passTicketService, safIdtProvider);
         underTest.initCookieName();
         underTest.defaultIdtExpiration = 10;
+    }
+
+    @Test
+    void testGetAuthSource() {
+        doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+        underTest.getAuthSource();
+        verify(authSourceService, times(1)).getAuthSourceFromRequest();
     }
 
     @Nested
@@ -81,7 +93,7 @@ class SafIdtSchemeTest {
                 when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
             }
-            
+
             @Nested
             class WhenApply {
 
@@ -92,7 +104,7 @@ class SafIdtSchemeTest {
                             .compact();
 
                     when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
-                    
+
                     AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                     assertNotNull(ac);
                     assertFalse(ac.isExpired());
