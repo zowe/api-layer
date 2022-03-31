@@ -72,7 +72,9 @@ dependencies {
     implementation libraries.swagger_core
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
+    implementation libraries.jackson_annotations
     implementation libraries.jackson_core
+    implementation libraries.jackson_databind
     implementation libraries.apache_commons_lang3
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.apache_velocity
