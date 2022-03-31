@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.discovery.config;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import com.netflix.discovery.EurekaClient;
@@ -26,6 +28,9 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 public class EurekaConfig {
 
+    @Value("${apiml.discovery.serviceIdPrefixReplacer:#{null}}")
+    private String tuple;
+
     @Bean
     @Primary
     public ApimlInstanceRegistry getApimlInstanceRegistry(
@@ -37,7 +42,47 @@ public class EurekaConfig {
         ApplicationContext appCntx)
     {
         eurekaClient.getApplications(); // force initialization
-        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties,appCntx);
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties,appCntx, new Tuple(tuple));
+    }
+
+    public static class Tuple {
+
+        boolean valid;
+        String oldPrefix;
+        String newPrefix;
+
+        public Tuple(String tuple){
+            if(isValidTuple(tuple)){
+                String[] prefixes = tuple.split(",");
+                this.oldPrefix = prefixes[0];
+                this.newPrefix = prefixes[1];
+                this.valid = true;
+            }
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public String getOldPrefix() {
+            return oldPrefix;
+        }
+
+        public String getNewPrefix() {
+            return newPrefix;
+        }
+
+        public static boolean isValidTuple(String tuple) {
+            if (StringUtils.isNotEmpty(tuple)) {
+                String[] replacer = tuple.split(",");
+                return replacer.length > 1 &&
+                    StringUtils.isNotEmpty(replacer[0]) &&
+                    StringUtils.isNotEmpty(replacer[1]) &&
+                    !replacer[0].equals(replacer[1]);
+            }
+            return false;
+        }
+
     }
 
 }

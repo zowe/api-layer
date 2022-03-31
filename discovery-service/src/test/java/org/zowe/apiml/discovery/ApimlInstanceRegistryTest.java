@@ -20,13 +20,18 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.Nested;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.discovery.config.EurekaConfig;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Field;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,6 +45,7 @@ class ApimlInstanceRegistryTest {
     private InstanceRegistryProperties instanceRegistryProperties;
     private ApplicationContext appCntx;
     private InstanceInfo standardInstance;
+    private EurekaConfig.Tuple tuple;
 
     @BeforeEach
     void setUp() throws Throwable {
@@ -50,13 +56,14 @@ class ApimlInstanceRegistryTest {
         eurekaClient = mock(DiscoveryClient.class);
         instanceRegistryProperties = mock(InstanceRegistryProperties.class);
         appCntx = mock(ApplicationContext.class);
+        tuple = new EurekaConfig.Tuple("service,hello");
         apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
             serverCodecs,
             eurekaClient,
             instanceRegistryProperties,
-            appCntx));
+            appCntx,tuple));
 
         MethodHandle methodHandle = mock(MethodHandle.class);
         Field declaredField = ApimlInstanceRegistry.class.getDeclaredField("handleRegistrationMethod");
@@ -81,7 +88,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenChangeServicePrefix() {
                 String tuple = "service,hello";
-                InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance, tuple.split(","));
+                InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance);
                 assertEquals("hello", info.getInstanceId());
                 assertEquals("HELLO", info.getAppName());
                 assertEquals("HELLO", info.getVIPAddress());
@@ -98,7 +105,7 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenDontChangeServicePrefix() {
                 String tuple = "differentService,hello";
-                InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance, tuple.split(","));
+                InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance);
                 assertEquals("service", info.getInstanceId());
                 assertEquals("SERVICE", info.getAppName());
                 assertEquals("SERVICE", info.getVIPAddress());
@@ -106,18 +113,33 @@ class ApimlInstanceRegistryTest {
             }
         }
     }
+    private static Stream<Arguments> tuples(){
+       return Stream.of(
+           Arguments.of("service,hello","hello"),
+           Arguments.of("service,service","service"),
+           Arguments.of("service","service"),
+           Arguments.of("service,","service"),
+           Arguments.of(null,"service")
+       );
+    }
 
-    @Nested
-    class GivenInstanceInfo {
-        @Nested
-        class WhenReplaceTupleIsCorrect {
-            @Test
-            void thenInvokeChangeServiceId() {
-                ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,hello");
-                apimlInstanceRegistry.register(standardInstance, false);
-                verify(apimlInstanceRegistry, times(1)).changeServiceId(any(), any());
-            }
-        }
+    @ParameterizedTest
+    @MethodSource("tuples")
+    void thenInvokeChangeServiceId(String tuple, String expectedServiceIdInResult) {
+        apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+            serverConfig,
+            clientConfig,
+            serverCodecs,
+            eurekaClient,
+            instanceRegistryProperties,
+            appCntx,new EurekaConfig.Tuple(tuple)));
+        MethodHandle methodHandle = mock(MethodHandle.class);
+        ReflectionTestUtils.setField(apimlInstanceRegistry,"register2ArgsMethodHandle",methodHandle);
+        ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
+        apimlInstanceRegistry.register(standardInstance, false);
+        assertEquals(expectedServiceIdInResult,standardInstance.getInstanceId());
+    }
+
 
         @Nested
         class WhenReplaceTupleValuesAreEquals {
@@ -125,7 +147,7 @@ class ApimlInstanceRegistryTest {
             void thenInvokeChangeServiceId() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,service");
                 apimlInstanceRegistry.register(standardInstance, false);
-                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any());
             }
         }
 
@@ -135,7 +157,7 @@ class ApimlInstanceRegistryTest {
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service");
                 apimlInstanceRegistry.register(standardInstance, false);
-                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any());
             }
         }
 
@@ -145,9 +167,9 @@ class ApimlInstanceRegistryTest {
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple",null);
                 apimlInstanceRegistry.register(standardInstance, false);
-                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any());
                 apimlInstanceRegistry.register(standardInstance, 1, false);
-                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any());
             }
         }
 
@@ -157,9 +179,9 @@ class ApimlInstanceRegistryTest {
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple","service,");
                 apimlInstanceRegistry.register(standardInstance, false);
-                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any());
                 apimlInstanceRegistry.register(standardInstance, 1, false);
-                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any());
             }
         }
 
@@ -169,7 +191,7 @@ class ApimlInstanceRegistryTest {
             void thenDontInvokeServicePrefix() {
                 ReflectionTestUtils.setField(apimlInstanceRegistry,"tuple",",service");
                 apimlInstanceRegistry.register(standardInstance, false);
-                verify(apimlInstanceRegistry, times(0)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(0)).changeServiceId(any());
             }
         }
 
@@ -287,7 +309,7 @@ class ApimlInstanceRegistryTest {
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenReturn(true);
                 apimlInstanceRegistry.register(standardInstance, false);
-                verify(apimlInstanceRegistry, times(1)).changeServiceId(any(), any());
+                verify(apimlInstanceRegistry, times(1)).changeServiceId(any());
                 boolean isCancelled = apimlInstanceRegistry.cancel("HELLO", "hello", false);
                 assertTrue(isCancelled);
             }
@@ -325,7 +347,7 @@ class ApimlInstanceRegistryTest {
                 });
             }
         }
-    }
+
 
     private InstanceInfo getStandardInstance() {
 
