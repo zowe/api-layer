@@ -36,7 +36,23 @@ public class LocationFilter extends PreZuulFilter implements RoutedServicesUser 
 
     @Override
     public boolean shouldFilter() {
-        return true;
+        RequestContext context = RequestContext.getCurrentContext();
+
+        final String serviceId = (String) context.get(SERVICE_ID_KEY);
+        final String proxy = UrlUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
+        final String requestPath = UrlUtils.addFirstSlash((String) context.get(REQUEST_URI_KEY));
+
+        if (!isRequestThatCanBeProcessed(serviceId, proxy, requestPath)) {
+            log.trace("Routing: Incorrect serviceId {}, proxy {} or requestPath {}.", serviceId, proxy, requestPath);
+            return false;
+        }
+        else if (routedServicesMap.get(serviceId) == null) {
+            log.trace("Routing: No routing metadata for service {} found.", serviceId);
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     @Override
@@ -46,24 +62,14 @@ public class LocationFilter extends PreZuulFilter implements RoutedServicesUser 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         final String proxy = UrlUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
         final String requestPath = UrlUtils.addFirstSlash((String) context.get(REQUEST_URI_KEY));
+        RoutedServices routedServices = routedServicesMap.get(serviceId);
+        @SuppressWarnings("squid:S2259")
+        int i = proxy.lastIndexOf('/');
 
-        if (isRequestThatCanBeProcessed(serviceId, proxy, requestPath)) {
-            RoutedServices routedServices = routedServicesMap.get(serviceId);
-
-            if (routedServices != null) {
-                @SuppressWarnings("squid:S2259")
-                int i = proxy.lastIndexOf('/');
-
-                if (i > 0) {
-                    String originalPath = normalizeOriginalPath(getService(routedServices, proxy).getServiceUrl());
-                    context.set(REQUEST_URI_KEY, originalPath + requestPath);
-                    log.debug("Routing: The request was routed to {}", originalPath + requestPath);
-                }
-            } else {
-                log.trace("Routing: No routing metadata for service {} found.", serviceId);
-            }
-        } else {
-            log.trace("Routing: Incorrect serviceId {}, proxy {} or requestPath {}.", serviceId, proxy, requestPath);
+        if (i > 0) {
+            String originalPath = normalizeOriginalPath(getService(routedServices, proxy).getServiceUrl());
+            context.set(REQUEST_URI_KEY, originalPath + requestPath);
+            log.debug("Routing: The request was routed to {}", originalPath + requestPath);
         }
 
         return null;

@@ -108,6 +108,7 @@ services:
             serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
       authentication:
           scheme: safIdt  # This service expects credentials in HTTP basic scheme with a PassTicket
+          applid: ZOWEAPPL
       apiInfo:
           - apiId: zowe.apiml.discoverableclient
             gatewayUrl: api/v1

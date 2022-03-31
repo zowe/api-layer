@@ -39,8 +39,9 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.filter.ApimlX509Filter;
+import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
@@ -107,9 +108,9 @@ public class SecurityConfiguration {
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 if (isAttlsEnabled) {
                     http.x509()
-                        .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) // filter out API ML certificate
                         .userDetailsService(x509UserDetailsService())
                         .and()
+                        .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
                         .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
                         .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 } else {
@@ -123,11 +124,10 @@ public class SecurityConfiguration {
             return username -> new User(username, "", Collections.emptyList());
         }
 
-        private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
-            ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+        private CategorizeCertsFilter reversedCategorizeCertFilter() {
+            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64);
             out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
             out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            out.setAuthenticationManager(authenticationManager);
             return out;
         }
     }
@@ -229,7 +229,8 @@ public class SecurityConfiguration {
             // endpoints protection
             .and()
             .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
         return http;
     }
@@ -265,6 +266,17 @@ public class SecurityConfiguration {
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties);
+    }
+
+    /**
+     * Secures content with a Bearer token
+     */
+    private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+        return new BearerContentFilter(
+            authenticationManager,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler()
+        );
     }
 
     @Bean
