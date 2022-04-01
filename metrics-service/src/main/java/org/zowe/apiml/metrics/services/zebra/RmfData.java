@@ -1,4 +1,4 @@
-package org.zowe.apiml.metrics;
+package org.zowe.apiml.metrics.services.zebra;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

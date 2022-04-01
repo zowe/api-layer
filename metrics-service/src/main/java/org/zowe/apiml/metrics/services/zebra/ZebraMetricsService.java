@@ -3,7 +3,6 @@ package org.zowe.apiml.metrics.services.zebra;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.zowe.apiml.metrics.RmfData;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

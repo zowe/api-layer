@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.metrics.RmfData;
+import org.zowe.apiml.metrics.services.zebra.RmfData;
 import org.zowe.apiml.metrics.services.zebra.ZebraMetricsService;
 
 import static org.junit.jupiter.api.Assertions.*;
