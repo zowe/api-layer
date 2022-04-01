@@ -65,7 +65,7 @@ apiml:
                 version: 1.0.0
         ssl:
             enabled: true
-            verifySslCertificatesOfServices: true
+            verifySslCertificatesOfServices: false
             protocol: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
@@ -174,3 +174,5 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+zebra-metrics-url: https://zebra.talktothemainframe.com:3390/v1
