@@ -18,5 +18,4 @@ public class ZebraBeanConfiguration {
     public ZebraMetricsService zebraMetricsService(RestTemplate restTemplate) {
         return new ZebraMetricsService(zebraConfiguration.getBaseUrl(), restTemplate);
     }
-
 }

@@ -1,7 +1,6 @@
 package org.zowe.apiml.metrics.services.zebra;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.metrics.RmfData;
@@ -21,10 +20,10 @@ public class ZebraMetricsService {
     public RmfData getRmfData(String lpar, String report) {
         String url = UriComponentsBuilder.fromUriString(zebraBaseUrl).pathSegment(lpar).pathSegment("rmf3").pathSegment(report).toUriString();
 
-        RmfData metricsData = restTemplate.getForObject(url, RmfData.class);
+        // RmfData metricsData = restTemplate.getForObject(url, RmfData.class);
         Map<String, String> map = new HashMap<>();
         map.put("STRPJOB", "1");
-        //RmfData metricsData = new RmfData("STOR (Storage Delays)", "03/31/2022 16:08:20", "03/31/2022 16:10:00", null, Collections.singletonList(map));
+        RmfData metricsData = new RmfData("STOR (Storage Delays)", "03/31/2022 16:08:20", "03/31/2022 16:10:00", null, Collections.singletonList(map));
 
 
         if (metricsData != null) {
@@ -33,7 +32,6 @@ public class ZebraMetricsService {
         }
 
         return metricsData;
-
     }
 
     private String formatZebraTimeStampsToISO8061(String timeStamp) {

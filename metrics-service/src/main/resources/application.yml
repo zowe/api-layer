@@ -1,3 +1,9 @@
+metrics:
+    system:
+        service: zebra
+        zebra:
+            baseUrl: https://zebra.talktothemainframe.com:3390/v1
+
 logging:
     level:
         ROOT: WARN
@@ -25,6 +31,7 @@ eureka:
 
 apiml:
     enabled: true
+    security.ssl.verifySslCertificatesOfServices: false
     service:
         preferIpAddress: false
 
