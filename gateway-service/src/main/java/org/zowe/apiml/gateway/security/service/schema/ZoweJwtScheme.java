@@ -31,7 +31,8 @@ import java.util.Optional;
 
 @Component
 @AllArgsConstructor
-public class ZoweJwtScheme implements AbstractAuthenticationScheme {
+public class ZoweJwtScheme implements IAuthenticationScheme {
+
 
     private AuthSourceService authSourceService;
     private AuthConfigurationProperties configurationProperties;

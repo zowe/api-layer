@@ -21,7 +21,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
  * Default scheme, just forward, don't set anything.
  */
 @Component
-public class ByPassScheme implements AbstractAuthenticationScheme {
+public class ByPassScheme implements IAuthenticationScheme {
 
     public static final String AUTHENTICATION_SCHEME_BY_PASS_KEY = "AuthenticationSchemeByPass";
 

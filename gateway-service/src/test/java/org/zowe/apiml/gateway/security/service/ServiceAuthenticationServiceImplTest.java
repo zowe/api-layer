@@ -303,7 +303,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthSource authSource2 = authSourcePairs.get(1).left;
         AuthSource.Parsed parsedAuthSource1 = authSourcePairs.get(0).right;
         AuthSource.Parsed parsedAuthSource2 = authSourcePairs.get(1).right;
-        AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(IAuthenticationScheme.class);
 
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
@@ -332,7 +332,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
     @Test
     void testGetAuthenticationCommand_whenNoAuthSource() {
-        AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(IAuthenticationScheme.class);
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET))
             .thenReturn(schemeBeanMock);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
@@ -356,7 +356,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
         ServiceAuthenticationService sas = spy(serviceAuthenticationServiceImpl);
 
-        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme scheme = mock(IAuthenticationScheme.class);
         doAnswer(invocation -> ok).when(scheme).createCommand(any(), any());
         when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
 
@@ -378,7 +378,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     void testGetAuthenticationCommandByServiceIdCache(AuthSource authSource) {
         AuthenticationCommand ac1 = new AuthenticationCommandTest(true);
         AuthenticationCommand ac2 = new AuthenticationCommandTest(false);
-        AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(IAuthenticationScheme.class);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1");
 
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(schemeBeanMock);
@@ -420,7 +420,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         when(requestContext.getRequest()).thenReturn(request);
         RequestContext.testSetCurrentContext(requestContext);
         when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
-        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme scheme = mock(IAuthenticationScheme.class);
         when(scheme.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid0001")), any())).thenReturn(ac);
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(scheme);
 
@@ -449,7 +449,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthSource authSource1 = authSourceList.get(0);
         AuthSource authSource2 = authSourceList.get(1);
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
-        AbstractAuthenticationScheme schemeBeanMock = mock(ByPassScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(ByPassScheme.class);
 
         Authentication auth1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0001");
         Authentication auth2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0002");
@@ -519,7 +519,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
         AuthenticationCommand ac = mock(AuthenticationCommand.class);
         AuthSource.Parsed parsedSource = mock(AuthSource.Parsed.class);
-        AbstractAuthenticationScheme schema = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme schema = mock(IAuthenticationScheme.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
         RequestContext.getCurrentContext().setRequest(request);
 
@@ -594,7 +594,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     @ParameterizedTest
     @MethodSource("provideAuthSources")
     void givenServiceIdAndAuthSource_whenExpiringCommand_thenReturnNewOne(AuthSource authSource) {
-        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme scheme = mock(IAuthenticationScheme.class);
         Application application = createApplication(
             createInstanceInfo("instanceId", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")
         );
