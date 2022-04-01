@@ -2,6 +2,35 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.0.9 (2022-04-25)`
+
+* Feature:  Enhance x509 authentication scheme to support client certificates (part 1) (#2244) ([615badf](https://github.com/zowe/api-layer/commit/615badf)), closes [#2244](https://github.com/zowe/api-layer/issues/2244)
+* Feature:  Enhance zosmf authentication scheme to support client certificates (#2207) ([5750072](https://github.com/zowe/api-layer/commit/5750072)), closes [#2207](https://github.com/zowe/api-layer/issues/2207)
+* Feature:  publish jacococ results (#2177) ([f88a90b](https://github.com/zowe/api-layer/commit/f88a90b)), closes [#2177](https://github.com/zowe/api-layer/issues/2177)
+* Feature:  Add ApimlX509Filter to default filterchain. (#2146) ([b8dd509](https://github.com/zowe/api-layer/commit/b8dd509)), closes [#2146](https://github.com/zowe/api-layer/issues/2146)
+* Feature:  Add support to change password via zOSMF (#2095) ([51e8bd3](https://github.com/zowe/api-layer/commit/51e8bd3)), closes [#2095](https://github.com/zowe/api-layer/issues/2095)
+* Feature:  Enable Discovery Service class path extensions and Gateway native library extensions (#1987) ([fd03db5](https://github.com/zowe/api-layer/commit/fd03db5)), closes [#1987](https://github.com/zowe/api-layer/issues/1987)
+
+
+* Bugfix:  caching service logging (#2221) ([6cb121a](https://github.com/zowe/api-layer/commit/6cb121a)), closes [#2221](https://github.com/zowe/api-layer/issues/2221)
+* Bugfix:  zaas client supports v2 compatibility with both gateway endpoint base Url paths (#2227) ([abdf995](https://github.com/zowe/api-layer/commit/abdf995)), closes [#2227](https://github.com/zowe/api-layer/issues/2227)
+* Bugfix:  Add BearerContent filter to enable bearer auth (#2197) ([1d41704](https://github.com/zowe/api-layer/commit/1d41704)), closes [#2197](https://github.com/zowe/api-layer/issues/2197)
+* Bugfix:  Type in image setup input name (#2184) ([e001dc3](https://github.com/zowe/api-layer/commit/e001dc3)), closes [#2184](https://github.com/zowe/api-layer/issues/2184)
+* Bugfix:  use unique artifacts for gha (#2191) ([576fd72](https://github.com/zowe/api-layer/commit/576fd72)), closes [#2191](https://github.com/zowe/api-layer/issues/2191)
+* Bugfix:  configure southbound timeout with APIML_GATEWAY_TIMEOUT_MILLIS (#2154) ([6af5d6f](https://github.com/zowe/api-layer/commit/6af5d6f)), closes [#2154](https://github.com/zowe/api-layer/issues/2154)
+* Bugfix:  Improve error handling for API diff endpoint (#2178) ([1581e39](https://github.com/zowe/api-layer/commit/1581e39)), closes [#2178](https://github.com/zowe/api-layer/issues/2178)
+* Bugfix:  update data model for infinispan (#2156) ([38a1348](https://github.com/zowe/api-layer/commit/38a1348)), closes [#2156](https://github.com/zowe/api-layer/issues/2156)
+* Bugfix:  Versioning in image publishing workflow (#2159) ([db52527](https://github.com/zowe/api-layer/commit/db52527)), closes [#2159](https://github.com/zowe/api-layer/issues/2159)
+* Bugfix:  Add x509 auth info to gw api doc (#2142) ([0205470](https://github.com/zowe/api-layer/commit/0205470)), closes [#2142](https://github.com/zowe/api-layer/issues/2142)
+* Bugfix:  Properly remove services when instances are removed from Discovery Service (#2128) ([c675b91](https://github.com/zowe/api-layer/commit/c675b91)), closes [#2128](https://github.com/zowe/api-layer/issues/2128)
+* Bugfix:  use ribbon LB (#2147) ([4751dbc](https://github.com/zowe/api-layer/commit/4751dbc)), closes [#2147](https://github.com/zowe/api-layer/issues/2147)
+* Bugfix:  Add missing fields in error response (#2118) ([3b9745c](https://github.com/zowe/api-layer/commit/3b9745c)), closes [#2118](https://github.com/zowe/api-layer/issues/2118)
+* Bugfix:  change ws and sse pattern  (#2086) ([551c8bc](https://github.com/zowe/api-layer/commit/551c8bc)), closes [#2086](https://github.com/zowe/api-layer/issues/2086)
+* Bugfix:  do not require keyAlias (#2110) ([03bee79](https://github.com/zowe/api-layer/commit/03bee79)), closes [#2110](https://github.com/zowe/api-layer/issues/2110)
+* Bugfix:  publish images to appropriate Artifactory location (#2052) ([8dcd930](https://github.com/zowe/api-layer/commit/8dcd930)), closes [#2052](https://github.com/zowe/api-layer/issues/2052)
+* Bugfix:  Build conformant images properly (#2009) ([5f07073](https://github.com/zowe/api-layer/commit/5f07073)), closes [#2009](https://github.com/zowe/api-layer/issues/2009)
+* Bugfix:  Change homepage label (#2019) ([6c50d70](https://github.com/zowe/api-layer/commit/6c50d70)), closes [#2019](https://github.com/zowe/api-layer/issues/2019)
+
 ## `1.27.0 (2022-01-14)`
 
 * Feature:  Enable Discovery Service class path extensions and Gateway native library extensions (#1987) ([fd03db5](https://github.com/zowe/api-layer/commit/fd03db5)), closes [#1987](https://github.com/zowe/api-layer/issues/1987)
