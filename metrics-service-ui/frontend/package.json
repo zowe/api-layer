@@ -57,7 +57,7 @@
         "build": "react-scripts build",
         "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --silent",
         "start": "cross-env HTTPS=true react-scripts start",
-        "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
+        "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env DISABLE_ESLINT_PLUGIN=true REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
         "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
         "cy:open": "cypress open",
         "cy:e2e": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless"

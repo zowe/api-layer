@@ -9,79 +9,27 @@
  */
 
 import Typography from '@material-ui/core/Typography';
-import Container from '@material-ui/core/Container';
 import React, { useEffect, useState } from 'react';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Box from '@material-ui/core/Box';
-import axios from 'axios';
+import Button from '@material-ui/core/Button';
+import Grid from "@material-ui/core/Grid";
+import IFRAME  from '../Iframe/IFRAME';
+import {Default_Dashboard} from "../Default_Dashboard/Default_dashboard";
 
 export default function Dashboard() {
-    const [availableClusters, setAvailableClusters] = useState([]);
-    const [currentCluster, setCurrentCluster] = useState(null);
-    const [haveGottenClusters, setHaveGottenClusters] = useState(false);
-
-    function setMetricsDisplay(cluster) {
-        setCurrentCluster(cluster);
-        window.addStreams(
-            `${process.env.REACT_APP_GATEWAY_URL}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`,
-            cluster
-        );
-    }
-
-    function retrieveAvailableClusters(callback) {
-        axios.get(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_METRICS_HOME}/clusters`).then((res) => {
-            callback(res);
-        });
-    }
-
-    useEffect(() => {
-        if (!haveGottenClusters && availableClusters.length === 0) {
-            retrieveAvailableClusters((res) => {
-                setHaveGottenClusters(true);
-
-                const clusters = res.data.map((d) => d.name);
-                setAvailableClusters(clusters);
-
-                if (clusters.length > 0) {
-                    setMetricsDisplay(clusters[0]);
-                }
-            });
-        }
-
-        setTimeout(() => {
-            retrieveAvailableClusters((res) => {
-                const clusters = res.data.map((d) => d.name);
-                setAvailableClusters(clusters);
-            });
-        }, 30000);
-    });
-
-    const handleChange = (event, newValue) => {
-        setMetricsDisplay(newValue);
-    };
+    const [panelShow, setPanelShow] = useState(false);
+    const [defaultPanelShow, setDefaultPanelShow] = useState(true);
 
     return (
         <React.Fragment>
             <Typography id="name" variant="h2" component="h1" gutterBottom align="center">
                 Metrics Service
             </Typography>
-            {availableClusters.length > 0 && (
-                <Box sx={{ width: '100%' }}>
-                    <Tabs
-                        value={currentCluster}
-                        onChange={handleChange}
-                        aria-label="service tabs"
-                        centered
-                        indicatorColor="primary"
-                    >
-                        {availableClusters.map((stream) => (
-                            <Tab label={stream} value={stream} />
-                        ))}
-                    </Tabs>
-                </Box>
-            )}
-            <Container maxWidth="lg" id="content" className="dependencies" />
+            <Grid container justify="center">
+                <Button variant="outlined" size="large" onClick={() => setPanelShow(!panelShow)}>Grafana Panel</Button>
+                <Button variant="outlined" size="large" onClick={() => setDefaultPanelShow(!defaultPanelShow)}>Default Panel</Button>
+            </Grid>
+            {panelShow ? <IFRAME /> : null}
+            {defaultPanelShow ? <Default_Dashboard /> : null}
         </React.Fragment>
     );
 }

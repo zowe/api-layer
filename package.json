@@ -56,7 +56,9 @@
         "url": "https://github.com/zowe/api-layer/issues"
     },
     "homepage": "https://github.com/zowe/api-layer#readme",
-    "dependencies": {},
+    "dependencies": {
+        "react-iframe": "^1.8.0"
+    },
     "devDependencies": {
         "concurrently": "6.0.0"
     }
