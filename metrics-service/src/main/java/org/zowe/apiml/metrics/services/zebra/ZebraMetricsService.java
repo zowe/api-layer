@@ -21,13 +21,13 @@ public class ZebraMetricsService {
     public RmfData getRmfData(String lpar, String report) {
         String url = UriComponentsBuilder.fromUriString(zebraBaseUrl).pathSegment(lpar).pathSegment("rmf3").pathSegment(report).toUriString();
 
-//        RmfData metricsData = restTemplate.getForObject(url, RmfData.class);
-        Map<String, String> map= new HashMap<>();
+        RmfData metricsData = restTemplate.getForObject(url, RmfData.class);
+        Map<String, String> map = new HashMap<>();
         map.put("STRPJOB", "1");
-        RmfData metricsData = new RmfData("STOR (Storage Delays)", "03/31/2022 16:08:20", "03/31/2022 16:10:00", null, Collections.singletonList(map));
+        //RmfData metricsData = new RmfData("STOR (Storage Delays)", "03/31/2022 16:08:20", "03/31/2022 16:10:00", null, Collections.singletonList(map));
 
 
-        if (metricsData != null){
+        if (metricsData != null) {
             metricsData.setTimestart(formatZebraTimeStampsToISO8061(metricsData.getTimestart()));
             metricsData.setTimeend(formatZebraTimeStampsToISO8061(metricsData.getTimeend()));
         }
@@ -45,11 +45,11 @@ public class ZebraMetricsService {
         int[] timeStampElements = new int[numberOfTimeElements];
 
         Matcher matcher = Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE).matcher(timeStamp);
-        for (int i=0; matcher.find(); i++) {
+        for (int i = 0; matcher.find(); i++) {
             timeStampElements[i] = Integer.parseInt(matcher.group(0));
         }
 
-        int month = timeStampElements[0]-1;
+        int month = timeStampElements[0] - 1;
         int day = timeStampElements[1];
         int year = timeStampElements[2];
         int hour = timeStampElements[3];

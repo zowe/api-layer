@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ZebraMetricsServiceTest {
+    private static final String baseUrl = "https://zebra.talktothemainframe.com:3390/v1";
 
     @Mock
     RestTemplate restTemplate;
@@ -22,7 +23,7 @@ public class ZebraMetricsServiceTest {
 
     @BeforeEach
     void setUp() {
-        fixture = new ZebraMetricsService(restTemplate);
+        fixture = new ZebraMetricsService(baseUrl, restTemplate);
     }
 
     @Test
