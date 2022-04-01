@@ -1,4 +1,4 @@
-package org.zowe.apiml.metrics.services;
+package org.zowe.apiml.metrics.services.zebra;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
