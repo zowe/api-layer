@@ -49,7 +49,7 @@ import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
  */
 @Component
 @RequiredArgsConstructor
-public class SafIdtScheme implements AbstractAuthenticationScheme {
+public class SafIdtScheme implements IAuthenticationScheme {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthSourceService authSourceService;
     private final PassTicketService passTicketService;
