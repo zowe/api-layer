@@ -34,7 +34,7 @@ import java.util.Base64;
  * SAF and generating new authentication header in request.
  */
 @Component
-public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
+public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     private final PassTicketService passTicketService;
     private final AuthSourceService authSourceService;

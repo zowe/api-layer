@@ -35,7 +35,7 @@ import java.util.Optional;
  */
 @Component
 @RequiredArgsConstructor
-public class ZosmfScheme implements AbstractAuthenticationScheme {
+public class ZosmfScheme implements IAuthenticationScheme {
 
     private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;

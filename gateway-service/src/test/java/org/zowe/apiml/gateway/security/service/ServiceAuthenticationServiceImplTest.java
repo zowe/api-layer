@@ -294,7 +294,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthSource authSource2 = authSourcePairs.get(1).left;
         AuthSource.Parsed parsedAuthSource1 = authSourcePairs.get(0).right;
         AuthSource.Parsed parsedAuthSource2 = authSourcePairs.get(1).right;
-        AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(IAuthenticationScheme.class);
 
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
@@ -323,7 +323,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
     @Test
     void testGetAuthenticationCommand_whenNoAuthSource() {
-        AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(IAuthenticationScheme.class);
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET))
             .thenReturn(schemeBeanMock);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
@@ -353,7 +353,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
         ServiceAuthenticationService sas = spy(serviceAuthenticationServiceImpl);
 
-        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme scheme = mock(IAuthenticationScheme.class);
         doAnswer(invocation -> ok).when(scheme).createCommand(any(), any());
         when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
 
@@ -375,7 +375,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     void testGetAuthenticationCommandByServiceIdCache(AuthSource authSource) {
         AuthenticationCommand ac1 = new AuthenticationCommandTest(true);
         AuthenticationCommand ac2 = new AuthenticationCommandTest(false);
-        AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(IAuthenticationScheme.class);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1");
 
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(schemeBeanMock);
@@ -403,7 +403,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthSource authSource1 = authSourceList.get(0);
         AuthSource authSource2 = authSourceList.get(1);
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
-        AbstractAuthenticationScheme schemeBeanMock = mock(ByPassScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(ByPassScheme.class);
 
         Authentication auth1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0001");
         Authentication auth2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0002");
@@ -453,10 +453,102 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", null, authSource));
     }
 
+    @Test
+    void testIsRequiredValidAuthSource() {
+        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+        assertFalse(universalAuthenticationCommand.isRequiredValidSource());
+    }
+
+    private <T> T getUnProxy(T springClass) throws Exception {
+        if (springClass instanceof  Advised) {
+            return (T) ((Advised) springClass).getTargetSource().getTarget();
+        }
+        return springClass;
+    }
+
+    private AuthenticationCommand testRequiredAuthentication(boolean requiredAuthSourceValidation, String authSourceString) throws Exception {
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
+        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand =
+            serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+
+        AuthenticationCommand ac = mock(AuthenticationCommand.class);
+        AuthSource.Parsed parsedSource = mock(AuthSource.Parsed.class);
+        IAuthenticationScheme schema = mock(IAuthenticationScheme.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        RequestContext.getCurrentContext().setRequest(request);
+
+        Stubber stubber;
+        AuthSource authSource;
+        if (StringUtils.equals(authSourceString, "validJwt")) {
+            stubber = doReturn(Optional.of(new JwtAuthSource(authSourceString)));
+            authSource = new JwtAuthSource(authSourceString);
+        } else if (StringUtils.equals(authSourceString, "validClientCert")) {
+            stubber = doReturn(Optional.of(new X509AuthSource(mock(X509Certificate.class))));
+            authSource = new X509AuthSource(mock(X509Certificate.class));
+        } else {
+            stubber = doThrow(new TokenNotValidException("Token is not valid."));
+            authSource = null;
+        }
+        stubber.when(getUnProxy(authSourceService)).getAuthSourceFromRequest();
+        doReturn(ac).when(schema).createCommand(eq(authentication), any());
+        doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
+        doReturn(parsedSource).when(getUnProxy(authSourceService)).parse(authSource);
+        doReturn(requiredAuthSourceValidation).when(ac).isRequiredValidSource();
+
+        universalAuthenticationCommand.apply(createInstanceInfo("id", authentication));
+
+        return ac;
+    }
+
+    @Test
+    void givenMissingAuthSource_whenCommandRequiredAuthentication_thenReject() throws Exception {
+        try {
+            testRequiredAuthentication(true, null);
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"invalidJwt", "invalidClientCert"})
+    void givenInvalidAuthSource_whenCommandRequiredAuthentication_thenReject(String authSourceString) throws Exception {
+        try {
+            testRequiredAuthentication(true, authSourceString);
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"validJwt", "validClientCert"})
+    void givenValidExpiredAuthSource_whenCommandRequiredAuthentication_thenCall(String authSourceString) throws Exception {
+        doThrow(new TokenExpireException("Token is expired."))
+            .when(getUnProxy(authSourceService)).isValid(any());
+
+        try {
+            testRequiredAuthentication(true, authSourceString);
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {/*"validJwt",*/ "validClientCert"})
+    void givenValidAuthSource_whenCommandRequiredAuthentication_thenCall(String authSourceString) throws Exception {
+        doReturn(true)
+            .when(getUnProxy(authSourceService)).isValid(any());
+
+        AuthenticationCommand ac = testRequiredAuthentication(true, authSourceString);
+        verify(ac, times(1)).apply(any());
+    }
+
     @ParameterizedTest
     @MethodSource("provideAuthSources")
     void givenServiceIdAndAuthSource_whenExpiringCommand_thenReturnNewOne(AuthSource authSource) {
-        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        IAuthenticationScheme scheme = mock(IAuthenticationScheme.class);
         Application application = createApplication(
             createInstanceInfo("instanceId", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")
         );
