@@ -19,10 +19,12 @@ export const baseCategories = [
                 question: 'A unique identifier for the API (service ID):',
                 maxLength: 40,
                 lowercase: true,
+                tooltip: 'Example: sampleservice',
             },
             title: {
                 value: '',
                 question: 'The name of the service (human readable):',
+                tooltip: 'Example: Hello API ML',
             },
         },
     },
@@ -32,6 +34,7 @@ export const baseCategories = [
             description: {
                 value: '',
                 question: 'A concise description of the service:',
+                tooltip: 'Example: Sample API ML REST Service.',
             },
         },
     },
@@ -42,6 +45,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The base URL of the service (the consistent part of the web address):',
                 validUrl: true,
+                tooltip: 'https://${samplehost}:${sampleport}/${sampleservice}',
             },
         },
     },
@@ -60,18 +64,23 @@ export const baseCategories = [
             scheme: {
                 value: 'https',
                 question: 'Service scheme:',
+                tooltip: 'https',
             },
             hostname: {
                 value: '',
                 question: 'Service hostname:',
+                tooltip: 'hostname can be externalized by specifying -Dapiml.service.hostname command line parameter',
             },
             port: {
                 value: '',
                 question: 'Service port:',
+                tooltip: 'port can be externalized by specifying -Dapiml.service.port command line parameter',
             },
             contextPath: {
                 value: '',
                 question: 'Context path:',
+                tooltip:
+                    "By default the contextPath is set to be the same as apiml.service.serviceId, but doesn't have to be the same",
             },
         },
     },
@@ -83,6 +92,7 @@ export const baseCategories = [
                 question: 'The service IP address:',
                 optional: true,
                 regexRestriction: [wizRegex.ipAddress],
+                tooltip: 'Example: https://localhost:3000/',
             },
         },
     },
@@ -94,18 +104,22 @@ export const baseCategories = [
                 question: 'The relative path to the home page of the service:',
                 optional: true,
                 regexRestriction: [wizRegex.validRelativeUrl],
+                tooltip:
+                    'Normally used for informational purposes for other services to use it as a landing page. Example: /home',
             },
             statusPageRelativeUrl: {
                 value: '',
                 question: 'The relative path to the status page of the service:',
                 optional: true,
                 regexRestriction: [wizRegex.validRelativeUrl],
+                tooltip: 'Example: /application/info',
             },
             healthCheckRelativeUrl: {
                 value: '',
                 question: 'The relative path to the health check endpoint of the service:',
                 optional: true,
                 regexRestriction: [wizRegex.validRelativeUrl],
+                tooltip: 'Example: /application/health',
             },
         },
     },
@@ -116,6 +130,7 @@ export const baseCategories = [
                 value: '',
                 question: 'Discovery Service URL:',
                 validUrl: true,
+                tooltip: 'Example: https://localhost:10011/eureka/',
             },
         },
         multiple: false,
@@ -133,6 +148,7 @@ export const baseCategories = [
             serviceUrl: {
                 value: '',
                 question: 'Service API common context path:',
+                tooltip: 'Example: /sampleservice/api/v1',
             },
         },
         help: 'For service: <service>/allOfMyEndpointsAreHere/** exposed on Gateway under <gateway>/<serviceid>/api/v1/**\nFill in:\ngatewayUrl: /api/v1\nserviceUrl: /allOfMyEndpointsAreHere',
@@ -151,6 +167,7 @@ export const baseCategories = [
                 value: '',
                 question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
                 dependencies: { scheme: 'httpBasicPassTicket' },
+                tooltip: 'Example: ZOWEAPPL',
             },
             headers: {
                 value: 'X-Certificate-Public',
@@ -171,11 +188,12 @@ export const baseCategories = [
             apiId: {
                 value: '',
                 question: 'A unique identifier to the API in the API ML:',
+                tooltip: 'Example: zowe.apiml.sampleservice',
             },
             version: {
                 value: '',
                 question: 'API version:',
-                tooltip: 'API version',
+                tooltip: 'Example: 1.0.0',
                 regexRestriction: [wizRegex.version],
             },
             gatewayUrl: {
@@ -188,11 +206,14 @@ export const baseCategories = [
                 value: '',
                 question: 'The Http or Https address where the Swagger JSON document is available:',
                 optional: true,
+                tooltip:
+                    'Example: http://${sampleServiceSwaggerHost}:${sampleServiceSwaggerPort}/sampleservice/api-doc',
             },
             documentationUrl: {
                 value: '',
                 question: 'Link to the external documentation:',
                 optional: true,
+                tooltip: 'Example: https://www.zowe.org',
             },
         },
     },
@@ -208,19 +229,22 @@ export const baseCategories = [
             id: {
                 value: '',
                 question: 'The unique identifier for the product family of API services:',
-                tooltip: 'reverse domain name notation, e.g. org.zowe.apiml',
+                tooltip: 'reverse domain name notation. Example: org.zowe.apiml',
             },
             title: {
                 value: '',
                 question: 'The title of the product family of the API service:',
+                tooltip: 'Example: Hello API ML',
             },
             description: {
                 value: '',
                 question: 'A description of the API service product family:',
+                tooltip: 'Example: Sample application to demonstrate exposing a REST API in the ZOWE API ML',
             },
             version: {
                 value: '',
                 question: 'The semantic version of this API Catalog tile (increase when adding changes):',
+                tooltip: 'Example: 1.0.0',
             },
         },
         interference: 'catalog',
@@ -239,20 +263,24 @@ export const baseCategories = [
             keyAlias: {
                 value: '',
                 question: 'The alias used to address the private key in the keystore',
+                tooltip: 'Example: localhost',
             },
             keyPassword: {
                 value: '',
                 question: 'The password associated with the private key:',
                 type: 'password',
+                tooltip: 'password',
             },
             keyStore: {
                 value: '',
                 question: 'The keystore file used to store the private key (keyring: set to SAF keyring location):',
+                tooltip: 'Example: keystore/localhost.keystore.p12',
             },
             keyStorePassword: {
                 value: '',
                 question: 'The password used to unlock the keystore:',
                 type: 'password',
+                tooltip: 'Your keystore password',
             },
             keyStoreType: {
                 value: 'PKCS12',
@@ -262,11 +290,13 @@ export const baseCategories = [
             trustStore: {
                 value: '',
                 question: 'The truststore file used to keep other parties public keys and certificates:',
+                tooltip: 'Example: keystore/localhost.truststore.p12',
             },
             trustStorePassword: {
                 value: '',
                 question: 'The password used to unlock the truststore:',
                 type: 'password',
+                tooltip: 'Your truststore password.',
             },
             trustStoreType: {
                 value: 'PKCS12',

@@ -5,6 +5,7 @@ on:
         branches: [ master, v2.x.x ]
     pull_request:
         branches: [ master, v2.x.x ]
+    workflow_dispatch:
 
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
