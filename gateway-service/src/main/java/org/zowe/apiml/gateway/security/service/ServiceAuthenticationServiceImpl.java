@@ -67,6 +67,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
     private final LoadBalancerAuthenticationCommand loadBalancerCommand = new LoadBalancerAuthenticationCommand();
+    private final LoadBalancerAuthentication loadBalancerAuthentication = new LoadBalancerAuthentication();
 
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
@@ -75,8 +76,36 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
+    /**
+     * Marker type of Authentication, the sole purpose of it is to highlight the fact that
+     * authentication cannot be determined before load balancer
+     */
+    static class LoadBalancerAuthentication extends Authentication {}
+
     public Authentication getAuthentication(InstanceInfo instanceInfo) {
         return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
+    }
+
+    @Override
+    public Authentication getAuthentication(String serviceId) {
+        final Application application = discoveryClient.getApplication(serviceId);
+        if (application == null) return null;
+
+        final List<InstanceInfo> instances = application.getInstances();
+
+        Authentication found = null;
+        for (final InstanceInfo instance : instances) {
+            final Authentication auth = getAuthentication(instance);
+
+            if (found == null) {
+                // this is the first record
+                found = auth;
+            } else if (!found.equals(auth)) {
+                // if next record is different, authentication cannot be determined before load balancer
+                return loadBalancerAuthentication;
+            }
+        }
+        return found;
     }
 
     @Override
@@ -95,29 +124,21 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, AuthSource authSource) {
-        final Application application = discoveryClient.getApplication(serviceId);
-        if (application == null) return AuthenticationCommand.EMPTY;
-
-        final List<InstanceInfo> instances = application.getInstances();
-
-        Authentication found = null;
-        for (final InstanceInfo instance : instances) {
-            final Authentication auth = getAuthentication(instance);
-
-            if (found == null) {
-                // this is the first record
-                found = auth;
-            } else if (!found.equals(auth)) {
-                // if next record is different, authentication cannot be determined before load balancer
-                return loadBalancerCommand;
-            }
-        }
-
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, Authentication found, AuthSource authSource) {
+        // Authentication cannot be determined before load balancer
+        if (found instanceof LoadBalancerAuthentication) return loadBalancerCommand;
         // if no instance exist or no metadata found, do nothing
         if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
 
         return getAuthenticationCommand(found, authSource);
+    }
+
+    public Optional<AuthSource> getAuthSourceByAuthentication(Authentication authentication) {
+        if (authentication == null || authentication.isEmpty() || authentication instanceof LoadBalancerAuthentication) {
+            return Optional.empty();
+        }
+        final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
+        return scheme.getAuthSource();
     }
 
     @Override

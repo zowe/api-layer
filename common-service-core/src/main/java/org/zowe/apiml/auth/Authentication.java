@@ -12,6 +12,7 @@ package org.zowe.apiml.auth;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import lombok.*;
 
 /**
@@ -22,7 +23,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Authentication {
+public class Authentication implements Serializable {
+    private static final long serialVersionUID = -4971506571102951057L;
 
     private AuthenticationScheme scheme;
     private String applid;

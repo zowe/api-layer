@@ -48,6 +48,7 @@ public class MetadataBuilder {
 
     public MetadataBuilder withSafIdt() {
         metadata.put("apiml.authentication.scheme", "safIdt");
+        metadata.put("apiml.authentication.applid", "ZOWEAPPL");
 
         return this;
     }
@@ -55,6 +56,19 @@ public class MetadataBuilder {
     public MetadataBuilder withX509() {
         metadata.put("apiml.authentication.scheme", "x509");
         metadata.put("apiml.authentication.headers", "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName");
+        return this;
+    }
+
+    public MetadataBuilder withZosmf() {
+        metadata.put("apiml.authentication.scheme", "zosmf");
+
+        return this;
+    }
+
+    public MetadataBuilder withHttpBasicPassTicket() {
+        metadata.put("apiml.authentication.scheme", "httpBasicPassTicket");
+        metadata.put("apiml.authentication.applid", "ZOWEAPPL");
+
         return this;
     }
 

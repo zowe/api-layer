@@ -22,7 +22,6 @@ dependencies {
     testCompile libraries.http_client
     testCompile libraries.eureka_client
     testCompile libraries.jackson_dataformat_yaml
-    testCompile libraries.jackson_databind
     testCompile libraries.json_path
     testCompile libraries.spring_boot_starter_websocket
     testCompile libraries.spring_boot_starter_actuator
@@ -42,6 +41,7 @@ dependencies {
     testAnnotationProcessor libraries.lombok
     testCompile libraries.jsoup
     testCompile libraries.rest_assured
+    testCompile libraries.jackson_annotations
     testCompile(libraries.jackson_core)
     testCompile(libraries.jackson_databind)
     testCompile libraries.jackson_dataformat_yaml

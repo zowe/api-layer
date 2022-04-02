@@ -5,6 +5,9 @@ on:
         # * is a special character in YAML so you have to quote this string
         - cron:  '0 0 * * 5'
 
+env:
+    JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
+
 jobs:
     analyze:
         name: Identify and generate changes in the Error messages
@@ -39,7 +42,7 @@ jobs:
             - name: Store results
               uses: actions/upload-artifact@v2
               with:
-                  name: ErrorMessage
+                  name: ErrorMessage-${{ env.JOB_ID }}
                   path: |
                       docs/docgen/ErrorMessagesDocumentation.md
 

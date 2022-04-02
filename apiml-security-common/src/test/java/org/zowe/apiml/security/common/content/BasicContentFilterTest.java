@@ -124,7 +124,7 @@ class BasicContentFilterTest {
     }
 
     @Test
-    void shouldNotFilterWithNoCookie() throws ServletException, IOException {
+    void shouldNotFilterWithNoCredentials() throws ServletException, IOException {
         basicContentFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager, never()).authenticate(any());

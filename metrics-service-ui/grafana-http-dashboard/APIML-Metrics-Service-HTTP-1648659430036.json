@@ -1,0 +1,3198 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_SYSTEM-METRICS-POC",
+      "label": "system-metrics-poc",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "zowe-system-metrics-poc",
+      "pluginName": "system-metrics-poc"
+    }
+  ],
+  "__elements": [],
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.4.0-pre"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "zowe-system-metrics-poc",
+      "name": "system-metrics-poc",
+      "version": "1.0.0"
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Dashboard for displaying HTTP metrics within the metrics service",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "panels": [
+        {
+          "description": "Request rate to show relative changes in traffic",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 1
+          },
+          "id": 10,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "requestCount",
+              "refId": "A"
+            }
+          ],
+          "title": "Traffic Volume",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Request rate",
+                "binary": {
+                  "left": "value",
+                  "operator": "/",
+                  "reducer": "sum",
+                  "right": "10"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                },
+                "replaceFields": true
+              }
+            }
+          ],
+          "type": "timeseries"
+        },
+        {
+          "description": "Execution complete with no errors",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 1
+          },
+          "id": 12,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountSuccess",
+              "refId": "A"
+            }
+          ],
+          "title": "Success",
+          "type": "stat"
+        },
+        {
+          "description": "Execution threw an exception",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 1
+          },
+          "id": 14,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountFailure",
+              "refId": "A"
+            }
+          ],
+          "title": "Failure",
+          "type": "stat"
+        },
+        {
+          "description": "Request rate within the cluster",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 5,
+            "x": 12,
+            "y": 1
+          },
+          "id": 24,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "requestCount",
+              "refId": "A"
+            }
+          ],
+          "title": "Request Rate",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Request rate",
+                "binary": {
+                  "left": "value",
+                  "operator": "/",
+                  "reducer": "sum",
+                  "right": "10"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                },
+                "replaceFields": true
+              }
+            }
+          ],
+          "type": "gauge"
+        },
+        {
+          "description": "Error percentage for the last 10 seconds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 4,
+            "x": 17,
+            "y": 1
+          },
+          "id": 19,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "errorPercentage",
+              "refId": "A"
+            }
+          ],
+          "title": "Error%",
+          "type": "gauge"
+        },
+        {
+          "description": "execution threw a HystrixBadRequestException",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 4
+          },
+          "id": 13,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountBadRequests",
+              "refId": "A"
+            }
+          ],
+          "title": "Bad Requests",
+          "type": "stat"
+        },
+        {
+          "description": "execution started, but did not complete in the allowed time\t",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 4
+          },
+          "id": 15,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountTimeout",
+              "refId": "A"
+            }
+          ],
+          "title": "Time out",
+          "type": "stat"
+        },
+        {
+          "description": "circuit breaker OPEN, execution not attempted",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 7
+          },
+          "id": 16,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountShortCircuited",
+              "refId": "A"
+            }
+          ],
+          "title": "Short-Circuited",
+          "type": "stat"
+        },
+        {
+          "description": "thread pool at capacity, execution not attempted",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 7
+          },
+          "id": 17,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountThreadPoolRejected",
+              "refId": "A"
+            }
+          ],
+          "title": "Rejected",
+          "type": "stat"
+        },
+        {
+          "description": "Hosts reported in the last 10 seconds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 0,
+            "y": 10
+          },
+          "id": 22,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "reportingHostsLast10Seconds",
+              "refId": "A"
+            }
+          ],
+          "title": "Hosts_Last 10 s",
+          "type": "stat"
+        },
+        {
+          "description": "Hosts reporting from cluster",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 3,
+            "y": 10
+          },
+          "id": 21,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "reportingHosts",
+              "refId": "A"
+            }
+          ],
+          "title": "Hosts_Total",
+          "type": "stat"
+        },
+        {
+          "description": "Status of the Circuit breaker, true for open, false for closed",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 6,
+            "y": 10
+          },
+          "id": 23,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "isCircuitBreakerOpen",
+              "refId": "A"
+            }
+          ],
+          "title": "Circuit-Breaker Open?",
+          "type": "stat"
+        },
+        {
+          "description": "Status of the Circuit breaker, true for open, false for closed",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 9,
+            "y": 10
+          },
+          "id": 25,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal_mean",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-Mean",
+          "type": "stat"
+        },
+        {
+          "description": "90th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 12,
+            "y": 10
+          },
+          "id": 26,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['90']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-90th",
+          "type": "stat"
+        },
+        {
+          "description": "99th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 15,
+            "y": 10
+          },
+          "id": 27,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['99']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-99th",
+          "type": "stat"
+        },
+        {
+          "description": "99.5th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 18,
+            "y": 10
+          },
+          "id": 28,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "GATEWAY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['99.5']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-99.5th",
+          "type": "stat"
+        }
+      ],
+      "title": "GATEWAY",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 6,
+      "panels": [
+        {
+          "description": "Request rate to show relative changes in traffic",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 2
+          },
+          "id": 30,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "requestCount",
+              "refId": "A"
+            }
+          ],
+          "title": "Traffic Volume",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Request rate",
+                "binary": {
+                  "left": "value",
+                  "operator": "/",
+                  "reducer": "sum",
+                  "right": "10"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                },
+                "replaceFields": true
+              }
+            }
+          ],
+          "type": "timeseries"
+        },
+        {
+          "description": "Execution complete with no errors",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 2
+          },
+          "id": 32,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountSuccess",
+              "refId": "A"
+            }
+          ],
+          "title": "Success",
+          "type": "stat"
+        },
+        {
+          "description": "Execution threw an exception",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 2
+          },
+          "id": 34,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountFailure",
+              "refId": "A"
+            }
+          ],
+          "title": "Failure",
+          "type": "stat"
+        },
+        {
+          "description": "Request rate within the cluster",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 5,
+            "x": 12,
+            "y": 2
+          },
+          "id": 44,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "requestCount",
+              "refId": "A"
+            }
+          ],
+          "title": "Request Rate",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Request rate",
+                "binary": {
+                  "left": "value",
+                  "operator": "/",
+                  "reducer": "sum",
+                  "right": "10"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                },
+                "replaceFields": true
+              }
+            }
+          ],
+          "type": "gauge"
+        },
+        {
+          "description": "Error percentage for the last 10 seconds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 4,
+            "x": 17,
+            "y": 2
+          },
+          "id": 46,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "errorPercentage",
+              "refId": "A"
+            }
+          ],
+          "title": "Error%",
+          "type": "gauge"
+        },
+        {
+          "description": "execution threw a HystrixBadRequestException",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 5
+          },
+          "id": 36,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountBadRequests",
+              "refId": "A"
+            }
+          ],
+          "title": "Bad Requests",
+          "type": "stat"
+        },
+        {
+          "description": "execution started, but did not complete in the allowed time\t",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 5
+          },
+          "id": 38,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountTimeout",
+              "refId": "A"
+            }
+          ],
+          "title": "Time out",
+          "type": "stat"
+        },
+        {
+          "description": "circuit breaker OPEN, execution not attempted",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 8
+          },
+          "id": 40,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountShortCircuited",
+              "refId": "A"
+            }
+          ],
+          "title": "Short-Circuited",
+          "type": "stat"
+        },
+        {
+          "description": "thread pool at capacity, execution not attempted",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 8
+          },
+          "id": 42,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountThreadPoolRejected",
+              "refId": "A"
+            }
+          ],
+          "title": "Rejected",
+          "type": "stat"
+        },
+        {
+          "description": "Hosts reported in the last 10 seconds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 0,
+            "y": 11
+          },
+          "id": 48,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "reportingHostsLast10Seconds",
+              "refId": "A"
+            }
+          ],
+          "title": "Hosts_Last 10 s",
+          "type": "stat"
+        },
+        {
+          "description": "Hosts reporting from cluster",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 3,
+            "y": 11
+          },
+          "id": 50,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "reportingHosts",
+              "refId": "A"
+            }
+          ],
+          "title": "Hosts_Total",
+          "type": "stat"
+        },
+        {
+          "description": "Status of the Circuit breaker, true for open, false for closed",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 6,
+            "y": 11
+          },
+          "id": 52,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "isCircuitBreakerOpen",
+              "refId": "A"
+            }
+          ],
+          "title": "Circuit-Breaker Open?",
+          "type": "stat"
+        },
+        {
+          "description": "Status of the Circuit breaker, true for open, false for closed",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 9,
+            "y": 11
+          },
+          "id": 54,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal_mean",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-Mean",
+          "type": "stat"
+        },
+        {
+          "description": "90th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 12,
+            "y": 11
+          },
+          "id": 56,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['90']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-90th",
+          "type": "stat"
+        },
+        {
+          "description": "99th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 15,
+            "y": 11
+          },
+          "id": 58,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['99']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-99th",
+          "type": "stat"
+        },
+        {
+          "description": "99.5th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 18,
+            "y": 11
+          },
+          "id": 60,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "DISCOVERY",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['99.5']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-99.5th",
+          "type": "stat"
+        }
+      ],
+      "title": "DISCOVERY",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "id": 4,
+      "panels": [
+        {
+          "description": "Request rate to show relative changes in traffic",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 3
+          },
+          "id": 62,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "requestCount",
+              "refId": "A"
+            }
+          ],
+          "title": "Traffic Volume",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Request rate",
+                "binary": {
+                  "left": "value",
+                  "operator": "/",
+                  "reducer": "sum",
+                  "right": "10"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                },
+                "replaceFields": true
+              }
+            }
+          ],
+          "type": "timeseries"
+        },
+        {
+          "description": "Execution complete with no errors",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 3
+          },
+          "id": 64,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountSuccess",
+              "refId": "A"
+            }
+          ],
+          "title": "Success",
+          "type": "stat"
+        },
+        {
+          "description": "Execution threw an exception",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 3
+          },
+          "id": 66,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountFailure",
+              "refId": "A"
+            }
+          ],
+          "title": "Failure",
+          "type": "stat"
+        },
+        {
+          "description": "Request rate within the cluster",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 5,
+            "x": 12,
+            "y": 3
+          },
+          "id": 76,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "requestCount",
+              "refId": "A"
+            }
+          ],
+          "title": "Request Rate",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Request rate",
+                "binary": {
+                  "left": "value",
+                  "operator": "/",
+                  "reducer": "sum",
+                  "right": "10"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                },
+                "replaceFields": true
+              }
+            }
+          ],
+          "type": "gauge"
+        },
+        {
+          "description": "Error percentage for the last 10 seconds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 4,
+            "x": 17,
+            "y": 3
+          },
+          "id": 78,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "errorPercentage",
+              "refId": "A"
+            }
+          ],
+          "title": "Error%",
+          "type": "gauge"
+        },
+        {
+          "description": "execution threw a HystrixBadRequestException",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 6
+          },
+          "id": 68,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountBadRequests",
+              "refId": "A"
+            }
+          ],
+          "title": "Bad Requests",
+          "type": "stat"
+        },
+        {
+          "description": "execution started, but did not complete in the allowed time\t",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 6
+          },
+          "id": 70,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountTimeout",
+              "refId": "A"
+            }
+          ],
+          "title": "Time out",
+          "type": "stat"
+        },
+        {
+          "description": "circuit breaker OPEN, execution not attempted",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 8,
+            "y": 9
+          },
+          "id": 72,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountShortCircuited",
+              "refId": "A"
+            }
+          ],
+          "title": "Short-Circuited",
+          "type": "stat"
+        },
+        {
+          "description": "thread pool at capacity, execution not attempted",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 2,
+            "x": 10,
+            "y": 9
+          },
+          "id": 74,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "rollingCountThreadPoolRejected",
+              "refId": "A"
+            }
+          ],
+          "title": "Rejected",
+          "type": "stat"
+        },
+        {
+          "description": "Hosts reported in the last 10 seconds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 0,
+            "y": 12
+          },
+          "id": 80,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "reportingHostsLast10Seconds",
+              "refId": "A"
+            }
+          ],
+          "title": "Hosts_Last 10 s",
+          "type": "stat"
+        },
+        {
+          "description": "Hosts reporting from cluster",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 3,
+            "y": 12
+          },
+          "id": 82,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "reportingHosts",
+              "refId": "A"
+            }
+          ],
+          "title": "Hosts_Total",
+          "type": "stat"
+        },
+        {
+          "description": "Status of the Circuit breaker, true for open, false for closed",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 6,
+            "y": 12
+          },
+          "id": 84,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "isCircuitBreakerOpen",
+              "refId": "A"
+            }
+          ],
+          "title": "Circuit-Breaker Open?",
+          "type": "stat"
+        },
+        {
+          "description": "Status of the Circuit breaker, true for open, false for closed",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 9,
+            "y": 12
+          },
+          "id": 86,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal_mean",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-Mean",
+          "type": "stat"
+        },
+        {
+          "description": "90th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 12,
+            "y": 12
+          },
+          "id": 88,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['90']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-90th",
+          "type": "stat"
+        },
+        {
+          "description": "99th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 15,
+            "y": 12
+          },
+          "id": 90,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['99']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-99th",
+          "type": "stat"
+        },
+        {
+          "description": "99.5th percentile of total latency",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 18,
+            "y": 12
+          },
+          "id": 92,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.4.0-pre",
+          "targets": [
+            {
+              "clusterName": "APICATALOG",
+              "datasource": {
+                "type": "zowe-system-metrics-poc",
+                "uid": "${DS_SYSTEM-METRICS-POC}"
+              },
+              "metricName": "latencyTotal['99.5']",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency-Total-99.5th",
+          "type": "stat"
+        }
+      ],
+      "title": "API CATALOG",
+      "type": "row"
+    }
+  ],
+  "schemaVersion": 34,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "APIML - Metrics-Service - HTTP",
+  "uid": "JyDukHP7k",
+  "version": 40,
+  "weekStart": ""
+}

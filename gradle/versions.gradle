@@ -11,6 +11,7 @@ ext {
     awaitilityVersion = '3.0.0'
     bouncyCastleVersion = '1.69'
     bootstrapVersion = '4.3.1'
+    commonsCodecVersion = '1.15'
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.9'
     commonsIoVersion = '2.7!!'
@@ -24,7 +25,8 @@ ext {
     httpClientVersion = '4.5.13'
     httpCoreVersion = '4.4.14'
     infinispanVersion = '13.0.2.Final'
-    jacksonCoreVersion = '2.11.4'
+    jacksonCoreVersion = '2.13.2'
+    jacksonDatabindVersion = '2.13.2.2'
     jacksonDataformatYamlVersion = '2.9.10'
     javaxAnnotationVersion = '1.3.2'
     javaxInjectVersion = '1'
@@ -45,7 +47,7 @@ ext {
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
     lombokVersion = '1.18.20'
-    mockitoCoreVersion = '2.23.4'
+    mockitoCoreVersion = '3.6.0'
     netflixServoVersion = '0.13.2'
     nettyVersion = '4.1.71.Final'
     nimbusJoseJwtVersion = '8.21.1'
@@ -106,6 +108,7 @@ ext {
         spring_webmvc                      : "org.springframework:spring-webmvc:${springFrameworkVersion}",
         spring_websocket                   : "org.springframework:spring-websocket:${springFrameworkVersion}",
 
+        apache_commons_codec               : "commons-codec:commons-codec:${commonsCodecVersion}",
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
         apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
@@ -125,7 +128,7 @@ ext {
         infinispan_jboss_marshalling       : "org.infinispan:infinispan-jboss-marshalling:${infinispanVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
-        jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonCoreVersion}",
+        jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}",
         jackson_dataformat_yaml            : "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonDataformatYamlVersion}",
         janino                             : "org.codehaus.janino:janino:3.1.6",
         javax_annotation                   : "javax.annotation:javax.annotation-api:${javaxAnnotationVersion}",

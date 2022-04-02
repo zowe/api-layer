@@ -21,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class JwtAuthSource implements AuthSource {
+    public static final AuthSourceType type = AuthSourceType.JWT;
+
     /**
      * JWT token
      */
@@ -30,6 +32,11 @@ public class JwtAuthSource implements AuthSource {
     @Override
     public String getRawSource() {
         return source;
+    }
+
+    @Override
+    public AuthSourceType getType() {
+        return type;
     }
 
     @RequiredArgsConstructor

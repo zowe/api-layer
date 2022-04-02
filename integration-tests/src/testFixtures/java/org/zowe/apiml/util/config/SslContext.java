@@ -34,6 +34,7 @@ public class SslContext {
     public static RestAssuredConfig clientCertApiml;
     public static RestAssuredConfig clientCertUser;
     public static RestAssuredConfig clientCertUnknownUser;
+    public static RestAssuredConfig apimlRootCert; // API ML root certificate, cannot be used for client authentication
     public static RestAssuredConfig selfSignedUntrusted;
     public static RestAssuredConfig tlsWithoutCert;
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
@@ -130,6 +131,16 @@ public class SslContext {
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
             selfSignedUntrusted = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext6, hostnameVerifier)));
+
+            SSLContext sslContext7 = SSLContextBuilder
+                .create()
+                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
+                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
+                    (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apiml external certificate authority")
+                .loadTrustMaterial(null, trustStrategy)
+                .build();
+
+            apimlRootCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext7, hostnameVerifier)));
 
             isInitialized.set(true);
         }
