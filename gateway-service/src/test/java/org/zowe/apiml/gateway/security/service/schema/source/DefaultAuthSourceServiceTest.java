@@ -125,7 +125,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
         @Test
         void thenAuthSourceIsValid() {
-            when(x509MFAuthSourceService.isValid(any())).thenReturn(true);
+            when(x509MFAuthSourceService.isValid(any(AuthSource.class))).thenReturn(true);
 
             assertTrue(serviceUnderTest.isValid(x509AuthSource));
             verify(x509MFAuthSourceService, times(1)).isValid(x509AuthSource);

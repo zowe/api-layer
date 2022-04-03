@@ -49,7 +49,11 @@ public class X509AuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
 
-        X509Certificate clientCert = getCertificateFromRequest(context.getRequest());
+        X509Certificate clientCert = getCertificateFromRequest(context.getRequest(), "client.auth.X509Certificate");
+        // check that X509 certificate is valid client certificate (has correct extended key usage)
+        if (!isValid(clientCert)) {
+            clientCert = null;
+        }
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));
     }
 
@@ -63,15 +67,24 @@ public class X509AuthSourceService implements AuthSourceService {
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate clientCert = (X509Certificate) authSource.getRawSource();
-            if (clientCert == null) {
-                return false;
-            }
-            if (!mapper.isClientAuthCertificate(clientCert)) {
-                throw new InvalidCertificateException("X509 certificate does contain the client certificate extended usage definition.");
-            }
-            return true;
+            return isValid(clientCert);
         }
         return false;
+    }
+
+    /**
+     * Validates X509 certificate, checks that certificate is not null and has the extended key usage set correctly.
+     *
+     * @param clientCert {@link X509Certificate} X509 client certificate.
+     * @return true if client certificate is valid, false otherwise.
+     */
+    protected boolean isValid(X509Certificate clientCert) {
+        try {
+            return clientCert != null && mapper.isClientAuthCertificate(clientCert);
+        } catch (Exception e) {
+            log.error("Error occurred while validation X509 certificate: " + e.getLocalizedMessage());
+            return false;
+        }
     }
 
     /**
@@ -95,12 +108,12 @@ public class X509AuthSourceService implements AuthSourceService {
     }
 
     // Gets client certificate from request
-    private X509Certificate getCertificateFromRequest(HttpServletRequest request) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+    protected X509Certificate getCertificateFromRequest(HttpServletRequest request, String attributeName) {
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(attributeName);
         return getOne(certs);
     }
 
-    private X509Certificate getOne(X509Certificate[] certs) {
+    protected X509Certificate getOne(X509Certificate[] certs) {
         if (certs != null && certs.length > 0) {
             return certs[0];
         } else return null;
@@ -122,7 +135,7 @@ public class X509AuthSourceService implements AuthSourceService {
                 Origin.X509, encodedCert, distinguishedName);
         } catch (CertificateEncodingException e) {
             log.error("Exception parsing certificate", e);
-            return null;
+            throw new InvalidCertificateException("Exception parsing certificate. " + e.getLocalizedMessage());
         }
     }
 

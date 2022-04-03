@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -38,7 +40,6 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
     private RequestContext context;
     private HttpServletRequest request;
     private X509Certificate x509Certificate;
-    private final X509Certificate[] x509Certificates = new X509Certificate[1];
 
     @BeforeEach
     void init() {
@@ -65,25 +66,30 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
     class X509MFAuthSourceServiceTest {
         private X509AbstractMapper mapper;
         private X509AuthSourceService serviceUnderTest;
-        private TokenCreationService tokenCreationService;
-        private AuthenticationService authenticationService;
 
         @BeforeEach
         void init() {
             mapper = mock(X509AbstractMapper.class);
-            serviceUnderTest = new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
+            serviceUnderTest = new X509AuthSourceService(mapper, mock(TokenCreationService.class), mock(AuthenticationService.class));
         }
 
         @Nested
         class GivenNullAuthSource {
             @Test
             void whenNoClientCertInRequest_thenAuthSourceIsNotPresent() {
-                givenNoClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
+                context = spy(RequestContext.class);
+                request = mock(HttpServletRequest.class);
+                RequestContext.testSetCurrentContext(context);
+                when(context.getRequest()).thenReturn(request);
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                verify(request, times(1)).getAttribute("client.auth.X509Certificate");
+                assertFalse(authSource.isPresent());
             }
 
             @Test
             void whenValidate_thenFalse() {
-                Assertions.assertFalse(serviceUnderTest.isValid(null));
+                AuthSource authSource = null;
+                assertFalse(serviceUnderTest.isValid(authSource));
                 verifyNoInteractions(mapper);
             }
 
@@ -97,42 +103,110 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         @Nested
         class GiveNullRawSource {
             @Test
-            void whenValidate_thenCorrect() {
-                Assertions.assertFalse(serviceUnderTest.isValid(new X509AuthSource(null)));
+            void whenValidate_thenReturnFalse() {
+                assertFalse(serviceUnderTest.isValid(new X509AuthSource(null)));
             }
         }
 
         @Nested
         class GivenValidAuthSource {
+            @BeforeEach
+            void setup() {
+                context = spy(RequestContext.class);
+                request = mock(HttpServletRequest.class);
+                RequestContext.testSetCurrentContext(context);
+            }
+
             @Test
-            void whenClientCertInRequest_thenAuthSourceIsPresent() {
-                givenClientCertInRequest_testGetAuthSourceFromRequest(serviceUnderTest);
+            void whenClientCertInRequestInCustomAttribute_thenAuthSourceIsPresent() {
+                when(context.getRequest()).thenReturn(request);
+                when(request.getAttribute("client.auth.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
+                when(mapper.isClientAuthCertificate(any())).thenReturn(true);
+
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+                verify(request, times(1)).getAttribute("client.auth.X509Certificate");
+                verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
+
+                Assertions.assertTrue(authSource.isPresent());
+                Assertions.assertTrue(authSource.get() instanceof X509AuthSource);
+                Assertions.assertEquals(x509Certificate, authSource.get().getRawSource());
             }
 
             @Test
             void whenValidate_thenCorrect() {
                 when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(true);
                 Assertions.assertTrue(serviceUnderTest.isValid(new X509AuthSource(x509Certificate)));
+                verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
             }
 
             @Test
             void whenParse_thenCorrect() throws CertificateEncodingException {
-                givenValidAuthSource_testParse(serviceUnderTest, mapper);
+                String cert = "clientCertificate";
+                String encodedCert = Base64.getEncoder().encodeToString(cert.getBytes());
+                String distinguishedName = "distinguishedName";
+
+                Parsed expectedParsedSource = new X509AuthSource.Parsed("user", null, null, Origin.X509, encodedCert, distinguishedName);
+                when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenReturn("user");
+                when(x509Certificate.getEncoded()).thenReturn(cert.getBytes());
+
+                Principal principal = mock(Principal.class);
+                when(x509Certificate.getSubjectDN()).thenReturn(principal);
+                when(principal.toString()).thenReturn(distinguishedName);
+                Parsed parsedSource = serviceUnderTest.parse(new X509AuthSource(x509Certificate));
+
+                verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+                Assertions.assertNotNull(parsedSource);
+                Assertions.assertEquals(expectedParsedSource, parsedSource);
             }
         }
 
         @Nested
         class GivenIncorrectAuthSource {
+            @BeforeEach
+            void setup() {
+                context = spy(RequestContext.class);
+                request = mock(HttpServletRequest.class);
+                RequestContext.testSetCurrentContext(context);
+            }
+
+            @Test
+            void whenServerCertInRequestInCustomAttribute_thenAuthSourceIsNotPresent() {
+                when(context.getRequest()).thenReturn(request);
+                when(request.getAttribute("client.auth.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
+                when(mapper.isClientAuthCertificate(any())).thenReturn(false);
+
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+                verify(request, times(1)).getAttribute("client.auth.X509Certificate");
+                verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
+
+                Assertions.assertFalse(authSource.isPresent());
+            }
+
+            @Test
+            void whenInternalApimlCertInRequestInStandardAttribute_thenAuthSourceIsNotPresent() {
+                when(context.getRequest()).thenReturn(request);
+                doReturn(new X509Certificate[0]).when(request).getAttribute("client.auth.X509Certificate");
+
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+                verify(request, times(1)).getAttribute("client.auth.X509Certificate");
+                verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
+
+                Assertions.assertFalse(authSource.isPresent());
+            }
+
             @Test
             void whenIncorrectAuthSourceType_thenIsValidFalse() {
-                Assertions.assertFalse(serviceUnderTest.isValid(new JwtAuthSource("")));
+                assertFalse(serviceUnderTest.isValid(new JwtAuthSource("")));
             }
 
             @Test
             void whenAuthenticationServiceException_thenThrowWhenValidate() {
                 AuthSource authSource = new X509AuthSource(x509Certificate);
                 when(mapper.isClientAuthCertificate(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
-                assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.isValid(authSource));
+                assertFalse(serviceUnderTest.isValid(authSource));
                 verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
             }
 
@@ -154,7 +228,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             void returnNullWhenCertificateEncodingExceptionIsThrown() throws CertificateEncodingException {
                 AuthSource authSource = new X509AuthSource(x509Certificate);
                 when(x509Certificate.getEncoded()).thenThrow(new CertificateEncodingException(""));
-                assertNull(serviceUnderTest.parse(authSource));
+                assertThrows(InvalidCertificateException.class, () -> serviceUnderTest.parse(authSource));
             }
 
             @Nested
@@ -163,57 +237,10 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
                 void thenThrowWhenValidate() {
                     AuthSource authSource = new X509AuthSource(x509Certificate);
                     when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(false);
-                    assertThrows(InvalidCertificateException.class, () -> serviceUnderTest.isValid(authSource));
+                    assertFalse(serviceUnderTest.isValid(authSource));
                     verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
                 }
             }
         }
-    }
-
-    private void givenClientCertInRequest_testGetAuthSourceFromRequest(AuthSourceService serviceUnderTest) {
-        x509Certificates[0] = x509Certificate;
-        context = spy(RequestContext.class);
-        request = mock(HttpServletRequest.class);
-        RequestContext.testSetCurrentContext(context);
-        when(context.getRequest()).thenReturn(request);
-        when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
-
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
-
-        verify(request, times(1)).getAttribute("client.auth.X509Certificate");
-
-        Assertions.assertTrue(authSource.isPresent());
-        Assertions.assertTrue(authSource.get() instanceof X509AuthSource);
-        Assertions.assertEquals(x509Certificates[0], authSource.get().getRawSource());
-    }
-
-    private void givenNoClientCertInRequest_testGetAuthSourceFromRequest(AuthSourceService serviceUnderTest) {
-        context = spy(RequestContext.class);
-        request = mock(HttpServletRequest.class);
-        RequestContext.testSetCurrentContext(context);
-        when(context.getRequest()).thenReturn(request);
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
-        verify(request, times(1)).getAttribute("client.auth.X509Certificate");
-        Assertions.assertFalse(authSource.isPresent());
-    }
-
-    private void givenValidAuthSource_testParse(AuthSourceService serviceUnderTest, X509AbstractMapper mapper)
-        throws CertificateEncodingException {
-        String cert = "clientCertificate";
-        String encodedCert = Base64.getEncoder().encodeToString(cert.getBytes());
-        String distinguishedName = "distinguishedName";
-
-        Parsed expectedParsedSource = new X509AuthSource.Parsed("user", null, null, Origin.X509, encodedCert, distinguishedName);
-        when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenReturn("user");
-        when(x509Certificate.getEncoded()).thenReturn(cert.getBytes());
-
-        Principal principal = mock(Principal.class);
-        when(x509Certificate.getSubjectDN()).thenReturn(principal);
-        when(principal.toString()).thenReturn(distinguishedName);
-        Parsed parsedSource = serviceUnderTest.parse(new X509AuthSource(x509Certificate));
-
-        verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
-        Assertions.assertNotNull(parsedSource);
-        Assertions.assertEquals(expectedParsedSource, parsedSource);
     }
 }
