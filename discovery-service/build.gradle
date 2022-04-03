@@ -66,7 +66,11 @@ dependencies {
     implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE')  {
         exclude group: "javax.servlet", module: "servlet-api"
     }
+    
+    implementation libraries.jackson_annotations
+    implementation libraries.jackson_core
     implementation libraries.jackson_dataformat_yaml
+    implementation libraries.jackson_databind
     implementation libraries.jetty_client
     implementation libraries.jetty_http
     implementation libraries.jetty_io
@@ -92,6 +96,7 @@ dependencies {
     implementation libraries.spring_expression
     implementation libraries.spring_messaging
     implementation libraries.spring_web
+    implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
 

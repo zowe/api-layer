@@ -33,7 +33,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
  */
 @Component
 @Slf4j
-public class X509Scheme implements AbstractAuthenticationScheme {
+public class X509Scheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
 
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";

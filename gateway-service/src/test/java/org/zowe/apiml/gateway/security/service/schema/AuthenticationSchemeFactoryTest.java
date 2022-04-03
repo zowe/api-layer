@@ -14,6 +14,7 @@ import java.security.cert.X509Certificate;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -43,8 +44,8 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         );
     }
 
-    private AbstractAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault, AuthSource authSource) {
-        return new AbstractAuthenticationScheme() {
+    private IAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault) {
+        return new IAuthenticationScheme() {
             @Override
             public AuthenticationScheme getScheme() {
                 return scheme;
@@ -84,7 +85,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     @ParameterizedTest
     @MethodSource("provideAuthSources")
     void testInit_NoDefault(AuthSource authSource) {
-        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+        List<IAuthenticationScheme> schemes = Arrays.asList(
             createScheme(AuthenticationScheme.BYPASS, false, authSource),
             createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false, authSource),
             createScheme(AuthenticationScheme.ZOWE_JWT, false, authSource)
@@ -100,7 +101,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     @ParameterizedTest
     @MethodSource("provideAuthSources")
     void testInit_MultipleDefaults(AuthSource authSource) {
-        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+        List<IAuthenticationScheme> schemes = Arrays.asList(
             createScheme(AuthenticationScheme.BYPASS, true, authSource),
             createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, true, authSource),
             createScheme(AuthenticationScheme.ZOWE_JWT, false, authSource)
@@ -117,7 +118,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     @ParameterizedTest
     @MethodSource("provideAuthSources")
     void testInit_MultipleSameScheme(AuthSource authSource) {
-        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+        List<IAuthenticationScheme> schemes = Arrays.asList(
             createScheme(AuthenticationScheme.BYPASS, true, authSource),
             createScheme(AuthenticationScheme.BYPASS, false, authSource));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {

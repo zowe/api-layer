@@ -27,17 +27,17 @@ import java.util.Map;
 @Service
 public class AuthenticationSchemeFactory {
 
-    private final AbstractAuthenticationScheme defaultScheme;
-    private final Map<AuthenticationScheme, AbstractAuthenticationScheme> map;
+    private final IAuthenticationScheme defaultScheme;
+    private final Map<AuthenticationScheme, IAuthenticationScheme> map;
 
-    public AuthenticationSchemeFactory(@Autowired List<AbstractAuthenticationScheme> schemes) {
+    public AuthenticationSchemeFactory(@Autowired List<IAuthenticationScheme> schemes) {
         map = new EnumMap<>(AuthenticationScheme.class);
 
-        AbstractAuthenticationScheme foundDefaultScheme = null;
+        IAuthenticationScheme foundDefaultScheme = null;
 
         // map beans to map, checking duplicity and find exactly one default bean, otherwise throw exception
-        for (final AbstractAuthenticationScheme aas : schemes) {
-            final AbstractAuthenticationScheme prev = map.put(aas.getScheme(), aas);
+        for (final IAuthenticationScheme aas : schemes) {
+            final IAuthenticationScheme prev = map.put(aas.getScheme(), aas);
 
             if (prev != null) {
                 throw new IllegalArgumentException("Multiple beans for scheme " + aas.getScheme() +
@@ -61,10 +61,10 @@ public class AuthenticationSchemeFactory {
         this.defaultScheme = foundDefaultScheme;
     }
 
-    public AbstractAuthenticationScheme getSchema(AuthenticationScheme scheme) {
+    public IAuthenticationScheme getSchema(AuthenticationScheme scheme) {
         if (scheme == null) return defaultScheme;
 
-        final AbstractAuthenticationScheme output = map.get(scheme);
+        final IAuthenticationScheme output = map.get(scheme);
         if (output == null) {
             throw new IllegalArgumentException("Unknown scheme : " + scheme);
         }
@@ -72,7 +72,7 @@ public class AuthenticationSchemeFactory {
     }
 
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication) {
-        final AbstractAuthenticationScheme scheme;
+        final IAuthenticationScheme scheme;
         if ((authentication == null) || (authentication.getScheme() == null)) {
             scheme = defaultScheme;
         } else {

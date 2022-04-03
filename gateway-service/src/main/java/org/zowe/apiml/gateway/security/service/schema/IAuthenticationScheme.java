@@ -21,7 +21,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
  *
  * For each type of scheme should exist right one implementation.
  */
-public interface AbstractAuthenticationScheme {
+public interface IAuthenticationScheme {
 
     /**
      * @return Scheme which is supported by this component
