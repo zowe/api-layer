@@ -14,7 +14,6 @@ import java.security.cert.X509Certificate;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -44,7 +43,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         );
     }
 
-    private IAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault) {
+    private IAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault, AuthSource authSource) {
         return new IAuthenticationScheme() {
             @Override
             public AuthenticationScheme getScheme() {
@@ -151,8 +150,8 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         HttpServletRequest request;
         RequestContext requestContext;
 
-        AbstractAuthenticationScheme byPass;
-        AbstractAuthenticationScheme passTicket;
+        IAuthenticationScheme byPass;
+        IAuthenticationScheme passTicket;
         AuthenticationSchemeFactory asf;
         Authentication authentication;
 

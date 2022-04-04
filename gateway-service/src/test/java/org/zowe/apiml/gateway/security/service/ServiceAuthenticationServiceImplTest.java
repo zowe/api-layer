@@ -449,7 +449,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthSource authSource1 = authSourceList.get(0);
         AuthSource authSource2 = authSourceList.get(1);
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
-        AbstractAuthenticationScheme schemeBeanMock = mock(ByPassScheme.class);
+        IAuthenticationScheme schemeBeanMock = mock(ByPassScheme.class);
 
         Authentication auth1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0001");
         Authentication auth2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0002");
