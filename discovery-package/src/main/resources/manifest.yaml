@@ -29,5 +29,10 @@ apimlServices:
   static:
     - file: zosmf-static-definition.yaml.template
 configs:
+    # server.prefix.replacer is used to replace service ID prefix non-conformant with v2.
+    # Define ZWE_configs_apiml_discovery_serviceIdPrefixReplacer in the Zowe config if you want to use it
+#  apiml:
+#    discovery:
+#        serviceIdPrefixReplacer: ""
   port: 7553
   debug: false
