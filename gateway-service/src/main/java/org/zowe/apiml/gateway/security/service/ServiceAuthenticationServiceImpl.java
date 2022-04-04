@@ -94,6 +94,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         final List<InstanceInfo> instances = application.getInstances();
 
         Authentication found = null;
+        // iterates over all instances to verify if they all have the same authentication scheme in registration metadata
         for (final InstanceInfo instance : instances) {
             final Authentication auth = getAuthentication(instance);
 
@@ -101,7 +102,8 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
                 // this is the first record
                 found = auth;
             } else if (!found.equals(auth)) {
-                // if next record is different, authentication cannot be determined before load balancer
+                // if next record is different, authentication cannot be determined before load balancer and
+                // will be selected in load balancer with applyToRequest method
                 return loadBalancerAuthentication;
             }
         }
