@@ -43,7 +43,6 @@ public class X509AuthSource implements AuthSource {
     @Getter
     @EqualsAndHashCode
     public static class Parsed implements AuthSource.Parsed, X509Parsed {
-        private static final long serialVersionUID = -2984464419130383590L;
         private final String userId;
         private final Date creation;
         private final Date expiration;
