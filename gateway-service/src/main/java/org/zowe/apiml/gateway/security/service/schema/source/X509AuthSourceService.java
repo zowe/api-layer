@@ -17,6 +17,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -130,7 +131,14 @@ public class X509AuthSourceService implements AuthSourceService {
     public String getJWT(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             String userId = mapper.mapCertificateToMainframeUserId((X509Certificate) authSource.getRawSource());
-            return tokenService.createJwtTokenWithoutCredentials(userId);
+            if (userId == null) {
+                throw new UserNotMappedException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
+            }
+            try {
+                return tokenService.createJwtTokenWithoutCredentials(userId);
+            } catch (Exception e) {
+                throw new AuthenticationTokenException("org.zowe.apiml.gateway.security.token.authenticationFailed");
+            }
         }
         return null;
     }
