@@ -82,7 +82,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
@@ -325,7 +325,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 15
 
         services:
             api-catalog-services:
