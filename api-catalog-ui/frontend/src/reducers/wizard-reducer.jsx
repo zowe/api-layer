@@ -21,6 +21,7 @@ import {
     VALIDATE_INPUT,
     WIZARD_VISIBILITY_TOGGLE,
     OVERRIDE_DEF,
+    UPDATE_UPLOADED_YAML_TITLE,
 } from '../constants/wizard-constants';
 import { categoryData } from '../components/Wizard/configs/wizard_categories';
 import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
@@ -304,6 +305,9 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         }
         case OVERRIDE_DEF: {
             return { ...state, confirmDialog: !state.confirmDialog, wizardIsOpen: !state.wizardIsOpen };
+        }
+        case UPDATE_UPLOADED_YAML_TITLE: {
+            return { ...state, uploadedYamlTitle: action.payload.value };
         }
         default:
             return state;

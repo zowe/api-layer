@@ -86,11 +86,16 @@ export default class WizardDialog extends Component {
     showFile = (e) => {
         e.preventDefault();
         const reader = new FileReader();
+        // eslint-disable-next-line no-console
+        console.log(e);
+        const filepath = e.target.value.split('\\');
+        const filename = filepath[2];
         reader.onload = (event) => {
             const text = event.target.result;
             try {
                 const obj = yaml.load(text);
                 this.fillInputs(obj);
+                this.props.updateUploadedYamlTitle(filename);
             } catch {
                 document.getElementById('yaml-browser').value = null;
                 toast.warn('Please make sure the file you are uploading is in valid YAML format!', {
@@ -179,17 +184,29 @@ export default class WizardDialog extends Component {
                         <DialogContentText>
                             This wizard will guide you through creating a correct YAML for your application.
                         </DialogContentText>
-                        <div className="yaml-file-browser">
-                            <div>Select your YAML configuration file to prefill the fields:</div>
-                            <input id="yaml-browser" type="file" onChange={this.showFile} />
+                        <DialogContentText>
+                            Select your YAML configuration file to prefill the fields:
+                        </DialogContentText>
+                        <div id="yaml-upload-container">
+                            <label id="yaml-upload" nesting="true" htmlFor="yaml-browser">
+                                <input id="yaml-browser" type="file" onChange={this.showFile} />
+                                Choose File
+                            </label>
+                            {this.props.uploadedYamlTitle ? (
+                                <span id="yam-file-text">{this.props.uploadedYamlTitle}</span>
+                            ) : null}
                         </div>
+                        <DialogContentText>Or fill the fields:</DialogContentText>
                         <WizardNavigationContainer />
                     </DialogContent>
                     <DialogActions>
                         <IconButton
                             id="wizard-cancel-button"
                             size="medium"
-                            onClick={this.closeWizard}
+                            onClick={() => {
+                                this.closeWizard();
+                                this.props.updateUploadedYamlTitle('');
+                            }}
                             style={{ borderRadius: '0.1875em' }}
                         >
                             Cancel

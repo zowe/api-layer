@@ -15,6 +15,7 @@ import {
     createYamlObject,
     validateInput,
     updateWizardData,
+    updateUploadedYamlTitle,
 } from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 import { sendYAML, notifyError } from '../../actions/wizard-fetch-actions';
@@ -28,6 +29,7 @@ const mapStateToProps = (state) => ({
     serviceId: state.wizardReducer.serviceId,
     userCanAutoOnboard: state.wizardReducer.userCanAutoOnboard,
     inputData: state.wizardReducer.inputData,
+    uploadedYamlTitle: state.wizardReducer.uploadedYamlTitle,
 });
 const mapDispatchToProps = {
     wizardToggleDisplay,
@@ -38,5 +40,6 @@ const mapDispatchToProps = {
     sendYAML,
     notifyError,
     updateWizardData,
+    updateUploadedYamlTitle,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(WizardDialog);
