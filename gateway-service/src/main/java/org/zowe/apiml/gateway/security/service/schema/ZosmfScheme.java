@@ -65,7 +65,7 @@ public class ZosmfScheme implements IAuthenticationScheme {
 
     @lombok.Value
     @EqualsAndHashCode(callSuper = false)
-    public class ZosmfCommand extends AuthenticationCommand {
+    public class ZosmfCommand extends JwtCommand {
 
         private static final long serialVersionUID = 2284037230674275720L;
 
@@ -91,6 +91,7 @@ public class ZosmfScheme implements IAuthenticationScheme {
                 )
             );
         }
+        Long expireAt;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
