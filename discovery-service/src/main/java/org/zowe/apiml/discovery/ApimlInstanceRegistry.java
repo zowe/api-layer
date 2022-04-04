@@ -181,8 +181,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     @Override
     public boolean cancel(String appName, String serverId, boolean isReplication) {
         try {
-            final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, appName, serverId, isReplication);
-            handleCancelationMethod.invokeWithArguments(this, appName, serverId, isReplication);
+            String[] updatedValues = replaceValues(appName, serverId);
+            final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
+            handleCancelationMethod.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
             return out;
         } catch (ClassCastException | WrongMethodTypeException e) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
@@ -195,7 +196,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public boolean renew(String appName, String serverId, boolean isReplication) {
-        String[] updatedValues = replaceValues(appName,serverId);
+        String[] updatedValues = replaceValues(appName, serverId);
         return super.renew(updatedValues[0], updatedValues[1], isReplication);
     }
 
