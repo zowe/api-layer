@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import lombok.EqualsAndHashCode;
@@ -43,7 +42,7 @@ public class X509AuthSource implements AuthSource {
     @RequiredArgsConstructor
     @Getter
     @EqualsAndHashCode
-    public static class Parsed implements AuthSource.Parsed, X509Parsed, Serializable {
+    public static class Parsed implements AuthSource.Parsed, X509Parsed {
         private static final long serialVersionUID = -2984464419130383590L;
         private final String userId;
         private final Date creation;
