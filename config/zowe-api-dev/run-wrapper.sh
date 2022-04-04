@@ -71,7 +71,7 @@ export ZWE_CACHING_SERVICE_PORT=$((basePort+4))
 export ZWE_DISCOVERY_SERVICES_LIST=https://$ZOWE_EXPLORER_HOST:$DISCOVERY_PORT/eureka/
 export ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES=$dir/apidef
 export APIML_STATIC_DEF=$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES
-#export ZWE_components_discovery_server_prefix_replacer=
+#export ZWE_configs_apiml_discovery_serviceIdPrefixReplacer=
 echo "*******************  ENVIRONMENT  *******************"
 echo "Working directory "$dir
 echo "JAVA_HOME "$JAVA_HOME
