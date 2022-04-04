@@ -230,7 +230,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             if (instanceId.contains(servicePrefix)) {
                 String appName = info.getAppName();
                 String[] updatedValues = replaceValues(appName,instanceId);
-                log.debug("The instance ID of {} service has been changed to {}.", info.getAppName(), instanceId);
+                log.debug("The instance ID of {} service has been changed to {}.", info.getAppName(), updatedValues[1]);
                 return new InstanceInfo.Builder(info)
                     .setInstanceId(updatedValues[1])
                     .setAppGroupName(updatedValues[0])
