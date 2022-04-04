@@ -48,7 +48,7 @@ public abstract class JwtCommand extends AuthenticationCommand {
         request.addHeader(AUTH_FAIL_HEADER, value);
     }
 
-    public void removeCookie(RequestContext context, String name) {
+    public static void removeCookie(RequestContext context, String name) {
         context.addZuulRequestHeader(COOKIE_HEADER,
             CookieUtil.removeCookie(
                 context.getZuulRequestHeaders().get(COOKIE_HEADER),

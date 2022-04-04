@@ -24,6 +24,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -93,6 +94,17 @@ class ZoweJwtSchemeTest {
             command = scheme.createCommand(null, jwtSource);
             assertTrue(command instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
             assertEquals("ZWEAG102E Token is not valid", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
+        }
+
+        @Test
+        void whenExpiredJwt_thenCreateErrorMessage() {
+            requestContext.addZuulRequestHeader("cookie", "apimlAuthenticationToken=expiredToken");
+            AuthSource jwtSource = new JwtAuthSource("expiredToken");
+            when(authSourceService.parse(jwtSource)).thenThrow(new TokenExpireException("expired token"));
+            command = scheme.createCommand(null, jwtSource);
+            assertEquals("ZWEAG103E The token has expired", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
+            command.apply(null);
+            assertEquals("", requestContext.getZuulRequestHeaders().get("cookie"));
         }
 
         @Test

@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.UserNotMappedExcept
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.Cookies;
 
@@ -53,15 +54,18 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         String error = null;
         String jwt = null;
-        AuthSource.Parsed parsedAuthSource;
+        AuthSource.Parsed parsedAuthSource = null;
         try {
             parsedAuthSource = authSourceService.parse(authSource);
         } catch (TokenNotValidException e) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
-            return new ZoweJwtAuthCommand(null, null, error);
+        } catch (TokenExpireException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
         }
         if (authSource == null || authSource.getRawSource() == null) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
+        }
+        if (error != null) {
             return new ZoweJwtAuthCommand(null, null, error);
         }
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
@@ -91,6 +95,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             if (jwt != null) {
                 JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
             } else {
+                JwtCommand.removeCookie(context, configurationProperties.getCookieProperties().getCookieName());
                 JwtCommand.setErrorHeader(context, errorHeader);
             }
         }
