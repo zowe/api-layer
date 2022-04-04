@@ -27,7 +27,7 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpired;
 import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.schema.IAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * This bean is responsible for "translating" security to specific service. It decorate request with security data for
  * specific service. Implementation of security updates are defined with beans extending
- * {@link AbstractAuthenticationScheme}.
+ * {@link IAuthenticationScheme}.
  * <p>
  * The main idea of this bean is to create command
  * {@link AuthenticationCommand}. Command is object which update the
@@ -114,7 +114,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
-        final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
+        final IAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         return scheme.createCommand(authentication, authSource);
     }
 
@@ -139,7 +139,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         if (authentication == null || authentication.isEmpty() || authentication instanceof LoadBalancerAuthentication) {
             return Optional.empty();
         }
-        final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
+        final IAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         return scheme.getAuthSource();
     }
 
