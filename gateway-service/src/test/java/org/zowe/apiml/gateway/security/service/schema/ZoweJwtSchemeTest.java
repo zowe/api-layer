@@ -14,18 +14,17 @@ import com.netflix.zuul.context.RequestContext;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.message.BasicHeader;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
@@ -43,7 +42,13 @@ class ZoweJwtSchemeTest {
     AuthSourceService authSourceService;
     AuthConfigurationProperties configurationProperties;
     ZoweJwtScheme scheme;
-    MessageService messageService = YamlMessageServiceInstance.getInstance();
+    static MessageService messageService;
+
+    @BeforeAll
+    static void setForAll() {
+        messageService = new YamlMessageService();
+        messageService.loadMessages("/gateway-messages.yml");
+    }
 
     @BeforeEach
     void setup() {
@@ -82,6 +87,15 @@ class ZoweJwtSchemeTest {
         }
 
         @Test
+        void whenInvalidJwt_thenCreateErrorMessage() {
+            AuthSource jwtSource = new JwtAuthSource("invalidToken");
+            when(authSourceService.parse(jwtSource)).thenThrow(new TokenNotValidException(""));
+            command = scheme.createCommand(null, jwtSource);
+            assertTrue(command instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
+            assertEquals("ZWEAG102E Token is not valid", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
+        }
+
+        @Test
         void whenValidJWTAuthSource_thenUpdateCookieWithJWToken() {
             HttpRequest httpRequest = new HttpGet("api/v1/files");
             httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
@@ -89,6 +103,7 @@ class ZoweJwtSchemeTest {
             command.applyToRequest(httpRequest);
             assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
         }
+
     }
 
     @Nested
@@ -127,14 +142,37 @@ class ZoweJwtSchemeTest {
         }
 
         @Test
+        void whenJwtCannotBeCreatedFromX509_thenCreateErrorMessage() {
+            X509Certificate cert = mock(X509Certificate.class);
+            AuthSource certSource = new X509AuthSource(cert);
+            when(authSourceService.parse(certSource)).thenReturn(new X509AuthSource.Parsed("user", null, null, null, null, null));
+            when(authSourceService.getJWT(certSource)).thenThrow(new UserNotMappedException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed"));
+            command = scheme.createCommand(null, certSource);
+            assertEquals("ZWEAG161E No user was found", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
+        }
+
+        @Test
         void whenNoJWTReturned_thenUpdateZuulHeaderWithJWToken() {
+            String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
             when(authSourceService.getJWT(authSource.get())).thenReturn(null);
             AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
 
             assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
             assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
+            authenticationCommand.apply(null);
+            assertEquals(errorHeaderValue, requestContext.getZuulRequestHeaders().get("x-zowe-auth-failure"));
         }
 
+        @Test
+        void whenNoJWTReturned_thenUpdateHeaderWithJWToken() {
+            when(authSourceService.getJWT(authSource.get())).thenReturn(null);
+            AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
+            HttpRequest request = mock(HttpRequest.class);
+            assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
+            assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
+            authenticationCommand.applyToRequest(request);
+            verify(request, times(1)).addHeader(any(), any());
+        }
     }
 
 

@@ -58,7 +58,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .get(URL)
             .then()
             .body("headers.x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
-            .header("x-zowe-auth-failure",is("ZWEAG160E No authentication provided in the request"))
+            .header("x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
             .statusCode(200);
     }
 
@@ -76,6 +76,21 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .then()
                 .body("headers.cookie", is("apimlAuthenticationToken=" + jwt))
                 .statusCode(200);
+        }
+
+        @Nested
+        class GivenInvalidTokenTest {
+            @Test
+            void forwardJWTToService() {
+                given()
+                    .config(SslContext.tlsWithoutCert)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
+                    .when()
+                    .get(URL)
+                    .then()
+                    .header("x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
+                    .statusCode(200);
+            }
         }
     }
 

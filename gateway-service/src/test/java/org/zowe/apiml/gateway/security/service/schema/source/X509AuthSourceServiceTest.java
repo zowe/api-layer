@@ -14,12 +14,14 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.web.client.ResourceAccessException;
 import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,13 +54,35 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         assertNull(service.getLtpaToken(null));
     }
 
-    @Test
-    void givenX509Source_returnNullLtpa() {
-        AuthenticationService authenticationService = mock(AuthenticationService.class);
-        TokenCreationService tokenCreationService = mock(TokenCreationService.class);
-        X509AuthSourceService service = new X509AuthSourceService(mock(X509AbstractMapper.class), tokenCreationService, authenticationService);
-        X509AuthSource source = new X509AuthSource(null);
-        assertThrows(UserNotMappedException.class, () -> service.getLtpaToken(source));
+    @Nested
+    class GivenX509SourceTest {
+        TokenCreationService tokenCreationService;
+        X509AuthSourceService service;
+        AuthenticationService authenticationService;
+        X509AbstractMapper mapper;
+
+        @BeforeEach
+        void setup() {
+            authenticationService = mock(AuthenticationService.class);
+            tokenCreationService = mock(TokenCreationService.class);
+            mapper = mock(X509AbstractMapper.class);
+            service = new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
+        }
+
+        @Test
+        void givenX509Source_returnNullLtpa() {
+
+            X509AuthSource source = new X509AuthSource(null);
+            assertThrows(UserNotMappedException.class, () -> service.getLtpaToken(source));
+        }
+
+        @Test
+        void givenX509Source_thenTranslateException() {
+            X509AuthSource source = new X509AuthSource(null);
+            when(mapper.mapCertificateToMainframeUserId(any())).thenReturn("user1");
+            when(tokenCreationService.createJwtTokenWithoutCredentials(any())).thenThrow(new ResourceAccessException("I/O exception"));
+            assertThrows(AuthenticationTokenException.class, () -> service.getJWT(source));
+        }
     }
 
     @Nested

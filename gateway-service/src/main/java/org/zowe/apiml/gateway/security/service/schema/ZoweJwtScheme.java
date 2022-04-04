@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.UserNotMappedExcept
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.Cookies;
 
 import java.util.Date;
@@ -49,9 +50,15 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
         String error = null;
         String jwt = null;
+        AuthSource.Parsed parsedAuthSource;
+        try {
+            parsedAuthSource = authSourceService.parse(authSource);
+        } catch (TokenNotValidException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            return new ZoweJwtAuthCommand(null, null, error);
+        }
         if (authSource == null || authSource.getRawSource() == null) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
             return new ZoweJwtAuthCommand(null, null, error);
