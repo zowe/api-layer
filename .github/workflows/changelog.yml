@@ -37,4 +37,4 @@ jobs:
                   cd scripts/release_docs
                   npm install
                   npm install -g conventional-changelog-cli
-                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }} ${{ github.head_ref }}
+                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }} v2.x.x
