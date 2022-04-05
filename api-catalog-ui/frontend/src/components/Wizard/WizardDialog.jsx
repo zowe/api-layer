@@ -86,8 +86,6 @@ export default class WizardDialog extends Component {
     showFile = (e) => {
         e.preventDefault();
         const reader = new FileReader();
-        // eslint-disable-next-line no-console
-        console.log(e);
         const filepath = e.target.value.split('\\');
         const filename = filepath[2];
         reader.onload = (event) => {
@@ -234,7 +232,7 @@ export default class WizardDialog extends Component {
                                 Choose File
                             </label>
                             {this.props.uploadedYamlTitle ? (
-                                <span id="yam-file-text">{this.props.uploadedYamlTitle}</span>
+                                <span id="yaml-file-text">{this.props.uploadedYamlTitle}</span>
                             ) : null}
                         </div>
                         <DialogContentText>Or fill the fields:</DialogContentText>
