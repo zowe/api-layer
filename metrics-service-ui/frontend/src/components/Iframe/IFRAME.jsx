@@ -12,15 +12,36 @@ import React from 'react';
 
 export function IFRAME() {
     return (
+        <fragment>
         <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-        }}
-            dangerouslySetInnerHTML={{
-                __html: "<iframe src='http://localhost:8080/d-solo/FZmhyNPnz/new-dashboard?orgId=1&from=1647347602192&to=1647369202192&panelId=2' width='1000' height='600' />",
-            }}
-        />
+        }}>
+            <div       dangerouslySetInnerHTML={{
+                 __html: "<iframe src='http://localhost:8080/d-solo/JyDukHP7k/apiml-metrics-service-http?orgId=1&from=1649169576404&to=1649169876405&panelId=10' width='450' height='200' />",
+            }} />
+            <div       dangerouslySetInnerHTML={{
+                __html: "<iframe src='http://localhost:8080/d-solo/JyDukHP7k/apiml-metrics-service-http?orgId=1&from=1649178335450&to=1649178635450&panelId=12' width='250' height='100' />",
+            }} />
+            <div       dangerouslySetInnerHTML={{
+                __html: "<iframe src='http://localhost:8080/d-solo/JyDukHP7k/apiml-metrics-service-http?orgId=1&from=1649178445869&to=1649178745869&panelId=14' width='250' height='100' />",
+            }} />
+            <div       dangerouslySetInnerHTML={{
+                __html: "<iframe src='http://localhost:8080/d-solo/JyDukHP7k/apiml-metrics-service-http?orgId=1&from=1649178527343&to=1649178827343&panelId=13' width='450' height='200' />",
+            }} />
+        </div>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <div       dangerouslySetInnerHTML={{
+                    __html: "<iframe src='http://localhost:8080/d-solo/JyDukHP7k/apiml-metrics-service-http?orgId=1&from=1649179375601&to=1649179675601&panelId=24' width='450' height='200' />",
+                }} />
+            </div>
+
+        </fragment>
     );
 }
 export default IFRAME;
