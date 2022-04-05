@@ -9,7 +9,8 @@ package org.zowe.apiml.zaasclient.service.internal;
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
@@ -17,13 +18,14 @@ import org.zowe.apiml.zaasclient.service.ZaasClient;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ZaasClientImplHttpTests {
-    @Test
-    void testHttpOnlyZaasClientCanBeCreated() throws ZaasConfigurationException {
+    @ParameterizedTest
+    @ValueSource(strings = {"/api/v1/gateway/auth", "/gateway/api/v1/auth"})
+    void testHttpOnlyZaasClientCanBeCreated(String baseUrl) throws ZaasConfigurationException {
         ConfigProperties configProperties = new ConfigProperties();
         configProperties.setHttpOnly(true);
         configProperties.setApimlHost("hostname");
         configProperties.setApimlPort("10010");
-        configProperties.setApimlBaseUrl("/api/v1/gateway/auth");
+        configProperties.setApimlBaseUrl(baseUrl);
         configProperties.setNonStrictVerifySslCertificatesOfServices(false);
         configProperties.setKeyStorePath("keystorePath");
         ZaasClient client = new ZaasClientImpl(configProperties);

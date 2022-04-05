@@ -61,7 +61,7 @@ class ServiceAuthenticationDecoratorTest {
         decorator.process(request);
 
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
-        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any(Authentication.class), any());
     }
 
     @ParameterizedTest
@@ -74,7 +74,7 @@ class ServiceAuthenticationDecoratorTest {
         decorator.process(request);
 
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
-        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any(Authentication.class), any());
     }
 
     @ParameterizedTest
@@ -141,7 +141,7 @@ class ServiceAuthenticationDecoratorTest {
     private void prepareContext(AuthenticationCommand command, AuthSource authSource) {
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
+        doReturn(Optional.of(authSource)).when(serviceAuthenticationService).getAuthSourceByAuthentication(any());
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
