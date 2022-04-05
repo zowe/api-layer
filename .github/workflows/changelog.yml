@@ -28,14 +28,14 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
               with:
-                  ref: ${{ github.head_ref }}
+                  ref: ${{ github.ref }}
 
             - name: Generate Changelog and open PR
               run: |
-                  git clone --branch ${GITHUB_REF#refs/heads/} https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/api-layer.git
+                  git clone --branch ${{ github.ref }} https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/api-layer.git
                   git config --global user.email "zowe-robot@users.noreply.github.com"
                   git config --global user.name "Zowe Robot"
                   cd api-layer/scripts/release_docs
                   npm install
                   npm install -g conventional-changelog-cli
-                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }} ${GITHUB_REF#refs/heads/}
+                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }} ${{ github.ref }}
