@@ -31,7 +31,7 @@ export default class Header extends Component {
                         </div>
                     </Link>
                     <Link href={dashboard}>
-                        <Text element="h3" color="#ffffff">
+                        <Text as="h3" color="#ffffff">
                             API Catalog
                         </Text>
                     </Link>
