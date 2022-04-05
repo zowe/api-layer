@@ -81,7 +81,7 @@ export default class WizardDialog extends Component {
     };
 
     /**
-     * Convert an uploaded yaml file to JSON and save in local storage
+     * Convert an uploaded yaml file to JSON and save in redux
      */
     showFile = (e) => {
         e.preventDefault();

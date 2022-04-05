@@ -240,4 +240,17 @@ describe('>>> WizardDialog tests', () => {
         instance.nextSave();
         expect(notifyError).toHaveBeenCalled();
     });
+    it('should render file yaml upload button and labels', () => {
+        render(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                inputData={categoryData}
+                navsObj={{ 'Tab 1': {} }}
+                wizardIsOpen
+            />
+        );
+        expect(screen.getByText('Select your YAML configuration file to prefill the fields:')).toBeInTheDocument();
+        expect(screen.getByText('Choose File')).toBeInTheDocument();
+        expect(screen.getByText('Or fill the fields:')).toBeInTheDocument();
+    });
 });

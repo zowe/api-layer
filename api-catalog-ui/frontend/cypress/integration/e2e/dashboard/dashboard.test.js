@@ -84,5 +84,11 @@ describe('>>> Dashboard test', () => {
         cy.contains('API Mediation Layer API').click();
 
         cy.url().should('contain', '/tile/apimediationlayer/');
+
+        cy.get('#onboard-wizard-button')
+            .should('exist')
+            .click();
+        cy.get('.MuiListItem-button').should('have.length', 6);
+        
     });
 });
