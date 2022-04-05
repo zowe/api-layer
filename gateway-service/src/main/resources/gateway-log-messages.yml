@@ -308,3 +308,10 @@ messages:
       text: "Error occurred while parsing X509 certificate."
       reason: "%s"
       action: "Configure your client to provide valid x509 certificate."
+
+    - key: org.zowe.apiml.gateway.security.scheme.x509ValidationError
+      number: ZWEAG164
+      type: ERROR
+      text: "Error occurred while validating X509 certificate. %s"
+      reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
+      action: "Configure your client to provide valid x509 certificate."

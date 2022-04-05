@@ -31,6 +31,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -139,16 +140,14 @@ class X509SchemeTest {
     class NoCertificateInRequest {
         @Test
             void givenNoClientCertificate_andX509SchemeRequired_thenNoHeaderIsSet() {
-            String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
             doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
 
-            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            AuthenticationCommand command = x509Scheme.createCommand(authentication, null);
 
             assertNotNull(command);
-            assertNotNull(command.getErrorHeader());
+            assertEquals(AuthenticationCommand.EMPTY, command);
 
             command.apply(null);
-            verifyErrorHeaderSet(errorHeaderValue);
             verifyNoHeadersSet();
         }
     }

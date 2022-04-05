@@ -122,10 +122,11 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
 
     @Nested
     class GivenInvalidCertificate {
-        private final String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
 
         @Test
         void whenServerCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
+            String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition";
+
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             mockValid200HttpResponse();
 
@@ -144,6 +145,8 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
 
         @Test
         void whenNoCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
+            String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
+
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             mockValid200HttpResponse();
 

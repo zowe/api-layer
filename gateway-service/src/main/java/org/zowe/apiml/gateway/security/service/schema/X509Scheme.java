@@ -52,12 +52,11 @@ public class X509Scheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        String error;
         if (authSource == null || authSource.getRawSource() == null) {
-            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
-            return new X509Command(error);
+            return AuthenticationCommand.EMPTY;
         }
 
+        String error;
         X509AuthSource.Parsed parsedAuthSource;
         try {
             parsedAuthSource = (X509AuthSource.Parsed) authSourceService.parse(authSource);
