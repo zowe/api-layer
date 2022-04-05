@@ -29,6 +29,7 @@ import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 
 /**
  * This implementation of instance registry is solving known problem in Eureka. Discovery service notify about change
@@ -202,7 +203,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public boolean statusUpdate(String appName, String instanceId, InstanceInfo.InstanceStatus newStatus, String lastDirtyTimestamp, boolean isReplication) {
-        String[] updatedValues = replaceValues(appName,instanceId);
+        String[] updatedValues = replaceValues(appName, instanceId);
         boolean isUpdated = super.statusUpdate(updatedValues[0], updatedValues[1], newStatus, lastDirtyTimestamp, isReplication);
         this.appCntx.publishEvent(new EurekaStatusUpdateEvent(this, appName, instanceId));
         return isUpdated;
@@ -210,10 +211,15 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     private String[] replaceValues(String appName, String instanceId) {
         if (tuple.isValid()) {
-            String servicePrefix = tuple.getOldPrefix();
+            String appNameRegex = "(?i)^" + tuple.getOldPrefix();
+            String instanceIdRegex = "(?i):" + tuple.getOldPrefix();
             String targetValue = tuple.getNewPrefix();
-            appName = appName.replace(servicePrefix.toUpperCase(), targetValue.toUpperCase());
-            instanceId = instanceId.replace(servicePrefix, targetValue);
+            appName = appName.replaceAll(appNameRegex, targetValue).toUpperCase();
+            if (instanceId.contains(":")) {
+                instanceId = instanceId.replaceAll(instanceIdRegex, ":" + targetValue);
+            } else {
+                instanceId = instanceId.replaceAll(appNameRegex, targetValue);
+            }
         }
         return new String[]{appName,instanceId};
     }
@@ -227,15 +233,16 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         if (tuple.isValid()) {
             String servicePrefix = tuple.getOldPrefix();
             String instanceId = info.getInstanceId();
-            if (instanceId.contains(servicePrefix)) {
-                String appName = info.getAppName();
-                String[] updatedValues = replaceValues(appName,instanceId);
+            String appName = info.getAppName();
+            Pattern p = Pattern.compile("(?i)^" + servicePrefix);
+            if (p.matcher(appName).find()) {
+                String[] updatedValues = replaceValues(appName, instanceId);
                 log.debug("The instance ID of {} service has been changed to {}.", info.getAppName(), updatedValues[1]);
                 return new InstanceInfo.Builder(info)
                     .setInstanceId(updatedValues[1])
                     .setAppGroupName(updatedValues[0])
                     .setAppName(updatedValues[0])
-                    .setVIPAddress(updatedValues[0])
+                    .setVIPAddress(updatedValues[0].toLowerCase())
                     .build();
             }
             return info;
