@@ -108,38 +108,77 @@ export default class WizardDialog extends Component {
     };
 
     /**
-     * Go through the uploaded yaml file and create "targets". "targets" is an object representing the
-     * input fields and what they should be changed to.
+     * Fills in the field specified by the indentation dependency
+     * @param inputData inputData array with all categories (already filled by user)
+     * @param indentationDependency the name of the input on which it depends
+     * @param indentationDependencyValue the value for the input
+     */
+    fillIndentationDependency = (inputData, indentationDependency, indentationDependencyValue) => {
+        inputData.forEach((category) => {
+            const objResult = { ...category };
+            if (Array.isArray(category.content)) {
+                category.content.forEach((inpt, j) => {
+                    Object.keys(inpt).forEach((k) => {
+                        if (k === indentationDependency) {
+                            objResult.content[j][k].value = indentationDependencyValue;
+                        }
+                    });
+                });
+            } else {
+                Object.keys(category.content).forEach((k) => {
+                    if (k === indentationDependency) {
+                        objResult.content[k].value = indentationDependencyValue;
+                    }
+                });
+            }
+            this.props.updateWizardData(objResult);
+        });
+    };
+
+    /**
+     * Go through the uploaded yaml file and fill the corresponding input fields
+     * @param uploadedYaml the yaml object uploaded by the user
      */
     fillInputs = (uploadedYaml) => {
-        const targets = {};
         if (this.props.inputData) {
             // Loop through all input groups (tabs/sections)
             this.props.inputData.forEach((obj) => {
                 const { content } = obj;
                 const objResult = { ...obj };
                 if (content) {
+                    let path = [];
+                    // Get indentation to mimic hierarchy of yaml
+                    if (obj.indentation) {
+                        path = obj.indentation.split('/');
+                    }
+                    let value = uploadedYaml;
+                    let found = true;
+                    // Set value if it is in an array
+                    if (obj.inArr) {
+                        [value] = value.services;
+                    }
+                    // Navigate down Yaml hierarchy to find desired value to change to
+                    if (path.length > 0) {
+                        path.forEach((indent) => {
+                            if (found && value[indent]) {
+                                value = value[indent];
+                            } else {
+                                found = false;
+                            }
+                        });
+                    }
+                    if (obj.indentationDependency) {
+                        this.fillIndentationDependency(
+                            this.props.inputData,
+                            obj.indentationDependency,
+                            Object.keys(value)[0]
+                        );
+                        value = value[Object.keys(value)[0]];
+                    }
                     // Loop through all possible replicas of an input group (e.g. Routes 1 (field1, field2), Routes 2 (field1, field2))
                     content.forEach((property, index) => {
-                        let path = '';
-                        // Get indentation to mimic hierarchy of yaml
-                        if (obj.indentation) {
-                            path = obj.indentation.split('/');
-                        }
                         // Loop through each input in an input group replica
                         Object.keys(property).forEach((propertyKey) => {
-                            let value = uploadedYaml;
-                            let found = true;
-                            // Navigate down Yaml hierarchy to find desired value to change to
-                            if (path.length > 0) {
-                                path.forEach((indent) => {
-                                    if (found && value[indent]) {
-                                        value = value[indent];
-                                    } else {
-                                        found = false;
-                                    }
-                                });
-                            }
                             // If this path exists in the uploaded yaml and its a field that has potential replicas
                             if (found && obj.multiple && obj.multiple === true) {
                                 value.forEach((individualValue, individualIndex) => {
@@ -148,6 +187,9 @@ export default class WizardDialog extends Component {
                                     }
                                     if (obj.noKey && obj.noKey === true && individualValue) {
                                         objResult.content[individualIndex][propertyKey].value = individualValue;
+                                    } else if (obj.arrIndent && individualValue[obj.arrIndent][propertyKey]) {
+                                        objResult.content[individualIndex][propertyKey].value =
+                                            individualValue[obj.arrIndent][propertyKey];
                                     } else if (individualValue[propertyKey]) {
                                         objResult.content[individualIndex][propertyKey].value =
                                             individualValue[propertyKey];
@@ -162,7 +204,6 @@ export default class WizardDialog extends Component {
                 this.props.updateWizardData(objResult);
             });
         }
-        return targets;
     };
 
     renderDoneButtonText() {
