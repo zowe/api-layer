@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import static org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers.x509Certificate;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -66,7 +65,7 @@ class X509CNAuthSourceServiceTest {
         }
 
         @Test
-        void whenServerCertInRequest_thenAuthSourceIsPresent() {
+        void whenServerCertInRequest_thenAuthSourceIsNotPresent() {
             when(context.getRequest()).thenReturn(request);
             when(request.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
             when(mapper.isClientAuthCertificate(any())).thenReturn(false);

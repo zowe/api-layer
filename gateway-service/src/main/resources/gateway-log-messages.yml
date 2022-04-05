@@ -301,3 +301,10 @@ messages:
       text: "Gateway service failed to obtain token."
       reason: "Authentication request to get token failed."
       action: "Contact your administrator."
+
+    - key: org.zowe.apiml.gateway.security.scheme.x509ParsingError
+      number: ZWEAG163
+      type: ERROR
+      text: "Error occurred while parsing X509 certificate."
+      reason: "%s"
+      action: "Configure your client to provide valid x509 certificate."

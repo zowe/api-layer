@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Base64;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 /**
  * This schema adds requested information about client certificate. This information is added
@@ -35,11 +35,14 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 @Slf4j
 public class X509Scheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
+    private final MessageService messageService;
 
+    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
 
-    public X509Scheme(@Autowired @Qualifier("x509CNAuthSourceService") AuthSourceService authSourceService) {
+    public X509Scheme(@Autowired @Qualifier("x509CNAuthSourceService") AuthSourceService authSourceService, MessageService messageService) {
         this.authSourceService = authSourceService;
+        this.messageService = messageService;
     }
 
     @Override
@@ -49,14 +52,34 @@ public class X509Scheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        String error;
+        if (authSource == null || authSource.getRawSource() == null) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
+            return new X509Command(error);
+        }
+
+        X509AuthSource.Parsed parsedAuthSource;
+        try {
+            parsedAuthSource = (X509AuthSource.Parsed) authSourceService.parse(authSource);
+        } catch (InvalidCertificateException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", e.getLocalizedMessage()).mapToLogMessage();
+            return new X509Command(error);
+        }
+
+        if (parsedAuthSource == null) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", "Cannot parse provided authentication source").mapToLogMessage();
+            return new X509Command(error);
+        }
+
         String[] headers;
         if (StringUtils.isEmpty(authentication.getHeaders())) {
             headers = ALL_HEADERS.split(",");
         } else {
             headers = authentication.getHeaders().split(",");
         }
-        return new X509Command(headers);
 
+        Long expireAt = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : null;
+        return new X509Command(expireAt, headers, parsedAuthSource, null);
     }
 
     @Override
@@ -64,48 +87,60 @@ public class X509Scheme implements IAuthenticationScheme {
         return authSourceService.getAuthSourceFromRequest();
     }
 
-    public class X509Command extends AuthenticationCommand {
+    public static class X509Command extends AuthenticationCommand {
+        private final Long expireAt;
         private final String[] headers;
+        private final X509AuthSource.Parsed parsedAuthSource;
+        @Getter
+        private final String errorHeader;
 
         public static final String PUBLIC_KEY = "X-Certificate-Public";
         public static final String DISTINGUISHED_NAME = "X-Certificate-DistinguishedName";
         public static final String COMMON_NAME = "X-Certificate-CommonName";
 
-        public X509Command(String[] headers) {
+        public X509Command(Long expireAt, String[] headers, X509AuthSource.Parsed parsedAuthSource, String errorHeader) {
+            this.expireAt = expireAt;
             this.headers = headers;
+            this.parsedAuthSource = parsedAuthSource;
+            this.errorHeader = errorHeader;
+        }
+
+        public X509Command(String errorHeader) {
+            this.expireAt = null;
+            this.headers = new String[0];
+            this.parsedAuthSource = null;
+            this.errorHeader = errorHeader;
         }
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
-            final AuthSource authSource = authSourceService.getAuthSourceFromRequest().orElse(null);
-            X509Certificate clientCertificate = authSource == null ? null : (X509Certificate) authSource.getRawSource();
-
-            if (clientCertificate != null) {
-                try {
-                    setHeader(context, clientCertificate);
-                    context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
-                } catch (CertificateEncodingException e) {
-                    log.error("Exception parsing certificate", e);
-                }
+            if (parsedAuthSource != null) {
+                setHeader(context, parsedAuthSource);
+                context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
+            } else {
+                setErrorHeader(context, errorHeader);
             }
         }
 
-        private void setHeader(RequestContext context, X509Certificate clientCert) throws CertificateEncodingException {
+        @Override
+        public boolean isExpired() {
+            if (expireAt == null) return false;
+
+            return System.currentTimeMillis() > expireAt;
+        }
+
+        private void setHeader(RequestContext context, X509AuthSource.Parsed parsedAuthSource) {
             for (String header : headers) {
                 switch (header.trim()) {
                     case COMMON_NAME:
-                        X509CommonNameUserMapper mapper = new X509CommonNameUserMapper();
-                        String commonName = mapper.mapCertificateToMainframeUserId(clientCert);
-                        context.addZuulRequestHeader(COMMON_NAME, commonName);
+                        context.addZuulRequestHeader(COMMON_NAME, parsedAuthSource.getCommonName());
                         break;
                     case PUBLIC_KEY:
-                        String encodedCert = Base64.getEncoder().encodeToString(clientCert.getEncoded());
-                        context.addZuulRequestHeader(PUBLIC_KEY, encodedCert);
+                        context.addZuulRequestHeader(PUBLIC_KEY, parsedAuthSource.getPublicKey());
                         break;
                     case DISTINGUISHED_NAME:
-                        String distinguishedName = clientCert.getSubjectDN().toString();
-                        context.addZuulRequestHeader(DISTINGUISHED_NAME, distinguishedName);
+                        context.addZuulRequestHeader(DISTINGUISHED_NAME, parsedAuthSource.getDistinguishedName());
                         break;
                     default:
                         log.warn("Unsupported header specified in service metadata, " +
@@ -114,6 +149,11 @@ public class X509Scheme implements IAuthenticationScheme {
 
                 }
             }
+        }
+
+        private void setErrorHeader(RequestContext context, String value) {
+            context.addZuulRequestHeader(AUTH_FAIL_HEADER, value);
+            context.addZuulResponseHeader(AUTH_FAIL_HEADER, value);
         }
     }
 }

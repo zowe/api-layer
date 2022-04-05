@@ -105,7 +105,7 @@ public class X509AuthSourceService implements AuthSourceService {
     @Override
     public String getLtpaToken(AuthSource authSource) {
         String jwt = getJWT(authSource);
-        return authenticationService.getLtpaToken(jwt);
+        return jwt != null ? authenticationService.getLtpaToken(jwt) : null;
     }
 
     // Gets client certificate from request
