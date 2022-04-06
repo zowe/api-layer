@@ -31,7 +31,7 @@ describe('>>> Wizard Dialog test', () => {
         cy.get('[role="dialog"]').should('exist');
 
         cy.get('#yaml-browser').should('exist');
-        cy.get('#yaml-browser').attachFile('testEnabler1.yaml');
+        cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler1.yaml');
         
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
@@ -44,7 +44,7 @@ describe('>>> Wizard Dialog test', () => {
         cy.get('[role="dialog"]').should('exist');
 
         cy.get('#yaml-browser').should('exist');
-        cy.get('#yaml-browser').attachFile('testEnabler2.yaml');
+        cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler2.yaml');
         
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
@@ -57,7 +57,7 @@ describe('>>> Wizard Dialog test', () => {
         cy.get('[role="dialog"]').should('exist');
 
         cy.get('#yaml-browser').should('exist');
-        cy.get('#yaml-browser').attachFile('testEnabler3.yaml');
+        cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler3.yaml');
         
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
@@ -70,7 +70,7 @@ describe('>>> Wizard Dialog test', () => {
         cy.get('[role="dialog"]').should('exist');
 
         cy.get('#yaml-browser').should('exist');
-        cy.get('#yaml-browser').attachFile('testEnabler4.yaml');
+        cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler4.yaml');
         
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
@@ -83,7 +83,7 @@ describe('>>> Wizard Dialog test', () => {
         cy.get('[role="dialog"]').should('exist');
 
         cy.get('#yaml-browser').should('exist');
-        cy.get('#yaml-browser').attachFile('testEnabler5.yaml');
+        cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler5.yaml');
         
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();

@@ -83,6 +83,6 @@ describe('>>> Dashboard test', () => {
 
         cy.contains('API Mediation Layer API').click();
 
-        cy.url().should('contain', '/tile/apimediationlayer/');        
+        cy.url().should('contain', '/tile/apimediationlayer/'); 
     });
 });
