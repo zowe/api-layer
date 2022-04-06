@@ -214,6 +214,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             String appNameRegex = "(?i)^" + tuple.getOldPrefix();
             String instanceIdRegex = "(?i):" + tuple.getOldPrefix();
             String targetValue = tuple.getNewPrefix();
+            if (targetValue.contains("*")) {
+                targetValue = targetValue.replace("*", "");
+            }
             appName = appName.replaceAll(appNameRegex, targetValue).toUpperCase();
             if (instanceId.contains(":")) {
                 instanceId = instanceId.replaceAll(instanceIdRegex, ":" + targetValue);
