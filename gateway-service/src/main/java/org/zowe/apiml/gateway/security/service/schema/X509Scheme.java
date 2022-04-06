@@ -11,18 +11,21 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
-import javax.servlet.http.HttpServletRequest;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 
 /**
  * This schema adds requested information about client certificate. This information is added
@@ -31,9 +34,13 @@ import java.util.Base64;
 @Component
 @Slf4j
 public class X509Scheme implements IAuthenticationScheme {
+    private final AuthSourceService authSourceService;
 
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
 
+    public X509Scheme(@Autowired @Qualifier("x509CNAuthSourceService") AuthSourceService authSourceService) {
+        this.authSourceService = authSourceService;
+    }
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -52,7 +59,12 @@ public class X509Scheme implements IAuthenticationScheme {
 
     }
 
-    public static class X509Command extends AuthenticationCommand {
+    @Override
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
+    }
+
+    public class X509Command extends AuthenticationCommand {
         private final String[] headers;
 
         public static final String PUBLIC_KEY = "X-Certificate-Public";
@@ -66,8 +78,8 @@ public class X509Scheme implements IAuthenticationScheme {
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
-            HttpServletRequest request = context.getRequest();
-            X509Certificate clientCertificate = getCertificateFromRequest(request);
+            final AuthSource authSource = authSourceService.getAuthSourceFromRequest().orElse(null);
+            X509Certificate clientCertificate = authSource == null ? null : (X509Certificate) authSource.getRawSource();
 
             if (clientCertificate != null) {
                 try {
@@ -77,22 +89,6 @@ public class X509Scheme implements IAuthenticationScheme {
                     log.error("Exception parsing certificate", e);
                 }
             }
-        }
-
-        private X509Certificate getCertificateFromRequest(HttpServletRequest request) {
-            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
-            X509Certificate clientCert = getOne(certs);
-            if (clientCert == null) {
-                certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-                return getOne(certs);
-            }
-            return clientCert;
-        }
-
-        private X509Certificate getOne(X509Certificate[] certs) {
-            if (certs != null && certs.length > 0) {
-                return certs[0];
-            } else return null;
         }
 
         private void setHeader(RequestContext context, X509Certificate clientCert) throws CertificateEncodingException {

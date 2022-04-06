@@ -33,6 +33,7 @@ import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 
 import java.io.IOException;
 import java.util.Date;
+import org.zowe.apiml.util.config.SslContext;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -152,7 +153,26 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
         }
     }
 
+    @Nested
+    class GivenServerCertificate {
+        @Test
+        void thenSafheaderInRequestHeaders() throws IOException {
+            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+            mockValid200HttpResponse();
 
+            given()
+                .config(SslContext.apimlRootCert)
+                .when()
+                .get(basePath + serviceWithDefaultConfiguration.getPath())
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+
+            ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+            verify(mockClient, times(1)).execute(captor.capture());
+
+            assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
+        }
+    }
     /*
     @Nested
     class GivenClientCertificate {
