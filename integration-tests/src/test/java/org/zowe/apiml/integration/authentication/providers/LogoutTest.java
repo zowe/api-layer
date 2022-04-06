@@ -12,7 +12,8 @@ package org.zowe.apiml.integration.authentication.providers;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
@@ -21,6 +22,8 @@ import org.zowe.apiml.util.categories.zOSMFAuthTest;
 
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT_OLD_FORMAT;
 
 /**
  * Basic set of logout related tests that needs to pass against every valid authentication provider.
@@ -29,6 +32,10 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @SAFAuthTest
 @zOSMFAuthTest
 class LogoutTest implements TestWithStartedInstances {
+
+    protected static String[] logoutUrlsSource() {
+        return new String[]{SecurityUtils.getGatewayLogoutUrl(ROUTED_LOGOUT), SecurityUtils.getGatewayLogoutUrl(ROUTED_LOGOUT_OLD_FORMAT)};
+    }
 
     @BeforeEach
     void setUp() {
@@ -40,15 +47,16 @@ class LogoutTest implements TestWithStartedInstances {
     class WhenUserLogOut {
         @Nested
         class InvalidateTheToken {
-            @Test
-            void givenValidCredentials() {
+            @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
+            void givenValidCredentials(String logoutUrl) {
                 // make login
                 String jwt = SecurityUtils.gatewayToken();
 
                 // check if it is logged in
                 assertIfLogged(jwt, true);
 
-                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayLogoutUrl(), jwt);
+                SecurityUtils.logoutOnGateway(logoutUrl, jwt);
 
                 // check if it is logged out
                 assertIfLogged(jwt, false);
