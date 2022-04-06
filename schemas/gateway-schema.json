@@ -1,0 +1,132 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schema/api-layer-config",
+    "title": "gateway service configuration",
+    "description": "",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535,
+            "default": 7553
+        },
+        "discoveryServiceUrls": {
+            "type": "string",
+            "description": "Comma separated list of discovery service URLs."
+        },
+        "allowEncodedSlashes": {
+            "type": "boolean",
+            "description": "Allow URLs on gateway to contain encoded slashes.",
+            "default": true
+        },
+        "corsEnabled": {
+            "type": "boolean",
+            "description": "Allow CORS on gateway.",
+            "default": true
+        },
+        "apiml": {
+            "type": "object",
+            "description": "",
+            "additionalProperties": false,
+            "properties": {
+                "security": {
+                    "type": "object",
+                    "description": "",
+                    "additionalProperties": false,
+                    "properties": {
+                        "auth": {
+                            "type": "object",
+                            "description": "",
+                            "additionalProperties": false,
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "description": "",
+                                    "default": "zosmf"
+                                },
+                                "zosmf": {
+                                    "type": "object",
+                                    "description": "",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "jwtAutoconfiguration": {
+                                            "type": "string",
+                                            "description": "Type of the token that is returned from zOSMF after login.",
+                                            "default": "auto"
+                                        },
+                                        "serviceId": {
+                                            "type": "string",
+                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
+                                            "default": "zosmf"
+                                        }
+                                    }
+                                }
+                                }
+                            },
+                        "authorization": {
+                            "type": "object",
+                            "description": "",
+                            "additionalProperties": false,
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "description": ""
+                                },
+                                "endpoint": {
+                                    "type": "object",
+                                    "description": "",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Type of the token that is returned from zOSMF after login.",
+                                            "default": false
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered"
+                                        }
+                                    }
+                                },
+                                "resourceClass": {
+                                    "type": "string",
+                                    "description": "",
+                                    "default": "ZOWE"
+                                },
+                                "resourceNamePrefix": {
+                                    "type": "string",
+                                    "description": "",
+                                    "default": "APIML."
+                                }
+                            }
+                        },
+                        "x509": {
+                            "type": "object",
+                            "description": "",
+                            "additionalProperties": false,
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "",
+                                    "default": false
+                                },
+                                "externalMapperUrl": {
+                                    "type": "string",
+                                    "description": ""
+                                },
+                                "externalMapperUser": {
+                                    "type": "string",
+                                    "description": ""
+                                }
+                            }
+                        }
+
+                        }
+                }
+            }
+        }
+    }
+}
