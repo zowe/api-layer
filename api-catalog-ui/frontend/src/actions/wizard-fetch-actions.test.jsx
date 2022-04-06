@@ -66,4 +66,11 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.toggleWizardVisibility(true)).toEqual(expectedAction);
     });
+    it('should do nothing on YAML upload having invalid format', () => {
+        const expectedAction = {
+            type: 'IGNORE',
+            payload: null,
+        };
+        expect(actions.notifyInvalidYamlUpload()).toEqual(expectedAction);
+    });
 });

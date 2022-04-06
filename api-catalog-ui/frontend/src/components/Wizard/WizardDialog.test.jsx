@@ -240,7 +240,7 @@ describe('>>> WizardDialog tests', () => {
         instance.nextSave();
         expect(notifyError).toHaveBeenCalled();
     });
-    it('should render file yaml upload button and labels', () => {
+    it('should render yaml file upload button and labels', () => {
         render(
             <WizardDialog
                 wizardToggleDisplay={jest.fn()}

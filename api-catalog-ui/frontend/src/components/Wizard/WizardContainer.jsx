@@ -18,7 +18,7 @@ import {
     updateUploadedYamlTitle,
 } from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
-import { sendYAML, notifyError } from '../../actions/wizard-fetch-actions';
+import { sendYAML, notifyError, notifyInvalidYamlUpload } from '../../actions/wizard-fetch-actions';
 
 const mapStateToProps = (state) => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
@@ -41,5 +41,6 @@ const mapDispatchToProps = {
     notifyError,
     updateWizardData,
     updateUploadedYamlTitle,
+    notifyInvalidYamlUpload,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(WizardDialog);

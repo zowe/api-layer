@@ -9,7 +9,6 @@
  */
 import yaml from 'js-yaml';
 import * as YAML from 'yaml';
-import { toast } from 'react-toastify';
 import { Component } from 'react';
 import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
 import './wizard.css';
@@ -96,10 +95,7 @@ export default class WizardDialog extends Component {
                 this.props.updateUploadedYamlTitle(filename);
             } catch {
                 document.getElementById('yaml-browser').value = null;
-                toast.warn('Please make sure the file you are uploading is in valid YAML format!', {
-                    closeOnClick: true,
-                    autoClose: 4000,
-                });
+                this.props.notifyInvalidYamlUpload();
             }
         };
         reader.readAsText(e.target.files[0]);
