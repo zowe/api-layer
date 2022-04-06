@@ -235,6 +235,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     protected InstanceInfo changeServiceId(final InstanceInfo info) {
         if (tuple.isValid()) {
             String servicePrefix = tuple.getOldPrefix();
+            if (!servicePrefix.contains("*")) {
+                servicePrefix = servicePrefix + "*";
+            }
             String instanceId = info.getInstanceId();
             String appName = info.getAppName();
             Pattern p = Pattern.compile("(?i)^" + servicePrefix);

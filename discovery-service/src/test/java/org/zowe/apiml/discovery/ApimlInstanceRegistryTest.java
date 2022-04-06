@@ -94,6 +94,7 @@ class ApimlInstanceRegistryTest {
     private static Stream<Arguments> tuples() {
        return Stream.of(
            Arguments.of("service*,hello", "helloclient"),
+           Arguments.of("service,hello", "helloclient"),
            Arguments.of("service*,hello*", "helloclient"),
            Arguments.of("service*,service", "serviceclient"),
            Arguments.of("service*", "serviceclient"),
