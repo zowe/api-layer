@@ -129,6 +129,66 @@ export default class WizardDialog extends Component {
         });
     };
 
+    addToContent = (obj, objResult, index, propertyKey, value) => {
+        // If this path exists in the uploaded yaml and its a field that has potential replicas
+        if (obj.multiple && obj.multiple === true) {
+            value.forEach((individualValue, individualIndex) => {
+                if (objResult.content.length <= individualIndex) {
+                    objResult.content.push(JSON.parse(JSON.stringify(obj.content[0])));
+                }
+                if (obj.noKey && obj.noKey === true && individualValue) {
+                    objResult.content[individualIndex][propertyKey].value = individualValue;
+                } else if (obj.arrIndent && individualValue[obj.arrIndent][propertyKey]) {
+                    objResult.content[individualIndex][propertyKey].value = individualValue[obj.arrIndent][propertyKey];
+                } else if (individualValue[propertyKey]) {
+                    objResult.content[individualIndex][propertyKey].value = individualValue[propertyKey];
+                }
+            });
+        } else if (value[propertyKey]) {
+            objResult.content[index][propertyKey].value = value[propertyKey];
+        }
+        return objResult;
+    };
+
+    findValue = (obj, objResultIn, content, uploadedYaml) => {
+        let objResult = { ...objResultIn };
+        let path = [];
+        // Get indentation to mimic hierarchy of yaml
+        if (obj.indentation) {
+            path = obj.indentation.split('/');
+        }
+        let value = uploadedYaml;
+        let found = true;
+        // Set value if it is in an array
+        if (obj.inArr) {
+            [value] = value.services;
+        }
+        // Navigate down Yaml hierarchy to find desired value to change to
+        if (path.length > 0) {
+            path.forEach((indent) => {
+                if (found && value[indent]) {
+                    value = value[indent];
+                } else {
+                    found = false;
+                }
+            });
+        }
+        if (obj.indentationDependency) {
+            this.fillIndentationDependency(this.props.inputData, obj.indentationDependency, Object.keys(value)[0]);
+            value = value[Object.keys(value)[0]];
+        }
+        if (found) {
+            // Loop through all possible replicas of an input group (e.g. Routes 1 (field1, field2), Routes 2 (field1, field2))
+            content.forEach((property, index) => {
+                // Loop through each input in an input group replica
+                Object.keys(property).forEach((propertyKey) => {
+                    objResult = this.addToContent(obj, objResult, index, propertyKey, value);
+                });
+            });
+        }
+        return objResult;
+    };
+
     /**
      * Go through the uploaded yaml file and fill the corresponding input fields
      * @param uploadedYaml the yaml object uploaded by the user
@@ -138,62 +198,9 @@ export default class WizardDialog extends Component {
             // Loop through all input groups (tabs/sections)
             this.props.inputData.forEach((obj) => {
                 const { content } = obj;
-                const objResult = { ...obj };
+                let objResult = { ...obj };
                 if (content) {
-                    let path = [];
-                    // Get indentation to mimic hierarchy of yaml
-                    if (obj.indentation) {
-                        path = obj.indentation.split('/');
-                    }
-                    let value = uploadedYaml;
-                    let found = true;
-                    // Set value if it is in an array
-                    if (obj.inArr) {
-                        [value] = value.services;
-                    }
-                    // Navigate down Yaml hierarchy to find desired value to change to
-                    if (path.length > 0) {
-                        path.forEach((indent) => {
-                            if (found && value[indent]) {
-                                value = value[indent];
-                            } else {
-                                found = false;
-                            }
-                        });
-                    }
-                    if (obj.indentationDependency) {
-                        this.fillIndentationDependency(
-                            this.props.inputData,
-                            obj.indentationDependency,
-                            Object.keys(value)[0]
-                        );
-                        value = value[Object.keys(value)[0]];
-                    }
-                    // Loop through all possible replicas of an input group (e.g. Routes 1 (field1, field2), Routes 2 (field1, field2))
-                    content.forEach((property, index) => {
-                        // Loop through each input in an input group replica
-                        Object.keys(property).forEach((propertyKey) => {
-                            // If this path exists in the uploaded yaml and its a field that has potential replicas
-                            if (found && obj.multiple && obj.multiple === true) {
-                                value.forEach((individualValue, individualIndex) => {
-                                    if (objResult.content.length <= individualIndex) {
-                                        objResult.content.push(JSON.parse(JSON.stringify(obj.content[0])));
-                                    }
-                                    if (obj.noKey && obj.noKey === true && individualValue) {
-                                        objResult.content[individualIndex][propertyKey].value = individualValue;
-                                    } else if (obj.arrIndent && individualValue[obj.arrIndent][propertyKey]) {
-                                        objResult.content[individualIndex][propertyKey].value =
-                                            individualValue[obj.arrIndent][propertyKey];
-                                    } else if (individualValue[propertyKey]) {
-                                        objResult.content[individualIndex][propertyKey].value =
-                                            individualValue[propertyKey];
-                                    }
-                                });
-                            } else if (found && value[propertyKey]) {
-                                objResult.content[index][propertyKey].value = value[propertyKey];
-                            }
-                        });
-                    });
+                    objResult = this.findValue(obj, objResult, content, uploadedYaml);
                 }
                 this.props.updateWizardData(objResult);
             });
