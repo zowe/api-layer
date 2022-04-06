@@ -129,6 +129,14 @@ export default class WizardDialog extends Component {
         });
     };
 
+    /**
+     * Add to the inputData content
+     * @param obj the item of inputData being searched through
+     * @param objResult the current changes to the inputData item
+     * @param index the index of the inputData content item
+     * @param propertyKey the current value's key
+     * @param value the value to be set from the yaml
+     */
     addToContent = (obj, objResult, index, propertyKey, value) => {
         // If this path exists in the uploaded yaml and its a field that has potential replicas
         if (obj.multiple && obj.multiple === true) {
@@ -150,7 +158,13 @@ export default class WizardDialog extends Component {
         return objResult;
     };
 
-    findValue = (obj, objResultIn, content, uploadedYaml) => {
+    /**
+     * Find each value from the yaml to fill the fields
+     * @param obj the item of inputData being searched through
+     * @param objResultIn the current changes to the inputData item
+     * @param uploadedYaml the yaml object uploaded by the user
+     */
+    findValue = (obj, objResultIn, uploadedYaml) => {
         let objResult = { ...objResultIn };
         let path = [];
         // Get indentation to mimic hierarchy of yaml
@@ -179,7 +193,7 @@ export default class WizardDialog extends Component {
         }
         if (found) {
             // Loop through all possible replicas of an input group (e.g. Routes 1 (field1, field2), Routes 2 (field1, field2))
-            content.forEach((property, index) => {
+            obj.content.forEach((property, index) => {
                 // Loop through each input in an input group replica
                 Object.keys(property).forEach((propertyKey) => {
                     objResult = this.addToContent(obj, objResult, index, propertyKey, value);
@@ -197,10 +211,9 @@ export default class WizardDialog extends Component {
         if (this.props.inputData) {
             // Loop through all input groups (tabs/sections)
             this.props.inputData.forEach((obj) => {
-                const { content } = obj;
                 let objResult = { ...obj };
-                if (content) {
-                    objResult = this.findValue(obj, objResult, content, uploadedYaml);
+                if (obj.content) {
+                    objResult = this.findValue(obj, objResult, uploadedYaml);
                 }
                 this.props.updateWizardData(objResult);
             });
