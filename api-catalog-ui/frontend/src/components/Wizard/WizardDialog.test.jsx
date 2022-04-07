@@ -341,7 +341,7 @@ title: Onboarding Enabler Java Sample App`;
         // Simulate the onchange event
         const input = wrapper.find('#yaml-browser');
         input.simulate('change', {
-            target: { value: 'C:\\fakepath\\' + filename, files: [fakeFile] },
+            target: { value: `C:\\fakepath\\${filename}`, files: [fakeFile] },
             preventDefault: jest.fn(),
         });
 
