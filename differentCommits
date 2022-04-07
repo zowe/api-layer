@@ -1,0 +1,74 @@
+* 97d26d8a (HEAD -> v2.x.x, origin/v2.x.x) chore: Return classes that extenders depend on (#2190)
+* a7988cd6 fix: Add support for regex (#2272)
+* bbbcc91c chore: Provide old path pattern support for auth related endpoints for zaas client (#2241)
+* 8712b177 chore: more generic changlog action (#2269)
+* 63f6fde4 feat: Service ID prefix replacer (#2229)
+*   17c4da8f Merge branch 'v2.x.x' of https://github.com/zowe/api-layer into v2.x.x
+|\  
+| * f77fa1bf fix: Upgrade Spring to version without vulnerability (#2252)
+* | 2606312c (origin/apiml/v2/blackduck/220104, apiml/v2/blackduck/220104) fix: Upgrade Spring to version without vulnerability
+|/  
+* 5446fd5e feat: Add missing tooltips to all onboarding options (#2194)
+* 88d804fa (apiml/GH1972/apring_boot_2.5) chore: allow tests to be run manually (#2226)
+* 9fbd7525 refactor: Introduce applid to the SafIdtProvider (#2219)
+* 44d269ec refactor: Update the mock functionality (#2216)
+* 4f684f56 refactor: Improve error messages around saf idt token (#2205)
+* 5ff64d9e fix: caching service logging (#2222)
+* ad6cf2cd chore: Upgrade dependencies (#2214)
+* f8def8ce fix: use unique artifacts for gha (#2192)
+* d8dd257d docs: Update v2 container readme to use v2 config (#2187)
+* 0612bc40 fix: Fix image publish input name (#2183)
+* 40faa013 chore: Cherry pick commits from master (#2180)
+* 35719f22 [Gradle Release plugin] Create new version: 'v2.0.8-SNAPSHOT'.
+* 9ebc827d (tag: v2.0.7) [Gradle Release plugin] [skip ci] Before tag commit 'v2.0.7'.
+* 50fc8f12 [skip ci] Update version
+* a9e9146a fix: Use tr instead of upper_case (#2181)
+* 1407e2e9 fix: configure southbound timeout with APIML_GATEWAY_TIMEOUT_MILLIS (#2154)
+* 44af876e fix: use ribbon LB (#2147)
+* 41fa2aaf chore: Cherry pick instead of merge (#2149)
+* 2472516d fix: Correct tooltip keys (#2141)
+* 072ad23e fix: Add x509 auth info to gw api doc (#2142)
+* a2b5dda2 chore: Create Pull Request instead of Merge (#2139)
+* b7dbce8b chore: Upgrade dependency versions (#2137)
+* fc71ee34 fix: Properly remove services when instances are removed from Discovery Service (#2128)
+* 45d75aea chore: Merge branch 'master' into v2.x.x (#2136)
+* c44840ee Fix ac icon link (#2126)
+* 9eeaba2f chore: remove unlikely to be customized values from manifest.yaml (#2117)
+* 9a4be5ae (origin/apiml/jb892003/test) feat: loader for extensions in custom base packages (#2081)
+* 1382f243 (origin/apiml/main_to_v2) feat: redesign logout panel (#2102)
+* aa77926a fix: apiml.security.authorization.provider default value should be empty i… (#2107)
+* 865c1ca6 fix: Reflect different options for the calls to the catalog's backend (#2069)
+* deabe52f (origin/apiml/fix_e2e_tests) fix: login page styles (#2068)
+* bce7497c fix: UI bug polishing in v2 (#2061)
+* c230bb75 Remove micronaut enabler from projects to publish (#2051)
+* 1484607f Convert Login to functional component (#2050)
+* c2a7a426 chore: Enable e2e in GitHub Actions (#2031)
+* 139a231f feat: UI pass change (#2035)
+* b580593f chore: Merge master branch to v2 (#2032)
+* 6f4257ad (origin/apiml/GH1951/fix_bug_login) fix: change url for v2 and mark plugin as v2 in case very old apiml v1 copies dont support same url scheme (#2022)
+* 6cfebf5d feat: Migrate Service Diff + Fix of e2e tests (#2014)
+* 2c595d54 feat: use material in wizard (#2004)
+* 7323b480 Update version
+* 54c73df0 Update version
+* 73b37070 Update version
+* 23b09e00 chore: merge master branch(#1979)
+* 28941b1d [Gradle Release plugin] Create new version: 'v2.0.4-SNAPSHOT'.
+* 880c2bce (tag: v2.0.3) [Gradle Release plugin] Before tag commit 'v2.0.3'.
+* 6bb2bdc4 Update version
+* 71830ae4 Users/jack/test v2 (#1964)
+* 8775720f (origin/apiml/deploy_for_jan) Merge main into v2 (#1967)
+* 0da7f15c (origin/apiml/poc/change_password_ui) feat: Migrate dashboard to Material (#1959)
+* c60371d7 feat: Migrate Error components to Material  (#1957)
+* b895d580 chore: merge main branch (#1956)
+* b5ca86ad fix: accept homepage without context path (#1955)
+* 95da4884 feat: Migrate detail page to Material (#1949)
+* 537fa34b feat: Migrate header and footer to Material UI (#1943)
+* 81ab2ed7 feat: Migrate Login panel to Material UI (#1900)
+* 1c0e2231 chore: Merge master into v2  (#1937)
+* f48d9b6d chore: Distinguish Core and SDK publishing (#1911)
+* 9ed8dc84 refactor: security remapping (#1896)
+* fbb86938 chore: Remove support for old path pattern. (#1886)
+* 37c587a0 Merge branch 'master' into v2.x.x
+* af134ed7 Move to V2 release branch.
+* 6b8b793e Merge branch 'master' into v2.x.x
+* 5f52e3d4 Clean statistics Support v2.x.x branch

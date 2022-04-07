@@ -14,7 +14,8 @@ services:
         - gatewayUrl: api/v1
           serviceRelativeUrl:
       authentication:
-          scheme: zosmf
+          scheme: httpBasicPassTicket
+          applid: IZUDFLT
       apiInfo:
         - apiId: ibm.zosmf
           gatewayUrl: api/v1
@@ -35,7 +36,8 @@ services:
         - gatewayUrl: api/v1
           serviceRelativeUrl:
       authentication:
-          scheme: zosmf
+          scheme: httpBasicPassTicket
+          applid: IZUDFLT
       apiInfo:
         - apiId: ibm.zosmf
           gatewayUrl: api/v1
