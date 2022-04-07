@@ -37,6 +37,12 @@ public class AuthConfigurationProperties {
     private String gatewayQueryEndpoint = "/gateway/api/v1/auth/query";
     private String gatewayTicketEndpoint = "/gateway/api/v1/auth/ticket";
 
+    private String gatewayLoginEndpointOldFormat = "/api/v1/gateway/auth/login";
+    private String gatewayLogoutEndpointOldFormat = "/api/v1/gateway/auth/logout";
+    private String gatewayQueryEndpointOldFormat = "/api/v1/gateway/auth/query";
+    private String gatewayTicketEndpointOldFormat = "/api/v1/gateway/auth/ticket";
+
+    private String gatewayRefreshEndpointOldFormat = "/api/v1/gateway/auth/refresh";
     private String gatewayRefreshEndpoint = "/gateway/api/v1/auth/refresh";
 
     private String serviceLoginEndpoint = "/auth/login";

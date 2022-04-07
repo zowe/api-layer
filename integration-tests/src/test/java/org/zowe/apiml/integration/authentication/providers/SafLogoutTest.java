@@ -12,8 +12,8 @@ package org.zowe.apiml.integration.authentication.providers;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.SecurityUtils;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.SAFAuthTest;
 
@@ -35,14 +35,15 @@ class SafLogoutTest implements TestWithStartedInstances {
     class WhenUserLogsOutTwice {
         @Nested
         class SecondCallReturnUnauthorized {
-            @Test
+            @ParameterizedTest(name = "givenValidToken {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
             void givenValidToken(String logoutUrl) {
                 String jwt = gatewayToken();
 
                 assertIfLogged(jwt, true);
 
-                assertLogout(SecurityUtils.getGatewayLogoutUrl(), jwt, SC_NO_CONTENT);
-                assertLogout(SecurityUtils.getGatewayLogoutUrl(), jwt, SC_UNAUTHORIZED);
+                assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
+                assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
             }
         }
     }
@@ -51,7 +52,8 @@ class SafLogoutTest implements TestWithStartedInstances {
     class WhenUserLogsOutOnceWithMultipleTokens {
         @Nested
         class VerifySecondTokenIsValid {
-            @Test
+            @ParameterizedTest(name = "givenTwoValidTokens {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
             void givenTwoValidTokens(String logoutUrl) {
                 String jwt1 = gatewayToken();
                 String jwt2 = gatewayToken();
@@ -59,7 +61,7 @@ class SafLogoutTest implements TestWithStartedInstances {
                 assertIfLogged(jwt1, true);
                 assertIfLogged(jwt2, true);
 
-                assertLogout(SecurityUtils.getGatewayLogoutUrl(), jwt1, SC_NO_CONTENT);
+                assertLogout(logoutUrl, jwt1, SC_NO_CONTENT);
 
                 assertIfLogged(jwt1, false);
                 assertIfLogged(jwt2, true);
