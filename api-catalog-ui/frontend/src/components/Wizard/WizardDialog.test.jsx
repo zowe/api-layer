@@ -333,7 +333,7 @@ title: Onboarding Enabler Java Sample App`;
         const expectedFileConversion = {
             serviceId: 'enablerjavasampleapp',
             title: 'Onboarding Enabler Java Sample App',
-        }
+        };
 
         const filename = 'brokenFile.yaml';
         const fakeFile = new File([fileContents], filename);
@@ -342,11 +342,11 @@ title: Onboarding Enabler Java Sample App`;
         const input = wrapper.find('#yaml-browser');
         input.simulate('change', {
             target: { value: 'C:\\fakepath\\' + filename, files: [fakeFile] },
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
         });
-        
+
         // Must wait slightly for the file to actually be read in by the system (triggers the reader.onload event)
-        const pauseFor = milliseconds => new Promise((resolve) => setTimeout((resolve), milliseconds));
+        const pauseFor = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
         await pauseFor(300);
 
         // Check that all functions are called as expected
