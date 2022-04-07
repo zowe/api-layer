@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_AUTH;
 
 @Slf4j
 public class ConfigReaderZaasClient {
