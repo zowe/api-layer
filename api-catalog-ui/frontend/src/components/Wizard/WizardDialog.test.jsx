@@ -321,6 +321,24 @@ title: Onboarding Enabler Java Sample App`;
         // //await userEvent.upload(input, fakeFile);
         // expect(getByTestId(/yaml-upload-test/i)).toHaveValue('testEnabler1.yaml')
         // //expect(queryByTestId(/yaml-upload-test/i)).toBeTruthy();
-        
+    });   
+    it('should fill inputs', () => {
+        const convertedCategoryData = Object.keys(categoryData);
+
+        const validateInput = jest.fn();
+        const updateWizardData = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                updateWizardData={updateWizardData}
+                inputData={convertedCategoryData}
+                navsObj={{ Basics: { 'Basic info': [['key']], silent: true } }}
+                wizardIsOpen
+                validateInput={validateInput}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.fillInputs(categoryData[0]);
+        expect(updateWizardData).toHaveBeenCalled();
     });
 });

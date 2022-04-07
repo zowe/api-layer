@@ -56,7 +56,7 @@ class ApimlInstanceRegistryTest {
         eurekaClient = mock(DiscoveryClient.class);
         instanceRegistryProperties = mock(InstanceRegistryProperties.class);
         appCntx = mock(ApplicationContext.class);
-        tuple = new EurekaConfig.Tuple("service,hello");
+        tuple = new EurekaConfig.Tuple("service*,hello");
         apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
@@ -80,10 +80,10 @@ class ApimlInstanceRegistryTest {
             @Test
             void thenChangeServicePrefix() {
                 InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance);
-                assertEquals("hello", info.getInstanceId());
-                assertEquals("HELLO", info.getAppName());
-                assertEquals("HELLO", info.getVIPAddress());
-                assertEquals("HELLO", info.getAppGroupName());
+                assertEquals("helloclient", info.getInstanceId());
+                assertEquals("HELLOCLIENT", info.getAppName());
+                assertEquals("helloclient", info.getVIPAddress());
+                assertEquals("HELLOCLIENT", info.getAppGroupName());
                 assertEquals("192.168.0.1", info.getIPAddr());
                 assertEquals("localhost", info.getHostName());
                 assertEquals(9090, info.getSecurePort());
@@ -93,13 +93,15 @@ class ApimlInstanceRegistryTest {
     }
     private static Stream<Arguments> tuples() {
        return Stream.of(
-           Arguments.of("service,hello", "hello"),
-           Arguments.of("service,service", "service"),
-           Arguments.of("service", "service"),
-           Arguments.of(",service", "service"),
-           Arguments.of("service,", "service"),
-           Arguments.of(null, "service"),
-           Arguments.of("different,hello", "service")
+           Arguments.of("service*,hello", "helloclient"),
+           Arguments.of("service,hello", "helloclient"),
+           Arguments.of("service*,hello*", "helloclient"),
+           Arguments.of("service*,service", "serviceclient"),
+           Arguments.of("service*", "serviceclient"),
+           Arguments.of(",service", "serviceclient"),
+           Arguments.of("service,", "serviceclient"),
+           Arguments.of(null, "serviceclient"),
+           Arguments.of("different*,hello", "serviceclient")
        );
     }
 
@@ -167,7 +169,7 @@ class ApimlInstanceRegistryTest {
                     serverCodecs,
                     eurekaClient,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple("service,hello")));
+                    appCntx,new EurekaConfig.Tuple("service*,hello")));
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
@@ -202,7 +204,7 @@ class ApimlInstanceRegistryTest {
                     serverCodecs,
                     eurekaClient,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple("service,hello")));
+                    appCntx,new EurekaConfig.Tuple("service*,hello")));
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
@@ -213,8 +215,8 @@ class ApimlInstanceRegistryTest {
 
             private Stream<Arguments> exceptions() {
                 return Stream.of(
-                    Arguments.of("service,hello", new WrongMethodTypeException()),
-                    Arguments.of("service,hello", new Exception(new Throwable()))
+                    Arguments.of("service*,hello", new WrongMethodTypeException()),
+                    Arguments.of("service*,hello", new Exception(new Throwable()))
                 );
             }
         }
@@ -298,15 +300,15 @@ class ApimlInstanceRegistryTest {
     private InstanceInfo getStandardInstance() {
 
         return InstanceInfo.Builder.newBuilder()
-            .setInstanceId("service")
-            .setAppName("SERVICE")
-            .setAppGroupName("SERVICE")
+            .setInstanceId("serviceclient")
+            .setAppName("SERVICECLIENT")
+            .setAppGroupName("SERVICECLIENT")
             .setIPAddr("192.168.0.1")
             .enablePort(InstanceInfo.PortType.SECURE, true)
             .setSecurePort(9090)
             .setHostName("localhost")
             .setSecureVIPAddress("localhost")
-            .setVIPAddress("SERVICE")
+            .setVIPAddress("serviceclient")
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .build();
     }
