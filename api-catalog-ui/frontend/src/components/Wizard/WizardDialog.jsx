@@ -189,7 +189,7 @@ export default class WizardDialog extends Component {
                     objResult.content[individualIndex][propertyKey].value = valueToSet;
                     objResult.content[individualIndex][propertyKey].interactedWith = true;
                     objResult.content[individualIndex][propertyKey].empty = false;
-                    objResult.content[index][propertyKey].problem = this.checkRestrictions(
+                    objResult.content[individualIndex][propertyKey].problem = this.checkRestrictions(
                         objResult.content[index][propertyKey],
                         valueToSet,
                         obj.content[index][propertyKey].regexRestriction,
