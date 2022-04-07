@@ -88,7 +88,7 @@ public class X509Scheme implements IAuthenticationScheme {
         return authSourceService.getAuthSourceFromRequest();
     }
 
-    public static class X509Command extends AuthenticationCommand {
+    public class X509Command extends AuthenticationCommand {
         private final Long expireAt;
         private final String[] headers;
         private final X509AuthSource.Parsed parsedAuthSource;
