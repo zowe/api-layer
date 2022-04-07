@@ -137,8 +137,8 @@ export function sendYAML(yamlText, serviceId) {
 /**
  * Notify a user that the file they have uploaded is invalid yaml
  */
-export function notifyInvalidYamlUpload() {
-    toast.warning('Please make sure the file you are uploading is in valid YAML format!', {
+export function notifyInvalidYamlUpload(message) {
+    toast.warning(message, {
         closeOnClick: true,
         autoClose: 4000,
     });

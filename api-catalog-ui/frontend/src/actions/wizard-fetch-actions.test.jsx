@@ -71,6 +71,6 @@ describe('>>> Wizard actions tests', () => {
             type: 'IGNORE',
             payload: null,
         };
-        expect(actions.notifyInvalidYamlUpload()).toEqual(expectedAction);
+        expect(actions.notifyInvalidYamlUpload('test_message')).toEqual(expectedAction);
     });
 });

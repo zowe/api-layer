@@ -124,7 +124,7 @@ export default class WizardDialog extends Component {
                 if (document.getElementById('yaml-browser')) {
                     document.getElementById('yaml-browser').value = null;
                 }
-                notifyInvalidYamlUpload();
+                notifyInvalidYamlUpload('Please make sure the file you are uploading is in valid YAML format!');
             }
         };
         reader.readAsText(e.target.files[0]);
