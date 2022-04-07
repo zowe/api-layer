@@ -9,10 +9,12 @@
  */
 /* eslint-disable react/display-name */
 import * as enzyme from 'enzyme';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/extend-expect';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
+import WizardContainer from './WizardContainer';
 
 jest.mock('./WizardComponents/WizardNavigationContainer', () => () => {
     const WizardNavigationContainer = 'WizardNavigationContainerMock';
@@ -252,5 +254,73 @@ describe('>>> WizardDialog tests', () => {
         expect(screen.getByText('Select your YAML configuration file to prefill the fields:')).toBeInTheDocument();
         expect(screen.getByText('Choose File')).toBeInTheDocument();
         expect(screen.getByText('Or fill the fields:')).toBeInTheDocument();
+    });
+    it('should upload a yaml file and fill the corresponding inputs', async () => {
+        
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                inputData={categoryData}
+                navsObj={{ 'Tab 1': {} }}
+                wizardIsOpen
+                updateUploadedYamlTitle={jest.fn()}
+            />
+        );
+
+        // Setup spies
+        const readAsText = jest.spyOn(FileReader.prototype, 'readAsText');
+        const instance = wrapper.instance();
+        const fillInputs = jest.spyOn(instance, "fillInputs");
+        const updateYamlTitle = jest.spyOn(instance.props, "updateUploadedYamlTitle");
+
+        const fileContents = `serviceId: enablerjavasampleapp
+title: Onboarding Enabler Java Sample App`;
+        const expectedFileConversion = { "serviceId": "enablerjavasampleapp", "title": "Onboarding Enabler Java Sample App" }
+
+        const filename = 'testEnabler1.yaml';
+        const fakeFile = new File([fileContents], filename);
+        
+        const input = wrapper.find('#yaml-browser');
+        input.simulate('change', { target: { value: 'C:\\fakepath\\' + filename, files: [fakeFile]  }, preventDefault: jest.fn() });
+        
+        // Must wait slightly for the file to actually be read in by the system (triggers the reader.onload event)
+        const pauseFor = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+        await pauseFor(300);
+
+        expect(readAsText).toBeCalledWith(fakeFile);
+        expect(fillInputs).toHaveBeenCalledTimes(1);
+        expect(fillInputs).toHaveBeenCalledWith(expectedFileConversion);
+        expect(updateYamlTitle).toHaveBeenCalledTimes(1);
+        expect(updateYamlTitle).toBeCalledWith(filename);
+        // expect(fillInputs).toBeCalledWith("ogogogo");
+
+        // expect(wrapper.find('#yaml-file-text')).toExist();
+
+
+        // const { getByTestId, queryByTestId } = render(
+        //     <WizardDialog
+        //         wizardToggleDisplay={jest.fn()}
+        //         inputData={categoryData}
+        //         navsObj={{ 'Tab 1': {} }}
+        //         wizardIsOpen
+        //     />
+        // );
+
+        // const fileContents = require('./../../../cypress/fixtures/enabler-test-files/testEnabler1.yaml');
+        // const fakeFile = new File([fileContents], 'testEnabler1.yaml');
+
+        // const input = getByTestId(/yaml-upload-test/i);
+
+        
+        // // fireEvent.change(input, {
+        // //     target: { value: 'C:\\fakepath\\testEnabler1.yaml', files: [fakeFile] },
+        // // })
+        // userEvent.upload(input, fakeFile);
+        // const pauseFor = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+        // await pauseFor(2000);
+        // //await userEvent.upload(input, fakeFile);
+        // expect(getByTestId(/yaml-upload-test/i)).toHaveValue('testEnabler1.yaml')
+        // //expect(queryByTestId(/yaml-upload-test/i)).toBeTruthy();
+        
     });
 });

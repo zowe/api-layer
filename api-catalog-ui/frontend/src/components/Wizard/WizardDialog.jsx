@@ -82,7 +82,7 @@ export default class WizardDialog extends Component {
     /**
      * Convert an uploaded yaml file to JSON and save in redux
      */
-    showFile = (e) => {
+    showFile(e) {
         e.preventDefault();
         const reader = new FileReader();
         const filepath = e.target.value.split('\\');
@@ -93,13 +93,16 @@ export default class WizardDialog extends Component {
                 const obj = yaml.load(text);
                 this.fillInputs(obj);
                 this.props.updateUploadedYamlTitle(filename);
-            } catch {
+            } catch (error) {
+                throw error;
+                this.props.updateUploadedYamlTitle(filename);
                 document.getElementById('yaml-browser').value = null;
                 this.props.notifyInvalidYamlUpload();
+                throw error;
             }
         };
         reader.readAsText(e.target.files[0]);
-    };
+    }
 
     /**
      * Fills in the field specified by the indentation dependency
@@ -260,7 +263,7 @@ export default class WizardDialog extends Component {
      * Go through the uploaded yaml file and fill the corresponding input fields
      * @param uploadedYaml the yaml object uploaded by the user
      */
-    fillInputs = (uploadedYaml) => {
+    fillInputs(uploadedYaml) {
         if (this.props.inputData) {
             // Loop through all input groups (tabs/sections)
             this.props.inputData.forEach((obj) => {
@@ -276,7 +279,7 @@ export default class WizardDialog extends Component {
         navNamesArr.forEach((navName) => {
             this.props.validateInput(navName, false);
         });
-    };
+    }
 
     renderDoneButtonText() {
         if (this.props.enablerName === 'Static Onboarding' && this.props.userCanAutoOnboard) {
@@ -302,11 +305,18 @@ export default class WizardDialog extends Component {
                         </DialogContentText>
                         <div id="yaml-upload-container">
                             <label id="yaml-upload" nesting="true" htmlFor="yaml-browser">
-                                <input id="yaml-browser" type="file" onChange={this.showFile} />
+                                <input
+                                    id="yaml-browser"
+                                    type="file"
+                                    onChange={this.showFile}
+                                    data-testid="yaml-upload-test"
+                                />
                                 Choose File
                             </label>
                             {this.props.uploadedYamlTitle ? (
-                                <span id="yaml-file-text">{this.props.uploadedYamlTitle}</span>
+                                <span id="yaml-file-text" data-testid="yaml-file-text-test">
+                                    {this.props.uploadedYamlTitle}
+                                </span>
                             ) : null}
                         </div>
                         <DialogContentText>Or fill the fields:</DialogContentText>
