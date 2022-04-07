@@ -42,7 +42,7 @@ ext {
     jsoupVersion = '1.8.3'
     jsr305Version = '3.0.2'
     junitJupiterVersion = '5.5.2'
-    jqueryVersion = '3.5.1!!'
+    jqueryVersion = '3.6.0!!'
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
     lombokVersion = '1.18.20'
