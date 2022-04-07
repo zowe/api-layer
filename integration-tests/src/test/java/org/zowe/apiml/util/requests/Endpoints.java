@@ -22,6 +22,10 @@ public class Endpoints {
     public final static String ROUTED_AUTH = "/gateway/api/v1/auth";
     public final static String ROUTED_LOGIN = "/gateway/api/v1/auth/login";
     public final static String ROUTED_LOGOUT = "/gateway/api/v1/auth/logout";
+
+    public final static String ROUTED_LOGIN_OLD_FORMAT = "/gateway/api/v1/auth/login";
+    public final static String ROUTED_LOGOUT_OLD_FORMAT = "/gateway/api/v1/auth/logout";
+
     public final static String ROUTED_QUERY = "/gateway/api/v1/auth/query";
     public final static String ROUTED_PASSTICKET = "/gateway/api/v1/auth/ticket";
     public final static String ROUTED_SERVICE = "/gateway/api/v1/services";

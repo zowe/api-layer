@@ -1080,7 +1080,7 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
                 env:
-                    APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable,sample"
+                    APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable*,sample"
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-services:
