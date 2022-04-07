@@ -172,9 +172,8 @@ class X509SchemeTest {
             void givenNoClientCertificate_andX509SchemeRequired_thenNoHeaderIsSet() {
             String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. Can't get extensions from certificate";
             doReturn(errorHeaderValue).when(context).get(AUTH_FAIL_HEADER);
-            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
 
-            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, authSource);
 
             assertNotNull(command);
 
@@ -187,9 +186,8 @@ class X509SchemeTest {
         void givenNoClientCertificate_thenCommandExpiredImmediately() {
             String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. Can't get extensions from certificate";
             doReturn(errorHeaderValue).when(context).get(AUTH_FAIL_HEADER);
-            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
 
-            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, authSource);
 
             assertNotNull(command);
 

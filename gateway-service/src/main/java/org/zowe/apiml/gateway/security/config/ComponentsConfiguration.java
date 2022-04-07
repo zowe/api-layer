@@ -85,15 +85,4 @@ public class ComponentsConfiguration {
     public X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService, MessageService messageService) {
         return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService, authenticationService, messageService);
     }
-
-    /**
-     * Implementation of AuthSourceService interface which uses client certificate as an authentication source.
-     * This bean does not perform the mapping between common name from the client certificate and the mainframe user ID.
-     * It treats client name from certificate as user ID and uses X509CommonNameUserMapper for validation.
-     */
-    @Bean
-    @Qualifier("x509CNAuthSourceService")
-    public X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
-        return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService, authenticationService);
-    }
 }
