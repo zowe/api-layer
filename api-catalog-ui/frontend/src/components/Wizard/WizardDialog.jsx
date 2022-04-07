@@ -163,20 +163,92 @@ export default class WizardDialog extends Component {
     }
 
     /**
+     * Adds the replicas of content including for minions when necessary
+     * @param obj the item of inputData being searched through
+     * @param objResult the current changes to the inputData item
+     * @param index the index of the inputData content item
+     * @returns updated object
+     */
+    addNecessaryReplicas = (obj, objResult, index) => {
+        if (objResult.content.length <= index) {
+            objResult.content.push(JSON.parse(JSON.stringify(obj.content[0])));
+        }
+        let otherObj;
+        if (obj.minions) {
+            Object.keys(obj.minions).forEach((minion) => {
+                this.props.inputData.forEach((currentObj) => {
+                    if (currentObj.text === minion) {
+                        otherObj = { ...currentObj };
+                    }
+                });
+                if (otherObj) {
+                    if (otherObj.content.length <= index) {
+                        otherObj.content.push(JSON.parse(JSON.stringify(otherObj.content[0])));
+                    }
+                    this.props.updateWizardData(otherObj);
+                }
+            });
+        }
+        return objResult;
+    };
+
+    /**
+     * Check if there are any minions attached and update them if a shared value has been modified
+     * @param name key of the value that has been changed
+     * @param value the new value
+     * @param arrIndex index of the set
+     */
+    propagateToMinions(obj, name, value, arrIndex) {
+        const { minions } = obj;
+        if (minions) {
+            if (Object.values(minions)[0].includes(name)) {
+                let category;
+                this.props.inputData.forEach((cat) => {
+                    if (cat.text === Object.keys(minions)[0]) {
+                        category = { ...cat };
+                    }
+                });
+                if (typeof category !== 'undefined') {
+                    const arr = [...category.content];
+                    if (arr[arrIndex]) {
+                        arr[arrIndex] = {
+                            ...arr[arrIndex],
+                            [name]: {
+                                ...category.content[arrIndex][name],
+                                value,
+                                interactedWith: true,
+                                empty: false,
+                                problem: this.checkRestrictions(
+                                    category.content[arrIndex][name],
+                                    value,
+                                    category.content[arrIndex][name].regexRestriction,
+                                    category.content[arrIndex][name].validUrl
+                                ),
+                            },
+                        };
+                        this.props.updateWizardData({ ...category, content: arr });
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Add to the inputData content
      * @param obj the item of inputData being searched through
      * @param objResult the current changes to the inputData item
      * @param index the index of the inputData content item
      * @param propertyKey the current value's key
      * @param value the value to be set from the yaml
+     * @returns updated object and added minion calls
      */
-    addToContent = (obj, objResult, index, propertyKey, value) => {
+    addToContent = (obj, objResultIn, index, propertyKey, value) => {
+        let objResult = { ...objResultIn };
+        let minionCalls = [];
         // If this path exists in the uploaded yaml and its a field that has potential replicas
         if (obj.multiple && obj.multiple === true) {
             value.forEach((individualValue, individualIndex) => {
-                if (objResult.content.length <= individualIndex) {
-                    objResult.content.push(JSON.parse(JSON.stringify(obj.content[0])));
-                }
+                objResult = this.addNecessaryReplicas(obj, objResult, individualIndex);
                 let valueToSet = null;
                 if (obj.noKey && obj.noKey === true && individualValue) {
                     valueToSet = individualValue;
@@ -190,11 +262,14 @@ export default class WizardDialog extends Component {
                     objResult.content[individualIndex][propertyKey].interactedWith = true;
                     objResult.content[individualIndex][propertyKey].empty = false;
                     objResult.content[individualIndex][propertyKey].problem = this.checkRestrictions(
-                        objResult.content[index][propertyKey],
+                        obj.content[index][propertyKey],
                         valueToSet,
                         obj.content[index][propertyKey].regexRestriction,
                         obj.content[index][propertyKey].validUrl
                     );
+                    minionCalls = objResult.minions
+                        ? [...minionCalls, { obj, name: propertyKey, value: valueToSet, index: individualIndex }]
+                        : minionCalls;
                 }
             });
         } else if (value[propertyKey]) {
@@ -202,13 +277,16 @@ export default class WizardDialog extends Component {
             objResult.content[index][propertyKey].interactedWith = true;
             objResult.content[index][propertyKey].empty = false;
             objResult.content[index][propertyKey].problem = this.checkRestrictions(
-                objResult.content[index][propertyKey],
+                obj.content[index][propertyKey],
                 value[propertyKey],
                 obj.content[index][propertyKey].regexRestriction,
                 obj.content[index][propertyKey].validUrl
             );
+            minionCalls = objResult.minions
+                ? [...minionCalls, { obj, name: propertyKey, value: value[propertyKey], index: 0 }]
+                : minionCalls;
         }
-        return objResult;
+        return { val1: objResult, val2: minionCalls };
     };
 
     /**
@@ -216,6 +294,7 @@ export default class WizardDialog extends Component {
      * @param obj the item of inputData being searched through
      * @param objResultIn the current changes to the inputData item
      * @param uploadedYaml the yaml object uploaded by the user
+     * @returns updated object and added minion calls
      */
     findValue = (obj, objResultIn, uploadedYaml) => {
         let objResult = { ...objResultIn };
@@ -244,16 +323,19 @@ export default class WizardDialog extends Component {
             this.fillIndentationDependency(this.props.inputData, obj.indentationDependency, Object.keys(value)[0]);
             value = value[Object.keys(value)[0]];
         }
+        let minionCalls = [];
         if (found) {
             // Loop through all possible replicas of an input group (e.g. Routes 1 (field1, field2), Routes 2 (field1, field2))
             obj.content.forEach((property, index) => {
                 // Loop through each input in an input group replica
                 Object.keys(property).forEach((propertyKey) => {
-                    objResult = this.addToContent(obj, objResult, index, propertyKey, value);
+                    const { val1, val2 } = this.addToContent(obj, objResult, index, propertyKey, value);
+                    objResult = val1;
+                    minionCalls = [...minionCalls, ...val2];
                 });
             });
         }
-        return objResult;
+        return { val1: objResult, val2: minionCalls };
     };
 
     /**
@@ -261,16 +343,23 @@ export default class WizardDialog extends Component {
      * @param uploadedYaml the yaml object uploaded by the user
      */
     fillInputs = (uploadedYaml) => {
+        let minionCalls = [];
         if (this.props.inputData) {
             // Loop through all input groups (tabs/sections)
             this.props.inputData.forEach((obj) => {
                 let objResult = { ...obj };
                 if (obj.content) {
-                    objResult = this.findValue(obj, objResult, uploadedYaml);
+                    const { val1, val2 } = this.findValue(obj, objResult, uploadedYaml);
+                    objResult = val1;
+                    minionCalls = [...minionCalls, ...val2];
                 }
                 this.props.updateWizardData(objResult);
             });
         }
+        // Do all propagations to minions
+        minionCalls.forEach((minionCall) => {
+            this.propagateToMinions(minionCall.obj, minionCall.name, minionCall.value, minionCall.index);
+        });
         // Validate all fields
         const navNamesArr = Object.keys(this.props.navsObj);
         navNamesArr.forEach((navName) => {
