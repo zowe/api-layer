@@ -408,8 +408,7 @@ export default class WizardDialog extends Component {
     }
 
     render() {
-        const { wizardIsOpen, enablerName, selectedCategory, navsObj, uploadedYamlTitle, updateUploadedYamlTitle } =
-            this.props;
+        const { wizardIsOpen, enablerName, selectedCategory, navsObj, updateUploadedYamlTitle } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
         const disable = selectedCategory !== Object.keys(navsObj).length;
         return (

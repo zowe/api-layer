@@ -19,7 +19,7 @@ beforeEach(() => {
     jest.clearAllMocks();
 });
 
-afterEach(() => {    
+afterEach(() => {
     jest.clearAllMocks();
 });
 
@@ -291,11 +291,11 @@ describe('>>> WizardDialog tests', () => {
 
     //     const filename = 'testEnabler1.yaml';
     //     const fakeFile = new File([fileContents], filename);
-        
+
     //     // Simulate the onchange event
     //     const input = wrapper.find('#yaml-browser');
     //     input.simulate('change', { target: { value: 'C:\\fakepath\\' + filename, files: [fakeFile]  }, preventDefault: jest.fn() });
-        
+
     //     // Must wait slightly for the file to actually be read in by the system (triggers the reader.onload event)
     //     const pauseFor = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
     //     await pauseFor(300);
@@ -320,27 +320,33 @@ describe('>>> WizardDialog tests', () => {
                 validateInput={jest.fn()}
             />
         );
-        
+
         // Setup spies
         const readAsText = jest.spyOn(FileReader.prototype, 'readAsText');
         const instance = wrapper.instance();
-        const fillInputs = jest.spyOn(instance, "fillInputs");
-        const updateYamlTitle = jest.spyOn(instance.props, "updateUploadedYamlTitle");
+        const fillInputs = jest.spyOn(instance, 'fillInputs');
+        const updateYamlTitle = jest.spyOn(instance.props, 'updateUploadedYamlTitle');
 
         // Setup the file to be uploaded
         const fileContents = `serviceId: enablerjavasampleapp
 title: Onboarding Enabler Java Sample App`;
-        const expectedFileConversion = { "serviceId": "enablerjavasampleapp", "title": "Onboarding Enabler Java Sample App" }
+        const expectedFileConversion = {
+            serviceId: 'enablerjavasampleapp',
+            title: 'Onboarding Enabler Java Sample App',
+        };
 
         const filename = 'brokenFile.yaml';
         const fakeFile = new File([fileContents], filename);
-        
+
         // Simulate the onchange event
         const input = wrapper.find('#yaml-browser');
-        input.simulate('change', { target: { value: 'C:\\fakepath\\' + filename, files: [fakeFile]  }, preventDefault: jest.fn() });
-        
+        input.simulate('change', {
+            target: { value: `C:\\fakepath\\${filename}`, files: [fakeFile] },
+            preventDefault: jest.fn(),
+        });
+
         // Must wait slightly for the file to actually be read in by the system (triggers the reader.onload event)
-        const pauseFor = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+        const pauseFor = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
         await pauseFor(300);
 
         // Check that all functions are called as expected
