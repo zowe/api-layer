@@ -254,7 +254,7 @@ describe('>>> WizardDialog tests', () => {
         expect(screen.getByText('Or fill the fields:')).toBeInTheDocument();
     });
     it('should fill inputs', () => {
-        const convertedCategoryData =  Object.keys(categoryData);
+        const convertedCategoryData = Object.keys(categoryData);
 
         const validateInput = jest.fn();
         const updateWizardData = jest.fn();

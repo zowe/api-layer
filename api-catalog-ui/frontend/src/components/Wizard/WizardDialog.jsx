@@ -106,6 +106,7 @@ export default class WizardDialog extends Component {
      * Convert an uploaded yaml file to JSON and save in redux
      */
     showFile = (e) => {
+        const { updateUploadedYamlTitle, notifyInvalidYamlUpload } = this.props;
         e.preventDefault();
         const reader = new FileReader();
         const filepath = e.target.value.split('\\');
@@ -115,10 +116,10 @@ export default class WizardDialog extends Component {
             try {
                 const obj = yaml.load(text);
                 this.fillInputs(obj);
-                this.props.updateUploadedYamlTitle(filename);
+                updateUploadedYamlTitle(filename);
             } catch {
                 document.getElementById('yaml-browser').value = null;
-                this.props.notifyInvalidYamlUpload();
+                notifyInvalidYamlUpload();
             }
         };
         reader.readAsText(e.target.files[0]);
@@ -175,8 +176,7 @@ export default class WizardDialog extends Component {
             try {
                 // eslint-disable-next-line no-new
                 new URL(value);
-                problem = problem || false;
-                return problem;
+                return problem || false;
             } catch {
                 inputObject.tooltip = 'The URL has to be valid, example: https://localhost:10014';
                 return true;
@@ -264,7 +264,7 @@ export default class WizardDialog extends Component {
      * @param obj the item of inputData being searched through
      * @param name key of the value that has been changed
      * @param value the new value
-     * @param arrIndex index of the set
+     * @param index index of the set
      * @returns an appended list of minion calls
      */
     addMinionCall = (minionCalls, minions, obj, name, value, index) => {
@@ -277,7 +277,7 @@ export default class WizardDialog extends Component {
     /**
      * Add to the inputData content
      * @param obj the item of inputData being searched through
-     * @param objResult the current changes to the inputData item
+     * @param objResultIn the current changes to the inputData item
      * @param index the index of the inputData content item
      * @param propertyKey the current value's key
      * @param value the value to be set from the yaml
@@ -403,7 +403,8 @@ export default class WizardDialog extends Component {
     }
 
     render() {
-        const { wizardIsOpen, enablerName, selectedCategory, navsObj } = this.props;
+        const { wizardIsOpen, enablerName, selectedCategory, navsObj, uploadedYamlTitle, updateUploadedYamlTitle } =
+            this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
         const disable = selectedCategory !== Object.keys(navsObj).length;
         return (
@@ -418,13 +419,16 @@ export default class WizardDialog extends Component {
                             Select your YAML configuration file to prefill the fields:
                         </DialogContentText>
                         <div id="yaml-upload-container">
-                            <label id="yaml-upload" nesting="true" htmlFor="yaml-browser">
-                                <input id="yaml-browser" type="file" onChange={this.showFile} />
+                            <label id="yaml-upload" htmlFor="yaml-browser">
+                                <input
+                                    data-testid="yaml-browser"
+                                    id="yaml-browser"
+                                    type="file"
+                                    onChange={this.showFile}
+                                />
                                 Choose File
                             </label>
-                            {this.props.uploadedYamlTitle ? (
-                                <span id="yaml-file-text">{this.props.uploadedYamlTitle}</span>
-                            ) : null}
+                            {uploadedYamlTitle ? <span id="yaml-file-text">{uploadedYamlTitle}</span> : null}
                         </div>
                         <DialogContentText>Or fill the fields:</DialogContentText>
                         <WizardNavigationContainer />
@@ -435,7 +439,7 @@ export default class WizardDialog extends Component {
                             size="medium"
                             onClick={() => {
                                 this.closeWizard();
-                                this.props.updateUploadedYamlTitle('');
+                                updateUploadedYamlTitle('');
                             }}
                             style={{ borderRadius: '0.1875em' }}
                         >
