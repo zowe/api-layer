@@ -130,6 +130,39 @@ export default class WizardDialog extends Component {
     };
 
     /**
+     * Check the non-applicable restrictions
+     * @param inputObject one input object
+     * @param value user's input
+     * @param regexRestriction restriction in regex expression
+     * @param validUrl whether the value should be a valid URL
+     * @returns {boolean} true if there's a problem
+     */
+    checkRestrictions(inputObject, value, regexRestriction, validUrl) {
+        let problem = false;
+        if (regexRestriction !== undefined) {
+            regexRestriction.forEach((regex) => {
+                const restriction = new RegExp(regex.value);
+                if (!restriction.test(value)) {
+                    inputObject.tooltip = regex.tooltip;
+                    problem = true;
+                }
+            });
+        }
+        if (validUrl) {
+            try {
+                // eslint-disable-next-line no-new
+                new URL(value);
+                problem = problem || false;
+                return problem;
+            } catch {
+                inputObject.tooltip = 'The URL has to be valid, example: https://localhost:10014';
+                return true;
+            }
+        }
+        return problem;
+    }
+
+    /**
      * Add to the inputData content
      * @param obj the item of inputData being searched through
      * @param objResult the current changes to the inputData item
@@ -144,16 +177,36 @@ export default class WizardDialog extends Component {
                 if (objResult.content.length <= individualIndex) {
                     objResult.content.push(JSON.parse(JSON.stringify(obj.content[0])));
                 }
+                let valueToSet = null;
                 if (obj.noKey && obj.noKey === true && individualValue) {
-                    objResult.content[individualIndex][propertyKey].value = individualValue;
+                    valueToSet = individualValue;
                 } else if (obj.arrIndent && individualValue[obj.arrIndent][propertyKey]) {
-                    objResult.content[individualIndex][propertyKey].value = individualValue[obj.arrIndent][propertyKey];
+                    valueToSet = individualValue[obj.arrIndent][propertyKey];
                 } else if (individualValue[propertyKey]) {
-                    objResult.content[individualIndex][propertyKey].value = individualValue[propertyKey];
+                    valueToSet = individualValue[propertyKey];
+                }
+                if (valueToSet != null) {
+                    objResult.content[individualIndex][propertyKey].value = valueToSet;
+                    objResult.content[individualIndex][propertyKey].interactedWith = true;
+                    objResult.content[individualIndex][propertyKey].empty = false;
+                    objResult.content[index][propertyKey].problem = this.checkRestrictions(
+                        objResult.content[index][propertyKey],
+                        valueToSet,
+                        obj.content[index][propertyKey].regexRestriction,
+                        obj.content[index][propertyKey].validUrl
+                    );
                 }
             });
         } else if (value[propertyKey]) {
             objResult.content[index][propertyKey].value = value[propertyKey];
+            objResult.content[index][propertyKey].interactedWith = true;
+            objResult.content[index][propertyKey].empty = false;
+            objResult.content[index][propertyKey].problem = this.checkRestrictions(
+                objResult.content[index][propertyKey],
+                value[propertyKey],
+                obj.content[index][propertyKey].regexRestriction,
+                obj.content[index][propertyKey].validUrl
+            );
         }
         return objResult;
     };
@@ -218,6 +271,11 @@ export default class WizardDialog extends Component {
                 this.props.updateWizardData(objResult);
             });
         }
+        // Validate all fields
+        const navNamesArr = Object.keys(this.props.navsObj);
+        navNamesArr.forEach((navName) => {
+            this.props.validateInput(navName, false);
+        });
     };
 
     renderDoneButtonText() {
