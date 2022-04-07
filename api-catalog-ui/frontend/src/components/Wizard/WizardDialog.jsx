@@ -23,6 +23,29 @@ export default class WizardDialog extends Component {
         this.renderDoneButtonText = this.renderDoneButtonText.bind(this);
     }
 
+    /**
+     *
+     * @param objResult the current changes to the inputData item
+     * @param individualIndex the index of the inputData content item, different from index in case of replicas
+     * @param propertyKey the current value's key
+     * @param valueToSet the value to set
+     * @param obj the item of inputData being searched through
+     * @param index the index of the inputData content item
+     * @returns the objResult with the values set
+     */
+    setObjectResult(objResult, individualIndex, propertyKey, valueToSet, obj, index) {
+        objResult.content[individualIndex][propertyKey].value = valueToSet;
+        objResult.content[individualIndex][propertyKey].interactedWith = true;
+        objResult.content[individualIndex][propertyKey].empty = false;
+        objResult.content[individualIndex][propertyKey].problem = this.checkRestrictions(
+            obj.content[index][propertyKey],
+            valueToSet,
+            obj.content[index][propertyKey].regexRestriction,
+            obj.content[index][propertyKey].validUrl
+        );
+        return objResult;
+    }
+
     closeWizard = () => {
         const { wizardToggleDisplay } = this.props;
         wizardToggleDisplay();
@@ -276,15 +299,7 @@ export default class WizardDialog extends Component {
                     valueToSet = individualValue[propertyKey];
                 }
                 if (valueToSet != null) {
-                    objResult.content[individualIndex][propertyKey].value = valueToSet;
-                    objResult.content[individualIndex][propertyKey].interactedWith = true;
-                    objResult.content[individualIndex][propertyKey].empty = false;
-                    objResult.content[individualIndex][propertyKey].problem = this.checkRestrictions(
-                        obj.content[index][propertyKey],
-                        valueToSet,
-                        obj.content[index][propertyKey].regexRestriction,
-                        obj.content[index][propertyKey].validUrl
-                    );
+                    objResult = this.setObjectResult(objResult, individualIndex, propertyKey, valueToSet, obj, index);
                     minionCalls = this.addMinionCall(
                         minionCalls,
                         objResult.minions,
@@ -296,15 +311,7 @@ export default class WizardDialog extends Component {
                 }
             });
         } else if (value[propertyKey]) {
-            objResult.content[index][propertyKey].value = value[propertyKey];
-            objResult.content[index][propertyKey].interactedWith = true;
-            objResult.content[index][propertyKey].empty = false;
-            objResult.content[index][propertyKey].problem = this.checkRestrictions(
-                obj.content[index][propertyKey],
-                value[propertyKey],
-                obj.content[index][propertyKey].regexRestriction,
-                obj.content[index][propertyKey].validUrl
-            );
+            objResult = this.setObjectResult(objResult, index, propertyKey, value[propertyKey], obj, index);
             minionCalls = this.addMinionCall(minionCalls, objResult.minions, obj, propertyKey, value[propertyKey], 0);
         }
         return { val1: objResult, val2: minionCalls };
