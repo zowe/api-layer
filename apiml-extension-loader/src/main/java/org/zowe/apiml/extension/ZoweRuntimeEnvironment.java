@@ -29,6 +29,7 @@ public class ZoweRuntimeEnvironment {
     static final String COMPONENTS_APP_SERVER_DIR_ENV = "ZWE_components_app_server_pluginsDir";
     static final String PLUGINS_DIR_ENV = "ZWED_pluginsDir";
     static final String EXTENSION_DIR_ENV = "ZWE_zowe_extensionDirectory";
+    static final String PRIVATE_WORKSPACE_ENV = "ZWE_PRIVATE_WORKSPACE_ENV_DIR";
 
     public static ZoweRuntimeEnvironment defaultEnv() {
         return new ZoweRuntimeEnvironment();
@@ -66,5 +67,9 @@ public class ZoweRuntimeEnvironment {
 
     String getExtensionDirectory() {
         return System.getenv(EXTENSION_DIR_ENV);
+    }
+
+    String getWorkspaceDirectory() {
+        return System.getenv(PRIVATE_WORKSPACE_ENV);
     }
 }
