@@ -194,6 +194,7 @@ export default class WizardDialog extends Component {
 
     /**
      * Check if there are any minions attached and update them if a shared value has been modified
+     * @param obj the item of inputData being searched through
      * @param name key of the value that has been changed
      * @param value the new value
      * @param arrIndex index of the set
@@ -234,6 +235,23 @@ export default class WizardDialog extends Component {
     }
 
     /**
+     * Get the new list of calls to propagate to minions
+     * @param minionCalls the list of minion calls
+     * @param minions the list of minions
+     * @param obj the item of inputData being searched through
+     * @param name key of the value that has been changed
+     * @param value the new value
+     * @param arrIndex index of the set
+     * @returns an appended list of minion calls
+     */
+    addMinionCall = (minionCalls, minions, obj, name, value, index) => {
+        if (minions) {
+            return [...minionCalls, { obj, name, value, index }];
+        }
+        return minionCalls;
+    };
+
+    /**
      * Add to the inputData content
      * @param obj the item of inputData being searched through
      * @param objResult the current changes to the inputData item
@@ -267,9 +285,14 @@ export default class WizardDialog extends Component {
                         obj.content[index][propertyKey].regexRestriction,
                         obj.content[index][propertyKey].validUrl
                     );
-                    minionCalls = objResult.minions
-                        ? [...minionCalls, { obj, name: propertyKey, value: valueToSet, index: individualIndex }]
-                        : minionCalls;
+                    minionCalls = this.addMinionCall(
+                        minionCalls,
+                        objResult.minions,
+                        obj,
+                        propertyKey,
+                        valueToSet,
+                        individualIndex
+                    );
                 }
             });
         } else if (value[propertyKey]) {
@@ -282,9 +305,7 @@ export default class WizardDialog extends Component {
                 obj.content[index][propertyKey].regexRestriction,
                 obj.content[index][propertyKey].validUrl
             );
-            minionCalls = objResult.minions
-                ? [...minionCalls, { obj, name: propertyKey, value: value[propertyKey], index: 0 }]
-                : minionCalls;
+            minionCalls = this.addMinionCall(minionCalls, objResult.minions, obj, propertyKey, value[propertyKey], 0);
         }
         return { val1: objResult, val2: minionCalls };
     };
