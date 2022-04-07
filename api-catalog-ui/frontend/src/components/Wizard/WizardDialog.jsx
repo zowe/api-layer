@@ -115,10 +115,15 @@ export default class WizardDialog extends Component {
             const text = event.target.result;
             try {
                 const obj = yaml.load(text);
+                if (typeof obj !== 'object') {
+                    throw Error('File not valid yaml!');
+                }
                 this.fillInputs(obj);
                 updateUploadedYamlTitle(filename);
             } catch {
-                document.getElementById('yaml-browser').value = null;
+                if (document.getElementById('yaml-browser')) {
+                    document.getElementById('yaml-browser').value = null;
+                }
                 notifyInvalidYamlUpload();
             }
         };
