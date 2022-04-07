@@ -15,6 +15,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService.AUTH_FAIL_HEADER;
 
 import com.netflix.zuul.context.RequestContext;
 import java.security.cert.X509Certificate;
@@ -78,6 +79,7 @@ class X509CNAuthSourceServiceTest {
         void whenServerCertInRequest_thenAuthSourceIsNotPresent() {
             String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition";
             when(context.getRequest()).thenReturn(request);
+            when(context.get(AUTH_FAIL_HEADER)).thenReturn(errorHeaderValue);
             when(request.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
             when(mapper.isClientAuthCertificate(any())).thenReturn(false);
 
@@ -87,7 +89,7 @@ class X509CNAuthSourceServiceTest {
             verify(request, times(1)).getAttribute("javax.servlet.request.X509Certificate");
 
             Assertions.assertFalse(authSource.isPresent());
-            verifyErrorHeaderSet(errorHeaderValue);
+            verifyErrorHeaderStoredInContext(errorHeaderValue);
         }
 
         @Test
@@ -107,7 +109,7 @@ class X509CNAuthSourceServiceTest {
         }
     }
 
-    private void verifyErrorHeaderSet(String errorMessage) {
-        verify(context, times(1)).addZuulRequestHeader("X-Zowe-Auth-Failure", errorMessage);
+    private void verifyErrorHeaderStoredInContext(String errorMessage) {
+        verify(context, times(1)).put("X-Zowe-Auth-Failure", errorMessage);
     }
 }

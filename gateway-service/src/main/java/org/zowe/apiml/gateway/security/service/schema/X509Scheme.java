@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import static org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService.X509_DEFAULT_EXPIRATION;
+
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
@@ -25,7 +27,6 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 /**
  * This schema adds requested information about client certificate. This information is added
@@ -52,22 +53,20 @@ public class X509Scheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        if (authSource == null || authSource.getRawSource() == null) {
-            return AuthenticationCommand.EMPTY;
+        final RequestContext context = RequestContext.getCurrentContext();
+        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
+        if (context.containsKey(AUTH_FAIL_HEADER)) {
+            String errorHeaderValue = context.get(AUTH_FAIL_HEADER).toString();
+            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
+            return new X509Command(System.currentTimeMillis(), errorHeaderValue);
         }
 
         String error;
-        X509AuthSource.Parsed parsedAuthSource;
-        try {
-            parsedAuthSource = (X509AuthSource.Parsed) authSourceService.parse(authSource);
-        } catch (InvalidCertificateException e) {
-            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", e.getLocalizedMessage()).mapToLogMessage();
-            return new X509Command(error);
-        }
+        X509AuthSource.Parsed parsedAuthSource = (X509AuthSource.Parsed) authSourceService.parse(authSource);
 
         if (parsedAuthSource == null) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", "Cannot parse provided authentication source").mapToLogMessage();
-            return new X509Command(error);
+            return new X509Command(null, error);
         }
 
         String[] headers;
@@ -77,7 +76,10 @@ public class X509Scheme implements IAuthenticationScheme {
             headers = authentication.getHeaders().split(",");
         }
 
-        Long expireAt = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : null;
+        final long defaultExpirationTime = System.currentTimeMillis() + X509_DEFAULT_EXPIRATION;
+        final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
+        final long expireAt = Math.min(defaultExpirationTime, expirationTime);
+
         return new X509Command(expireAt, headers, parsedAuthSource, null);
     }
 
@@ -104,8 +106,8 @@ public class X509Scheme implements IAuthenticationScheme {
             this.errorHeader = errorHeader;
         }
 
-        public X509Command(String errorHeader) {
-            this.expireAt = null;
+        public X509Command(Long expireAt, String errorHeader) {
+            this.expireAt = expireAt;
             this.headers = new String[0];
             this.parsedAuthSource = null;
             this.errorHeader = errorHeader;

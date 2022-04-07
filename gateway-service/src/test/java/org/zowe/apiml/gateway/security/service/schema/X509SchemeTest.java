@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -33,8 +35,11 @@ import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.service.schema.X509Scheme.AUTH_FAIL_HEADER;
 
 class X509SchemeTest {
     private static final String PUBLIC_KEY = "X-Certificate-Public";
@@ -133,6 +138,31 @@ class X509SchemeTest {
             command.apply(null);
             verifyNoHeadersSet();
         }
+
+        @Test
+        void whenCertWithShortExpiration_thenUseCertExpiration() {
+            long expectedExpiration = Instant.now().getEpochSecond() + (5 * 60 * 1000);
+            parsedSource = new Parsed("commonName", new Date(), new Date(expectedExpiration), Origin.X509, "", "distName");
+            doReturn(parsedSource).when(authSourceService).parse(any(AuthSource.class));
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, authSource);
+
+            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+            assertNotNull(expiration);
+            assertEquals(expectedExpiration, expiration);
+        }
+
+        @Test
+        void whenCertWithLongExpiration_thenUseDefaultExpiration() {
+            long expectedExpiration = Instant.MAX.getEpochSecond();
+            parsedSource = new Parsed("commonName", new Date(), new Date(expectedExpiration), Origin.X509, "", "distName");
+            doReturn(parsedSource).when(authSourceService).parse(any(AuthSource.class));
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, authSource);
+
+            assertNotNull(command);
+            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+            assertNotNull(expiration);
+            assertTrue(expiration < expectedExpiration);
+        }
     }
 
     @Nested
@@ -140,37 +170,42 @@ class X509SchemeTest {
     class NoCertificateInRequest {
         @Test
             void givenNoClientCertificate_andX509SchemeRequired_thenNoHeaderIsSet() {
+            String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. Can't get extensions from certificate";
+            doReturn(errorHeaderValue).when(context).get(AUTH_FAIL_HEADER);
             doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
 
-            AuthenticationCommand command = x509Scheme.createCommand(authentication, null);
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
 
             assertNotNull(command);
-            assertEquals(AuthenticationCommand.EMPTY, command);
 
             command.apply(null);
             verifyNoHeadersSet();
+            verifyErrorHeaderSet(errorHeaderValue);
+        }
+
+        @Test
+        void givenNoClientCertificate_thenCommandExpiredImmediately() {
+            String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. Can't get extensions from certificate";
+            doReturn(errorHeaderValue).when(context).get(AUTH_FAIL_HEADER);
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+
+            assertNotNull(command);
+
+            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+            assertNotNull(expiration);
+            assertTrue(expiration <= System.currentTimeMillis());
         }
     }
 
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class IncorrectCertificateInRequest {
-        X509Scheme.X509Command command;
-
-        @BeforeEach
-        void init() {
-            command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, authSource);
-        }
-
         @Test
         void givenExceptionDuringParsing_thenNoHeaderIsSet() {
-            String errorHeaderValue = "ZWEAG163E Error occurred while parsing X509 certificate.";
             doThrow(new InvalidCertificateException("error")).when(authSourceService).parse(any(AuthSource.class));
-
-            command.apply(null);
-
-            verifyErrorHeaderSet(errorHeaderValue);
-            verifyNoHeadersSet();
+            assertThrows(InvalidCertificateException.class, () -> x509Scheme.createCommand(authentication, authSource));
         }
     }
 

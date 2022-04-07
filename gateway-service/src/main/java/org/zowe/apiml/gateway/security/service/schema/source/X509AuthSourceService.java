@@ -66,7 +66,7 @@ public class X509AuthSourceService implements AuthSourceService {
     protected X509Certificate checkCertificate(RequestContext context, X509Certificate clientCert) {
         if (clientCert == null) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
-            setErrorHeader(context, error);
+            storeErrorHeader(context, error);
         } else {
             // check that X509 certificate is valid client certificate (has correct extended key usage)
             // if certificate is not valid - don't use it as a source of authentication
@@ -107,12 +107,12 @@ public class X509AuthSourceService implements AuthSourceService {
                 return true;
             } else {
                 String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ValidationError", "X509 certificate is missing the client certificate extended usage definition").mapToLogMessage();
-                setErrorHeader(context, error);
+                storeErrorHeader(context, error);
                 return false;
             }
         } catch (Exception e) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ValidationError", e.getLocalizedMessage()).mapToLogMessage();
-            setErrorHeader(context, error);
+            storeErrorHeader(context, error);
             return false;
         }
     }
@@ -185,8 +185,8 @@ public class X509AuthSourceService implements AuthSourceService {
         return null;
     }
 
-    protected void setErrorHeader(RequestContext context, String value) {
-        context.addZuulRequestHeader(AUTH_FAIL_HEADER, value);
-        context.addZuulResponseHeader(AUTH_FAIL_HEADER, value);
+    // Method stores information about error into context to use it in header "X-Zowe-Auth-Failure"
+    protected void storeErrorHeader(RequestContext context, String value) {
+        context.put(AUTH_FAIL_HEADER, value);
     }
 }

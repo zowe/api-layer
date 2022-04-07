@@ -212,7 +212,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
                 when(mapper.isClientAuthCertificate(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
                 assertFalse(serviceUnderTest.isValid(authSource));
                 verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
-                verifyErrorHeaderSet(errorHeaderValue);
+                verifyErrorHeaderStoredInContext(errorHeaderValue);
             }
 
             @Test
@@ -250,13 +250,13 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
                     when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(false);
                     assertFalse(serviceUnderTest.isValid(authSource));
                     verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
-                    verifyErrorHeaderSet(errorHeaderValue);
+                    verifyErrorHeaderStoredInContext(errorHeaderValue);
                 }
             }
         }
     }
 
-    private void verifyErrorHeaderSet(String errorMessage) {
-        verify(context, times(1)).addZuulRequestHeader("X-Zowe-Auth-Failure", errorMessage);
+    private void verifyErrorHeaderStoredInContext(String errorMessage) {
+        verify(context, times(1)).put("X-Zowe-Auth-Failure", errorMessage);
     }
 }
