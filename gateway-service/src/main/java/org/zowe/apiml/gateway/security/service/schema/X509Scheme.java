@@ -120,7 +120,7 @@ public class X509Scheme implements IAuthenticationScheme {
                 setHeader(context, parsedAuthSource);
                 context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
             } else {
-                setErrorHeader(context, errorHeader);
+                JwtCommand.setErrorHeader(context, errorHeader);
             }
         }
 
@@ -150,11 +150,6 @@ public class X509Scheme implements IAuthenticationScheme {
 
                 }
             }
-        }
-
-        private void setErrorHeader(RequestContext context, String value) {
-            context.addZuulRequestHeader(AUTH_FAIL_HEADER, value);
-            context.addZuulResponseHeader(AUTH_FAIL_HEADER, value);
         }
     }
 }

@@ -47,7 +47,7 @@ public class X509CNAuthSourceService extends X509AuthSourceService {
             // get certificate from standard attribute "javax.servlet.request.X509Certificate"
             clientCert = super.getCertificateFromRequest(context.getRequest(), "javax.servlet.request.X509Certificate");
         }
-        clientCert = checkCertificate(context, clientCert);
+        clientCert = checkCertificate(clientCert);
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));
     }
 

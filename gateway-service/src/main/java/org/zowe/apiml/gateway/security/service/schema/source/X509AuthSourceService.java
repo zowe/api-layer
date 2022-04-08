@@ -53,20 +53,19 @@ public class X509AuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
         X509Certificate clientCert = getCertificateFromRequest(context.getRequest(), "client.auth.X509Certificate");
-        clientCert = checkCertificate(context, clientCert);
+        clientCert = checkCertificate(clientCert);
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));
     }
 
     /**
      * Check that certificate from request is not null and valid; otherwise set error header and do not use certificate for authentication
-     * @param context request context
      * @param clientCert {@link X509Certificate} X509 client certificate.
      * @return client certificate if it is valid, otherwise null
      */
-    protected X509Certificate checkCertificate(RequestContext context, X509Certificate clientCert) {
+    protected X509Certificate checkCertificate(X509Certificate clientCert) {
         if (clientCert == null) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
-            storeErrorHeader(context, error);
+            storeErrorHeader(error);
         } else {
             // check that X509 certificate is valid client certificate (has correct extended key usage)
             // if certificate is not valid - don't use it as a source of authentication
@@ -101,18 +100,17 @@ public class X509AuthSourceService implements AuthSourceService {
             return false;
         }
 
-        final RequestContext context = RequestContext.getCurrentContext();
         try {
             if (mapper.isClientAuthCertificate(clientCert)) {
                 return true;
             } else {
                 String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ValidationError", "X509 certificate is missing the client certificate extended usage definition").mapToLogMessage();
-                storeErrorHeader(context, error);
+                storeErrorHeader(error);
                 return false;
             }
         } catch (Exception e) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ValidationError", e.getLocalizedMessage()).mapToLogMessage();
-            storeErrorHeader(context, error);
+            storeErrorHeader(error);
             return false;
         }
     }
@@ -186,7 +184,8 @@ public class X509AuthSourceService implements AuthSourceService {
     }
 
     // Method stores information about error into context to use it in header "X-Zowe-Auth-Failure"
-    protected void storeErrorHeader(RequestContext context, String value) {
+    protected void storeErrorHeader(String value) {
+        final RequestContext context = RequestContext.getCurrentContext();
         context.put(AUTH_FAIL_HEADER, value);
     }
 }
