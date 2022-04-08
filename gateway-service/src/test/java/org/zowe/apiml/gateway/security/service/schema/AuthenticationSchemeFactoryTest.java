@@ -10,11 +10,16 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
+import java.security.cert.X509Certificate;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -28,8 +33,17 @@ import static org.mockito.Mockito.*;
 class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     private static final AuthenticationCommand COMMAND = mock(AuthenticationCommand.class);
+    private static final JwtAuthSource JWT_AUTH_SOURCE = new JwtAuthSource("token");
+    private static final X509AuthSource X509_AUTH_SOURCE = new X509AuthSource(mock(X509Certificate.class));
 
-    private IAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault) {
+    protected static Stream<AuthSource> provideAuthSources() {
+        return Stream.of(
+            JWT_AUTH_SOURCE,
+            X509_AUTH_SOURCE
+        );
+    }
+
+    private IAuthenticationScheme createScheme(final AuthenticationScheme scheme, final boolean isDefault, AuthSource authSource) {
         return new IAuthenticationScheme() {
             @Override
             public AuthenticationScheme getScheme() {
@@ -45,47 +59,54 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
             public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
                 return COMMAND;
             }
+
+            @Override
+            public Optional<AuthSource> getAuthSource() {
+                return Optional.of(authSource);
+            }
         };
     }
 
-    @Test
-    void testInit_OK() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void testInit_OK(AuthSource authSource) {
         assertDoesNotThrow(() -> {
             new AuthenticationSchemeFactory(
-                mock(AuthSourceService.class),
                 Arrays.asList(
-                    createScheme(AuthenticationScheme.BYPASS, true),
-                    createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
-                    createScheme(AuthenticationScheme.ZOWE_JWT, false)
+                    createScheme(AuthenticationScheme.BYPASS, true, authSource),
+                    createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false, authSource),
+                    createScheme(AuthenticationScheme.ZOWE_JWT, false, authSource)
                 )
             );
         });
     }
 
-    @Test
-    void testInit_NoDefault() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void testInit_NoDefault(AuthSource authSource) {
         List<IAuthenticationScheme> schemes = Arrays.asList(
-            createScheme(AuthenticationScheme.BYPASS, false),
-            createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
-            createScheme(AuthenticationScheme.ZOWE_JWT, false)
+            createScheme(AuthenticationScheme.BYPASS, false, authSource),
+            createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false, authSource),
+            createScheme(AuthenticationScheme.ZOWE_JWT, false, authSource)
         );
 
         // no default
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new AuthenticationSchemeFactory(mock(AuthSourceService.class), schemes);
+            new AuthenticationSchemeFactory(schemes);
         });
         assertTrue(exception.getMessage().contains("No scheme"));
     }
 
-    @Test
-    void testInit_MultipleDefaults() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void testInit_MultipleDefaults(AuthSource authSource) {
         List<IAuthenticationScheme> schemes = Arrays.asList(
-            createScheme(AuthenticationScheme.BYPASS, true),
-            createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, true),
-            createScheme(AuthenticationScheme.ZOWE_JWT, false)
+            createScheme(AuthenticationScheme.BYPASS, true, authSource),
+            createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, true, authSource),
+            createScheme(AuthenticationScheme.ZOWE_JWT, false, authSource)
         );
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new AuthenticationSchemeFactory(mock(AuthSourceService.class), schemes);
+            new AuthenticationSchemeFactory(schemes);
         });
         assertTrue(exception.getMessage().contains("Multiple scheme"));
         assertTrue(exception.getMessage().contains("as default"));
@@ -93,26 +114,27 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         assertTrue(exception.getMessage().contains(AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme()));
     }
 
-    @Test
-    void testInit_MultipleSameScheme() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void testInit_MultipleSameScheme(AuthSource authSource) {
         List<IAuthenticationScheme> schemes = Arrays.asList(
-            createScheme(AuthenticationScheme.BYPASS, true),
-            createScheme(AuthenticationScheme.BYPASS, false));
+            createScheme(AuthenticationScheme.BYPASS, true, authSource),
+            createScheme(AuthenticationScheme.BYPASS, false, authSource));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new AuthenticationSchemeFactory(mock(AuthSourceService.class), schemes);
+            new AuthenticationSchemeFactory(schemes);
         });
         assertTrue(exception.getMessage().contains("Multiple beans for scheme"));
         assertTrue(exception.getMessage().contains("AuthenticationSchemeFactoryTest$1"));
     }
 
-    @Test
-    void testGetSchema() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void testGetSchema(AuthSource authSource) {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
-            mock(AuthSourceService.class),
             Arrays.asList(
-                createScheme(AuthenticationScheme.BYPASS, true),
-                createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
-                createScheme(AuthenticationScheme.ZOWE_JWT, false)
+                createScheme(AuthenticationScheme.BYPASS, true, authSource),
+                createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false, authSource),
+                createScheme(AuthenticationScheme.ZOWE_JWT, false, authSource)
             )
         );
 
@@ -123,63 +145,70 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         assertEquals(AuthenticationScheme.BYPASS, asf.getSchema(null).getScheme());
     }
 
-    @Test
-    void testGetAuthenticationCommand() {
-        final IAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
-        final IAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
+    @Nested
+    class GivenAuthenticationSchemesDefined {
+        HttpServletRequest request;
+        RequestContext requestContext;
 
-        AuthSourceService as = mock(AuthSourceService.class);
-        AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(as, Arrays.asList(byPass, passTicket));
-        Authentication authentication = new Authentication(AuthenticationScheme.BYPASS, "applid1");
+        IAuthenticationScheme byPass;
+        IAuthenticationScheme passTicket;
+        AuthenticationSchemeFactory asf;
+        Authentication authentication;
 
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        RequestContext requestContext = new RequestContext();
-        requestContext.setRequest(request);
+        @BeforeEach
+        void setup() {
+            request = mock(HttpServletRequest.class);
+            requestContext = new RequestContext();
+            requestContext.setRequest(request);
 
-        verify(byPass, times(0)).createCommand(authentication,null);
-        verify(passTicket, times(0)).createCommand(authentication,null);
-        asf.getAuthenticationCommand(authentication);
+            byPass = spy(createScheme(AuthenticationScheme.BYPASS, true, JWT_AUTH_SOURCE));
+            passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false, X509_AUTH_SOURCE));
 
-        verify(byPass, times(1)).createCommand(authentication,null);
-        verify(passTicket, times(0)).createCommand(authentication,null);
-        authentication.setScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
-        asf.getAuthenticationCommand(authentication);
+            asf = new AuthenticationSchemeFactory(Arrays.asList(byPass, passTicket));
+            authentication = new Authentication(AuthenticationScheme.BYPASS, "applid1");
+        }
 
-        verify(byPass, times(1)).createCommand(authentication,null);
-        verify(passTicket, times(1)).createCommand(authentication,null);
-        authentication.setScheme(null);
-        asf.getAuthenticationCommand(authentication);
+        @Test
+        void whenBypassAuthentication_thenByPassCommandCreate() {
+            asf.getAuthenticationCommand(authentication);
+            verify(byPass, times(1)).createCommand(authentication, JWT_AUTH_SOURCE);
+            verify(passTicket, times(0)).createCommand(authentication, X509_AUTH_SOURCE);
+        }
 
-        verify(byPass, times(2)).createCommand(authentication,null);
-        verify(passTicket, times(1)).createCommand(authentication,null);
-        asf.getAuthenticationCommand(null);
+        @Test
+        void whenHttpPassTicketAuthentication_thenHttpPassTicketCommandCreate() {
+            authentication.setScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
 
-        verify(byPass, times(2)).createCommand(authentication,null);
-        verify(byPass, times(1)).createCommand(null,null);
-        verify(passTicket, times(1)).createCommand(authentication,null);
+            asf.getAuthenticationCommand(authentication);
+            verify(byPass, times(0)).createCommand(authentication, JWT_AUTH_SOURCE);
+            verify(passTicket, times(1)).createCommand(authentication, X509_AUTH_SOURCE);
+        }
 
-        RequestContext.testSetCurrentContext(requestContext);
-        AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed("userId", new Date(), new Date(), Origin.ZOWE);
-        when(as.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtToken123")));
-        when(as.parse(new JwtAuthSource("jwtToken123"))).thenReturn(parsedSource);
+        @Test
+        void whenAuthenticationSchemeIsNull_thenByPassTicketCommandCreate() {
+            authentication.setScheme(null);
 
+            asf.getAuthenticationCommand(authentication);
+            verify(byPass, times(1)).createCommand(authentication, JWT_AUTH_SOURCE);
+            verify(passTicket, times(0)).createCommand(authentication, X509_AUTH_SOURCE);
+        }
 
-        verify(byPass, times(0)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
-        verify(passTicket, times(0)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
-        authentication.setScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
-        asf.getAuthenticationCommand(authentication);
-        verify(byPass, times(0)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
-        verify(passTicket, times(1)).createCommand(authentication, new JwtAuthSource("jwtToken123"));
+        @Test
+        void whenNullAuthentication_thenByPassTicketCommandCreate() {
+            asf.getAuthenticationCommand(null);
+            verify(byPass, times(1)).createCommand(null, JWT_AUTH_SOURCE);
+            verify(passTicket, times(0)).createCommand(null, X509_AUTH_SOURCE);
+        }
     }
 
-    @Test
-    void testUnknownScheme() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void testUnknownScheme(AuthSource authSource) {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
-            mock(AuthSourceService.class),
             Arrays.asList(
-                createScheme(AuthenticationScheme.BYPASS, true),
-                createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
-                createScheme(AuthenticationScheme.ZOWE_JWT, false)
+                createScheme(AuthenticationScheme.BYPASS, true, authSource),
+                createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false, authSource),
+                createScheme(AuthenticationScheme.ZOWE_JWT, false, authSource)
             )
         );
 

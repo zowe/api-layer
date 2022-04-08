@@ -6,6 +6,7 @@ const githubToken = process.argv[2];
 const version = process.argv[3];
 const releaseDate = process.argv[4];
 const amountOfVersions = process.argv[5];
+const branchToMerge = process.argv[6];
 
 (async function () {
     const changes = execSync(`conventional-changelog -r ${amountOfVersions}`).toString();
@@ -60,7 +61,7 @@ ${restOfChangelog}`;
         repo: 'api-layer',
         title: 'Automatic update for the Changelog for release',
         head: branch,
-        base: 'master',
+        base: branchToMerge,
         body: 'Update changelog for new release'
     });
 })()

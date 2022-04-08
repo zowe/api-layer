@@ -7,6 +7,12 @@ dependencies {
     compile libraries.bcprov;
     compile libraries.bcpkix;
     
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_web
 
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok
