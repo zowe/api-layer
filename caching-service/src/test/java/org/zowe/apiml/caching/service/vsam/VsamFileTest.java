@@ -17,11 +17,10 @@ import org.mockito.stubbing.Answer;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.zfile.ZFile;
-import org.zowe.apiml.zfile.ZFileConstants;
-import org.zowe.apiml.zfile.ZFileException;
+import com.ibm.jzos.*;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +46,7 @@ class VsamFileTest {
     private final String VALID_SERVICE_ID = "test-service-id";
 
     @BeforeEach
-    void prepareConfig() throws VsamRecordException {
+    void prepareConfig() throws VsamRecordException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         vsamConfiguration = DefaultVsamConfiguration.defaultConfiguration();
         key = new VsamKey(vsamConfiguration);
 
@@ -60,7 +59,7 @@ class VsamFileTest {
     @Nested
     class whenInstantiatingRecord {
         @Test
-        void hasValidFileName() throws VsamRecordException {
+        void hasValidFileName() throws VsamRecordException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
             ZFileProducer producer = mock(ZFileProducer.class);
 
             when(producer.openZfile()).thenReturn(zFile);
@@ -82,7 +81,7 @@ class VsamFileTest {
         }
 
         @Test
-        void givenOpenZFileThrowsException_ExceptionIsThrown() throws VsamRecordException {
+        void givenOpenZFileThrowsException_ExceptionIsThrown() throws VsamRecordException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
             when(producer.openZfile()).thenThrow(VsamRecordException.class);
             VsamInitializer initializer = new VsamInitializer();
             assertThrows(IllegalStateException.class, () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer, apimlLogger));
@@ -298,7 +297,7 @@ class VsamFileTest {
     @Nested
     class whenClosingRecord {
         @Test
-        void givenZFile_fileIsClosed() throws VsamRecordException, ZFileException {
+        void givenZFile_fileIsClosed() throws VsamRecordException, ZFileException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
             when(producer.openZfile()).thenReturn(zFile);
             VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
             vsamFile.close();
@@ -307,7 +306,7 @@ class VsamFileTest {
         }
 
         @Test
-        void givenNoZFile_fileIsNotClosed() throws VsamRecordException, ZFileException {
+        void givenNoZFile_fileIsNotClosed() throws VsamRecordException, ZFileException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
             when(producer.openZfile()).thenReturn(null);
             VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
             vsamFile.close();
@@ -316,7 +315,7 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileCloseError_NoExceptionThrown() throws VsamRecordException, ZFileException {
+        void givenZFileCloseError_NoExceptionThrown() throws VsamRecordException, ZFileException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
             doThrow(new ZFileException("", "", "", 0, 0, 0, new byte[]{}, 0, 0, 0, 0, 0)).when(zFile).close();
             when(producer.openZfile()).thenReturn(zFile);
             VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);

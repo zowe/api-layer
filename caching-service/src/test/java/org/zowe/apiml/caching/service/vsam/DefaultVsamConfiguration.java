@@ -12,7 +12,8 @@ package org.zowe.apiml.caching.service.vsam;
 import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
-import org.zowe.apiml.zfile.ZFileConstants;
+//import com.ibm.jzos;
+import com.ibm.jzos.ZFileConstants;
 
 public class DefaultVsamConfiguration {
     public static VsamConfig defaultConfiguration() {

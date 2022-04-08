@@ -14,7 +14,7 @@ import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.config.GeneralConfig;
-import org.zowe.apiml.zfile.ZFileConstants;
+import com.ibm.jzos.*;
 
 /**
  * Main configuration hub for VSAM based storage

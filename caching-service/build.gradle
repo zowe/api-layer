@@ -48,7 +48,9 @@ gitProperties {
 }
 
 dependencies {
-
+    // compileOnly(project(':mock-zos'))
+    implementation project(':mock-zos')
+    implementation project(':common-service-core')
     implementation project(':common-service-core')
     implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')

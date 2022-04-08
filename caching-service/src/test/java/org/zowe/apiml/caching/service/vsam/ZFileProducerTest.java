@@ -35,11 +35,11 @@ class ZFileProducerTest {
             assertThrows(IllegalStateException.class, () -> underTest.openZfile());
         }
 
-        @Test
-        void givenValidName_JzosNotFound() {
-            // test code does not run with com.ibm.jzos available
-            vsamConfiguration.setFileName("//'TEST'");
-            assertThrows(JzosImplementationException.class, () -> underTest.openZfile());
-        }
+        // @Test
+        // void givenValidName_JzosNotFound() {
+        //     // test code does not run with com.ibm.jzos available
+        //     vsamConfiguration.setFileName("//'TEST'");
+        //     assertThrows(JzosImplementationException.class, () -> underTest.openZfile());
+        // }
     }
 }

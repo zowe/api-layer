@@ -15,9 +15,8 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.zfile.ZFile;
-import org.zowe.apiml.zfile.ZFileConstants;
-import org.zowe.apiml.zfile.ZFileException;
+import com.ibm.jzos.*;
+
 
 /**
  * This performs the warmup of VSAM during startup with retry
