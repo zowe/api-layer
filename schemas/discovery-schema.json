@@ -1,0 +1,37 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schema/api-layer-config",
+    "title": "Discovery service configuration",
+    "description": "Properties that can be used to configure discovery service in a configuration file, such as zowe.yaml.",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "apiml": {
+            "type": "object",
+            "description": "",
+            "additionalProperties": false,
+            "properties": {
+                "serviceIdPrefixReplacer": {
+                    "type": "string",
+                    "description": "A comma separated tuple to replace service ID with new one in API ML registry."
+                }
+            }
+        },
+        "port": {
+            "$ref": "#/$defs/port",
+            "default": 7552
+        },
+        "debug": {
+            "type": "boolean",
+            "description": "Enable debug logs in discovery service"
+        }
+    },
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        }
+    }
+}

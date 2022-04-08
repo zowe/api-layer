@@ -12,7 +12,10 @@
                         "app-server": {
                             "allOf": [
                                 { "$ref": "/schema/base#component" },
-                                { "$ref": "/schema/gateway-schema#"}
+                                { "$ref": "/schema/gateway-schema#"},
+                                { "$ref": "/schema/discovery-schema#"},
+                                { "$ref": "/schema/catalog-schema#"},
+                                { "$ref": "/schema/caching-schema#"}
                             ]
                         }
                     }
