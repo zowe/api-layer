@@ -2,12 +2,13 @@ package org.zowe.apiml.metrics.services.zebra;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class RmfData {
 
