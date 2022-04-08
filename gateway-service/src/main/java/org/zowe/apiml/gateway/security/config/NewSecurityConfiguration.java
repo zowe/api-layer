@@ -28,6 +28,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -52,7 +53,7 @@ import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.filter.ApimlX509Filter;
+import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
@@ -133,7 +134,6 @@ public class NewSecurityConfiguration {
                 .and()
 
                 .x509()
-                .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) //this filter selects certificates to use for user authentication and pushes them to custom attribute
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
 
@@ -149,6 +149,7 @@ public class NewSecurityConfiguration {
                 .and()
 
                 //drive filter order this way
+                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                 .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
@@ -163,12 +164,6 @@ public class NewSecurityConfiguration {
                 securityObjectMapper,
                 authenticationManager,
                 handlerInitializer.getResourceAccessExceptionHandler());
-        }
-
-        private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
-            ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
-            out.setAuthenticationManager(authenticationManager);
-            return out;
         }
 
         private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
@@ -376,9 +371,11 @@ public class NewSecurityConfiguration {
                 .logout().disable();  // logout filter in this chain not needed
             if (isAttlsEnabled) {
                 http.x509()
-                    .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) // filter out API ML certificate
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                    .userDetailsService(new SimpleUserDetailService());
+                    .userDetailsService(new SimpleUserDetailService())
+                    .and()
+                    // filter out API ML certificate
+                    .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
             } else {
                 http.x509() // default x509 filter, authenticates trusted cert
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
@@ -390,11 +387,10 @@ public class NewSecurityConfiguration {
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
         }
 
-        private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
-            ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+        private CategorizeCertsFilter reversedCategorizeCertFilter() {
+            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64);
             out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
             out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            out.setAuthenticationManager(authenticationManager);
             return out;
         }
 
@@ -447,7 +443,9 @@ public class NewSecurityConfiguration {
                 .authorizeRequests()
                 .anyRequest()
                 .permitAll()
-                .and().logout().disable();
+                .and().logout().disable()
+                // sort out client and apiml internal certificates
+                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), AnonymousAuthenticationFilter.class);
         }
     }
 
