@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.AUTH_FAIL_HEADER;
+
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
@@ -52,6 +54,14 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        final RequestContext context = RequestContext.getCurrentContext();
+        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
+        if (context.containsKey(AUTH_FAIL_HEADER)) {
+            String errorHeaderValue = context.get(AUTH_FAIL_HEADER).toString();
+            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
+            return new ZoweJwtAuthCommand(System.currentTimeMillis(), null, errorHeaderValue);
+        }
+
         String error = null;
         String jwt = null;
         AuthSource.Parsed parsedAuthSource = null;

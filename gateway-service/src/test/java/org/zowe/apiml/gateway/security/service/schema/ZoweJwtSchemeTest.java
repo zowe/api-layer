@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.service.schema.X509Scheme.AUTH_FAIL_HEADER;
 
 
 class ZoweJwtSchemeTest {
@@ -165,80 +166,116 @@ class ZoweJwtSchemeTest {
 
         }
 
-        @Test
-        void whenValid_thenUpdateZuulHeaderWithJWToken() {
-            command = scheme.createCommand(null, authSource);
-            command.apply(null);
-            verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
-            assertEquals(EXPECTED_TOKEN_RESULT, requestContext.getZuulRequestHeaders().get("cookie"));
+        @Nested
+        class WhenCertificateInRequest {
+            @Test
+            void whenValid_thenUpdateZuulHeaderWithJWToken() {
+                command = scheme.createCommand(null, authSource);
+                command.apply(null);
+                verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
+                assertEquals(EXPECTED_TOKEN_RESULT, requestContext.getZuulRequestHeaders().get("cookie"));
+            }
+
+            @Test
+            void whenValid_thenUpdateCookiesWithJWToken() {
+                command = scheme.createCommand(null, authSource);
+                HttpRequest httpRequest = new HttpGet("api/v1/files");
+                httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
+                command.applyToRequest(httpRequest);
+                assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
+            }
+
+            @Test
+            void whenJwtCannotBeCreatedFromX509_thenCreateErrorMessage() {
+                X509Certificate cert = mock(X509Certificate.class);
+                AuthSource certSource = new X509AuthSource(cert);
+                when(authSourceService.parse(certSource)).thenReturn(new X509AuthSource.Parsed("user", null, null, null, null, null));
+                when(authSourceService.getJWT(certSource)).thenThrow(new UserNotMappedException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed"));
+                command = scheme.createCommand(null, certSource);
+                assertEquals("ZWEAG161E No user was found", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
+            }
+
+            @Test
+            void whenNoJWTReturned_thenUpdateZuulHeaderWithJWToken() {
+                String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
+                when(authSourceService.getJWT(authSource)).thenReturn(null);
+                AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
+
+                assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
+                assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
+                authenticationCommand.apply(null);
+                assertEquals(errorHeaderValue, requestContext.getZuulRequestHeaders().get("x-zowe-auth-failure"));
+            }
+
+            @Test
+            void whenNoJWTReturned_thenUpdateHeaderWithJWToken() {
+                when(authSourceService.getJWT(authSource)).thenReturn(null);
+                AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
+                HttpRequest request = mock(HttpRequest.class);
+                assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
+                assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
+                authenticationCommand.applyToRequest(request);
+                verify(request, times(1)).addHeader(any(), any());
+            }
+
+            @Test
+            void whenValidX509AuthSource_thenCommandIsNotExpired() {
+                long expectedExpiration = System.currentTimeMillis() + (5 * 60 * 1000);
+                when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
+
+                command = scheme.createCommand(null, authSource);
+                Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+
+                assertFalse(command.isExpired());
+                assertNotNull(expiration);
+                assertEquals(expectedExpiration, expiration);
+            }
         }
 
-        @Test
-        void whenValid_thenUpdateCookiesWithJWToken() {
-            command = scheme.createCommand(null, authSource);
-            HttpRequest httpRequest = new HttpGet("api/v1/files");
-            httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
-            command.applyToRequest(httpRequest);
-            assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
+        @Nested
+        class NoCertificateInRequest {
+            @Test
+            void givenNoClientCertificate_thenCommandDoNotExpire() {
+                String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
+                doReturn(errorHeaderValue).when(requestContext).get(AUTH_FAIL_HEADER);
+
+                ZoweJwtScheme.ZoweJwtAuthCommand command = (ZoweJwtScheme.ZoweJwtAuthCommand) scheme.createCommand(null, null);
+
+                assertNotNull(command);
+
+                Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+                assertNotNull(expiration);
+                assertTrue(expiration <= System.currentTimeMillis());
+            }
         }
 
-        @Test
-        void whenJwtCannotBeCreatedFromX509_thenCreateErrorMessage() {
-            X509Certificate cert = mock(X509Certificate.class);
-            AuthSource certSource = new X509AuthSource(cert);
-            when(authSourceService.parse(certSource)).thenReturn(new X509AuthSource.Parsed("user", null, null, null, null, null));
-            when(authSourceService.getJWT(certSource)).thenThrow(new UserNotMappedException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed"));
-            command = scheme.createCommand(null, certSource);
-            assertEquals("ZWEAG161E No user was found", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
-        }
+        @Nested
+        class IncorrectCertificateInRequest {
+            @Test
+            void givenNoClientCertificate_andX509SchemeRequired_thenNoHeaderIsSet() {
+                String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. Can't get extensions from certificate";
+                doReturn(errorHeaderValue).when(requestContext).get(AUTH_FAIL_HEADER);
 
-        @Test
-        void whenNoJWTReturned_thenUpdateZuulHeaderWithJWToken() {
-            String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
-            when(authSourceService.getJWT(authSource)).thenReturn(null);
-            AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
+                ZoweJwtScheme.ZoweJwtAuthCommand command = (ZoweJwtScheme.ZoweJwtAuthCommand) scheme.createCommand(null, null);
 
-            assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
-            assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
-            authenticationCommand.apply(null);
-            assertEquals(errorHeaderValue, requestContext.getZuulRequestHeaders().get("x-zowe-auth-failure"));
-        }
+                assertNotNull(command);
 
-        @Test
-        void whenNoJWTReturned_thenUpdateHeaderWithJWToken() {
-            when(authSourceService.getJWT(authSource)).thenReturn(null);
-            AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
-            HttpRequest request = mock(HttpRequest.class);
-            assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
-            assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
-            authenticationCommand.applyToRequest(request);
-            verify(request, times(1)).addHeader(any(), any());
-        }
+                command.apply(null);
+                assertEquals(errorHeaderValue, requestContext.getZuulRequestHeaders().get("x-zowe-auth-failure"));
+            }
 
-        @Test
-        void whenValidX509AuthSource_thenCommandIsNotExpired() {
-            long expectedExpiration = System.currentTimeMillis() + (5 * 60 * 1000);
-            when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
+            @Test
+            void whenExpiredX509AuthSource_thenCommandIsExpired() {
+                long expectedExpiration = System.currentTimeMillis() - (5 * 60 * 1000);
+                when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
 
-            command = scheme.createCommand(null, authSource);
-            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+                command = scheme.createCommand(null, authSource);
+                Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
 
-            assertFalse(command.isExpired());
-            assertNotNull(expiration);
-            assertEquals(expectedExpiration, expiration);
-        }
-
-        @Test
-        void whenExpiredX509AuthSource_thenCommandIsExpired() {
-            long expectedExpiration = System.currentTimeMillis() - (5 * 60 * 1000);
-            when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
-
-            command = scheme.createCommand(null, authSource);
-            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
-
-            assertTrue(command.isExpired());
-            assertNotNull(expiration);
-            assertEquals(expectedExpiration, expiration);
+                assertTrue(command.isExpired());
+                assertNotNull(expiration);
+                assertEquals(expectedExpiration, expiration);
+            }
         }
     }
 
