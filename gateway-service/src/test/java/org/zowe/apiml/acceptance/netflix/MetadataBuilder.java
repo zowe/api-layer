@@ -53,6 +53,12 @@ public class MetadataBuilder {
         return this;
     }
 
+    public MetadataBuilder withX509() {
+        metadata.put("apiml.authentication.scheme", "x509");
+        metadata.put("apiml.authentication.headers", "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName");
+        return this;
+    }
+
     public MetadataBuilder withCompression(boolean compressionEnabled) {
         metadata.put("apiml.response.compress", String.valueOf(compressionEnabled));
 
