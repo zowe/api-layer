@@ -141,7 +141,7 @@ class X509SchemeTest {
 
         @Test
         void whenCertWithShortExpiration_thenUseCertExpiration() {
-            long expectedExpiration = Instant.now().getEpochSecond() + (5 * 60 * 1000);
+            long expectedExpiration = System.currentTimeMillis() + (5 * 60 * 1000);
             parsedSource = new Parsed("commonName", new Date(), new Date(expectedExpiration), Origin.X509, "", "distName");
             doReturn(parsedSource).when(authSourceService).parse(any(AuthSource.class));
             X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, authSource);

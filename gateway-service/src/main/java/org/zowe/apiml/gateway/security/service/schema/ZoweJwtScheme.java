@@ -109,5 +109,12 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
                 JwtCommand.addErrorHeader(request, errorHeader);
             }
         }
+
+        @Override
+        public boolean isExpired() {
+            if (expireAt == null) return false;
+
+            return System.currentTimeMillis() > expireAt;
+        }
     }
 }
