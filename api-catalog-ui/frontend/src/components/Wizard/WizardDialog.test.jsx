@@ -13,7 +13,6 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
-import WizardContainer from './WizardContainer';
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -355,5 +354,97 @@ title: Onboarding Enabler Java Sample App`;
         expect(fillInputs).toHaveBeenCalledWith(expectedFileConversion);
         expect(updateYamlTitle).toHaveBeenCalledTimes(1);
         expect(updateYamlTitle).toBeCalledWith(filename);
+    });
+    it('should call fillInputs', async () => {
+        const convertedCategoryData = Object.keys(categoryData);
+        const testNavsObj = {
+            Basics: true,
+            'IP info': true,
+            URL: true,
+            'Discovery Service URL': true,
+            Routes: true,
+            Authentication: true,
+            'API Info': true,
+            Catalog: true,
+            SSL: true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                updateWizardData={jest.fn()}
+                inputData={convertedCategoryData}
+                wizardIsOpen
+                updateUploadedYamlTitle={jest.fn()}
+                notifyInvalidYamlUpload={jest.fn()}
+                validateInput={jest.fn()}
+                navsObj={testNavsObj}
+            />
+        );
+
+        // Setup spies
+        const instance = wrapper.instance();
+        const fillInputs = jest.spyOn(instance, 'fillInputs');
+        const validateInput = jest.spyOn(instance.props, 'validateInput');
+
+        // Set up data to call fillInputs
+        const testData = {
+            serviceId: 'enablerjavasampleapp',
+            title: 'Onboarding Enabler Java Sample App',
+            description: 'Example for exposing a Jersey REST API using Onboarding Enabler Java',
+            baseUrl: 'https://localhost:10016/enablerJavaSampleApp',
+            serviceIpAddress: '127.0.0.1',
+            preferIpAddress: true,
+            homePageRelativeUrl: null,
+            statusPageRelativeUrl: '/application/info',
+            healthCheckRelativeUrl: '/application/health',
+            discoveryServiceUrls: ['https://localhost:10011/eureka', 'https://localhost:10012/eureka'],
+            routes: [
+                {
+                    gatewayUrl: 'api/v1',
+                    serviceUrl: '/enablerJavaSampleApp/api/v1',
+                },
+                {
+                    gatewayUrl: 'ui/v1',
+                    serviceUrl: '/',
+                },
+            ],
+            apiInfo: [
+                {
+                    apiId: 'zowe.apiml.enabler.java.sample',
+                    version: '1.1.1',
+                    gatewayUrl: 'api/v1',
+                    swaggerUrl: 'https://localhost:10016/enablerJavaSampleApp/openapi.json',
+                },
+            ],
+            catalog: {
+                tile: {
+                    id: 'cademoapps',
+                    title: 'Sample API Mediation Layer Applications',
+                    description:
+                        'Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem',
+                    version: '1.0.0',
+                },
+            },
+            ssl: {
+                verifySslCertificatesOfServices: true,
+                protocol: 'TLSv1.2',
+                keyAlias: 'localhost',
+                keyPassword: 'password',
+                keyStore: '../keystore/localhost/localhost.keystore.p12',
+                keyStorePassword: 'password',
+                keyStoreType: 'PKCS12',
+                trustStore: '../keystore/localhost/localhost.truststore.p12',
+                trustStorePassword: 'password',
+                trustStoreType: 'PKCS12',
+            },
+        };
+
+        // Call the function to test it
+        instance.fillInputs(testData);
+
+        // Check that all functions are called as expected
+        expect(fillInputs).toHaveBeenCalledTimes(1);
+        expect(fillInputs).toHaveBeenCalledWith(testData);
+        expect(validateInput).toHaveBeenCalledTimes(9);
     });
 });
