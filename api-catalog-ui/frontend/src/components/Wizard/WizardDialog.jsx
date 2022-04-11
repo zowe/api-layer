@@ -118,8 +118,6 @@ export default class WizardDialog extends Component {
                 if (typeof obj !== 'object') {
                     throw Error('File not valid yaml!');
                 }
-                // eslint-disable-next-line no-console
-                console.log(obj);
                 this.fillInputs(obj);
                 updateUploadedYamlTitle(filename);
             } catch {
@@ -397,11 +395,7 @@ export default class WizardDialog extends Component {
         });
         // Validate all fields
         const navNamesArr = Object.keys(this.props.navsObj);
-        // eslint-disable-next-line no-console
-        console.log(navNamesArr);
         navNamesArr.forEach((navName) => {
-            // eslint-disable-next-line no-console
-            console.log('HERE');
             this.props.validateInput(navName, false);
         });
     }

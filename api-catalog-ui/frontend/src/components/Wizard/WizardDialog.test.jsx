@@ -13,6 +13,11 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
+import { baseCategories } from './configs/wizard_base_categories';
+import { springSpecificCategories } from './configs/wizard_spring_categories';
+import { staticSpecificCategories } from './configs/wizard_static_categories';
+import { nodeSpecificCategories } from './configs/wizard_node_categories';
+import { micronautSpecificCategories } from './configs/wizard_micronaut_categories';
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -355,8 +360,7 @@ title: Onboarding Enabler Java Sample App`;
         expect(updateYamlTitle).toHaveBeenCalledTimes(1);
         expect(updateYamlTitle).toBeCalledWith(filename);
     });
-    it('should call fillInputs', async () => {
-        const convertedCategoryData = Object.keys(categoryData);
+    it('should call fillInputs for the Plain Java Enabler', async () => {
         const testNavsObj = {
             Basics: true,
             'IP info': true,
@@ -372,7 +376,7 @@ title: Onboarding Enabler Java Sample App`;
             <WizardDialog
                 wizardToggleDisplay={jest.fn()}
                 updateWizardData={jest.fn()}
-                inputData={convertedCategoryData}
+                inputData={baseCategories}
                 wizardIsOpen
                 updateUploadedYamlTitle={jest.fn()}
                 notifyInvalidYamlUpload={jest.fn()}
@@ -446,5 +450,407 @@ title: Onboarding Enabler Java Sample App`;
         expect(fillInputs).toHaveBeenCalledTimes(1);
         expect(fillInputs).toHaveBeenCalledWith(testData);
         expect(validateInput).toHaveBeenCalledTimes(9);
+    });
+    it('should call fillInputs for the Spring Enabler', async () => {
+        const testNavsObj = {
+            Basics: true,
+            'Scheme info': true,
+            'IP & URL': true,
+            'Discovery Service URL': true,
+            Routes: true,
+            'API Info': true,
+            Catalog: true,
+            'Auth & SSL': true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                updateWizardData={jest.fn()}
+                inputData={springSpecificCategories}
+                wizardIsOpen
+                updateUploadedYamlTitle={jest.fn()}
+                notifyInvalidYamlUpload={jest.fn()}
+                validateInput={jest.fn()}
+                navsObj={testNavsObj}
+            />
+        );
+
+        // Setup spies
+        const instance = wrapper.instance();
+        const fillInputs = jest.spyOn(instance, 'fillInputs');
+        const validateInput = jest.spyOn(instance.props, 'validateInput');
+
+        // Set up data to call fillInputs
+        const testData = {
+            enabled: true,
+            enableUrlEncodedCharacters: false,
+            service: {
+                serviceId: 'test',
+                title: 'Test',
+                description: 'A test',
+                scheme: 'https',
+                hostname: 'testhost',
+                port: '12345',
+                contextPath: '/${apiml.service.serviceId}',
+                baseUrl: 'https://testhost:12345',
+                homePageRelativeUrl: '${apiml.service.contextPath}/',
+                statusPageRelativeUrl: '${apiml.service.contextPath}/',
+                healthCheckRelativeUrl: '${apiml.service.contextPath}/',
+                discoveryServiceUrls: ['http://testhost:12345'],
+                routes: [
+                    {
+                        gatewayUrl: '/api/v1',
+                        serviceUrl: '/enablerJavaSampleApp/api/v1',
+                    },
+                ],
+                apiInfo: [
+                    {
+                        apiId: 'test',
+                        version: '1.0.0',
+                        gatewayUrl: '/api/v1',
+                        swaggerUrl:
+                            '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
+                    },
+                ],
+                catalog: {
+                    tile: {
+                        id: 'apicatalog',
+                        title: 'API Mediation Layer API',
+                        description:
+                            'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
+                        version: '1.0.0',
+                    },
+                },
+                authentication: {
+                    scheme: 'bypass',
+                },
+                ssl: {
+                    verifySslCertificatesOfServices: true,
+                    protocol: 'TL',
+                    keyAlias: 'test',
+                    keyPassword: 'test',
+                    keyStore: 'test',
+                    keyStorePassword: 'test',
+                    keyStoreType: 'PKCS12',
+                    trustStore: 'test',
+                    trustStorePassword: 'test',
+                    trustStoreType: 'PKCS12',
+                },
+            },
+        };
+
+        // Call the function to test it
+        instance.fillInputs(testData);
+
+        // Check that all functions are called as expected
+        expect(fillInputs).toHaveBeenCalledTimes(1);
+        expect(fillInputs).toHaveBeenCalledWith(testData);
+        expect(validateInput).toHaveBeenCalledTimes(8);
+    });
+    it('should call fillInputs for the Micronaut Enabler', async () => {
+        const testNavsObj = {
+            Basics: true,
+            'Scheme Info': true,
+            URL: true,
+            Routes: true,
+            'API info': true,
+            'Catalog configuration': true,
+            SSL: true,
+            'Micronaut configuration': true,
+            'Micronaut SSL configuration': true,
+            'Micronaut management': true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                updateWizardData={jest.fn()}
+                inputData={staticSpecificCategories}
+                wizardIsOpen
+                updateUploadedYamlTitle={jest.fn()}
+                notifyInvalidYamlUpload={jest.fn()}
+                validateInput={jest.fn()}
+                navsObj={testNavsObj}
+            />
+        );
+
+        // Setup spies
+        const instance = wrapper.instance();
+        const fillInputs = jest.spyOn(instance, 'fillInputs');
+        const validateInput = jest.spyOn(instance.props, 'validateInput');
+
+        // Set up data to call fillInputs
+        const testData = {
+            apiml: {
+                service: {
+                    preferIpAddress: true,
+                    serviceId: 'test',
+                    title: 'Test App',
+                    description: 'A test app for testing',
+                    discoveryServiceUrls: 'http://localhost:12345',
+                    scheme: 'https',
+                    hostname: 'test',
+                    port: '123',
+                    contextPath: '/${apiml.service.serviceId}',
+                    baseUrl: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}',
+                    homePageRelativeUrl: '${apiml.service.contextPath}',
+                    statusPageRelativeUrl: '${apiml.service.contextPath}',
+                    healthCheckRelativeUrl: '${apiml.service.contextPath}',
+                    routes: [
+                        {
+                            gatewayUrl: '/api/v1',
+                            serviceUrl: '/service/api/v1',
+                        },
+                    ],
+                    apiInfo: [
+                        {
+                            apiId: 'my.app.for.testing',
+                            version: '1.0.0',
+                            gatewayUrl: '${apiml.service.routes.gatewayUrl}',
+                        },
+                    ],
+                    catalog: [
+                        {
+                            tile: {
+                                id: 'apicatalog',
+                                title: 'API Mediation Layer API',
+                                description:
+                                    'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
+                                version: '1.0.0',
+                            },
+                        },
+                    ],
+                    ssl: [
+                        {
+                            enabled: false,
+                        },
+                    ],
+                },
+            },
+            micronaut: {
+                application: {
+                    name: '${apiml.service.serviceId}',
+                },
+                server: {
+                    port: '${apiml.service.port}',
+                    'context-path': '/${apiml.service.serviceId}',
+                },
+                ssl: {
+                    enable: false,
+                    'key-store': {
+                        password: '${apiml.service.ssl[0].keyPassword}',
+                        type: '${apiml.service.ssl[0].keyStoreType}',
+                        path: 'file:${apiml.service.ssl[0].keyStore}',
+                    },
+                    key: {
+                        alias: '${apiml.service.ssl[0].keyAlias}',
+                        password: '${apiml.service.ssl[0].keyPassword}',
+                    },
+                    'trust-store': {
+                        password: '${apiml.service.ssl[0].trustStorePassword}',
+                        path: 'file:${apiml.service.ssl[0].trustStore}',
+                        type: '${apiml.service.ssl[0].trustStoreType}',
+                    },
+                    port: '${apiml.service.port}',
+                    ciphers: '${apiml.service.ssl[0].ciphers}',
+                    protocol: '${apiml.service.ssl[0].protocol}',
+                },
+            },
+            eureka: {
+                client: {
+                    serviceUrl: {
+                        defaultZone: 'https://localhost:44212',
+                    },
+                },
+            },
+            management: {
+                endpoints: {
+                    web: {
+                        'base-path': '/thing',
+                        exposure: {
+                            include: 'yep,yepp',
+                        },
+                    },
+                    health: {
+                        defaults: {
+                            enabled: false,
+                        },
+                    },
+                },
+            },
+        };
+
+        // Call the function to test it
+        instance.fillInputs(testData);
+
+        // Check that all functions are called as expected
+        expect(fillInputs).toHaveBeenCalledTimes(1);
+        expect(fillInputs).toHaveBeenCalledWith(testData);
+        expect(validateInput).toHaveBeenCalledTimes(10);
+    });
+    it('should call fillInputs for the Node JS Enabler', async () => {
+        const testNavsObj = {
+            Basics: true,
+            Instance: true,
+            'Instance ports': true,
+            'Instance info': true,
+            'Instance metadata': true,
+            SSL: true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                updateWizardData={jest.fn()}
+                inputData={nodeSpecificCategories}
+                wizardIsOpen
+                updateUploadedYamlTitle={jest.fn()}
+                notifyInvalidYamlUpload={jest.fn()}
+                validateInput={jest.fn()}
+                navsObj={testNavsObj}
+            />
+        );
+
+        // Setup spies
+        const instance = wrapper.instance();
+        const fillInputs = jest.spyOn(instance, 'fillInputs');
+        const validateInput = jest.spyOn(instance.props, 'validateInput');
+
+        // Set up data to call fillInputs
+        const testData = {
+            eureka: {
+                ssl: false,
+                host: 'localhost',
+                ipAddress: '127.0.0.1',
+                port: '10011',
+                servicePath: '/eureka/apps/',
+                maxRetries: 30,
+                requestRetryDelay: 1000,
+                registryFetchInterval: 5,
+            },
+            instance: {
+                app: '${serviceId}',
+                vipAddress: '${serviceId}',
+                instanceId: 'localhost:hwexpress:10020',
+                homePageUrl: '${homePageRelativeUrl}',
+                hostname: 'localhost',
+                ipAddr: '127.0.0.1',
+                secureVipAddress: '${serviceId}',
+                port: {
+                    $: '10020',
+                    '@enabled': false,
+                },
+                securePort: {
+                    $: '10020',
+                    '@enabled': true,
+                },
+                dataCenterInfo: {
+                    '@class': 'com.test',
+                    name: 'Test',
+                },
+                metadata: {
+                    'apiml.catalog.tile.id': 'samplenodeservice',
+                    'apiml.catalog.tile.title': 'Zowe TEST',
+                    'apiml.catalog.tile.description': 'test',
+                    'apiml.catalog.tile.version': '1.1.1',
+                    'apiml.routes.api_v1.gatewayUrl': '${routes.gatewayUrl}',
+                    'apiml.routes.api_v1.serviceUrl': '${routes.serviceUrl}',
+                    'apiml.apiInfo.0.apiId': 'test.test',
+                    'apiml.apiInfo.0.gatewayUrl': '${routes.gatewayUrl}',
+                    'apiml.apiInfo.0.swaggerUrl': 'http://localhost:10020/swagger.json',
+                    'apiml.service.title': 'Test Service',
+                    'apiml.service.description': 'a service for testing',
+                },
+            },
+            ssl: {
+                certificate: 'ssl/localhost.keystore.cer',
+                keyStore: 'ssl/localhost.keystore.cer',
+                caFile: 'ssl/localhost.kpen',
+                keyPassword: '123',
+            },
+        };
+
+        // Call the function to test it
+        instance.fillInputs(testData);
+
+        // Check that all functions are called as expected
+        expect(fillInputs).toHaveBeenCalledTimes(1);
+        expect(fillInputs).toHaveBeenCalledWith(testData);
+        expect(validateInput).toHaveBeenCalledTimes(6);
+    });
+    it('should call fillInputs for the Static Onboarding', async () => {
+        const convertedCategoryData = Object.keys(categoryData);
+        const testNavsObj = {
+            Basics: true,
+            URL: true,
+            Routes: true,
+            Authentication: true,
+            'API Info': true,
+            'Catalog UI Tiles': true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                wizardToggleDisplay={jest.fn()}
+                updateWizardData={jest.fn()}
+                inputData={micronautSpecificCategories}
+                wizardIsOpen
+                updateUploadedYamlTitle={jest.fn()}
+                notifyInvalidYamlUpload={jest.fn()}
+                validateInput={jest.fn()}
+                navsObj={testNavsObj}
+            />
+        );
+
+        // Setup spies
+        const instance = wrapper.instance();
+        const fillInputs = jest.spyOn(instance, 'fillInputs');
+        const validateInput = jest.spyOn(instance.props, 'validateInput');
+
+        // Set up data to call fillInputs
+        const testData = {
+            services: [
+                {
+                    serviceId: 'sampleservice',
+                    title: 'Hello API ML',
+                    description:
+                        'Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem',
+                    instanceBaseUrls: ['http://localhost:8080',],
+                    homePageRelativeUrl: '/home',
+                    statusPageRelativeUrl: '/application/info',
+                    healthCheckRelativeUrl: '/application/health',
+                    routes: [
+                        {
+                            gatewayUrl: '/api/v1',
+                            serviceRelativeUrl: '/sampleservice/api/v1',
+                        },
+                    ],
+                    authentication: {
+                        scheme: 'bypass',
+                        applid: '',
+                        headers: 'X-Certificate-Public',
+                    },
+                    apiInfo: [
+                        {
+                            apiId: 'test.test.test',
+                            version: '1.1.1',
+                            gatewayUrl: '/api/v1',
+                        },
+                    ],
+                },
+            ],
+            catalogUiTiles: {
+                apicatalog: {
+                    title: 'API Mediation Layer API',
+                    description:
+                        'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
+                },
+            },
+        };
+
+        // Call the function to test it
+        instance.fillInputs(testData);
+
+        // Check that all functions are called as expected
+        expect(fillInputs).toHaveBeenCalledTimes(1);
+        expect(fillInputs).toHaveBeenCalledWith(testData);
+        expect(validateInput).toHaveBeenCalledTimes(6);
     });
 });
