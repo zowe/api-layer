@@ -104,7 +104,10 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
             ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
             verify(mockClient, times(1)).execute(captor.capture());
 
-            HttpUriRequest toVerify = captor.getValue();
+            assertHeaders(captor.getValue(), expectedCnHeader, expectedDnHeader, expectedPublicKeyHeader);
+        }
+
+        private void assertHeaders(HttpUriRequest toVerify, String expectedCnHeader, String expectedDnHeader, String expectedPublicKeyHeader) {
             Header cnHeader = toVerify.getFirstHeader(X509Scheme.X509Command.COMMON_NAME);
             Header dnHeader = toVerify.getFirstHeader(X509Scheme.X509Command.DISTINGUISHED_NAME);
             Header publicKeyHeader = toVerify.getFirstHeader(X509Scheme.X509Command.PUBLIC_KEY);
@@ -119,14 +122,36 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
     }
 
     @Nested
-    class GivenServerCertificate {
+    class GivenInvalidCertificate {
+
         @Test
-        void thenNoCertDetailsInRequestHeaders() throws IOException {
-            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+        void whenServerCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
+            String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition";
+
+            applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
             mockValid200HttpResponse();
 
             given()
                 .config(SslContext.apimlRootCert)
+                .when()
+                .get(basePath + serviceWithCustomConfiguration.getPath())
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+
+            ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+            verify(mockClient, times(1)).execute(captor.capture());
+
+            assertHeaders(captor.getValue(), errorHeaderValue);
+        }
+
+        @Test
+        void whenNoCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
+            String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
+
+            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+            mockValid200HttpResponse();
+
+            given()
                 .when()
                 .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then()
@@ -135,6 +160,16 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
             ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
             verify(mockClient, times(1)).execute(captor.capture());
 
+            assertHeaders(captor.getValue(), errorHeaderValue);
+        }
+
+        private void assertHeaders(HttpUriRequest toVerify, String errorMessage) throws IOException {
+            ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+            verify(mockClient, times(1)).execute(captor.capture());
+
+            Header xZoweAuthFailureHeader = toVerify.getFirstHeader("X-Zowe-Auth-Failure");
+            Assertions.assertNotNull(xZoweAuthFailureHeader);
+            Assertions.assertEquals(errorMessage, xZoweAuthFailureHeader.getValue());
             assertThat(captor.getValue().getHeaders(X509Scheme.X509Command.COMMON_NAME).length, is(0));
             assertThat(captor.getValue().getHeaders(X509Scheme.X509Command.DISTINGUISHED_NAME).length, is(0));
             assertThat(captor.getValue().getHeaders(X509Scheme.X509Command.PUBLIC_KEY).length, is(0));
