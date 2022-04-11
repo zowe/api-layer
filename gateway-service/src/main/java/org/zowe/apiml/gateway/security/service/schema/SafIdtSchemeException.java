@@ -13,7 +13,7 @@ package org.zowe.apiml.gateway.security.service.schema;
  * This exception is used to cover various failure scenarios in during
  * transformation in SafIdtScheme
  */
-public class SafIdtSchemeException extends Exception{
+public class SafIdtSchemeException extends Exception {
 
     public SafIdtSchemeException(String message) {
         super(message);
