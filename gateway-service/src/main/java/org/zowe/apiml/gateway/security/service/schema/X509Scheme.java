@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import static org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService.X509_DEFAULT_EXPIRATION;
+
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
@@ -121,7 +123,7 @@ public class X509Scheme implements IAuthenticationScheme {
                 setHeader(context, parsedAuthSource);
                 context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
             } else {
-                setErrorHeader(context, errorHeader);
+                JwtCommand.setErrorHeader(context, errorHeader);
             }
         }
 
