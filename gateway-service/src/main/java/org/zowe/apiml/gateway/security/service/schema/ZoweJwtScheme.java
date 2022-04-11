@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.AUTH_FAIL_HEADER;
+
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
@@ -52,6 +54,14 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        final RequestContext context = RequestContext.getCurrentContext();
+        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
+        if (context.containsKey(AUTH_FAIL_HEADER)) {
+            String errorHeaderValue = context.get(AUTH_FAIL_HEADER).toString();
+            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
+            return new ZoweJwtAuthCommand(System.currentTimeMillis(), null, errorHeaderValue);
+        }
+
         String error = null;
         String jwt = null;
         AuthSource.Parsed parsedAuthSource = null;
@@ -68,15 +78,19 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
         if (error != null) {
             return new ZoweJwtAuthCommand(null, null, error);
         }
+
+        final long defaultExpirationTime = System.currentTimeMillis() + configurationProperties.getTokenProperties().getExpirationInSeconds() * 1000L;
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
-        final Long expirationTime = expiration == null ? null : expiration.getTime();
+        final long expirationTime = expiration != null ? expiration.getTime() : defaultExpirationTime;
+        final long expireAt = Math.min(defaultExpirationTime, expirationTime);
+
         try {
             jwt = authSourceService.getJWT(authSource);
         } catch (UserNotMappedException | AuthenticationTokenException e) {
             error = this.messageService.createMessage(e.getMessage()).mapToLogMessage();
         }
 
-        return new ZoweJwtAuthCommand(expirationTime, jwt, error);
+        return new ZoweJwtAuthCommand(expireAt, jwt, error);
     }
 
     @lombok.Value
@@ -108,6 +122,13 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             } else {
                 JwtCommand.addErrorHeader(request, errorHeader);
             }
+        }
+
+        @Override
+        public boolean isExpired() {
+            if (expireAt == null) return false;
+
+            return System.currentTimeMillis() > expireAt;
         }
     }
 }
