@@ -315,3 +315,10 @@ messages:
       text: "Error occurred while validating X509 certificate. %s"
       reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
       action: "Configure your client to provide valid x509 certificate."
+
+    - key: org.zowe.apiml.gateway.security.scheme.missingApplid
+      number: ZWEAG165
+      type: ERROR
+      text: "The 'apiml.authentication.applid' parameter is not specified for a service."
+      reason: "The applid parameter is required for the calling service."
+      action: "Provide the 'apiml.authentication.applid' parameter."
