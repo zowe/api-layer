@@ -13,7 +13,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.http.Cookie;
-
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -25,16 +24,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.JwtCommand;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 
 import java.io.IOException;
 import java.util.Date;
-import org.zowe.apiml.util.config.SslContext;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,6 +48,7 @@ import static org.mockito.Mockito.*;
  * The output to be tested is the saf idt token.
  */
 @AcceptanceTest
+@TestPropertySource(properties = {"spring.profiles.active=debug", "apiml.security.x509.externalMapperUrl="})
 class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;
@@ -105,7 +108,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 SafRestAuthenticationService.Token responseBody =
                         new SafRestAuthenticationService.Token(resultSafToken, "applid");
                 when(response.getBody()).thenReturn(responseBody);
-                
+
                 given()
                     .cookie(validJwtToken)
                     .when()
@@ -155,28 +158,9 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
     }
 
     @Nested
-    class GivenServerCertificate {
-        @Test
-        void thenSafheaderInRequestHeaders() throws IOException {
-            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
-            mockValid200HttpResponse();
-
-            given()
-                .config(SslContext.apimlRootCert)
-                .when()
-                .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
-                .statusCode(is(HttpStatus.SC_OK));
-
-            ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
-            verify(mockClient, times(1)).execute(captor.capture());
-
-            assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
-        }
-    }
-    /*
-    @Nested
     class GivenClientCertificate {
+        String resultSafToken;
+
         @BeforeEach
         void setUp() throws Exception {
             SslContextConfigurer configurer = new SslContextConfigurer(keystorePassword, clientKeystore, keystore);
@@ -189,45 +173,63 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
             reset(mockClient);
+
+            resultSafToken = Jwts.builder()
+                .setExpiration(DateUtils.addMinutes(new Date(), 10))
+                .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256))
+                .compact();
+
+            ResponseEntity<SafRestAuthenticationService.Token> response = mock(ResponseEntity.class);
+            when(mockTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                .thenReturn(response);
+            SafRestAuthenticationService.Token responseBody =
+                new SafRestAuthenticationService.Token(resultSafToken, "applid");
+            when(response.getBody()).thenReturn(responseBody);
+
+            mockValid200HttpResponse();
         }
 
         @Nested
         class WhenClientAuthInExtendedKeyUsage {
-            // TODO: add checks for transformation once X509 -> SafIdt is implemented
             @Test
-            @Ignore
-            void thenOk() throws IOException {
-                mockValid200HttpResponse();
-
+            void thenValidSafIdTokenProvided() throws IOException {
                 given()
                     .config(SslContext.clientCertUser)
                     .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                     .then()
                     .statusCode(is(HttpStatus.SC_OK));
+
+                ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+                verify(mockClient, times(1)).execute(captor.capture());
+                assertHeaderWithValue(captor.getValue(), "X-SAF-Token", resultSafToken);
+                assertThat(captor.getValue().getHeaders(JwtCommand.AUTH_FAIL_HEADER).length, is(0));
             }
         }
 
         /**
          * When client certificate from request does not have extended key usage set correctly and can't be used for
-         * client authentication then request fails with response code 400 - BAD REQUEST
-         * /
+         * client authentication then request will continue with X-Zowe-Auth-Failure header only.
+         */
         @Nested
         class WhenNoClientAuthInExtendedKeyUsage {
             @Test
-            @Ignore
-            void thenBadRequest() {
+            void thenNoSafIdTokenProvided() throws IOException {
 
                 given()
                     .config(SslContext.apimlRootCert)
                     .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                     .then()
-                    .statusCode(is(HttpStatus.SC_BAD_REQUEST));
+                    .statusCode(is(HttpStatus.SC_OK));
+
+                ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+                verify(mockClient, times(1)).execute(captor.capture());
+                assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
+                assertHeaderWithValue(captor.getValue(), JwtCommand.AUTH_FAIL_HEADER, "ZWEAG160E No authentication provided in the request");
             }
         }
     }
-    */
 
     private void assertHeaderWithValue(HttpUriRequest request, String header, String value) {
         assertThat(request.getHeaders(header).length, is(1));
