@@ -77,7 +77,9 @@ dependencies {
 
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
+    implementation libraries.jackson_annotations
     implementation libraries.jackson_core
+    implementation libraries.jackson_databind
     implementation libraries.tomcat_coyote
     implementation libraries.tomcat_annotations_api
     implementation libraries.tomcat_embed_core
@@ -156,6 +158,7 @@ dependencies {
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok
 
+    testImplementation(testFixtures(project(":integration-tests")))
 
     runtime libraries.jjwt_impl
     runtime libraries.jjwt_jackson
