@@ -78,15 +78,19 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
         if (error != null) {
             return new ZoweJwtAuthCommand(null, null, error);
         }
+
+        final long defaultExpirationTime = System.currentTimeMillis() + configurationProperties.getTokenProperties().getExpirationInSeconds() * 1000L;
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
-        final Long expirationTime = expiration == null ? null : expiration.getTime();
+        final long expirationTime = expiration != null ? expiration.getTime() : defaultExpirationTime;
+        final long expireAt = Math.min(defaultExpirationTime, expirationTime);
+
         try {
             jwt = authSourceService.getJWT(authSource);
         } catch (UserNotMappedException | AuthenticationTokenException e) {
             error = this.messageService.createMessage(e.getMessage()).mapToLogMessage();
         }
 
-        return new ZoweJwtAuthCommand(expirationTime, jwt, error);
+        return new ZoweJwtAuthCommand(expireAt, jwt, error);
     }
 
     @lombok.Value

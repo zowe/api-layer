@@ -67,6 +67,7 @@ class ZoweJwtSchemeTest {
         authSourceService = mock(AuthSourceService.class);
         configurationProperties = mock(AuthConfigurationProperties.class);
         when(configurationProperties.getCookieProperties()).thenReturn(new AuthConfigurationProperties.CookieProperties());
+        when(configurationProperties.getTokenProperties()).thenReturn(new AuthConfigurationProperties.TokenProperties());
     }
 
     @Nested
@@ -220,7 +221,7 @@ class ZoweJwtSchemeTest {
 
             @Test
             void whenValidX509AuthSource_thenCommandIsNotExpired() {
-                long expectedExpiration = System.currentTimeMillis() + (5 * 60 * 1000);
+                long expectedExpiration = System.currentTimeMillis() + (5L * 60 * 1000);
                 when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
 
                 command = scheme.createCommand(null, authSource);
