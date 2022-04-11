@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -30,11 +30,7 @@ public class AuthenticationSchemeFactory {
     private final IAuthenticationScheme defaultScheme;
     private final Map<AuthenticationScheme, IAuthenticationScheme> map;
 
-    private final AuthSourceService authSourceService;
-
-    public AuthenticationSchemeFactory(@Autowired AuthSourceService authSourceService, @Autowired List<IAuthenticationScheme> schemes) {
-        this.authSourceService = authSourceService;
-
+    public AuthenticationSchemeFactory(@Autowired List<IAuthenticationScheme> schemes) {
         map = new EnumMap<>(AuthenticationScheme.class);
 
         IAuthenticationScheme foundDefaultScheme = null;
@@ -82,8 +78,8 @@ public class AuthenticationSchemeFactory {
         } else {
             scheme = getSchema(authentication.getScheme());
         }
-
-        return scheme.createCommand(authentication, authSourceService.getAuthSourceFromRequest().orElse(null));
+        final AuthSource authSource = scheme.getAuthSource().orElse(null);
+        return scheme.createCommand(authentication, authSource);
     }
 
 }
