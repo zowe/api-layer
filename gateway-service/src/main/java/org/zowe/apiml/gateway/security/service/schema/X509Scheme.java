@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import static org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService.X509_DEFAULT_EXPIRATION;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
@@ -27,6 +25,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 /**
  * This schema adds requested information about client certificate. This information is added
@@ -36,14 +35,16 @@ import org.zowe.apiml.message.core.MessageService;
 @Slf4j
 public class X509Scheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
+    private final AuthConfigurationProperties authConfigurationProperties;
     private final MessageService messageService;
 
     public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
 
-    public X509Scheme(@Autowired @Qualifier("x509CNAuthSourceService") AuthSourceService authSourceService, MessageService messageService) {
+    public X509Scheme(@Autowired @Qualifier("x509CNAuthSourceService") AuthSourceService authSourceService, MessageService messageService, AuthConfigurationProperties authConfigurationProperties) {
         this.authSourceService = authSourceService;
         this.messageService = messageService;
+        this.authConfigurationProperties = authConfigurationProperties;
     }
 
     @Override
@@ -76,7 +77,7 @@ public class X509Scheme implements IAuthenticationScheme {
             headers = authentication.getHeaders().split(",");
         }
 
-        final long defaultExpirationTime = System.currentTimeMillis() + X509_DEFAULT_EXPIRATION;
+        final long defaultExpirationTime = System.currentTimeMillis() + authConfigurationProperties.getX509Cert().getTimeout() * 1000L;
         final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
         final long expireAt = Math.min(defaultExpirationTime, expirationTime);
 

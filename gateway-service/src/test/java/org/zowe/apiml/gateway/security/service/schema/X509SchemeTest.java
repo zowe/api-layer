@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +52,7 @@ class X509SchemeTest {
     HttpServletRequest request;
     X509Certificate x509Certificate;
     AuthSourceService authSourceService;
+    AuthConfigurationProperties authConfigurationProperties;
     X509AuthSource authSource;
     X509AuthSource.Parsed parsedSource;
     X509Scheme x509Scheme;
@@ -75,7 +77,9 @@ class X509SchemeTest {
         parsedSource = new Parsed("commonName", new Date(), new Date(), Origin.X509, "", "distName");
 
         authSourceService = mock(AuthSourceService.class);
-        x509Scheme = new X509Scheme(authSourceService, messageService);
+        authConfigurationProperties = mock(AuthConfigurationProperties.class);
+        doReturn(new AuthConfigurationProperties.X509Cert()).when(authConfigurationProperties).getX509Cert();
+        x509Scheme = new X509Scheme(authSourceService, messageService, authConfigurationProperties);
         authentication = new Authentication(AuthenticationScheme.X509, null, null);
     }
 
