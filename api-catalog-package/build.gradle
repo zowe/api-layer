@@ -20,6 +20,7 @@ task packageApiCatalog(type: Zip) {
     into('/') {
         from "$resourceDir/manifest.yaml"
         from "$resourceDir/pluginDefinition.json"
+        from "../schemas/catalog-schema.json"
     }
 
     into('plugin/') {

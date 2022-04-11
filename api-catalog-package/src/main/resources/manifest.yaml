@@ -8,6 +8,8 @@ title: API Catalog
 # Human readable component description
 description: API Catalog service to display service details and API documentation for discovered API services.
 license: EPL-2.0
+schemas:
+    configs: catalog-schema.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git

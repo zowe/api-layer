@@ -19,6 +19,7 @@ task packageApiGateway(type: Zip) {
 
     into('/') {
         from "$resourceDir/manifest.yaml"
+        from "../schemas/gateway-schema.json"
     }
 
     into('bin/') {
