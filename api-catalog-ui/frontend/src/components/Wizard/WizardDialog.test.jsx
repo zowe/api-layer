@@ -262,50 +262,6 @@ describe('>>> WizardDialog tests', () => {
         expect(screen.getByText('Choose File')).toBeInTheDocument();
         expect(screen.getByText('Or fill the fields:')).toBeInTheDocument();
     });
-    // it('should upload a file and fail because it is not yaml format', async () => {
-    //     const convertedCategoryData = Object.keys(categoryData);
-    //     const wrapper = enzyme.shallow(
-    //         <WizardDialog
-    //             wizardToggleDisplay={jest.fn()}
-    //             updateWizardData={jest.fn()}
-    //             inputData={convertedCategoryData}
-    //             navsObj={{ 'Tab 1': {} }}
-    //             wizardIsOpen
-    //             updateUploadedYamlTitle={jest.fn()}
-    //             notifyInvalidYamlUpload={jest.fn()}
-    //             validateInput={jest.fn()}
-    //         />
-    //     );
-
-    //     // Setup spies
-    //     const readAsText = jest.spyOn(FileReader.prototype, 'readAsText');
-    //     const instance = wrapper.instance();
-    //     const fillInputs = jest.spyOn(instance, "fillInputs");
-    //     const updateYamlTitle = jest.spyOn(instance.props, "updateUploadedYamlTitle");
-    //     const notifyInvalidYamlUpload = jest.spyOn(instance.props, "notifyInvalidYamlUpload")
-
-    //     // Setup the file to be uploaded
-    //     const fileContents = `give this file some invalid yaml
-    //     this is not valid
-    //     i am not valid`;
-
-    //     const filename = 'testEnabler1.yaml';
-    //     const fakeFile = new File([fileContents], filename);
-
-    //     // Simulate the onchange event
-    //     const input = wrapper.find('#yaml-browser');
-    //     input.simulate('change', { target: { value: 'C:\\fakepath\\' + filename, files: [fakeFile]  }, preventDefault: jest.fn() });
-
-    //     // Must wait slightly for the file to actually be read in by the system (triggers the reader.onload event)
-    //     const pauseFor = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
-    //     await pauseFor(300);
-
-    //     // Check that all functions are called as expected
-    //     expect(readAsText).toBeCalledWith(fakeFile);
-    //     expect(fillInputs).toHaveBeenCalledTimes(0);
-    //     expect(updateYamlTitle).toHaveBeenCalledTimes(0);
-    //     expect(notifyInvalidYamlUpload).toHaveBeenCalledTimes(1);
-    // });
     it('should upload a yaml file and fill the corresponding inputs', async () => {
         const convertedCategoryData = Object.keys(categoryData);
         const wrapper = enzyme.shallow(
