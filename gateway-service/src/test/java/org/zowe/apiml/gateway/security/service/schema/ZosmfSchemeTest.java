@@ -208,14 +208,13 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
             @Test
             void givenZoweJwtAuthSource_thenAddOnlyLtpaCookie() {
-                requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, null);
                 zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken1")).apply(null);
                 assertEquals("LtpaToken2=ltpa1", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
             }
 
             @Test
             void givenZoweJwtAuthSource_andExistingCookie_thenAppendCookieWithLtpa() {
-                requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, "cookie1=1");
+                ((MockHttpServletRequest)request).addHeader(COOKIE_HEADER, "cookie1=1");
                 zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken1")).apply(null);
                 assertEquals("cookie1=1;LtpaToken2=ltpa1", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
             }

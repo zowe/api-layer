@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.integration.authentication.schemes;
 
+import io.restassured.http.Cookie;
+import io.restassured.http.Cookies;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -75,6 +77,23 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .get(URL)
                 .then()
                 .body("headers.cookie", is("apimlAuthenticationToken=" + jwt))
+                .statusCode(200);
+        }
+
+        @Test
+        void preserveCookies() {
+            String jwt = gatewayToken();
+            Cookie.Builder builder = new Cookie.Builder("XSRF-TOKEN","another-token-in-cookies");
+            Cookies cookies = new Cookies(builder.build());
+            given()
+                .config(SslContext.tlsWithoutCert)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .cookies(cookies)
+                .when()
+                .get(URL)
+                .then()
+                .body("cookies.apimlAuthenticationToken", is(jwt))
+                .body("cookies.XSRF-TOKEN", is("another-token-in-cookies"))
                 .statusCode(200);
         }
 
