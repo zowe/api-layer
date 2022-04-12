@@ -723,8 +723,8 @@ title: Onboarding Enabler Java Sample App`;
                     title: 'Hello API ML',
                     description:
                         'Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem',
-                    instanceBaseUrls: ['invalidURL'],
-                    homePageRelativeUrl: '/home',
+                    instanceBaseUrls: ['invalidURL', 'http://localhost:8080'],
+                    homePageRelativeUrl: 'invalidUrl',
                     statusPageRelativeUrl: '/application/info',
                     healthCheckRelativeUrl: '/application/health',
                     routes: [
@@ -767,6 +767,7 @@ title: Onboarding Enabler Java Sample App`;
                     },
                 },
             ],
+            test: false,
         };
 
         // Call the function to test it
