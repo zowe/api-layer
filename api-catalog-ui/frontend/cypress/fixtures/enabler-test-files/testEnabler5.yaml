@@ -1,0 +1,28 @@
+services:
+  - serviceId: sampleservice
+    title: Hello API ML
+    description: Applications which demonstrate how to make a service integrated to
+      the API Mediation Layer ecosystem
+    instanceBaseUrls:
+      - http://localhost:8080
+    homePageRelativeUrl: /home
+    statusPageRelativeUrl: /application/info
+    healthCheckRelativeUrl: /application/health
+    routes:
+      - gatewayUrl: /api/v1
+        serviceRelativeUrl: /sampleservice/api/v1
+    authentication:
+      scheme: bypass
+      applid: ""
+      headers: X-Certificate-Public
+    apiInfo:
+      - apiId: test.test.test
+        version: 1.1.1
+        gatewayUrl: /api/v1
+catalogUiTiles:
+  apicatalog:
+    title: API Mediation Layer API
+    description: The API Mediation Layer for z/OS internal API services. The API
+      Mediation Layer provides a single point of access to mainframe REST APIs
+      and offers enterprise cloud-like features such as high-availability,
+      scalability, dynamic API discovery, and documentation.

@@ -133,3 +133,20 @@ export function overrideStaticDef(yamlText, serviceId) {
 export function sendYAML(yamlText, serviceId) {
     return yamlEndpointConnect(yamlText, serviceId, 'generate');
 }
+
+/**
+ * Notify a user that the file they have uploaded is invalid yaml
+ */
+export function notifyInvalidYamlUpload(message) {
+    toast.warning(message, {
+        closeOnClick: true,
+        autoClose: 4000,
+    });
+    setTimeout(() => {
+        toast.dismiss();
+    }, 4000);
+    return {
+        type: 'IGNORE',
+        payload: null,
+    };
+}

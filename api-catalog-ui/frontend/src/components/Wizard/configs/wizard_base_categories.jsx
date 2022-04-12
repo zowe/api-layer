@@ -92,7 +92,7 @@ export const baseCategories = [
                 question: 'The service IP address:',
                 optional: true,
                 regexRestriction: [wizRegex.ipAddress],
-                tooltip: 'Example: https://localhost:3000/',
+                tooltip: 'Example: 127.0.0.1',
             },
         },
     },

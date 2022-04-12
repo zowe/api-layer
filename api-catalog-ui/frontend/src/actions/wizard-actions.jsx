@@ -18,6 +18,7 @@ import {
     REMOVE_INDEX,
     VALIDATE_INPUT,
     UPDATE_SERVICE_ID,
+    UPDATE_UPLOADED_YAML_TITLE,
 } from '../constants/wizard-constants';
 
 /**
@@ -288,6 +289,17 @@ export function validateInput(navName, silent) {
 export function updateServiceId(value) {
     return {
         type: UPDATE_SERVICE_ID,
+        payload: { value },
+    };
+}
+
+/**
+ * Store the title of the uploaded yaml file
+ * @param value the title to be stored
+ */
+export function updateUploadedYamlTitle(value) {
+    return {
+        type: UPDATE_UPLOADED_YAML_TITLE,
         payload: { value },
     };
 }

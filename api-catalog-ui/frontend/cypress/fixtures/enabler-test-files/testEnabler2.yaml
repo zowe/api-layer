@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: ${apiml.service.serviceId}
+apiml:
+  enabled: true
+  enableUrlEncodedCharacters: false
+  service:
+    serviceId: test
+    title: Test
+    description: A test
+    scheme: https
+    hostname: testhost
+    port: "12345"
+    contextPath: /${apiml.service.serviceId}
+    baseUrl: https://testhost:12345
+    homePageRelativeUrl: ${apiml.service.contextPath}/
+    statusPageRelativeUrl: ${apiml.service.contextPath}/
+    healthCheckRelativeUrl: ${apiml.service.contextPath}/
+    discoveryServiceUrls:
+      - http://testhost:12345
+    routes:
+      - gatewayUrl: /api/v1
+        serviceUrl: /enablerJavaSampleApp/api/v1
+    apiInfo:
+      - apiId: test
+        version: 1.0.0
+        gatewayUrl: /api/v1
+        swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}
+    catalog:
+      tile:
+        id: apicatalog
+        title: API Mediation Layer API
+        description: The API Mediation Layer for z/OS internal API services. The API
+          Mediation Layer provides a single point of access to mainframe REST
+          APIs and offers enterprise cloud-like features such as
+          high-availability, scalability, dynamic API discovery, and
+          documentation.
+        version: 1.0.0
+    authentication:
+      scheme: bypass
+    ssl:
+      verifySslCertificatesOfServices: true
+      protocol: TLSv1.2
+      keyAlias: test
+      keyPassword: test
+      keyStore: test
+      keyStorePassword: test
+      keyStoreType: PKCS12
+      trustStore: test
+      trustStorePassword: test
+      trustStoreType: PKCS12
