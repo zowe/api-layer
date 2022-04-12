@@ -384,5 +384,4 @@ const inputDataCombinedEnabler = [
     },
 ];
 
-
 export default inputDataCombinedEnabler;
