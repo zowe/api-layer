@@ -1,20 +1,38 @@
 {
     "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "$id": "https://zowe.org/schema/api-layer-config",
-    "title": "API Catalog configuration",
-    "description": "Properties that can be used to configure API Catalog in a configuration file, such as zowe.yaml.",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "port": {
-            "$ref": "#/$defs/port",
-            "default": 7554
-        },
-        "debug": {
-            "type": "boolean",
-            "description": "Enable debug logs in discovery service"
+    "$id": "https://zowe.org/schema/catalog-config",
+    "allOf": [
+        { "$ref": "https://zowe.org/schemas/v2/server-base" },
+        {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "properties": {
+                        "additionalProperties": true,
+                        "api-catalog": {
+                            "allOf": [
+                                {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "port": {
+                                            "$ref": "#/$defs/port",
+                                            "default": 7554
+                                        },
+                                        "debug": {
+                                            "type": "boolean",
+                                            "description": "Enable debug logs in metrics service"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
-    },
+    ],
     "$defs": {
         "port": {
             "type": "integer",

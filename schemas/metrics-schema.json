@@ -1,20 +1,38 @@
 {
     "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "$id": "https://zowe.org/schema/api-layer-config",
-    "title": "Metrics service configuration",
-    "description": "Properties that can be used to configure Metrics service in a configuration file, such as zowe.yaml.",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "port": {
-            "$ref": "#/$defs/port",
-            "default": 7551
-        },
-        "debug": {
-            "type": "boolean",
-            "description": "Enable debug logs in metrics service"
+    "$id": "https://zowe.org/schema/metrics-config",
+    "allOf": [
+        { "$ref": "https://zowe.org/schemas/v2/server-base" },
+        {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "properties": {
+                        "additionalProperties": true,
+                        "metrics-service": {
+                            "allOf": [
+                                {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "port": {
+                                            "$ref": "#/$defs/port",
+                                            "default": 7551
+                                        },
+                                        "debug": {
+                                            "type": "boolean",
+                                            "description": "Enable debug logs in metrics service"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
-    },
+    ],
     "$defs": {
         "port": {
             "type": "integer",

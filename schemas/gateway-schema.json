@@ -1,210 +1,228 @@
 {
     "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "$id": "https://zowe.org/schema/api-layer-config",
-    "title": "Gateway service configuration",
-    "description": "Properties that can be used to configure gateway service in a configuration file, such as zowe.yaml.",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "port": {
-            "$ref": "#/$defs/port",
-            "default": 7553
-        },
-        "apiml": {
+    "$id": "https://zowe.org/schema/gateway-config",
+    "allOf": [
+        { "$ref": "https://zowe.org/schemas/v2/server-base" },
+        {
             "type": "object",
-            "description": "Zowe API ML specific properties.",
-            "additionalProperties": false,
             "properties": {
-                "security": {
+                "components": {
                     "type": "object",
-                    "description": "Authentication and authorization options",
-                    "additionalProperties": false,
                     "properties": {
-                        "auth": {
-                            "type": "object",
-                            "description": "Authentication against API ML.",
-                            "additionalProperties": false,
-                            "properties": {
-                                "provider": {
-                                    "type": "string",
-                                    "description": "Which provider should be used to verify user credentials.",
-                                    "enum": ["zosmf","saf"],
-                                    "default": "zosmf"
-                                },
-                                "zosmf": {
+                        "additionalProperties": true,
+                        "gateway-service": {
+                            "allOf": [
+                                {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
+                                {
                                     "type": "object",
-                                    "description": "When zosmf is set as authentication provider, this section can be used to provide more details.",
-                                    "additionalProperties": false,
                                     "properties": {
-                                        "jwtAutoconfiguration": {
-                                            "type": "string",
-                                            "description": "Type of the token that is returned from zOSMF after login.",
-                                            "default": "auto"
+                                        "port": {
+                                            "$ref": "#/$defs/port",
+                                            "default": 7553
                                         },
-                                        "serviceId": {
-                                            "type": "string",
-                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
-                                            "default": "zosmf"
-                                        }
-                                    }
-                                }
-                                }
-                            },
-                        "authorization": {
-                            "type": "object",
-                            "description": "Service info endpoints on gateway service can be protected by SAF resource check. Update this section to enable it.",
-                            "additionalProperties": false,
-                            "properties": {
-                                "provider": {
-                                    "type": "string",
-                                    "description": "Which provider will be used to validate access authorization.",
-                                    "enum": ["endpoint","native","dummy"]
-                                },
-                                "endpoint": {
-                                    "type": "object",
-                                    "description": "Where the access will be validate.",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean",
-                                            "description": "Is this endpoint enabled?",
-                                            "default": false
+                                        "apiml": {
+                                            "type": "object",
+                                            "description": "Zowe API ML specific properties.",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "security": {
+                                                    "type": "object",
+                                                    "description": "Authentication and authorization options",
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                        "auth": {
+                                                            "type": "object",
+                                                            "description": "Authentication against API ML.",
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "provider": {
+                                                                    "type": "string",
+                                                                    "description": "Which provider should be used to verify user credentials.",
+                                                                    "enum": ["zosmf","saf"],
+                                                                    "default": "zosmf"
+                                                                },
+                                                                "zosmf": {
+                                                                    "type": "object",
+                                                                    "description": "When zosmf is set as authentication provider, this section can be used to provide more details.",
+                                                                    "additionalProperties": false,
+                                                                    "properties": {
+                                                                        "jwtAutoconfiguration": {
+                                                                            "type": "string",
+                                                                            "description": "Type of the token that is returned from zOSMF after login.",
+                                                                            "default": "auto"
+                                                                        },
+                                                                        "serviceId": {
+                                                                            "type": "string",
+                                                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
+                                                                            "default": "zosmf"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "authorization": {
+                                                            "type": "object",
+                                                            "description": "Service info endpoints on gateway service can be protected by SAF resource check. Update this section to enable it.",
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "provider": {
+                                                                    "type": "string",
+                                                                    "description": "Which provider will be used to validate access authorization.",
+                                                                    "enum": ["endpoint","native","dummy"]
+                                                                },
+                                                                "endpoint": {
+                                                                    "type": "object",
+                                                                    "description": "Where the access will be validate.",
+                                                                    "additionalProperties": false,
+                                                                    "properties": {
+                                                                        "enabled": {
+                                                                            "type": "boolean",
+                                                                            "description": "Is this endpoint enabled?",
+                                                                            "default": false
+                                                                        },
+                                                                        "url": {
+                                                                            "type": "string",
+                                                                            "description": "Url to validate the authorization."
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "resourceClass": {
+                                                                    "type": "string",
+                                                                    "description": "zOS resource to verify access.",
+                                                                    "default": "ZOWE"
+                                                                },
+                                                                "resourceNamePrefix": {
+                                                                    "type": "string",
+                                                                    "description": "Prefix of the resource.",
+                                                                    "default": "APIML."
+                                                                }
+                                                            }
+                                                        },
+                                                        "x509": {
+                                                            "type": "object",
+                                                            "description": "Client certificate authentication support.",
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "enabled": {
+                                                                    "type": "boolean",
+                                                                    "description": "Enable if client certificate should be considered as a source of authentication.",
+                                                                    "default": false
+                                                                },
+                                                                "externalMapperUrl": {
+                                                                    "type": "string",
+                                                                    "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
+                                                                },
+                                                                "externalMapperUser": {
+                                                                    "type": "string",
+                                                                    "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "service": {
+                                                    "type": "object",
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                        "allowEncodedSlashes": {
+                                                            "type": "boolean",
+                                                            "description": "Allow URLs on gateway to contain encoded slashes.",
+                                                            "default": true
+                                                        },
+                                                        "corsEnabled": {
+                                                            "type": "boolean",
+                                                            "description": "Allow CORS on gateway.",
+                                                            "default": true
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         },
-                                        "url": {
-                                            "type": "string",
-                                            "description": "Url to validate the authorization."
-                                        }
-                                    }
-                                },
-                                "resourceClass": {
-                                    "type": "string",
-                                    "description": "zOS resource to verify access.",
-                                    "default": "ZOWE"
-                                },
-                                "resourceNamePrefix": {
-                                    "type": "string",
-                                    "description": "Prefix of the resource.",
-                                    "default": "APIML."
-                                }
-                            }
-                        },
-                        "x509": {
-                            "type": "object",
-                            "description": "Client certificate authentication support.",
-                            "additionalProperties": false,
-                            "properties": {
-                                "enabled": {
-                                    "type": "boolean",
-                                    "description": "Enable if client certificate should be considered as a source of authentication.",
-                                    "default": false
-                                },
-                                "externalMapperUrl": {
-                                    "type": "string",
-                                    "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
-                                },
-                                "externalMapperUser": {
-                                    "type": "string",
-                                    "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
-                                }
-                            }
-                        }
-                    }
-                },
-                "service": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "allowEncodedSlashes": {
-                            "type": "boolean",
-                            "description": "Allow URLs on gateway to contain encoded slashes.",
-                            "default": true
-                        },
-                        "corsEnabled": {
-                            "type": "boolean",
-                            "description": "Allow CORS on gateway.",
-                            "default": true
-                        }
-                    }
-                }
-            }
-        },
-        "server": {
-            "type": "object",
-            "description": "Configure gateway server properties.",
-            "additionalProperties": false,
-            "properties": {
-                "internal": {
-                    "type": "object",
-                    "description": "It is possible to enable another gateway port for internal communication.",
-                    "additionalProperties": false,
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "description": "Should internal port be enabled?",
-                            "default": false
-                        },
-                        "port": {
-                            "$ref": "#/$defs/port",
-                            "default": 10017
-                        },
-                        "ssl": {
-                            "type": "object",
-                            "description": "Network encryption options for internal port. If internal is enabled, it will use Zowe SSL configuration as default.",
-                            "additionalProperties": false,
-                            "properties": {
-                                "enabled": {
-                                    "type": "boolean",
-                                    "description": "Should internal port use encryption?",
-                                    "default": false
-                                }
-                            }
-                        }
-                    }
-                },
-                "maxConnectionsPerRoute": {
-                    "type": "integer",
-                    "description": "How many connection should exists for single HTTP client?",
-                    "default": 100
-                },
-                "maxTotalConnections": {
-                    "type": "integer",
-                    "description": "How many connection should exists in total?",
-                    "default": 1000
-                },
-                "ssl": {
-                    "type": "object",
-                    "description": "Network encryption for gateway service connections.",
-                    "additionalProperties": false,
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "description": "Should gateway use encrypted communication?",
-                            "default": true
-                        }
-                    }
-                }
+                                        "server": {
+                                            "type": "object",
+                                            "description": "Configure gateway server properties.",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "internal": {
+                                                    "type": "object",
+                                                    "description": "It is possible to enable another gateway port for internal communication.",
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                        "enabled": {
+                                                            "type": "boolean",
+                                                            "description": "Should internal port be enabled?",
+                                                            "default": false
+                                                        },
+                                                        "port": {
+                                                            "$ref": "#/$defs/port",
+                                                            "default": 10017
+                                                        },
+                                                        "ssl": {
+                                                            "type": "object",
+                                                            "description": "Network encryption options for internal port. If internal is enabled, it will use Zowe SSL configuration as default.",
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "enabled": {
+                                                                    "type": "boolean",
+                                                                    "description": "Should internal port use encryption?",
+                                                                    "default": false
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "maxConnectionsPerRoute": {
+                                                    "type": "integer",
+                                                    "description": "How many connection should exists for single HTTP client?",
+                                                    "default": 100
+                                                },
+                                                "maxTotalConnections": {
+                                                    "type": "integer",
+                                                    "description": "How many connection should exists in total?",
+                                                    "default": 1000
+                                                },
+                                                "ssl": {
+                                                    "type": "object",
+                                                    "description": "Network encryption for gateway service connections.",
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                        "enabled": {
+                                                            "type": "boolean",
+                                                            "description": "Should gateway use encrypted communication?",
+                                                            "default": true
+                                                        }
+                                                    }
+                                                }
 
-            }
-        },
-        "spring": {
-            "type": "object",
-            "description": "Application framework parameters",
-            "additionalProperties": false,
-            "properties": {
-                "profiles": {
-                    "type": "object",
-                    "description": "Profiles that can hold multiple configuration parameters.",
-                    "additionalProperties": false,
-                    "properties": {
-                        "active": {
-                            "type": "string",
-                            "description": "List of the active configuration profiles."
+                                            }
+                                        },
+                                        "spring": {
+                                            "type": "object",
+                                            "description": "Application framework parameters",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "profiles": {
+                                                    "type": "object",
+                                                    "description": "Profiles that can hold multiple configuration parameters.",
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                        "active": {
+                                                            "type": "string",
+                                                            "description": "List of the active configuration profiles."
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
             }
         }
-    },
+    ],
     "$defs": {
         "port": {
             "type": "integer",
