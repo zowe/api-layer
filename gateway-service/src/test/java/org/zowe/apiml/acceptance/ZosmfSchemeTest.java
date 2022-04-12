@@ -71,6 +71,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
             defaultBuilder.withZosmf();
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
+            applicationRegistry.addApplication(serviceWithCustomConfiguration, defaultBuilder, true);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             reset(mockClient);
             config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
@@ -103,12 +104,13 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
 
                 @Test
                 void thenOk() throws IOException {
+                    applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
 
                     mockValid200HttpResponse();
                     given()
                         .config(SslContext.clientCertUser)
                         .when()
-                        .get(basePath + serviceWithDefaultConfiguration.getPath())
+                        .get(basePath + serviceWithCustomConfiguration.getPath())
                         .then()
                         .statusCode(is(HttpStatus.SC_OK));
                     assertResult("LtpaToken2=LTPA_token_from_zosmf");
