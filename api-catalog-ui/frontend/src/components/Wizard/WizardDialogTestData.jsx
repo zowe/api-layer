@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-export default inputDataCombinedEnabler = [
+const inputDataCombinedEnabler = [
     {
         text: 'Basic info',
         content: [
@@ -383,3 +383,6 @@ export default inputDataCombinedEnabler = [
         nav: 'Catalog configuration',
     },
 ];
+
+
+export default inputDataCombinedEnabler;
