@@ -387,11 +387,12 @@ title: Onboarding Enabler Java Sample App`;
                     tile: {
                         id: 'apicatalog',
                         title: 'API Mediation Layer API',
-                        description: 'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
+                        description:
+                            'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
                         version: '1.0.0',
-                    }
+                    },
                 },
-            ]
+            ],
         };
 
         // Call the function to test it
