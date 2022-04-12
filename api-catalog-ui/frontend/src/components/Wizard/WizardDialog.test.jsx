@@ -400,6 +400,10 @@ title: Onboarding Enabler Java Sample App`;
                             gatewayUrl: '/api/v1',
                             serviceRelativeUrl: '/sampleservice/api/v1',
                         },
+                        {
+                            gatewayUrl: '/api/v2',
+                            serviceRelativeUrl: '/sampleservice/api/v2',
+                        },
                     ],
                     authentication: {
                         scheme: 'bypass',
