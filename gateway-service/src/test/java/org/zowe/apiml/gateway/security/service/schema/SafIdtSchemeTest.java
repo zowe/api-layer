@@ -196,6 +196,22 @@ class SafIdtSchemeTest {
             }
 
             @Test
+            void givenErrorInRequestContext() {
+                final RequestContext context = RequestContext.getCurrentContext();
+                context.set(JwtCommand.AUTH_FAIL_HEADER, "Some test error message.");
+
+                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
+                assertNotNull(ac);
+                assertEquals("Some test error message.", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
+                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
+                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
+
+                ac.apply(null);
+                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
+                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("Some test error message."));
+            }
+
+            @Test
             void givenSafIdtException() throws IRRPassTicketGenerationException {
                 when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);

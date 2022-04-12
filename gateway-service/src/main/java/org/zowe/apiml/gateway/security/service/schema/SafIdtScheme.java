@@ -67,6 +67,14 @@ public class SafIdtScheme implements IAuthenticationScheme {
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         String error = null;
 
+        final RequestContext context = RequestContext.getCurrentContext();
+        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
+        if (context.containsKey(JwtCommand.AUTH_FAIL_HEADER)) {
+            error = context.get(JwtCommand.AUTH_FAIL_HEADER).toString();
+            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
+            return new SafIdtCommand(null, null, error);
+        }
+
         // check the authentication source
         if (authSource == null || authSource.getRawSource() == null) {
             error = messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
@@ -86,16 +94,16 @@ public class SafIdtScheme implements IAuthenticationScheme {
         }
 
         String safIdentityToken;
-        Long expirationDate;
+        long expireAt;
         try {
             String applId = getApplId(authentication);
             safIdentityToken = generateSafIdentityToken(parsedAuthSource, applId);
-            expirationDate = calculateSafIdtExpiration(safIdentityToken);
+            expireAt = getSafIdtExpiration(safIdentityToken);
         } catch (SafIdtSchemeException e) {
             return new SafIdtCommand(null, null, e.getMessage());
         }
 
-        return new SafIdtCommand(safIdentityToken, expirationDate, error);
+        return new SafIdtCommand(safIdentityToken, expireAt, error);
     }
 
     @Override
@@ -139,7 +147,7 @@ public class SafIdtScheme implements IAuthenticationScheme {
         return safIdentityToken;
     }
 
-    private Long calculateSafIdtExpiration(String safIdentityToken) throws SafIdtSchemeException {
+    private long getSafIdtExpiration(String safIdentityToken) throws SafIdtSchemeException {
         Date expirationTime;
         String error;
         try {

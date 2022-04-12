@@ -226,7 +226,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
                 verify(mockClient, times(1)).execute(captor.capture());
                 assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
-                assertHeaderWithValue(captor.getValue(), JwtCommand.AUTH_FAIL_HEADER, "ZWEAG160E No authentication provided in the request");
+                assertHeaderWithValue(captor.getValue(), JwtCommand.AUTH_FAIL_HEADER, "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition");
             }
         }
     }
