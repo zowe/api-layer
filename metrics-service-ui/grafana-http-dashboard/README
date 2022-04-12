@@ -1,0 +1,37 @@
+Installation of Grafana:
+MacOS: https://grafana.com/docs/grafana/latest/installation/mac/
+Windows: https://grafana.com/docs/grafana/latest/installation/windows/
+Linux: https://grafana.com/docs/grafana/latest/installation/rpm/
+
+Grafana configuration:
+see below link for location of grafana.ini configuration file. 
+https://grafana.com/docs/grafana/v7.5/administration/configuration/
+To load the custom plugin:
+  1. Uncomment the 'plugins' variable in grafana.ini file and set it to the path to local custom plugin directory, i.e. plugin = /path/to/metrics-service-ui/data-source-plugin
+  2. Set 'allow_loading_unsigned_plugins = zowe-system-metrics-poc' in grafana.ini to allow unsigned plugin.
+  3. run 'npm install' in custom plugin directory to install dependencies
+  4. run 'npm run-script dev' to build the plugin.
+  5. restart grafana server.
+      for MacOS: run 'brew services restart grafana'
+      for windows: clicking the  grafana server exe file
+
+To import the Metrics-service-http dashboard:
+  1. After restarting the grafana server, go to http://localhost:3000/
+  2. follow https://grafana.com/docs/grafana/latest/getting-started/getting-started/ for login and changing passwords.
+  3. go to plugins and create a datasource with the system-metrics-poc plugin
+  4. follow https://grafana.com/docs/grafana/latest/dashboards/export-import/ to import the dashboard by loading the 'APIML-Metrics-Service-HTTP-1648659430036.json' file and choosing system-metrics-poc as datasource.
+
+For bypassing web security issues, the following actions may be of help:
+  for CORS related issues, try disabling security for web browsers:
+  for mac (Chrome): run 'open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security'
+  for windows (Chrome): run '"C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir=“C://Chrome dev session” --disable-web-security' (change path to chrome.exe to fit local system settings)
+
+  for 'net::err_cert_authority_invalid' error, try disabling certificate verifications by:
+  1. run 'open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security --ignore-certificate-errors' 
+  on Mac to ignore certificate errors on google chrome.
+  run '"C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir=“C://Chrome dev session” --disable-web-security --ignore-certificate-errors' (change path to chrome.exe to fit local system settings)
+  on windows to ignore certificate errors on google chrome.
+
+  2. disable certificate verifications for the api-mediation-layer. Set 'verifySslCertificatesOfServices: false' in gateway-service.yml and discovery-service.yml.
+  Set '--apiml.security.ssl.verifySslCertificatesOfServices=false' for gateway-service, discovery-service and api-catalog-service.
+  3. Set 'app_tls_skip_verify_insecure = true' under [plugins] in grafana.ini file.
