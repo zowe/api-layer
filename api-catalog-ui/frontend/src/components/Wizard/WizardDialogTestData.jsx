@@ -83,9 +83,9 @@ export const inputDataCombinedEnabler = [
         content: [
             {
                 instanceBaseUrls: {
-                    value: 'http://localhost:8080',
+                    value: 'https://localhost:8080',
                     question: 'The base URL of the instance (the consistent part of the web address):',
-                    tooltip: 'Example: http://localhost:8080',
+                    tooltip: 'Example: https://localhost:8080',
                     interactedWith: true,
                     empty: false,
                     problem: false,
@@ -280,7 +280,7 @@ export const inputDataCombinedEnabler = [
                     question: 'The Http or Https address where the Swagger JSON document is available:',
                     optional: true,
                     tooltip:
-                        'Example: http://${sampleServiceSwaggerHost}:${sampleServiceSwaggerPort}/sampleservice/api-doc',
+                        'Example: https://${sampleServiceSwaggerHost}:${sampleServiceSwaggerPort}/sampleservice/api-doc',
                 },
                 documentationUrl: {
                     value: '',
