@@ -13,11 +13,13 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
-import { baseCategories } from './configs/wizard_base_categories';
-import { springSpecificCategories } from './configs/wizard_spring_categories';
-import { staticSpecificCategories } from './configs/wizard_static_categories';
-import { nodeSpecificCategories } from './configs/wizard_node_categories';
-import { micronautSpecificCategories } from './configs/wizard_micronaut_categories';
+import {
+    inputDataBaseEnabler,
+    inputDataSpringEnabler,
+    inputDataMicronautEnabler,
+    inputDataNodeJSEnabler,
+    inputDataStaticOnboarding,
+} from './WizardDialogTestData';
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -376,7 +378,7 @@ title: Onboarding Enabler Java Sample App`;
             <WizardDialog
                 wizardToggleDisplay={jest.fn()}
                 updateWizardData={jest.fn()}
-                inputData={baseCategories}
+                inputData={inputDataBaseEnabler}
                 wizardIsOpen
                 updateUploadedYamlTitle={jest.fn()}
                 notifyInvalidYamlUpload={jest.fn()}
@@ -466,7 +468,7 @@ title: Onboarding Enabler Java Sample App`;
             <WizardDialog
                 wizardToggleDisplay={jest.fn()}
                 updateWizardData={jest.fn()}
-                inputData={springSpecificCategories}
+                inputData={inputDataSpringEnabler}
                 wizardIsOpen
                 updateUploadedYamlTitle={jest.fn()}
                 notifyInvalidYamlUpload={jest.fn()}
@@ -564,7 +566,7 @@ title: Onboarding Enabler Java Sample App`;
             <WizardDialog
                 wizardToggleDisplay={jest.fn()}
                 updateWizardData={jest.fn()}
-                inputData={staticSpecificCategories}
+                inputData={inputDataMicronautEnabler}
                 wizardIsOpen
                 updateUploadedYamlTitle={jest.fn()}
                 notifyInvalidYamlUpload={jest.fn()}
@@ -700,7 +702,7 @@ title: Onboarding Enabler Java Sample App`;
             <WizardDialog
                 wizardToggleDisplay={jest.fn()}
                 updateWizardData={jest.fn()}
-                inputData={nodeSpecificCategories}
+                inputData={inputDataNodeJSEnabler}
                 wizardIsOpen
                 updateUploadedYamlTitle={jest.fn()}
                 notifyInvalidYamlUpload={jest.fn()}
@@ -777,7 +779,6 @@ title: Onboarding Enabler Java Sample App`;
         expect(validateInput).toHaveBeenCalledTimes(6);
     });
     it('should call fillInputs for the Static Onboarding', async () => {
-        const convertedCategoryData = Object.keys(categoryData);
         const testNavsObj = {
             Basics: true,
             URL: true,
@@ -790,7 +791,7 @@ title: Onboarding Enabler Java Sample App`;
             <WizardDialog
                 wizardToggleDisplay={jest.fn()}
                 updateWizardData={jest.fn()}
-                inputData={micronautSpecificCategories}
+                inputData={inputDataStaticOnboarding}
                 wizardIsOpen
                 updateUploadedYamlTitle={jest.fn()}
                 notifyInvalidYamlUpload={jest.fn()}
@@ -812,7 +813,7 @@ title: Onboarding Enabler Java Sample App`;
                     title: 'Hello API ML',
                     description:
                         'Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem',
-                    instanceBaseUrls: ['http://localhost:8080',],
+                    instanceBaseUrls: ['http://localhost:8080'],
                     homePageRelativeUrl: '/home',
                     statusPageRelativeUrl: '/application/info',
                     healthCheckRelativeUrl: '/application/health',
