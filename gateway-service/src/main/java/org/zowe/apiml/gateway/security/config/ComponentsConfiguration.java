@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509CNAuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
@@ -70,8 +71,8 @@ public class ComponentsConfiguration {
      */
     @Bean
     @Qualifier("x509MFAuthSourceService")
-    public X509AuthSourceService getX509MFAuthSourceService(X509AbstractMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
-        return new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
+    public X509AuthSourceService getX509MFAuthSourceService(X509AbstractMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService, MessageService messageService) {
+        return new X509AuthSourceService(mapper, tokenCreationService, authenticationService, messageService);
     }
 
     /**
@@ -81,7 +82,7 @@ public class ComponentsConfiguration {
      */
     @Bean
     @Qualifier("x509CNAuthSourceService")
-    public X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
-        return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService, authenticationService);
+    public X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService, MessageService messageService) {
+        return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService, authenticationService, messageService);
     }
 }
