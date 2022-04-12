@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.COOKIE_HEADER;
 import static org.zowe.apiml.gateway.security.service.schema.X509Scheme.AUTH_FAIL_HEADER;
 
 
@@ -104,7 +105,7 @@ class ZoweJwtSchemeTest {
 
         @Test
         void whenExpiredJwt_thenCreateErrorMessage() {
-            requestContext.addZuulRequestHeader("cookie", "apimlAuthenticationToken=expiredToken");
+            ((MockHttpServletRequest)request).addHeader(COOKIE_HEADER, "apimlAuthenticationToken=expiredToken");
             AuthSource jwtSource = new JwtAuthSource("expiredToken");
             when(authSourceService.parse(jwtSource)).thenThrow(new TokenExpireException("expired token"));
             command = scheme.createCommand(null, jwtSource);

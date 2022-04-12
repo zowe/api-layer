@@ -32,7 +32,7 @@ public abstract class JwtCommand extends AuthenticationCommand {
     public static void setCookie(RequestContext context, String name, String value) {
         context.addZuulRequestHeader(COOKIE_HEADER,
             CookieUtil.setCookie(
-                context.getZuulRequestHeaders().get(COOKIE_HEADER),
+                context.getRequest().getHeader(COOKIE_HEADER),
                 name,
                 value
             )
@@ -51,7 +51,7 @@ public abstract class JwtCommand extends AuthenticationCommand {
     public static void removeCookie(RequestContext context, String name) {
         context.addZuulRequestHeader(COOKIE_HEADER,
             CookieUtil.removeCookie(
-                context.getZuulRequestHeaders().get(COOKIE_HEADER),
+                context.getRequest().getHeader(COOKIE_HEADER),
                 name
             )
         );
