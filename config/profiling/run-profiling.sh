@@ -76,4 +76,4 @@ then
     fi
 fi
 
-jmeter -Jhost=$host -Jport=$port -Jthreads=$threads -Jdataset=$dataset -Jjmeter.reportgenerator.overall_granularity=1000 -n -t caching-profiling-parametrized.jmx -l $dir/result -e -o $dir/test-results -j $dir/result.log
+jmeter -D javax.net.ssl.keyStore=../../keystore/client_cert/client-certs.p12 -D javax.net.ssl.keyStorePassword=password -Jhost=$host -Jport=$port -Jthreads=$threads -Jdataset=$dataset -Jjmeter.reportgenerator.overall_granularity=1000 -n -t caching-profiling-parametrized.jmx -l $dir/result -e -o $dir/test-results -j $dir/result.log

@@ -2,6 +2,7 @@ dependencies {
     annotationProcessor libraries.lombok
 
     compile libraries.http_client
+    compile libraries.jackson_annotations
     compile libraries.jackson_databind
     compile libraries.slf4j_api
     compile libraries.jaxb_api

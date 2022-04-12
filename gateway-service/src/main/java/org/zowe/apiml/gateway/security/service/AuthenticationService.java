@@ -86,7 +86,7 @@ public class AuthenticationService {
      * @param ltpaToken the LTPA token
      * @return the JWT token
      */
-    public String createJwtToken(String username, String domain, String ltpaToken) {
+    public String createJwtToken(@NonNull String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
         long expiration = calculateExpiration(now, username);
 

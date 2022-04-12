@@ -56,7 +56,6 @@ class PostStoreLoadBalancerCacheFilterTest {
 
     @Test
     void verifyFilterProperties() {
-        assertThat(underTest.shouldFilter(), is(true));
         assertThat(underTest.filterOrder(), is(SEND_RESPONSE_FILTER_ORDER - 1));
         assertThat(underTest.filterType(), is(POST_TYPE));
     }
@@ -73,9 +72,9 @@ class PostStoreLoadBalancerCacheFilterTest {
         class GivenAuthenticationAndInstanceInfo {
 
             @Test
-            void dontAddToCache() {
+            void whenShouldFilterIsFalse_thenDontAddToCache() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
-                underTest.run();
+                assertThat(underTest.shouldFilter(), is(false));
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
         }
@@ -98,7 +97,7 @@ class PostStoreLoadBalancerCacheFilterTest {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
 
                 when(authenticationService.getPrincipalFromRequest(any())).thenReturn(Optional.of(VALID_USER));
-
+                assertThat(underTest.shouldFilter(), is(true));
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(not(nullValue())));
             }
@@ -107,7 +106,7 @@ class PostStoreLoadBalancerCacheFilterTest {
             void whenInCacheDoNothing() {
                 loadBalancerCache.store(VALID_USER, VALID_SERVICE_ID, new LoadBalancerCacheRecord(VALID_INSTANCE_ID));
                 when(info.getInstanceId()).thenReturn("nowhere");
-
+                assertThat(underTest.shouldFilter(), is(true));
                 underTest.run();
                 LoadBalancerCacheRecord record = loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID);
                 assertThat(record.getInstanceId(), is(VALID_INSTANCE_ID));
@@ -120,6 +119,7 @@ class PostStoreLoadBalancerCacheFilterTest {
             @Test
             void dontStoreInstanceInfo() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
+                assertThat(underTest.shouldFilter(), is(true));
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
@@ -129,8 +129,8 @@ class PostStoreLoadBalancerCacheFilterTest {
         class GivenAuthenticationButNoInstanceInfo {
 
             @Test
-            void dontStoreInstanceInfo() {
-                underTest.run();
+            void whenShouldFilterIsFalse_thenDontStoreInstanceInfo() {
+                assertThat(underTest.shouldFilter(), is(false));
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
         }

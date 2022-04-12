@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
@@ -23,8 +24,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.source.DefaultAuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -42,6 +45,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 
@@ -53,8 +58,11 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
     @BeforeEach
     void init() {
+        JwtAuthSourceService jwtAuthSourceService = mock(JwtAuthSourceService.class);
+        X509AuthSourceService x509MFAuthSourceService = mock(X509AuthSourceService.class);
+
         PassTicketService passTicketService = new PassTicketService();
-        AuthSourceService authSourceService = new AuthSourceServiceImpl();
+        AuthSourceService authSourceService = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
     }
 
@@ -112,6 +120,18 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         calendar.add(Calendar.SECOND, authConfigurationProperties.getPassTicket().getTimeout());
         // checking setup of expired time, JWT expired in future (more than hour), check if set date is similar to passticket timeout (5s)
         assertEquals(0.0, Math.abs(calendar.getTime().getTime() - (long) ReflectionTestUtils.getField(ac, "expireAt")), 10.0);
+    }
+
+    @Test
+    void testGetAuthSource() {
+        PassTicketService passTicketService = mock(PassTicketService.class);
+        AuthSourceService authSourceService = mock(AuthSourceService.class);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
+
+        doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+        httpBasicPassTicketScheme.getAuthSource();
+        verify(authSourceService, times(1)).getAuthSourceFromRequest();
     }
 
     @Test

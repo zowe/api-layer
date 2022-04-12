@@ -35,3 +35,4 @@ For bypassing web security issues, the following actions may be of help:
   2. disable certificate verifications for the api-mediation-layer. Set 'verifySslCertificatesOfServices: false' in gateway-service.yml and discovery-service.yml.
   Set '--apiml.security.ssl.verifySslCertificatesOfServices=false' for gateway-service, discovery-service and api-catalog-service.
   3. Set 'app_tls_skip_verify_insecure = true' under [plugins] in grafana.ini file.
+

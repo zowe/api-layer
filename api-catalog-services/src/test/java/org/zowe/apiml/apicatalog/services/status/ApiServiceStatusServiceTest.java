@@ -60,21 +60,14 @@ class ApiServiceStatusServiceTest {
     private APIServiceStatusService apiServiceStatusService;
 
     @Test
-    void getCachedApplicationState() {
+    void givenCachedServices_whenGetCachedApplicationsState_thenReturnState() {
         when(cachedServicesService.getAllCachedServices()).thenReturn(new Applications());
         ResponseEntity<Applications> responseEntity = apiServiceStatusService.getCachedApplicationStateResponse();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    void addFirstContainer() {
-        when(cachedServicesService.getAllCachedServices()).thenReturn(new Applications());
-        ResponseEntity<Applications> responseEntity = apiServiceStatusService.getCachedApplicationStateResponse();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
-
-    @Test
-    void testGetContainerStatusAsEvents() {
+    void givenContainers_whenGetContainersStateEvents_thenReturnEvents() {
         List<APIContainer> containers = new ArrayList<>(createContainers());
         when(cachedProductFamilyService.getAllContainers()).thenReturn(containers);
         doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
@@ -84,6 +77,8 @@ class ApiServiceStatusServiceTest {
             STATUS_EVENT_TYPE eventType;
             if (InstanceInfo.InstanceStatus.DOWN.name().equalsIgnoreCase(container.getStatus())) {
                 eventType = STATUS_EVENT_TYPE.CANCEL;
+            } else if (container.getCreatedTimestamp().equals(container.getLastUpdatedTimestamp())) {
+                eventType = STATUS_EVENT_TYPE.CREATED_CONTAINER;
             } else {
                 eventType = STATUS_EVENT_TYPE.RENEW;
             }
@@ -97,41 +92,47 @@ class ApiServiceStatusServiceTest {
                 eventType)
             );
         });
+
         List<ContainerStatusChangeEvent> actualEvents = apiServiceStatusService.getContainersStateAsEvents();
         assertEquals(expectedEvents.size(), actualEvents.size());
+        for (int eventIndex = 0; eventIndex < expectedEvents.size(); eventIndex++) {
+            assertEquals(expectedEvents.get(eventIndex), actualEvents.get(eventIndex));
+        }
     }
 
     @Test
-    void testGetCachedApiDocInfoForService() {
+    void givenApiDoc_whenGetCachedApiDocForService_thenSuccessfulResponse() {
         String apiDoc = "this is the api doc";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
         ResponseEntity<String> actualResponse = apiServiceStatusService.getServiceCachedApiDocInfo("aaa", "v1");
         assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse.getBody(), actualResponse.getBody());
     }
 
     @Test
-    void testGetCachedApiDiffForService() {
+    void givenCachedApiDoc_whenGetApiDiff_thenReturnsApiDiff() {
         String apiDoc = "{}";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
         when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(actualProducer.fromContents(apiDoc, apiDoc));
         ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
+        assertNotNull(actualResponse.getBody());
         assertTrue(actualResponse.getBody().contains("Api Change Log"));
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
     }
 
     @Test
     void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
-        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new NullPointerException());
-        assertThrows(ApiDiffNotAvailableException.class, () ->
+        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new RuntimeException());
+        Exception ex = assertThrows(ApiDiffNotAvailableException.class, () ->
             apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")
         );
+        assertEquals("Error retrieving API diff for service and versions v1 and v2", ex.getMessage());
     }
 
     @Test
-    void testGetRecentlyChangedEvents() {
+    void givenUpdatedContainers_whenGetRecentlyUpdatedContainers_thenUpdatedContainersAreReturned() {
         List<APIContainer> containers = createContainers();
         when(cachedProductFamilyService.getRecentlyUpdatedContainers()).thenReturn(containers);
         doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
@@ -145,7 +146,7 @@ class ApiServiceStatusServiceTest {
     private List<APIContainer> createContainers() {
         Set<APIService> services = new HashSet<>();
 
-        APIService service =  new APIService.Builder("service1")
+        APIService service = new APIService.Builder("service1")
             .title("service-1")
             .description("service-1")
             .secured(false)
@@ -157,7 +158,7 @@ class ApiServiceStatusServiceTest {
             .build();
         services.add(service);
 
-        service =  new APIService.Builder("service2")
+        service = new APIService.Builder("service2")
             .title("service-2")
             .description("service-2")
             .secured(true)
