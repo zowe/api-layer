@@ -701,6 +701,17 @@ title: Onboarding Enabler Java Sample App`;
                         arrIndent: 'tile',
                         nav: 'Catalog configuration',
                     },
+                    {
+                        text: 'Test',
+                        content: [],
+                        interference: 'test',
+                        indentation: 'test/test/test',
+                        indentationDependency: 'test',
+                        minions: {
+                            'Fake Nav': ['nothing'],
+                        },
+                        nav: 'Test',
+                    },
                 ]}
                 wizardIsOpen
                 updateUploadedYamlTitle={jest.fn()}
