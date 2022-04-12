@@ -432,12 +432,7 @@ title: Onboarding Enabler Java Sample App`;
                                     value: '/home',
                                     question: 'The relative path to the home page of the service:',
                                     optional: true,
-                                    regexRestriction: [
-                                        {
-                                            value: '^(?!www\\.|(?:http|ftp)s?://|[A-Za-z]:\\\\|//).*',
-                                            tooltip: 'The relative URL has to be valid, example: /application/info',
-                                        },
-                                    ],
+                                    validUrl: true,
                                     tooltip:
                                         'Normally used for informational purposes for other services to use it as a landing page. Example: /home',
                                     interactedWith: true,
@@ -728,7 +723,7 @@ title: Onboarding Enabler Java Sample App`;
                     title: 'Hello API ML',
                     description:
                         'Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem',
-                    instanceBaseUrls: ['http://localhost:8080'],
+                    instanceBaseUrls: ['invalidURL'],
                     homePageRelativeUrl: '/home',
                     statusPageRelativeUrl: '/application/info',
                     healthCheckRelativeUrl: '/application/health',
@@ -759,8 +754,6 @@ title: Onboarding Enabler Java Sample App`;
             catalogUiTiles: {
                 apicatalog: {
                     title: 'API Mediation Layer API',
-                    description:
-                        'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
                 },
             },
             catalog: [
