@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -27,21 +27,17 @@ import java.util.Map;
 @Service
 public class AuthenticationSchemeFactory {
 
-    private final AbstractAuthenticationScheme defaultScheme;
-    private final Map<AuthenticationScheme, AbstractAuthenticationScheme> map;
+    private final IAuthenticationScheme defaultScheme;
+    private final Map<AuthenticationScheme, IAuthenticationScheme> map;
 
-    private final AuthSourceService authSourceService;
-
-    public AuthenticationSchemeFactory(@Autowired AuthSourceService authSourceService, @Autowired List<AbstractAuthenticationScheme> schemes) {
-        this.authSourceService = authSourceService;
-
+    public AuthenticationSchemeFactory(@Autowired List<IAuthenticationScheme> schemes) {
         map = new EnumMap<>(AuthenticationScheme.class);
 
-        AbstractAuthenticationScheme foundDefaultScheme = null;
+        IAuthenticationScheme foundDefaultScheme = null;
 
         // map beans to map, checking duplicity and find exactly one default bean, otherwise throw exception
-        for (final AbstractAuthenticationScheme aas : schemes) {
-            final AbstractAuthenticationScheme prev = map.put(aas.getScheme(), aas);
+        for (final IAuthenticationScheme aas : schemes) {
+            final IAuthenticationScheme prev = map.put(aas.getScheme(), aas);
 
             if (prev != null) {
                 throw new IllegalArgumentException("Multiple beans for scheme " + aas.getScheme() +
@@ -65,10 +61,10 @@ public class AuthenticationSchemeFactory {
         this.defaultScheme = foundDefaultScheme;
     }
 
-    public AbstractAuthenticationScheme getSchema(AuthenticationScheme scheme) {
+    public IAuthenticationScheme getSchema(AuthenticationScheme scheme) {
         if (scheme == null) return defaultScheme;
 
-        final AbstractAuthenticationScheme output = map.get(scheme);
+        final IAuthenticationScheme output = map.get(scheme);
         if (output == null) {
             throw new IllegalArgumentException("Unknown scheme : " + scheme);
         }
@@ -76,14 +72,14 @@ public class AuthenticationSchemeFactory {
     }
 
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication) {
-        final AbstractAuthenticationScheme scheme;
+        final IAuthenticationScheme scheme;
         if ((authentication == null) || (authentication.getScheme() == null)) {
             scheme = defaultScheme;
         } else {
             scheme = getSchema(authentication.getScheme());
         }
-
-        return scheme.createCommand(authentication, authSourceService.getAuthSourceFromRequest().orElse(null));
+        final AuthSource authSource = scheme.getAuthSource().orElse(null);
+        return scheme.createCommand(authentication, authSource);
     }
 
 }
