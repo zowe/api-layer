@@ -44,7 +44,6 @@
                                             "vsam": {
                                                 "type": "object",
                                                 "description": "When storage is selected as VSAM",
-                                                "additionalProperties": false,
                                                 "properties": {
                                                     "name": {
                                                         "type": "string",

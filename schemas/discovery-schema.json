@@ -18,7 +18,6 @@
                                     "properties": {
                                         "apiml": {
                                             "type": "object",
-                                            "additionalProperties": false,
                                             "properties": {
                                                 "serviceIdPrefixReplacer": {
                                                     "type": "string",
