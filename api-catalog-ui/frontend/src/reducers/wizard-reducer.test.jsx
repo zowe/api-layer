@@ -20,6 +20,7 @@ import {
     UPDATE_SERVICE_ID,
     VALIDATE_INPUT,
     WIZARD_VISIBILITY_TOGGLE,
+    UPDATE_UPLOADED_YAML_TITLE,
 } from '../constants/wizard-constants';
 import wizardReducer, {
     addDefaultValues,
@@ -884,5 +885,25 @@ describe('>>> Wizard reducer tests', () => {
             content: [{ type: { value: '', question: 'Why?', options: ['Custom', 'Tile 1', 'Tile 2'] } }],
             interference: 'catalog',
         });
+    });
+    it('should handle UPDATE_UPLOADED_YAML_TITLE undefined -> TestTitle and TestTitle -> NewTestTitle ', () => {
+        expect(
+            wizardReducer(
+                {},
+                {
+                    type: UPDATE_UPLOADED_YAML_TITLE,
+                    payload: { value: 'TestTitle' },
+                }
+            )
+        ).toEqual({ uploadedYamlTitle: 'TestTitle' });
+        expect(
+            wizardReducer(
+                { uploadedYamlTitle: 'TestTitle' },
+                {
+                    type: UPDATE_UPLOADED_YAML_TITLE,
+                    payload: { value: 'NewTestTitle' },
+                }
+            )
+        ).toEqual({ uploadedYamlTitle: 'NewTestTitle' });
     });
 });

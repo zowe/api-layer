@@ -63,6 +63,20 @@ task jacocoFullReport(type: JacocoReport) {
         files(jacocoProjects.jacocoTestReport.executionData)
     )
 
+    if(System.getProperty("results")) {
+        for(dir in System.getProperty("results").split(",")){
+            def names = []
+            fileTree(dir).visit { FileVisitDetails details ->
+                names << details.file.path
+            }
+
+            getExecutionData().from(
+                files(names)
+            )
+        }
+    }
+
+
     reports {
         html.enabled = true
         xml.enabled = true

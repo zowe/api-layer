@@ -284,4 +284,11 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.updateServiceId('hey')).toEqual(expectedAction);
     });
+    it('should update the uploaded yaml title', () => {
+        const expectedAction = {
+            type: constants.UPDATE_UPLOADED_YAML_TITLE,
+            payload: { value: 'TestTitle' },
+        };
+        expect(actions.updateUploadedYamlTitle('TestTitle')).toEqual(expectedAction);
+    });
 });

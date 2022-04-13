@@ -1,0 +1,69 @@
+apiml:
+  service:
+    preferIpAddress: true
+    serviceId: test
+    title: Test App
+    description: A test app for testing
+    discoveryServiceUrls: http://localhost:12345
+    scheme: https
+    hostname: test
+    port: "123"
+    contextPath: /${apiml.service.serviceId}
+    baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+    homePageRelativeUrl: ${apiml.service.contextPath}
+    statusPageRelativeUrl: ${apiml.service.contextPath}
+    healthCheckRelativeUrl: ${apiml.service.contextPath}
+    routes:
+      - gatewayUrl: /api/v1
+        serviceUrl: /service/api/v1
+    apiInfo:
+      - apiId: my.app.for.testing
+        version: 1.0.0
+        gatewayUrl: ${apiml.service.routes.gatewayUrl}
+    catalog:
+      - tile:
+          id: apicatalog
+          title: API Mediation Layer API
+          description: The API Mediation Layer for z/OS internal API services. The API
+            Mediation Layer provides a single point of access to mainframe REST
+            APIs and offers enterprise cloud-like features such as
+            high-availability, scalability, dynamic API discovery, and
+            documentation.
+          version: 1.0.0
+    ssl:
+      - enabled: false
+micronaut:
+  application:
+    name: ${apiml.service.serviceId}
+  server:
+    port: ${apiml.service.port}
+    context-path: /${apiml.service.serviceId}
+  ssl:
+    enable: false
+    key-store:
+      password: ${apiml.service.ssl[0].keyPassword}
+      type: ${apiml.service.ssl[0].keyStoreType}
+      path: file:${apiml.service.ssl[0].keyStore}
+    key:
+      alias: ${apiml.service.ssl[0].keyAlias}
+      password: ${apiml.service.ssl[0].keyPassword}
+    trust-store:
+      password: ${apiml.service.ssl[0].trustStorePassword}
+      path: file:${apiml.service.ssl[0].trustStore}
+      type: ${apiml.service.ssl[0].trustStoreType}
+    port: ${apiml.service.port}
+    ciphers: ${apiml.service.ssl[0].ciphers}
+    protocol: ${apiml.service.ssl[0].protocol}
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: https://localhost:44212
+management:
+  endpoints:
+    web:
+      base-path: /thing
+      exposure:
+        include: yep,yepp
+    health:
+      defaults:
+        enabled: false

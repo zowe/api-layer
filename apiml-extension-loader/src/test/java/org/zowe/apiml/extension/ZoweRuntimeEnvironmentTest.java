@@ -50,6 +50,11 @@ class ZoweRuntimeEnvironmentTest {
             void extensionDirectoryIsNotSet() {
                 assertNull(env.getExtensionDirectory());
             }
+
+            @Test
+            void workspaceDirectoryIsNotSet() {
+                assertNull(env.getWorkspaceDirectory());
+            }
         }
     }
 }

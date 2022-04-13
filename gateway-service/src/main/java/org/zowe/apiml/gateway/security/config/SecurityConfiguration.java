@@ -49,7 +49,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.filter.ApimlX509Filter;
+import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
@@ -74,6 +74,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
         "/gateway/api/v1",
+        "/api/v1/gateway",
         "/application",
         "/gateway/services"
     };
@@ -126,18 +127,23 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpointOldFormat()).permitAll()
 
             // ticket endpoint
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpointOldFormat()).authenticated()
             .and().x509()
             .userDetailsService(x509UserDetailsService())
 
             // logout endpoint
             .and()
             .logout()
-            .logoutRequestMatcher(new RegexRequestMatcher(authConfigurationProperties.getGatewayLogoutEndpoint()
+            .logoutRequestMatcher(new RegexRequestMatcher(
+                String.format("(%s|%s)",
+                    authConfigurationProperties.getGatewayLogoutEndpoint(),
+                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
                 , HttpMethod.POST.name()))
             .addLogoutHandler(logoutHandler())
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
@@ -161,7 +167,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .userDetailsService(x509UserDetailsService())
 
@@ -170,7 +175,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .userDetailsService(x509UserDetailsService())
 
@@ -181,10 +185,39 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509AuthenticationFilter.class)
 
+
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
+                handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), ShouldBeAlreadyAuthenticatedFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), X509AuthenticationFilter.class)
+
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
+
+            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
+
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
+
+            .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
+
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
+
+            /**
+             * The problem the squad was trying to solve:
+             * For certain endpoints the Gateway should accept only certificates issued by API Mediation Layer. The key reason
+             * is that these endpoints leverage the Gateway certificate as an authentication method for the downstream service
+             * This certificate has stronger priviliges and as such the Gateway need to be more careful with who can use it.
+             * <p>
+             * This solution is risky as it removes the certificates from the chain from all subsequent processing.
+             * Despite this it seems to be the simplest solution to the problem.
+             * While exploring the topic, the API squad explored following possibilities without any results:
+             * 1) As this is more linked to the authentication, move it to the CertificateAuthenticationProvider and distinguish
+             * authentication based on the provided certificates - This doesn't work as the CertificateAuthenticationProvider
+             * is never used
+             * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
+             * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
+             */
+            .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
 
         if (isAttlsEnabled) {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
@@ -303,27 +336,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private LogoutHandler logoutHandler() {
         FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
         return new JWTLogoutHandler(authenticationService, failure);
-    }
-
-    /**
-     * The problem the squad was trying to solve:
-     * For certain endpoints the Gateway should accept only certificates issued by API Mediation Layer. The key reason
-     * is that these endpoints leverage the Gateway certificate as an authentication method for the downstream service
-     * This certificate has stronger priviliges and as such the Gateway need to be more careful with who can use it.
-     * <p>
-     * This solution is risky as it removes the certificates from the chain from all subsequent processing.
-     * Despite this it seems to be the simplest solution to the problem.
-     * While exploring the topic, the API squad explored following possibilities without any results:
-     * 1) As this is more linked to the authentication, move it to the CertificateAuthenticationProvider and distinguish
-     * authentication based on the provided certificates - This doesn't work as the CertificateAuthenticationProvider
-     * is never used
-     * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
-     * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
-     */
-    private ApimlX509Filter apimlX509Filter() throws Exception {
-        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
-        out.setAuthenticationManager(authenticationManager());
-        return out;
     }
 
     private UserDetailsService x509UserDetailsService() {

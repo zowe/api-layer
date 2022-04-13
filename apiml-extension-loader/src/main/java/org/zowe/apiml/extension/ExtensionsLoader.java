@@ -9,6 +9,8 @@
 */
 package org.zowe.apiml.extension;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationListener;
@@ -38,6 +40,7 @@ public class ExtensionsLoader implements ApplicationListener<ApplicationContextI
             ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
 
             String[] extensionsBasePackages = configReader.getBasePackages();
+            log.info("Loading extensions defined in {} packages", Arrays.toString(extensionsBasePackages));
             if (extensionsBasePackages.length > 0) {
                 try {
                     scanner.scan(configReader.getBasePackages());
