@@ -14,7 +14,7 @@ public class MetricServiceController {
 
     private final ZebraMetricsService zebraMetricsService;
 
-    @GetMapping("/persistent-system-metrics")
+    @GetMapping("/zebra/persistent-system-metrics")
     public RmfData getPersistentSystemMetrics(@QueryParam("lpar") String lpar, @QueryParam("report") String report) {
         return zebraMetricsService.getRmfData(lpar, report);
     }
