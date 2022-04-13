@@ -146,7 +146,7 @@
                                                         },
                                                         "port": {
                                                             "$ref": "#/$defs/port",
-                                                            "default": 10017
+                                                            "default": 7550
                                                         },
                                                         "ssl": {
                                                             "type": "object",
