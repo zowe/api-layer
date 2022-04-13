@@ -17,6 +17,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
@@ -34,9 +35,11 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class X509AuthSourceService implements AuthSourceService {
+    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
     private final X509AbstractMapper mapper;
     private final TokenCreationService tokenService;
     private final AuthenticationService authenticationService;
+    protected final MessageService messageService;
 
     /**
      * Gets client certificate from request.
@@ -49,13 +52,26 @@ public class X509AuthSourceService implements AuthSourceService {
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
-
         X509Certificate clientCert = getCertificateFromRequest(context.getRequest(), "client.auth.X509Certificate");
-        // check that X509 certificate is valid client certificate (has correct extended key usage)
-        if (!isValid(clientCert)) {
-            clientCert = null;
-        }
+        clientCert = checkCertificate(clientCert);
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));
+    }
+
+    /**
+     * Check that certificate from request is not null and valid; otherwise set error header and do not use certificate for authentication
+     * @param clientCert {@link X509Certificate} X509 client certificate.
+     * @return client certificate if it is valid, otherwise null
+     */
+    protected X509Certificate checkCertificate(X509Certificate clientCert) {
+        if (clientCert == null) {
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
+            storeErrorHeader(error);
+        } else {
+            // check that X509 certificate is valid client certificate (has correct extended key usage)
+            // if certificate is not valid - don't use it as a source of authentication
+            clientCert = isValid(clientCert) ? clientCert : null;
+        }
+        return clientCert;
     }
 
     /**
@@ -80,10 +96,21 @@ public class X509AuthSourceService implements AuthSourceService {
      * @return true if client certificate is valid, false otherwise.
      */
     protected boolean isValid(X509Certificate clientCert) {
+        if (clientCert == null) {
+            return false;
+        }
+
         try {
-            return clientCert != null && mapper.isClientAuthCertificate(clientCert);
+            if (mapper.isClientAuthCertificate(clientCert)) {
+                return true;
+            } else {
+                String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ValidationError", "X509 certificate is missing the client certificate extended usage definition").mapToLogMessage();
+                storeErrorHeader(error);
+                return false;
+            }
         } catch (Exception e) {
-            log.error("Error occurred while validation X509 certificate: " + e.getLocalizedMessage());
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ValidationError", e.getLocalizedMessage()).mapToLogMessage();
+            storeErrorHeader(error);
             return false;
         }
     }
@@ -105,7 +132,7 @@ public class X509AuthSourceService implements AuthSourceService {
     @Override
     public String getLtpaToken(AuthSource authSource) {
         String jwt = getJWT(authSource);
-        return authenticationService.getLtpaToken(jwt);
+        return jwt != null ? authenticationService.getLtpaToken(jwt) : null;
     }
 
     // Gets client certificate from request
@@ -154,5 +181,11 @@ public class X509AuthSourceService implements AuthSourceService {
             }
         }
         return null;
+    }
+
+    // Method stores information about error into context to use it in header "X-Zowe-Auth-Failure"
+    protected void storeErrorHeader(String value) {
+        final RequestContext context = RequestContext.getCurrentContext();
+        context.put(AUTH_FAIL_HEADER, value);
     }
 }

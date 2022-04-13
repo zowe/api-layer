@@ -15,7 +15,6 @@ import java.util.Optional;
  * Interface represents main methods of service which gets the source of authentication and process it.
  */
 public interface AuthSourceService {
-
     /**
      * Core method of the interface. Gets specific source of authentication from request and defines precedence
      * in case if more than one source is present.
