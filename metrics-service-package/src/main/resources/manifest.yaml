@@ -8,6 +8,8 @@ title: Metrics service
 # Human readable component description
 description: Service that provides metrics information for APIML service.
 license: EPL-2.0
+schemas:
+    configs: metrics-schema.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git
