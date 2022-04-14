@@ -246,11 +246,14 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         @Test
         void givenAuthSourceWithoutExpiration_thenCommandIsNotExpired() {
+            long defaultExpiration = System.currentTimeMillis() + authConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000L;
             when(authSourceService.parse(new JwtAuthSource("jwtToken"))).thenReturn(new JwtAuthSource.Parsed("user", null, null, Origin.ZOWE));
 
             AuthenticationCommand command = zosmfScheme.createCommand(null, new JwtAuthSource("jwtToken"));
 
-            assertNull(ReflectionTestUtils.getField(command, "expireAt"));
+            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+            assertNotNull(expiration);
+            assertTrue(expiration >= defaultExpiration);
             assertFalse(command.isExpired());
         }
 
