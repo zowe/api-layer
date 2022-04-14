@@ -163,7 +163,7 @@ public class X509AuthSourceService implements AuthSourceService {
                 Origin.X509, encodedCert, distinguishedName);
         } catch (CertificateEncodingException e) {
             log.error("Exception parsing certificate", e);
-            throw new InvalidCertificateException("Exception parsing certificate. " + e.getLocalizedMessage());
+            throw new InvalidCertificateException("Exception parsing certificate. " + e.getLocalizedMessage()); // is this not in ticket?
         }
     }
 

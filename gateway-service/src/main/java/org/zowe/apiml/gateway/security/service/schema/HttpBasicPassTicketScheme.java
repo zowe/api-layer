@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
@@ -43,6 +44,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final String cookieName;
+    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
@@ -62,6 +64,14 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        final RequestContext context = RequestContext.getCurrentContext();
+        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
+        if (context.containsKey(AUTH_FAIL_HEADER)) {
+            String errorHeaderValue = context.get(AUTH_FAIL_HEADER).toString();
+            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
+            return new PassTicketCommand(System.currentTimeMillis(), errorHeaderValue);
+        }
+
         final long before = System.currentTimeMillis();
 
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
@@ -72,10 +82,10 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         final String applId = authentication.getApplid();
         final String userId = parsedAuthSource.getUserId();
-        String passTicket;
+        String passTicket; // should be able to generate passticket for a user authenticated with cient certificate instead of with userid with token
         try {
-            passTicket = passTicketService.generate(userId, applId);
-        } catch (IRRPassTicketGenerationException e) {
+            passTicket = passTicketService.generate(userId, applId); //edit generate to have user authenticated with clietn certificate, should not just get the userid
+        } catch (IRRPassTicketGenerationException e) { // change to PassTicketCOmmand with auth fail header
             throw new PassTicketException(
                 String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e
             );
@@ -87,7 +97,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final long expiredAt = Math.min(before + authConfigurationProperties.getPassTicket().getTimeout() * 1000,
             parsedAuthSource.getExpiration().getTime());
 
-        return new PassTicketCommand(value, cookieName, expiredAt);
+        return new PassTicketCommand(value, cookieName, expiredAt, null);
     }
 
     @Override
@@ -97,15 +107,31 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class PassTicketCommand extends AuthenticationCommand {
+    public class PassTicketCommand extends AuthenticationCommand {
 
         private static final long serialVersionUID = 3941300386857998443L;
 
         private static final String COOKIE_HEADER = "cookie";
 
-        private final String authorizationValue;
-        private final String cookieName;
-        private final long expireAt;
+        String authorizationValue;
+        String cookieName;
+        long expireAt;
+        String errorValue;
+
+        public PassTicketCommand(String authorizationValue, String cookieName, long expireAt, String errorValue) {
+            this.authorizationValue = authorizationValue;
+            this.cookieName = cookieName;
+            this.expireAt = expireAt;
+            this.errorValue = errorValue;
+        }
+
+        public PassTicketCommand(long expireAt, String errorValue) {
+            this.authorizationValue = null;
+            this.cookieName = null;
+            this.expireAt = expireAt;
+            this.errorValue = errorValue;
+        }
+
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
