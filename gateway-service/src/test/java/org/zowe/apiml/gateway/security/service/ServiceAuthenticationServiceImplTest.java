@@ -13,12 +13,9 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.zuul.context.RequestContext;
-import java.security.cert.X509Certificate;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +45,14 @@ import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.util.CacheUtils;
 
+import java.security.cert.X509Certificate;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -320,8 +319,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         verify(discoveryClient, times(3)).getApplication("s1");
     }
 
-    @Test
-    void testEvictCacheService() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSourcesList")
+    void testEvictCacheService(List<AuthSource> authSourceList) {
+        AuthSource authSource1 = authSourceList.get(0);
+        AuthSource authSource2 = authSourceList.get(1);
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
         reset(discoveryClient);
 
@@ -368,8 +370,9 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", authSource));
     }
 
-    @Test
-    void givenServiceIdAndJwt_whenExpiringCommand_thenReturnNewOne() {
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenServiceIdAndAuthSource_whenExpiringCommand_thenReturnNewOne(AuthSource authSource) {
         AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         Application application = createApplication(
             createInstanceInfo("instanceId", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")
