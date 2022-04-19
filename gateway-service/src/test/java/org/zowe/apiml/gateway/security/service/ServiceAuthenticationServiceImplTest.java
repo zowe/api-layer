@@ -12,14 +12,10 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
-import java.security.cert.X509Certificate;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,11 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.Stubber;
-import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -51,14 +44,16 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,7 +61,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
-import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -105,12 +99,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         serviceAuthenticationService.evictCacheAllService();
 
         serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(
-                discoveryClient,
-                new EurekaMetadataParser(),
-                authenticationSchemeFactory,
-                authSourceService,
-                cacheManager,
-                new CacheUtils());
+            discoveryClient,
+            new EurekaMetadataParser(),
+            authenticationSchemeFactory,
+            cacheManager,
+            new CacheUtils());
     }
 
     @AfterEach
@@ -396,47 +389,47 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthSource authSource1 = authSourceList.get(0);
         AuthSource authSource2 = authSourceList.get(1);
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
-        IAuthenticationScheme schemeBeanMock = mock(ByPassScheme.class);
+        IAuthenticationScheme baypassSchemeMock = mock(ByPassScheme.class);
 
         Authentication auth1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0001");
         Authentication auth2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0002");
-        doReturn(schemeBeanMock).when(authenticationSchemeFactory).getSchema(auth1.getScheme());
-        doReturn(schemeBeanMock).when(authenticationSchemeFactory).getSchema(auth2.getScheme());
-        when(schemeBeanMock.createCommand(eq(auth1), any())).thenReturn(command);
-        when(schemeBeanMock.createCommand(eq(auth2), any())).thenReturn(command);
+        doReturn(baypassSchemeMock).when(authenticationSchemeFactory).getSchema(auth1.getScheme());
+        doReturn(baypassSchemeMock).when(authenticationSchemeFactory).getSchema(auth2.getScheme());
+        when(baypassSchemeMock.createCommand(eq(auth1), any())).thenReturn(command);
+        when(baypassSchemeMock.createCommand(eq(auth2), any())).thenReturn(command);
 
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource1));
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource1));
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth2, authSource1));
-        verify(schemeBeanMock, times(1)).createCommand(auth1, authSource1);
-        verify(schemeBeanMock, times(1)).createCommand(auth2, authSource1);
+        verify(baypassSchemeMock, times(1)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(1)).createCommand(auth2, authSource1);
 
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource2));
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth1, authSource1));
-        verify(schemeBeanMock, times(2)).createCommand(auth1, authSource1);
-        verify(schemeBeanMock, times(1)).createCommand(auth1, authSource2);
+        verify(baypassSchemeMock, times(2)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(1)).createCommand(auth1, authSource2);
 
         serviceAuthenticationService.evictCacheService("service0001");
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource1));
-        verify(schemeBeanMock, times(3)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource2));
-        verify(schemeBeanMock, times(2)).createCommand(auth1, authSource2);
+        verify(baypassSchemeMock, times(2)).createCommand(auth1, authSource2);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth2, authSource1));
-        verify(schemeBeanMock, times(2)).createCommand(auth2, authSource1);
+        verify(baypassSchemeMock, times(2)).createCommand(auth2, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth1, authSource1));
-        verify(schemeBeanMock, times(3)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource1);
 
         serviceAuthenticationService.evictCacheAllService();
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource1));
-        verify(schemeBeanMock, times(4)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(4)).createCommand(auth1, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource2));
-        verify(schemeBeanMock, times(3)).createCommand(auth1, authSource2);
+        verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource2);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth2, authSource2));
-        verify(schemeBeanMock, times(1)).createCommand(auth2, authSource2);
+        verify(baypassSchemeMock, times(1)).createCommand(auth2, authSource2);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth1, authSource1));
-        verify(schemeBeanMock, times(5)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(5)).createCommand(auth1, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth2, authSource1));
-        verify(schemeBeanMock, times(3)).createCommand(auth2, authSource1);
+        verify(baypassSchemeMock, times(3)).createCommand(auth2, authSource1);
     }
 
     @ParameterizedTest
@@ -445,16 +438,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         when(discoveryClient.getApplication(any())).thenReturn(null);
         assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", null, authSource));
     }
-
-
-    private <T> T getUnProxy(T springClass) throws Exception {
-        if (springClass instanceof  Advised) {
-            return (T) ((Advised) springClass).getTargetSource().getTarget();
-        }
-        return springClass;
-    }
-
-
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")

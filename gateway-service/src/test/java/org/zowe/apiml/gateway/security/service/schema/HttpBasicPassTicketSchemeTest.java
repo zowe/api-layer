@@ -10,9 +10,6 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,12 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.DefaultAuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;

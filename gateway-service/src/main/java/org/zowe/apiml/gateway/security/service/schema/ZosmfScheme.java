@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.AUTH_FAIL_HEADER;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
@@ -28,14 +26,14 @@ import org.zowe.apiml.gateway.security.service.schema.source.UserNotMappedExcept
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.util.Cookies;
 
 import java.util.Date;
 import java.util.Optional;
+
+import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.AUTH_FAIL_HEADER;
 
 /**
  * This bean provide LTPA token into request. It get LTPA from authentication source (JWT token value is set on logon)

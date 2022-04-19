@@ -10,7 +10,7 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import io.jsonwebtoken.JwtException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,12 +24,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.UserNotMappedException;
-import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.gateway.utils.X509Utils;
@@ -128,7 +124,6 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
 
-
     @Nested
     class ZuulRequestTest {
 
@@ -158,7 +153,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
             @Test
             void givenZoweJwtAuthSource_andExistingCookie_thenAppendCookieWithLtpa() {
-                ((MockHttpServletRequest)request).addHeader(COOKIE_HEADER, "cookie1=1");
+                ((MockHttpServletRequest) request).addHeader(COOKIE_HEADER, "cookie1=1");
                 zosmfScheme.createCommand(authentication, new JwtAuthSource("jwtToken1")).apply(null);
                 assertEquals("cookie1=1;LtpaToken2=ltpa1", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
             }
@@ -300,25 +295,6 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
             assertFalse(command.isExpired());
         }
-
-    @Test
-    void givenZosmfToken_whenCreateCommand_thenTestJwtToken() {
-        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
-        when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
-        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
-
-        ZosmfScheme scheme = new ZosmfScheme(authSourceService, authConfigurationProperties);
-        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(new JwtAuthSource("jwtTokenZosmf")));
-        when(authSourceService.parse(new JwtAuthSource("jwtTokenZosmf"))).thenReturn(parsedSourceZosmf);
-
-        AuthenticationCommand command = scheme.createCommand(new Authentication(AuthenticationScheme.ZOSMF, null), new JwtAuthSource("jwtTokenZosmf"));
-
-        command.apply(null);
-
-        verify(authSourceService, times(1)).getAuthSourceFromRequest();
-        verify(authSourceService, times(2)).parse(new JwtAuthSource("jwtTokenZosmf"));
-        verify(authSourceService, never()).getLtpaToken(new JwtAuthSource("jwtTokenZosmf"));
-    }
 
     }
 

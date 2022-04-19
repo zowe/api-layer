@@ -22,12 +22,11 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpired;
 import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.schema.IAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
+import org.zowe.apiml.gateway.security.service.schema.IAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.util.List;
@@ -65,7 +64,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
-    private final AuthSourceService authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
@@ -110,21 +108,10 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, Authentication found, AuthSource authSource) {
-        final Application application = discoveryClient.getApplication(serviceId);
-        if (application == null) return AuthenticationCommand.EMPTY;
+        // if no instance exist or no metadata found, do nothing
+        if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
 
-        final List<InstanceInfo> instances = application.getInstances();
-        Authentication auth = null;
-        // If any instance is specifying which authentication it wants, then use the first found.
-        for (InstanceInfo instance : instances) {
-            auth = getAuthentication(instance);
-            if (auth != null && !auth.isEmpty()) {
-                break;
-            }
-        }
-        if (auth == null || auth.isEmpty()) return AuthenticationCommand.EMPTY;
-
-        return getAuthenticationCommand(auth, authSource);
+        return getAuthenticationCommand(found, authSource);
     }
 
     public Optional<AuthSource> getAuthSourceByAuthentication(Authentication authentication) {

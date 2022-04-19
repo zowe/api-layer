@@ -9,13 +9,10 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.AUTH_FAIL_HEADER;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import org.apache.http.HttpRequest;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -27,10 +24,11 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.util.Cookies;
 
 import java.util.Date;
 import java.util.Optional;
+
+import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.AUTH_FAIL_HEADER;
 
 
 @Component
@@ -111,16 +109,6 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             } else {
                 JwtCommand.removeCookie(context, configurationProperties.getCookieProperties().getCookieName());
                 JwtCommand.setErrorHeader(context, errorHeader);
-            }
-        }
-
-        @Override
-        public void applyToRequest(HttpRequest request) {
-            Cookies cookies = Cookies.of(request);
-            if (jwt != null) {
-                JwtCommand.createCookie(cookies, configurationProperties.getCookieProperties().getCookieName(), jwt);
-            } else {
-                JwtCommand.addErrorHeader(request, errorHeader);
             }
         }
 

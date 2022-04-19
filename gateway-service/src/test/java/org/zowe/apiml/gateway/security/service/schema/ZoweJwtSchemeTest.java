@@ -11,10 +11,6 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import java.util.Date;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.message.BasicHeader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -33,6 +29,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,22 +102,13 @@ class ZoweJwtSchemeTest {
 
         @Test
         void whenExpiredJwt_thenCreateErrorMessage() {
-            ((MockHttpServletRequest)request).addHeader(COOKIE_HEADER, "apimlAuthenticationToken=expiredToken");
+            ((MockHttpServletRequest) request).addHeader(COOKIE_HEADER, "apimlAuthenticationToken=expiredToken");
             AuthSource jwtSource = new JwtAuthSource("expiredToken");
             when(authSourceService.parse(jwtSource)).thenThrow(new TokenExpireException("expired token"));
             command = scheme.createCommand(null, jwtSource);
             assertEquals("ZWEAG103E The token has expired", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
             command.apply(null);
             assertEquals("", requestContext.getZuulRequestHeaders().get("cookie"));
-        }
-
-        @Test
-        void whenValidJWTAuthSource_thenUpdateCookieWithJWToken() {
-            HttpRequest httpRequest = new HttpGet("api/v1/files");
-            httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
-            command = scheme.createCommand(null, authSource);
-            command.applyToRequest(httpRequest);
-            assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
         }
 
         @Test
@@ -179,15 +167,6 @@ class ZoweJwtSchemeTest {
             }
 
             @Test
-            void whenValid_thenUpdateCookiesWithJWToken() {
-                command = scheme.createCommand(null, authSource);
-                HttpRequest httpRequest = new HttpGet("api/v1/files");
-                httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
-                command.applyToRequest(httpRequest);
-                assertEquals(EXPECTED_TOKEN_RESULT, httpRequest.getFirstHeader("cookie").getValue());
-            }
-
-            @Test
             void whenJwtCannotBeCreatedFromX509_thenCreateErrorMessage() {
                 X509Certificate cert = mock(X509Certificate.class);
                 AuthSource certSource = new X509AuthSource(cert);
@@ -207,17 +186,6 @@ class ZoweJwtSchemeTest {
                 assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
                 authenticationCommand.apply(null);
                 assertEquals(errorHeaderValue, requestContext.getZuulRequestHeaders().get("x-zowe-auth-failure"));
-            }
-
-            @Test
-            void whenNoJWTReturned_thenUpdateHeaderWithJWToken() {
-                when(authSourceService.getJWT(authSource)).thenReturn(null);
-                AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
-                HttpRequest request = mock(HttpRequest.class);
-                assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
-                assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
-                authenticationCommand.applyToRequest(request);
-                verify(request, times(1)).addHeader(any(), any());
             }
 
             @Test
