@@ -8,6 +8,7 @@ dependencies {
     compile libraries.jaxb_api
     implementation libraries.javax_servlet_api
     implementation libraries.spring_context
+    implementation libraries.apache_commons_codec
 
     compileOnly libraries.lombok
 

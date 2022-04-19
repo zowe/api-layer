@@ -40,7 +40,7 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
     AuthenticationCommand getAuthenticationCommand(String serviceId, Authentication authentication, AuthSource authSource);
 
     /**
-     * Get authentication for given InstanceInfo
+     * Provides information about authentication scheme selected by a service registered in Eureka
      * @param instanceInfo InstanceInfo object of service instance, containing the security metadata
      * @return Authentication object representing instance's authentication schema
      */

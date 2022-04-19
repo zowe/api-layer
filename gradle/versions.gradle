@@ -3,7 +3,7 @@ ext {
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE'
     springSecurityVersion = '5.3.13.RELEASE!!'
-    springFrameworkVersion = '5.2.19.RELEASE!!'
+    springFrameworkVersion = '5.2.20.RELEASE!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
@@ -43,7 +43,7 @@ ext {
     jsoupVersion = '1.8.3'
     jsr305Version = '3.0.2'
     junitJupiterVersion = '5.5.2'
-    jqueryVersion = '3.5.1!!'
+    jqueryVersion = '3.6.0!!'
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
     lombokVersion = '1.18.20'
@@ -106,6 +106,7 @@ ext {
         spring_messaging                   : "org.springframework:spring-messaging:${springFrameworkVersion}",
         spring_web                         : "org.springframework:spring-web:${springFrameworkVersion}",
         spring_webmvc                      : "org.springframework:spring-webmvc:${springFrameworkVersion}",
+        spring_webflux                     : "org.springframework:spring-webflux:${springFrameworkVersion}",
         spring_websocket                   : "org.springframework:spring-websocket:${springFrameworkVersion}",
 
         apache_commons_codec               : "commons-codec:commons-codec:${commonsCodecVersion}",
