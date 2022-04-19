@@ -280,3 +280,10 @@ messages:
       text: "Error occurred while validating X509 certificate. %s"
       reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
       action: "Configure your client to provide valid x509 certificate."
+
+    - key: org.zowe.apiml.gateway.security.scheme.zosmfSchemeNotSupported
+      number: ZWEAG165
+      type: ERROR
+      text: "ZOSMF authentication scheme is not supported for this API ML instance."
+      reason: "z/OSMF is not used as security provider for API ML."
+      action: "Contact your administrator."
