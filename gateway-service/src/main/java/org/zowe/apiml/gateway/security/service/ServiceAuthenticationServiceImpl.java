@@ -31,6 +31,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This bean is responsible for "translating" security to specific service. It decorate request with security data for
@@ -40,8 +41,8 @@ import java.util.List;
  * The main idea of this bean is to create command
  * {@link AuthenticationCommand}. Command is object which update the
  * request for specific scheme (defined by service). This bean is responsible for getting the right command. If it is
- * possible to decide now for just one scheme type, bean return this command to update request immediatelly. Otherwise
- * it returns {@link LoadBalancerAuthenticationCommand}. This command write in the ZUUL context
+ * possible to decide now for just one scheme type, bean return this command to update request immediatelly.
+ * This command write in the ZUUL context
  * UniversalAuthenticationCommand, which is used in Ribbon loadbalancer. There is a listener which work with this value.
  * After load balancer will decide which instance will be used, universal command is called and update the request.
  * <p>
@@ -73,6 +74,26 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     }
 
     @Override
+    public Authentication getAuthentication(String serviceId) {
+        final Application application = discoveryClient.getApplication(serviceId);
+        if (application == null) return null;
+
+        final List<InstanceInfo> instances = application.getInstances();
+
+        Authentication found = null;
+        // iterates over all instances to verify if they all have the same authentication scheme in registration metadata
+        for (final InstanceInfo instance : instances) {
+            final Authentication auth = getAuthentication(instance);
+
+            if (auth != null) {
+                // this is the first record
+                return auth;
+            }
+        }
+        return null;
+    }
+
+    @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
@@ -88,7 +109,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, AuthSource authSource) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, Authentication found, AuthSource authSource) {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
@@ -107,7 +128,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     }
 
     public Optional<AuthSource> getAuthSourceByAuthentication(Authentication authentication) {
-        if (authentication == null || authentication.isEmpty() || authentication instanceof LoadBalancerAuthentication) {
+        if (authentication == null || authentication.isEmpty()) {
             return Optional.empty();
         }
         final IAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());

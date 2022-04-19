@@ -12,10 +12,14 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
+import java.security.cert.X509Certificate;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +28,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Stubber;
+import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -44,21 +51,22 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 
-import java.security.cert.X509Certificate;
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -234,7 +242,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
             InstanceInfo ii4 = createInstanceInfo("inst02", a4);
             InstanceInfo ii5 = createInstanceInfo("inst02", null);
 
-            Authentication lba = new LoadBalancerAuthentication();
 
             @Nested
             class AndHaveMultipleInstances {
@@ -243,13 +250,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
                     application = createApplication(ii1, ii1, ii1);
                     when(discoveryClient.getApplication("svr01")).thenReturn(application);
                     assertEquals(a1, sas.getAuthentication("svr01"));
-                }
-
-                @Test
-                void andInstancesHaveDifferentAuthentication_thenReturnLoadBalancerAuthentication() {
-                    application = createApplication(ii1, ii2, ii3);
-                    when(discoveryClient.getApplication("svr01")).thenReturn(application);
-                    assertEquals(lba, sas.getAuthentication("svr01"));
                 }
 
                 @Test
@@ -342,14 +342,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         AuthSource authSource = authSourceTriplet.get(0);
         AuthenticationCommand ok = new AuthenticationCommandTest(false);
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
-        Authentication a2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
-        Authentication a5 = new Authentication(null, null);
+        Authentication ea = new Authentication(null, null);
 
-        InstanceInfo ii1 = createInstanceInfo("inst01", a1);
-        InstanceInfo ii2 = createInstanceInfo("inst01", a2);
-        InstanceInfo ii5 = createInstanceInfo("inst02", a5);
-
-        Application application;
 
         ServiceAuthenticationService sas = spy(serviceAuthenticationServiceImpl);
 
@@ -361,7 +355,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         assertSame(ok, sas.getAuthenticationCommand("svr01", a1, authSource));
 
         // loadBalanceAuthentication as parameter (multiple different instances)
-        assertTrue(sas.getAuthenticationCommand("svr02", lba, authSource) instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
 
         // empty authentication
         assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr03", ea, authSource));
@@ -453,11 +446,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", null, authSource));
     }
 
-    @Test
-    void testIsRequiredValidAuthSource() {
-        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
-        assertFalse(universalAuthenticationCommand.isRequiredValidSource());
-    }
 
     private <T> T getUnProxy(T springClass) throws Exception {
         if (springClass instanceof  Advised) {
@@ -466,84 +454,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         return springClass;
     }
 
-    private AuthenticationCommand testRequiredAuthentication(boolean requiredAuthSourceValidation, String authSourceString) throws Exception {
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
-        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand =
-            serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
 
-        AuthenticationCommand ac = mock(AuthenticationCommand.class);
-        AuthSource.Parsed parsedSource = mock(AuthSource.Parsed.class);
-        IAuthenticationScheme schema = mock(IAuthenticationScheme.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        RequestContext.getCurrentContext().setRequest(request);
-
-        Stubber stubber;
-        AuthSource authSource;
-        if (StringUtils.equals(authSourceString, "validJwt")) {
-            stubber = doReturn(Optional.of(new JwtAuthSource(authSourceString)));
-            authSource = new JwtAuthSource(authSourceString);
-        } else if (StringUtils.equals(authSourceString, "validClientCert")) {
-            stubber = doReturn(Optional.of(new X509AuthSource(mock(X509Certificate.class))));
-            authSource = new X509AuthSource(mock(X509Certificate.class));
-        } else {
-            stubber = doThrow(new TokenNotValidException("Token is not valid."));
-            authSource = null;
-        }
-        stubber.when(getUnProxy(authSourceService)).getAuthSourceFromRequest();
-        doReturn(ac).when(schema).createCommand(eq(authentication), any());
-        doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
-        doReturn(parsedSource).when(getUnProxy(authSourceService)).parse(authSource);
-        doReturn(requiredAuthSourceValidation).when(ac).isRequiredValidSource();
-
-        universalAuthenticationCommand.apply(createInstanceInfo("id", authentication));
-
-        return ac;
-    }
-
-    @Test
-    void givenMissingAuthSource_whenCommandRequiredAuthentication_thenReject() throws Exception {
-        try {
-            testRequiredAuthentication(true, null);
-            fail();
-        } catch (ExecutionListener.AbortExecutionException aee) {
-            assertTrue(aee.getMessage().contains("Invalid JWT token"));
-        }
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"invalidJwt", "invalidClientCert"})
-    void givenInvalidAuthSource_whenCommandRequiredAuthentication_thenReject(String authSourceString) throws Exception {
-        try {
-            testRequiredAuthentication(true, authSourceString);
-            fail();
-        } catch (ExecutionListener.AbortExecutionException aee) {
-            assertTrue(aee.getMessage().contains("Invalid JWT token"));
-        }
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"validJwt", "validClientCert"})
-    void givenValidExpiredAuthSource_whenCommandRequiredAuthentication_thenCall(String authSourceString) throws Exception {
-        doThrow(new TokenExpireException("Token is expired."))
-            .when(getUnProxy(authSourceService)).isValid(any());
-
-        try {
-            testRequiredAuthentication(true, authSourceString);
-            fail();
-        } catch (ExecutionListener.AbortExecutionException aee) {
-            assertTrue(aee.getMessage().contains("Invalid JWT token"));
-        }
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {/*"validJwt",*/ "validClientCert"})
-    void givenValidAuthSource_whenCommandRequiredAuthentication_thenCall(String authSourceString) throws Exception {
-        doReturn(true)
-            .when(getUnProxy(authSourceService)).isValid(any());
-
-        AuthenticationCommand ac = testRequiredAuthentication(true, authSourceString);
-        verify(ac, times(1)).apply(any());
-    }
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
