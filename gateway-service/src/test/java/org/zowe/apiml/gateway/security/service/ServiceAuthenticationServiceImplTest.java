@@ -225,13 +225,9 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         @Nested
         class WhenApplicationDiscovered {
             Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
-            Authentication a2 = new Authentication(AuthenticationScheme.ZOWE_JWT, null);
-            Authentication a3 = new Authentication(AuthenticationScheme.ZOWE_JWT, "applid01");
             Authentication a4 = new Authentication(null, null);
 
             InstanceInfo ii1 = createInstanceInfo("inst01", a1);
-            InstanceInfo ii2 = createInstanceInfo("inst01", a2);
-            InstanceInfo ii3 = createInstanceInfo("inst01", a3);
             InstanceInfo ii4 = createInstanceInfo("inst02", a4);
             InstanceInfo ii5 = createInstanceInfo("inst02", null);
 

@@ -56,8 +56,6 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationService {
 
-    public static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
-
     private static final String CACHE_BY_SERVICE_ID = "serviceAuthenticationByServiceId";
     private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
@@ -78,7 +76,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
         final List<InstanceInfo> instances = application.getInstances();
 
-        Authentication found = null;
         // iterates over all instances to verify if they all have the same authentication scheme in registration metadata
         for (final InstanceInfo instance : instances) {
             final Authentication auth = getAuthentication(instance);
