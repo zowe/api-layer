@@ -14,7 +14,7 @@ import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
 import axios from 'axios';
 
-export function Default_Dashboard() {
+export function DefaultDashboard() {
     const [availableClusters, setAvailableClusters] = useState([]);
     const [currentCluster, setCurrentCluster] = useState(null);
     const [haveGottenClusters, setHaveGottenClusters] = useState(false);
@@ -59,8 +59,6 @@ export function Default_Dashboard() {
         setMetricsDisplay(newValue);
     };
 
-
-
     return (
         <React.Fragment>
             {availableClusters.length > 0 && (
@@ -82,4 +80,5 @@ export function Default_Dashboard() {
         </React.Fragment>
     );
 }
-export default Default_Dashboard;
+
+export default DefaultDashboard;

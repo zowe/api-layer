@@ -11,10 +11,10 @@
 import Typography from '@material-ui/core/Typography';
 import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
-import Grid from "@material-ui/core/Grid";
-import GatewayHttpDashboard  from '../grafana-iframes/Gateway-http-dashboard';
-import GatewayZebraDashboard  from '../grafana-iframes/Gateway-zebra-dashboard';
-import {Default_Dashboard} from "../Default_Dashboard/Default_dashboard";
+import Grid from '@material-ui/core/Grid';
+import GatewayHttpDashboard from '../grafana-iframes/Gateway-http-dashboard';
+import GatewayZebraDashboard from '../grafana-iframes/Gateway-zebra-dashboard';
+import { DefaultDashboard } from '../Default_Dashboard/DefaultDashboard';
 
 export default function Dashboard() {
     const [zebraPanelShow, setZebraPanelShow] = useState(false);
@@ -27,13 +27,19 @@ export default function Dashboard() {
                 Metrics Service
             </Typography>
             <Grid container justify="center" columnSpacing={2}>
-                <Button variant="outlined" size="large" onClick={() => setHttpPanelShow(!httpPanelShow)}>Http Metrics Panel</Button>
-                <Button variant="outlined" size="large" onClick={() => setZebraPanelShow(!zebraPanelShow)}>Zebra Metrics Panel</Button>
-                <Button variant="outlined" size="large" onClick={() => setDefaultPanelShow(!defaultPanelShow)}>Default Panel</Button>
+                <Button variant="outlined" size="large" onClick={() => setHttpPanelShow(!httpPanelShow)}>
+                    Http Metrics Panel
+                </Button>
+                <Button variant="outlined" size="large" onClick={() => setZebraPanelShow(!zebraPanelShow)}>
+                    Zebra Metrics Panel
+                </Button>
+                <Button variant="outlined" size="large" onClick={() => setDefaultPanelShow(!defaultPanelShow)}>
+                    Default Panel
+                </Button>
             </Grid>
             {httpPanelShow ? <GatewayHttpDashboard /> : null}
             {zebraPanelShow ? <GatewayZebraDashboard /> : null}
-            {defaultPanelShow ? <Default_Dashboard /> : null}
+            {defaultPanelShow ? <DefaultDashboard /> : null}
         </React.Fragment>
     );
 }

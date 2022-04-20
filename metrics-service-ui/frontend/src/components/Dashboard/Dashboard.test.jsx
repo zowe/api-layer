@@ -27,6 +27,6 @@ describe('>>> Dashboard component tests', () => {
         document.body.appendChild(container);
 
         await act(async () => render(<Dashboard />, container));
-        expect(container.textContent).toBe('Metrics ServiceGATEWAY');
+        expect(container.textContent).toBe('Metrics ServiceHttp Metrics PanelZebra Metrics PanelDefault PanelGATEWAY');
     });
 });

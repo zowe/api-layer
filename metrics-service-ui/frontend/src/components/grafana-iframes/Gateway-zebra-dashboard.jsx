@@ -13,39 +13,56 @@ import React from 'react';
 export function GatewayZebraDashboard() {
     return (
         <fragment>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '2rem',
-            }}>
-                <div       dangerouslySetInnerHTML={{
-                    __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=2' width='450' height='300' />",
-                }} />
-                <div       dangerouslySetInnerHTML={{
-                    __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=3'  width='450' height='300' />",
-                }} />
-                <div       dangerouslySetInnerHTML={{
-                    __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=12'  width='450' height='300' />",
-                }} />
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '2rem',
+                }}
+            >
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=2' width='450' height='300' />",
+                    }}
+                />
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=3'  width='450' height='300' />",
+                    }}
+                />
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=12'  width='450' height='300' />",
+                    }}
+                />
             </div>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '2rem',
-            }}>
-                <div       dangerouslySetInnerHTML={{
-                    __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=14'  width='450' height='300' />",
-                }} />
-                <div       dangerouslySetInnerHTML={{
-                    __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=15'  width='450' height='300' />",
-                }} />
-                <div       dangerouslySetInnerHTML={{
-                    __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=19'  width='450' height='300' />",
-                }} />
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '2rem',
+                }}
+            >
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=14'  width='450' height='300' />",
+                    }}
+                />
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=15'  width='450' height='300' />",
+                    }}
+                />
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: "<iframe src='http://localhost:3000/d-solo/0MIkGHU7z/rprt-cpc-metrics?orgId=1&panelId=19'  width='450' height='300' />",
+                    }}
+                />
             </div>
         </fragment>
     );
 }
+
 export default GatewayZebraDashboard;
