@@ -79,9 +79,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final long before = System.currentTimeMillis();
 
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
-
+        String error;
         if (authSource == null || authSource.getRawSource() == null) {
-            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
             return new PassTicketCommand(null, cookieName, null, error);
         }
 
@@ -91,9 +91,8 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         try {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
-            throw new PassTicketException(
-                String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e
-            );
+            error = String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId);
+            return new PassTicketCommand(null, cookieName, null, error);
         }
         final String encoded = Base64.getEncoder()
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
@@ -129,6 +128,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             if (authorizationValue != null) {
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
             }
+            else {
+                JwtCommand.setErrorHeader(context, errorValue);
+            }
             context.addZuulRequestHeader(COOKIE_HEADER,
                 CookieUtil.removeCookie(
                     context.getZuulRequestHeaders().get(COOKIE_HEADER),
@@ -143,6 +145,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
                 request.setHeader(
                     new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
                 );
+            }
+            else {
+                request.addHeader(AUTH_FAIL_HEADER, errorValue);
             }
             Header header = request.getFirstHeader(COOKIE_HEADER);
             if (header != null) {

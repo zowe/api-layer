@@ -187,10 +187,10 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(UNKNOWN_USER, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
         when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
         AuthSource authSource = new JwtAuthSource("token");
-        Exception exception = assertThrows(PassTicketException.class,
-            () -> httpBasicPassTicketScheme.createCommand(authentication, authSource),
-            "Expected exception is not AuthenticationException");
-        assertEquals((String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId)), exception.getMessage());
+        String errorMsg = String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId);
+        AuthenticationCommand expected = new HttpBasicPassTicketScheme.PassTicketCommand(null, authConfigurationProperties.getCookieProperties().getCookieName(), null, errorMsg);
+        AuthenticationCommand actual =  httpBasicPassTicketScheme.createCommand(authentication, authSource);
+        assertEquals(expected, actual);
     }
 
     @Test
