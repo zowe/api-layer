@@ -19,7 +19,6 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.message.core.MessageService;
@@ -127,16 +126,16 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             final RequestContext context = RequestContext.getCurrentContext();
             if (authorizationValue != null) {
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+                context.addZuulRequestHeader(COOKIE_HEADER,
+                    CookieUtil.removeCookie(
+                        context.getZuulRequestHeaders().get(COOKIE_HEADER),
+                        cookieName
+                    )
+                );
             }
             else {
                 JwtCommand.setErrorHeader(context, errorValue);
             }
-            context.addZuulRequestHeader(COOKIE_HEADER,
-                CookieUtil.removeCookie(
-                    context.getZuulRequestHeaders().get(COOKIE_HEADER),
-                    cookieName
-                )
-            );
         }
 
         @Override
