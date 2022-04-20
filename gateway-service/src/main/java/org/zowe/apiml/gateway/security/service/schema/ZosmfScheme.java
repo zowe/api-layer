@@ -111,8 +111,8 @@ public class ZosmfScheme implements IAuthenticationScheme {
 
         final long defaultExpirationTime = System.currentTimeMillis() + authConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000L;
         final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
-        final Long expirationTime = expiration != null ? expiration.getTime() : null;
-        final Long expireAt = expirationTime != null ? Math.min(defaultExpirationTime, expirationTime) : null;
+        final long expirationTime = expiration != null ? expiration.getTime() : defaultExpirationTime;
+        final Long expireAt = Math.min(defaultExpirationTime, expirationTime);
         final AuthSource.Origin origin = parsedAuthSource != null ? parsedAuthSource.getOrigin() : null;
 
         return new ZosmfCommand(expireAt, origin, cookieValue, error);
