@@ -87,7 +87,7 @@ public class PassTicketService {
         }
 
         @Override
-        public String generate(String userId, String applId) throws IRRPassTicketGenerationException { //edit here
+        public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
             if (StringUtils.equalsIgnoreCase(UNKNOWN_USER, userId)) {
                 throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16);
             }

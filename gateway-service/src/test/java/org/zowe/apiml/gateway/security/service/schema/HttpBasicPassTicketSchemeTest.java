@@ -15,7 +15,6 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -30,8 +29,6 @@ import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
@@ -58,13 +55,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     private static final String USERNAME = "USERNAME";
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
-    static MessageService messageService;
-
-    @BeforeAll
-    static void setForAll() {
-        messageService = new YamlMessageService();
-        messageService.loadMessages("/gateway-messages.yml");
-    }
 
     @BeforeEach
     void init() {
@@ -73,7 +63,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
         PassTicketService passTicketService = new PassTicketService();
         AuthSourceService authSourceService = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
     }
 
     @AfterEach
@@ -85,7 +75,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void testCreateCommand() {
         PassTicketService passTicketService = new PassTicketService();
         AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
@@ -136,7 +126,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void testGetAuthSource() {
         PassTicketService passTicketService = mock(PassTicketService.class);
         AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
 
@@ -148,7 +138,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
         PassTicketService passTicketService = mock(PassTicketService.class);
         AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
@@ -179,7 +169,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         String applId = "APPLID";
         PassTicketService passTicketService = new PassTicketService();
         AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
@@ -196,7 +186,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void testIsRequiredValidJwt() {
         PassTicketService passTicketService = new PassTicketService();
         AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, 1);
@@ -208,19 +198,16 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void whenCallWithoutJwt_thenNoPassTicketGenerates() {
+    void whenCallWithoutJwt_thenDoNothing() {
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, null);
-        String errorMsg = messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
-        AuthenticationCommand expected = new HttpBasicPassTicketScheme.PassTicketCommand(authConfigurationProperties.getCookieProperties().getCookieName(), null, errorMsg);
-
-        assertEquals(expected, ac);
+        assertSame(AuthenticationCommand.EMPTY, ac);
     }
 
     private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {
         PassTicketService passTicketService = new PassTicketService();
         AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
 
         Calendar c = Calendar.getInstance();
         c.add(Calendar.YEAR, 1);
@@ -239,7 +226,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         RequestContext requestContext = new RequestContext();
         requestContext.addZuulRequestHeader("cookie",
             authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
-            "abc=def"
+                "abc=def"
         );
         RequestContext.testSetCurrentContext(requestContext);
 
@@ -265,7 +252,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         HttpRequest httpRequest = new HttpGet();
         httpRequest.setHeader("cookie",
             authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
-            "abc=def"
+                "abc=def"
         );
 
         command.applyToRequest(httpRequest);
