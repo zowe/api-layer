@@ -22,6 +22,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
 
+import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.message.core.MessageService;
@@ -112,12 +113,12 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         try {
             passTicket = passTicketService.generate(userId, applId); //edit generate to have user authenticated with clietn certificate, should not just get the userid
         } catch (IRRPassTicketGenerationException e) { // change to PassTicketCOmmand with auth fail header
-            error = String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId);
+            throw new PassTicketException(String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e);
         }
 
-        if (error != null) { // catching all exceptions relating to parsing all AuthSourceService types and auth source null errors, can apply command to set X-Zowe-Auth-Failure header
-            return new PassTicketCommand(cookieName, null, error);
-        }
+//        if (error != null) { // catching all exceptions relating to parsing all AuthSourceService types and auth source null errors, can apply command to set X-Zowe-Auth-Failure header
+//            return new PassTicketCommand(cookieName, null, error);
+//        }
 
         final String encoded = Base64.getEncoder()
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));

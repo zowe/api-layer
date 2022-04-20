@@ -22,6 +22,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.DefaultAuthSourceService;
@@ -185,10 +186,10 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(UNKNOWN_USER, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
         when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
         AuthSource authSource = new JwtAuthSource("token");
-        String errorMsg = String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId);
-        AuthenticationCommand expected = new HttpBasicPassTicketScheme.PassTicketCommand(authConfigurationProperties.getCookieProperties().getCookieName(), null, errorMsg);
-        AuthenticationCommand actual =  httpBasicPassTicketScheme.createCommand(authentication, authSource);
-        assertEquals(expected, actual);
+        Exception exception = assertThrows(PassTicketException.class,
+            () -> httpBasicPassTicketScheme.createCommand(authentication, authSource),
+            "Expected exception is not AuthenticationException");
+        assertEquals((String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId)), exception.getMessage());
     }
 
     @Test
