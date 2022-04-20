@@ -121,7 +121,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
-            context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+            if (authorizationValue != null) {
+                context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+            }
             context.addZuulRequestHeader(COOKIE_HEADER,
                 CookieUtil.removeCookie(
                     context.getZuulRequestHeaders().get(COOKIE_HEADER),
@@ -132,9 +134,11 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         @Override
         public void applyToRequest(HttpRequest request) {
-            request.setHeader(
-                new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
-            );
+            if (authorizationValue != null) {
+                request.setHeader(
+                    new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
+                );
+            }
             Header header = request.getFirstHeader(COOKIE_HEADER);
             if (header != null) {
                 request.setHeader(COOKIE_HEADER,
