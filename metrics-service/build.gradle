@@ -53,6 +53,14 @@ dependencies {
     implementation project(':onboarding-enabler-spring')
     implementation(project(':security-service-client-spring'))
 
+    implementation libraries.jackson_annotations
+    implementation libraries.jackson_core
+    implementation libraries.jackson_databind
+    implementation libraries.jackson_mapper_asl
+    implementation libraries.jetty_client
+    implementation libraries.jetty_http
+    implementation libraries.jetty_io
+    implementation libraries.jetty_util
     implementation libraries.springFox
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_cloud_starter_eureka
@@ -79,6 +87,7 @@ dependencies {
     implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
+    
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
