@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
@@ -44,17 +45,20 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final PassTicketService passTicketService;
     private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;
+    private final MessageService messageService;
     private final String cookieName;
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
         AuthSourceService authSourceService,
-        AuthConfigurationProperties authConfigurationProperties
+        AuthConfigurationProperties authConfigurationProperties,
+        MessageService messageService
     ) {
         this.passTicketService = passTicketService;
         this.authSourceService = authSourceService;
         this.authConfigurationProperties = authConfigurationProperties;
         cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+        this.messageService = messageService;
     }
 
     @Override
@@ -76,8 +80,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
 
-        if (authSource == null || parsedAuthSource == null) {
-            return AuthenticationCommand.EMPTY;
+        if (authSource == null || authSource.getRawSource() == null) {
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
         }
 
         final String applId = authentication.getApplid();
@@ -115,7 +120,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         private final String authorizationValue;
         private final String cookieName;
-        private final long expireAt;
+        private final Long expireAt;
         private final String errorValue;
 
         @Override
