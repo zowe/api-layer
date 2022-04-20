@@ -22,7 +22,6 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.DefaultAuthSourceService;
