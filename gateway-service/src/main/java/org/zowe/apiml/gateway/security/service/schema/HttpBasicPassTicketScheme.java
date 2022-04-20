@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 
-import java.security.cert.CertificateEncodingException;
 import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -22,18 +21,15 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
+
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.UserNotMappedException;
-import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CookieUtil;
@@ -89,8 +85,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         String error = null;
         try {
             parsedAuthSource = authSourceService.parse(authSource);
-        } catch (InvalidCertificateException e) {
-            error = e.getMessage();
         } catch (TokenNotValidException e) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
         } catch (TokenExpireException e) {
@@ -102,6 +96,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         }
         else if (parsedAuthSource == null) { // invalid authSource - can be due to
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", "Cannot parse provided authentication source").mapToLogMessage();
+            return new PassTicketCommand(cookieName, null, error);
         }
         else if (parsedAuthSource.getUserId() == null) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();

@@ -35,7 +35,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.*;
-//edit here
 @DiscoverableClientDependentTest
 @GeneralAuthenticationTest
 public class PassticketSchemeTest implements TestWithStartedInstances {
