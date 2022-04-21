@@ -21,7 +21,6 @@ import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -85,10 +84,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         String error;
         try {
             parsedAuthSource = authSourceService.parse(authSource);
-//        } catch (TokenNotValidException e) {
-//            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
-//            return new PassTicketCommand(null, cookieName, null, error);
-//        }
+        } catch (TokenNotValidException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
         } catch (TokenExpireException e) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
             return new PassTicketCommand(null, cookieName, null, error);
