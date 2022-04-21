@@ -47,6 +47,9 @@ management:
     health:
         defaults:
             enabled: false
+    endpoint:
+        health:
+            show-details: always
 ---
 spring:
     profiles: https
