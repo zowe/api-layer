@@ -147,12 +147,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             final RequestContext context = RequestContext.getCurrentContext();
             if (authorizationValue != null) {
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
-                context.addZuulRequestHeader(COOKIE_HEADER,
-                    CookieUtil.removeCookie(
-                        context.getZuulRequestHeaders().get(COOKIE_HEADER),
-                        cookieName
-                    )
-                );
+                JwtCommand.removeCookie(context, cookieName);
             }
             else {
                 JwtCommand.setErrorHeader(context, errorValue);
