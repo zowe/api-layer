@@ -144,18 +144,18 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
                 request.setHeader(
                     new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
                 );
+                Header header = request.getFirstHeader(COOKIE_HEADER);
+                if (header != null) {
+                    request.setHeader(COOKIE_HEADER,
+                        CookieUtil.removeCookie(
+                            header.getValue(),
+                            cookieName
+                        )
+                    );
+                }
             }
             else {
                 request.addHeader(AUTH_FAIL_HEADER, errorValue);
-            }
-            Header header = request.getFirstHeader(COOKIE_HEADER);
-            if (header != null) {
-                request.setHeader(COOKIE_HEADER,
-                    CookieUtil.removeCookie(
-                        header.getValue(),
-                        cookieName
-                    )
-                );
             }
         }
 
