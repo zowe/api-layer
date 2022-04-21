@@ -237,6 +237,12 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void givenJwtInCookie_whenApply_thenJwtIsRemoved() {
         AuthenticationCommand command = getPassTicketCommand();
         RequestContext requestContext = new RequestContext();
+        HttpServletRequest request = new MockHttpServletRequest();
+        ((MockHttpServletRequest)request).addHeader("cookie",
+            authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
+                "abc=def");
+
+        requestContext.setRequest(request);
         requestContext.addZuulRequestHeader("cookie",
             authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
                 "abc=def"
