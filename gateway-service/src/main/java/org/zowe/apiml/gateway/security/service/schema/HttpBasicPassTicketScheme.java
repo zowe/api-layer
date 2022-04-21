@@ -83,6 +83,14 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
             return new PassTicketCommand(null, cookieName, null, error);
         }
+        else if (parsedAuthSource == null) { // invalid authSource - can be due to
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", "Cannot parse provided authentication source").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        }
+        else if (parsedAuthSource.getUserId() == null) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        }
 
         final String applId = authentication.getApplid();
         final String userId = parsedAuthSource.getUserId();
