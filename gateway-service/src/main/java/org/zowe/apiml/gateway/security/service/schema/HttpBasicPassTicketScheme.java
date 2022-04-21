@@ -85,14 +85,14 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         String error;
         try {
             parsedAuthSource = authSourceService.parse(authSource);
-        } catch (TokenNotValidException e) {
-            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
-            return new PassTicketCommand(null, cookieName, null, error);
-        }
-//        } catch (TokenExpireException e) {
-//            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
+//        } catch (TokenNotValidException e) {
+//            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
 //            return new PassTicketCommand(null, cookieName, null, error);
 //        }
+        } catch (TokenExpireException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        }
 
         if (authSource == null || authSource.getRawSource() == null) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
