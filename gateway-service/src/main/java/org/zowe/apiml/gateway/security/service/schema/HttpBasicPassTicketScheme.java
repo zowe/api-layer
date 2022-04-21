@@ -182,6 +182,8 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         @Override
         public boolean isExpired() {
+            if (expireAt == null) return false;
+
             return System.currentTimeMillis() > expireAt;
         }
 
