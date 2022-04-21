@@ -18,16 +18,19 @@ import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.util.CookieUtil;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
+import static org.zowe.apiml.gateway.security.service.schema.X509Scheme.AUTH_FAIL_HEADER;
 
 /**
  * This bean support PassTicket. Bean is responsible for getting PassTicket from
@@ -39,17 +42,20 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final PassTicketService passTicketService;
     private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;
+    private final MessageService messageService;
     private final String cookieName;
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
         AuthSourceService authSourceService,
-        AuthConfigurationProperties authConfigurationProperties
+        AuthConfigurationProperties authConfigurationProperties,
+        MessageService messageService
     ) {
         this.passTicketService = passTicketService;
         this.authSourceService = authSourceService;
         this.authConfigurationProperties = authConfigurationProperties;
         cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+        this.messageService = messageService;
     }
 
     @Override
@@ -59,12 +65,40 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        final RequestContext context = RequestContext.getCurrentContext();
+        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
+        if (context.containsKey(AUTH_FAIL_HEADER)) {
+            String errorHeaderValue = context.get(AUTH_FAIL_HEADER).toString();
+            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
+            return new PassTicketCommand(null, cookieName, System.currentTimeMillis(), errorHeaderValue);
+        }
+
         final long before = System.currentTimeMillis();
 
-        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
 
-        if (authSource == null || parsedAuthSource == null) {
-            return AuthenticationCommand.EMPTY;
+        AuthSource.Parsed parsedAuthSource;
+        String error;
+        try {
+            parsedAuthSource = authSourceService.parse(authSource);
+        } catch (TokenNotValidException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        } catch (TokenExpireException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        }
+
+        if (authSource == null || authSource.getRawSource() == null) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        }
+        else if (parsedAuthSource == null) { // invalid authSource - can be due to
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", "Cannot parse provided authentication source").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        }
+        else if (parsedAuthSource.getUserId() == null) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
         }
 
         final String applId = authentication.getApplid();
@@ -73,9 +107,8 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         try {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
-            throw new PassTicketException(
-                String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e
-            );
+            error = String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId);
+            return new PassTicketCommand(null, cookieName, null, error);
         }
         final String encoded = Base64.getEncoder()
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
@@ -84,7 +117,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final long expiredAt = Math.min(before + authConfigurationProperties.getPassTicket().getTimeout() * 1000,
             parsedAuthSource.getExpiration().getTime());
 
-        return new PassTicketCommand(value, cookieName, expiredAt);
+        return new PassTicketCommand(value, cookieName, expiredAt, null);
     }
 
     @Override
@@ -102,22 +135,25 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         private final String authorizationValue;
         private final String cookieName;
-        private final long expireAt;
+        private final Long expireAt;
+        private final String errorValue;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
-            context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
-            context.addZuulRequestHeader(COOKIE_HEADER,
-                CookieUtil.removeCookie(
-                    context.getZuulRequestHeaders().get(COOKIE_HEADER),
-                    cookieName
-                )
-            );
+            if (authorizationValue != null) {
+                context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+                JwtCommand.removeCookie(context, cookieName);
+            }
+            else {
+                JwtCommand.setErrorHeader(context, errorValue);
+            }
         }
 
         @Override
         public boolean isExpired() {
+            if (expireAt == null) return false;
+
             return System.currentTimeMillis() > expireAt;
         }
 
