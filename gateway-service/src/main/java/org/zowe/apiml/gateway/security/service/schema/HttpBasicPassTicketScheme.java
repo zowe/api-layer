@@ -27,6 +27,8 @@ import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CookieUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -77,8 +79,19 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         final long before = System.currentTimeMillis();
 
-        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+
+        AuthSource.Parsed parsedAuthSource;
         String error;
+        try {
+            parsedAuthSource = authSourceService.parse(authSource);
+        } catch (TokenNotValidException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        } catch (TokenExpireException e) {
+            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
+            return new PassTicketCommand(null, cookieName, null, error);
+        }
+
         if (authSource == null || authSource.getRawSource() == null) {
             error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
             return new PassTicketCommand(null, cookieName, null, error);
