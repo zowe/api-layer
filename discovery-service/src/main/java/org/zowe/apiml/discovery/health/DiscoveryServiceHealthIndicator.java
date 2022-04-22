@@ -29,9 +29,9 @@ public class DiscoveryServiceHealthIndicator extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(Health.Builder builder) {
         String gatewayServiceId = CoreService.GATEWAY.getServiceId();
-        Status gatewayStatus = this.discoveryClient.getInstances(gatewayServiceId).isEmpty() ? Status.DOWN : Status.UP;
+        boolean gatewayDown = this.discoveryClient.getInstances(gatewayServiceId).isEmpty();
         builder
-            .up()
-            .withDetail(gatewayServiceId, gatewayStatus.getCode());
+            .status(gatewayDown ? new Status("PARTIAL", "Authenticated endpoints not available.") : Status.UP)
+            .withDetail(gatewayServiceId, gatewayDown ? Status.DOWN : Status.UP);
     }
 }

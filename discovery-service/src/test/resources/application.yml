@@ -49,6 +49,11 @@ management:
             enabled: false
     endpoint:
         health:
+            status:
+                order: "DOWN,PARTIAL,UP"
+                http-mapping:
+                  DOWN: 503
+                  PARTIAL: 200
             show-details: always
 ---
 spring:

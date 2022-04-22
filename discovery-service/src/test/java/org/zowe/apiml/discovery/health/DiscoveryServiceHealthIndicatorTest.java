@@ -37,16 +37,17 @@ class DiscoveryServiceHealthIndicatorTest {
         discoverServiceHealthIndicator.doHealthCheck(builder);
 
         Assertions.assertEquals(Status.UP, builder.build().getStatus());
-        Assertions.assertEquals("UP", builder.build().getDetails().get("gateway"));
+        Assertions.assertEquals(Status.UP, builder.build().getDetails().get("gateway"));
     }
 
     @Test
-    void testStatusIsUpWhenGatewayIsNotAvailable() {
+    void testStatusIsPartialWhenGatewayIsNotAvailable() {
         when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
 
         discoverServiceHealthIndicator.doHealthCheck(builder);
 
-        Assertions.assertEquals(Status.UP, builder.build().getStatus());
-        Assertions.assertEquals("DOWN", builder.build().getDetails().get("gateway"));
+        Assertions.assertEquals(new Status("PARTIAL"), builder.build().getStatus());
+        Assertions.assertEquals("Authenticated endpoints not available.", builder.build().getStatus().getDescription());
+        Assertions.assertEquals(Status.DOWN, builder.build().getDetails().get("gateway"));
     }
 }
