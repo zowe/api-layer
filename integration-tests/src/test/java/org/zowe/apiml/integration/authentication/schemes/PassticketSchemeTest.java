@@ -140,7 +140,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             }
 
             @ParameterizedTest(name = "call passticket service with {0} to receive response code {2}")
-            @MethodSource("getTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#getTokens")
             @TestsNotMeantForZowe
             void whenCallPassTicketService(String tokenType, int status) {
                 String token = getToken(tokenType);
