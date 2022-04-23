@@ -9,8 +9,18 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-public class UserNotMappedException extends RuntimeException {
-    public UserNotMappedException(String message) {
+public class AuthSchemeException extends RuntimeException {
+    final String[] params;
+
+    public AuthSchemeException(String message) {
         super(message);
+        params = null;
     }
+
+    public AuthSchemeException(String message, String ... params) {
+        super(message);
+        this.params = params;
+    }
+
+    public String[] getParams() { return params; }
 }
