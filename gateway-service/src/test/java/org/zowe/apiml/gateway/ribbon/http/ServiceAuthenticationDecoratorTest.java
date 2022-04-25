@@ -31,6 +31,8 @@ import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 
 import java.util.Optional;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -39,6 +41,7 @@ import static org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer.LOADBALANCED_INSTA
 class ServiceAuthenticationDecoratorTest {
 
     private static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
+    private static final MessageService messageService = new YamlMessageService("/gateway-messages.yml");
 
     ServiceAuthenticationService serviceAuthenticationService = mock(ServiceAuthenticationService.class);
     AuthSourceService authSourceService = mock(AuthSourceService.class);
@@ -49,7 +52,7 @@ class ServiceAuthenticationDecoratorTest {
 
     @BeforeEach
     void setUp() {
-       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authSourceService);
+       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authSourceService, messageService);
        request = new HttpGet("/");
        RequestContext.getCurrentContext().clear();
     }
