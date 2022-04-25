@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource.Parsed;
@@ -40,11 +39,13 @@ import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.COOKIE_H
 class ZoweJwtSchemeTest {
 
     public static final String EXPECTED_TOKEN_RESULT = "apimlAuthenticationToken=jwtToken";
+    private final AuthSource authSource = new JwtAuthSource("jwtToken");
     RequestContext requestContext;
     HttpServletRequest request;
     AuthSourceService authSourceService;
     AuthConfigurationProperties configurationProperties;
     ZoweJwtScheme scheme;
+    AuthenticationCommand command;
 
     @BeforeEach
     void setup() {
@@ -58,21 +59,43 @@ class ZoweJwtSchemeTest {
         configurationProperties = mock(AuthConfigurationProperties.class);
         when(configurationProperties.getCookieProperties()).thenReturn(new AuthConfigurationProperties.CookieProperties());
         when(configurationProperties.getTokenProperties()).thenReturn(new AuthConfigurationProperties.TokenProperties());
+
+        when(authSourceService.getJWT(authSource)).thenReturn("jwtToken");
+        scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
+    }
+
+    @Nested
+    class AuthSourceIndependentTests {
+        @Test
+        void testGetAuthSource() {
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+            scheme.getAuthSource();
+            verify(authSourceService, times(1)).getAuthSourceFromRequest();
+        }
+
+        @Test
+        void givenNullParsingResult_thenThrows() {
+            AuthSource authSource = new JwtAuthSource("jwt");
+            doReturn(null).when(authSourceService).parse(any(AuthSource.class));
+            assertThrows(IllegalStateException.class, () -> scheme.createCommand(null, authSource));
+        }
+
+        @Test
+        void whenCannotGetExpiration_thenUseDefaultExpiration() {
+            AuthSource.Parsed parsedSource = new X509AuthSource.Parsed("commonName", new Date(), null, Origin.X509, "", "distName");
+            doReturn(parsedSource).when(authSourceService).parse(any(AuthSource.class));
+            command = scheme.createCommand(null, new JwtAuthSource("jwtToken"));
+
+            assertNotNull(command);
+            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+            assertNotNull(expiration);
+        }
     }
 
     @Nested
     class GivenJWTAuthSourceTest {
         AuthenticationCommand command;
-        AuthSource authSource = new JwtAuthSource("jwtToken");
-
-        @BeforeEach
-        void setup() {
-            when(authSourceService.getJWT(authSource)).thenReturn("jwtToken");
-            scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
-            assertFalse(scheme.isDefault());
-            assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());
-
-        }
 
         @Test
         void whenValidJWTAuthSource_thenUpdateZuulHeaderWithJWToken() {

@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.zuul.context.RequestContext;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -80,6 +81,14 @@ class X509SchemeTest {
         void init() {
             doReturn(true).when(authSourceService).isValid(any(AuthSource.class));
             doReturn(parsedSource).when(authSourceService).parse(any(X509AuthSource.class));
+        }
+
+        @Test
+        void testGetAuthSource() {
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+            x509Scheme.getAuthSource();
+            verify(authSourceService, times(1)).getAuthSourceFromRequest();
         }
 
         @Test
@@ -155,6 +164,17 @@ class X509SchemeTest {
             assertNotNull(expiration);
             assertTrue(expiration < expectedExpiration);
         }
+
+        @Test
+        void whenCannotGetExpirationFromCert_thenUseDefaultExpiration() {
+            parsedSource = new Parsed("commonName", new Date(), null, Origin.X509, "", "distName");
+            doReturn(parsedSource).when(authSourceService).parse(any(AuthSource.class));
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, authSource);
+
+            assertNotNull(command);
+            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+            assertNotNull(expiration);
+        }
     }
 
     @Nested
@@ -173,6 +193,18 @@ class X509SchemeTest {
         void givenExceptionDuringParsing_thenNoHeaderIsSet() {
             doThrow(new InvalidCertificateException("error")).when(authSourceService).parse(any(AuthSource.class));
             assertThrows(InvalidCertificateException.class, () -> x509Scheme.createCommand(authentication, authSource));
+        }
+
+        @Test
+        void givenAuthSourceWithoutContent_thenThrows() {
+            AuthSource nullAuthSource = new X509AuthSource(null);
+            assertThrows(AuthSchemeException.class, () -> x509Scheme.createCommand(authentication, nullAuthSource));
+        }
+
+        @Test
+        void givenNullParsingResult_thenNoHeaderIsSet() {
+            doReturn(null).when(authSourceService).parse(any(AuthSource.class));
+            assertThrows(IllegalStateException.class, () -> x509Scheme.createCommand(authentication, authSource));
         }
     }
 
