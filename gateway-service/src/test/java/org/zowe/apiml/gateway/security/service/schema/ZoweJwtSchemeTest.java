@@ -227,7 +227,7 @@ class ZoweJwtSchemeTest {
         @Nested
         class NoCertificateInRequest {
             @Test
-            void givenNoClientCertificate_thenCommandDoNotExpire() {
+            void givenNoClientCertificate_thenCommandCreationFails() {
                 assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, null));
             }
         }
