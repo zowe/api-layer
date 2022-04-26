@@ -38,6 +38,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
+import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
 
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
@@ -119,7 +120,7 @@ class SafIdtSchemeTest {
 
                     ac.apply(null);
                     assertThat(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER), is(safIdt));
-                    assertNull(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER));
+                    assertNull(getValueOfZuulHeader(AUTH_FAIL_HEADER));
                 }
 
                 @Test
@@ -137,7 +138,7 @@ class SafIdtSchemeTest {
 
                     ac.apply(null);
                     assertThat(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER), is(safIdt));
-                    assertNull(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER));
+                    assertNull(getValueOfZuulHeader(AUTH_FAIL_HEADER));
                 }
             }
 
@@ -161,7 +162,7 @@ class SafIdtSchemeTest {
                     ac.applyToRequest(httpRequest);
                     assertThat(httpRequest.getHeaders(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER),
                             hasItemInArray(hasToString(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER + ": " + safIdt)));
-                    assertThat(httpRequest.getHeaders(JwtCommand.AUTH_FAIL_HEADER), emptyArray());
+                    assertThat(httpRequest.getHeaders(AUTH_FAIL_HEADER), emptyArray());
                 }
             }
         }
@@ -178,7 +179,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG160E No authentication provided in the request"));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG160E No authentication provided in the request"));
             }
 
             @Test
@@ -192,13 +193,13 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG160E No authentication provided in the request"));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG160E No authentication provided in the request"));
             }
 
             @Test
             void givenErrorInRequestContext() {
                 final RequestContext context = RequestContext.getCurrentContext();
-                context.set(JwtCommand.AUTH_FAIL_HEADER, "Some test error message.");
+                context.set(AUTH_FAIL_HEADER, "Some test error message.");
 
                 AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                 assertNotNull(ac);
@@ -208,7 +209,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("Some test error message."));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("Some test error message."));
             }
 
             @Test
@@ -226,7 +227,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG150E SAF IDT generation failed. Reason: " + errorMessage));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG150E SAF IDT generation failed. Reason: " + errorMessage));
             }
 
             @Test
@@ -243,7 +244,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG141E The generation of the PassTicket failed. Reason: Error on generation of PassTicket: Invalid function code."));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG141E The generation of the PassTicket failed. Reason: Error on generation of PassTicket: Invalid function code."));
             }
 
             @Test
@@ -258,7 +259,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG102E Token is not valid"));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG102E Token is not valid"));
             }
 
             @Test
@@ -278,7 +279,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG103E The token has expired"));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG103E The token has expired"));
             }
 
             @Test
@@ -297,7 +298,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG102E Token is not valid"));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG102E Token is not valid"));
             }
 
             @Test
@@ -317,7 +318,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG103E The token has expired"));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG103E The token has expired"));
             }
 
             @Test
@@ -333,7 +334,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG161E No user was found"));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG161E No user was found"));
             }
 
             @Test
@@ -349,7 +350,7 @@ class SafIdtSchemeTest {
 
                 ac.apply(null);
                 assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(JwtCommand.AUTH_FAIL_HEADER), is("ZWEAG165E The 'apiml.authentication.applid' parameter is not specified for a service."));
+                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG165E The 'apiml.authentication.applid' parameter is not specified for a service."));
             }
         }
     }

@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
+import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
 import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
 /**
@@ -69,8 +70,8 @@ public class SafIdtScheme implements IAuthenticationScheme {
 
         final RequestContext context = RequestContext.getCurrentContext();
         // Check for error in context to use it in header "X-Zowe-Auth-Failure"
-        if (context.containsKey(JwtCommand.AUTH_FAIL_HEADER)) {
-            error = context.get(JwtCommand.AUTH_FAIL_HEADER).toString();
+        if (context.containsKey(AUTH_FAIL_HEADER)) {
+            error = context.get(AUTH_FAIL_HEADER).toString();
             // this command should expire immediately after creation because it is build based on missing/incorrect authentication
             return new SafIdtCommand(null, null, error);
         }
@@ -186,9 +187,6 @@ public class SafIdtScheme implements IAuthenticationScheme {
                 // add header with SafIdt token to request and remove APIML token from Cookie if exists
                 context.addZuulRequestHeader(SAF_TOKEN_HEADER, safIdentityToken);
                 JwtCommand.removeCookie(context, authConfigurationProperties.getCookieProperties().getCookieName());
-            } else {
-                // add failure header to request
-                JwtCommand.setErrorHeader(context, errorMessage);
             }
         }
 
@@ -208,9 +206,6 @@ public class SafIdtScheme implements IAuthenticationScheme {
                         )
                     );
                 }
-            } else {
-                // add failure header to request
-                JwtCommand.addErrorHeader(request, errorMessage);
             }
         }
 

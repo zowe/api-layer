@@ -31,7 +31,6 @@ import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.JwtCommand;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
@@ -42,6 +41,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
 
 /**
  * This test verifies that the token/client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
@@ -203,7 +203,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
                 verify(mockClient, times(1)).execute(captor.capture());
                 assertHeaderWithValue(captor.getValue(), "X-SAF-Token", resultSafToken);
-                assertThat(captor.getValue().getHeaders(JwtCommand.AUTH_FAIL_HEADER).length, is(0));
+                assertThat(captor.getValue().getHeaders(AUTH_FAIL_HEADER).length, is(0));
             }
         }
 
@@ -226,7 +226,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
                 verify(mockClient, times(1)).execute(captor.capture());
                 assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
-                assertHeaderWithValue(captor.getValue(), JwtCommand.AUTH_FAIL_HEADER, "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition");
+                assertHeaderWithValue(captor.getValue(), AUTH_FAIL_HEADER, "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition");
             }
         }
     }
