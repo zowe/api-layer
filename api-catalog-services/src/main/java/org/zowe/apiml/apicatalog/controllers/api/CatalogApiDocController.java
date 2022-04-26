@@ -51,7 +51,7 @@ public class CatalogApiDocController {
      */
     @GetMapping(value = "/{serviceId}/{apiId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Retrieves the API documentation for a specific service version",
-        notes = "Returns the API documentation for a specific service {serviceId} and version {apiVersion}. When " +
+        notes = "Returns the API documentation for a specific service {serviceId} and version {apiId}. When " +
             " the API documentation for the specified version is not found, the first discovered version will be used.",
         authorizations = {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
