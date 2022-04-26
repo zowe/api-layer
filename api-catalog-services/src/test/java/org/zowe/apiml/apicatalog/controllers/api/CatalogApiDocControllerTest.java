@@ -9,47 +9,88 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 class CatalogApiDocControllerTest {
 
-    @Test
-    void testCreationOfClass() {
-        APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
-        CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
-        Assertions.assertNotNull(catalogApiDocController);
+    private APIServiceStatusService mockApiServiceStatusService;
+    private CatalogApiDocController underTest;
+
+    @BeforeEach
+    void setup() {
+        mockApiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
+        underTest = new CatalogApiDocController(mockApiServiceStatusService);
     }
 
     @Test
-    void testGetApiDocInfo() {
-        APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
-        CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
-        ResponseEntity<String> response = new ResponseEntity<>("Some API Doc", HttpStatus.OK);
-
-        when(apiServiceStatusService.getServiceCachedApiDocInfo("service", "1.0.0")).thenReturn(response);
-        ResponseEntity<String> res = catalogApiDocController.getApiDocInfo("service", "1.0.0");
-        Assertions.assertNotNull(res);
-        Assertions.assertEquals("Some API Doc", res.getBody());
+    void whenCreateController_thenItIsInstantiated() {
+        assertNotNull(underTest);
     }
 
-    @Test
-    void testGetApiDiff() {
-        APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
-        CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
-        String responseString = "<html>Some Diff</html>";
-        ResponseEntity<String> response = new ResponseEntity<>("<html>Some Diff</html>", HttpStatus.OK);
+    @Nested
+    class GivenService {
+        @Nested
+        class WhenGetApiDocByVersion {
+            @Test
+            void givenApiDoc_thenReturnApiDoc() {
+                ResponseEntity<String> response = new ResponseEntity<>("Some API Doc", HttpStatus.OK);
+                when(mockApiServiceStatusService.getServiceCachedApiDocInfo("service", "1.0.0")).thenReturn(response);
 
-        when(apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")).thenReturn(response);
-        ResponseEntity<String> res = catalogApiDocController.getApiDiff("service", "v1", "v2");
-        Assertions.assertNotNull(res);
-        Assertions.assertEquals(responseString, res.getBody());
+                ResponseEntity<String> res = underTest.getApiDocInfo("service", "1.0.0");
+                assertNotNull(res);
+                assertEquals("Some API Doc", res.getBody());
+            }
 
+            @Test
+            void givenNoApiDoc_thenReturnFirst() {
+                ResponseEntity<String> response = new ResponseEntity<>("First API Doc", HttpStatus.OK);
+                when(mockApiServiceStatusService.getServiceCachedApiDocInfo("service", "1.0.0")).thenThrow(new ApiDocNotFoundException("error"));
+                when(mockApiServiceStatusService.getServiceCachedApiDocInfo("service", null)).thenReturn(response);
+
+                ResponseEntity<String> res = underTest.getApiDocInfo("service", "1.0.0");
+                assertNotNull(res);
+                assertEquals("First API Doc", res.getBody());
+            }
+        }
+
+        @Nested
+        class WhenGetApiDocVersionDefault {
+            @Test
+            void givenApiDocExists_thenReturnIt() {
+                ResponseEntity<String> response = new ResponseEntity<>("Some API Doc", HttpStatus.OK);
+                when(mockApiServiceStatusService.getServiceCachedDefaultApiDocInfo("service")).thenReturn(response);
+
+                ResponseEntity<String> res = underTest.getDefaultApiDocInfo("service");
+                assertNotNull(res);
+                assertEquals("Some API Doc", res.getBody());
+            }
+
+            @Test
+            void givenNoApiDocExists_thenThrowException() {
+                when(mockApiServiceStatusService.getServiceCachedDefaultApiDocInfo("service")).thenThrow(new ApiDocNotFoundException("error"));
+                assertThrows(ApiDocNotFoundException.class, () -> underTest.getDefaultApiDocInfo("service"));
+            }
+        }
+
+        @Test
+        void whenGetApiDiff_thenReturnApiDiffHtml() {
+            String responseString = "<html>Some Diff</html>";
+            ResponseEntity<String> response = new ResponseEntity<>("<html>Some Diff</html>", HttpStatus.OK);
+
+            when(mockApiServiceStatusService.getApiDiffInfo("service", "v1", "v2")).thenReturn(response);
+            ResponseEntity<String> res = underTest.getApiDiff("service", "v1", "v2");
+            assertNotNull(res);
+            assertEquals(responseString, res.getBody());
+        }
     }
 }
