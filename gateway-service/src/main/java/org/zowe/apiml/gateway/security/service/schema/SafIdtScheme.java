@@ -25,9 +25,9 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -40,7 +40,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
 import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
 /**
@@ -54,7 +53,6 @@ public class SafIdtScheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
     private final PassTicketService passTicketService;
     private final SafIdtProvider safIdtProvider;
-    private final MessageService messageService;
 
     @Value("${apiml.security.saf.defaultIdtExpiration:10}")
     int defaultIdtExpiration;
@@ -66,45 +64,31 @@ public class SafIdtScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        String error = null;
-
-        final RequestContext context = RequestContext.getCurrentContext();
-        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
-        if (context.containsKey(AUTH_FAIL_HEADER)) {
-            error = context.get(AUTH_FAIL_HEADER).toString();
-            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
-            return new SafIdtCommand(null, null, error);
-        }
-
         // check the authentication source
         if (authSource == null || authSource.getRawSource() == null) {
-            error = messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
-            return new SafIdtCommand(null, null, error);
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
         }
         // parse the authentication source
-        AuthSource.Parsed parsedAuthSource = null;
+        AuthSource.Parsed parsedAuthSource;
         try {
             parsedAuthSource = authSourceService.parse(authSource);
+            if (parsedAuthSource == null) {
+                throw new IllegalStateException("Error occurred while parsing authenticationSource");
+            }
         } catch (TokenNotValidException e) {
-            error = messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
         } catch (TokenExpireException e) {
-            error = messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
-        }
-        if (parsedAuthSource == null) {
-            return new SafIdtCommand(null, null, error);
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
         }
 
         String safIdentityToken;
         long expireAt;
-        try {
-            String applId = getApplId(authentication);
-            safIdentityToken = generateSafIdentityToken(parsedAuthSource, applId);
-            expireAt = getSafIdtExpiration(safIdentityToken);
-        } catch (SafIdtSchemeException e) {
-            return new SafIdtCommand(null, null, e.getMessage());
-        }
 
-        return new SafIdtCommand(safIdentityToken, expireAt, error);
+        String applId = getApplId(authentication);
+        safIdentityToken = generateSafIdentityToken(parsedAuthSource, applId);
+        expireAt = getSafIdtExpiration(safIdentityToken);
+
+        return new SafIdtCommand(safIdentityToken, expireAt);
     }
 
     @Override
@@ -112,24 +96,20 @@ public class SafIdtScheme implements IAuthenticationScheme {
         return authSourceService.getAuthSourceFromRequest();
     }
 
-    private String getApplId(Authentication authentication) throws SafIdtSchemeException {
-        String error;
+    private String getApplId(Authentication authentication) {
         String applId = authentication == null ? null : authentication.getApplid();
         if (applId == null) {
-            error = messageService.createMessage("org.zowe.apiml.gateway.security.scheme.missingApplid").mapToLogMessage();
-            throw new SafIdtSchemeException(error);
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.scheme.missingApplid");
         }
         return applId;
     }
 
-    private String generateSafIdentityToken(@NotNull AuthSource.Parsed parsedAuthSource , @NotNull String applId) throws SafIdtSchemeException {
-        String safIdentityToken = null;
-        String error;
+    private String generateSafIdentityToken(@NotNull AuthSource.Parsed parsedAuthSource , @NotNull String applId) {
+        String safIdentityToken;
 
         String userId = parsedAuthSource.getUserId();
         if (userId == null) {
-            error = messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();
-            throw new SafIdtSchemeException(error);
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
         }
 
         char[] passTicket = "".toCharArray();
@@ -137,20 +117,17 @@ public class SafIdtScheme implements IAuthenticationScheme {
             passTicket = passTicketService.generate(userId, applId).toCharArray();
             safIdentityToken = safIdtProvider.generate(userId, passTicket, applId);
         } catch (IRRPassTicketGenerationException e) {
-            error = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", e.getMessage()).mapToLogMessage();
-            throw new SafIdtSchemeException(error);
+            throw new AuthSchemeException("org.zowe.apiml.security.ticket.generateFailed", e.getMessage());
         } catch (SafIdtException | SafIdtAuthException e) {
-            error = messageService.createMessage("org.zowe.apiml.security.idt.failed", e.getMessage()).mapToLogMessage();
-            throw new SafIdtSchemeException(error);
+            throw new AuthSchemeException("org.zowe.apiml.security.idt.failed", e.getMessage());
         } finally {
             Arrays.fill(passTicket, (char) 0);
         }
         return safIdentityToken;
     }
 
-    private long getSafIdtExpiration(String safIdentityToken) throws SafIdtSchemeException {
+    private long getSafIdtExpiration(String safIdentityToken) {
         Date expirationTime;
-        String error;
         try {
             Claims claims = getJwtClaims(safIdentityToken);
             expirationTime = claims.getExpiration();
@@ -158,11 +135,9 @@ public class SafIdtScheme implements IAuthenticationScheme {
                 expirationTime = DateUtils.addMinutes(new Date(), defaultIdtExpiration);
             }
         } catch (TokenNotValidException e) {
-            error = messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
-            throw new SafIdtSchemeException(error);
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
         } catch (TokenExpireException e) {
-            error = messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
-            throw new SafIdtSchemeException(error);
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
         }
         return expirationTime.getTime();
     }
@@ -175,15 +150,13 @@ public class SafIdtScheme implements IAuthenticationScheme {
         private final String safIdentityToken;
         @Getter
         private final Long expireAt;
-        @Getter
-        private final String errorMessage;
 
         protected static final String SAF_TOKEN_HEADER = "X-SAF-Token";
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
-            final RequestContext context = RequestContext.getCurrentContext();
-            if (safIdentityToken != null && errorMessage == null) {
+            if (safIdentityToken != null) {
+                final RequestContext context = RequestContext.getCurrentContext();
                 // add header with SafIdt token to request and remove APIML token from Cookie if exists
                 context.addZuulRequestHeader(SAF_TOKEN_HEADER, safIdentityToken);
                 JwtCommand.removeCookie(context, authConfigurationProperties.getCookieProperties().getCookieName());

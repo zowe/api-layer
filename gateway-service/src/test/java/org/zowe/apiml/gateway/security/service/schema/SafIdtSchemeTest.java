@@ -11,18 +11,19 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.Jwts;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.*;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -49,21 +50,13 @@ class SafIdtSchemeTest {
     private PassTicketService passTicketService;
     private SafIdtProvider safIdtProvider;
 
-    static MessageService messageService;
-
-    @BeforeAll
-    static void setForAll() {
-        messageService = new YamlMessageService();
-        messageService.loadMessages("/gateway-messages.yml");
-    }
-
     @BeforeEach
     void setUp() {
         authSourceService = mock(AuthSourceService.class);
         passTicketService = mock(PassTicketService.class);
         safIdtProvider = mock(SafIdtProvider.class);
 
-        underTest = new SafIdtScheme(authConfigurationProperties, authSourceService, passTicketService, safIdtProvider, messageService);
+        underTest = new SafIdtScheme(authConfigurationProperties, authSourceService, passTicketService, safIdtProvider);
         underTest.defaultIdtExpiration = 10;
     }
 
@@ -104,6 +97,17 @@ class SafIdtSchemeTest {
 
             @Nested
             class WhenApply {
+                private RequestContext requestContext;
+                private HttpServletRequest request;
+
+                @BeforeEach
+                void setup() {
+                    requestContext = spy(new RequestContext());
+                    RequestContext.testSetCurrentContext(requestContext);
+
+                    request = new MockHttpServletRequest();
+                    requestContext.setRequest(request);
+                }
 
                 @Test
                 void givenAuthenticatedJwtToken() {
@@ -171,45 +175,15 @@ class SafIdtSchemeTest {
         class ThenNoTokenIsProduced {
             @Test
             void givenNullAuthSource() {
-                AuthenticationCommand ac = underTest.createCommand(auth, null);
-                assertNotNull(ac);
-                assertEquals("ZWEAG160E No authentication provided in the request", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG160E No authentication provided in the request"));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, null));
+                assertEquals("org.zowe.apiml.gateway.security.schema.missingAuthentication", exc.getMessage());
             }
 
             @Test
             void givenNoRawAuthSource() {
                 AuthSource emptySource = new JwtAuthSource(null);
-                AuthenticationCommand ac = underTest.createCommand(auth, emptySource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG160E No authentication provided in the request", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG160E No authentication provided in the request"));
-            }
-
-            @Test
-            void givenErrorInRequestContext() {
-                final RequestContext context = RequestContext.getCurrentContext();
-                context.set(AUTH_FAIL_HEADER, "Some test error message.");
-
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("Some test error message.", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("Some test error message."));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, emptySource));
+                assertEquals("org.zowe.apiml.gateway.security.schema.missingAuthentication", exc.getMessage());
             }
 
             @Test
@@ -219,47 +193,26 @@ class SafIdtSchemeTest {
                 String errorMessage = "Error generating saf idt token";
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenThrow(new SafIdtException(errorMessage));
 
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG150E SAF IDT generation failed. Reason: " + errorMessage, ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG150E SAF IDT generation failed. Reason: " + errorMessage));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.security.idt.failed", exc.getMessage());
             }
 
             @Test
             void givenPassTicketException() throws IRRPassTicketGenerationException {
                 when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID))
-                        .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
+                    .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
 
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG141E The generation of the PassTicket failed. Reason: Error on generation of PassTicket: Invalid function code.", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG141E The generation of the PassTicket failed. Reason: Error on generation of PassTicket: Invalid function code."));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.security.ticket.generateFailed", exc.getMessage());
             }
 
             @Test
             void givenAuthTokenNotValidException() {
                 when(authSourceService.parse(authSource)).thenThrow(TokenNotValidException.class);
 
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG102E Token is not valid", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG102E Token is not valid"));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.invalidToken", exc.getMessage());
             }
 
             @Test
@@ -271,15 +224,8 @@ class SafIdtSchemeTest {
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
                 when(authSourceService.parse(authSource)).thenThrow(TokenExpireException.class);
 
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG103E The token has expired", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG103E The token has expired"));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.expiredToken", exc.getMessage());
             }
 
             @Test
@@ -290,15 +236,8 @@ class SafIdtSchemeTest {
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(invalidSafIdt);
 
 
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG102E Token is not valid", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG102E Token is not valid"));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.invalidToken", exc.getMessage());
             }
 
             @Test
@@ -310,15 +249,8 @@ class SafIdtSchemeTest {
                 when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
                 when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(expiredSafIdt);
 
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG103E The token has expired", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG103E The token has expired"));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.expiredToken", exc.getMessage());
             }
 
             @Test
@@ -326,15 +258,8 @@ class SafIdtSchemeTest {
                 X509AuthSource.Parsed emptyAuthSource = new X509AuthSource.Parsed(null,null,null,null, null, null);
                 when(authSourceService.parse(authSource)).thenReturn(emptyAuthSource);
 
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG161E No user was found", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG161E No user was found"));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.schema.x509.mappingFailed", exc.getMessage());
             }
 
             @Test
@@ -342,15 +267,8 @@ class SafIdtSchemeTest {
                 when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 Authentication authNoApplId = new Authentication(SAF_IDT, null);
 
-                AuthenticationCommand ac = underTest.createCommand(authNoApplId, authSource);
-                assertNotNull(ac);
-                assertEquals("ZWEAG165E The 'apiml.authentication.applid' parameter is not specified for a service.", ((SafIdtScheme.SafIdtCommand) ac).getErrorMessage());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getSafIdentityToken());
-                assertNull(((SafIdtScheme.SafIdtCommand) ac).getExpireAt());
-
-                ac.apply(null);
-                assertNull(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER));
-                assertThat(getValueOfZuulHeader(AUTH_FAIL_HEADER), is("ZWEAG165E The 'apiml.authentication.applid' parameter is not specified for a service."));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(authNoApplId, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.scheme.missingApplid", exc.getMessage());
             }
         }
     }

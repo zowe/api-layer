@@ -14,6 +14,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.http.Cookie;
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +41,8 @@ import java.util.Date;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
 
@@ -139,7 +142,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             }
 
             @Test
-            void givenInvalidJwtToken() {
+            void givenInvalidJwtToken() throws IOException {
                 Cookie withInvalidToken = new Cookie.Builder("apimlAuthenticationToken=invalidValue").build();
 
                 //@formatter:off
@@ -148,11 +151,18 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then()
-                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                    .statusCode(is(HttpStatus.SC_OK));
                 //@formatter:on
+
+                ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+                verify(mockClient, times(1)).execute(captor.capture());
 
                 verify(mockTemplate, times(0))
                         .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
+
+                Header zoweAuthFailureHeader = captor.getValue().getFirstHeader(AUTH_FAIL_HEADER);
+                assertNotNull(zoweAuthFailureHeader);
+                assertEquals("ZWEAG102E Token is not valid", zoweAuthFailureHeader.getValue());
             }
         }
     }
@@ -226,7 +236,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
                 verify(mockClient, times(1)).execute(captor.capture());
                 assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
-                assertHeaderWithValue(captor.getValue(), AUTH_FAIL_HEADER, "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition");
+                assertHeaderWithValue(captor.getValue(), AUTH_FAIL_HEADER, "ZWEAG165E X509 certificate is missing the client certificate extended usage definition");
             }
         }
     }
