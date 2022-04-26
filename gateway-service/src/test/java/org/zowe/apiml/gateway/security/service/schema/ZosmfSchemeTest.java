@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,25 +22,20 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.gateway.utils.X509Utils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
-import java.util.stream.Stream;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -80,11 +74,6 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         when(authConfigurationProperties.getTokenProperties()).thenReturn(new AuthConfigurationProperties.TokenProperties());
         zosmfScheme = new ZosmfScheme(authSourceService, authConfigurationProperties);
         ReflectionTestUtils.setField(zosmfScheme, "authProvider", "zosmf");
-    }
-
-    static Stream<Arguments> authSources() {
-        return Stream.of(Arguments.of(new JwtAuthSource("jwtToken2")), Arguments.of(new X509AuthSource(mock(
-            X509Certificate.class))));
     }
 
     @Nested

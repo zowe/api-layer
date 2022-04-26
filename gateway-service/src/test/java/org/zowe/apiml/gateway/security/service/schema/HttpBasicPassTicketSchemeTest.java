@@ -186,7 +186,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
             AuthenticationCommand command = getPassTicketCommand();
             RequestContext requestContext = new RequestContext();
             HttpServletRequest request = new MockHttpServletRequest();
-            ((MockHttpServletRequest)request).addHeader("cookie",
+            ((MockHttpServletRequest) request).addHeader("cookie",
                 authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
                     "abc=def");
 
@@ -213,4 +213,5 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
             assertTrue(out instanceof HttpBasicPassTicketScheme.PassTicketCommand);
             return (HttpBasicPassTicketScheme.PassTicketCommand) out;
         }
+    }
 }
