@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import org.apache.http.HttpRequest;
 import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.util.Cookies;
 
@@ -19,7 +18,6 @@ import java.net.HttpCookie;
 public abstract class JwtCommand extends AuthenticationCommand {
 
     public static final String COOKIE_HEADER = "cookie";
-    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 
     public static void createCookie(Cookies cookies, String name, String token) {
         HttpCookie jwtCookie = new HttpCookie(name, token);
@@ -37,15 +35,6 @@ public abstract class JwtCommand extends AuthenticationCommand {
                 value
             )
         );
-    }
-
-    public static void setErrorHeader(RequestContext context, String value) {
-        context.addZuulRequestHeader(AUTH_FAIL_HEADER, value);
-        context.addZuulResponseHeader(AUTH_FAIL_HEADER, value);
-    }
-
-    public static void addErrorHeader(HttpRequest request, String value) {
-        request.addHeader(AUTH_FAIL_HEADER, value);
     }
 
     public static void removeCookie(RequestContext context, String name) {

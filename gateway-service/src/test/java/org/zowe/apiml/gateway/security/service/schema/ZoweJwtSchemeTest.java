@@ -15,18 +15,14 @@ import java.util.Date;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.message.BasicHeader;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource.Parsed;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -38,24 +34,18 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.COOKIE_HEADER;
-import static org.zowe.apiml.gateway.security.service.schema.X509Scheme.AUTH_FAIL_HEADER;
 
 
 class ZoweJwtSchemeTest {
 
     public static final String EXPECTED_TOKEN_RESULT = "apimlAuthenticationToken=jwtToken";
+    private final AuthSource authSource = new JwtAuthSource("jwtToken");
     RequestContext requestContext;
     HttpServletRequest request;
     AuthSourceService authSourceService;
     AuthConfigurationProperties configurationProperties;
     ZoweJwtScheme scheme;
-    static MessageService messageService;
-
-    @BeforeAll
-    static void setForAll() {
-        messageService = new YamlMessageService();
-        messageService.loadMessages("/gateway-messages.yml");
-    }
+    AuthenticationCommand command;
 
     @BeforeEach
     void setup() {
@@ -69,53 +59,70 @@ class ZoweJwtSchemeTest {
         configurationProperties = mock(AuthConfigurationProperties.class);
         when(configurationProperties.getCookieProperties()).thenReturn(new AuthConfigurationProperties.CookieProperties());
         when(configurationProperties.getTokenProperties()).thenReturn(new AuthConfigurationProperties.TokenProperties());
+
+        when(authSourceService.getJWT(authSource)).thenReturn("jwtToken");
+        scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
+    }
+
+    @Nested
+    class AuthSourceIndependentTests {
+        @Test
+        void testGetAuthSource() {
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+            scheme.getAuthSource();
+            verify(authSourceService, times(1)).getAuthSourceFromRequest();
+        }
+
+        @Test
+        void givenNullParsingResult_thenThrows() {
+            AuthSource authSource = new JwtAuthSource("jwt");
+            doReturn(null).when(authSourceService).parse(any(AuthSource.class));
+            assertThrows(IllegalStateException.class, () -> scheme.createCommand(null, authSource));
+        }
+
+        @Test
+        void whenCannotGetExpiration_thenUseDefaultExpiration() {
+            AuthSource.Parsed parsedSource = new X509AuthSource.Parsed("commonName", new Date(), null, Origin.X509, "", "distName");
+            doReturn(parsedSource).when(authSourceService).parse(any(AuthSource.class));
+            command = scheme.createCommand(null, new JwtAuthSource("jwtToken"));
+
+            assertNotNull(command);
+            Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
+            assertNotNull(expiration);
+        }
     }
 
     @Nested
     class GivenJWTAuthSourceTest {
         AuthenticationCommand command;
-        AuthSource authSource = new JwtAuthSource("jwtToken");
-
-        @BeforeEach
-        void setup() {
-
-            when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
-            when(authSourceService.getJWT(authSource)).thenReturn("jwtToken");
-            scheme = new ZoweJwtScheme(authSourceService, configurationProperties, messageService);
-            assertFalse(scheme.isDefault());
-            assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());
-
-        }
 
         @Test
         void whenValidJWTAuthSource_thenUpdateZuulHeaderWithJWToken() {
+            when(authSourceService.parse(authSource)).thenReturn(new JwtAuthSource.Parsed("user", new Date(), new Date(), Origin.ZOSMF));
             command = scheme.createCommand(null, authSource);
             command.apply(null);
             verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
         }
 
         @Test
-        void whenInvalidJwt_thenCreateErrorMessage() {
+        void whenInvalidJwt_thenThrows() {
             AuthSource jwtSource = new JwtAuthSource("invalidToken");
             when(authSourceService.parse(jwtSource)).thenThrow(new TokenNotValidException(""));
-            command = scheme.createCommand(null, jwtSource);
-            assertTrue(command instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
-            assertEquals("ZWEAG102E Token is not valid", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
+            assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, jwtSource));
         }
 
         @Test
-        void whenExpiredJwt_thenCreateErrorMessage() {
+        void whenExpiredJwt_thenThrows() {
             ((MockHttpServletRequest)request).addHeader(COOKIE_HEADER, "apimlAuthenticationToken=expiredToken");
             AuthSource jwtSource = new JwtAuthSource("expiredToken");
             when(authSourceService.parse(jwtSource)).thenThrow(new TokenExpireException("expired token"));
-            command = scheme.createCommand(null, jwtSource);
-            assertEquals("ZWEAG103E The token has expired", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
-            command.apply(null);
-            assertEquals("", requestContext.getZuulRequestHeaders().get("cookie"));
+            assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, jwtSource));
         }
 
         @Test
         void whenValidJWTAuthSource_thenUpdateCookieWithJWToken() {
+            when(authSourceService.parse(authSource)).thenReturn(new JwtAuthSource.Parsed("user", new Date(), new Date(), Origin.ZOSMF));
             HttpRequest httpRequest = new HttpGet("api/v1/files");
             httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
             command = scheme.createCommand(null, authSource);
@@ -164,14 +171,14 @@ class ZoweJwtSchemeTest {
             when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
             when(authSourceService.getJWT(authSource)).thenReturn("jwtToken");
 
-            scheme = new ZoweJwtScheme(authSourceService, configurationProperties, messageService);
-
+            scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
         }
 
         @Nested
         class WhenCertificateInRequest {
             @Test
             void whenValid_thenUpdateZuulHeaderWithJWToken() {
+                when(authSourceService.parse(authSource)).thenReturn(new X509AuthSource.Parsed("user", new Date(), new Date(), Origin.ZOSMF, "public key", "distinguishedName"));
                 command = scheme.createCommand(null, authSource);
                 command.apply(null);
                 verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
@@ -180,6 +187,7 @@ class ZoweJwtSchemeTest {
 
             @Test
             void whenValid_thenUpdateCookiesWithJWToken() {
+                when(authSourceService.parse(authSource)).thenReturn(new X509AuthSource.Parsed("user", new Date(), new Date(), Origin.ZOSMF, "public key", "distinguishedName"));
                 command = scheme.createCommand(null, authSource);
                 HttpRequest httpRequest = new HttpGet("api/v1/files");
                 httpRequest.setHeader(new BasicHeader("authorization", "basic=aha"));
@@ -188,36 +196,18 @@ class ZoweJwtSchemeTest {
             }
 
             @Test
-            void whenJwtCannotBeCreatedFromX509_thenCreateErrorMessage() {
+            void whenJwtCannotBeCreatedFromX509_thenThrows() {
                 X509Certificate cert = mock(X509Certificate.class);
                 AuthSource certSource = new X509AuthSource(cert);
                 when(authSourceService.parse(certSource)).thenReturn(new X509AuthSource.Parsed("user", null, null, null, null, null));
-                when(authSourceService.getJWT(certSource)).thenThrow(new UserNotMappedException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed"));
-                command = scheme.createCommand(null, certSource);
-                assertEquals("ZWEAG161E No user was found", ((ZoweJwtScheme.ZoweJwtAuthCommand) command).getErrorHeader());
+                when(authSourceService.getJWT(certSource)).thenThrow(new AuthSchemeException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed"));
+                assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, certSource));
             }
 
             @Test
-            void whenNoJWTReturned_thenUpdateZuulHeaderWithJWToken() {
-                String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
+            void whenNoJWTReturned_thenThrows() {
                 when(authSourceService.getJWT(authSource)).thenReturn(null);
-                AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
-
-                assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
-                assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
-                authenticationCommand.apply(null);
-                assertEquals(errorHeaderValue, requestContext.getZuulRequestHeaders().get("x-zowe-auth-failure"));
-            }
-
-            @Test
-            void whenNoJWTReturned_thenUpdateHeaderWithJWToken() {
-                when(authSourceService.getJWT(authSource)).thenReturn(null);
-                AuthenticationCommand authenticationCommand = scheme.createCommand(null, null);
-                HttpRequest request = mock(HttpRequest.class);
-                assertTrue(authenticationCommand instanceof ZoweJwtScheme.ZoweJwtAuthCommand);
-                assertNotNull(((ZoweJwtScheme.ZoweJwtAuthCommand) authenticationCommand).getErrorHeader());
-                authenticationCommand.applyToRequest(request);
-                verify(request, times(1)).addHeader(any(), any());
+                assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, null));
             }
 
             @Test
@@ -237,35 +227,13 @@ class ZoweJwtSchemeTest {
         @Nested
         class NoCertificateInRequest {
             @Test
-            void givenNoClientCertificate_thenCommandDoNotExpire() {
-                String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
-                doReturn(errorHeaderValue).when(requestContext).get(AUTH_FAIL_HEADER);
-
-                ZoweJwtScheme.ZoweJwtAuthCommand command = (ZoweJwtScheme.ZoweJwtAuthCommand) scheme.createCommand(null, null);
-
-                assertNotNull(command);
-
-                Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
-                assertNotNull(expiration);
-                assertTrue(expiration <= System.currentTimeMillis());
+            void givenNoClientCertificate_thenCommandCreationFails() {
+                assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, null));
             }
         }
 
         @Nested
         class IncorrectCertificateInRequest {
-            @Test
-            void givenNoClientCertificate_andX509SchemeRequired_thenNoHeaderIsSet() {
-                String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. Can't get extensions from certificate";
-                doReturn(errorHeaderValue).when(requestContext).get(AUTH_FAIL_HEADER);
-
-                ZoweJwtScheme.ZoweJwtAuthCommand command = (ZoweJwtScheme.ZoweJwtAuthCommand) scheme.createCommand(null, null);
-
-                assertNotNull(command);
-
-                command.apply(null);
-                assertEquals(errorHeaderValue, requestContext.getZuulRequestHeaders().get("x-zowe-auth-failure"));
-            }
-
             @Test
             void whenExpiredX509AuthSource_thenCommandIsExpired() {
                 long expectedExpiration = System.currentTimeMillis() - (5 * 60 * 1000);
@@ -280,6 +248,4 @@ class ZoweJwtSchemeTest {
             }
         }
     }
-
-
 }
