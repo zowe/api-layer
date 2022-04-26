@@ -72,7 +72,7 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
 
             // Verify authentication source validity if it is required for the schema
             if (authSource.isPresent() && !isSourceValidForCommand(authSource.get(), cmd)) {
-                throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
+                throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidAuthentication");
             }
         } catch (TokenExpireException tee) {
             cmd = null;
