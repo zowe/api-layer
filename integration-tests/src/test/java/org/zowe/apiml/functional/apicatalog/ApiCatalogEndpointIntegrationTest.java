@@ -52,6 +52,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
+    private static final String GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog";
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v1.0.0";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v18.0.0";
 
@@ -112,8 +113,41 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     class ApiDoc {
         @Test
             // Functional
-        void whenCatalogApiDoc_thenResponseOK() throws Exception {
+        void whenSpecificCatalogApiDoc_thenResponseOK() throws Exception {
             final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
+
+            // When
+            final String jsonResponse = EntityUtils.toString(response.getEntity());
+
+            String apiCatalogSwagger = "\n**************************\n" +
+                "Integration Test: API Catalog Swagger" +
+                "\n**************************\n" +
+                jsonResponse +
+                "\n**************************\n";
+            DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+
+            String swaggerHost = jsonContext.read("$.host");
+            String swaggerBasePath = jsonContext.read("$.basePath");
+            LinkedHashMap paths = jsonContext.read("$.paths");
+            LinkedHashMap definitions = jsonContext.read("$.definitions");
+
+            // Then
+            assertFalse(paths.isEmpty(), apiCatalogSwagger);
+            assertFalse(definitions.isEmpty(), apiCatalogSwagger);
+            assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
+            assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
+            assertNull(paths.get("/status/updates"), apiCatalogSwagger);
+            assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
+            assertNotNull(paths.get("/containers"), apiCatalogSwagger);
+            assertNotNull(paths.get("/apidoc/{serviceId}/{apiVersion}"), apiCatalogSwagger);
+            assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
+            assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
+            assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
+        }
+
+        @Test
+        void whenDefaultCatalogApiDoc_thenResponseOK() throws Exception {
+            final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT, HttpStatus.SC_OK);
 
             // When
             final String jsonResponse = EntityUtils.toString(response.getEntity());
