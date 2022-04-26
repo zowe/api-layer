@@ -71,6 +71,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
             defaultBuilder.withZosmf();
             applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
+            applicationRegistry.addApplication(serviceWithCustomConfiguration, defaultBuilder, true);
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             reset(mockClient);
             config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
@@ -103,12 +104,13 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
 
                 @Test
                 void thenOk() throws IOException {
+                    applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
 
                     mockValid200HttpResponse();
                     given()
                         .config(SslContext.clientCertUser)
                         .when()
-                        .get(basePath + serviceWithDefaultConfiguration.getPath())
+                        .get(basePath + serviceWithCustomConfiguration.getPath())
                         .then()
                         .statusCode(is(HttpStatus.SC_OK));
                     assertResult("LtpaToken2=LTPA_token_from_zosmf");
@@ -152,7 +154,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
          */
         @Nested
         class WhenNoClientAuthInExtendedKeyUsage {
-            void assertResult() throws IOException {
+            void assertNoTransformation() throws IOException {
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
                 verify(mockClient, times(1)).execute(captor.capture());
 
@@ -162,7 +164,7 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
             }
 
             @Test
-            void thenNoTransformation() throws IOException {
+            void whenNoClientAuthInExtendedKeyUsage_thenNoTransformation() throws IOException {
                 mockValid200HttpResponse();
                 given()
                     .config(SslContext.apimlRootCert)
@@ -170,7 +172,19 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                     .then()
                     .statusCode(is(HttpStatus.SC_OK));
-                assertResult();
+                assertNoTransformation();
+            }
+
+            @Test
+            void whenServerCertificate_thenNoTransformation() throws IOException {
+                mockValid200HttpResponse();
+                given()
+                    .config(SslContext.apimlRootCert)
+                    .when()
+                    .get(basePath + serviceWithDefaultConfiguration.getPath())
+                    .then()
+                    .statusCode(is(HttpStatus.SC_OK));
+                assertNoTransformation();
             }
         }
     }

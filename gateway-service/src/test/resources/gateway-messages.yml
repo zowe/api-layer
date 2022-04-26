@@ -281,8 +281,22 @@ messages:
       reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
       action: "Configure your client to provide valid x509 certificate."
 
-    - key: org.zowe.apiml.gateway.security.scheme.missingApplid
+    - key: org.zowe.apiml.gateway.security.scheme.x509ExtendedKeyUsageError
       number: ZWEAG165
+      type: ERROR
+      text: "X509 certificate is missing the client certificate extended usage definition"
+      reason: "X509 certificate cannot be used for client authentication."
+      action: "Configure your client to provide valid x509 certificate."
+
+    - key: org.zowe.apiml.gateway.security.scheme.zosmfSchemeNotSupported
+      number: ZWEAG166
+      type: ERROR
+      text: "ZOSMF authentication scheme is not supported for this API ML instance."
+      reason: "z/OSMF is not used as security provider for API ML."
+      action: "Contact your administrator."
+
+    - key: org.zowe.apiml.gateway.security.scheme.missingApplid
+      number: ZWEAG170
       type: ERROR
       text: "The 'apiml.authentication.applid' parameter is not specified for a service."
       reason: "The applid parameter is required for the calling service."

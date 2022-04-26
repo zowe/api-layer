@@ -33,6 +33,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
 
 /**
  * This test verifies that only the client certificate is passed through the X509scheme to the southbound service.
@@ -126,7 +127,7 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
 
         @Test
         void whenServerCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
-            String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition";
+            String errorHeaderValue = "ZWEAG165E X509 certificate is missing the client certificate extended usage definition";
 
             applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
             mockValid200HttpResponse();
@@ -167,7 +168,7 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
             ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
             verify(mockClient, times(1)).execute(captor.capture());
 
-            Header xZoweAuthFailureHeader = toVerify.getFirstHeader("X-Zowe-Auth-Failure");
+            Header xZoweAuthFailureHeader = toVerify.getFirstHeader(AUTH_FAIL_HEADER);
             Assertions.assertNotNull(xZoweAuthFailureHeader);
             Assertions.assertEquals(errorMessage, xZoweAuthFailureHeader.getValue());
             assertThat(captor.getValue().getHeaders(X509Scheme.X509Command.COMMON_NAME).length, is(0));

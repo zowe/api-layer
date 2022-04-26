@@ -9,12 +9,9 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import static org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService.X509_DEFAULT_EXPIRATION;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +19,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
-import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 /**
  * This schema adds requested information about client certificate. This information is added
@@ -36,14 +34,13 @@ import org.zowe.apiml.message.core.MessageService;
 @Slf4j
 public class X509Scheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
-    private final MessageService messageService;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
-    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
 
-    public X509Scheme(@Autowired @Qualifier("x509CNAuthSourceService") AuthSourceService authSourceService, MessageService messageService) {
+    public X509Scheme(@Autowired @Qualifier("x509CNAuthSourceService") AuthSourceService authSourceService, AuthConfigurationProperties authConfigurationProperties) {
         this.authSourceService = authSourceService;
-        this.messageService = messageService;
+        this.authConfigurationProperties = authConfigurationProperties;
     }
 
     @Override
@@ -53,20 +50,13 @@ public class X509Scheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        final RequestContext context = RequestContext.getCurrentContext();
-        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
-        if (context.containsKey(AUTH_FAIL_HEADER)) {
-            String errorHeaderValue = context.get(AUTH_FAIL_HEADER).toString();
-            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
-            return new X509Command(System.currentTimeMillis(), errorHeaderValue);
+        if (authSource == null || authSource.getRawSource() == null) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
         }
 
-        String error;
         X509AuthSource.Parsed parsedAuthSource = (X509AuthSource.Parsed) authSourceService.parse(authSource);
-
         if (parsedAuthSource == null) {
-            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.scheme.x509ParsingError", "Cannot parse provided authentication source").mapToLogMessage();
-            return new X509Command(null, error);
+            throw new IllegalStateException("Error occurred while parsing the source of authentication.");
         }
 
         String[] headers;
@@ -76,11 +66,11 @@ public class X509Scheme implements IAuthenticationScheme {
             headers = authentication.getHeaders().split(",");
         }
 
-        final long defaultExpirationTime = System.currentTimeMillis() + X509_DEFAULT_EXPIRATION;
+        final long defaultExpirationTime = System.currentTimeMillis() + authConfigurationProperties.getX509Cert().getTimeout() * 1000L;
         final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
         final long expireAt = Math.min(defaultExpirationTime, expirationTime);
 
-        return new X509Command(expireAt, headers, parsedAuthSource, null);
+        return new X509Command(expireAt, headers, parsedAuthSource);
     }
 
     @Override
@@ -88,39 +78,27 @@ public class X509Scheme implements IAuthenticationScheme {
         return authSourceService.getAuthSourceFromRequest();
     }
 
-    public class X509Command extends AuthenticationCommand {
+    public static class X509Command extends AuthenticationCommand {
         private final Long expireAt;
         private final String[] headers;
         private final X509AuthSource.Parsed parsedAuthSource;
-        @Getter
-        private final String errorHeader;
 
         public static final String PUBLIC_KEY = "X-Certificate-Public";
         public static final String DISTINGUISHED_NAME = "X-Certificate-DistinguishedName";
         public static final String COMMON_NAME = "X-Certificate-CommonName";
 
-        public X509Command(Long expireAt, String[] headers, X509AuthSource.Parsed parsedAuthSource, String errorHeader) {
+        public X509Command(Long expireAt, String[] headers, X509AuthSource.Parsed parsedAuthSource) {
             this.expireAt = expireAt;
             this.headers = headers;
             this.parsedAuthSource = parsedAuthSource;
-            this.errorHeader = errorHeader;
-        }
-
-        public X509Command(Long expireAt, String errorHeader) {
-            this.expireAt = expireAt;
-            this.headers = new String[0];
-            this.parsedAuthSource = null;
-            this.errorHeader = errorHeader;
         }
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
-            final RequestContext context = RequestContext.getCurrentContext();
             if (parsedAuthSource != null) {
+                final RequestContext context = RequestContext.getCurrentContext();
                 setHeader(context, parsedAuthSource);
                 context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
-            } else {
-                JwtCommand.setErrorHeader(context, errorHeader);
             }
         }
 
