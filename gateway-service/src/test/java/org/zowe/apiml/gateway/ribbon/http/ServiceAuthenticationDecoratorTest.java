@@ -25,6 +25,7 @@ import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
@@ -122,6 +123,19 @@ class ServiceAuthenticationDecoratorTest {
         prepareContext(universalCmd, authSource);
         AuthenticationException ae = mock(AuthenticationException.class);
         doThrow(ae).when(authSourceService).isValid(any());
+
+        assertThrows(RequestAbortException.class, () ->
+                decorator.process(request),
+            "Exception is not RequestAbortException");
+        verify(universalCmd, times(0)).applyToRequest(request);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
+    void givenContextWithoutAuthentication_whenAuthSchemeThrows_thenShouldAbort(AuthSource authSource) {
+        AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
+        prepareContext(universalCmd, authSource);
+        doThrow(new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication")).when(serviceAuthenticationService).getAuthenticationCommand(any(Authentication.class), eq(authSource));
 
         assertThrows(RequestAbortException.class, () ->
                 decorator.process(request),
