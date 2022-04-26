@@ -51,7 +51,7 @@ public class X509Scheme implements IAuthenticationScheme {
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         if (authSource == null || authSource.getRawSource() == null) {
-            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingX509Authentication");
         }
 
         X509AuthSource.Parsed parsedAuthSource = (X509AuthSource.Parsed) authSourceService.parse(authSource);
