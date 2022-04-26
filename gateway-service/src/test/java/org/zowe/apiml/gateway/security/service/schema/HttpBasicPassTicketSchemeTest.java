@@ -11,23 +11,16 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.DefaultAuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
-import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
-import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
+import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +30,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 
@@ -44,24 +38,17 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
     private static final String USERNAME = "USERNAME";
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+    private final Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
+    private final AuthSource jwtAuthSource = new JwtAuthSource("jwtToken1");
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
-    private static MessageService messageService;
-
-
-    @BeforeAll
-    static void setForAll() {
-        messageService = new YamlMessageService();
-        messageService.loadMessages("/gateway-messages.yml");
-    }
+    private PassTicketService passTicketService;
+    private AuthSourceService authSourceService;
 
     @BeforeEach
     void init() {
-        JwtAuthSourceService jwtAuthSourceService = mock(JwtAuthSourceService.class);
-        X509AuthSourceService x509MFAuthSourceService = mock(X509AuthSourceService.class);
-
-        PassTicketService passTicketService = new PassTicketService();
-        AuthSourceService authSourceService = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        passTicketService = spy(new PassTicketService());
+        authSourceService = mock(AuthSourceService.class);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
     }
 
     @AfterEach
@@ -69,17 +56,63 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         RequestContext.testSetCurrentContext(null);
     }
 
+    @Nested
+    class AuthSourceIndependentTests {
+        @Test
+        void testGetAuthSource() {
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+            httpBasicPassTicketScheme.getAuthSource();
+            verify(authSourceService, times(1)).getAuthSourceFromRequest();
+        }
+
+        @Test
+        void returnsCorrectScheme() {
+            assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, httpBasicPassTicketScheme.getScheme());
+        }
+
+        @Test
+        void testIsRequiredValidJwt() {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DATE, 1);
+            AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed("username", calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
+            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
+            AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
+            assertTrue(ac.isRequiredValidSource());
+        }
+
+        @Test
+        void givenNoAuthSource_thenThrows() {
+            assertThrows(AuthSchemeException.class, () -> httpBasicPassTicketScheme.createCommand(authentication, null));
+        }
+
+        @Test
+        void givenAuthSourceWithoutContent_thenThrows() {
+            AuthSource authSource = new X509AuthSource(null);
+            assertThrows(AuthSchemeException.class, () -> httpBasicPassTicketScheme.createCommand(authentication, authSource));
+        }
+
+        @Test
+        void givenNullParsingResult_thenThrows() {
+            doReturn(null).when(authSourceService).parse(any(AuthSource.class));
+            assertThrows(IllegalStateException.class, () -> httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource));
+        }
+
+        @Test
+        void givenNoUseridInParsingResult_thenThrows() {
+            Calendar calendar = Calendar.getInstance();
+            AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(null, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
+            doReturn(parsedSource).when(authSourceService).parse(any(AuthSource.class));
+            assertThrows(AuthSchemeException.class, () -> httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource));
+        }
+    }
+
     @Test
     void testCreateCommand() {
-        PassTicketService passTicketService = new PassTicketService();
-        AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
-
         Calendar calendar = Calendar.getInstance();
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
         AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
-        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
+        when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
+        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
         assertNotNull(ac);
 
         RequestContext requestContext = new RequestContext();
@@ -94,127 +127,90 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
             )
         );
         assertTrue(authorizationValue.startsWith("USERNAME:ZOWE_DUMMY_PASS_TICKET_APPLID_USERNAME_"));
-
-        // JWT token expired one minute ago (command expired also if JWT token expired)
-        calendar.add(Calendar.MINUTE, -1);
-        AuthSource.Parsed parsedSource2 = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource2);
-        ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
-        assertTrue(ac.isExpired());
-
-        // JWT token will expire in one minute (command expired also if JWT token expired)
-        calendar.add(Calendar.MINUTE, 2);
-        AuthSource.Parsed parsedSource3 = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource3);
-        ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
-        assertFalse(ac.isExpired());
-
-        calendar.add(Calendar.MINUTE, 100);
-        AuthSource.Parsed parsedSource4 = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource4);
-        ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
-
-        calendar = Calendar.getInstance();
-        calendar.add(Calendar.SECOND, authConfigurationProperties.getPassTicket().getTimeout());
-        // checking setup of expired time, JWT expired in future (more than hour), check if set date is similar to passticket timeout (5s)
-        assertEquals(0.0, Math.abs(calendar.getTime().getTime() - (long) ReflectionTestUtils.getField(ac, "expireAt")), 10.0);
-    }
-    @Test
-    void testGetAuthSource() {
-        PassTicketService passTicketService = mock(PassTicketService.class);
-        AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
-
-        doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
-
-        httpBasicPassTicketScheme.getAuthSource();
-        verify(authSourceService, times(1)).getAuthSourceFromRequest();
     }
 
-    @Test
-    void returnsCorrectScheme() {
-        assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, httpBasicPassTicketScheme.getScheme());
+    @Nested
+    class ExpirationTest {
+        AuthenticationCommand ac;
+
+        @Test
+        void whenJwtExpired_thenCommandExpired() {
+            // JWT token expired one minute ago (command expired also if JWT token expired)
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MINUTE, -1);
+            AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
+            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
+            ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
+            assertTrue(ac.isExpired());
+        }
+
+        @Test
+        void whenJwtExpireSoon_thenCommandInNotExpiredYet() {
+            // JWT token will expire in one minute (command expired also if JWT token expired)
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MINUTE, 2);
+            AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
+            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
+            ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
+            assertFalse(ac.isExpired());
+        }
+
+        @Test
+        void testPassticketTimeout() {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MINUTE, 100);
+            AuthSource.Parsed parsedSource4 = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
+            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource4);
+            ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
+
+            calendar = Calendar.getInstance();
+            calendar.add(Calendar.SECOND, authConfigurationProperties.getPassTicket().getTimeout());
+            // checking setup of expired time, JWT expired in future (more than hour), check if set date is similar to passticket timeout (5s)
+            assertEquals(0.0, Math.abs(calendar.getTime().getTime() - (long) ReflectionTestUtils.getField(ac, "expireAt")), 10.0);
+        }
     }
 
-    @Test
-    void getExceptionWhenUserIdNotValid() {
-        String applId = "APPLID";
-        PassTicketService passTicketService = new PassTicketService();
-        AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+    @Nested
+    class GivenZoweJwtAuthSource {
 
-        Calendar calendar = Calendar.getInstance();
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
-        AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(UNKNOWN_USER, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
-        AuthSource authSource = new JwtAuthSource("token");
-        String errorMsg = String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId);
-        AuthenticationCommand expected = new HttpBasicPassTicketScheme.PassTicketCommand(null, authConfigurationProperties.getCookieProperties().getCookieName(), null, errorMsg);
-        AuthenticationCommand actual =  httpBasicPassTicketScheme.createCommand(authentication, authSource);
-        assertEquals(expected, actual);
-    }
+        @Test
+        void getExceptionWhenUserIdNotValid() {
+            Calendar calendar = Calendar.getInstance();
+            AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(UNKNOWN_USER, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
+            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
+            assertThrows(AuthSchemeException.class, () -> httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource));
+        }
 
-    @Test
-    void testIsRequiredValidJwt() {
-        PassTicketService passTicketService = new PassTicketService();
-        AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        @Test
+        void givenJwtInCookie_whenApply_thenJwtIsRemoved() {
+            AuthenticationCommand command = getPassTicketCommand();
+            RequestContext requestContext = new RequestContext();
+            HttpServletRequest request = new MockHttpServletRequest();
+            ((MockHttpServletRequest)request).addHeader("cookie",
+                authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
+                    "abc=def");
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, 1);
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
-        AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed("username", calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
-        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
-        assertTrue(ac.isRequiredValidSource());
-    }
+            requestContext.setRequest(request);
+            requestContext.addZuulRequestHeader("cookie",
+                authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
+                    "abc=def"
+            );
+            RequestContext.testSetCurrentContext(requestContext);
 
-    @Test
-    void whenCallWithoutJwt_thenNoPassTicketGenerates() {
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
-        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, null);
-        String errorMsg = messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
-        AuthenticationCommand expected = new HttpBasicPassTicketScheme.PassTicketCommand(null, authConfigurationProperties.getCookieProperties().getCookieName(), null, errorMsg);
+            command.apply(null);
 
-        assertEquals(expected, ac);
-    }
+            String cookies = requestContext.getZuulRequestHeaders().get("cookie");
+            assertEquals("abc=def", cookies);
+        }
 
-    private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {
-        PassTicketService passTicketService = new PassTicketService();
-        AuthSourceService authSourceService = mock(AuthSourceService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties, messageService);
+        private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.YEAR, 1);
 
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.YEAR, 1);
-
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
-        AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(USERNAME, new Date(), c.getTime(), AuthSource.Origin.ZOWE);
-        when(authSourceService.parse(new JwtAuthSource("token"))).thenReturn(parsedSource);
-        AuthenticationCommand out = httpBasicPassTicketScheme.createCommand(authentication, new JwtAuthSource("token"));
-        assertTrue(out instanceof HttpBasicPassTicketScheme.PassTicketCommand);
-        return (HttpBasicPassTicketScheme.PassTicketCommand) out;
-    }
-
-    @Test
-    void givenJwtInCookie_whenApply_thenJwtIsRemoved() {
-        AuthenticationCommand command = getPassTicketCommand();
-        RequestContext requestContext = new RequestContext();
-        HttpServletRequest request = new MockHttpServletRequest();
-        ((MockHttpServletRequest)request).addHeader("cookie",
-            authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
-                "abc=def");
-
-        requestContext.setRequest(request);
-        requestContext.addZuulRequestHeader("cookie",
-            authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
-                "abc=def"
-        );
-        RequestContext.testSetCurrentContext(requestContext);
-
-        command.apply(null);
-
-        String cookies = requestContext.getZuulRequestHeaders().get("cookie");
-        assertEquals("abc=def", cookies);
-    }
-
+            AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(USERNAME, new Date(), c.getTime(), AuthSource.Origin.ZOWE);
+            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
+            AuthenticationCommand out = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
+            assertTrue(out instanceof HttpBasicPassTicketScheme.PassTicketCommand);
+            return (HttpBasicPassTicketScheme.PassTicketCommand) out;
+        }
 }

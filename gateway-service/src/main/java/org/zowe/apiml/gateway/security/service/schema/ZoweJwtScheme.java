@@ -16,19 +16,14 @@ import lombok.EqualsAndHashCode;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.UserNotMappedException;
-import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.Date;
 import java.util.Optional;
-
-import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.AUTH_FAIL_HEADER;
 
 
 @Component
@@ -38,7 +33,6 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
 
     private AuthSourceService authSourceService;
     private AuthConfigurationProperties configurationProperties;
-    private MessageService messageService;
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -52,71 +46,46 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        final RequestContext context = RequestContext.getCurrentContext();
-        // Check for error in context to use it in header "X-Zowe-Auth-Failure"
-        if (context.containsKey(AUTH_FAIL_HEADER)) {
-            String errorHeaderValue = context.get(AUTH_FAIL_HEADER).toString();
-            // this command should expire immediately after creation because it is build based on missing/incorrect authentication
-            return new ZoweJwtAuthCommand(System.currentTimeMillis(), null, errorHeaderValue);
+        if (authSource == null || authSource.getRawSource() == null) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
         }
 
-        String error = null;
-        String jwt = null;
-        AuthSource.Parsed parsedAuthSource = null;
+        String jwt;
+        AuthSource.Parsed parsedAuthSource;
         try {
             parsedAuthSource = authSourceService.parse(authSource);
+            if (parsedAuthSource == null) {
+                throw new IllegalStateException("Error occurred while parsing authenticationSource");
+            }
+            jwt = authSourceService.getJWT(authSource);
         } catch (TokenNotValidException e) {
-            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
         } catch (TokenExpireException e) {
-            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
-        }
-        if (authSource == null || authSource.getRawSource() == null) {
-            error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingAuthentication").mapToLogMessage();
-        }
-        if (error != null) {
-            return new ZoweJwtAuthCommand(null, null, error);
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
         }
 
         final long defaultExpirationTime = System.currentTimeMillis() + configurationProperties.getTokenProperties().getExpirationInSeconds() * 1000L;
-        final Date expiration = parsedAuthSource == null ? null : parsedAuthSource.getExpiration();
-        final long expirationTime = expiration != null ? expiration.getTime() : defaultExpirationTime;
+        final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
         final long expireAt = Math.min(defaultExpirationTime, expirationTime);
 
-        try {
-            jwt = authSourceService.getJWT(authSource);
-        } catch (UserNotMappedException | AuthenticationTokenException e) {
-            error = this.messageService.createMessage(e.getMessage()).mapToLogMessage();
-        }
-
-        return new ZoweJwtAuthCommand(expireAt, jwt, error);
+        return new ZoweJwtAuthCommand(expireAt, jwt);
     }
 
     @lombok.Value
     @EqualsAndHashCode(callSuper = false)
-    public class ZoweJwtAuthCommand extends AuthenticationCommand {
+    public class ZoweJwtAuthCommand extends JwtCommand {
 
         public static final long serialVersionUID = -885301934611866658L;
         Long expireAt;
         String jwt;
-        String errorHeader;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
-
-            final RequestContext context = RequestContext.getCurrentContext();
             if (jwt != null) {
+                final RequestContext context = RequestContext.getCurrentContext();
                 JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
-            } else {
-                JwtCommand.removeCookie(context, configurationProperties.getCookieProperties().getCookieName());
-                JwtCommand.setErrorHeader(context, errorHeader);
             }
         }
 
-        @Override
-        public boolean isExpired() {
-            if (expireAt == null) return false;
-
-            return System.currentTimeMillis() > expireAt;
-        }
     }
 }

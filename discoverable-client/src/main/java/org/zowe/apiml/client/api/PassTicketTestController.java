@@ -46,21 +46,25 @@ public class PassTicketTestController {
     @ApiOperation(value = "Validate that the PassTicket in Authorization header is valid", tags = { "Test Operations" })
     @HystrixCommand()
     public void passticketTest(@RequestHeader("authorization") String authorization,
-            @RequestParam(value = "applId", defaultValue = "", required = false) String applId)
-            throws IRRPassTicketEvaluationException
-    {
+        @RequestHeader(value = "X-Zowe-Auth-Failure", required = false) String zoweAuthFailure,
+        @RequestParam(value = "applId", defaultValue = "", required = false) String applId)
+        throws IRRPassTicketEvaluationException {
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
-            String base64Credentials = authorization.substring("Basic".length()).trim();
-            String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
-            String[] values = credentials.split(":", 2);
-            String userId = values[0];
-            String passTicket = values[1];
-            if (applId.isEmpty()) {
-                 applId = defaultApplId;
+            if (zoweAuthFailure != null) {
+                throw new IllegalArgumentException("Scheme transformation happened and error was set in X-Zowe-Auth-Failure header");
+            } else {
+                String base64Credentials = authorization.substring("Basic".length()).trim();
+                String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+                String[] values = credentials.split(":", 2);
+                String userId = values[0];
+                String passTicket = values[1];
+                if (applId.isEmpty()) {
+                    applId = defaultApplId;
+                }
+                passTicketService.evaluate(userId, applId, passTicket);
             }
-            passTicketService.evaluate(userId, applId, passTicket);
-        } else {
-            throw new IllegalArgumentException("Missing Basic authorization header");
+        } else if (authorization != null && !authorization.toLowerCase().startsWith("basic") && zoweAuthFailure == null) {
+            throw new IllegalArgumentException("Neither scheme transformation happened not error was set in X-Zowe-Auth-Failure header");
         }
     }
 }

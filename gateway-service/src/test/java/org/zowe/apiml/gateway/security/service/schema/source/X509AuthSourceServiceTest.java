@@ -22,9 +22,6 @@ import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,13 +42,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
     private HttpServletRequest request;
     private X509Certificate x509Certificate;
     private final X509Certificate[] x509Certificates = new X509Certificate[1];
-    static MessageService messageService;
 
-    @BeforeAll
-    static void setForAll() {
-        messageService = new YamlMessageService();
-        messageService.loadMessages("/gateway-messages.yml");
-    }
 
     @BeforeEach
     void init() {
@@ -70,14 +61,14 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             authenticationService = mock(AuthenticationService.class);
             tokenCreationService = mock(TokenCreationService.class);
             mapper = mock(X509AbstractMapper.class);
-            service = new X509AuthSourceService(mapper, tokenCreationService, authenticationService, messageService);
+            service = new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
         }
 
         @Test
         void givenX509Source_returnNullLtpa() {
 
             X509AuthSource source = new X509AuthSource(null);
-            assertThrows(UserNotMappedException.class, () -> service.getLtpaToken(source));
+            assertThrows(AuthSchemeException.class, () -> service.getLtpaToken(source));
         }
 
         @Test
@@ -85,7 +76,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             X509AuthSource source = new X509AuthSource(null);
             when(mapper.mapCertificateToMainframeUserId(any())).thenReturn("user1");
             when(tokenCreationService.createJwtTokenWithoutCredentials(any())).thenThrow(new ResourceAccessException("I/O exception"));
-            assertThrows(AuthenticationTokenException.class, () -> service.getJWT(source));
+            assertThrows(AuthSchemeException.class, () -> service.getJWT(source));
         }
     }
 
@@ -98,21 +89,20 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         @BeforeEach
         void init() {
             mapper = mock(X509AbstractMapper.class);
-            serviceUnderTest = spy(new X509AuthSourceService(mapper, null, null, messageService));
+            serviceUnderTest = spy(new X509AuthSourceService(mapper, null, null));
         }
 
         @Nested
         class GivenNullAuthSource {
             @Test
-            void whenNoClientCertInRequest_thenAuthSourceIsNotPresent() {
+            void whenNoClientCertInRequest_thenThrows() {
                 context = spy(RequestContext.class);
                 request = mock(HttpServletRequest.class);
                 RequestContext.testSetCurrentContext(context);
                 when(context.getRequest()).thenReturn(request);
-                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                assertFalse(serviceUnderTest.getAuthSourceFromRequest().isPresent());
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
                 verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
-                assertFalse(authSource.isPresent());
             }
 
             @Test
@@ -214,30 +204,26 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             }
 
             @Test
-            void whenServerCertInRequestInCustomAttribute_thenAuthSourceIsNotPresent() {
+            void whenServerCertInRequestInCustomAttribute_thenThrows() {
                 when(context.getRequest()).thenReturn(request);
                 when(request.getAttribute("client.auth.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
                 when(mapper.isClientAuthCertificate(any())).thenReturn(false);
 
-                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                assertThrows(AuthSchemeException.class, () -> serviceUnderTest.getAuthSourceFromRequest());
 
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
                 verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
-
-                Assertions.assertFalse(authSource.isPresent());
             }
 
             @Test
-            void whenInternalApimlCertInRequestInStandardAttribute_thenAuthSourceIsNotPresent() {
+            void whenInternalApimlCertInRequestInStandardAttribute_thenThrows() {
                 when(context.getRequest()).thenReturn(request);
                 doReturn(new X509Certificate[0]).when(request).getAttribute("client.auth.X509Certificate");
 
-                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                assertFalse(serviceUnderTest.getAuthSourceFromRequest().isPresent());
 
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
                 verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
-
-                Assertions.assertFalse(authSource.isPresent());
             }
 
             @Test
@@ -246,16 +232,14 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             }
 
             @Test
-            void whenAuthenticationServiceException_thenFalseWhenValidate() {
-                String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. Can't get extensions from certificate";
+            void whenAuthenticationServiceException_thenThrowsWhenValidate() {
                 context = spy(RequestContext.class);
                 RequestContext.testSetCurrentContext(context);
 
                 AuthSource authSource = new X509AuthSource(x509Certificate);
                 when(mapper.isClientAuthCertificate(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
-                assertFalse(serviceUnderTest.isValid(authSource));
+                assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.isValid(authSource));
                 verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
-                verifyErrorHeaderStoredInContext(errorHeaderValue);
             }
 
             @Test
@@ -284,22 +268,16 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             @Nested
             class WhenNotAClientCertificate {
                 @Test
-                void thenFalseWhenValidate() {
-                    String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition";
+                void thenThrowsWhenValidate() {
                     context = spy(RequestContext.class);
                     RequestContext.testSetCurrentContext(context);
 
                     AuthSource authSource = new X509AuthSource(x509Certificate);
                     when(mapper.isClientAuthCertificate(x509Certificate)).thenReturn(false);
-                    assertFalse(serviceUnderTest.isValid(authSource));
+                    assertThrows(AuthSchemeException.class, () -> serviceUnderTest.isValid(authSource));
                     verify(mapper, times(1)).isClientAuthCertificate(x509Certificate);
-                    verifyErrorHeaderStoredInContext(errorHeaderValue);
                 }
             }
         }
-    }
-
-    private void verifyErrorHeaderStoredInContext(String errorMessage) {
-        verify(context, times(1)).put("X-Zowe-Auth-Failure", errorMessage);
     }
 }

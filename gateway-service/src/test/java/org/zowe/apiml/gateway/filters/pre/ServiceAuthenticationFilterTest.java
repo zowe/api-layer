@@ -33,6 +33,10 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +60,9 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @Mock
     private AuthSourceService authSourceService;
+
+    @Mock
+    private static MessageService messageService;
 
     @Test
     void testConfig() {
@@ -133,14 +140,17 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
-    void givenValidAuthSource_whenAuthSourceRequired_thenCallThrought(AuthSource authSource) {
+    void givenInvalidAuthSource_whenAuthSourceRequired_thenCallThrought(AuthSource authSource) {
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
+
         AuthenticationCommand cmd = createValidationCommand(authSource);
         doReturn(false).when(authSourceService).isValid(any());
 
         serviceAuthenticationFilter.run();
 
-        verify(RequestContext.getCurrentContext(), times(1)).setSendZuulResponse(false);
-        verify(RequestContext.getCurrentContext(), times(1)).setResponseStatusCode(401);
+        verify(RequestContext.getCurrentContext(), times(1)).setResponseStatusCode(200);
         verify(cmd, never()).apply(any());
     }
 
