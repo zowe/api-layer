@@ -89,6 +89,16 @@ public class APIServiceStatusService {
     }
 
     /**
+     * Return the cached default API doc for a service
+     *
+     * @param serviceId  the unique service id
+     * @return the default version of an API Doc
+     */
+    public ResponseEntity<String> getServiceCachedDefaultApiDocInfo(@NonNull String serviceId) {
+        return new ResponseEntity<>(cachedApiDocService.getDefaultApiDocForService(serviceId), createHeaders(), HttpStatus.OK);
+    }
+
+    /**
      * Return the diff of two api versions
      * @param serviceId the unique service id
      * @param apiVersion1 the old version of the api

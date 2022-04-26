@@ -76,6 +76,32 @@ public class CatalogApiDocController {
             return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, null);
         }
     }
+    /**
+     * Retrieve the api-doc info for this service's default API
+     *
+     * @param serviceId  the eureka id
+     * @return api-doc info (as JSON)
+     */
+    @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Retrieves the API documentation for the default service version",
+        notes = "Returns the API documentation for a specific service {serviceId} and it's default version.",
+        authorizations = {
+            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
+        },
+        response = String.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "OK"),
+        @ApiResponse(code = 401, message = "Unauthorized"),
+        @ApiResponse(code = 403, message = "Forbidden"),
+        @ApiResponse(code = 404, message = "URI not found"),
+        @ApiResponse(code = 500, message = "An unexpected condition occurred"),
+    })
+    @HystrixCommand
+    public ResponseEntity<String> getDefaultApiDocInfo(
+        @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
+        @PathVariable(value = "serviceId") String serviceId) {
+        return this.apiServiceStatusService.getServiceCachedDefaultApiDocInfo(serviceId);
+    }
 
     @GetMapping(value = "/{serviceId}/{apiVersion1}/{apiVersion2}", produces = MediaType.TEXT_HTML_VALUE)
     @ApiOperation(value = "Retrieve diff of two api versions for a specific service",
