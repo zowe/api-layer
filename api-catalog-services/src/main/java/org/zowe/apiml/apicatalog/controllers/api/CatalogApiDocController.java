@@ -82,7 +82,7 @@ public class CatalogApiDocController {
      */
     @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Retrieves the API documentation for the default service version",
-        notes = "Returns the API documentation for a specific service {serviceId} and it's default version.",
+        notes = "Returns the API documentation for a specific service {serviceId} and its default version.",
         authorizations = {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         },
