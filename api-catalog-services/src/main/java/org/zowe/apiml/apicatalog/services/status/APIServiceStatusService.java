@@ -106,8 +106,8 @@ public class APIServiceStatusService {
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
             return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
         } catch (Exception e) {
-            String errorMessage = String.format("Error retrieving API diff for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2);
-            log.debug("{}. Cause: {}", errorMessage, e.getMessage());
+            String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiVersion1, apiVersion2);
+            log.error(errorMessage, e);
             throw new ApiDiffNotAvailableException(errorMessage);
         }
     }

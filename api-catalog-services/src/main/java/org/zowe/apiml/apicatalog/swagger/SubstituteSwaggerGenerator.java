@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.swagger;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.config.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import org.apache.velocity.Template;
@@ -22,6 +23,7 @@ import java.io.StringWriter;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
+@Slf4j
 public class SubstituteSwaggerGenerator {
     private final VelocityEngine ve = new VelocityEngine();
 
@@ -34,6 +36,7 @@ public class SubstituteSwaggerGenerator {
     public String generateSubstituteSwaggerForService(InstanceInfo service,
                                                       ApiInfo api,
                                                       String gatewayScheme, String gatewayHost) {
+        log.warn("Generating substitute swagger for service instance '{}' API '{} {}'", service.getInstanceId(), api.getApiId(), api.getVersion());
         String title = service.getMetadata().get(SERVICE_TITLE);
         String description = service.getMetadata().get(SERVICE_DESCRIPTION);
         String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + service.getAppName().toLowerCase()

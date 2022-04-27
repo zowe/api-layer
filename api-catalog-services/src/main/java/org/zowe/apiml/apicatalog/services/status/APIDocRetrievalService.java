@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.services.status;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -39,6 +40,7 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class APIDocRetrievalService {
 
     private final RestTemplate restTemplate;
@@ -57,6 +59,7 @@ public class APIDocRetrievalService {
      * @throws ApiVersionNotFoundException if the API versions cannot be loaded
      */
     public List<String> retrieveApiVersions(@NonNull String serviceId) {
+        log.debug("Retrieving API versions for service '{}'", serviceId);
         InstanceInfo instanceInfo;
 
         try {
@@ -70,6 +73,8 @@ public class APIDocRetrievalService {
         for (ApiInfo apiInfo : apiInfoList) {
             apiVersions.add(apiInfo.getApiId() + " v" + apiInfo.getVersion());
         }
+
+        log.debug("For service '{}' found API versions '{}'", serviceId, apiVersions);
         return apiVersions;
     }
 
@@ -83,6 +88,7 @@ public class APIDocRetrievalService {
      * @return default API version in the format v{majorVersion}, or null.
      */
     public String retrieveDefaultApiVersion(@NonNull String serviceId) {
+        log.debug("Retrieving default API version for service '{}'", serviceId);
         InstanceInfo instanceInfo;
 
         try {
@@ -98,7 +104,9 @@ public class APIDocRetrievalService {
             return "";
         }
 
-        return defaultApiInfo.getApiId() + " v" + defaultApiInfo.getVersion();
+        String defaultVersion = defaultApiInfo.getApiId() + " v" + defaultApiInfo.getVersion();
+        log.debug("For service '{}' found default API version '{}'", serviceId, defaultVersion);
+        return defaultVersion;
     }
 
     /**
@@ -118,6 +126,7 @@ public class APIDocRetrievalService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
+        log.debug("Retrieving API doc for '{} {}'", serviceId, apiVersion);
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
@@ -131,6 +140,7 @@ public class APIDocRetrievalService {
         String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo, routes);
 
         if (apiDocUrl == null) {
+            log.warn("No api doc URL for {} {} {}", serviceId, apiInfo.getApiId(), apiInfo.getVersion());
             return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
         }
 
@@ -144,6 +154,7 @@ public class APIDocRetrievalService {
                 }
                 return new ApiDocInfo(apiInfo, apiDocContent, routes);
             } catch (Exception e) {
+                log.error("Error retrieving api doc for '{}'", serviceId, e);
                 return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
             }
         }
@@ -165,6 +176,7 @@ public class APIDocRetrievalService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public ApiDocInfo retrieveDefaultApiDoc(@NonNull String serviceId) {
+        log.debug("Retrieving default API doc for service '{}'", serviceId);
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
@@ -177,6 +189,7 @@ public class APIDocRetrievalService {
         ApiInfo defaultApiInfo = getApiInfoSetAsDefault(apiInfoList);
 
         if (defaultApiInfo == null) {
+            log.debug("No API set as default, will use highest major version as default");
             defaultApiInfo = getHighestApiVersion(apiInfoList);
         }
 
@@ -188,7 +201,10 @@ public class APIDocRetrievalService {
         for (ApiInfo apiInfo : apiInfoList) {
             if (apiInfo.isDefaultApi()) {
                 if (defaultApiInfo != null) {
-                    // multiple APIs set as default, can't handle conflict so stop looking for set default
+                    log.warn("Multiple API are set as default: '{} {}' and '{} {}'. Neither will be treated as the default.",
+                        defaultApiInfo.getApiId(), apiInfo.getVersion(),
+                        apiInfo.getApiId(), apiInfo.getVersion()
+                    );
                     return null;
                 } else {
                     defaultApiInfo = apiInfo;
@@ -271,16 +287,21 @@ public class APIDocRetrievalService {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        ResponseEntity<String> response = restTemplate.exchange(
-            apiDocUrl,
-            HttpMethod.GET,
-            new HttpEntity<>(headers),
-            String.class);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiDocUrl,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                String.class);
 
-        if (response.getStatusCode().isError()) {
-            throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId + " server error: '" + response.getBody() + "'.");
+            if (response.getStatusCode().isError()) {
+                throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId + " server error: '" + response.getBody() + "'.");
+            }
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error retrieving api doc by url for {} at {}", serviceId, apiDocUrl, e);
+            throw e;
         }
-        return response.getBody();
     }
 
     /**
@@ -316,7 +337,7 @@ public class APIDocRetrievalService {
         }
 
         if (apiVersion == null) {
-           return apiInfos.get(0);
+            return apiInfos.get(0);
         }
 
         String[] api = apiVersion.split(" ");
@@ -330,7 +351,9 @@ public class APIDocRetrievalService {
             .findFirst();
 
         if (!result.isPresent()) {
-            throw new ApiDocNotFoundException("There is no api doc for combination of apiId and version. " + apiId + " " + version);
+            String errMessage = String.format("Error finding api doc: there is no api doc for '%s %s'.", apiId, version);
+            log.error(errMessage);
+            throw new ApiDocNotFoundException(errMessage);
         } else {
             return result.get();
         }
