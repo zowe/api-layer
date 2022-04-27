@@ -140,7 +140,7 @@ public class APIDocRetrievalService {
         String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo, routes);
 
         if (apiDocUrl == null) {
-            log.warn("No api doc URL for {} {} {}", serviceId, apiInfo.getApiId(), apiInfo.getVersion());
+            log.warn("No api doc URL for '{} {} {}'", serviceId, apiInfo.getApiId(), apiInfo.getVersion());
             return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
         }
 

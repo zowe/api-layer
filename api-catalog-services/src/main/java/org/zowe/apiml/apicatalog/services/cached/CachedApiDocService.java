@@ -75,7 +75,7 @@ public class CachedApiDocService {
             }
         } catch (Exception e) {
             //if there's not apiDoc in cache
-            String logMessage = String.format("Exception updating API doc in cache for %s %s", serviceId, apiVersion);
+            String logMessage = String.format("Exception updating API doc in cache for '%s %s'", serviceId, apiVersion);
             if (apiDoc == null) {
                 log.error("No API doc available for '{} {}': {}", serviceId, apiVersion, logMessage, e);
                 throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
@@ -121,7 +121,7 @@ public class CachedApiDocService {
             }
         } catch (Exception e) {
             //if there's not apiDoc in cache
-            String logMessage = String.format("Exception updating default API doc in cache for %s.", serviceId);
+            String logMessage = String.format("Exception updating default API doc in cache for '%s'.", serviceId);
             if (apiDoc == null) {
                 log.error("No default API doc available for service '{}': {}", serviceId, logMessage, e);
                 throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
@@ -160,12 +160,12 @@ public class CachedApiDocService {
             }
         } catch (Exception e) {
             // if no versions in cache
-            String logMessage = String.format("Exception updating API versions in cache for %s: %s", serviceId, e);
+            String logMessage = String.format("Exception updating API versions in cache for '%s'", serviceId);
             if (apiVersions == null) {
-                log.error("No API versions available for service '{}': {}", serviceId, logMessage);
+                log.error("No API versions available for service '{}': {}", serviceId, logMessage, e);
                 throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
             }
-            log.debug(logMessage);
+            log.debug(logMessage, e);
         }
         return apiVersions;
     }
