@@ -40,7 +40,7 @@ public class CatalogApiDocControllerExceptionHandler {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.apiDocNotFound", exception.getMessage());
 
         return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .status(HttpStatus.NOT_FOUND)
             .body(message.mapToView());
     }
 
