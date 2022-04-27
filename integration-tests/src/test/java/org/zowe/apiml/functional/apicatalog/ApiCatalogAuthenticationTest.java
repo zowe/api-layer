@@ -14,6 +14,7 @@ import io.restassured.config.SSLConfig;
 import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -30,6 +31,7 @@ import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -67,7 +69,10 @@ class ApiCatalogAuthenticationTest {
 
     static Stream<Arguments> requestsToTest() {
         return Stream.of(
-            Arguments.of(CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))),
+            Arguments.of(CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) ->
+                when.urlEncodingEnabled(false) // space in URL gets encoded by getUriFromGateway
+                    .get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))
+            ),
             Arguments.of(CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))),
             Arguments.of(CATALOG_ACTUATOR_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
         );
@@ -149,8 +154,8 @@ class ApiCatalogAuthenticationTest {
         class ReturnUnauthorized {
             @ParameterizedTest(name = "givenNoAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenNoAuthentication(String endpoint, Request request) {
-                String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
+            void givenNoAuthentication(String endpoint, Request request) throws URISyntaxException {
+                String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
 
                 request.execute(
                         given()
@@ -168,8 +173,8 @@ class ApiCatalogAuthenticationTest {
 
             @ParameterizedTest(name = "givenInvalidBasicAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidBasicAuthentication(String endpoint, Request request) {
-                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
+            void givenInvalidBasicAuthentication(String endpoint, Request request) throws URISyntaxException {
+                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
 
                 request.execute(
                         given()
@@ -185,8 +190,8 @@ class ApiCatalogAuthenticationTest {
 
             @ParameterizedTest(name = "givenInvalidBearerAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidBearerAuthentication(String endpoint, Request request) {
-                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
+            void givenInvalidBearerAuthentication(String endpoint, Request request) throws URISyntaxException {
+                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
 
                 request.execute(
                         given()
@@ -202,8 +207,8 @@ class ApiCatalogAuthenticationTest {
 
             @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidTokenInCookie(String endpoint, Request request) {
-                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
+            void givenInvalidTokenInCookie(String endpoint, Request request) throws URISyntaxException {
+                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
                 String invalidToken = "nonsense";
 
                 request.execute(
