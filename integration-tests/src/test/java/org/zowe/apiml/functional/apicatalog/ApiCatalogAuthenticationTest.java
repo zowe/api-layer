@@ -49,7 +49,7 @@ class ApiCatalogAuthenticationTest {
     private static final String CATALOG_SERVICE_ID_PATH = "/" + CATALOG_SERVICE_ID;
     private static final String CATALOG_PREFIX = "/api/v1";
 
-    private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc/discoverableclient/v1";
+    private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";
     private static final String CATALOG_STATIC_REFRESH_ENDPOINT = "/static-api/refresh";
     private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
 
