@@ -10,8 +10,6 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import org.springframework.http.HttpStatus;
-import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,7 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
