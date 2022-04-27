@@ -46,12 +46,12 @@ public class CatalogApiDocController {
      * Retrieve the api-doc info for this service
      *
      * @param serviceId  the eureka id
-     * @param apiVersion the version of the api
+     * @param apiId the version of the api
      * @return api-doc info (as JSON)
      */
-    @GetMapping(value = "/{serviceId}/{apiVersion}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{serviceId}/{apiId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Retrieves the API documentation for a specific service version",
-        notes = "Returns the API documentation for a specific service {serviceId} and version {apiVersion}. When " +
+        notes = "Returns the API documentation for a specific service {serviceId} and version {apiId}. When " +
             " the API documentation for the specified version is not found, the first discovered version will be used.",
         authorizations = {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
@@ -68,10 +68,10 @@ public class CatalogApiDocController {
     public ResponseEntity<String> getApiDocInfo(
         @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
-        @ApiParam(name = "apiVersion", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v1")
-        @PathVariable(value = "apiVersion") String apiVersion) {
+        @ApiParam(name = "apiId", value = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
+        @PathVariable(value = "apiId") String apiId) {
         try {
-            return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion);
+            return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiId);
         } catch (ApiDocNotFoundException e) {
             return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, null);
         }
@@ -103,7 +103,7 @@ public class CatalogApiDocController {
         return this.apiServiceStatusService.getServiceCachedDefaultApiDocInfo(serviceId);
     }
 
-    @GetMapping(value = "/{serviceId}/{apiVersion1}/{apiVersion2}", produces = MediaType.TEXT_HTML_VALUE)
+    @GetMapping(value = "/{serviceId}/{apiId1}/{apiId2}", produces = MediaType.TEXT_HTML_VALUE)
     @ApiOperation(value = "Retrieve diff of two api versions for a specific service",
         notes = "Returns an HTML document which details the difference between two versions of a API service",
         authorizations = {
@@ -121,10 +121,10 @@ public class CatalogApiDocController {
     public ResponseEntity<String> getApiDiff(
         @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
-        @ApiParam(name = "apiVersion1", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v1")
-        @PathVariable(value = "apiVersion1") String apiVersion1,
-        @ApiParam(name = "apiVersion2", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v2")
-        @PathVariable(value = "apiVersion2") String apiVersion2) {
-        return this.apiServiceStatusService.getApiDiffInfo(serviceId, apiVersion1, apiVersion2);
+        @ApiParam(name = "apiId1", value = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
+        @PathVariable(value = "apiId1") String apiId1,
+        @ApiParam(name = "apiId2", value = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v2.0.0")
+        @PathVariable(value = "apiId2") String apiId2) {
+        return this.apiServiceStatusService.getApiDiffInfo(serviceId, apiId1, apiId2);
     }
 }
