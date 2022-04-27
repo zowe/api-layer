@@ -9,13 +9,13 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService.AUTH_FAIL_HEADER;
 
 import com.netflix.zuul.context.RequestContext;
 import java.security.cert.X509Certificate;
@@ -23,15 +23,12 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 
 class X509CNAuthSourceServiceTest {
     private RequestContext context;
@@ -39,13 +36,6 @@ class X509CNAuthSourceServiceTest {
     private X509CommonNameUserMapper mapper;
     private X509AuthSourceService serviceUnderTest;
     private X509Certificate x509Certificate;
-    static MessageService messageService;
-
-    @BeforeAll
-    static void setForAll() {
-        messageService = new YamlMessageService();
-        messageService.loadMessages("/gateway-messages.yml");
-    }
 
     @Nested
     class GivenValidAuthSource {
@@ -56,7 +46,7 @@ class X509CNAuthSourceServiceTest {
             RequestContext.testSetCurrentContext(context);
             x509Certificate = mock(X509Certificate.class);
             mapper = mock(X509CommonNameUserMapper.class);
-            serviceUnderTest = new X509CNAuthSourceService(mapper, mock(TokenCreationService.class), mock(AuthenticationService.class), messageService);
+            serviceUnderTest = new X509CNAuthSourceService(mapper, mock(TokenCreationService.class), mock(AuthenticationService.class));
         }
 
         @Test
@@ -76,20 +66,15 @@ class X509CNAuthSourceServiceTest {
         }
 
         @Test
-        void whenServerCertInRequest_thenAuthSourceIsNotPresent() {
-            String errorHeaderValue = "ZWEAG164E Error occurred while validating X509 certificate. X509 certificate is missing the client certificate extended usage definition";
+        void whenServerCertInRequest_thenThrows() {
             when(context.getRequest()).thenReturn(request);
-            when(context.get(AUTH_FAIL_HEADER)).thenReturn(errorHeaderValue);
             when(request.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
             when(mapper.isClientAuthCertificate(any())).thenReturn(false);
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            assertThrows(AuthSchemeException.class, () -> serviceUnderTest.getAuthSourceFromRequest());
 
             verify(request, times(1)).getAttribute("client.auth.X509Certificate");
             verify(request, times(1)).getAttribute("javax.servlet.request.X509Certificate");
-
-            Assertions.assertFalse(authSource.isPresent());
-            verifyErrorHeaderStoredInContext(errorHeaderValue);
         }
 
         @Test
@@ -107,9 +92,5 @@ class X509CNAuthSourceServiceTest {
             Assertions.assertTrue(authSource.get() instanceof X509AuthSource);
             Assertions.assertEquals(x509Certificate, authSource.get().getRawSource());
         }
-    }
-
-    private void verifyErrorHeaderStoredInContext(String errorMessage) {
-        verify(context, times(1)).put("X-Zowe-Auth-Failure", errorMessage);
     }
 }

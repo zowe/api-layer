@@ -292,8 +292,8 @@ messages:
       number: ZWEAG161
       type: ERROR
       text: "No user was found"
-      reason: "It was not possible to map provided certificate to the mainframe identity."
-      action: "Ask your security administrator to connect your client certificate with your mainframe user."
+      reason: "It was not possible to map provided token or certificate to the mainframe identity."
+      action: "Ask your security administrator to connect your token or client certificate with your mainframe user."
 
     - key: org.zowe.apiml.gateway.security.token.authenticationFailed
       number: ZWEAG162
@@ -316,9 +316,31 @@ messages:
       reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
       action: "Configure your client to provide valid x509 certificate."
 
-    - key: org.zowe.apiml.gateway.security.scheme.zosmfSchemeNotSupported
+    - key: org.zowe.apiml.gateway.security.scheme.x509ExtendedKeyUsageError
       number: ZWEAG165
+      type: ERROR
+      text: "X509 certificate is missing the client certificate extended usage definition"
+      reason: "X509 certificate cannot be used for client authentication."
+      action: "Configure your client to provide valid x509 certificate."
+
+    - key: org.zowe.apiml.gateway.security.scheme.zosmfSchemeNotSupported
+      number: ZWEAG166
       type: ERROR
       text: "ZOSMF authentication scheme is not supported for this API ML instance."
       reason: "z/OSMF is not used as security provider for API ML."
       action: "Contact your administrator."
+
+    - key: org.zowe.apiml.gateway.security.schema.missingX509Authentication
+      number: ZWEAG167
+      type: ERROR
+      text: "No client certificate provided in the request"
+      reason: "The X509 client certificate was not provided with the request"
+      action: "Configure your client to provide valid certificate."
+
+    - key: org.zowe.apiml.gateway.security.invalidAuthentication
+      number: ZWEAG168
+      type: ERROR
+      text: "Invalid authentication provided in request"
+      reason: "The JWT token or client certificate is not valid"
+      action: "Configure your client to provide valid authentication."
+

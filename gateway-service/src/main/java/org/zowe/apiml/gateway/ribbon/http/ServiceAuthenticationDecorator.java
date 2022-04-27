@@ -21,8 +21,10 @@ import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
@@ -32,7 +34,7 @@ public class ServiceAuthenticationDecorator {
 
     private final ServiceAuthenticationService serviceAuthenticationService;
     private final AuthSourceService authSourceService;
-
+    private final MessageService messageService;
     /**
      * If a service requires authentication,
      *   verify that the specific instance was selected upfront
@@ -65,9 +67,11 @@ public class ServiceAuthenticationDecorator {
                 if (!isSourceValidForCommand(authSource.orElse(null), cmd)) {
                     throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                 }
-            }
-            catch (AuthenticationException ae) {
-                throw new RequestAbortException(ae);
+            } catch (AuthSchemeException ae) {
+                String error = this.messageService.createMessage(ae.getMessage()).mapToLogMessage();
+                throw new RequestAbortException(error);
+            } catch (AuthenticationException ae) {
+                throw new RequestAbortException(ae.getLocalizedMessage());
             }
 
             cmd.applyToRequest(request);
