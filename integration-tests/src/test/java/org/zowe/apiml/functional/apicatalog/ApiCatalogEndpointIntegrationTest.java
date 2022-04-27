@@ -138,7 +138,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
             assertNull(paths.get("/status/updates"), apiCatalogSwagger);
             assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
             assertNotNull(paths.get("/containers"), apiCatalogSwagger);
-            assertNotNull(paths.get("/apidoc/{serviceId}/{apiVersion}"), apiCatalogSwagger);
+            assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
             assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
             assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
             assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
