@@ -114,71 +114,74 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
     @Nested
     class ApiDoc {
-        @Test
-            // Functional
-        void whenSpecificCatalogApiDoc_thenResponseOK() throws Exception {
-            final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
+        @Nested
+        class ThenResponseOk {
+            @Test
+                // Functional
+            void whenSpecificCatalogApiDoc() throws Exception {
+                final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 
-            // When
-            final String jsonResponse = EntityUtils.toString(response.getEntity());
+                // When
+                final String jsonResponse = EntityUtils.toString(response.getEntity());
 
-            String apiCatalogSwagger = "\n**************************\n" +
-                "Integration Test: API Catalog Swagger" +
-                "\n**************************\n" +
-                jsonResponse +
-                "\n**************************\n";
-            DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+                String apiCatalogSwagger = "\n**************************\n" +
+                    "Integration Test: API Catalog Swagger" +
+                    "\n**************************\n" +
+                    jsonResponse +
+                    "\n**************************\n";
+                DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
-            String swaggerHost = jsonContext.read("$.host");
-            String swaggerBasePath = jsonContext.read("$.basePath");
-            LinkedHashMap paths = jsonContext.read("$.paths");
-            LinkedHashMap definitions = jsonContext.read("$.definitions");
+                String swaggerHost = jsonContext.read("$.host");
+                String swaggerBasePath = jsonContext.read("$.basePath");
+                LinkedHashMap paths = jsonContext.read("$.paths");
+                LinkedHashMap definitions = jsonContext.read("$.definitions");
 
-            // Then
-            assertFalse(paths.isEmpty(), apiCatalogSwagger);
-            assertFalse(definitions.isEmpty(), apiCatalogSwagger);
-            assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
-            assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
-            assertNull(paths.get("/status/updates"), apiCatalogSwagger);
-            assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
-            assertNotNull(paths.get("/containers"), apiCatalogSwagger);
-            assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
-            assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
-            assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
-            assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
-        }
+                // Then
+                assertFalse(paths.isEmpty(), apiCatalogSwagger);
+                assertFalse(definitions.isEmpty(), apiCatalogSwagger);
+                assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
+                assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
+                assertNull(paths.get("/status/updates"), apiCatalogSwagger);
+                assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
+                assertNotNull(paths.get("/containers"), apiCatalogSwagger);
+                assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
+                assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
+                assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
+                assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
+            }
 
-        @Test
-        void whenDefaultCatalogApiDoc_thenResponseOK() throws Exception {
-            final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT, HttpStatus.SC_OK);
+            @Test
+            void whenDefaultCatalogApiDoc() throws Exception {
+                final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT, HttpStatus.SC_OK);
 
-            // When
-            final String jsonResponse = EntityUtils.toString(response.getEntity());
+                // When
+                final String jsonResponse = EntityUtils.toString(response.getEntity());
 
-            String apiCatalogSwagger = "\n**************************\n" +
-                "Integration Test: API Catalog Swagger" +
-                "\n**************************\n" +
-                jsonResponse +
-                "\n**************************\n";
-            DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+                String apiCatalogSwagger = "\n**************************\n" +
+                    "Integration Test: API Catalog Swagger" +
+                    "\n**************************\n" +
+                    jsonResponse +
+                    "\n**************************\n";
+                DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
-            String swaggerHost = jsonContext.read("$.host");
-            String swaggerBasePath = jsonContext.read("$.basePath");
-            LinkedHashMap paths = jsonContext.read("$.paths");
-            LinkedHashMap definitions = jsonContext.read("$.definitions");
+                String swaggerHost = jsonContext.read("$.host");
+                String swaggerBasePath = jsonContext.read("$.basePath");
+                LinkedHashMap paths = jsonContext.read("$.paths");
+                LinkedHashMap definitions = jsonContext.read("$.definitions");
 
-            // Then
-            assertFalse(paths.isEmpty(), apiCatalogSwagger);
-            assertFalse(definitions.isEmpty(), apiCatalogSwagger);
-            assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
-            assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
-            assertNull(paths.get("/status/updates"), apiCatalogSwagger);
-            assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
-            assertNotNull(paths.get("/containers"), apiCatalogSwagger);
-            assertNotNull(paths.get("/apidoc/{serviceId}/{apiVersion}"), apiCatalogSwagger);
-            assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
-            assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
-            assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
+                // Then
+                assertFalse(paths.isEmpty(), apiCatalogSwagger);
+                assertFalse(definitions.isEmpty(), apiCatalogSwagger);
+                assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
+                assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
+                assertNull(paths.get("/status/updates"), apiCatalogSwagger);
+                assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
+                assertNotNull(paths.get("/containers"), apiCatalogSwagger);
+                assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
+                assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
+                assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
+                assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
+            }
         }
 
         @Test
