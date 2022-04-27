@@ -52,14 +52,9 @@ class CatalogApiDocControllerTest {
             }
 
             @Test
-            void givenNoApiDoc_thenReturnFirst() {
-                ResponseEntity<String> response = new ResponseEntity<>("First API Doc", HttpStatus.OK);
+            void givenNoApiDoc_thenThrowException() {
                 when(mockApiServiceStatusService.getServiceCachedApiDocInfo("service", "1.0.0")).thenThrow(new ApiDocNotFoundException("error"));
-                when(mockApiServiceStatusService.getServiceCachedApiDocInfo("service", null)).thenReturn(response);
-
-                ResponseEntity<String> res = underTest.getApiDocInfo("service", "1.0.0");
-                assertNotNull(res);
-                assertEquals("First API Doc", res.getBody());
+                assertThrows(ApiDocNotFoundException.class, () -> underTest.getApiDocInfo("service", "1.0.0"));
             }
         }
 

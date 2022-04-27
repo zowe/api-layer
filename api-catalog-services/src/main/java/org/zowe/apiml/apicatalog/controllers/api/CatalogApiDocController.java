@@ -10,6 +10,7 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,8 @@ public class CatalogApiDocController {
     /**
      * Retrieve the api-doc info for this service
      *
-     * @param serviceId  the eureka id
-     * @param apiId the version of the api
+     * @param serviceId the eureka id
+     * @param apiId     the version of the api
      * @return api-doc info (as JSON)
      */
     @GetMapping(value = "/{serviceId}/{apiId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -70,16 +71,13 @@ public class CatalogApiDocController {
         @PathVariable(value = "serviceId") String serviceId,
         @ApiParam(name = "apiId", value = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
-        try {
-            return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiId);
-        } catch (ApiDocNotFoundException e) {
-            return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, null);
-        }
+        return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiId);
     }
+
     /**
      * Retrieve the api-doc info for this service's default API
      *
-     * @param serviceId  the eureka id
+     * @param serviceId the eureka id
      * @return api-doc info (as JSON)
      */
     @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_VALUE)

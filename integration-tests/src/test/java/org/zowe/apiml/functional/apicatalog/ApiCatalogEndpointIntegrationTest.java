@@ -88,24 +88,27 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
             assertTrue(containerStatus.contains("UP"));
         }
 
-        @Test
-        @Disabled("The test is flaky, update needed.")
-        void givenApiCatalog_whenGetContainerById_thenResponseOk() throws IOException {
-            final HttpResponse response = getResponse(GET_CONTAINER_BY_ID_ENDPOINT, HttpStatus.SC_OK);
+        @Nested
+        class GivenApiCatalog_thenResponseOk {
+            @Test
+            @Disabled("The test is flaky, update needed.")
+            void whenGetContainerById() throws IOException {
+                final HttpResponse response = getResponse(GET_CONTAINER_BY_ID_ENDPOINT, HttpStatus.SC_OK);
 
-            final String jsonResponse = EntityUtils.toString(response.getEntity());
-            DocumentContext jsonContext = JsonPath.parse(jsonResponse);
-            JSONArray containerTitles = jsonContext.read("$.[*].title");
-            JSONArray containerStatus = jsonContext.read("$.[*].status");
+                final String jsonResponse = EntityUtils.toString(response.getEntity());
+                DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+                JSONArray containerTitles = jsonContext.read("$.[*].title");
+                JSONArray containerStatus = jsonContext.read("$.[*].status");
 
-            assertTrue(containerTitles.contains("API Mediation Layer API"), "Tile title did not match: API Mediation Layer API");
-            assertTrue(containerStatus.contains("UP"));
-        }
+                assertTrue(containerTitles.contains("API Mediation Layer API"), "Tile title did not match: API Mediation Layer API");
+                assertTrue(containerStatus.contains("UP"));
+            }
 
-        @Test
-        void givenApiCatalog_whenGetContainerByInvalidId_thenResponseOk() throws IOException {
-            final HttpResponse response = getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_OK);
-            assertEquals("[]", EntityUtils.toString(response.getEntity()));
+            @Test
+            void whenGetContainerByInvalidId() throws IOException {
+                final HttpResponse response = getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_OK);
+                assertEquals("[]", EntityUtils.toString(response.getEntity()));
+            }
         }
     }
 
@@ -179,14 +182,8 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         }
 
         @Test
-        void whenInvalidApiDocVersion_thenReturnFirstDoc() throws Exception {
-            final HttpResponse response = getResponse(INVALID_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
-
-            // When
-            final String jsonResponse = EntityUtils.toString(response.getEntity());
-            String swaggerBasePath = JsonPath.parse(jsonResponse).read("$.basePath");
-
-            assertEquals("/apicatalog/api/v1", swaggerBasePath);
+        void whenInvalidApiDocVersion_thenReturn404() throws Exception {
+            getResponse(INVALID_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_NOT_FOUND);
         }
     }
 
