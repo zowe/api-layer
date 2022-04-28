@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package org.zowe.apiml.apicatalog.swagger.api;
 
+import org.junit.jupiter.api.Nested;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.dummy.DummyApiDocService;
 import org.zowe.apiml.config.ApiInfo;
@@ -54,19 +54,34 @@ class AbstractApiDocServiceTest {
     }
 
     @Test
-    void shouldGetShortEndpoint() {
+    void givenRoutedUrlAndEndpoint_whenGetShortEndpoint_thenReturnEndpoint() {
         String shortEndpoint = abstractApiDocService.getShortEndPoint("/apicatalog/api/v1", "/apicatalog");
         assertEquals("/apicatalog", shortEndpoint);
     }
 
-    @Test
-    void shouldGetEndpoint() {
-        String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc", "/apicatalog");
-        assertEquals("/api/v1/api-doc/apicatalog", endpoint);
+    @Nested
+    class WhenGetEndpoint {
+        @Test
+        void givenPathAndEndpoint_thenReturnThem() {
+            String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc", "/apicatalog");
+            assertEquals("/api/v1/api-doc/apicatalog", endpoint);
+        }
+
+        @Test
+        void givenBasePathAndEndpointThatWillResultInMalformedUrl_thenReturnNormalizedEndpoint() {
+            String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc/", "/apicatalog");
+            assertEquals("/api/v1/api-doc/apicatalog", endpoint);
+        }
+
+        @Test
+        void givenBasePathAndEndpointThatWillCauseUriException_thenReturnOriginalEndpoint() {
+            String endpoint = abstractApiDocService.getEndPoint(null, null);
+            assertNull(endpoint);
+        }
     }
 
     @Test
-    void shouldGetEndpointPairs() {
+    void givenRoutedEndpoint_whenGetEndpointPairs_thenReturnRoutedPair() {
         RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog/api/v1");
         Pair endpointPairs = abstractApiDocService.getEndPointPairs("/apicatalog", "apicatalog", routedService);
         ImmutablePair expectedPairs = new ImmutablePair("/apicatalog", "/apicatalog/api/v1/apicatalog");
@@ -74,13 +89,13 @@ class AbstractApiDocServiceTest {
     }
 
     @Test
-    void shouldReturnNull_whenGetRoutedServiceByApiInfo_IfApiInfoIsNull() {
+    void givenNullApiInfo_whenGetRoutedServiceByApiInfo_thenReturnNull() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
         assertNull(abstractApiDocService.getRoutedServiceByApiInfo(apiDocInfo, "/"));
     }
 
     @Test
-    void preparePath() {
+    void givenSwaggerDoc_whenPreparePaths_thenSetpathsInSwaggerDoc() {
         List<Server> servers = new ArrayList<>();
         servers.add(0, new Server().url("/apicatalog"));
         ApiDocPath<PathItem> apiDocPath = new ApiDocPath<>();
