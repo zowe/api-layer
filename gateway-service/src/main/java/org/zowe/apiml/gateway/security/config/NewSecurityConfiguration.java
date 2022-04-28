@@ -52,6 +52,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
@@ -384,7 +385,8 @@ public class NewSecurityConfiguration {
             http
                 // place the following filters before the x509 filter
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterBefore(bearerContentFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
         }
 
         private CategorizeCertsFilter reversedCategorizeCertFilter() {
@@ -416,10 +418,21 @@ public class NewSecurityConfiguration {
                 authConfigurationProperties,
                 protectedEndpoints);
         }
+
+        /**
+         * Secures content with a Bearer token
+         */
+        private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+            return new BearerContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler(),
+                protectedEndpoints);
+        }
     }
 
     /**
-     * fallback filterchain for all other requests
+     * Fallback filterchain for all other requests
      * All Routing goes through here
      * The filterchain does not require authentication
      * Web security is configured here and only here

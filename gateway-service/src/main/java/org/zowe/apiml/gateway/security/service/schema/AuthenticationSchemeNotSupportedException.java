@@ -7,10 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.filters.pre;
+package org.zowe.apiml.gateway.security.service.schema;
 
-import com.netflix.zuul.context.RequestContext;
+import org.springframework.security.core.AuthenticationException;
 
-public interface RequestContextProvider {
-    RequestContext context();
+public class AuthenticationSchemeNotSupportedException extends AuthenticationException {
+
+    public AuthenticationSchemeNotSupportedException(String msg) {
+        super(msg);
+    }
 }

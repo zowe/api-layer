@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import java.util.Optional;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -20,7 +21,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
  *
  * For each type of scheme should exist right one implementation.
  */
-public interface AbstractAuthenticationScheme {
+public interface IAuthenticationScheme {
 
     /**
      * @return Scheme which is supported by this component
@@ -31,9 +32,17 @@ public interface AbstractAuthenticationScheme {
      * This method decorate the request for target service
      *
      * @param authentication DTO describing details about authentication
-     * @param authSource User's parsed authentication source (Zowe's JWT token, client certificate, etc.), evaluated only, if needed
+     * @param authSource User's authentication source (Zowe's JWT token, client certificate, etc.)
      */
     AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource);
+
+    /**
+     * Returns authentication source according to the logic of the scheme. By default, authentication source is empty.
+     * @return Optional of user's authentication source (Zowe's JWT token, client certificate, etc.) or empty Optional.
+     */
+    default Optional<AuthSource> getAuthSource() {
+        return Optional.empty();
+    }
 
     /**
      * Define implementation, which will be use in case no scheme is defined.

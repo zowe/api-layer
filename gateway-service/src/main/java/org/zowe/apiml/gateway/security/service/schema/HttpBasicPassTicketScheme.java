@@ -11,19 +11,21 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.util.CookieUtil;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -33,7 +35,7 @@ import java.util.Base64;
  * SAF and generating new authentication header in request.
  */
 @Component
-public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
+public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     private final PassTicketService passTicketService;
     private final AuthSourceService authSourceService;
@@ -60,10 +62,24 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         final long before = System.currentTimeMillis();
 
-        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
+        if (authSource == null || authSource.getRawSource() == null) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
+        }
 
-        if (authSource == null || parsedAuthSource == null) {
-            return AuthenticationCommand.EMPTY;
+        AuthSource.Parsed parsedAuthSource;
+        try {
+            parsedAuthSource = authSourceService.parse(authSource);
+            if (parsedAuthSource == null) {
+                throw new IllegalStateException("Error occurred while parsing authentication source");
+            }
+
+            if (parsedAuthSource.getUserId() == null) {
+                throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
+            }
+        } catch (TokenNotValidException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
+        } catch (TokenExpireException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
         }
 
         final String applId = authentication.getApplid();
@@ -72,18 +88,23 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         try {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
-            throw new PassTicketException(
-                String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e
-            );
+            String error = String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId);
+            throw new AuthSchemeException("org.zowe.apiml.security.ticket.generateFailed", error);
         }
         final String encoded = Base64.getEncoder()
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
         final String value = "Basic " + encoded;
 
-        final long expiredAt = Math.min(before + authConfigurationProperties.getPassTicket().getTimeout() * 1000,
-            parsedAuthSource.getExpiration().getTime());
+        final long defaultExpirationTime = before + authConfigurationProperties.getPassTicket().getTimeout() * 1000L;
+        final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
+        final Long expireAt = Math.min(defaultExpirationTime, expirationTime);
 
-        return new PassTicketCommand(value, cookieName, expiredAt);
+        return new PassTicketCommand(value, cookieName, expireAt);
+    }
+
+    @Override
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
     }
 
     @Value
@@ -94,24 +115,23 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
         private static final String COOKIE_HEADER = "cookie";
 
-        private final String authorizationValue;
-        private final String cookieName;
-        private final long expireAt;
+        String authorizationValue;
+        String cookieName;
+        Long expireAt;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
-            final RequestContext context = RequestContext.getCurrentContext();
-            context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
-            context.addZuulRequestHeader(COOKIE_HEADER,
-                CookieUtil.removeCookie(
-                    context.getZuulRequestHeaders().get(COOKIE_HEADER),
-                    cookieName
-                )
-            );
+            if (authorizationValue != null) {
+                final RequestContext context = RequestContext.getCurrentContext();
+                context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+                JwtCommand.removeCookie(context, cookieName);
+            }
         }
 
         @Override
         public boolean isExpired() {
+            if (expireAt == null) return false;
+
             return System.currentTimeMillis() > expireAt;
         }
 

@@ -48,7 +48,7 @@ ext {
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
     lombokVersion = '1.18.20'
-    mockitoCoreVersion = '2.23.4'
+    mockitoCoreVersion = '3.6.0'
     netflixServoVersion = '0.13.2'
     nettyVersion = '4.1.71.Final'
     nimbusJoseJwtVersion = '8.21.1'

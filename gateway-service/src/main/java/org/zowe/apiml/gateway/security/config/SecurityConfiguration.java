@@ -36,8 +36,8 @@ import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -48,6 +48,7 @@ import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
@@ -201,12 +202,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(bearerContentFilter(), UsernamePasswordAuthenticationFilter.class)
 
             /**
              * The problem the squad was trying to solve:
              * For certain endpoints the Gateway should accept only certificates issued by API Mediation Layer. The key reason
              * is that these endpoints leverage the Gateway certificate as an authentication method for the downstream service
-             * This certificate has stronger priviliges and as such the Gateway need to be more careful with who can use it.
+             * This certificate has stronger privileges and as such the Gateway need to be more careful with who can use it.
              * <p>
              * This solution is risky as it removes the certificates from the chain from all subsequent processing.
              * Despite this it seems to be the simplest solution to the problem.
@@ -326,6 +328,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties,
+            PROTECTED_ENDPOINTS);
+    }
+
+    /**
+     * Secures content with a Bearer token
+     */
+    private BearerContentFilter bearerContentFilter() throws Exception {
+        return new BearerContentFilter(
+            authenticationManager(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
             PROTECTED_ENDPOINTS);
     }
 

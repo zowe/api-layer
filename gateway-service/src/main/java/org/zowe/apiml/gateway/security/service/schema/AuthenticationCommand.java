@@ -33,22 +33,12 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
             // do nothing
         }
 
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidSource() {
-            return false;
-        }
     };
 
     /**
      * Apply the command, if it is necessary, it is possible to use a specific instance for execution. This is
      * using for loadBalancer command, where are not available all information in step of command creation.
      * In all other case call apply(null).
-     *
      * @param instanceInfo Specific instanceIf if it is needed
      */
     public abstract void apply(InstanceInfo instanceInfo);

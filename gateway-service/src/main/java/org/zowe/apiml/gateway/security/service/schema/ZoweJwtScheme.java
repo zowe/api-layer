@@ -9,14 +9,30 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.zuul.context.RequestContext;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import java.util.Optional;
 
 
 @Component
-public class ZoweJwtScheme implements AbstractAuthenticationScheme {
+@AllArgsConstructor
+public class ZoweJwtScheme implements IAuthenticationScheme {
+
+
+    private AuthSourceService authSourceService;
+    private AuthConfigurationProperties configurationProperties;
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -24,8 +40,52 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        return AuthenticationCommand.EMPTY;
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
     }
 
+    @Override
+    public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
+        if (authSource == null || authSource.getRawSource() == null) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
+        }
+
+        String jwt;
+        AuthSource.Parsed parsedAuthSource;
+        try {
+            parsedAuthSource = authSourceService.parse(authSource);
+            if (parsedAuthSource == null) {
+                throw new IllegalStateException("Error occurred while parsing authenticationSource");
+            }
+            jwt = authSourceService.getJWT(authSource);
+        } catch (TokenNotValidException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
+        } catch (TokenExpireException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
+        }
+
+        final long defaultExpirationTime = System.currentTimeMillis() + configurationProperties.getTokenProperties().getExpirationInSeconds() * 1000L;
+        final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
+        final long expireAt = Math.min(defaultExpirationTime, expirationTime);
+
+        return new ZoweJwtAuthCommand(expireAt, jwt);
+    }
+
+    @lombok.Value
+    @EqualsAndHashCode(callSuper = false)
+    public class ZoweJwtAuthCommand extends JwtCommand {
+
+        public static final long serialVersionUID = -885301934611866658L;
+        Long expireAt;
+        String jwt;
+
+        @Override
+        public void apply(InstanceInfo instanceInfo) {
+            if (jwt != null) {
+                final RequestContext context = RequestContext.getCurrentContext();
+                JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
+            }
+        }
+
+    }
 }
