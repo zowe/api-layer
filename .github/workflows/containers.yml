@@ -67,7 +67,6 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
-
             -   name: Store results
                 uses: actions/upload-artifact@v3
                 if: always()
@@ -76,7 +75,6 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         results/**
-                        integration-tests/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -115,7 +113,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -215,6 +213,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -262,6 +261,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -310,6 +310,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -357,6 +358,10 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -364,6 +369,7 @@ jobs:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -486,7 +492,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -565,7 +571,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -660,6 +666,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -729,7 +736,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -799,7 +806,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -873,7 +880,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -947,7 +954,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-
+            # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -1128,7 +1135,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis]
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis,CITestsInternalPort]
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1157,13 +1164,13 @@ jobs:
                 with:
                     name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
                     path: containercitestswithredis
-            -   name: Copy test reports
-                run: |
-                    mkdir -p integration-tests/build/test-results
-                    cp -R containercitests/integration-tests/build/test-results/runContainerTests integration-tests/build/test-results
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
+                    path: containercitestsinternalport
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results,containercitestsinternalport/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:

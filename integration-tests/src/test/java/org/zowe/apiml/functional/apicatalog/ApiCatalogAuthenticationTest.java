@@ -23,6 +23,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
@@ -115,6 +116,20 @@ class ApiCatalogAuthenticationTest {
                     .statusCode(is(SC_OK));
             }
 
+            @ParameterizedTest(name = "givenValidBearerAuthentication {index} {0} ")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
+            void givenValidBearerAuthentication(String endpoint, Request request) {
+                String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+                request.execute(
+                        given()
+                            .header("Authorization", "Bearer " + token)
+                            .when(),
+                        endpoint
+                    )
+                    .then()
+                    .statusCode(is(SC_OK));
+            }
+
             @ParameterizedTest(name = "givenValidBasicAuthenticationAndCertificate {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenValidBasicAuthenticationAndCertificate(String endpoint, Request request) {
@@ -165,6 +180,23 @@ class ApiCatalogAuthenticationTest {
                     .then()
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
+                    ).statusCode(is(SC_UNAUTHORIZED));
+            }
+
+            @ParameterizedTest(name = "givenInvalidBearerAuthentication {index} {0}")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
+            void givenInvalidBearerAuthentication(String endpoint, Request request) {
+                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
+
+                request.execute(
+                        given()
+                            .header("Authorization", "Bearer invalidToken")
+                            .when(),
+                        endpoint
+                    )
+                    .then()
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
                     ).statusCode(is(SC_UNAUTHORIZED));
             }
 

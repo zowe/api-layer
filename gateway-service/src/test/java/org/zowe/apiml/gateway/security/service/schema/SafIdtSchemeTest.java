@@ -10,39 +10,36 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import java.util.Date;
-
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
-import io.jsonwebtoken.Jwts;
+import java.util.Date;
+import java.util.Optional;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
 
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private final JwtAuthSource authSource = new JwtAuthSource("token");
-    
+
     private AuthSourceService authSourceService;
     private PassTicketService passTicketService;
     private SafIdtProvider safIdtProvider;
@@ -58,6 +55,14 @@ class SafIdtSchemeTest {
         underTest.defaultIdtExpiration = 10;
     }
 
+    @Test
+    void testGetAuthSource() {
+        doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+
+        underTest.getAuthSource();
+        verify(authSourceService, times(1)).getAuthSourceFromRequest();
+    }
+
     @Nested
     class WhenTokenIsRequested {
         private static final String USERNAME = "USERNAME";
@@ -66,10 +71,10 @@ class SafIdtSchemeTest {
 
         private final Authentication auth = new Authentication(SAF_IDT, APPLID);
         private final JwtAuthSource.Parsed parsedAuthSource = new JwtAuthSource.Parsed(
-                USERNAME,
-                null,
-                null,
-                null
+            USERNAME,
+            null,
+            null,
+            null
         );
 
         @Nested
@@ -79,18 +84,18 @@ class SafIdtSchemeTest {
                 when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
             }
-            
+
             @Nested
             class WhenApply {
 
                 @Test
                 void givenAuthenticatedJwtToken() {
                     String safIdt = Jwts.builder()
-                            .setExpiration(new Date(System.currentTimeMillis() + 1000000))
-                            .compact();
+                        .setExpiration(new Date(System.currentTimeMillis() + 1000000))
+                        .compact();
 
                     when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
-                    
+
                     AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                     assertNotNull(ac);
                     assertFalse(ac.isExpired());
@@ -127,10 +132,10 @@ class SafIdtSchemeTest {
             void givenInvalidJwtToken() throws IRRPassTicketGenerationException {
                 when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID))
-                        .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
+                    .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
 
                 PassTicketException ex = assertThrows(PassTicketException.class,
-                        () -> underTest.createCommand(auth, authSource));
+                    () -> underTest.createCommand(auth, authSource));
                 assertThat(ex.getMessage(), allOf(containsString(USERNAME), containsString(APPLID)));
             }
         }

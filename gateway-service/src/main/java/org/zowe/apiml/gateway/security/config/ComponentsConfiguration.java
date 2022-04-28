@@ -9,12 +9,19 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
+import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509CNAuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -57,4 +64,24 @@ public class ComponentsConfiguration {
         return new Providers(discoveryClient, authConfigurationProperties, compoundAuthProvider, zosmfService);
     }
 
+    /**
+     * Implementation of AuthSourceService interface which uses client certificate as an authentication source.
+     * This bean performs the mapping between common name from the client certificate and the mainframe user ID.
+     */
+    @Bean
+    @Qualifier("x509MFAuthSourceService")
+    public X509AuthSourceService getX509MFAuthSourceService(X509AbstractMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
+        return new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
+    }
+
+    /**
+     * Implementation of AuthSourceService interface which uses client certificate as an authentication source.
+     * This bean does not perform the mapping between common name from the client certificate and the mainframe user ID.
+     * It treats client name from certificate as user ID and uses X509CommonNameUserMapper for validation.
+     */
+    @Bean
+    @Qualifier("x509CNAuthSourceService")
+    public X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
+        return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService, authenticationService);
+    }
 }
