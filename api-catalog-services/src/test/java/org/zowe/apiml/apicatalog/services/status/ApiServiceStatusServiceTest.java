@@ -146,7 +146,7 @@ class ApiServiceStatusServiceTest {
         Exception ex = assertThrows(ApiDiffNotAvailableException.class, () ->
             apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")
         );
-        assertEquals("Error retrieving API diff for service and versions v1 and v2", ex.getMessage());
+        assertEquals("Error retrieving API diff for 'service' with versions 'v1' and 'v2'", ex.getMessage());
     }
 
     @Test

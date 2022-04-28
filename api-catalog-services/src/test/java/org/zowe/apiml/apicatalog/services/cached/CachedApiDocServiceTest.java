@@ -10,6 +10,7 @@
 package org.zowe.apiml.apicatalog.services.cached;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -48,58 +49,61 @@ class CachedApiDocServiceTest {
         cachedApiDocService.resetCache();
     }
 
-    @Test
-    void givenValidApiDoc_whenRetrieving_thenReturnIt() {
-        String serviceId = "Service";
-        String version = "v1";
-        String expectedApiDoc = "This is some api doc";
+    @Nested
+    class GivenValidApiDoc_thenReturnIt {
+        @Test
+        void whenRetrieving() {
+            String serviceId = "Service";
+            String version = "v1";
+            String expectedApiDoc = "This is some api doc";
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
+            ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
 
-        when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
-            .thenReturn(apiDocInfo);
-        when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
-            .thenReturn(expectedApiDoc);
+            when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
+                .thenReturn(apiDocInfo);
+            when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
+                .thenReturn(expectedApiDoc);
 
-        String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
+            String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
-        assertNotNull(apiDoc);
-        assertEquals(expectedApiDoc, apiDoc);
-    }
+            assertNotNull(apiDoc);
+            assertEquals(expectedApiDoc, apiDoc);
+        }
 
-    @Test
-    void givenValidApiDoc_whenUpdating_thenRetrieve() {
-        String serviceId = "Service";
-        String version = "v1";
-        String expectedApiDoc = "This is some api doc";
-        String updatedApiDoc = "This is some updated API Doc";
+        @Test
+        void whenUpdating() {
+            String serviceId = "Service";
+            String version = "v1";
+            String expectedApiDoc = "This is some api doc";
+            String updatedApiDoc = "This is some updated API Doc";
 
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
+            ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
 
-        when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
-            .thenReturn(apiDocInfo);
-        when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
-            .thenReturn(expectedApiDoc);
+            when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
+                .thenReturn(apiDocInfo);
+            when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
+                .thenReturn(expectedApiDoc);
 
-        String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
+            String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
-        assertNotNull(apiDoc);
-        assertEquals(expectedApiDoc, apiDoc);
+            assertNotNull(apiDoc);
+            assertEquals(expectedApiDoc, apiDoc);
 
-        cachedApiDocService.updateApiDocForService(serviceId, version, updatedApiDoc);
+            cachedApiDocService.updateApiDocForService(serviceId, version, updatedApiDoc);
 
-        apiDocInfo = new ApiDocInfo(null, updatedApiDoc, null);
+            apiDocInfo = new ApiDocInfo(null, updatedApiDoc, null);
 
-        when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
-            .thenReturn(apiDocInfo);
-        when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
-            .thenReturn(updatedApiDoc);
+            when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
+                .thenReturn(apiDocInfo);
+            when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
+                .thenReturn(updatedApiDoc);
 
-        apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
+            apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
-        assertNotNull(apiDoc);
-        assertEquals(updatedApiDoc, apiDoc);
+            assertNotNull(apiDoc);
+            assertEquals(updatedApiDoc, apiDoc);
+        }
     }
 
     @Test
@@ -113,34 +117,37 @@ class CachedApiDocServiceTest {
         assertEquals("No API Documentation was retrieved for the service Service.", exception.getMessage());
     }
 
-    @Test
-    void givenValidApiVersions_whenRetrieving_thenReturnIt() {
-        String serviceId = "service";
-        List<String> expectedVersions = Arrays.asList("1.0.0", "2.0.0");
+    @Nested
+    class GivenValidApiVersions_thenReturnThem {
+        @Test
+        void whenRetrieving() {
+            String serviceId = "service";
+            List<String> expectedVersions = Arrays.asList("1.0.0", "2.0.0");
 
-        when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(expectedVersions);
+            when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(expectedVersions);
 
-        List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
-        assertEquals(expectedVersions, versions);
-    }
+            List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
+            assertEquals(expectedVersions, versions);
+        }
 
-    @Test
-    void givenValidApiVersions_whenUpdating_thenRetrieve() {
-        String serviceId = "service";
-        List<String> initialVersions = Arrays.asList("1.0.0", "2.0.0");
-        List<String> updatedVersions = Arrays.asList("1.0.0", "2.0.0", "3.0.0");
+        @Test
+        void whenUpdating() {
+            String serviceId = "service";
+            List<String> initialVersions = Arrays.asList("1.0.0", "2.0.0");
+            List<String> updatedVersions = Arrays.asList("1.0.0", "2.0.0", "3.0.0");
 
-        when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(initialVersions);
+            when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(initialVersions);
 
-        List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
-        assertEquals(initialVersions, versions);
+            List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
+            assertEquals(initialVersions, versions);
 
-        cachedApiDocService.updateApiVersionsForService(serviceId, updatedVersions);
+            cachedApiDocService.updateApiVersionsForService(serviceId, updatedVersions);
 
-        when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(updatedVersions);
+            when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(updatedVersions);
 
-        versions = cachedApiDocService.getApiVersionsForService(serviceId);
-        assertEquals(updatedVersions, versions);
+            versions = cachedApiDocService.getApiVersionsForService(serviceId);
+            assertEquals(updatedVersions, versions);
+        }
     }
 
     @Test
@@ -154,40 +161,43 @@ class CachedApiDocServiceTest {
         assertEquals("No API versions were retrieved for the service service.", exception.getMessage());
     }
 
-    @Test
-    void givenValidApiDocs_whenRetrievingDefault_thenReturnLatestApi() {
-        String serviceId = "service";
-        String expectedApiDoc = "This is some api doc";
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
+    @Nested
+    class GivenValidApiDocs {
+        @Test
+        void whenRetrievingDefault_thenReturnLatestApi() {
+            String serviceId = "service";
+            String expectedApiDoc = "This is some api doc";
+            ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
 
-        when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(apiDocInfo);
-        when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo)).thenReturn(expectedApiDoc);
+            when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(apiDocInfo);
+            when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo)).thenReturn(expectedApiDoc);
 
-        String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
-        assertEquals(expectedApiDoc, apiDoc);
-    }
+            String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
+            assertEquals(expectedApiDoc, apiDoc);
+        }
 
-    @Test
-    void givenValidApiDocs_whenUpdatingDefault_thenRetrieveDefault() {
-        String serviceId = "service";
-        String initialApiDoc = "This is some api doc";
-        String updatedApiDoc = "This is some updated api doc";
-        ApiDocInfo initialApiDocInfo = new ApiDocInfo(null, initialApiDoc, null);
-        ApiDocInfo updatedApiDocInfo = new ApiDocInfo(null, updatedApiDoc, null);
+        @Test
+        void whenUpdatingDefault_thenRetrieveDefault() {
+            String serviceId = "service";
+            String initialApiDoc = "This is some api doc";
+            String updatedApiDoc = "This is some updated api doc";
+            ApiDocInfo initialApiDocInfo = new ApiDocInfo(null, initialApiDoc, null);
+            ApiDocInfo updatedApiDocInfo = new ApiDocInfo(null, updatedApiDoc, null);
 
-        when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(initialApiDocInfo);
-        when(transformApiDocService.transformApiDoc(serviceId, initialApiDocInfo)).thenReturn(initialApiDoc);
+            when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(initialApiDocInfo);
+            when(transformApiDocService.transformApiDoc(serviceId, initialApiDocInfo)).thenReturn(initialApiDoc);
 
-        String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
-        assertEquals(initialApiDoc, apiDoc);
+            String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
+            assertEquals(initialApiDoc, apiDoc);
 
-        cachedApiDocService.updateDefaultApiDocForService(serviceId, updatedApiDoc);
+            cachedApiDocService.updateDefaultApiDocForService(serviceId, updatedApiDoc);
 
-        when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(updatedApiDocInfo);
-        when(transformApiDocService.transformApiDoc(serviceId, updatedApiDocInfo)).thenReturn(updatedApiDoc);
+            when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(updatedApiDocInfo);
+            when(transformApiDocService.transformApiDoc(serviceId, updatedApiDocInfo)).thenReturn(updatedApiDoc);
 
-        apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
-        assertEquals(updatedApiDoc, apiDoc);
+            apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
+            assertEquals(updatedApiDoc, apiDoc);
+        }
     }
 
     @Test
@@ -200,31 +210,34 @@ class CachedApiDocServiceTest {
         assertEquals("No API Documentation was retrieved for the service service.", exception.getMessage());
     }
 
-    @Test
-    void givenDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnIt() {
-        String serviceId = "service";
-        String expected = "v1";
-        when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenReturn(expected);
+    @Nested
+    class GivenDefaultApiVersion_thenReturnIt {
+        @Test
+        void whenRetrieveDefaultVersion() {
+            String serviceId = "service";
+            String expected = "v1";
+            when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenReturn(expected);
 
-        String actual = cachedApiDocService.getDefaultApiVersionForService(serviceId);
-        assertEquals(expected, actual);
-    }
+            String actual = cachedApiDocService.getDefaultApiVersionForService(serviceId);
+            assertEquals(expected, actual);
+        }
 
-    @Test
-    void givenDefaultApiVersion_whenUpdateDefaultVersion_thenRetrieveDefault() {
-        String serviceId = "service";
-        String initialVersion = "v1";
-        String updatedVersion = "v2";
+        @Test
+        void whenUpdateDefaultVersion() {
+            String serviceId = "service";
+            String initialVersion = "v1";
+            String updatedVersion = "v2";
 
-        when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenReturn(initialVersion);
-        String version = cachedApiDocService.getDefaultApiVersionForService(serviceId);
-        assertEquals(initialVersion, version);
+            when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenReturn(initialVersion);
+            String version = cachedApiDocService.getDefaultApiVersionForService(serviceId);
+            assertEquals(initialVersion, version);
 
-        cachedApiDocService.updateDefaultApiVersionForService(serviceId, updatedVersion);
+            cachedApiDocService.updateDefaultApiVersionForService(serviceId, updatedVersion);
 
-        when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenReturn(null);
-        version = cachedApiDocService.getDefaultApiVersionForService(serviceId);
-        assertEquals(updatedVersion, version);
+            when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenReturn(null);
+            version = cachedApiDocService.getDefaultApiVersionForService(serviceId);
+            assertEquals(updatedVersion, version);
+        }
     }
 
     @Test
