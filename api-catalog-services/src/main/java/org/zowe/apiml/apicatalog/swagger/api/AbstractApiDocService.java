@@ -12,11 +12,14 @@ package org.zowe.apiml.apicatalog.swagger.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.ServiceType;
+
+import java.net.URISyntaxException;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -66,11 +69,16 @@ public abstract class AbstractApiDocService<T, N> {
      * @return endpoint
      */
     protected String getEndPoint(String swaggerBasePath, String originalEndpoint) {
-        String endPoint = originalEndpoint;
         if (swaggerBasePath != null && !swaggerBasePath.equals(OpenApiUtil.SEPARATOR)) {
-            endPoint = swaggerBasePath + endPoint;
+            try {
+                return new URIBuilder().setPath(swaggerBasePath + originalEndpoint).build().normalize().toString();
+            } catch (URISyntaxException e) {
+                log.error("Error trying to normalize '{}{}'. Returning original endpoint '{}'. Error: {}",
+                    swaggerBasePath, originalEndpoint, originalEndpoint, e.getMessage());
+                return originalEndpoint;
+            }
         }
-        return endPoint;
+        return originalEndpoint;
     }
 
     /**
