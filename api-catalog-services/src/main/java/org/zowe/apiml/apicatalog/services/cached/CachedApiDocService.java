@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocCacheKey;
@@ -30,6 +31,7 @@ import java.util.function.UnaryOperator;
  */
 
 @Service
+@Slf4j
 public class CachedApiDocService {
     private static final String DEFAULT_API_KEY = "default";
 
@@ -73,9 +75,12 @@ public class CachedApiDocService {
             }
         } catch (Exception e) {
             //if there's not apiDoc in cache
+            String logMessage = String.format("Exception updating API doc in cache for '%s %s'", serviceId, apiVersion);
             if (apiDoc == null) {
+                log.error("No API doc available for '{} {}': {}", serviceId, apiVersion, logMessage, e);
                 throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
             }
+            log.debug(logMessage, e);
         }
         return apiDoc;
     }
@@ -116,9 +121,12 @@ public class CachedApiDocService {
             }
         } catch (Exception e) {
             //if there's not apiDoc in cache
+            String logMessage = String.format("Exception updating default API doc in cache for '%s'.", serviceId);
             if (apiDoc == null) {
+                log.error("No default API doc available for service '{}': {}", serviceId, logMessage, e);
                 throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
             }
+            log.debug(logMessage,e);
         }
         return apiDoc;
     }
@@ -152,9 +160,12 @@ public class CachedApiDocService {
             }
         } catch (Exception e) {
             // if no versions in cache
+            String logMessage = String.format("Exception updating API versions in cache for '%s'", serviceId);
             if (apiVersions == null) {
+                log.error("No API versions available for service '{}': {}", serviceId, logMessage, e);
                 throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
             }
+            log.debug(logMessage, e);
         }
         return apiVersions;
     }
@@ -184,6 +195,7 @@ public class CachedApiDocService {
                 defaultVersion = version;
             }
         } catch (Exception e) {
+            log.error("No default API version available for service '{}'", serviceId, e);
             throw new ApiVersionNotFoundException("Error trying to find default API version");
         }
         return defaultVersion;

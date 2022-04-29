@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
+import org.junit.jupiter.api.Nested;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
@@ -100,26 +101,43 @@ class ApiServiceStatusServiceTest {
         }
     }
 
-    @Test
-    void givenApiDoc_whenGetCachedApiDocForService_thenSuccessfulResponse() {
-        String apiDoc = "this is the api doc";
-        when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
-        ResponseEntity<String> actualResponse = apiServiceStatusService.getServiceCachedApiDocInfo("aaa", "v1");
-        assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), actualResponse.getBody());
-    }
+    @Nested
+    class GivenCachedApiDoc {
+        @Test
+        void whenGetApiDocForService_thenSuccessfulResponse() {
+            String apiDoc = "this is the api doc";
+            when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
 
-    @Test
-    void givenCachedApiDoc_whenGetApiDiff_thenReturnsApiDiff() {
-        String apiDoc = "{}";
-        when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
-        OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
-        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(actualProducer.fromContents(apiDoc, apiDoc));
-        ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
-        assertNotNull(actualResponse.getBody());
-        assertTrue(actualResponse.getBody().contains("Api Change Log"));
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
+            ResponseEntity<String> actualResponse = apiServiceStatusService.getServiceCachedApiDocInfo("aaa", "v1");
+
+            assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
+            assertEquals(expectedResponse.getBody(), actualResponse.getBody());
+        }
+
+        @Test
+        void whenGetDefaultApiDocForService_thenSuccessfulResponse() {
+            String apiDoc = "this is the api doc";
+            when(cachedApiDocService.getDefaultApiDocForService(anyString())).thenReturn(apiDoc);
+
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
+            ResponseEntity<String> actualResponse = apiServiceStatusService.getServiceCachedDefaultApiDocInfo("aaa");
+
+            assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
+            assertEquals(expectedResponse.getBody(), actualResponse.getBody());
+        }
+
+        @Test
+        void whenGetApiDiff_thenReturnsApiDiff() {
+            String apiDoc = "{}";
+            when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
+            OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
+            when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(actualProducer.fromContents(apiDoc, apiDoc));
+            ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
+            assertNotNull(actualResponse.getBody());
+            assertTrue(actualResponse.getBody().contains("Api Change Log"));
+            assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        }
     }
 
     @Test
@@ -128,7 +146,7 @@ class ApiServiceStatusServiceTest {
         Exception ex = assertThrows(ApiDiffNotAvailableException.class, () ->
             apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")
         );
-        assertEquals("Error retrieving API diff for service and versions v1 and v2", ex.getMessage());
+        assertEquals("Error retrieving API diff for 'service' with versions 'v1' and 'v2'", ex.getMessage());
     }
 
     @Test
