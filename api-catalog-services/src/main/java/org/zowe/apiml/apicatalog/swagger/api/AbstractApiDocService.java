@@ -12,14 +12,11 @@ package org.zowe.apiml.apicatalog.swagger.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.ServiceType;
-
-import java.net.URISyntaxException;
 
 @RequiredArgsConstructor
 @Slf4j
