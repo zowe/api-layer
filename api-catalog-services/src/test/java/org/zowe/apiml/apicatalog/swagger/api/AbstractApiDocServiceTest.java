@@ -72,9 +72,9 @@ class AbstractApiDocServiceTest {
         }
 
         @Test
-        void givenBasePathAndEndpointThatWillCauseUriException_thenReturnOriginalEndpoint() {
-            String endpoint = abstractApiDocService.getEndPoint(null, null);
-            assertNull(endpoint);
+        void givenSwaggerTemplateCharacter_thenReturnTemplateNotNormalized() {
+            String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc/", "/containers/{id}");
+            assertEquals("/api/v1/api-doc/containers/{id}", endpoint);
         }
     }
 

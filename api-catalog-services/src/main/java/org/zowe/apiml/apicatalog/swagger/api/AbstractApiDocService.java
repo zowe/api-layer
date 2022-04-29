@@ -70,13 +70,9 @@ public abstract class AbstractApiDocService<T, N> {
      */
     protected String getEndPoint(String swaggerBasePath, String originalEndpoint) {
         if (swaggerBasePath != null && !swaggerBasePath.equals(OpenApiUtil.SEPARATOR)) {
-            try {
-                return new URIBuilder().setPath(swaggerBasePath + originalEndpoint).build().normalize().toString();
-            } catch (URISyntaxException e) {
-                log.error("Error trying to normalize '{}{}'. Returning original endpoint '{}'. Error: {}",
-                    swaggerBasePath, originalEndpoint, originalEndpoint, e.getMessage());
-                return originalEndpoint;
-            }
+            String newEndpoint = swaggerBasePath + originalEndpoint;
+            // handles case where base path ends in '/' and originalEndpoint starts with '/'
+            return newEndpoint.replaceAll("//", "/");
         }
         return originalEndpoint;
     }
