@@ -16,9 +16,11 @@ import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.registry.AbstractInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
+import org.zowe.apiml.discovery.config.EurekaConfig;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -27,6 +29,7 @@ import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 
 /**
  * This implementation of instance registry is solving known problem in Eureka. Discovery service notify about change
@@ -37,6 +40,7 @@ import java.lang.reflect.Method;
  * #2659 Race condition with registration events in Eureka server
  * https://github.com/spring-cloud/spring-cloud-netflix/issues/2659
  */
+@Slf4j
 public class ApimlInstanceRegistry extends InstanceRegistry {
 
     private static final String EXCEPTION_MESSAGE = "Implementation of InstanceRegistry changed, please verify fix of order sending events";
@@ -49,7 +53,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private MethodHandle register3ArgsMethodHandle;
     private MethodHandle cancelMethodHandle;
 
-    private ApplicationContext appCntx;
+    private final ApplicationContext appCntx;
+    private final EurekaConfig.Tuple tuple;
 
     public ApimlInstanceRegistry(
         EurekaServerConfig serverConfig,
@@ -57,13 +62,16 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         ServerCodecs serverCodecs,
         EurekaClient eurekaClient,
         InstanceRegistryProperties instanceRegistryProperties,
-        ApplicationContext appCntx
+        ApplicationContext appCntx,
+        EurekaConfig.Tuple tuple
     ) {
+
         super(serverConfig, clientConfig, serverCodecs, eurekaClient,
             instanceRegistryProperties.getExpectedNumberOfClientsSendingRenews(),
             instanceRegistryProperties.getDefaultOpenForTrafficCount()
         );
         this.appCntx = appCntx;
+        this.tuple = tuple;
         init();
     }
 
@@ -143,6 +151,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
+            info = changeServiceId(info);
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
             handleRegistrationMethod.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -156,7 +165,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     }
 
     @Override
-    public void register(final InstanceInfo info, final boolean isReplication) {
+    public void register(InstanceInfo info, final boolean isReplication) {
+            info = changeServiceId(info);
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
             handleRegistrationMethod.invokeWithArguments(this, info, resolveInstanceLeaseDurationRewritten(info), isReplication);
@@ -172,8 +182,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     @Override
     public boolean cancel(String appName, String serverId, boolean isReplication) {
         try {
-            final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, appName, serverId, isReplication);
-            handleCancelationMethod.invokeWithArguments(this, appName, serverId, isReplication);
+            String[] updatedValues = replaceValues(appName, serverId);
+            final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
+            handleCancelationMethod.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
             return out;
         } catch (ClassCastException | WrongMethodTypeException e) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
@@ -185,9 +196,64 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     }
 
     @Override
+    public boolean renew(String appName, String serverId, boolean isReplication) {
+        String[] updatedValues = replaceValues(appName, serverId);
+        return super.renew(updatedValues[0], updatedValues[1], isReplication);
+    }
+
+    @Override
     public boolean statusUpdate(String appName, String instanceId, InstanceInfo.InstanceStatus newStatus, String lastDirtyTimestamp, boolean isReplication) {
-        boolean isUpdated = super.statusUpdate(appName, instanceId, newStatus, lastDirtyTimestamp, isReplication);
+        String[] updatedValues = replaceValues(appName, instanceId);
+        boolean isUpdated = super.statusUpdate(updatedValues[0], updatedValues[1], newStatus, lastDirtyTimestamp, isReplication);
         this.appCntx.publishEvent(new EurekaStatusUpdateEvent(this, appName, instanceId));
         return isUpdated;
     }
+
+    private String[] replaceValues(String appName, String instanceId) {
+        if (tuple.isValid()) {
+            String appNameRegex = "(?i)^" + tuple.getOldPrefix();
+            String instanceIdRegex = "(?i):" + tuple.getOldPrefix();
+            String targetValue = tuple.getNewPrefix();
+            if (targetValue.contains("*")) {
+                targetValue = targetValue.replace("*", "");
+            }
+            appName = appName.replaceAll(appNameRegex, targetValue).toUpperCase();
+            if (instanceId.contains(":")) {
+                instanceId = instanceId.replaceAll(instanceIdRegex, ":" + targetValue);
+            } else {
+                instanceId = instanceId.replaceAll(appNameRegex, targetValue);
+            }
+        }
+        return new String[]{appName,instanceId};
+    }
+
+    /**
+     * Change the service ID prefix according to the mapper before the service registers to Eureka.
+     * @param info the instance info
+     * @return instance info with the modified service ID
+     */
+    protected InstanceInfo changeServiceId(final InstanceInfo info) {
+        if (tuple.isValid()) {
+            String servicePrefix = tuple.getOldPrefix();
+            if (!servicePrefix.contains("*")) {
+                servicePrefix = servicePrefix + "*";
+            }
+            String instanceId = info.getInstanceId();
+            String appName = info.getAppName();
+            Pattern p = Pattern.compile("(?i)^" + servicePrefix);
+            if (p.matcher(appName).find()) {
+                String[] updatedValues = replaceValues(appName, instanceId);
+                log.debug("The instance ID of {} service has been changed to {}.", info.getAppName(), updatedValues[1]);
+                return new InstanceInfo.Builder(info)
+                    .setInstanceId(updatedValues[1])
+                    .setAppGroupName(updatedValues[0])
+                    .setAppName(updatedValues[0])
+                    .setVIPAddress(updatedValues[0].toLowerCase())
+                    .build();
+            }
+            return info;
+        }
+        return info;
+    }
+
 }

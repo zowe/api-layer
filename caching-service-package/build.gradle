@@ -19,6 +19,7 @@ task packageCachingService(type: Zip) {
 
     into('/') {
         from "$resourceDir/manifest.yaml"
+        from "../schemas/caching-schema.json"
     }
 
     into('bin/') {

@@ -81,5 +81,25 @@ class X509SchemeTest implements TestWithStartedInstances {
                 .body("dn", is(""))
                 .body("cn", is("")).statusCode(200);
         }
+
+        @Test
+        void givenServerCertificateInRequest() {
+            given()
+                .config(SslContext.apimlRootCert)
+                .when()
+                .get(X509SchemeTest.URL)
+                .then()
+                .header("X-Zowe-Auth-Failure", is("ZWEAG165E X509 certificate is missing the client certificate extended usage definition")).statusCode(200);
+        }
+
+        @Test
+        void givenNoCertificate_thenEmptyBodyIsReturned() {
+            given()
+                .when()
+                .config(SslContext.tlsWithoutCert)
+                .get(X509SchemeTest.URL)
+                .then()
+                .header("X-Zowe-Auth-Failure", is("ZWEAG167E No client certificate provided in the request")).statusCode(200);
+        }
     }
 }

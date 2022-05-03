@@ -37,6 +37,12 @@ public class AuthConfigurationProperties {
     private String gatewayQueryEndpoint = "/gateway/api/v1/auth/query";
     private String gatewayTicketEndpoint = "/gateway/api/v1/auth/ticket";
 
+    private String gatewayLoginEndpointOldFormat = "/api/v1/gateway/auth/login";
+    private String gatewayLogoutEndpointOldFormat = "/api/v1/gateway/auth/logout";
+    private String gatewayQueryEndpointOldFormat = "/api/v1/gateway/auth/query";
+    private String gatewayTicketEndpointOldFormat = "/api/v1/gateway/auth/ticket";
+
+    private String gatewayRefreshEndpointOldFormat = "/api/v1/gateway/auth/refresh";
     private String gatewayRefreshEndpoint = "/gateway/api/v1/auth/refresh";
 
     private String serviceLoginEndpoint = "/auth/login";
@@ -48,6 +54,7 @@ public class AuthConfigurationProperties {
     private String provider = "zosmf";
 
     private AuthConfigurationProperties.PassTicket passTicket;
+    private AuthConfigurationProperties.X509Cert x509Cert;
 
     private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
 
@@ -83,6 +90,11 @@ public class AuthConfigurationProperties {
     }
 
     @Data
+    public static class X509Cert {
+        private Integer timeout = 15 * 60;
+    }
+
+    @Data
     public static class Zosmf {
         private String serviceId;
         private String jwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
@@ -93,6 +105,7 @@ public class AuthConfigurationProperties {
         this.cookieProperties = new AuthConfigurationProperties.CookieProperties();
         this.tokenProperties = new AuthConfigurationProperties.TokenProperties();
         this.passTicket = new AuthConfigurationProperties.PassTicket();
+        this.x509Cert = new AuthConfigurationProperties.X509Cert();
     }
 
     /**

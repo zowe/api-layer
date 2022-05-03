@@ -1,0 +1,87 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schema/caching-config",
+    "allOf": [
+        { "$ref": "https://zowe.org/schemas/v2/server-base" },
+        {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "properties": {
+                        "additionalProperties": true,
+                        "caching-service": {
+                            "allOf": [
+                                {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "port": {
+                                            "$ref": "#/$defs/port",
+                                            "default": 7555
+                                        },
+                                        "debug": {
+                                            "type": "boolean",
+                                            "description": "Enable debug logs in discovery service"
+                                        },
+                                        "storage": {
+                                            "evictionStrategy": {
+                                                "type": "string",
+                                                "description": "Strategy for caching entries eviction.",
+                                                "default": "reject"
+                                            },
+                                            "mode": {
+                                                "type": "string",
+                                                "description": "Type of storge in caching service.",
+                                                "enum": ["inMemory","VSAM","redis"],
+                                                "default": "inMemory"
+                                            },
+                                            "size": {
+                                                "type": "integer",
+                                                "description": "the number of records stored before the eviction strategy is initiated",
+                                                "default": 10000
+                                            },
+                                            "vsam": {
+                                                "type": "object",
+                                                "description": "When storage is selected as VSAM",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "The ZFile filename of created VSAM."
+                                                    },
+                                                    "keyLength": {
+                                                        "type": "integer",
+                                                        "description": "The VsamKey length",
+                                                        "default": 32
+                                                    },
+                                                    "recordLength": {
+                                                        "type": "integer",
+                                                        "description": "The record length.",
+                                                        "default": 512
+                                                    },
+                                                    "encoding": {
+                                                        "type": "string",
+                                                        "description": "The character encoding.",
+                                                        "default": "IBM-1047"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        }
+    }
+}

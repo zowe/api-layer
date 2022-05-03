@@ -19,6 +19,7 @@ task packageMetricsService(type: Zip) {
 
     into('/') {
         from "$resourceDir/manifest.yaml"
+        from "../schemas/metrics-schema.json"
     }
 
     into('bin/') {

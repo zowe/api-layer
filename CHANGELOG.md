@@ -2,6 +2,28 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.0.7 (2022-03-11)`
+
+* Feature:  Add missing tooltips to all onboarding options (#2194) ([5446fd5](https://github.com/zowe/api-layer/commit/5446fd5)), closes [#2194](https://github.com/zowe/api-layer/issues/2194)
+* Feature:  Discovery service can be configured to modify the service ID at registration time (#2229) ([63f6fde](https://github.com/zowe/api-layer/commit/63f6fde)), closes [#2229](https://github.com/zowe/api-layer/issues/2229)
+* Feature:  There is now the option to specify base packages for the extensions loader(#2081) ([9a4be5a](https://github.com/zowe/api-layer/commit/9a4be5a)), closes [#2081](https://github.com/zowe/api-layer/issues/2081)
+* Feature:  There is a new design of the logout panel in the Catalog dashboard (#2102) ([1382f24](https://github.com/zowe/api-layer/commit/1382f24)), closes [#2102](https://github.com/zowe/api-layer/issues/2102)
+* Feature:  There is now the option to change your password via the Catalog UI (#2035) ([139a231](https://github.com/zowe/api-layer/commit/139a231)), closes [#2035](https://github.com/zowe/api-layer/issues/2035)
+* Feature:  Migrated the onboarding wizard to the Material UI library. This replaces the Mineral UI framework with the Material UI usage in the wizard (#2004) ([2c595d5](https://github.com/zowe/api-layer/commit/2c595d5)), closes [#2004](https://github.com/zowe/api-layer/issues/2004)
+* Feature:  Migrated the dashboard to the Material UI library (#1959) ([0da7f15](https://github.com/zowe/api-layer/commit/0da7f15)), closes [#1959](https://github.com/zowe/api-layer/issues/1959)
+* Feature:  Migrated the detail page to the Material UI library (#1949) ([95da488](https://github.com/zowe/api-layer/commit/95da488)), closes [#1949](https://github.com/zowe/api-layer/issues/1949)
+* Feature:  Migrated Error components to the Material UI library (#1957) ([c60371d](https://github.com/zowe/api-layer/commit/c60371d)), closes [#1957](https://github.com/zowe/api-layer/issues/1957)
+* Feature:  Migrated the header and footer to the Material UI library (#1943) ([537fa34](https://github.com/zowe/api-layer/commit/537fa34)), closes [#1943](https://github.com/zowe/api-layer/issues/1943)
+* Feature:  Migrated the Login panel to the Material UI library (#1900) ([81ab2ed](https://github.com/zowe/api-layer/commit/81ab2ed)), closes [#1900](https://github.com/zowe/api-layer/issues/1900) 
+* Feature:  Made various improvements to the onboarding wizard (#1772) ([20dd70b](https://github.com/zowe/api-layer/commit/20dd70b)), closes [#1772](https://github.com/zowe/api-layer/issues/1772)
+
+* Bugfix:  Caching service logging (#2222) ([5ff64d9](https://github.com/zowe/api-layer/commit/5ff64d9)), closes [#2222](https://github.com/zowe/api-layer/issues/2222)
+* Bugfix:  Upgrade Spring to version without vulnerability (#2252) ([f77fa1b](https://github.com/zowe/api-layer/commit/f77fa1b)), closes [#2252](https://github.com/zowe/api-layer/issues/2252)
+* Bugfix:  Use unique artifacts for gha (#2192) ([f8def8c](https://github.com/zowe/api-layer/commit/f8def8c)), closes [#2192](https://github.com/zowe/api-layer/issues/2192)
+* Bugfix:  Add x509 auth info to gw api doc (#2142) ([072ad23](https://github.com/zowe/api-layer/commit/072ad23)), closes [#2142](https://github.com/zowe/api-layer/issues/2142)
+* Bugfix:  Authorization provider set empty as default (#2107) ([aa77926](https://github.com/zowe/api-layer/commit/aa77926)), closes [#2107](https://github.com/zowe/api-layer/issues/2107)
+* Bugfix:  Change url for v2 and mark plugin as v2 in case very old apiml v1 copies don't support same url  ([6f4257a](https://github.com/zowe/api-layer/commit/6f4257a)), closes [#2022](https://github.com/zowe/api-layer/issues/2022)
+
 ## `1.27.0 (2022-01-14)`
 
 * Feature:  Enable Discovery Service class path extensions and Gateway native library extensions (#1987) ([fd03db5](https://github.com/zowe/api-layer/commit/fd03db5)), closes [#1987](https://github.com/zowe/api-layer/issues/1987)

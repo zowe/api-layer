@@ -13,7 +13,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.http.Cookie;
-
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -22,6 +21,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -33,6 +33,7 @@ import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 
 import java.io.IOException;
 import java.util.Date;
+import org.zowe.apiml.util.config.SslContext;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,11 +41,17 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.*;
 
 /**
- * This test verifies that the token was exchanged. The input is a valid apimlJwtToken. The output to be tested is
- * the saf idt token.
+ * This test verifies that the token/client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
+ * The output to be tested is the saf idt token.
  */
 @AcceptanceTest
 class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
+    @Value("${server.ssl.keyStorePassword:password}")
+    private char[] keystorePassword;
+    @Value("${server.ssl.keyStore}")
+    private String keystore;
+    private final String clientKeystore = "../keystore/client_cert/client-certs.p12";
+
     @Autowired
     protected SafRestAuthenticationService safRestAuthenticationService;
 
@@ -93,11 +100,11 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
 
                 ResponseEntity<SafRestAuthenticationService.Token> response = mock(ResponseEntity.class);
                 when(mockTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
-                        .thenReturn(response);
+                    .thenReturn(response);
                 SafRestAuthenticationService.Token responseBody =
-                        new SafRestAuthenticationService.Token(resultSafToken, "applid");
+                    new SafRestAuthenticationService.Token(resultSafToken, "applid");
                 when(response.getBody()).thenReturn(responseBody);
-                
+
                 given()
                     .cookie(validJwtToken)
                     .when()
@@ -134,18 +141,38 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 //@formatter:off
                 given()
                     .cookie(withInvalidToken)
-                .when()
+                    .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
+                    .then()
                     .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
                 //@formatter:on
 
                 verify(mockTemplate, times(0))
-                        .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
+                    .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
             }
         }
     }
 
+    @Nested
+    class GivenServerCertificate {
+        @Test
+        void thenSafheaderInRequestHeaders() throws IOException {
+            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+            mockValid200HttpResponse();
+
+            given()
+                .config(SslContext.apimlRootCert)
+                .when()
+                .get(basePath + serviceWithDefaultConfiguration.getPath())
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+
+            ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+            verify(mockClient, times(1)).execute(captor.capture());
+
+            assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
+        }
+    }
     /*
     @Nested
     class GivenClientCertificate {

@@ -23,6 +23,9 @@ buildscript {
                 password mavenPassword
             }
         }
+        maven {
+            url "https://artifacts-oss.talend.com/nexus/content/repositories/TalendOpenSourceRelease/"
+        }
     }
 
     repositories mavenRepositories
@@ -143,6 +146,11 @@ task runContainerTests(dependsOn: [":integration-tests:runContainerTests"]) {
 
 task runRegistrationTests(dependsOn: [":integration-tests:runRegistrationTests"]) {
     description "Run Integration Test verifying registration and deregistration"
+    group "Integration tests"
+}
+
+task runIdPrefixReplacerTests(dependsOn: [":integration-tests:runIdPrefixReplacerTests"]) {
+    description "Run Integration Test verifying the service ID prefix replacer mechanism"
     group "Integration tests"
 }
 

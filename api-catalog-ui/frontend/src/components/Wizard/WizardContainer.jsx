@@ -9,9 +9,16 @@
  */
 import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
-import { nextWizardCategory, wizardToggleDisplay, createYamlObject, validateInput } from '../../actions/wizard-actions';
+import {
+    nextWizardCategory,
+    wizardToggleDisplay,
+    createYamlObject,
+    validateInput,
+    updateWizardData,
+    updateUploadedYamlTitle,
+} from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
-import { sendYAML, notifyError } from '../../actions/wizard-fetch-actions';
+import { sendYAML, notifyError, notifyInvalidYamlUpload } from '../../actions/wizard-fetch-actions';
 
 const mapStateToProps = (state) => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
@@ -21,6 +28,8 @@ const mapStateToProps = (state) => ({
     navsObj: state.wizardReducer.navsObj,
     serviceId: state.wizardReducer.serviceId,
     userCanAutoOnboard: state.wizardReducer.userCanAutoOnboard,
+    inputData: state.wizardReducer.inputData,
+    uploadedYamlTitle: state.wizardReducer.uploadedYamlTitle,
 });
 const mapDispatchToProps = {
     wizardToggleDisplay,
@@ -30,5 +39,8 @@ const mapDispatchToProps = {
     validateInput,
     sendYAML,
     notifyError,
+    updateWizardData,
+    updateUploadedYamlTitle,
+    notifyInvalidYamlUpload,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(WizardDialog);

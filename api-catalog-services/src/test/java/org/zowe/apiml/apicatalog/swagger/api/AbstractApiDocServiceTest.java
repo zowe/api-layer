@@ -7,16 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.swagger.api.dummy.DummyApiDocService;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -28,16 +20,22 @@ import io.swagger.v3.oas.models.tags.Tag;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.swagger.api.dummy.DummyApiDocService;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.hasKey;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class AbstractApiDocServiceTest {
@@ -54,19 +52,34 @@ class AbstractApiDocServiceTest {
     }
 
     @Test
-    void shouldGetShortEndpoint() {
+    void givenRoutedUrlAndEndpoint_whenGetShortEndpoint_thenReturnEndpoint() {
         String shortEndpoint = abstractApiDocService.getShortEndPoint("/apicatalog/api/v1", "/apicatalog");
         assertEquals("/apicatalog", shortEndpoint);
     }
 
-    @Test
-    void shouldGetEndpoint() {
-        String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc", "/apicatalog");
-        assertEquals("/api/v1/api-doc/apicatalog", endpoint);
+    @Nested
+    class WhenGetEndpoint {
+        @Test
+        void givenPathAndEndpoint_thenReturnThem() {
+            String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc", "/apicatalog");
+            assertEquals("/api/v1/api-doc/apicatalog", endpoint);
+        }
+
+        @Test
+        void givenBasePathAndEndpointThatWillResultInMalformedUrl_thenReturnNormalizedEndpoint() {
+            String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc/", "/apicatalog");
+            assertEquals("/api/v1/api-doc/apicatalog", endpoint);
+        }
+
+        @Test
+        void givenSwaggerTemplateCharacter_thenReturnTemplateNotNormalized() {
+            String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc/", "/containers/{id}");
+            assertEquals("/api/v1/api-doc/containers/{id}", endpoint);
+        }
     }
 
     @Test
-    void shouldGetEndpointPairs() {
+    void givenRoutedEndpoint_whenGetEndpointPairs_thenReturnRoutedPair() {
         RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog/api/v1");
         Pair endpointPairs = abstractApiDocService.getEndPointPairs("/apicatalog", "apicatalog", routedService);
         ImmutablePair expectedPairs = new ImmutablePair("/apicatalog", "/apicatalog/api/v1/apicatalog");
@@ -74,13 +87,13 @@ class AbstractApiDocServiceTest {
     }
 
     @Test
-    void shouldReturnNull_whenGetRoutedServiceByApiInfo_IfApiInfoIsNull() {
+    void givenNullApiInfo_whenGetRoutedServiceByApiInfo_thenReturnNull() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
         assertNull(abstractApiDocService.getRoutedServiceByApiInfo(apiDocInfo, "/"));
     }
 
     @Test
-    void preparePath() {
+    void givenSwaggerDoc_whenPreparePaths_thenSetpathsInSwaggerDoc() {
         List<Server> servers = new ArrayList<>();
         servers.add(0, new Server().url("/apicatalog"));
         ApiDocPath<PathItem> apiDocPath = new ApiDocPath<>();

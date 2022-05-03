@@ -8,6 +8,8 @@ title: Caching service for internal usage
 # Human readable component description
 description: Service that provides caching API.
 license: EPL-2.0
+schemas:
+    configs: gateway-schema.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git

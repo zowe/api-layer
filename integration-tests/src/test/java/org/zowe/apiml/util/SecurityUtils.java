@@ -78,8 +78,8 @@ public class SecurityUtils {
         return String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, port, path);
     }
 
-    public static String getGatewayLogoutUrl() {
-        return getGatewayUrl(ROUTED_LOGOUT);
+    public static String getGatewayLogoutUrl(String path) {
+        return getGatewayUrl(path);
     }
 
     public static String gatewayToken() {

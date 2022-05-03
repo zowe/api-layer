@@ -5,8 +5,7 @@ const loginSuccess = require('./assets/login-success.json');
 const invalidCredentials = require('./assets/invalid-credentials.json');
 const timeout = require('./assets/timeout-error.json');
 const clusters = require('./assets/services/clusters.json');
-
-const metrics = fs.readFileSync(path.join(__dirname, './assets/services/metrics.txt'), 'utf-8');
+const metrics = require('./assets/services/metrics.json');
 
 function validateCredentials({ username, password }) {
     return username === 'USER' && password === 'validPassword';
@@ -48,7 +47,7 @@ const appRouter = app => {
 
         res.setHeader('Content-Type', 'text/event-stream');
         const responseIntervalId = setInterval(() => {
-            res.write(metrics);
+            res.write(`data: ${JSON.stringify(metrics)}\n\n`);
         }, 1000);
 
         res.on('close', () => {

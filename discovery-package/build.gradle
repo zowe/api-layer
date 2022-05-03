@@ -19,6 +19,7 @@ task packageDiscovery(type: Zip) {
 
     into('/') {
         from "$resourceDir/manifest.yaml", "$resourceDir/zosmf-static-definition.yaml.template"
+        from "../schemas/discovery-schema.json"
     }
 
     into('bin/') {

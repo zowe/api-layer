@@ -8,6 +8,8 @@ title: API Discovery
 # Human readable component description
 description: The API Discovery service acts as the registration service broker between the API Gateway and its southbound servers.
 license: EPL-2.0
+schemas:
+    configs: discovery-schema.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git
@@ -29,5 +31,10 @@ apimlServices:
   static:
     - file: zosmf-static-definition.yaml.template
 configs:
+    # server.prefix.replacer is used to replace service ID prefix non-conformant with v2.
+    # Define ZWE_configs_apiml_discovery_serviceIdPrefixReplacer in the Zowe config if you want to use it
+#  apiml:
+#    discovery:
+#        serviceIdPrefixReplacer: ""
   port: 7553
   debug: false
