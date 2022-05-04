@@ -70,7 +70,7 @@ else
   nonStrictVerifySslCertificatesOfServices=true
 fi
 
-if [ "$(uname)" = "OS/390" ];
+if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
 fi
