@@ -103,7 +103,8 @@ else
   nonStrictVerifySslCertificatesOfServices=true
 fi
 
-if [ "$(uname)" = "OS/390" ]; then
+if [ "$(uname)" = "OS/390" ]
+then
     QUICK_START=-Xquickstart
 fi
 LIBPATH="$LIBPATH":"/lib"

@@ -128,7 +128,8 @@ then
     APIML_GATEWAY_CATALOG_ID=""
 fi
 
-if [ "$(uname)" = "OS/390" ]; then
+if [ "$(uname)" = "OS/390" ]
+then
     QUICK_START=-Xquickstart
     GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 else
