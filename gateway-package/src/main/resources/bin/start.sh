@@ -67,7 +67,7 @@
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
-if [ ${LAUNCH_COMPONENT} ]
+if [ -n "${LAUNCH_COMPONENT}" ]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 else
@@ -76,14 +76,14 @@ fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 
-if [[ -z ${CMMN_LB} ]]
+if [ -z "${CMMN_LB}" ]
 then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB=${CMMN_LB}
 fi
 
-if [[ -z ${LIBRARY_PATH} ]]
+if [ -z "${LIBRARY_PATH}" ]
 then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
@@ -91,7 +91,7 @@ fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
-if [[ ! -z ${ZWE_configs_debug} && ${ZWE_configs_debug} == true ]]
+if [ "${ZWE_configs_debug}" = "true" ]
 then
   export LOG_LEVEL="debug"
 fi
@@ -118,17 +118,17 @@ else
   nonStrictVerifySslCertificatesOfServices=true
 fi
 
-if [[ -z ${ZWE_configs_apiml_catalog_serviceId} ]]
+if [ -z "${ZWE_configs_apiml_catalog_serviceId}" ]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
 fi
 
-if [ ${ZWE_configs_apiml_catalog_serviceId} = "none" ]
+if [ "${ZWE_configs_apiml_catalog_serviceId}" = "none" ]
 then
     APIML_GATEWAY_CATALOG_ID=""
 fi
 
-if [ `uname` = "OS/390" ]; then
+if [ "$(uname)" = "OS/390" ]; then
     QUICK_START=-Xquickstart
     GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 else
@@ -136,7 +136,7 @@ else
 fi
 
 # Check if the directory containing the Gateway shared JARs was set and append it to the GW loader path
-if [[ ! -z ${ZWE_GATEWAY_SHARED_LIBS} ]]
+if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
 then
     GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS},${GATEWAY_LOADER_PATH}
 fi
@@ -153,7 +153,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
-if [[ ! -z ${ZWE_GATEWAY_LIBRARY_PATH} ]]
+if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
 then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi

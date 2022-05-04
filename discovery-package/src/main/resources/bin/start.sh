@@ -39,7 +39,7 @@
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
-if [ ${LAUNCH_COMPONENT} ]
+if [ -n "${LAUNCH_COMPONENT}" ]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 else
@@ -48,21 +48,21 @@ fi
 
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the discovery component directory and common_lib needs to be relative path
-if [[ -z ${CMMN_LB} ]]
+if [ -z "${CMMN_LB}" ]
 then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB=${CMMN_LB}
 fi
 
-if [[ -z ${LIBRARY_PATH} ]]
+if [ -z "${LIBRARY_PATH}" ]
 then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
-if [[ ! -z ${ZWE_configs_debug} && ${ZWE_configs_debug} == true ]]
+if [ "${ZWE_configs_debug}" = "true" ]
 then
   export LOG_LEVEL="debug"
 fi
@@ -97,13 +97,13 @@ else
   nonStrictVerifySslCertificatesOfServices=true
 fi
 
-if [ `uname` = "OS/390" ]; then
+if [ "$(uname)" = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
 
 DISCOVERY_LOADER_PATH=${COMMON_LIB}
 
-if [[ ! -z ${ZWE_DISCOVERY_SHARED_LIBS} ]]
+if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
 then
     DISCOVERY_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${DISCOVERY_LOADER_PATH}
 fi
