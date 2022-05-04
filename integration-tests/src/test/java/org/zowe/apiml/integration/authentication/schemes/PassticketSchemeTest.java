@@ -13,15 +13,20 @@ import io.restassured.RestAssured;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
+import java.util.stream.Stream;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -34,6 +39,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.integration.penetration.JwtPenTest.getToken;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @DiscoverableClientDependentTest
@@ -45,6 +51,15 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
 
+    public static Stream<Arguments> getTokens() {
+        return Stream.of(
+            Arguments.of("validJwt", SC_OK),
+            Arguments.of("noSignJwt", SC_OK),
+            Arguments.of("publicKeySignedJwt", SC_OK),
+            Arguments.of("changedRealmJwt", SC_OK),
+            Arguments.of("changedUserJwt", SC_OK)
+        );
+    }
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
@@ -121,6 +136,23 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                         .get(requestUrl)
                     .then()
                 );
+
+            }
+
+            @ParameterizedTest(name = "call passticket service with {0} to receive response code {2}")
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#getTokens")
+            @TestsNotMeantForZowe
+            void whenCallPassTicketService(String tokenType, int status) {
+                String token = getToken(tokenType);
+
+                //@formatter:off
+                given()
+                    .header("Authorization", "Bearer " + token)
+                    .when()
+                    .get(discoverablePassticketUrl)
+                    .then()
+                    .statusCode(is(status));
+                //@formatter:on
 
             }
         }

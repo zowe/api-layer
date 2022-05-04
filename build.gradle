@@ -23,6 +23,9 @@ buildscript {
                 password mavenPassword
             }
         }
+        maven {
+            url "https://artifacts-oss.talend.com/nexus/content/repositories/TalendOpenSourceRelease/"
+        }
     }
 
     repositories mavenRepositories

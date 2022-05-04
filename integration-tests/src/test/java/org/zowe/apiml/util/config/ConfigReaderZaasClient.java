@@ -24,7 +24,7 @@ public class ConfigReaderZaasClient {
 
             configProperties.setApimlHost(environmentConfiguration().getGatewayServiceConfiguration().getHost());
             configProperties.setApimlPort(environmentConfiguration().getGatewayServiceConfiguration().getPort() + "");
-            configProperties.setApimlBaseUrl("/api/v1/gateway/auth");
+            configProperties.setApimlBaseUrl("/gateway/api/v1/auth");
             configProperties.setKeyStorePath(environmentConfiguration().getTlsConfiguration().getKeyStore());
             configProperties.setKeyStorePassword(environmentConfiguration().getTlsConfiguration().getKeyStorePassword());
             configProperties.setKeyStoreType(environmentConfiguration().getTlsConfiguration().getKeyStoreType());

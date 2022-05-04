@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
 
+import java.util.Objects;
+
 @Data
 @Builder
 public class ConfigProperties {
@@ -28,6 +30,8 @@ public class ConfigProperties {
     private char[] trustStorePassword;
     private boolean httpOnly;
     private boolean nonStrictVerifySslCertificatesOfServices;
+
+    private static final String GATEWAY_SERVICE_ID = "gateway";
 
     @Tolerate
     public ConfigProperties() {
@@ -45,6 +49,30 @@ public class ConfigProperties {
             .httpOnly(httpOnly)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .build();
+    }
+
+    public void setApimlBaseUrl(String baseUrl) {
+        if (baseUrl == null) { // default path
+            apimlBaseUrl = "/gateway/api/v1/auth";
+        }
+        else if (baseUrl.contains("/") && baseUrl.contains(GATEWAY_SERVICE_ID)) {
+            String[] baseUrlParts = baseUrl.split("/");
+            if (Objects.equals(baseUrlParts[2], GATEWAY_SERVICE_ID)) {
+                apimlBaseUrl = "/gateway/" + baseUrlParts[0] + "/" + baseUrlParts[1] + "/auth";
+            }
+            else if (Objects.equals(baseUrlParts[3], GATEWAY_SERVICE_ID)) {
+                apimlBaseUrl = "/gateway/" + baseUrlParts[1] + "/" + baseUrlParts[2] + "/auth";
+            }
+            else if (!baseUrl.startsWith("/")) { // starts with gateway/..
+                apimlBaseUrl = "/" + baseUrl;
+            }
+            else {
+                apimlBaseUrl = baseUrl;
+            }
+        }
+        else {
+            apimlBaseUrl = baseUrl;
+        }
     }
 
 }

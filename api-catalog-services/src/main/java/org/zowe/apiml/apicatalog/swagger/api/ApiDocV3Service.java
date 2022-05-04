@@ -71,7 +71,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         try {
             return initializeObjectMapper().writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
-            log.debug("Could not convert Swagger to JSON", e);
+            log.debug("Could not convert OpenAPI to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
         }
     }

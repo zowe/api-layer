@@ -25,12 +25,15 @@ import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 
 import java.util.Optional;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -39,6 +42,7 @@ import static org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer.LOADBALANCED_INSTA
 class ServiceAuthenticationDecoratorTest {
 
     private static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
+    private static final MessageService messageService = new YamlMessageService("/gateway-messages.yml");
 
     ServiceAuthenticationService serviceAuthenticationService = mock(ServiceAuthenticationService.class);
     AuthSourceService authSourceService = mock(AuthSourceService.class);
@@ -49,7 +53,7 @@ class ServiceAuthenticationDecoratorTest {
 
     @BeforeEach
     void setUp() {
-       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authSourceService);
+       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authSourceService, messageService);
        request = new HttpGet("/");
        RequestContext.getCurrentContext().clear();
     }
@@ -61,7 +65,7 @@ class ServiceAuthenticationDecoratorTest {
         decorator.process(request);
 
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
-        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any(Authentication.class), any());
     }
 
     @ParameterizedTest
@@ -74,7 +78,7 @@ class ServiceAuthenticationDecoratorTest {
         decorator.process(request);
 
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
-        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any(Authentication.class), any());
     }
 
     @ParameterizedTest
@@ -128,6 +132,19 @@ class ServiceAuthenticationDecoratorTest {
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
+    void givenContextWithoutAuthentication_whenAuthSchemeThrows_thenShouldAbort(AuthSource authSource) {
+        AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
+        prepareContext(universalCmd, authSource);
+        doThrow(new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication")).when(serviceAuthenticationService).getAuthenticationCommand(any(Authentication.class), eq(authSource));
+
+        assertThrows(RequestAbortException.class, () ->
+                decorator.process(request),
+            "Exception is not RequestAbortException");
+        verify(universalCmd, times(0)).applyToRequest(request);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAuthSources")
     void givenWrongContext_whenProcess_thenReturnWhenCmdIsNull(AuthSource authSource) throws RequestAbortException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareWrongContextForCmdNull(universalCmd, authSource);
@@ -141,7 +158,7 @@ class ServiceAuthenticationDecoratorTest {
     private void prepareContext(AuthenticationCommand command, AuthSource authSource) {
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
-        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
+        doReturn(Optional.of(authSource)).when(serviceAuthenticationService).getAuthSourceByAuthentication(any());
         Authentication authentication = mock(Authentication.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);

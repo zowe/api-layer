@@ -20,11 +20,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -32,6 +33,10 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +61,9 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     @Mock
     private AuthSourceService authSourceService;
 
+    @Mock
+    private static MessageService messageService;
+
     @Test
     void testConfig() {
         assertEquals("pre", serviceAuthenticationFilter.filterType());
@@ -73,7 +81,10 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     @ParameterizedTest
     @MethodSource("provideAuthSources")
     void testRun(AuthSource authSource) {
-        Mockito.when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
+        Authentication authentication = new Authentication(AuthenticationScheme.BYPASS, "");
+        when(serviceAuthenticationService.getAuthentication(anyString())).thenReturn(authentication);
+        when(serviceAuthenticationService.getAuthSourceByAuthentication(authentication)).thenReturn(Optional.of(authSource));
+        when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any(), any())).thenReturn(command);
 
         HttpServletRequest request = mock(HttpServletRequest.class);
 
@@ -82,16 +93,14 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
 
-        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
-
         serviceAuthenticationFilter.run();
-        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", authSource);
+        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", authentication, authSource);
         verify(command, times(1)).apply(null);
 
-        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
+        when(serviceAuthenticationService.getAuthSourceByAuthentication(authentication)).thenReturn(Optional.empty());
         serviceAuthenticationFilter.run();
-        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", null);
-        verify(serviceAuthenticationService, times(2)).getAuthenticationCommand(anyString(), any());
+        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", authentication,null);
+        verify(serviceAuthenticationService, times(2)).getAuthenticationCommand(anyString(), any(Authentication.class), any());
 
         reset(requestContext);
         reset(authSourceService);
@@ -101,8 +110,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
             }
         });
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("error");
-        when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
-        when(serviceAuthenticationService.getAuthenticationCommand(eq("error"), any()))
+        when(serviceAuthenticationService.getAuthenticationCommand(eq("error"), any(), any()))
             .thenThrow(new RuntimeException("Potential exception"));
         try {
             serviceAuthenticationFilter.run();
@@ -119,10 +127,12 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         RequestContext requestContext = mock(RequestContext.class);
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
-        doReturn(Optional.of(authSource)).when(authSourceService).getAuthSourceFromRequest();
 
         AuthenticationCommand cmd = mock(AuthenticationCommand.class);
-        doReturn(cmd).when(serviceAuthenticationService).getAuthenticationCommand("service", authSource);
+        Authentication authentication = new Authentication(AuthenticationScheme.BYPASS, "");
+        doReturn(authentication).when(serviceAuthenticationService).getAuthentication("service");
+        doReturn(Optional.of(authSource)).when(serviceAuthenticationService).getAuthSourceByAuthentication(authentication);
+        doReturn(cmd).when(serviceAuthenticationService).getAuthenticationCommand("service", authentication, authSource);
         doReturn(true).when(cmd).isRequiredValidSource();
 
         return cmd;
@@ -130,14 +140,17 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
-    void givenValidAuthSource_whenAuthSourceRequired_thenCallThrought(AuthSource authSource) {
+    void givenInvalidAuthSource_whenAuthSourceRequired_thenCallThrought(AuthSource authSource) {
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
+
         AuthenticationCommand cmd = createValidationCommand(authSource);
         doReturn(false).when(authSourceService).isValid(any());
 
         serviceAuthenticationFilter.run();
 
-        verify(RequestContext.getCurrentContext(), times(1)).setSendZuulResponse(false);
-        verify(RequestContext.getCurrentContext(), times(1)).setResponseStatusCode(401);
+        verify(RequestContext.getCurrentContext(), times(1)).setResponseStatusCode(200);
         verify(cmd, never()).apply(any());
     }
 

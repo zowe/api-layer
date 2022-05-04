@@ -16,14 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
+import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.security.common.error.InvalidCertificateException;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -34,12 +36,16 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * load balancer. The request will be modified after specific instance will be selected.
  */
 public class ServiceAuthenticationFilter extends PreZuulFilter {
+    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 
     @Autowired
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
 
     @Autowired
     private AuthSourceService authSourceService;
+
+    @Autowired
+    private MessageService messageService;
 
     @Override
     public int filterOrder() {
@@ -56,25 +62,33 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
         final RequestContext context = RequestContext.getCurrentContext();
 
         boolean rejected = false;
-        boolean badRequest = false;
         AuthenticationCommand cmd = null;
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         try {
-            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
-            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authSource.orElse(null));
+            Authentication authentication = serviceAuthenticationService.getAuthentication(serviceId);
+            Optional<AuthSource> authSource = serviceAuthenticationService.getAuthSourceByAuthentication(authentication);
+            cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, authentication, authSource.orElse(null));
 
             // Verify authentication source validity if it is required for the schema
             if (authSource.isPresent() && !isSourceValidForCommand(authSource.get(), cmd)) {
-                rejected = true;
+                throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidAuthentication");
             }
         } catch (TokenExpireException tee) {
             cmd = null;
-        } catch (InvalidCertificateException ice) {
-            rejected = true;
-            badRequest = true;
         } catch (AuthenticationException ae) {
             rejected = true;
+        } catch (AuthSchemeException ase) {
+            String error;
+            if (ase.getParams() != null) {
+                error = this.messageService.createMessage(ase.getMessage(), (Object[]) ase.getParams()).mapToLogMessage();
+            } else {
+                error = this.messageService.createMessage(ase.getMessage()).mapToLogMessage();
+            }
+            context.addZuulRequestHeader(AUTH_FAIL_HEADER, error);
+            context.addZuulResponseHeader(AUTH_FAIL_HEADER, error);
+            context.setResponseStatusCode(SC_OK);
+            return null;
         } catch (Exception e) {
             throw new ZuulRuntimeException(
                 new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getLocalizedMessage())
@@ -83,7 +97,7 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
 
         if (rejected) {
             context.setSendZuulResponse(false);
-            context.setResponseStatusCode(badRequest ? SC_BAD_REQUEST : SC_UNAUTHORIZED);
+            context.setResponseStatusCode(SC_UNAUTHORIZED);
         } else if (cmd != null) {
             try {
                 // Update ZUUL context by authentication schema

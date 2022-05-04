@@ -11,6 +11,7 @@ package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -72,351 +73,362 @@ class LocalApiDocServiceTest {
             gatewayClient);
     }
 
-    @Test
-    void testRetrievalOfAPIDoc() {
-        String responseBody = "api-doc body";
+    @Nested
+    class WhenGetApiDoc {
+        @Test
+        void givenValidApiInfo_thenReturnApiDoc() {
+            String responseBody = "api-doc body";
 
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata(), true));
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
 
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
-        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
 
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-        assertEquals(responseBody, actualResponse.getApiDocContent());
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+            assertEquals(responseBody, actualResponse.getApiDocContent());
 
-        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+        }
+
+        @Nested
+        class ThenThrowException {
+            @Test
+            void givenNoApiDocFoundForService() {
+                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
+                assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
+            }
+
+            @Test
+            void givenServerErrorWhenRequestingSwaggerUrl() {
+                String responseBody = "Server not found";
+
+                when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                    .thenReturn(getStandardInstance(getStandardMetadata(), true));
+
+                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                    .thenReturn(expectedResponse);
+
+                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
+                assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
+            }
+
+            @Test
+            void givenNoInstanceMetadata() {
+                String responseBody = "api-doc body";
+
+                when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                    .thenReturn(getStandardInstance(new HashMap<>(), true));
+
+                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                    .thenReturn(expectedResponse);
+
+                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
+                assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
+            }
+        }
+        @Test
+        void givenNoSwaggerUrl_thenReturnSubstituteApiDoc() {
+            String generatedResponseBody = "{\n" +
+                "    \"swagger\": \"2.0\",\n" +
+                "    \"info\": {\n" +
+                "        \"title\": \"Test service\"\n" +
+                "      , \"description\": \"Test service description\"\n" +
+                "      , \"version\": \"1.0.0\"\n" +
+                "    },\n" +
+                "    \"host\": \"gateway:10000\",\n" +
+                "    \"basePath\": \"/service/api/v1\",\n" +
+                "    \"schemes\": [\"http\"],\n" +
+                "    \"tags\": [\n" +
+                "        {\n" +
+                "            \"name\": \"apimlHidden\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"paths\": {\n" +
+                "        \"/apimlHidden\": {\n" +
+                "            \"get\": {\n" +
+                "                \"tags\": [\"apimlHidden\"],\n" +
+                "                \"responses\": {\n" +
+                "                    \"200\": {\n" +
+                "                        \"description\": \"OK\"\n" +
+                "                    }\n" +
+                "                }\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n";
+            String responseBody = "api-doc body";
+
+            generatedResponseBody = generatedResponseBody.replaceAll("\\s+", "");
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
+
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
+
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+
+            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+            assertNull(actualResponse.getApiInfo().getSwaggerUrl());
+
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+            assertEquals(generatedResponseBody, actualResponse.getApiDocContent().replaceAll("\\s+", ""));
+
+            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+        }
+
+        @Test
+        void givenApiDocUrlInRouting_thenCreateApiDocUrlFromRoutingAndReturnApiDoc() {
+            String responseBody = "api-doc body";
+
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
+
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
+
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+
+            assertEquals(responseBody, actualResponse.getApiDocContent());
+        }
+
+        @Test
+        void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
+            String responseBody = "api-doc body";
+
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
+
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            when(restTemplate.exchange("http://service:8080/service/api-doc", HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
+
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+
+            assertEquals(responseBody, actualResponse.getApiDocContent());
+        }
+
+        @Nested
+        class GivenZosmfId {
+            @Test
+            void thenReturnApiDoc() {
+                String responseBody = "api-doc [ null, null ] body";
+                String expectedResponseBody = "api-doc [ true, false ] body";
+
+                when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
+                    .thenReturn(getStandardInstance(getStandardMetadata(), true));
+
+                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                    .thenReturn(expectedResponse);
+
+                ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
+
+                assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+                assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+                assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+                assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+
+                assertNotNull(actualResponse);
+                assertNotNull(actualResponse.getApiDocContent());
+                assertEquals(expectedResponseBody, actualResponse.getApiDocContent());
+
+                assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            }
+
+            @Test
+            void whenIncorrectResponseFromServer_thenReturnDefaultDoc() {
+                String responseBody = "Server not found";
+
+                when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
+                    .thenReturn(getStandardInstance(getStandardMetadata(), true));
+
+                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                    .thenReturn(expectedResponse);
+
+                ApiDocInfo result = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
+                assertThat(result.getApiDocContent(), is(notNullValue()));
+            }
+        }
     }
 
-    @Test
-    void givenZosmfId_whenDocIsRequested_ValidDocIsProduced() {
-        String responseBody = "api-doc [ null, null ] body";
-        String expectedResponseBody = "api-doc [ true, false ] body";
+    @Nested
+    class WhenGetDefaultApiDoc {
+        @Test
+        void givenDefaultApiDoc_thenReturnIt() {
+            String responseBody = "api-doc body";
+            Map<String, String> metadata = getMetadataWithMultipleApiInfo();
 
-        when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata(), true));
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(metadata, true));
 
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
 
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
-        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
 
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-        assertEquals(expectedResponseBody, actualResponse.getApiDocContent());
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+            assertEquals(responseBody, actualResponse.getApiDocContent());
 
-        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+        }
+
+        @Test
+        void givenNoDefaultApiDoc_thenReturnHighestVersion() {
+            String responseBody = "api-doc body";
+            Map<String, String> metadata = getMetadataWithMultipleApiInfo();
+            metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
+
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(metadata, true));
+
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
+
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+
+            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+            assertEquals(HIGHER_SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+            assertEquals(responseBody, actualResponse.getApiDocContent());
+
+            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+        }
+
+        @Test
+        void givenNoDefaultApiDocAndDifferentVersionFormat_thenReturnHighestVersion() {
+            String responseBody = "api-doc body";
+
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true));
+
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
+
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+
+            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+            assertEquals(HIGHER_SERVICE_VERSION_V, actualResponse.getApiInfo().getVersion());
+            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+            assertEquals(responseBody, actualResponse.getApiDocContent());
+
+            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+        }
+
+        @Test
+        void givenNoApiDocs_thenReturnNull() {
+            String responseBody = "api-doc body";
+
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
+
+            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+                .thenReturn(expectedResponse);
+
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+
+            assertNotNull(actualResponse);
+            assertNotNull(actualResponse.getApiDocContent());
+
+            assertEquals(responseBody, actualResponse.getApiDocContent());
+        }
     }
 
-    @Test
-    void givenZosmfId_whenIncorrectResponseFromServer_thenReturnDefaultDoc() {
-        String responseBody = "Server not found";
+    @Nested
+    class WhenGetApiVersions {
+        @Test
+        void givenApiVersions_thenReturnThem() {
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getStandardMetadata(), false));
 
-        when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata(), true));
+            List<String> actualVersions = apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+            assertEquals(Collections.singletonList(SERVICE_VERSION_V), actualVersions);
+        }
 
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
+        @Test
+        void givenNoApiVersions_thenThrowException() {
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-        ApiDocInfo result = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
-        assertThat(result.getApiDocContent(), is(notNullValue()));
+            Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
+                apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+            });
+            assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
+        }
     }
 
-    @Test
-    void testFailedRetrievalOfAPIDocWhenServiceNotFound() {
-        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
-        });
-        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
-    }
-
-    @Test
-    void testFailedRetrievalOfAPIDocWhenServerError() {
-        String responseBody = "Server not found";
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata(), true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
-        });
-        assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
-    }
-
-    @Test
-    void testFailedRetrievalOfAPIDocWhenMetadataNotDefined() {
-        String responseBody = "api-doc body";
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(new HashMap<>(), true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
-        });
-        assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
-    }
-
-    @Test
-    void shouldGenerateSubstituteSwaggerIfSwaggerUrlNull() {
-        String generatedResponseBody = "{\n" +
-            "    \"swagger\": \"2.0\",\n" +
-            "    \"info\": {\n" +
-            "        \"title\": \"Test service\"\n" +
-            "      , \"description\": \"Test service description\"\n" +
-            "      , \"version\": \"1.0.0\"\n" +
-            "    },\n" +
-            "    \"host\": \"gateway:10000\",\n" +
-            "    \"basePath\": \"/service/api/v1\",\n" +
-            "    \"schemes\": [\"http\"],\n" +
-            "    \"tags\": [\n" +
-            "        {\n" +
-            "            \"name\": \"apimlHidden\"\n" +
-            "        }\n" +
-            "    ],\n" +
-            "    \"paths\": {\n" +
-            "        \"/apimlHidden\": {\n" +
-            "            \"get\": {\n" +
-            "                \"tags\": [\"apimlHidden\"],\n" +
-            "                \"responses\": {\n" +
-            "                    \"200\": {\n" +
-            "                        \"description\": \"OK\"\n" +
-            "                    }\n" +
-            "                }\n" +
-            "            }\n" +
-            "        }\n" +
-            "    }\n" +
-            "}\n";
-        String responseBody = "api-doc body";
-
-        generatedResponseBody = generatedResponseBody.replaceAll("\\s+", "");
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
-
-        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-        assertNull(actualResponse.getApiInfo().getSwaggerUrl());
-
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-        assertEquals(generatedResponseBody, actualResponse.getApiDocContent().replaceAll("\\s+", ""));
-
-        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
-    }
-
-    @Test
-    void shouldCreateApiDocUrlFromRouting() {
-        String responseBody = "api-doc body";
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
-
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-
-        assertEquals(responseBody, actualResponse.getApiDocContent());
-    }
-
-    @Test
-    void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
-        String responseBody = "api-doc body";
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange("http://service:8080/service/api-doc", HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
-
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-
-        assertEquals(responseBody, actualResponse.getApiDocContent());
-    }
-
-    @Test
-    void givenDefaultApiDoc_whenRetrieveDefault_thenReturnIt() {
-        String responseBody = "api-doc body";
-        Map<String, String> metadata = getMetadataWithMultipleApiInfo();
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(metadata, true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
-
-        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
-
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-        assertEquals(responseBody, actualResponse.getApiDocContent());
-
-        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
-    }
-
-    @Test
-    void givenNoDefaultApiDoc_whenRetrieveDefault_thenReturnHighestVersion() {
-        String responseBody = "api-doc body";
-        Map<String, String> metadata = getMetadataWithMultipleApiInfo();
-        metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(metadata, true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
-
-        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-        assertEquals(HIGHER_SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
-
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-        assertEquals(responseBody, actualResponse.getApiDocContent());
-
-        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
-    }
-
-    @Test
-    void givenNoDefaultApiDocAndDifferentVersionFormat_whenRetrieveDefault_thenReturnHighestVersion() {
-        String responseBody = "api-doc body";
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
-
-        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-        assertEquals(HIGHER_SERVICE_VERSION_V, actualResponse.getApiInfo().getVersion());
-        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
-
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-        assertEquals(responseBody, actualResponse.getApiDocContent());
-
-        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
-    }
-
-    @Test
-    void givenNoApiDocs_whenRetrieveDefault_thenReturnNull() {
-        String responseBody = "api-doc body";
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
-
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-            .thenReturn(expectedResponse);
-
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
-
-        assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocContent());
-
-        assertEquals(responseBody, actualResponse.getApiDocContent());
-    }
-
-    @Test
-    void givenApiVersions_whenRetrieveVersions_thenReturnThem() {
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata(), false));
-
-        List<String> actualVersions = apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
-        assertEquals(Collections.singletonList(SERVICE_VERSION_V), actualVersions);
-    }
-
-    @Test
-    void givenNoApiVersions_whenRetrieveVersions_thenThrowException() {
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
-
-        Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
-        });
-        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
-    }
-
-    @Test
-    void givenDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnIt() {
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
-
-        String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
-        assertEquals(SERVICE_VERSION_V, defaultVersion);
-    }
-
-    @Test
-    void givenNoDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnHighestVersion() {
-        Map<String, String> metadata = getMetadataWithMultipleApiInfo();
-        metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
-
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(metadata, false));
-
-        String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
-        assertEquals(HIGHER_SERVICE_VERSION_V, defaultVersion);
-    }
-
-    @Test
-    void givenNoApiInfo_whenRetrieveDefaultVersion_thenThrowException() {
-        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
-
-        Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
-        });
-        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
+    @Nested
+    class WhenGetDefaultApiVersion {
+        @Test
+        void givenDefaultApiVersion_thenReturnIt() {
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
+
+            String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+            assertEquals(SERVICE_VERSION_V, defaultVersion);
+        }
+
+        @Test
+        void givenNoDefaultApiVersion_thenReturnHighestVersion() {
+            Map<String, String> metadata = getMetadataWithMultipleApiInfo();
+            metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
+
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(metadata, false));
+
+            String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+            assertEquals(HIGHER_SERVICE_VERSION_V, defaultVersion);
+        }
+
+        @Test
+        void givenNoApiInfo_thenThrowException() {
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
+
+            Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
+                apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+            });
+            assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
+        }
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {

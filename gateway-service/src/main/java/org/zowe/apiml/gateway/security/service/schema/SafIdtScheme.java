@@ -14,6 +14,7 @@ import com.netflix.zuul.context.RequestContext;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -48,7 +49,7 @@ import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
  */
 @Component
 @RequiredArgsConstructor
-public class SafIdtScheme implements AbstractAuthenticationScheme {
+public class SafIdtScheme implements IAuthenticationScheme {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthSourceService authSourceService;
     private final PassTicketService passTicketService;
@@ -109,6 +110,11 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
         } catch (TokenNotValidException | TokenExpireException e) {
             throw new SafIdtException("Unable to parse Identity Token", e);
         }
+    }
+
+    @Override
+    public Optional<AuthSource> getAuthSource() {
+        return authSourceService.getAuthSourceFromRequest();
     }
 
     @RequiredArgsConstructor
