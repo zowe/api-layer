@@ -66,11 +66,12 @@ public abstract class AbstractApiDocService<T, N> {
      * @return endpoint
      */
     protected String getEndPoint(String swaggerBasePath, String originalEndpoint) {
-        String endPoint = originalEndpoint;
         if (swaggerBasePath != null && !swaggerBasePath.equals(OpenApiUtil.SEPARATOR)) {
-            endPoint = swaggerBasePath + endPoint;
+            String newEndpoint = swaggerBasePath + originalEndpoint;
+            // handles case where base path ends in '/' and originalEndpoint starts with '/'
+            return newEndpoint.replace("//", "/");
         }
-        return endPoint;
+        return originalEndpoint;
     }
 
     /**
