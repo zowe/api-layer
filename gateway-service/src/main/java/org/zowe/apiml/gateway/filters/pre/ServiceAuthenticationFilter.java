@@ -23,6 +23,9 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import static org.apache.http.HttpStatus.SC_OK;
@@ -37,6 +40,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  */
 public class ServiceAuthenticationFilter extends PreZuulFilter {
     public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
+    @InjectApimlLogger
+    private final ApimlLogger logger = ApimlLogger.empty();
 
     @Autowired
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
@@ -85,6 +90,7 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
             } else {
                 error = this.messageService.createMessage(ase.getMessage()).mapToLogMessage();
             }
+            logger.log(MessageType.DEBUG, error);
             context.addZuulRequestHeader(AUTH_FAIL_HEADER, error);
             context.addZuulResponseHeader(AUTH_FAIL_HEADER, error);
             context.setResponseStatusCode(SC_OK);
