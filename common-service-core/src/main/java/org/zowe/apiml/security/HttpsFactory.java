@@ -271,7 +271,7 @@ public class HttpsFactory {
     }
 
     public HostnameVerifier createHostnameVerifier() {
-        if (config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
             return new NoopHostnameVerifier();

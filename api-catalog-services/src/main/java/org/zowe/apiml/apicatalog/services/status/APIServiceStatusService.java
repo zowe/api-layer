@@ -89,6 +89,16 @@ public class APIServiceStatusService {
     }
 
     /**
+     * Return the cached default API doc for a service
+     *
+     * @param serviceId  the unique service id
+     * @return the default version of an API Doc
+     */
+    public ResponseEntity<String> getServiceCachedDefaultApiDocInfo(@NonNull String serviceId) {
+        return new ResponseEntity<>(cachedApiDocService.getDefaultApiDocForService(serviceId), createHeaders(), HttpStatus.OK);
+    }
+
+    /**
      * Return the diff of two api versions
      * @param serviceId the unique service id
      * @param apiVersion1 the old version of the api
@@ -106,8 +116,8 @@ public class APIServiceStatusService {
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
             return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
         } catch (Exception e) {
-            String errorMessage = String.format("Error retrieving API diff for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2);
-            log.debug("{}. Cause: {}", errorMessage, e.getMessage());
+            String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiVersion1, apiVersion2);
+            log.error(errorMessage, e);
             throw new ApiDiffNotAvailableException(errorMessage);
         }
     }

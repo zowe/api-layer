@@ -31,9 +31,9 @@ public class VsamConfig {
 
     @Value("${caching.storage.vsam.name:}")
     private String fileName;
-    @Value("${caching.storage.vsam.keyLength:32}")
+    @Value("${caching.storage.vsam.keyLength:128}")
     private int keyLength;
-    @Value("${caching.storage.vsam.recordLength:512}")
+    @Value("${caching.storage.vsam.recordLength:4096}")
     private int recordLength;
     @Value("${caching.storage.vsam.encoding:" + ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE + "}")
     private String encoding;
