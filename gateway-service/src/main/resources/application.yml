@@ -221,6 +221,7 @@ eureka:
                         serviceUrl: /gateway
                 apiInfo:
                     - apiId: zowe.apiml.gateway
+                      version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
                       documentationUrl: https://zowe.github.io/docs-site/
