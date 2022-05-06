@@ -16,6 +16,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.swagger.models.*;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -50,8 +51,10 @@ class ApiDocV2ServiceTest {
     private static final String HIDDEN_TAG = "apimlHidden";
     private static final String CATALOG_VERSION = "/api/v1";
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
-    private static final String HARDCODED_VERSION = "/v1";
+    private static final String API_ID = "org.zowe.apicatalog";
+    private static final String API_VERSION = "v1.0.0";
     private static final String SEPARATOR = "/";
+    private static final String URL_ENCODED_SPACE = "%20";
 
     private ApiDocV2Service apiDocV2Service;
     private GatewayConfigProperties gatewayConfigProperties;
@@ -62,7 +65,7 @@ class ApiDocV2ServiceTest {
         gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV2Service = new ApiDocV2Service(gatewayClient);
-        ReflectionTestUtils.setField(apiDocV2Service,"scheme","https");
+        ReflectionTestUtils.setField(apiDocV2Service, "scheme", "https");
     }
 
     @Test
@@ -75,244 +78,259 @@ class ApiDocV2ServiceTest {
         assertEquals("Response is not a Swagger type object.", exception.getMessage());
     }
 
-    @Test
-    void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
-        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
+    @Nested
+    class WhenApiDocTransform {
+        @Nested
+        class ThenCheckUpdatedValues {
+            @Test
+            void givenSwaggerValidJson() {
+                Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
+                String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+                RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
-        routedServices.addRoutedService(routedService3);
+                RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
+                routedServices.addRoutedService(routedService3);
 
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
-        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertJsonToSwagger(actualContent);
+                String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                Swagger actualSwagger = convertJsonToSwagger(actualContent);
 
-        assertNotNull(actualSwagger);
+                assertNotNull(actualSwagger);
 
-        String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
-            "\n\n" +
-            SWAGGER_LOCATION_LINK +
-            "(" +
-            gatewayClient.getGatewayConfigProperties().getScheme() +
-            "://" +
-            gatewayClient.getGatewayConfigProperties().getHostname() +
-            SEPARATOR +
-            CoreService.API_CATALOG.getServiceId() +
-            CATALOG_VERSION +
-            CATALOG_APIDOC_ENDPOINT +
-            SEPARATOR +
-            SERVICE_ID +
-            HARDCODED_VERSION +
-            ")";
+                String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
+                    "\n\n" +
+                    SWAGGER_LOCATION_LINK +
+                    "(" +
+                    gatewayClient.getGatewayConfigProperties().getScheme() +
+                    "://" +
+                    gatewayClient.getGatewayConfigProperties().getHostname() +
+                    SEPARATOR +
+                    CoreService.API_CATALOG.getServiceId() +
+                    CATALOG_VERSION +
+                    CATALOG_APIDOC_ENDPOINT +
+                    SEPARATOR +
+                    SERVICE_ID +
+                    SEPARATOR +
+                    API_ID +
+                    URL_ENCODED_SPACE +
+                    API_VERSION +
+                    ")";
 
-        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
-        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
-        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
-        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
+                assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+                assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
+                assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+                assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+                assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
 
-        assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
-        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
-    }
+                assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
+                assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
+            }
 
-    @Test
-    void givenSwaggerValidYaml_whenApiDocTransform_thenCheckUpdatedValues() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
-        String apiDocContent = convertSwaggerToYaml(dummySwaggerObject);
+            @Test
+            void givenSwaggerValidYaml() {
+                Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
+                String apiDocContent = convertSwaggerToYaml(dummySwaggerObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+                RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
-        routedServices.addRoutedService(routedService3);
+                RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
+                routedServices.addRoutedService(routedService3);
 
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
-        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertYamlToSwagger(actualContent);
+                String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                Swagger actualSwagger = convertYamlToSwagger(actualContent);
 
-        assertNotNull(actualSwagger);
+                assertNotNull(actualSwagger);
 
-        String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
-            "\n\n" +
-            SWAGGER_LOCATION_LINK +
-            "(" +
-            gatewayClient.getGatewayConfigProperties().getScheme() +
-            "://" +
-            gatewayClient.getGatewayConfigProperties().getHostname() +
-            SEPARATOR +
-            CoreService.API_CATALOG.getServiceId() +
-            CATALOG_VERSION +
-            CATALOG_APIDOC_ENDPOINT +
-            SEPARATOR +
-            SERVICE_ID +
-            HARDCODED_VERSION +
-            ")";
+                String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
+                    "\n\n" +
+                    SWAGGER_LOCATION_LINK +
+                    "(" +
+                    gatewayClient.getGatewayConfigProperties().getScheme() +
+                    "://" +
+                    gatewayClient.getGatewayConfigProperties().getHostname() +
+                    SEPARATOR +
+                    CoreService.API_CATALOG.getServiceId() +
+                    CATALOG_VERSION +
+                    CATALOG_APIDOC_ENDPOINT +
+                    SEPARATOR +
+                    SERVICE_ID +
+                    SEPARATOR +
+                    API_ID +
+                    URL_ENCODED_SPACE +
+                    API_VERSION +
+                    ")";
 
-        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
-        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
-        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
-        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
+                assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+                assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
+                assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+                assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+                assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
 
-        assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
-        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
-    }
+                assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
+                assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
+            }
 
-    @Test
-    void givenApiInfoNullAndBasePathAsNotRoot_whenApiDocTransform_thenCheckUpdatedValues() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
-        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
+            @Test
+            void givenApiInfoNullAndBasePathAsNotRoot() {
+                Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
+                String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
+                RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, routedServices);
 
-        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertJsonToSwagger(actualContent);
-        assertNotNull(actualSwagger);
+                String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                Swagger actualSwagger = convertJsonToSwagger(actualContent);
+                assertNotNull(actualSwagger);
 
-        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
-        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
-    }
+                assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
+                assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
+            }
 
-    @Test
-    void givenApiInfoNullAndBasePathAsRoot_whenApiDocTransform_thenCheckUpdatedValues() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/", false);
-        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
+            @Test
+            void givenApiInfoNullAndBasePathAsRoot() {
+                Swagger dummySwaggerObject = getDummySwaggerObject("/", false);
+                String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
+                RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, routedServices);
 
-        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertJsonToSwagger(actualContent);
-        assertNotNull(actualSwagger);
+                String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                Swagger actualSwagger = convertJsonToSwagger(actualContent);
+                assertNotNull(actualSwagger);
 
-        assertEquals("", actualSwagger.getBasePath());
-        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
-    }
+                assertEquals("", actualSwagger.getBasePath());
+                assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
+            }
 
-    @Test
-    void givenApimlHiddenTag_whenApiDocTransform_thenShouldBeSameDescriptionAndPaths() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", true);
-        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
+            @Test
+            void givenMultipleRoutedService() {
+                Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
+                String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog/api1");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog/api2");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
+                final RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
+                routedServices.addRoutedService(routedService3);
 
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", null);
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
-        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertJsonToSwagger(actualContent);
-        assertNotNull(actualSwagger);
+                String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                Swagger actualSwagger = convertJsonToSwagger(actualContent);
 
-        assertNotNull(actualSwagger);
-        assertEquals(dummySwaggerObject.getInfo().getDescription(), actualSwagger.getInfo().getDescription());
+                assertNotNull(actualSwagger);
 
-        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
-    }
+                String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
+                    "\n\n" +
+                    SWAGGER_LOCATION_LINK +
+                    "(" +
+                    gatewayClient.getGatewayConfigProperties().getScheme() +
+                    "://" +
+                    gatewayClient.getGatewayConfigProperties().getHostname() +
+                    SEPARATOR +
+                    CoreService.API_CATALOG.getServiceId() +
+                    CATALOG_VERSION +
+                    CATALOG_APIDOC_ENDPOINT +
+                    SEPARATOR +
+                    SERVICE_ID +
+                    SEPARATOR +
+                    API_ID +
+                    URL_ENCODED_SPACE +
+                    API_VERSION +
+                    ")";
 
-    @Test
-    void givenMultipleRoutedService_whenApiDocTransform_thenCheckUpdatedValues() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
-        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
+                assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+                assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
+                assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+                assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+                assertEquals("", actualSwagger.getBasePath());
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog/api1");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
-        RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog/api2");
+                assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
+                assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + SERVICE_ID + "/" + routedService.getGatewayUrl()));
+                assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + SERVICE_ID + "/" + routedService3.getGatewayUrl()));
+            }
 
-        final RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
-        routedServices.addRoutedService(routedService3);
+            @Test
+            void givenServiceUrlAsRoot() {
+                Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
+                String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertJsonToSwagger(actualContent);
+                RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
 
-        assertNotNull(actualSwagger);
+                ApiInfo apiInfo = new ApiInfo(API_VERSION, "api/v1", API_ID, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
-        String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
-            "\n\n" +
-            SWAGGER_LOCATION_LINK +
-            "(" +
-            gatewayClient.getGatewayConfigProperties().getScheme() +
-            "://" +
-            gatewayClient.getGatewayConfigProperties().getHostname() +
-            SEPARATOR +
-            CoreService.API_CATALOG.getServiceId() +
-            CATALOG_VERSION +
-            CATALOG_APIDOC_ENDPOINT +
-            SEPARATOR +
-            SERVICE_ID +
-            HARDCODED_VERSION +
-            ")";
+                String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                Swagger actualSwagger = convertJsonToSwagger(actualContent);
+                assertNotNull(actualSwagger);
 
-        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
-        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
-        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
-        assertEquals("", actualSwagger.getBasePath());
+                assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
 
-        assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
-        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + SERVICE_ID + "/" + routedService.getGatewayUrl()));
-        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + SERVICE_ID + "/" + routedService3.getGatewayUrl()));
-    }
+                dummySwaggerObject.getPaths().forEach((k, v) ->
+                    assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k))
+                );
+            }
+        }
 
-    @Test
-    void givenServiceUrlAsRoot_whenApiDocTransform_thenCheckUpdatedValues() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
-        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
+        @Test
+        void givenApimlHiddenTag_thenShouldBeSameDescriptionAndPaths() {
+            Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", true);
+            String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+            RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+            RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
+            RoutedServices routedServices = new RoutedServices();
+            routedServices.addRoutedService(routedService);
+            routedServices.addRoutedService(routedService2);
 
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+            ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null);
+            ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
-        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertJsonToSwagger(actualContent);
-        assertNotNull(actualSwagger);
+            String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+            Swagger actualSwagger = convertJsonToSwagger(actualContent);
+            assertNotNull(actualSwagger);
 
-        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
+            assertNotNull(actualSwagger);
+            assertEquals(dummySwaggerObject.getInfo().getDescription(), actualSwagger.getInfo().getDescription());
 
-        dummySwaggerObject.getPaths().forEach((k, v) ->
-            assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k))
-        );
+            assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
+        }
     }
 
     private String convertSwaggerToJson(Swagger swagger) {
