@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
@@ -47,7 +48,7 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        updateSchemeHostAndLink(swagger, serviceId, hidden);
+        updateSchemeHostAndLink(swagger, serviceId, apiDocInfo.getApiInfo(), hidden);
         updatePaths(swagger, serviceId, apiDocInfo, hidden);
         updateExternalDoc(swagger, apiDocInfo);
 
@@ -66,9 +67,9 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
      * @param serviceId the unique service id
      * @param hidden    do not add link for automatically generated API doc
      */
-    private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
+    private void updateSchemeHostAndLink(Swagger swagger, String serviceId, ApiInfo apiInfo, boolean hidden) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties, scheme);
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
         log.debug("Updating host for service with id: " + serviceId + " to: " + gatewayConfigProperties.getHostname());
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
         swagger.setHost(gatewayConfigProperties.getHostname());

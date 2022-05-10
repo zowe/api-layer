@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
@@ -47,8 +48,10 @@ class ApiDocV3ServiceTest {
     private static final String EXTERNAL_DOCUMENTATION = "External documentation";
     private static final String CATALOG_VERSION = "/api/v1";
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
-    private static final String HARDCODED_VERSION = "/v1";
+    private static final String API_ID = "org.zowe.apicatalog";
+    private static final String API_VERSION = "v3.0.0";
     private static final String SEPARATOR = "/";
+    private static final String URL_ENCODED_SPACE = "%20";
 
     private GatewayClient gatewayClient;
     private ApiDocV3Service apiDocV3Service;
@@ -58,144 +61,159 @@ class ApiDocV3ServiceTest {
         GatewayConfigProperties gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV3Service = new ApiDocV3Service(gatewayClient);
-        ReflectionTestUtils.setField(apiDocV3Service,"scheme","https");
+        ReflectionTestUtils.setField(apiDocV3Service, "scheme", "https");
     }
 
-    @Test
-    void givenOpenApiValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
-        List<Server> servers = new ArrayList<>();
-        servers.add(0, new Server().url("/api/v1/apicatalog"));
-        servers.add(1, new Server().url("http://localhost:8080/apicatalog"));
-        servers.add(2, new Server().url("http://localhost2:8080/serviceId"));
-        OpenAPI dummyOpenApiObject = getDummyOpenApiObject(servers, false);
-        String apiDocContent = convertOpenApiToJson(dummyOpenApiObject);
+    @Nested
+    class WhenApiDocTransform {
+        @Nested
+        class ThenCheckUpdatedValues {
+            @Test
+            void givenOpenApiValidJson() {
+                List<Server> servers = new ArrayList<>();
+                servers.add(0, new Server().url("/api/v1/apicatalog"));
+                servers.add(1, new Server().url("http://localhost:8080/apicatalog"));
+                servers.add(2, new Server().url("http://localhost2:8080/serviceId"));
+                OpenAPI dummyOpenApiObject = getDummyOpenApiObject(servers, false);
+                String apiDocContent = convertOpenApiToJson(dummyOpenApiObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
-        String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        OpenAPI actualSwagger = convertJsonToOpenApi(actualContent);
-        assertNotNull(actualSwagger);
-        String expectedDescription = dummyOpenApiObject.getInfo().getDescription() +
-            "\n\n" +
-            SWAGGER_LOCATION_LINK +
-            "(" +
-            gatewayClient.getGatewayConfigProperties().getScheme() +
-            "://" +
-            gatewayClient.getGatewayConfigProperties().getHostname() +
-            SEPARATOR +
-            CoreService.API_CATALOG.getServiceId() +
-            CATALOG_VERSION +
-            CATALOG_APIDOC_ENDPOINT +
-            SEPARATOR +
-            SERVICE_ID +
-            HARDCODED_VERSION +
-            ")";
+                String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                OpenAPI actualSwagger = convertJsonToOpenApi(actualContent);
+                assertNotNull(actualSwagger);
+                String expectedDescription = dummyOpenApiObject.getInfo().getDescription() +
+                    "\n\n" +
+                    SWAGGER_LOCATION_LINK +
+                    "(" +
+                    gatewayClient.getGatewayConfigProperties().getScheme() +
+                    "://" +
+                    gatewayClient.getGatewayConfigProperties().getHostname() +
+                    SEPARATOR +
+                    CoreService.API_CATALOG.getServiceId() +
+                    CATALOG_VERSION +
+                    CATALOG_APIDOC_ENDPOINT +
+                    SEPARATOR +
+                    SERVICE_ID +
+                    SEPARATOR +
+                    API_ID +
+                    URL_ENCODED_SPACE +
+                    API_VERSION +
+                    ")";
 
-        assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
-        assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
+                assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
+                assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
 
-        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
-        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
-    }
+                assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+                assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+                assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+            }
 
-    @Test
-    void givenOpenApiValidYaml_whenApiDocTransform_thenCheckUpdatedValues() {
-        List<Server> servers = new ArrayList<>();
-        servers.add(0, new Server().url("/api/v1/apicatalog"));
-        servers.add(1, new Server().url("http://localhost:8080/apicatalog"));
-        servers.add(2, new Server().url("http://localhost2:8080/serviceId"));
-        OpenAPI dummyOpenApiObject = getDummyOpenApiObject(servers, false);
-        String apiDocContent = convertOpenApiToYaml(dummyOpenApiObject);
+            @Test
+            void givenOpenApiValidYaml() {
+                List<Server> servers = new ArrayList<>();
+                servers.add(0, new Server().url("/api/v1/apicatalog"));
+                servers.add(1, new Server().url("http://localhost:8080/apicatalog"));
+                servers.add(2, new Server().url("http://localhost2:8080/serviceId"));
+                OpenAPI dummyOpenApiObject = getDummyOpenApiObject(servers, false);
+                String apiDocContent = convertOpenApiToYaml(dummyOpenApiObject);
 
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+                RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+                RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                RoutedServices routedServices = new RoutedServices();
+                routedServices.addRoutedService(routedService);
+                routedServices.addRoutedService(routedService2);
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
-        String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        OpenAPI actualSwagger = convertYamlToOpenApi(actualContent);
-        assertNotNull(actualSwagger);
-        String expectedDescription = dummyOpenApiObject.getInfo().getDescription() +
-            "\n\n" +
-            SWAGGER_LOCATION_LINK +
-            "(" +
-            gatewayClient.getGatewayConfigProperties().getScheme() +
-            "://" +
-            gatewayClient.getGatewayConfigProperties().getHostname() +
-            SEPARATOR +
-            CoreService.API_CATALOG.getServiceId() +
-            CATALOG_VERSION +
-            CATALOG_APIDOC_ENDPOINT +
-            SEPARATOR +
-            SERVICE_ID +
-            HARDCODED_VERSION +
-            ")";
+                String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                OpenAPI actualSwagger = convertYamlToOpenApi(actualContent);
+                assertNotNull(actualSwagger);
+                String expectedDescription = dummyOpenApiObject.getInfo().getDescription() +
+                    "\n\n" +
+                    SWAGGER_LOCATION_LINK +
+                    "(" +
+                    gatewayClient.getGatewayConfigProperties().getScheme() +
+                    "://" +
+                    gatewayClient.getGatewayConfigProperties().getHostname() +
+                    SEPARATOR +
+                    CoreService.API_CATALOG.getServiceId() +
+                    CATALOG_VERSION +
+                    CATALOG_APIDOC_ENDPOINT +
+                    SEPARATOR +
+                    SERVICE_ID +
+                    SEPARATOR +
+                    API_ID +
+                    URL_ENCODED_SPACE +
+                    API_VERSION +
+                    ")";
 
-        assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
-        assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
+                assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
+                assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
 
-        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
-        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
-    }
+                assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+                assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+                assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+            }
+        }
 
-    @Test
-    void givenEmptyJson_whenApiDocTransform_thenThrowException() {
-        String invalidJson = "";
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
+        @Nested
+        class ThenThrowException {
+            @Test
+            void givenEmptyJson() {
+                String invalidJson = "";
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
-        Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
-            apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        });
-        assertEquals("[No swagger supplied]", exception.getMessage());
-    }
+                Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
+                    apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                });
+                assertEquals("[No swagger supplied]", exception.getMessage());
+            }
 
-    @Test
-    void givenInvalidJson_whenApiDocTransform_thenThrowException() {
-        String invalidJson = "nonsense";
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
+            @Test
+            void givenInvalidJson() {
+                String invalidJson = "nonsense";
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
-        Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
-            apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        });
-        assertEquals("[attribute openapi is not of type `object`]", exception.getMessage());
-    }
+                Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
+                    apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+                });
+                assertEquals("[attribute openapi is not of type `object`]", exception.getMessage());
+            }
+        }
 
-    /**
-     * GH #637
-     */
-    @Test
-    void givenValidApidoc_whenTransformed_thenDontCapitalizeEnums() {
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        String content = "{\"openapi\":\"3.0.1\",\"info\":{\"title\":\"ZoweKotlinSampleRESTAPI\",\"description\":\"SampleKotlinSpringBootRESTAPIforZowe.\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"https://localhost:10090\",\"description\":\"Generatedserverurl\"}],\"paths\":{\"/api/v1/greeting\":{\"get\":{\"tags\":[\"Greeting\"],\"summary\":\"Returnsagreetingforthenamepassed\",\"operationId\":\"getGreeting\",\"parameters\":[{\"name\":\"name\",\"in\":\"query\",\"description\":\"Personorobjecttobegreeted\",\"required\":false,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"Successfulgreeting\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Greeting\"}}}},\"404\":{\"description\":\"Notfound\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ApiMessage\"}}}}}}}},\"components\":{\"schemas\":{\"Greeting\":{\"required\":[\"content\",\"id\",\"languageTag\"],\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"description\":\"GeneratedsequenceIDofthemessage\",\"format\":\"int64\"},\"content\":{\"type\":\"string\",\"description\":\"Thegreetingmessage\"},\"languageTag\":{\"type\":\"string\",\"description\":\"Thelocalelanguagetagusedforthismessage\"}}},\"ApiMessage\":{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/Message\"}}}},\"Message\":{\"type\":\"object\",\"properties\":{\"messageType\":{\"type\":\"string\",\"enum\":[\"ERROR\",\"WARNING\",\"INFO\",\"DEBUG\",\"TRACE\"]},\"messageNumber\":{\"type\":\"string\"},\"messageContent\":{\"type\":\"string\"},\"messageAction\":{\"type\":\"string\"},\"messageReason\":{\"type\":\"string\"},\"messageKey\":{\"type\":\"string\"},\"messageParameters\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"messageInstanceId\":{\"type\":\"string\"},\"messageComponent\":{\"type\":\"string\"},\"messageSource\":{\"type\":\"string\"}}}}}}";
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+        /**
+         * GH #637
+         */
+        @Test
+        void givenValidApiDoc_thenDontCapitalizeEnums() {
+            ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+            String content = "{\"openapi\":\"3.0.1\",\"info\":{\"title\":\"ZoweKotlinSampleRESTAPI\",\"description\":\"SampleKotlinSpringBootRESTAPIforZowe.\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"https://localhost:10090\",\"description\":\"Generatedserverurl\"}],\"paths\":{\"/api/v1/greeting\":{\"get\":{\"tags\":[\"Greeting\"],\"summary\":\"Returnsagreetingforthenamepassed\",\"operationId\":\"getGreeting\",\"parameters\":[{\"name\":\"name\",\"in\":\"query\",\"description\":\"Personorobjecttobegreeted\",\"required\":false,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"Successfulgreeting\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Greeting\"}}}},\"404\":{\"description\":\"Notfound\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ApiMessage\"}}}}}}}},\"components\":{\"schemas\":{\"Greeting\":{\"required\":[\"content\",\"id\",\"languageTag\"],\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"description\":\"GeneratedsequenceIDofthemessage\",\"format\":\"int64\"},\"content\":{\"type\":\"string\",\"description\":\"Thegreetingmessage\"},\"languageTag\":{\"type\":\"string\",\"description\":\"Thelocalelanguagetagusedforthismessage\"}}},\"ApiMessage\":{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/Message\"}}}},\"Message\":{\"type\":\"object\",\"properties\":{\"messageType\":{\"type\":\"string\",\"enum\":[\"ERROR\",\"WARNING\",\"INFO\",\"DEBUG\",\"TRACE\"]},\"messageNumber\":{\"type\":\"string\"},\"messageContent\":{\"type\":\"string\"},\"messageAction\":{\"type\":\"string\"},\"messageReason\":{\"type\":\"string\"},\"messageKey\":{\"type\":\"string\"},\"messageParameters\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"messageInstanceId\":{\"type\":\"string\"},\"messageComponent\":{\"type\":\"string\"},\"messageSource\":{\"type\":\"string\"}}}}}}";
+            RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
+            RoutedServices routedServices = new RoutedServices();
+            routedServices.addRoutedService(routedService);
 
-        ApiDocInfo info = new ApiDocInfo(apiInfo, content, routedServices);
+            ApiDocInfo info = new ApiDocInfo(apiInfo, content, routedServices);
 
-        assertThat(content, not(containsString("\"style\":\"form\"")));
-        assertThat(content, not(containsString("\"style\":\"FORM\"")));
+            assertThat(content, not(containsString("\"style\":\"form\"")));
+            assertThat(content, not(containsString("\"style\":\"FORM\"")));
 
-        String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, info);
+            String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, info);
 
-        assertThat(actualContent, containsString("\"style\":\"form\""));
-        assertThat(actualContent, not(containsString("\"style\":\"FORM\"")));
+            assertThat(actualContent, containsString("\"style\":\"form\""));
+            assertThat(actualContent, not(containsString("\"style\":\"FORM\"")));
+        }
     }
 
     private String convertOpenApiToJson(OpenAPI openApi) {
