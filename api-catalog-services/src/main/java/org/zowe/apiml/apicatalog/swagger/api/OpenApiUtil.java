@@ -10,6 +10,7 @@
 package org.zowe.apiml.apicatalog.swagger.api;
 
 import lombok.experimental.UtilityClass;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
@@ -19,13 +20,16 @@ public class OpenApiUtil {
     private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
     private static final String CATALOG_VERSION = "/api/v1";
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
-    private static final String HARDCODED_VERSION = "/v1";
     public static final String SEPARATOR = "/";
+    public static final String URL_ENCODED_SPACE = "%20";
 
-    public static String getOpenApiLink(String serviceId, GatewayConfigProperties gatewayConfigProperties, String scheme) {
+    public static String getOpenApiLink(String serviceId, ApiInfo apiInfo, GatewayConfigProperties gatewayConfigProperties, String scheme) {
         String link = scheme + "://" + gatewayConfigProperties.getHostname()
             + SEPARATOR + CoreService.API_CATALOG.getServiceId() + CATALOG_VERSION
-            + CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
+            + CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId;
+        if (apiInfo != null) {
+            link = link + SEPARATOR + apiInfo.getApiId() + URL_ENCODED_SPACE + apiInfo.getVersion();
+        }
         return "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
     }
 

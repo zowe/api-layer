@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.apicatalog.swagger.SecuritySchemeSerializer;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -65,7 +66,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         boolean hidden = isHidden(openAPI.getTags());
 
         updatePaths(openAPI, serviceId, apiDocInfo, hidden);
-        updateServerAndLink(openAPI, serviceId, hidden);
+        updateServerAndLink(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden);
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
@@ -76,9 +77,9 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
     }
 
-    private void updateServerAndLink(OpenAPI openAPI, String serviceId, boolean hidden) {
+    private void updateServerAndLink(OpenAPI openAPI, String serviceId, ApiInfo apiInfo, boolean hidden) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties, scheme);
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
 
         if (openAPI.getServers() != null) {
             openAPI.getServers()
