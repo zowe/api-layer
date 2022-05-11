@@ -99,12 +99,13 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                     .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256))
                     .compact();
 
-                ResponseEntity<Object> response = mock(ResponseEntity.class);
-                when(mockTemplate.postForEntity(any(), any(), any())).thenReturn(response);
-                when(response.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.CREATED);SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
-                responseBody.setJwt(resultSafToken);
+                ResponseEntity<SafRestAuthenticationService.Token> response = mock(ResponseEntity.class);
+                when(mockTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                        .thenReturn(response);
+                SafRestAuthenticationService.Token responseBody =
+                        new SafRestAuthenticationService.Token(resultSafToken, "applid");
                 when(response.getBody()).thenReturn(responseBody);
-
+                
                 given()
                     .cookie(validJwtToken)
                     .when()
@@ -144,7 +145,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then()
-                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                    .statusCode(is(HttpStatus.SC_OK));
                 //@formatter:on
 
                 verify(mockTemplate, times(0))
