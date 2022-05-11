@@ -145,7 +145,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then()
-                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                    .statusCode(is(HttpStatus.SC_OK));
                 //@formatter:on
 
                 verify(mockTemplate, times(0))
