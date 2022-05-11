@@ -16,6 +16,7 @@ INITIAL_ERRORS_FOUND=$ERRORS_FOUND
 . ${ROOT_DIR}/bin/utils/utils.sh
 
 validate_port_is_available ${ZWE_CACHING_SERVICE_PORT}
+validate_port_is_available ${JGROUPS_BIND_PORT}
 validate_variables_are_set "KEYSTORE,KEYSTORE_PASSWORD,KEY_ALIAS,VERIFY_CERTIFICATES"
 
 return $(($ERRORS_FOUND-$INITIAL_ERRORS_FOUND))
