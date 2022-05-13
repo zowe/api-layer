@@ -87,6 +87,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE:-10000} \
   -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
+  -Djgroups.bind.address=${ZOWE_EXPLORER_HOST} \
   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
