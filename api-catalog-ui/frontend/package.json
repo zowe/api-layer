@@ -24,6 +24,7 @@
         "lodash": "4.17.21",
         "loglevel": "1.6.1",
         "npm": "7.20.5",
+        "openapi-snippet": "^0.13.0",
         "react": "17.0.2",
         "react-app-polyfill": "2.0.0",
         "react-dom": "17.0.2",
