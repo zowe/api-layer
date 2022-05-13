@@ -104,6 +104,9 @@ public class ApplicationRegistry {
     }
 
     public List<InstanceInfo> getInstances() {
+        if (applicationsToReturn.get(currentApplication) == null) {
+            currentApplication = "serviceid1";
+        }
         return applicationsToReturn.get(currentApplication).getRegisteredApplications(currentApplication).getInstances();
     }
 
