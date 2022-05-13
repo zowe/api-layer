@@ -47,7 +47,7 @@ public class CorsBeans {
             addCorsRelatedIgnoredHeaders();
 
             config.setAllowCredentials(true);
-            config.addAllowedOrigin(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
+            config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods());
             pathsToEnable = CORS_ENABLED_ENDPOINTS;

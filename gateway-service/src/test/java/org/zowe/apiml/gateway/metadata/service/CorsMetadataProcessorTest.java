@@ -72,8 +72,8 @@ class CorsMetadataProcessorTest {
         CorsConfiguration provided = configurationCaptor.getValue();
         assertDefaultConfiguration(provided);
 
-        assertThat(provided.getAllowedOrigins(), hasSize(1));
-        assertThat(provided.getAllowedOrigins().get(0), is("*"));
+        assertThat(provided.getAllowedOriginPatterns(), hasSize(1));
+        assertThat(provided.getAllowedOriginPatterns().get(0), is("*"));
     }
 
     private void assertDefaultConfiguration(CorsConfiguration provided) {
