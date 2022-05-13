@@ -111,7 +111,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 SafRestAuthenticationService.Token responseBody =
                         new SafRestAuthenticationService.Token(resultSafToken, "applid");
                 when(response.getBody()).thenReturn(responseBody);
-
+                
                 given()
                     .cookie(validJwtToken)
                     .when()

@@ -147,7 +147,7 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
 
         @Test
         void whenNoCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
-            String errorHeaderValue = "ZWEAG160E No authentication provided in the request";
+            String errorHeaderValue = "ZWEAG167E No client certificate provided in the request";
 
             applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
             mockValid200HttpResponse();

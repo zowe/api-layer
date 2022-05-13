@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,6 +23,9 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 /**
@@ -31,8 +33,10 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
  * to HTTP header. If no header is specified in Authentication object, empty command is returned.
  */
 @Component
-@Slf4j
 public class X509Scheme implements IAuthenticationScheme {
+    @InjectApimlLogger
+    private final ApimlLogger logger = ApimlLogger.empty();
+
     private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
@@ -51,7 +55,7 @@ public class X509Scheme implements IAuthenticationScheme {
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
         if (authSource == null || authSource.getRawSource() == null) {
-            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingX509Authentication");
         }
 
         X509AuthSource.Parsed parsedAuthSource = (X509AuthSource.Parsed) authSourceService.parse(authSource);
@@ -78,7 +82,7 @@ public class X509Scheme implements IAuthenticationScheme {
         return authSourceService.getAuthSourceFromRequest();
     }
 
-    public static class X509Command extends AuthenticationCommand {
+    public class X509Command extends AuthenticationCommand {
         private final Long expireAt;
         private final String[] headers;
         private final X509AuthSource.Parsed parsedAuthSource;
@@ -122,7 +126,7 @@ public class X509Scheme implements IAuthenticationScheme {
                         context.addZuulRequestHeader(DISTINGUISHED_NAME, parsedAuthSource.getDistinguishedName());
                         break;
                     default:
-                        log.warn("Unsupported header specified in service metadata, " +
+                        logger.log(MessageType.WARNING, "Unsupported header specified in service metadata, " +
                             "please review apiml.service.authentication.headers, possible values are: " + PUBLIC_KEY +
                             ", " + DISTINGUISHED_NAME + ", " + COMMON_NAME + "\nprovided value: " + header);
 

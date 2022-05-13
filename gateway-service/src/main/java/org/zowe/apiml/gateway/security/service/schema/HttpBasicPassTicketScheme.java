@@ -22,10 +22,13 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -40,6 +43,8 @@ import java.util.Base64;
  */
 @Component
 public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
+    @InjectApimlLogger
+    private final ApimlLogger logger = ApimlLogger.empty();
 
     private final PassTicketService passTicketService;
     private final AuthSourceService authSourceService;
@@ -78,11 +83,14 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             }
 
             if (parsedAuthSource.getUserId() == null) {
+                logger.log(MessageType.DEBUG, "It was not possible to map provided certificate to the mainframe identity.");
                 throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
             }
         } catch (TokenNotValidException e) {
+            logger.log(MessageType.DEBUG, e.getLocalizedMessage());
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
         } catch (TokenExpireException e) {
+            logger.log(MessageType.DEBUG, e.getLocalizedMessage());
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
         }
 
@@ -93,6 +101,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
             String error = String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId);
+            logger.log(MessageType.DEBUG, error);
             throw new AuthSchemeException("org.zowe.apiml.security.ticket.generateFailed", error);
         }
         final String encoded = Base64.getEncoder()

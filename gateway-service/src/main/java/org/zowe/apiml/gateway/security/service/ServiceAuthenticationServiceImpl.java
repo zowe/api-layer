@@ -31,6 +31,7 @@ import org.zowe.apiml.gateway.security.service.schema.IAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
@@ -187,7 +188,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
                     rejected = (!authSource.isPresent()) || !authSourceService.isValid(authSource.get());
                 }
 
-            } catch (AuthenticationException ae) {
+            } catch (AuthenticationException | AuthSchemeException ae) {
                 rejected = true;
             }
 

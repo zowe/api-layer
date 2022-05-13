@@ -11,7 +11,6 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
@@ -23,11 +22,18 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 /**
  * This filter is responsible for customization request to clients from security point of view. In this filter is
@@ -37,6 +43,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  */
 public class ServiceAuthenticationFilter extends PreZuulFilter {
     public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
+    @InjectApimlLogger
+    private final ApimlLogger logger = ApimlLogger.empty();
 
     @Autowired
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
@@ -72,10 +80,14 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
 
             // Verify authentication source validity if it is required for the schema
             if (authSource.isPresent() && !isSourceValidForCommand(authSource.get(), cmd)) {
-                throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
+                throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidAuthentication");
             }
         } catch (TokenExpireException tee) {
             cmd = null;
+        } catch (TokenNotValidException notValidException) {
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            sendErrorMessage(error, context);
+            return null;
         } catch (AuthenticationException ae) {
             rejected = true;
         } catch (AuthSchemeException ase) {
@@ -85,9 +97,7 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
             } else {
                 error = this.messageService.createMessage(ase.getMessage()).mapToLogMessage();
             }
-            context.addZuulRequestHeader(AUTH_FAIL_HEADER, error);
-            context.addZuulResponseHeader(AUTH_FAIL_HEADER, error);
-            context.setResponseStatusCode(SC_OK);
+            sendErrorMessage(error, context);
             return null;
         } catch (Exception e) {
             throw new ZuulRuntimeException(
@@ -110,6 +120,13 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
         }
 
         return null;
+    }
+
+    private void sendErrorMessage(String error, RequestContext context) {
+        logger.log(MessageType.DEBUG, error);
+        context.addZuulRequestHeader(AUTH_FAIL_HEADER, error);
+        context.addZuulResponseHeader(AUTH_FAIL_HEADER, error);
+        context.setResponseStatusCode(SC_OK);
     }
 
     private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
