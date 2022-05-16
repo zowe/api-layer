@@ -66,7 +66,10 @@ dependencies {
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_configuration_processor
-    implementation libraries.spring_cloud_starter_eureka
+    implementation(libraries.spring_cloud_starter_eureka){
+        exclude group: "com.google.code.gson", module: "gson"
+    }
+    implementation libraries.gson
     implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_retry
     implementation libraries.swagger_core
