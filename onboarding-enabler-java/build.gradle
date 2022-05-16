@@ -7,6 +7,7 @@ dependencies {
     implementation libraries.jackson_dataformat_yaml
     implementation(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
+        exclude group: "com.google.code.gson", module: "gson"
     }
 
     compileOnly libraries.lombok
