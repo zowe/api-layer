@@ -100,6 +100,8 @@ dependencies {
     implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
 
     compileOnly libraries.lombok

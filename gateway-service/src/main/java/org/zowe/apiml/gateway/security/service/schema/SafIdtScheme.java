@@ -11,12 +11,9 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
+import io.jsonwebtoken.Claims;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -25,9 +22,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -37,9 +35,10 @@ import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CookieUtil;
 
-import io.jsonwebtoken.Claims;
-
-import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Optional;
 
 import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
@@ -57,12 +56,6 @@ public class SafIdtScheme implements IAuthenticationScheme {
 
     @Value("${apiml.security.saf.defaultIdtExpiration:10}")
     int defaultIdtExpiration;
-    private String cookieName;
-
-    @PostConstruct
-    public void initCookieName() {
-        cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
-    }
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -71,45 +64,31 @@ public class SafIdtScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        final AuthSource.Parsed parsedAuthSource = authSourceService.parse(authSource);
-
-        if (parsedAuthSource == null) {
-            return AuthenticationCommand.EMPTY;
+        // check the authentication source
+        if (authSource == null || authSource.getRawSource() == null) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
         }
-
-        final String userId = parsedAuthSource.getUserId();
-        final String applId = authentication.getApplid();
-        if (applId == null) {
-            throw new PassTicketException(
-                    "Applid is required. Check the configuration of service"
-            );
+        // parse the authentication source
+        AuthSource.Parsed parsedAuthSource;
+        try {
+            parsedAuthSource = authSourceService.parse(authSource);
+            if (parsedAuthSource == null) {
+                throw new IllegalStateException("Error occurred while parsing authenticationSource");
+            }
+        } catch (TokenNotValidException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
+        } catch (TokenExpireException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
         }
 
         String safIdentityToken;
-        try {
-            char[] passTicket = passTicketService.generate(userId, applId).toCharArray();
-            try {
-                safIdentityToken = safIdtProvider.generate(userId, passTicket, applId);
-            } finally {
-                Arrays.fill(passTicket, (char) 0);
-            }
-        } catch (IRRPassTicketGenerationException e) {
-            throw new PassTicketException(
-                    String.format("Could not generate PassTicket for user ID '%s' and APPLID '%s'", userId, applId), e
-            );
-        }
+        long expireAt;
 
-        try {
-            Claims claims = getJwtClaims(safIdentityToken);
-            Date expirationDate = claims.getExpiration();
-            if (expirationDate == null) {
-                expirationDate = DateUtils.addMinutes(new Date(), defaultIdtExpiration);
-            }
+        String applId = getApplId(authentication);
+        safIdentityToken = generateSafIdentityToken(parsedAuthSource, applId);
+        expireAt = getSafIdtExpiration(safIdentityToken);
 
-            return new SafIdtCommand(safIdentityToken, cookieName, expirationDate.getTime());
-        } catch (TokenNotValidException | TokenExpireException e) {
-            throw new SafIdtException("Unable to parse Identity Token", e);
-        }
+        return new SafIdtCommand(safIdentityToken, expireAt);
     }
 
     @Override
@@ -117,42 +96,89 @@ public class SafIdtScheme implements IAuthenticationScheme {
         return authSourceService.getAuthSourceFromRequest();
     }
 
+    private String getApplId(Authentication authentication) {
+        String applId = authentication == null ? null : authentication.getApplid();
+        if (applId == null) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.scheme.missingApplid");
+        }
+        return applId;
+    }
+
+    private String generateSafIdentityToken(@NotNull AuthSource.Parsed parsedAuthSource , @NotNull String applId) {
+        String safIdentityToken;
+
+        String userId = parsedAuthSource.getUserId();
+        if (userId == null) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
+        }
+
+        char[] passTicket = "".toCharArray();
+        try {
+            passTicket = passTicketService.generate(userId, applId).toCharArray();
+            safIdentityToken = safIdtProvider.generate(userId, passTicket, applId);
+        } catch (IRRPassTicketGenerationException e) {
+            throw new AuthSchemeException("org.zowe.apiml.security.ticket.generateFailed", e.getMessage());
+        } catch (SafIdtException | SafIdtAuthException e) {
+            throw new AuthSchemeException("org.zowe.apiml.security.idt.failed", e.getMessage());
+        } finally {
+            Arrays.fill(passTicket, (char) 0);
+        }
+        return safIdentityToken;
+    }
+
+    private long getSafIdtExpiration(String safIdentityToken) {
+        Date expirationTime;
+        try {
+            Claims claims = getJwtClaims(safIdentityToken);
+            expirationTime = claims.getExpiration();
+            if (expirationTime == null) {
+                expirationTime = DateUtils.addMinutes(new Date(), defaultIdtExpiration);
+            }
+        } catch (TokenNotValidException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
+        } catch (TokenExpireException e) {
+            throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
+        }
+        return expirationTime.getTime();
+    }
+
     @RequiredArgsConstructor
     public class SafIdtCommand extends AuthenticationCommand {
         private static final long serialVersionUID = 8213192949049438897L;
 
+        @Getter
         private final String safIdentityToken;
-        private final String cookieName;
+        @Getter
         private final Long expireAt;
 
-        private static final String COOKIE_HEADER = "cookie";
-        private static final String SAF_TOKEN_HEADER = "X-SAF-Token";
+        protected static final String SAF_TOKEN_HEADER = "X-SAF-Token";
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
-            final RequestContext context = RequestContext.getCurrentContext();
-            context.addZuulRequestHeader(SAF_TOKEN_HEADER, safIdentityToken);
-            context.addZuulRequestHeader(COOKIE_HEADER,
-                    CookieUtil.removeCookie(
-                            context.getZuulRequestHeaders().get(COOKIE_HEADER),
-                            cookieName
-                    )
-            );
+            if (safIdentityToken != null) {
+                final RequestContext context = RequestContext.getCurrentContext();
+                // add header with SafIdt token to request and remove APIML token from Cookie if exists
+                context.addZuulRequestHeader(SAF_TOKEN_HEADER, safIdentityToken);
+                JwtCommand.removeCookie(context, authConfigurationProperties.getCookieProperties().getCookieName());
+            }
         }
 
         @Override
         public void applyToRequest(HttpRequest request) {
-            request.setHeader(
+            if (safIdentityToken != null) {
+                // add header with SafIdt token to request and remove APIML token from Cookie if exists
+                request.setHeader(
                     new BasicHeader(SAF_TOKEN_HEADER, safIdentityToken)
-            );
-            Header header = request.getFirstHeader(COOKIE_HEADER);
-            if (header != null) {
-                request.setHeader(COOKIE_HEADER,
-                        CookieUtil.removeCookie(
-                                header.getValue(),
-                                cookieName
-                        )
                 );
+                Header header = request.getFirstHeader(JwtCommand.COOKIE_HEADER);
+                if (header != null) {
+                    request.setHeader(JwtCommand.COOKIE_HEADER,
+                        CookieUtil.removeCookie(
+                            header.getValue(),
+                            authConfigurationProperties.getCookieProperties().getCookieName()
+                        )
+                    );
+                }
             }
         }
 
