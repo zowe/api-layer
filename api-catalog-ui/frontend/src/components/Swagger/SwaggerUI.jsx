@@ -9,11 +9,11 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import * as OpenAPISnippet from 'openapi-snippet';
 import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
+import { SnippedGenerator, requestSnippets } from '../../utils/generateSnippets';
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
@@ -49,75 +49,6 @@ export default class SwaggerUI extends Component {
             this.retrieveSwagger();
         }
     }
-
-    // configuration will be added programatically
-    snippedGenerator = () => ({
-        statePlugins: {
-            // extend some internals to gain information about current path, method and spec in the generator function metioned later
-            spec: {
-                wrapSelectors: {
-                    requestFor: (ori, system) => (state, path, method) => {
-                        return ori(path, method)
-                            ?.set('spec', state.get('json', {}))
-                            ?.setIn(['oasPathMethod', 'path'], path)
-                            ?.setIn(['oasPathMethod', 'method'], method);
-                    },
-                    mutatedRequestFor: (ori) => (state, path, method) => {
-                        return ori(path, method)
-                            ?.set('spec', state.get('json', {}))
-                            ?.setIn(['oasPathMethod', 'path'], path)
-                            ?.setIn(['oasPathMethod', 'method'], method);
-                    },
-                },
-            },
-            // extend the request snippets core plugin
-            requestSnippets: {
-                wrapSelectors: {
-                    // add additional snippet generators here
-                    getSnippetGenerators:
-                        (ori, system) =>
-                        (state, ...args) =>
-                            ori(state, ...args)
-                                // add node native snippet generator
-                                .set(
-                                    'java',
-                                    system.Im.fromJS({
-                                        title: 'Java',
-                                        syntax: 'java',
-                                        fn: (req) => {
-                                            // get extended info about request
-                                            const { spec, oasPathMethod } = req.toJS();
-                                            const { path, method } = oasPathMethod;
-
-                                            // run OpenAPISnippet for target node
-                                            const targets = ['java'];
-                                            let snippet;
-                                            try {
-                                                // set request snippet content
-                                                snippet = OpenAPISnippet.getEndpointSnippets(
-                                                    spec,
-                                                    path,
-                                                    method,
-                                                    targets
-                                                ).snippets[0].content;
-                                                // eslint-disable-next-line no-console
-                                                console.log('ciao');
-                                                // eslint-disable-next-line no-console
-                                                console.log(snippet);
-                                            } catch (err) {
-                                                // set to error in case it happens the npm package has some flaws
-                                                snippet = JSON.stringify(snippet);
-                                            }
-                                            // return stringified snipped
-                                            return snippet;
-                                        },
-                                    })
-                                ),
-                },
-            },
-        },
-    });
-
     customPlugins = () => ({
         statePlugins: {
             spec: {
@@ -169,7 +100,8 @@ export default class SwaggerUI extends Component {
                     dom_id: '#swaggerContainer',
                     spec: swagger,
                     presets: [presets.apis],
-                    plugins: [this.customPlugins, this.snippedGenerator],
+                    requestSnippetsEnabled: true,
+                    plugins: [this.customPlugins, SnippedGenerator],
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
@@ -179,7 +111,8 @@ export default class SwaggerUI extends Component {
                     dom_id: '#swaggerContainer',
                     url,
                     presets: [presets.apis],
-                    plugins: [this.customPlugins, this.snippedGenerator],
+                    requestSnippetsEnabled: true,
+                    plugins: [this.customPlugins, SnippedGenerator],
                     responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
                         const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
