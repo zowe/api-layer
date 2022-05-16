@@ -143,8 +143,8 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                     .cookie(withInvalidToken)
                     .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                    .then()
-                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                .then()
+                    .statusCode(is(HttpStatus.SC_OK));
                 //@formatter:on
 
                 verify(mockTemplate, times(0))

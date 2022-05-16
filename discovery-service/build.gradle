@@ -63,10 +63,11 @@ dependencies {
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_cloud_starter_hystrix
-    implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE')  {
+    implementation(libraries.spring_cloud_starter_eureka_server)  {
         exclude group: "javax.servlet", module: "servlet-api"
+        exclude group: "com.google.code.gson", module: "gson"
     }
-    
+    implementation libraries.gson
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
     implementation libraries.jackson_dataformat_yaml
@@ -99,6 +100,8 @@ dependencies {
     implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
 
     compileOnly libraries.lombok

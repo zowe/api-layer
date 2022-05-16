@@ -11,7 +11,6 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
@@ -19,16 +18,21 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 /**
  * Implementation of AuthSourceService which supports JWT token as authentication source.
  */
-@Slf4j
 @Service
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class JwtAuthSourceService implements AuthSourceService {
+    @InjectApimlLogger
+    protected final ApimlLogger logger = ApimlLogger.empty();
+
     @Autowired
     private AuthenticationService authenticationService;
 
@@ -40,8 +44,10 @@ public class JwtAuthSourceService implements AuthSourceService {
      */
     public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
-
+        logger.log(MessageType.DEBUG, "Getting JWT token from request.");
         Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        logger.log(MessageType.DEBUG, String.format("JWT token %s in request.", jwtToken.isPresent() ? "found" : "not found"));
+
         return jwtToken.map(JwtAuthSource::new);
     }
 
@@ -53,6 +59,7 @@ public class JwtAuthSourceService implements AuthSourceService {
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource)authSource).getRawSource();
+            logger.log(MessageType.DEBUG, "Validating JWT token.");
             return jwtToken != null && authenticationService.validateJwtToken(jwtToken).isAuthenticated();
         }
         return false;
@@ -66,6 +73,7 @@ public class JwtAuthSourceService implements AuthSourceService {
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource)authSource).getRawSource();
+            logger.log(MessageType.DEBUG, "Parsing JWT token.");
             QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken);
             return queryResponse == null ? null : new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
                 Origin.valueByIssuer(queryResponse.getSource().name()));
