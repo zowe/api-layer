@@ -110,6 +110,8 @@ dependencies {
     implementation libraries.spring_websocket
     implementation libraries.thymeleaf
     implementation libraries.thymeleafSpring
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
     implementation libraries.springFox
 

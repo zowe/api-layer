@@ -122,6 +122,8 @@ dependencies {
     implementation libraries.netty_transport_rxtx
     implementation libraries.netty_transport_sctp
     implementation libraries.netty_transport_udt
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
     implementation libraries.guava
     implementation libraries.gson
