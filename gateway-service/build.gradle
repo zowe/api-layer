@@ -124,6 +124,8 @@ dependencies {
     implementation libraries.netty_transport_udt
     implementation libraries.thymeleaf
     implementation libraries.thymeleafSpring
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
     implementation libraries.commons_io
     implementation libraries.guava
