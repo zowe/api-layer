@@ -7,21 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.error;
+package org.zowe.apiml.gateway.error.controllers;
 
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.zowe.apiml.gateway.error.ErrorUtils;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class NotFoundErrorController implements ErrorController {
+public class NotFoundErrorController extends AbstractGatewayErrorController {
     private static final String NOT_FOUND_ENDPOINT = "/not_found";
     private final MessageService messageService;
 
