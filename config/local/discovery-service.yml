@@ -9,7 +9,9 @@ apiml:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
         ssl:
+            # below values will only work if false
             verifySslCertificatesOfServices: true
+#            nonStrictverifySslCertificatesOfServices: false
     banner: console
 
 spring:

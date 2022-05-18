@@ -40,6 +40,12 @@ apiml:
     banner: console
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
+# edit here:
+#
+#    security:
+#        ssl:
+#            verifySslCertificatesOfServices: false
+#            nonStrictverifySslCertificatesOfServices: false
 
 spring:
     output:
