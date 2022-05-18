@@ -13,7 +13,7 @@ import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
-import { SnippedGenerator, requestSnippets } from '../../utils/generateSnippets';
+import { SnippedGenerator, requestSnippets, template } from '../../utils/generateSnippets';
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
