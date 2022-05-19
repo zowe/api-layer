@@ -19,8 +19,6 @@ export const requestSnippets = {
     defaultExpanded: true,
     languages: ['node'],
 };
-// Since swagger-ui-react was not configured to change the request snippets some workarounds required
-// configuration will be added programatically
 // Custom Plugin
 export const SnippedGenerator = {
     statePlugins: {
@@ -165,9 +163,7 @@ export const SnippedGenerator = {
     },
 };
 
-// Since swagger-ui-react was not configured to change the request snippets some workarounds required
-// configuration will be added programatically
-// Custom Plugin
+// This is the template to customize the snippet based on what the service will provide, rather than making the openapi-snippet library generate it
 export const template = {
     statePlugins: {
         // extend some internals to gain information about current path, method and spec in the generator function metioned later
@@ -195,17 +191,49 @@ export const template = {
                     (ori, system) =>
                     (state, ...args) =>
                         ori(state, ...args).set(
-                            'java_okhttp',
+                            // TODO the code language can be taken from config too
+                            'java_unirest',
                             system.Im.fromJS({
                                 title: 'Java',
                                 syntax: 'java',
                                 fn: (req) => {
-                                    // TODO read the snippet from the Swagger config
-                                    // const code =
-                                    //     'HttpResponse<String> response = Cooco.get("https://localhost:3000/apicatalog/api/v1/containers")\n' +
-                                    //     '  .header("Authorization", "Basic REPLACE_BASIC_AUTH")\n' +
-                                    //     '  .asString();';
-                                    // return code;
+                                    // get extended info about request
+                                    const { spec, oasPathMethod } = req.toJS();
+                                    const { path, method } = oasPathMethod;
+                                    // run OpenAPISnippet for target node
+                                    const targets = ['java_unirest'];
+                                    let snippet;
+                                    try {
+                                        // set request snippet content
+                                        // eslint-disable-next-line no-console
+                                        // This contains info about the endpoint. There should be a check to see if there is a snippet defined for the specific endpoint path
+                                        // and in case replace the content with the hand-crafted snippet
+                                        console.log(oasPathMethod);
+                                        // eslint-disable-next-line no-console
+                                        console.log(path);
+                                        const code =
+                                            'HttpResponse<String> response = Cooco.get("https://localhost:3000/apicatalog/api/v1/containers")\n' +
+                                            '  .header("Authorization", "Basic REPLACE_BASIC_AUTH")\n' +
+                                            '  .asString();';
+                                        // Code snippet defined in the configuration
+                                        // TODO this is a placeholder, it must be read from config and propagated to the Catalog UI and the replace should be conditional
+                                        if (path === '/apiMediationClient') {
+                                            snippet = code;
+                                        } else {
+                                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
+                                                .snippets[0].content;
+                                            // eslint-disable-next-line no-console
+                                            console.log(snippet);
+                                            snippet = snippet.replace(snippet[0].content, code);
+                                        }
+                                    } catch (err) {
+                                        // eslint-disable-next-line no-console
+                                        console.log('error');
+                                        // set to error in case it happens the npm package has some flaws
+                                        snippet = JSON.stringify(snippet);
+                                    }
+                                    // return stringified snipped
+                                    return snippet;
                                 },
                             })
                         ),

@@ -66,6 +66,13 @@ apiml:
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 1.0.0
                 gatewayUrl: api/v1
+#                codeSnippet:
+#                    -   endpoint: "/greetings"
+#                        block: |
+#                            ```
+#                            System. out. println("Hello, World!");
+#                            ```
+#                        language: java
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
                 documentationUrl: https://www.zowe.org
                 defaultApi: true

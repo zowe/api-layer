@@ -101,7 +101,7 @@ export default class SwaggerUI extends Component {
                     spec: swagger,
                     presets: [presets.apis],
                     requestSnippetsEnabled: true,
-                    plugins: [this.customPlugins, SnippedGenerator],
+                    plugins: [this.customPlugins, SnippedGenerator, template],
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
@@ -112,7 +112,7 @@ export default class SwaggerUI extends Component {
                     url,
                     presets: [presets.apis],
                     requestSnippetsEnabled: true,
-                    plugins: [this.customPlugins, SnippedGenerator],
+                    plugins: [this.customPlugins, SnippedGenerator, template],
                     responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
                         const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
