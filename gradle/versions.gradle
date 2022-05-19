@@ -64,7 +64,7 @@ ext {
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
-    tomcatVersion = '9.0.62'
+    tomcatVersion = '9.0.63'
     velocityVersion = '2.3'
     xstreamVersion = '1.4.19!!'
 
