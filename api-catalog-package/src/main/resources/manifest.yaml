@@ -13,11 +13,6 @@ schemas:
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git
-build:
-  branch: "{{build.branch}}"
-  number: "{{build.number}}"
-  commitHash: "{{build.commitHash}}"
-  timestamp: "{{build.timestamp}}"
 commands:
   start: bin/start.sh
   validate: bin/validate.sh
