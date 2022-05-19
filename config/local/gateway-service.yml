@@ -1,4 +1,4 @@
-spring.profiles.include: diag
+spring.profiles.active: diag
 apiml:
     service:
         hostname: localhost
@@ -49,8 +49,7 @@ server:
         trustStoreType: PKCS12
 
 ---
-spring:
-    profiles: attls
+spring.profiles.active: attls
 
 apiml:
     service:
