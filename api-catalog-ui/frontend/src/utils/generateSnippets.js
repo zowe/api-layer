@@ -191,7 +191,7 @@ export const template = {
                     (ori, system) =>
                     (state, ...args) =>
                         ori(state, ...args).set(
-                            // TODO the code language can be taken from config too
+                            // TODO the code language can be taken from config too (i.e. apiInfo[0].codeSnippet[0].language)
                             'java_unirest',
                             system.Im.fromJS({
                                 title: 'Java',
@@ -204,19 +204,16 @@ export const template = {
                                     const targets = ['java_unirest'];
                                     let snippet;
                                     try {
-                                        // set request snippet content
-                                        // eslint-disable-next-line no-console
-                                        // This contains info about the endpoint. There should be a check to see if there is a snippet defined for the specific endpoint path
-                                        // and in case replace the content with the hand-crafted snippet
                                         console.log(oasPathMethod);
                                         // eslint-disable-next-line no-console
                                         console.log(path);
+                                        // TODO the code to be replace should be read from configuration (i.e. apiInfo[0].codeSnippet.codeBlock)
                                         const code =
                                             'HttpResponse<String> response = Cooco.get("https://localhost:3000/apicatalog/api/v1/containers")\n' +
                                             '  .header("Authorization", "Basic REPLACE_BASIC_AUTH")\n' +
                                             '  .asString();';
                                         // Code snippet defined in the configuration
-                                        // TODO this is a placeholder, it must be read from config and propagated to the Catalog UI and the replace should be conditional
+                                        // TODO this is a placeholder, it must be read from config (i.e. apiInfo[0].codeSnippet[0].endpoint) and propagated to the Catalog UI and the replace should be conditional
                                         if (path === '/apiMediationClient') {
                                             snippet = code;
                                         } else {

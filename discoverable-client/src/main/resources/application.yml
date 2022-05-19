@@ -68,7 +68,7 @@ apiml:
                 gatewayUrl: api/v1
 #                codeSnippet:
 #                    -   endpoint: "/greetings"
-#                        block: |
+#                        codeBlock: |
 #                            ```
 #                            System. out. println("Hello, World!");
 #                            ```
