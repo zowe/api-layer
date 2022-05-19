@@ -1,4 +1,4 @@
-spring.profiles.include: diag
+spring.profiles.active: diag
 apiml:
     service:
         hostname: localhost2

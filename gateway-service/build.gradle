@@ -59,7 +59,6 @@ configurations.all {
 dependencies {
     implementation(project(':apiml-security-common'))
     implementation libraries.spring_boot_starter_webflux
-    implementation libraries.spring_cloud_starter_zuul
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
@@ -87,6 +86,9 @@ dependencies {
         exclude group: "com.google.code.gson", module: "gson"
     }
     implementation libraries.gson
+    implementation libraries.spring_cloud_commons
+    implementation libraries.spring_cloud_starter_bootstrap
+    implementation libraries.spring_cloud_starter_zuul
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common
     implementation libraries.jetty_websocket_client

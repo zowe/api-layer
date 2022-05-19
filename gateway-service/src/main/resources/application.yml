@@ -78,6 +78,8 @@ spring:
     application:
         name: ${apiml.service.id}
     cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
@@ -242,7 +244,7 @@ eureka:
 
 ---
 spring:
-    profiles: debug
+    profiles.activate: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -270,8 +272,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring:
-    profiles: diag
+spring.profiles.active: diag
 
 management:
     endpoints:
@@ -284,18 +285,20 @@ server:
     max-http-header-size: 40000
 
 zuul.debug.request: true
+
 ---
 spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+    config:
+        activate:
+            onProfile:
+                - dev
+                - debug
+                - diag
 
 logbackServiceName: ZWEAGW1
 
 ---
-spring:
-    profiles: attls
+spring.profiles.active: attls
 
 server:
     internal:
@@ -320,9 +323,9 @@ eureka:
                         gatewayUrl: api/v1
                         swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
                         documentationUrl: https://zowe.github.io/docs-site/
+
 ---
-spring:
-    profiles: securityFilterchainDebug
+spring.profiles.active: securityFilterchainDebug
 
 logging:
     level:

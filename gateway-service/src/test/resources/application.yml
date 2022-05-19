@@ -51,10 +51,12 @@ apiml:
 
 spring:
     profiles:
-        include: diag
+        active: diag
     application:
         name: ${apiml.service.id}
     cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
@@ -207,7 +209,8 @@ eureka:
 
 ---
 spring:
-    profiles: debug
+    profiles:
+        active: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -232,8 +235,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring:
-    profiles: diag
+spring.profiles.active: diag
 
 management:
     endpoints:
@@ -244,9 +246,12 @@ management:
 zuul.debug.request: true
 ---
 spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+    config:
+        activate:
+            onProfile:
+                - dev
+                - debug
+                - diag
+
 
 logbackServiceName: ZWEAGW1
