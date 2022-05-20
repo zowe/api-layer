@@ -75,6 +75,8 @@ apiml:
                 verify: https://localhost:10013/zss/saf/verify
 
 spring:
+    config:
+        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
@@ -244,7 +246,7 @@ eureka:
 
 ---
 spring:
-    profiles.activate: debug
+    profiles: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -272,7 +274,8 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring.profiles.active: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -288,17 +291,16 @@ zuul.debug.request: true
 
 ---
 spring:
-    config:
-        activate:
-            onProfile:
-                - dev
-                - debug
-                - diag
+    profiles: dev
+    profiles.include:
+        - debug
+        - diag
 
 logbackServiceName: ZWEAGW1
 
 ---
-spring.profiles.active: attls
+spring:
+    profiles: attls
 
 server:
     internal:
@@ -325,7 +327,8 @@ eureka:
                         documentationUrl: https://zowe.github.io/docs-site/
 
 ---
-spring.profiles.active: securityFilterchainDebug
+spring:
+    profiles: securityFilterchainDebug
 
 logging:
     level:

@@ -50,8 +50,10 @@ apiml:
                 verify: https://localhost:10013/zss/saf/verify
 
 spring:
+    config:
+        useLegacyProcessing: true
     profiles:
-        active: diag
+        include: diag
     application:
         name: ${apiml.service.id}
     cloud:
@@ -209,8 +211,7 @@ eureka:
 
 ---
 spring:
-    profiles:
-        active: debug
+    profiles: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -235,7 +236,8 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring.profiles.active: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -246,12 +248,10 @@ management:
 zuul.debug.request: true
 ---
 spring:
-    config:
-        activate:
-            onProfile:
-                - dev
-                - debug
-                - diag
+    profiles: dev
+    profiles.include:
+        - debug
+        - diag
 
 
 logbackServiceName: ZWEAGW1
