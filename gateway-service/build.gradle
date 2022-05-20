@@ -160,6 +160,8 @@ dependencies {
     testCompile libraries.json_smart
     testRuntime libraries.http_client
     testCompile libraries.rest_assured
+    testCompile libraries.rest_assured_json_path
+    testCompile libraries.rest_assured_xml_path
     testCompile libraries.javax_inject
 
     testCompile libraries.lombok

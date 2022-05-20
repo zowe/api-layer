@@ -95,11 +95,11 @@ subprojects {
        testImplementation libraries.junitJupiter
        testImplementation libraries.mockito_jupiter
 
-       testImplementation  'org.junit.platform:junit-platform-launcher:1.6.0'
+       testImplementation  libraries.junit_platform_launcher
 
        //For Idea
-       testImplementation  'org.junit.platform:junit-platform-commons:1.6.0'
-       testImplementation  'org.junit.platform:junit-platform-engine:1.6.0'
+       testImplementation  libraries.junit_platform_commons
+       testImplementation  libraries.junit_platform_engine
    }
 
     configurations.all {
