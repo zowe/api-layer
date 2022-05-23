@@ -36,9 +36,13 @@ apiml:
         allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
 
 spring:
+    config:
+        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
