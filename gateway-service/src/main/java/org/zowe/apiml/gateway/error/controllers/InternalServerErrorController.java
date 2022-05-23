@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.error.check.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.controller.AbstractApimlErrorController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.List;
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
-public class InternalServerErrorController extends AbstractGatewayErrorController {
+public class InternalServerErrorController extends AbstractApimlErrorController {
     public static final String ERROR_ENDPOINT = "/internal_error";
 
     private final MessageService messageService;
