@@ -18,7 +18,7 @@ import org.springframework.cloud.netflix.zuul.web.ZuulController;
 import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.gateway.error.controllers.AbstractGatewayErrorController;
+import org.zowe.apiml.product.controller.AbstractApimlErrorController;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -28,16 +28,16 @@ public class ZuulConfig {
 
     @Bean
     public ZuulPostProcessor zuulPostProcessor(@Autowired RouteLocator routeLocator, @Autowired ZuulController zuulController,
-                                               @Autowired(required = false) AbstractGatewayErrorController errorController) {
+                                               @Autowired(required = false) AbstractApimlErrorController errorController) {
         return new ZuulPostProcessor(routeLocator, zuulController, errorController);
     }
 
     private static class ZuulPostProcessor implements BeanPostProcessor {
         private final RouteLocator routeLocator;
         private final ZuulController zuulController;
-        private final AbstractGatewayErrorController errorController;
+        private final AbstractApimlErrorController errorController;
 
-        ZuulPostProcessor(RouteLocator routeLocator, ZuulController zuulController, AbstractGatewayErrorController errorController) {
+        ZuulPostProcessor(RouteLocator routeLocator, ZuulController zuulController, AbstractApimlErrorController errorController) {
             this.routeLocator = routeLocator;
             this.zuulController = zuulController;
             this.errorController = errorController;

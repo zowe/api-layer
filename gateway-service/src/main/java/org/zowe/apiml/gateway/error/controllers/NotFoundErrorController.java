@@ -22,6 +22,7 @@ import org.zowe.apiml.gateway.error.ErrorUtils;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.controller.AbstractApimlErrorController;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class NotFoundErrorController extends AbstractGatewayErrorController {
+public class NotFoundErrorController extends AbstractApimlErrorController {
     private static final String NOT_FOUND_ENDPOINT = "/not_found";
     private final MessageService messageService;
 

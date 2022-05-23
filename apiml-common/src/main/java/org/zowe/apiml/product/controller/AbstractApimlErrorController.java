@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.error.controllers;
+package org.zowe.apiml.product.controller;
 
 import org.springframework.boot.web.servlet.error.ErrorController;
 
-abstract public class AbstractGatewayErrorController implements ErrorController {
+abstract public class AbstractApimlErrorController implements ErrorController {
     abstract public String getErrorPath();
 }
