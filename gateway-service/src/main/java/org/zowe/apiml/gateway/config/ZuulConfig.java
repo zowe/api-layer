@@ -18,7 +18,7 @@ import org.springframework.cloud.netflix.zuul.web.ZuulController;
 import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.product.compatibility.AbstractApimlErrorController;
+import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -28,16 +28,23 @@ public class ZuulConfig {
 
     @Bean
     public ZuulPostProcessor zuulPostProcessor(@Autowired RouteLocator routeLocator, @Autowired ZuulController zuulController,
-                                               @Autowired(required = false) AbstractApimlErrorController errorController) {
+                                               @Autowired(required = false) ApimlErrorController errorController) {
         return new ZuulPostProcessor(routeLocator, zuulController, errorController);
     }
 
+    /**
+     * This class is used to reconcile the breaking change between Spring Boot 2.5 and Zuul. The breaking change
+     * is due to ErrorController.getErrorPath being removed in Spring Boot 2.5. A BeanPostProcessor is used
+     * to proxy ZuulHandlerMapping, intercepting the code execution that leads to the NoSuchMethodError.
+     * <p>
+     * NOTE: This should be removed when the APIML migrates away from Zuul to Spring Cloud Gateway.
+     */
     private static class ZuulPostProcessor implements BeanPostProcessor {
         private final RouteLocator routeLocator;
         private final ZuulController zuulController;
-        private final AbstractApimlErrorController errorController;
+        private final ApimlErrorController errorController;
 
-        ZuulPostProcessor(RouteLocator routeLocator, ZuulController zuulController, AbstractApimlErrorController errorController) {
+        ZuulPostProcessor(RouteLocator routeLocator, ZuulController zuulController, ApimlErrorController errorController) {
             this.routeLocator = routeLocator;
             this.zuulController = zuulController;
             this.errorController = errorController;
