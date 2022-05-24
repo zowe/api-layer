@@ -13,7 +13,7 @@ import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
-import { SnippedGenerator, requestSnippets, template } from '../../utils/generateSnippets';
+import { BasicSnippedGenerator } from '../../utils/generateSnippets';
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
@@ -101,7 +101,7 @@ export default class SwaggerUI extends Component {
                     spec: swagger,
                     presets: [presets.apis],
                     requestSnippetsEnabled: true,
-                    plugins: [this.customPlugins, SnippedGenerator, template],
+                    plugins: [this.customPlugins, BasicSnippedGenerator],
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
@@ -112,7 +112,7 @@ export default class SwaggerUI extends Component {
                     url,
                     presets: [presets.apis],
                     requestSnippetsEnabled: true,
-                    plugins: [this.customPlugins, SnippedGenerator, template],
+                    plugins: [this.customPlugins, BasicSnippedGenerator],
                     responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
                         const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));

@@ -9,23 +9,15 @@
  */
 import * as OpenAPISnippet from 'openapi-snippet';
 
-export const requestSnippets = {
-    generators: {
-        java: {
-            title: 'Java',
-            syntax: 'java',
-        },
-    },
-    defaultExpanded: true,
-    languages: ['node'],
-};
-// Custom Plugin
-export const SnippedGenerator = {
+/**
+ * Custom Plugin which extends the SwaggerUI to generate simple snippets
+ */
+export const BasicSnippedGenerator = {
     statePlugins: {
         // extend some internals to gain information about current path, method and spec in the generator function metioned later
         spec: {
             wrapSelectors: {
-                requestFor: (ori, system) => (state, path, method) => {
+                requestFor: (ori) => (state, path, method) => {
                     return ori(path, method)
                         ?.set('spec', state.get('json', {}))
                         ?.setIn(['oasPathMethod', 'path'], path)
@@ -47,38 +39,10 @@ export const SnippedGenerator = {
                     (ori, system) =>
                     (state, ...args) =>
                         ori(state, ...args)
-                            // add node native snippet generator
-                            .set(
-                                'java_okhttp',
-                                system.Im.fromJS({
-                                    title: 'Java',
-                                    syntax: 'java',
-                                    fn: (req) => {
-                                        // get extended info about request
-                                        const { spec, oasPathMethod } = req.toJS();
-                                        const { path, method } = oasPathMethod;
-                                        // run OpenAPISnippet for target node
-                                        const targets = ['java'];
-                                        let snippet;
-                                        try {
-                                            // set request snippet content
-                                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
-                                                .snippets[0].content;
-                                        } catch (err) {
-                                            // eslint-disable-next-line no-console
-                                            console.log('error');
-                                            // set to error in case it happens the npm package has some flaws
-                                            snippet = JSON.stringify(snippet);
-                                        }
-                                        // return stringified snipped
-                                        return snippet;
-                                    },
-                                })
-                            )
                             .set(
                                 'java_unirest',
                                 system.Im.fromJS({
-                                    title: 'Java2',
+                                    title: 'Java Unirest',
                                     syntax: 'java',
                                     fn: (req) => {
                                         // get extended info about request
@@ -92,13 +56,59 @@ export const SnippedGenerator = {
                                             snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
                                                 .snippets[0].content;
                                         } catch (err) {
-                                            // eslint-disable-next-line no-console
-                                            console.log('error');
                                             // set to error in case it happens the npm package has some flaws
                                             snippet = JSON.stringify(snippet);
                                         }
-                                        /* eslint-disable no-console */
-                                        console.log(snippet);
+                                        // return stringified snipped
+                                        return snippet;
+                                    },
+                                })
+                            )
+                            .set(
+                                'javascript_jquery',
+                                system.Im.fromJS({
+                                    title: 'jQuery AJAX',
+                                    syntax: 'javascript',
+                                    fn: (req) => {
+                                        // get extended info about request
+                                        const { spec, oasPathMethod } = req.toJS();
+                                        const { path, method } = oasPathMethod;
+                                        // run OpenAPISnippet for target node
+                                        const targets = ['javascript_jquery'];
+                                        let snippet;
+                                        try {
+                                            // set request snippet content
+                                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
+                                                .snippets[0].content;
+                                        } catch (err) {
+                                            // set to error in case it happens the npm package has some flaws
+                                            snippet = JSON.stringify(snippet);
+                                        }
+                                        // return stringified snipped
+                                        return snippet;
+                                    },
+                                })
+                            )
+                            .set(
+                                'javascript_xhr',
+                                system.Im.fromJS({
+                                    title: 'Javascript XHR',
+                                    syntax: 'javascript',
+                                    fn: (req) => {
+                                        // get extended info about request
+                                        const { spec, oasPathMethod } = req.toJS();
+                                        const { path, method } = oasPathMethod;
+                                        // run OpenAPISnippet for target node
+                                        const targets = ['javascript_xhr'];
+                                        let snippet;
+                                        try {
+                                            // set request snippet content
+                                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
+                                                .snippets[0].content;
+                                        } catch (err) {
+                                            // set to error in case it happens the npm package has some flaws
+                                            snippet = JSON.stringify(snippet);
+                                        }
                                         // return stringified snipped
                                         return snippet;
                                     },
@@ -121,8 +131,81 @@ export const SnippedGenerator = {
                                             snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
                                                 .snippets[0].content;
                                         } catch (err) {
-                                            // eslint-disable-next-line no-console
-                                            console.log('error');
+                                            // set to error in case it happens the npm package has some flaws
+                                            snippet = JSON.stringify(snippet);
+                                        }
+                                        // return stringified snipped
+                                        return snippet;
+                                    },
+                                })
+                            )
+                            .set(
+                                'c_libcurl',
+                                system.Im.fromJS({
+                                    title: 'C (libcurl)',
+                                    syntax: 'bash',
+                                    fn: (req) => {
+                                        // get extended info about request
+                                        const { spec, oasPathMethod } = req.toJS();
+                                        const { path, method } = oasPathMethod;
+                                        // run OpenAPISnippet for target node
+                                        const targets = ['c_libcurl'];
+                                        let snippet;
+                                        try {
+                                            // set request snippet content
+                                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
+                                                .snippets[0].content;
+                                        } catch (err) {
+                                            // set to error in case it happens the npm package has some flaws
+                                            snippet = JSON.stringify(snippet);
+                                        }
+                                        // return stringified snipped
+                                        return snippet;
+                                    },
+                                })
+                            )
+                            .set(
+                                'csharp_restsharp',
+                                system.Im.fromJS({
+                                    title: 'C#',
+                                    syntax: 'c#',
+                                    fn: (req) => {
+                                        // get extended info about request
+                                        const { spec, oasPathMethod } = req.toJS();
+                                        const { path, method } = oasPathMethod;
+                                        // run OpenAPISnippet for target node
+                                        const targets = ['csharp_restsharp'];
+                                        let snippet;
+                                        try {
+                                            // set request snippet content
+                                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
+                                                .snippets[0].content;
+                                        } catch (err) {
+                                            // set to error in case it happens the npm package has some flaws
+                                            snippet = JSON.stringify(snippet);
+                                        }
+                                        // return stringified snipped
+                                        return snippet;
+                                    },
+                                })
+                            )
+                            .set(
+                                'go_native',
+                                system.Im.fromJS({
+                                    title: 'Go',
+                                    syntax: 'bash',
+                                    fn: (req) => {
+                                        // get extended info about request
+                                        const { spec, oasPathMethod } = req.toJS();
+                                        const { path, method } = oasPathMethod;
+                                        // run OpenAPISnippet for target node
+                                        const targets = ['go_native'];
+                                        let snippet;
+                                        try {
+                                            // set request snippet content
+                                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
+                                                .snippets[0].content;
+                                        } catch (err) {
                                             // set to error in case it happens the npm package has some flaws
                                             snippet = JSON.stringify(snippet);
                                         }
@@ -148,8 +231,6 @@ export const SnippedGenerator = {
                                             snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
                                                 .snippets[0].content;
                                         } catch (err) {
-                                            // eslint-disable-next-line no-console
-                                            console.log('error');
                                             // set to error in case it happens the npm package has some flaws
                                             snippet = JSON.stringify(snippet);
                                         }
@@ -163,13 +244,14 @@ export const SnippedGenerator = {
     },
 };
 
-// This is the template to customize the snippet based on what the service will provide, rather than making the openapi-snippet library generate it
-export const template = {
+/**
+ * Custom Plugin which extends the SwaggerUI to generate hand-crafted snippets
+ */
+export const CustomizedSnippetGenerator = {
     statePlugins: {
-        // extend some internals to gain information about current path, method and spec in the generator function metioned later
         spec: {
             wrapSelectors: {
-                requestFor: (ori, system) => (state, path, method) => {
+                requestFor: (ori) => (state, path, method) => {
                     return ori(path, method)
                         ?.set('spec', state.get('json', {}))
                         ?.setIn(['oasPathMethod', 'path'], path)
@@ -183,10 +265,8 @@ export const template = {
                 },
             },
         },
-        // extend the request snippets core plugin
         requestSnippets: {
             wrapSelectors: {
-                // add additional snippet generators here
                 getSnippetGenerators:
                     (ori, system) =>
                     (state, ...args) =>
@@ -197,16 +277,11 @@ export const template = {
                                 title: 'Java',
                                 syntax: 'java',
                                 fn: (req) => {
-                                    // get extended info about request
                                     const { spec, oasPathMethod } = req.toJS();
                                     const { path, method } = oasPathMethod;
-                                    // run OpenAPISnippet for target node
                                     const targets = ['java_unirest'];
                                     let snippet;
                                     try {
-                                        console.log(oasPathMethod);
-                                        // eslint-disable-next-line no-console
-                                        console.log(path);
                                         // TODO the code to be replace should be read from configuration (i.e. apiInfo[0].codeSnippet.codeBlock)
                                         const code =
                                             'HttpResponse<String> response = Cooco.get("https://localhost:3000/apicatalog/api/v1/containers")\n' +
@@ -219,17 +294,11 @@ export const template = {
                                         } else {
                                             snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets)
                                                 .snippets[0].content;
-                                            // eslint-disable-next-line no-console
-                                            console.log(snippet);
                                             snippet = snippet.replace(snippet[0].content, code);
                                         }
                                     } catch (err) {
-                                        // eslint-disable-next-line no-console
-                                        console.log('error');
-                                        // set to error in case it happens the npm package has some flaws
                                         snippet = JSON.stringify(snippet);
                                     }
-                                    // return stringified snipped
                                     return snippet;
                                 },
                             })
