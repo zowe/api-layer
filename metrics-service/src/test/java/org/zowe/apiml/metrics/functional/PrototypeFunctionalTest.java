@@ -1,4 +1,3 @@
-package org.zowe.apiml.metrics.functional;
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -8,6 +7,8 @@ package org.zowe.apiml.metrics.functional;
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.metrics.functional;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;

@@ -84,6 +84,11 @@ apiml:
                 corsEnabled: false
 
 spring:
+    config:
+        useLegacyProcessing: true
+    cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
     application:
         name: Metrics Service
     output.ansi.enabled: always
