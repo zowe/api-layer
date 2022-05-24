@@ -2,6 +2,7 @@ dependencies {
     compile project(':apiml-utility')
     compile project(':apiml-tomcat-common')
     implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_cloud_starter_bootstrap
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
     }
