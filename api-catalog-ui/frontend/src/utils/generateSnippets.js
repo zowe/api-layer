@@ -9,26 +9,30 @@
  */
 import * as OpenAPISnippet from 'openapi-snippet';
 
+const wrapSelectors = {
+    spec: {
+        wrapSelectors: {
+            requestFor: (ori) => (state, path, method) =>
+                ori(path, method)
+                    ?.set('spec', state.get('json', {}))
+                    ?.setIn(['oasPathMethod', 'path'], path)
+                    ?.setIn(['oasPathMethod', 'method'], method),
+            mutatedRequestFor: (ori) => (state, path, method) =>
+                ori(path, method)
+                    ?.set('spec', state.get('json', {}))
+                    ?.setIn(['oasPathMethod', 'path'], path)
+                    ?.setIn(['oasPathMethod', 'method'], method),
+        },
+    },
+};
+
 /**
  * Custom Plugin which extends the SwaggerUI to generate simple snippets
  */
 export const BasicSnippedGenerator = {
     statePlugins: {
         // extend some internals to gain information about current path, method and spec in the generator function metioned later
-        spec: {
-            wrapSelectors: {
-                requestFor: (ori) => (state, path, method) =>
-                    ori(path, method)
-                        ?.set('spec', state.get('json', {}))
-                        ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method),
-                mutatedRequestFor: (ori) => (state, path, method) =>
-                    ori(path, method)
-                        ?.set('spec', state.get('json', {}))
-                        ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method),
-            },
-        },
+        spec: wrapSelectors.spec,
         // extend the request snippets core plugin
         requestSnippets: {
             wrapSelectors: {
@@ -248,20 +252,7 @@ export const BasicSnippedGenerator = {
 // TODO parametrize CustomizedSnippetGenerator to read data from the backend
 export const CustomizedSnippetGenerator = {
     statePlugins: {
-        spec: {
-            wrapSelectors: {
-                requestFor: (ori) => (state, path, method) =>
-                    ori(path, method)
-                        ?.set('spec', state.get('json', {}))
-                        ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method),
-                mutatedRequestFor: (ori) => (state, path, method) =>
-                    ori(path, method)
-                        ?.set('spec', state.get('json', {}))
-                        ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method),
-            },
-        },
+        spec: wrapSelectors.spec,
         requestSnippets: {
             wrapSelectors: {
                 getSnippetGenerators:
