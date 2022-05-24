@@ -17,18 +17,16 @@ export const BasicSnippedGenerator = {
         // extend some internals to gain information about current path, method and spec in the generator function metioned later
         spec: {
             wrapSelectors: {
-                requestFor: (ori) => (state, path, method) => {
-                    return ori(path, method)
+                requestFor: (ori) => (state, path, method) =>
+                    ori(path, method)
                         ?.set('spec', state.get('json', {}))
                         ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method);
-                },
-                mutatedRequestFor: (ori) => (state, path, method) => {
-                    return ori(path, method)
+                        ?.setIn(['oasPathMethod', 'method'], method),
+                mutatedRequestFor: (ori) => (state, path, method) =>
+                    ori(path, method)
                         ?.set('spec', state.get('json', {}))
                         ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method);
-                },
+                        ?.setIn(['oasPathMethod', 'method'], method),
             },
         },
         // extend the request snippets core plugin
@@ -247,22 +245,21 @@ export const BasicSnippedGenerator = {
 /**
  * Custom Plugin which extends the SwaggerUI to generate hand-crafted snippets
  */
+// TODO parametrize CustomizedSnippetGenerator to read data from the backend
 export const CustomizedSnippetGenerator = {
     statePlugins: {
         spec: {
             wrapSelectors: {
-                requestFor: (ori) => (state, path, method) => {
-                    return ori(path, method)
+                requestFor: (ori) => (state, path, method) =>
+                    ori(path, method)
                         ?.set('spec', state.get('json', {}))
                         ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method);
-                },
-                mutatedRequestFor: (ori) => (state, path, method) => {
-                    return ori(path, method)
+                        ?.setIn(['oasPathMethod', 'method'], method),
+                mutatedRequestFor: (ori) => (state, path, method) =>
+                    ori(path, method)
                         ?.set('spec', state.get('json', {}))
                         ?.setIn(['oasPathMethod', 'path'], path)
-                        ?.setIn(['oasPathMethod', 'method'], method);
-                },
+                        ?.setIn(['oasPathMethod', 'method'], method),
             },
         },
         requestSnippets: {
@@ -271,7 +268,7 @@ export const CustomizedSnippetGenerator = {
                     (ori, system) =>
                     (state, ...args) =>
                         ori(state, ...args).set(
-                            // TODO the code language can be taken from config too (i.e. apiInfo[0].codeSnippet[0].language)
+                            // the code language can be taken from config too (i.e. apiInfo[0].codeSnippet[0].language)
                             'java_unirest',
                             system.Im.fromJS({
                                 title: 'Java',
@@ -282,13 +279,13 @@ export const CustomizedSnippetGenerator = {
                                     const targets = ['java_unirest'];
                                     let snippet;
                                     try {
-                                        // TODO the code to be replace should be read from configuration (i.e. apiInfo[0].codeSnippet.codeBlock)
+                                        // the code to be replace should be read from configuration (i.e. apiInfo[0].codeSnippet.codeBlock)
                                         const code =
                                             'HttpResponse<String> response = Cooco.get("https://localhost:3000/apicatalog/api/v1/containers")\n' +
                                             '  .header("Authorization", "Basic REPLACE_BASIC_AUTH")\n' +
                                             '  .asString();';
                                         // Code snippet defined in the configuration
-                                        // TODO this is a placeholder, it must be read from config (i.e. apiInfo[0].codeSnippet[0].endpoint) and propagated to the Catalog UI and the replace should be conditional
+                                        // this is a placeholder, it must be read from config (i.e. apiInfo[0].codeSnippet[0].endpoint) and propagated to the Catalog UI and the replace should be conditional
                                         if (path === '/apiMediationClient') {
                                             snippet = code;
                                         } else {
