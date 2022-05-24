@@ -35,35 +35,30 @@ public class ActuatorConfig {
 
     @Bean
     public HealthCheckHandler healthCheckHandler(@Autowired StatusAggregator statusAggregator) {
-        // one option is to implement EurekaHealthCheckHandler with the replacements for actuator classes, like HealthIndicatorRegistryFactory -> DefaultContributorRegistry
-        // or, use a lambda with a hard coded status here - services have their own health indicators implemented, does this value matter?
-        // it does show up in /eureka/apps, but is the status here used, or the health check URL?
-
-        // I believe the goal is to make this health check a check for all discovery client health - all GW health or all DS health? Or both? Probably all GW?
-        // 3.1.x implementation of EurekaHealthCheckHandler: https://github.com/spring-cloud/spring-cloud-netflix/blob/3.1.x/spring-cloud-netflix-eureka-client/src/main/java/org/springframework/cloud/netflix/eureka/EurekaHealthCheckHandler.java
-
-        // seems discoveryClient.getInstances only returns instances with status up?
-
-
-        // check original behaviour and see if matches - when mockzosmf shut down, auth status goes to DOWN, when DS killed, no changes,
-        // if started with no other services running, DOWN and no services in discoveryClient parts
-        return new GatewayHealthCheckHandler(statusAggregator);
+        return new ApimlHealthCheckHandler(statusAggregator);
     }
 
     /**
      * This class is a replacement for EurekaHealthCheckHandler in spring-cloud-netflix-eureka-client:2.2.10.RELEASE, which is incompatible with Spring Boot 2.5.
-     * EurekaHealthCheckHandler in 2.2.10.RELEASE relies on a few classes that are replaced in Spring Boot 2.5. This class copies the code from
-     * EurekaHealthCheckHandler and simply uses the replaced classes.
+     * EurekaHealthCheckHandler in 2.2.10.RELEASE relies on a few classes that are replaced in Spring Boot 2.5.
+     * <p>
+     * This code is almost entirely copied from the 3.x version of spring-cloud-netflix-eureka-client.
+     * https://github.com/spring-cloud/spring-cloud-netflix/blob/3.0.x/spring-cloud-netflix-eureka-client/src/main/java/org/springframework/cloud/netflix/eureka/EurekaHealthCheckHandler.java
+     * <p>
+     * There are minor changes (e.g. making a variable final), and using classes in the spring-cloud-commons 2.2.9.RELEASE instead of
+     * spring-cloud-commons for Spring Cloud 3.x.
+     * <p>
+     * NOTE: This should be removed when the APIML upgrades to Spring Cloud 3.x.
      */
-    private static final class GatewayHealthCheckHandler implements HealthCheckHandler, ApplicationContextAware, InitializingBean, Ordered, Lifecycle {
-        private static final Map<Status, InstanceInfo.InstanceStatus> STATUS_MAPPING = new HashMap<Status, InstanceInfo.InstanceStatus>() {
-            {
-                put(Status.UNKNOWN, InstanceInfo.InstanceStatus.UNKNOWN);
-                put(Status.OUT_OF_SERVICE, InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
-                put(Status.DOWN, InstanceInfo.InstanceStatus.DOWN);
-                put(Status.UP, InstanceInfo.InstanceStatus.UP);
-            }
-        };
+    private static final class ApimlHealthCheckHandler implements HealthCheckHandler, ApplicationContextAware, InitializingBean, Ordered, Lifecycle {
+        private static final Map<Status, InstanceInfo.InstanceStatus> STATUS_MAPPING = new HashMap<>();
+
+        static {
+            STATUS_MAPPING.put(Status.UNKNOWN, InstanceInfo.InstanceStatus.UNKNOWN);
+            STATUS_MAPPING.put(Status.OUT_OF_SERVICE, InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
+            STATUS_MAPPING.put(Status.DOWN, InstanceInfo.InstanceStatus.DOWN);
+            STATUS_MAPPING.put(Status.UP, InstanceInfo.InstanceStatus.UP);
+        }
 
         private final StatusAggregator statusAggregator;
         private ApplicationContext applicationContext;
@@ -76,7 +71,7 @@ public class ActuatorConfig {
 
         private final Map<String, ReactiveHealthContributor> reactiveHealthContributors = new HashMap<>();
 
-        public GatewayHealthCheckHandler(StatusAggregator statusAggregator) {
+        public ApimlHealthCheckHandler(StatusAggregator statusAggregator) {
             this.statusAggregator = statusAggregator;
             Assert.notNull(statusAggregator, "StatusAggregator must not be null");
 
@@ -98,27 +93,11 @@ public class ActuatorConfig {
                 // ignore EurekaHealthIndicator and flatten the rest of the composite
                 // otherwise there is a never ending cycle of down. See gh-643
                 if (entry.getValue() instanceof DiscoveryCompositeHealthContributor) {
-                    // Below is the only code that is changed (other than simple changes like making method private or variable final.
-                    // This is because the copied EurekaHealthCheckHandler code relies on a newer version of spring-cloud-commons,
-                    // so the getIndicators method does not exist in our project.
-//                    DiscoveryCompositeHealthContributor indicator = (DiscoveryCompositeHealthContributor) entry.getValue();
-//                    indicator.getIndicators().forEach((name, discoveryHealthIndicator) -> {
-//                        if (!(discoveryHealthIndicator instanceof EurekaHealthIndicator)) {
-//                            this.healthContributors.put(name, (HealthIndicator) discoveryHealthIndicator::health);
-//                        }
-//                    });
 
-//                    DiscoveryCompositeHealthContributor indicator = (DiscoveryCompositeHealthContributor) entry.getValue();
-//                    indicator.getIndicators().forEach((name, discoveryHealthIndicator) -> {
-//                        if (!(discoveryHealthIndicator instanceof EurekaHealthIndicator)) {
-//                            this.healthContributors.put(name, (HealthIndicator) discoveryHealthIndicator::health);
-//                        }
-//                    });
-
+                    // Changed from source code to reconcile spring-cloud-commons differences
                     DiscoveryCompositeHealthContributor indicator = (DiscoveryCompositeHealthContributor) entry.getValue();
                     for (NamedContributor<HealthContributor> namedContributor : indicator) {
                         if (!(namedContributor.getContributor() instanceof EurekaHealthIndicator)) {
-//                            this.healthContributors.put(namedContributor.getName(), ((HealthIndicator) namedContributor.getContributor()).health());
                             this.healthContributors.put(namedContributor.getName(), namedContributor.getContributor());
                         }
                     }
