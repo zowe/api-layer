@@ -14,6 +14,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.ComponentScan;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
@@ -22,6 +23,10 @@ import org.springframework.cloud.netflix.turbine.EnableTurbine;
 import javax.annotation.Nonnull;
 
 @SpringBootApplication
+@ComponentScan(value = {
+    "org.zowe.apiml.metrics",
+    "org.zowe.apiml.product.compatibility"
+})
 @EnableApiDiscovery
 @EnableApimlLogger
 @EnableTurbine

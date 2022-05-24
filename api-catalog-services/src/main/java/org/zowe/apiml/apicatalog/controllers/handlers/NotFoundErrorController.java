@@ -15,7 +15,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.zowe.apiml.product.controller.AbstractApimlErrorController;
+import org.zowe.apiml.product.compatibility.AbstractApimlErrorController;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;

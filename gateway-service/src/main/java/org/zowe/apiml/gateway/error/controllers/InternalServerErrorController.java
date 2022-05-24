@@ -23,7 +23,7 @@ import org.zowe.apiml.gateway.error.check.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.product.controller.AbstractApimlErrorController;
+import org.zowe.apiml.product.compatibility.AbstractApimlErrorController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
