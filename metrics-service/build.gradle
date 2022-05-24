@@ -94,7 +94,7 @@ dependencies {
     implementation libraries.spring_websocket
     implementation libraries.logback_core
     implementation libraries.logback_classic
-
+    
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
