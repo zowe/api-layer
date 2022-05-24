@@ -44,7 +44,6 @@ function generateSnippet(system, title, syntax, target) {
                 // set to error in case it happens the npm package has some flaws
                 snippet = JSON.stringify(snippet);
             }
-            // return stringified snipped
             return snippet;
         },
     });
@@ -55,7 +54,7 @@ function generateSnippet(system, title, syntax, target) {
  */
 export const BasicSnippedGenerator = {
     statePlugins: {
-        // extend some internals to gain information about current path, method and spec in the generator function metioned later
+        // extend some internals to gain information about current path, method and spec in the generator function
         spec: wrapSelectors.spec,
         // extend the request snippets core plugin
         requestSnippets: {
@@ -110,7 +109,7 @@ export const CustomizedSnippetGenerator = {
                                     try {
                                         // the code to be replace should be read from configuration (i.e. apiInfo[0].codeSnippet.codeBlock)
                                         const code =
-                                            'HttpResponse<String> response = Cooco.get("https://localhost:3000/apicatalog/api/v1/containers")\n' +
+                                            'HttpResponse<String> response = Unirest.get("https://localhost:3000/apicatalog/api/v1/containers")\n' +
                                             '  .header("Authorization", "Basic REPLACE_BASIC_AUTH")\n' +
                                             '  .asString();';
                                         // Code snippet defined in the configuration

@@ -9,7 +9,7 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
+import SwaggerUi from 'swagger-ui-react/swagger-ui-es-bundle-core';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
@@ -99,9 +99,10 @@ export default class SwaggerUI extends Component {
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
-                    presets: [presets.apis],
+                    presets: [SwaggerUi.presets.apis],
                     requestSnippetsEnabled: true,
                     plugins: [this.customPlugins, BasicSnippedGenerator],
+                    filter: true,
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
@@ -110,9 +111,10 @@ export default class SwaggerUI extends Component {
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     url,
-                    presets: [presets.apis],
+                    presets: [SwaggerUi.presets.apis],
                     requestSnippetsEnabled: true,
                     plugins: [this.customPlugins, BasicSnippedGenerator],
+                    filter: true,
                     responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
                         const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
