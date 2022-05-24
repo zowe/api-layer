@@ -1,7 +1,7 @@
 ext {
     springBootVersion = '2.5.13'
     springCloudVersion = '2.2.10.RELEASE'
-    springCloudCommonsVersion = '2.2.9.RELEASE'
+    springCloudCommonsVersion = '2.2.9.RELEASE!!'
     springCloudVersion3 = '3.1.2'
     springSecurityVersion = '5.7.1!!'
     springFrameworkVersion = '5.3.20!!'
