@@ -17,7 +17,7 @@ describe('>>> Swagger component tests', () => {
         document.body.innerHTML = '';
     });
 
-    xit('should not render swagger if apiDoc is null', () => {
+    it('should not render swagger if apiDoc is null', () => {
         const service = {
             serviceId: 'testservice',
             title: 'Spring Boot Enabler Service',
@@ -38,7 +38,7 @@ describe('>>> Swagger component tests', () => {
         expect(swaggerDiv.length).toEqual(0);
     });
 
-    xit('should not render swagger if apiDoc is undefined', async () => {
+    it('should not render swagger if apiDoc is undefined', async () => {
         const service = {
             serviceId: 'testservice',
             title: 'Spring Boot Enabler Service',
@@ -56,7 +56,7 @@ describe('>>> Swagger component tests', () => {
         expect(container.textContent).toContain(`API documentation could not be retrieved`);
     });
 
-    xit('should transform swagger server url', async () => {
+    it('should transform swagger server url', async () => {
         const endpoint = '/enabler/api/v1';
         const service = {
             serviceId: 'testservice',
@@ -82,7 +82,7 @@ describe('>>> Swagger component tests', () => {
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint}`);
     });
 
-    xit('should update swagger', async () => {
+    it('should update swagger', async () => {
         const endpoint1 = '/oldenabler/api/v1';
         const endpoint2 = '/newenabler/api/v2';
         const service1 = {

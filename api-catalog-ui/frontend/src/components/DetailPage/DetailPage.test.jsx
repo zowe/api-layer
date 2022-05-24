@@ -40,7 +40,7 @@ const match = {
 };
 
 describe('>>> Detailed Page component tests', () => {
-    xit('should start epic on mount', () => {
+    it('should start epic on mount', () => {
         const fetchTilesStart = jest.fn();
         const history = {
             push: jest.fn(),
@@ -60,7 +60,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStart).toHaveBeenCalled();
     });
 
-    xit('should stop epic on unmount', () => {
+    it('should stop epic on unmount', () => {
         const fetchTilesStop = jest.fn();
         const history = {
             push: jest.fn(),
@@ -80,7 +80,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStop).toHaveBeenCalled();
     });
 
-    xit('should handle a back button click', () => {
+    it('should handle a back button click', () => {
         const historyMock = { push: jest.fn() };
         const wrapper = shallow(
             <DetailPage
@@ -95,7 +95,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(historyMock.push.mock.calls[0]).toEqual(['/dashboard']);
     });
 
-    xit('should load spinner when waiting for data', () => {
+    it('should load spinner when waiting for data', () => {
         const isLoading = true;
         const wrapper = shallow(
             <DetailPage
@@ -110,7 +110,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(spinner.props().isLoading).toEqual(true);
     });
 
-    xit('should display tile title', () => {
+    it('should display tile title', () => {
         const historyMock = { push: jest.fn() };
         const isLoading = false;
         const wrapper = shallow(
@@ -127,7 +127,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(title.props().children).toEqual(tile.title);
     });
 
-    xit('should display tile description', () => {
+    it('should display tile description', () => {
         const historyMock = { push: jest.fn() };
         const isLoading = false;
         const wrapper = shallow(
@@ -144,7 +144,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(title.props().children).toEqual(tile.description);
     });
 
-    xit('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
+    it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
         const historyMock = { push: jest.fn() };
         const isLoading = false;
         const fetchTilesStop = jest.fn();
@@ -165,7 +165,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStop).toHaveBeenCalled();
     });
 
-    xit('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
+    it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
         const historyMock = { push: jest.fn() };
         const isLoading = false;
         const fetchTilesStop = jest.fn();
@@ -186,7 +186,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStop).toHaveBeenCalled();
     });
 
-    xit('should clear the selected service, stop and restart fetching if a different tile is selected ', () => {
+    it('should clear the selected service, stop and restart fetching if a different tile is selected ', () => {
         const historyMock = { push: jest.fn() };
         const isLoading = false;
         const fetchTilesError = null;
