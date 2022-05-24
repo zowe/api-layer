@@ -48,9 +48,9 @@ gitProperties {
 }
 
 dependencies {
-    compile libraries.jjwt
-    compile libraries.jjwt_impl
-    compile libraries.jjwt_jackson
+    compileOnly libraries.jjwt
+    compileOnly libraries.jjwt_impl
+    compileOnly libraries.jjwt_jackson
     implementation libraries.apache_commons_lang3
     implementation libraries.nimbusJoseJwt
 

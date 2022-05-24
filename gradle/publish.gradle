@@ -36,7 +36,6 @@ ext.sdksToPublish = ext.enablers + ext.javaLibraries
 ext.projectsToPublish = ext.servicesToPublish + ext.sdksToPublish
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
-    apply plugin: "maven"
     apply plugin: 'maven-publish'
     apply plugin: 'java'
 

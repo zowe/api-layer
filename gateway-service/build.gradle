@@ -153,21 +153,21 @@ dependencies {
     annotationProcessor libraries.lombok
 
     implementation libraries.springFox
-    testCompile libraries.mockito_core
-    testCompile libraries.spring_mock_mvc
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
-    testRuntime libraries.http_client
-    testCompile libraries.rest_assured
-    testCompile libraries.javax_inject
+    testImplementation libraries.mockito_core
+    testImplementation libraries.spring_mock_mvc
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
+    testRuntimeOnly libraries.http_client
+    testImplementation libraries.rest_assured
+    testImplementation libraries.javax_inject
 
-    testCompile libraries.lombok
+    testImplementation libraries.lombok
     testAnnotationProcessor libraries.lombok
 
     testImplementation(testFixtures(project(":integration-tests")))
 
-    runtime libraries.jjwt_impl
-    runtime libraries.jjwt_jackson
+    runtimeOnly libraries.jjwt_impl
+    runtimeOnly libraries.jjwt_jackson
 }
 
 bootJar {

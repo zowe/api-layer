@@ -4,7 +4,7 @@ buildscript {
     }
     repositories {
         mavenCentral()
-        maven { url "http://repo.spring.io/libs-milestone" }
+        maven { url "https://repo.spring.io/libs-milestone" }
         maven { setUrl(artifactoryMavenRepo) }
         maven {
             url "https://plugins.gradle.org/m2/"
@@ -32,20 +32,20 @@ jar {
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.spring.io/libs-milestone" }
+    maven { url "https://repo.spring.io/libs-milestone" }
 }
 
 dependencies {
-    compile(project(':onboarding-enabler-spring'))
-    compile "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
-    compile "io.springfox:springfox-swagger2:2.9.2"
-    compile "io.springfox:springfox-spring-web:2.9.2"
+    compileOnly(project(':onboarding-enabler-spring'))
+    compileOnly "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
+    compileOnly "io.springfox:springfox-swagger2:2.9.2"
+    compileOnly "io.springfox:springfox-spring-web:2.9.2"
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
-    testCompile libraries.json_smart
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation libraries.json_smart
 }
 
 

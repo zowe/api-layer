@@ -51,7 +51,6 @@ apply from: 'gradle/lite.gradle'
 allprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
-    apply plugin: 'maven'
     apply plugin: 'com.github.hierynomus.license'
     apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'eclipse'

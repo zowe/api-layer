@@ -1,11 +1,11 @@
 dependencies {
-    compile(project(':apiml-common'))
-    compile libraries.spring_boot_starter_web
-    compile libraries.spring_security_web
-    compile libraries.spring_security_config
-    compile libraries.apache_commons_lang3
-    compile libraries.bcprov;
-    compile libraries.bcpkix;
+    compileOnly(project(':apiml-common'))
+    compileOnly libraries.spring_boot_starter_web
+    compileOnly libraries.spring_security_web
+    compileOnly libraries.spring_security_config
+    compileOnly libraries.apache_commons_lang3
+    compileOnly libraries.bcprov;
+    compileOnly libraries.bcpkix;
     
     implementation libraries.spring_aop
     implementation libraries.spring_beans
@@ -18,12 +18,12 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile libraries.mockito_core
-    testCompile libraries.spring_mock_mvc
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
+    testImplementation libraries.mockito_core
+    testImplementation libraries.spring_mock_mvc
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
 
-    testCompileOnly libraries.lombok
-    testCompile libraries.gson
+    testImplementation libraries.lombok
+    testImplementation libraries.gson
     testAnnotationProcessor libraries.lombok
 }

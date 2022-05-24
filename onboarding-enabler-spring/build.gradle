@@ -20,12 +20,12 @@ publish {
 }
 
 dependencies {
-    compile project(':apiml-utility')
-    compile project(':onboarding-enabler-java')
+    compileOnly project(':apiml-utility')
+    compileOnly project(':onboarding-enabler-java')
     
-    compile libraries.spring_boot_starter_web
-    compile libraries.tomcat_embed_core
-    compile libraries.tomcat_embed_websocket
+    compileOnly libraries.spring_boot_starter_web
+    compileOnly libraries.tomcat_embed_core
+    compileOnly libraries.tomcat_embed_websocket
     
     implementation libraries.spring_aop
     implementation libraries.spring_beans
@@ -39,12 +39,12 @@ dependencies {
 
     compileOnly libraries.javax_inject
 
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
-    testCompile libraries.mockito_core
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
+    testImplementation libraries.mockito_core
 
     annotationProcessor libraries.spring_boot_configuration_processor
-    testCompile libraries.gson
+    testImplementation libraries.gson
 }
 
 jar {

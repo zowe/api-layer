@@ -1,14 +1,14 @@
 dependencies {
-    compile project(':apiml-utility')
-    compile project(':apiml-tomcat-common')
-    compile libraries.spring_boot_starter_web
-    compile libraries.spring_boot_starter_validation
-    compile libraries.jackson_databind
-    compile libraries.apache_commons_lang3
-    compile libraries.http_client
-    compile libraries.http_core 
-    compile libraries.janino
-    compile libraries.xstream
+    compileOnly project(':apiml-utility')
+    compileOnly project(':apiml-tomcat-common')
+    compileOnly libraries.spring_boot_starter_web
+    compileOnly libraries.spring_boot_starter_validation
+    compileOnly libraries.jackson_databind
+    compileOnly libraries.apache_commons_lang3
+    compileOnly libraries.http_client
+    compileOnly libraries.http_core 
+    compileOnly libraries.janino
+    compileOnly libraries.xstream
 
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_security_crypto
@@ -17,10 +17,10 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile libraries.javax_servlet_api
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
+    testImplementation libraries.javax_servlet_api
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
 
-    testCompile libraries.lombok
+    testImplementation libraries.lombok
     annotationProcessor libraries.lombok
 }

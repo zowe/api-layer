@@ -1,20 +1,20 @@
 dependencies {
     annotationProcessor libraries.lombok
 
-    compile libraries.http_client
-    compile libraries.jackson_annotations
-    compile libraries.jackson_databind
-    compile libraries.slf4j_api
-    compile libraries.jaxb_api
+    compileOnly libraries.http_client
+    compileOnly libraries.jackson_annotations
+    compileOnly libraries.jackson_databind
+    compileOnly libraries.slf4j_api
+    compileOnly libraries.jaxb_api
     implementation libraries.javax_servlet_api
     implementation libraries.spring_context
     implementation libraries.apache_commons_codec
 
     compileOnly libraries.lombok
 
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
-    testCompile libraries.junitJupiter
-    testCompile libraries.jjwt_full
-    testCompile libraries.logback_classic
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
+    testImplementation libraries.junitJupiter
+    testImplementation libraries.jjwt_full
+    testImplementation libraries.logback_classic
 }

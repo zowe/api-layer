@@ -133,7 +133,7 @@ dependencies {
 
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart
-    testCompile libraries.hamcrest
+    testImplementation libraries.hamcrest
     testImplementation libraries.rest_assured
     testImplementation(testFixtures(project(":integration-tests")))
 }

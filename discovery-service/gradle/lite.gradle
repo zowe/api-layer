@@ -31,7 +31,7 @@ task liteJar(type: BootJar) {
     def modulesJar = getModulesJarNames()
     archiveName = getBaseNameLite() + ".jar"
     mainClassName = getSpringBootApp()
-    from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }}
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }}
     exclude { details -> details.file && details.file.name.endsWith('.jar') && !modulesJar.contains(details.file.name) }
     with bootJar
 
@@ -50,7 +50,7 @@ artifacts {
 task liteLibJar(type: Jar) {
     archiveName = getBaseNameLite() + "-lib.jar"
     entryCompression = ZipEntryCompression.STORED
-    from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }}
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }}
     include '*.jar'
     exclude getModulesJarFilters()
     with bootJar

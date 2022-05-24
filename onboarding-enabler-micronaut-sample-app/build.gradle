@@ -25,7 +25,7 @@ micronaut {
 }
 
 dependencies {
-    compile project(':onboarding-enabler-micronaut')
+    compileOnly project(':onboarding-enabler-micronaut')
     testImplementation ("io.micronaut:micronaut-http-client")
  }
 

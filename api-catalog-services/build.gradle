@@ -118,14 +118,14 @@ dependencies {
 
     implementation libraries.springFox
 
-    testCompile libraries.rest_assured
-    testCompile libraries.spring_mock_mvc
+    testImplementation libraries.rest_assured
+    testImplementation libraries.spring_mock_mvc
 
-    testCompile libraries.lombok
+    testImplementation libraries.lombok
     testAnnotationProcessor libraries.lombok
 
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
 }
 
 bootJar {

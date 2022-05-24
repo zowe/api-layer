@@ -109,12 +109,12 @@ dependencies {
 
     implementation libraries.netflix_servo
 
-    testCompile libraries.lombok
+    testImplementation libraries.lombok
     testAnnotationProcessor libraries.lombok
 
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
-    testCompile libraries.awaitility
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
+    testImplementation libraries.awaitility
     testImplementation libraries.rest_assured
     testImplementation(testFixtures(project(":integration-tests")))
 }

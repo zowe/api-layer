@@ -97,11 +97,11 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile libraries.lombok
+    testImplementation libraries.lombok
     testAnnotationProcessor libraries.lombok
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
-    testCompile libraries.rest_assured
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
+    testImplementation libraries.rest_assured
 }
 
 def uiModule = "${project(':metrics-service-ui').projectDir}"
