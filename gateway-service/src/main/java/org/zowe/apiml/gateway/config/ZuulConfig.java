@@ -18,7 +18,7 @@ import org.springframework.cloud.netflix.zuul.web.ZuulController;
 import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.product.controller.AbstractApimlErrorController;
+import org.zowe.apiml.product.compatibility.AbstractApimlErrorController;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
