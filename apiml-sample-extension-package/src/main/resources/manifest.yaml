@@ -12,10 +12,10 @@ repository:
   type: git
   url: https://github.com/zowe/api-layer.git
 build:
-    branch: "{{build.branch}}"
-    number: "{{build.number}}"
-    commitHash: "{{build.commitHash}}"
-    timestamp: "{{build.timestamp}}"
+  branch: "{{build.branch}}"
+  number: "{{build.number}}"
+  commitHash: "{{build.commitHash}}"
+  timestamp: "{{build.timestamp}}"
 # The following block contains all the extensions directory path
 # (or file path) that will be included in the API ML
 gatewaySharedLibs:
