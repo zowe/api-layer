@@ -19,17 +19,20 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Optional;
 
-
 @Component
 @AllArgsConstructor
 public class ZoweJwtScheme implements IAuthenticationScheme {
-
+    @InjectApimlLogger
+    private final ApimlLogger logger = ApimlLogger.empty();
 
     private AuthSourceService authSourceService;
     private AuthConfigurationProperties configurationProperties;
@@ -59,8 +62,10 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             }
             jwt = authSourceService.getJWT(authSource);
         } catch (TokenNotValidException e) {
+            logger.log(MessageType.DEBUG, e.getLocalizedMessage());
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
         } catch (TokenExpireException e) {
+            logger.log(MessageType.DEBUG, e.getLocalizedMessage());
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.expiredToken");
         }
 

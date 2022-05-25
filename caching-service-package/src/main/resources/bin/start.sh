@@ -42,7 +42,7 @@
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
-if [ ${LAUNCH_COMPONENT} ]
+if [ -n "${LAUNCH_COMPONENT}" ]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/caching-service.jar"
 else
@@ -53,17 +53,17 @@ echo "jar file: "${JAR_FILE}
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
-if [[ ! -z ${ZWE_configs_debug} && ${ZWE_configs_debug} == true ]]
+if [ "${ZWE_configs_debug}" = "true" ]
 then
   export LOG_LEVEL="debug"
 fi
 
-if [[ -z ${LIBRARY_PATH} ]]
+if [ -z "${LIBRARY_PATH}" ]
 then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ ! -z ${ZWE_configs_storage_vsam_name} ]
+if [ -n "${ZWE_configs_storage_vsam_name}" ]
 then
     VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name}\'
 fi
@@ -82,7 +82,7 @@ else
   nonStrictVerifySslCertificatesOfServices=true
 fi
 
-if [ `uname` = "OS/390" ]
+if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
 fi
@@ -119,6 +119,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.size=${ZWE_configs_storage_size:-10000} \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
+  -Djgroups.bind.address=${ZWE_haInstance_hostname:-localhost} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
   -Dserver.ssl.keyStore="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}" \

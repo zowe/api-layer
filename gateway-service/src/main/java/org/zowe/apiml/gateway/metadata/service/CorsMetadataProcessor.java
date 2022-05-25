@@ -73,7 +73,7 @@ public class CorsMetadataProcessor extends MetadataProcessor {
         String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
         if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
             // Origins not specified: allow everything
-            config.addAllowedOrigin(CorsConfiguration.ALL);
+            config.addAllowedOriginPattern(CorsConfiguration.ALL);
         } else {
             // Origins specified: split by comma, add to whitelist
             Arrays.stream(corsAllowedOriginsForService.split(","))

@@ -84,7 +84,10 @@ dependencies {
     implementation libraries.tomcat_annotations_api
     implementation libraries.tomcat_embed_core
     implementation libraries.tomcat_embed_websocket
-    implementation libraries.spring_cloud_starter_eureka
+    implementation(libraries.spring_cloud_starter_eureka){
+        exclude group: "com.google.code.gson", module: "gson"
+    }
+    implementation libraries.gson
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common
     implementation libraries.jetty_websocket_client
@@ -124,6 +127,8 @@ dependencies {
     implementation libraries.netty_transport_udt
     implementation libraries.thymeleaf
     implementation libraries.thymeleafSpring
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
     implementation libraries.commons_io
     implementation libraries.guava

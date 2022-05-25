@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.message.core.MessageType;
 
 /**
  * Custom implementation of AuthSourceService interface which uses client certificate as an authentication source.
@@ -40,10 +41,10 @@ public class X509CNAuthSourceService extends X509AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
 
-        // get certificate from custom attribute "client.auth.X509Certificate"
+        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute 'client.auth.X509Certificate'.");
         X509Certificate clientCert = super.getCertificateFromRequest(context.getRequest(), "client.auth.X509Certificate");
         if (clientCert == null) {
-            // get certificate from standard attribute "javax.servlet.request.X509Certificate"
+            logger.log(MessageType.DEBUG, "Getting X509 client certificate from standard attribute 'javax.servlet.request.X509Certificate'.");
             clientCert = super.getCertificateFromRequest(context.getRequest(), "javax.servlet.request.X509Certificate");
         }
         clientCert = isValid(clientCert) ? clientCert : null;
