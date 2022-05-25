@@ -86,6 +86,21 @@ if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
 fi
+
+if [ -z "${ZWE_configs_storage_infinispan_persistence_dataLocation}" ]; then
+  if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
+    ZWE_configs_storage_infinispan_persistence_dataLocation="${ZWE_zowe_workspaceDirectory}/caching-service/data"
+  fi
+fi
+if [ -z "${ZWE_configs_storage_infinispan_persistence_indexLocation}" ]; then
+  if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
+    ZWE_configs_storage_infinispan_persistence_indexLocation="${ZWE_zowe_workspaceDirectory}/caching-service/index"
+  fi
+fi
+if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ]; then
+  ZWE_configs_storage_infinispan_initialHosts="${ZWE_haInstance_hostname:-localhost}[${ZWE_configs_storage_infinispan_jgroups_port:-7098}]"
+fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
