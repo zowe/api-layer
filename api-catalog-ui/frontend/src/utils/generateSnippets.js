@@ -26,6 +26,14 @@ const wrapSelectors = {
     },
 };
 
+/**
+ * Generate the code snippets for each of the APIs
+ * @param system
+ * @param title the code snippet title
+ * @param syntax the syntax used for indentation
+ * @param target the language target
+ * @returns snippet code snippet content or an error in case of failure
+ */
 function generateSnippet(system, title, syntax, target) {
     return system.Im.fromJS({
         title,
@@ -41,7 +49,6 @@ function generateSnippet(system, title, syntax, target) {
                 // set request snippet content
                 snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
             } catch (err) {
-                // set to error in case it happens the npm package has some flaws
                 snippet = JSON.stringify(snippet);
             }
             return snippet;
@@ -86,7 +93,7 @@ export const BasicSnippedGenerator = {
 /**
  * Custom Plugin which extends the SwaggerUI to generate hand-crafted snippets
  */
-// TODO parametrize CustomizedSnippetGenerator to read data from the backend
+// TODO parametrize CustomizedSnippetGenerator to read data from the backend. Not ready for usage
 export const CustomizedSnippetGenerator = {
     statePlugins: {
         spec: wrapSelectors.spec,

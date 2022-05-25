@@ -161,7 +161,11 @@ export default class ServiceTab extends Component {
                     <Fragment>
                         <div className="serviceTab">
                             <div className="header">
-                                <Typography data-testid="service" variant="subtitle2" style={{ color: 'black' }}>
+                                <Typography
+                                    data-testid="service"
+                                    variant="subtitle2"
+                                    style={{ color: 'black', fontSize: '20px', fontWeight: 'bold' }}
+                                >
                                     {selectedService.title}
                                 </Typography>
                                 <br />
