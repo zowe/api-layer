@@ -29,13 +29,13 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
  */
 class ApimlDiscoveryCompositeHealthContributorTest {
     @Test
-    public void createWhenIndicatorsAreNullThrowsException() {
+    void createWhenIndicatorsAreNullThrowsException() {
         assertThatIllegalArgumentException().isThrownBy(() -> new ApimlDiscoveryCompositeHealthContributor(null))
             .withMessage("'indicators' must not be null");
     }
 
     @Test
-    public void getContributorReturnsContributor() {
+    void getContributorReturnsContributor() {
         TestDiscoveryHealthIndicator indicator = new TestDiscoveryHealthIndicator("test", Health.up().build());
         ApimlDiscoveryCompositeHealthContributor composite = new ApimlDiscoveryCompositeHealthContributor(
             Collections.singletonList(indicator));
@@ -45,7 +45,7 @@ class ApimlDiscoveryCompositeHealthContributorTest {
     }
 
     @Test
-    public void getContributorWhenMissingReturnsNull() {
+    void getContributorWhenMissingReturnsNull() {
         TestDiscoveryHealthIndicator indicator = new TestDiscoveryHealthIndicator("test", Health.up().build());
         ApimlDiscoveryCompositeHealthContributor composite = new ApimlDiscoveryCompositeHealthContributor(
             Collections.singletonList(indicator));
@@ -53,7 +53,7 @@ class ApimlDiscoveryCompositeHealthContributorTest {
     }
 
     @Test
-    public void iteratorIteratesNamedContributors() {
+    void iteratorIteratesNamedContributors() {
         TestDiscoveryHealthIndicator indicator1 = new TestDiscoveryHealthIndicator("test1", Health.up().build());
         TestDiscoveryHealthIndicator indicator2 = new TestDiscoveryHealthIndicator("test2", Health.down().build());
         ApimlDiscoveryCompositeHealthContributor composite = new ApimlDiscoveryCompositeHealthContributor(
