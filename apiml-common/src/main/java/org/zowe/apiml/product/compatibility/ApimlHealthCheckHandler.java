@@ -14,7 +14,6 @@ import com.netflix.appinfo.InstanceInfo;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.actuate.health.*;
-import org.springframework.cloud.client.discovery.health.DiscoveryCompositeHealthContributor;
 import org.springframework.cloud.netflix.eureka.EurekaHealthIndicator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -30,13 +29,13 @@ import java.util.Set;
 
 /**
  * This class is a replacement for EurekaHealthCheckHandler in spring-cloud-netflix-eureka-client:2.2.10.RELEASE, which is incompatible with Spring Boot 2.5.
- * EurekaHealthCheckHandler in 2.2.10.RELEASE relies on a few classes that are replaced in Spring Boot 2.5.
+ * EurekaHealthCheckHandler in 2.2.10.RELEASE relies on a few classes that are removed in Spring Boot 2.5.
  * <p>
- * This code is almost entirely copied from the 3.x version of spring-cloud-netflix-eureka-client.
- * https://github.com/spring-cloud/spring-cloud-netflix/blob/3.0.x/spring-cloud-netflix-eureka-client/src/main/java/org/springframework/cloud/netflix/eureka/EurekaHealthCheckHandler.java
+ * This code is almost entirely copied from the 3.1.x version of spring-cloud-netflix-eureka-client.
+ * https://github.com/spring-cloud/spring-cloud-netflix/blob/3.1.x/spring-cloud-netflix-eureka-client/src/main/java/org/springframework/cloud/netflix/eureka/EurekaHealthCheckHandler.java
  * <p>
- * There are minor changes (e.g. making a variable final), and using classes in the spring-cloud-commons 2.2.9.RELEASE instead of
- * spring-cloud-commons for Spring Cloud 3.x.
+ * There are minor formatting changes (e.g. making a variable final), the only other change is using ApimlDiscoveryCompositeHealthContributor
+ * to bridge the difference between spring-cloud-commons:2.2.9.RELEASE and spring-cloud-commons:3.1.x.
  * <p>
  * NOTE: This should be removed when the APIML upgrades to Spring Cloud 3.x.
  */
@@ -52,15 +51,14 @@ public class ApimlHealthCheckHandler implements HealthCheckHandler, ApplicationC
     }
 
     private final StatusAggregator statusAggregator;
-    private ApplicationContext applicationContext;
     private final Map<String, HealthContributor> healthContributors = new HashMap<>();
+    private final Map<String, ReactiveHealthContributor> reactiveHealthContributors = new HashMap<>();
 
     /**
      * {@code true} until the context is stopped.
      */
     private boolean running = true;
-
-    private final Map<String, ReactiveHealthContributor> reactiveHealthContributors = new HashMap<>();
+    private ApplicationContext applicationContext;
 
     public ApimlHealthCheckHandler(StatusAggregator statusAggregator) {
         this.statusAggregator = statusAggregator;
@@ -79,20 +77,17 @@ public class ApimlHealthCheckHandler implements HealthCheckHandler, ApplicationC
         reactiveHealthContributors.putAll(applicationContext.getBeansOfType(ReactiveHealthContributor.class));
     }
 
-    private void populateHealthContributors(Map<String, HealthContributor> healthContributors) {
+    void populateHealthContributors(Map<String, HealthContributor> healthContributors) {
         for (Map.Entry<String, HealthContributor> entry : healthContributors.entrySet()) {
             // ignore EurekaHealthIndicator and flatten the rest of the composite
             // otherwise there is a never ending cycle of down. See gh-643
-            if (entry.getValue() instanceof DiscoveryCompositeHealthContributor) {
-
-                // Changed from source code to reconcile spring-cloud-commons differences
-                DiscoveryCompositeHealthContributor indicator = (DiscoveryCompositeHealthContributor) entry.getValue();
-                for (NamedContributor<HealthContributor> namedContributor : indicator) {
-                    if (!(namedContributor.getContributor() instanceof EurekaHealthIndicator)) {
-                        this.healthContributors.put(namedContributor.getName(), namedContributor.getContributor());
+            if (entry.getValue() instanceof ApimlDiscoveryCompositeHealthContributor) {
+                ApimlDiscoveryCompositeHealthContributor indicator = (ApimlDiscoveryCompositeHealthContributor) entry.getValue();
+                indicator.getIndicators().forEach((name, discoveryHealthIndicator) -> {
+                    if (!(discoveryHealthIndicator instanceof EurekaHealthIndicator)) {
+                        this.healthContributors.put(name, (HealthIndicator) discoveryHealthIndicator::health);
                     }
-                }
-
+                });
             } else {
                 this.healthContributors.put(entry.getKey(), entry.getValue());
             }
@@ -111,12 +106,12 @@ public class ApimlHealthCheckHandler implements HealthCheckHandler, ApplicationC
         }
     }
 
-    private InstanceInfo.InstanceStatus getHealthStatus() {
+    protected InstanceInfo.InstanceStatus getHealthStatus() {
         Status status = getStatus(statusAggregator);
         return mapToInstanceStatus(status);
     }
 
-    private Status getStatus(StatusAggregator statusAggregator) {
+    protected Status getStatus(StatusAggregator statusAggregator) {
         Set<Status> statusSet = new HashSet<>();
         for (HealthContributor contributor : healthContributors.values()) {
             processContributor(statusSet, contributor);
@@ -150,7 +145,7 @@ public class ApimlHealthCheckHandler implements HealthCheckHandler, ApplicationC
         }
     }
 
-    private InstanceInfo.InstanceStatus mapToInstanceStatus(Status status) {
+    protected InstanceInfo.InstanceStatus mapToInstanceStatus(Status status) {
         if (!STATUS_MAPPING.containsKey(status)) {
             return InstanceInfo.InstanceStatus.UNKNOWN;
         }
