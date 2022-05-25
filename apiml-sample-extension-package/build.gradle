@@ -29,7 +29,6 @@ task packageSampleExtension(type: Zip) {
 
     into('/') {
         from "$resourceDir/manifest.yaml"
-        from "../schemas/apiml-sample-extension-schema.json"
     }
 
     into('bin/') {

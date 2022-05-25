@@ -24,7 +24,6 @@ task packageCommonLib(type: Zip) {
 
     into('/') {
         from "$resourceDir/manifest.yaml"
-        from "../schemas/apiml-common-lib-schema.json"
     }
 
     into('bin/') {
