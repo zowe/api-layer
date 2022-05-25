@@ -12,8 +12,6 @@ package org.zowe.apiml.gateway.routing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
 import org.springframework.cloud.netflix.zuul.web.ZuulController;
 import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
@@ -24,8 +22,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ZuulErrorControllerHandlerTest {
     private static final String BEAN_NAME = "name";
@@ -84,7 +85,8 @@ class ZuulErrorControllerHandlerTest {
         @Test
         void givenNotEnhancedBean_thenError() {
             zuulHandlerMapping.setErrorController(mockErrorController);
-            assertThrows(InvocationTargetException.class, () -> invokeLookupHandler(zuulHandlerMapping, ERROR_PATH));
+            InvocationTargetException e = assertThrows(InvocationTargetException.class, () -> invokeLookupHandler(zuulHandlerMapping, ERROR_PATH));
+            assertThat(e.getTargetException(), instanceOf(NoSuchMethodError.class));
         }
 
         private Object invokeLookupHandler(ZuulHandlerMapping instance, String path) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

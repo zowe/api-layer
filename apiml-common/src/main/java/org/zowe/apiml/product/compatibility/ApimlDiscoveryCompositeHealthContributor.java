@@ -9,22 +9,18 @@
  */
 package org.zowe.apiml.product.compatibility;
 
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.appinfo.InstanceInfo;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.actuate.health.*;
-import org.springframework.cloud.client.discovery.health.DiscoveryCompositeHealthContributor;
+import org.springframework.boot.actuate.health.CompositeHealthContributor;
+import org.springframework.boot.actuate.health.HealthContributor;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.health.NamedContributor;
 import org.springframework.cloud.client.discovery.health.DiscoveryHealthIndicator;
-import org.springframework.cloud.netflix.eureka.EurekaHealthIndicator;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.Lifecycle;
-import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
