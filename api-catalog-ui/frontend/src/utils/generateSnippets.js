@@ -18,10 +18,10 @@ const wrapSelectors = {
                     ?.setIn(['oasPathMethod', 'path'], path)
                     ?.setIn(['oasPathMethod', 'method'], method),
             mutatedRequestFor: (ori) => (state, path, method) =>
-                ori(path, method)
-                    ?.set('spec', state.get('json', {}))
-                    ?.setIn(['oasPathMethod', 'path'], path)
-                    ?.setIn(['oasPathMethod', 'method'], method),
+                ori(path, method) // NOSONAR
+                    ?.set('spec', state.get('json', {})) // NOSONAR
+                    ?.setIn(['oasPathMethod', 'path'], path) // NOSONAR
+                    ?.setIn(['oasPathMethod', 'method'], method), // NOSONAR
         },
     },
 };
