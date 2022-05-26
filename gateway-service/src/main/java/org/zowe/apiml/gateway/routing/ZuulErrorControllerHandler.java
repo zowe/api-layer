@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.routing;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.cglib.proxy.*;
 import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
@@ -20,6 +21,8 @@ import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is used to reconcile the breaking change between Spring Boot 2.5 and Zuul. The breaking change
@@ -32,21 +35,22 @@ import java.lang.reflect.Method;
 public class ZuulErrorControllerHandler implements BeanPostProcessor {
     private final RouteLocator routeLocator;
     private final ZuulController zuulController;
-    private final ApimlErrorController errorController;
+    private final List<ApimlErrorController> errorControllers;
 
-    public ZuulErrorControllerHandler(RouteLocator routeLocator, ZuulController zuulController, ApimlErrorController errorController) {
+    public ZuulErrorControllerHandler(RouteLocator routeLocator, ZuulController zuulController, List<ApimlErrorController> errorControllers) {
         this.routeLocator = routeLocator;
         this.zuulController = zuulController;
-        this.errorController = errorController;
+        this.errorControllers = errorControllers;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (errorController != null && (bean instanceof ZuulHandlerMapping)) {
+        boolean hasErrorController = errorControllers != null && errorControllers.size() > 0;
+        if (hasErrorController && (bean instanceof ZuulHandlerMapping)) {
             Enhancer enhancer = new Enhancer();
             enhancer.setSuperclass(ZuulHandlerMapping.class);
             enhancer.setCallbackFilter(LookupHandlerCallbackFilter.INSTANCE);
-            enhancer.setCallbacks(new Callback[]{new LookupHandlerMethodInterceptor(errorController.getErrorPath()), NoOp.INSTANCE});
+            enhancer.setCallbacks(new Callback[]{new LookupHandlerMethodInterceptor(errorControllers), NoOp.INSTANCE});
             Constructor<?> ctor = ZuulHandlerMapping.class.getConstructors()[0];
             return enhancer.create(ctor.getParameterTypes(), new Object[]{routeLocator, zuulController});
         }
@@ -66,15 +70,17 @@ public class ZuulErrorControllerHandler implements BeanPostProcessor {
     }
 
     private static final class LookupHandlerMethodInterceptor implements MethodInterceptor {
-        private final String errorPath;
+        private final List<String> errorPaths = new ArrayList<>();
 
-        LookupHandlerMethodInterceptor(String errorPath) {
-            this.errorPath = errorPath;
+        LookupHandlerMethodInterceptor(List<ApimlErrorController> errorControllers) {
+            for (ApimlErrorController errorController : errorControllers) {
+                errorPaths.add(errorController.getErrorPath());
+            }
         }
 
         @Override
         public Object intercept(Object target, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-            if (errorPath.equals(args[0])) {
+            if (args[0] instanceof String && errorPaths.contains(args[0])) {
                 return null;
             }
             return methodProxy.invokeSuper(target, args);
