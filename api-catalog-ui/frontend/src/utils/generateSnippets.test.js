@@ -122,7 +122,8 @@ describe('>>> Code snippet generator', () => {
                         let snippet;
                         try {
                             // set request snippet content
-                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
+                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0]
+                                .content;
                         } catch (err) {
                             snippet = JSON.stringify(snippet);
                         }
