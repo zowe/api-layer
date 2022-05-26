@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.routing;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.cglib.proxy.*;
 import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
