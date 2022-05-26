@@ -59,6 +59,7 @@ function generateSnippet(system, title, syntax, target) {
 /**
  * Custom Plugin which extends the SwaggerUI to generate simple snippets
  */
+// eslint-disable-next-line import/prefer-default-export
 export const BasicSnippedGenerator = {
     statePlugins: {
         // extend some internals to gain information about current path, method and spec in the generator function
