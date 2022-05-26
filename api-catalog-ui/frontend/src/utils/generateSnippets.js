@@ -36,7 +36,7 @@ const wrapSelectors = {
  * @param target the language target
  * @returns snippet code snippet content or an error in case of failure
  */
-function generateSnippet(system, title, syntax, target) {
+export function generateSnippet(system, title, syntax, target) {
     return system.Im.fromJS({
         title,
         syntax,
