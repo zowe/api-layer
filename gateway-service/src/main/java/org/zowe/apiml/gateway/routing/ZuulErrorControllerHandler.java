@@ -44,7 +44,7 @@ public class ZuulErrorControllerHandler implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        boolean hasErrorController = errorControllers != null && errorControllers.size() > 0;
+        boolean hasErrorController = errorControllers != null && !errorControllers.isEmpty();
         if (hasErrorController && (bean instanceof ZuulHandlerMapping)) {
             Enhancer enhancer = new Enhancer();
             enhancer.setSuperclass(ZuulHandlerMapping.class);
