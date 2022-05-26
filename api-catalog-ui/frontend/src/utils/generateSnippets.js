@@ -9,7 +9,7 @@
  */
 import * as OpenAPISnippet from 'openapi-snippet';
 
-const wrapSelectors = {
+export const wrapSelectors = {
     spec: {
         wrapSelectors: {
             requestFor: (ori) => (state, path, method) =>

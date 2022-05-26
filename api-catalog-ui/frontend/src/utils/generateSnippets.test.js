@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { generateSnippet } from './generateSnippets';
+import { generateSnippet, wrapSelectors } from './generateSnippets';
 
 describe('>>> Code snippet generator', () => {
     test('generate a snippet', () => {
@@ -77,5 +77,31 @@ describe('>>> Code snippet generator', () => {
             'HttpResponse<String> response = Unirest.get("http://undefinedundefined/path/to/api")\n' + '  .asString();';
 
         expect(result).toEqual(expectedResult);
+    });
+
+    it('should call mutatedRequestFor with path and method', () => {
+        const ori = jest.fn();
+        const requestFor = wrapSelectors.spec.wrapSelectors.requestFor(ori);
+        const state = {
+            json: {},
+        };
+        const path = '/some/path';
+        const method = 'GET';
+        requestFor(state, path, method);
+        expect(ori).toHaveBeenCalledWith(path, method);
+        expect(ori).toHaveBeenCalledTimes(1);
+    });
+
+    it('should wrap the mutatedRequestFor selector', () => {
+        const ori = jest.fn();
+        const mutatedRequestFor = wrapSelectors.spec.wrapSelectors.mutatedRequestFor(ori);
+        const state = {
+            json: {},
+        };
+        const path = '/some/path';
+        const method = 'GET';
+        mutatedRequestFor(state, path, method);
+        expect(ori).toHaveBeenCalledWith(path, method);
+        expect(ori).toHaveBeenCalledTimes(1);
     });
 });
