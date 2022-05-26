@@ -21,6 +21,8 @@ import org.zowe.apiml.product.compatibility.ApimlErrorController;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -50,7 +52,10 @@ class ZuulErrorControllerHandlerTest {
         mockErrorController = mock(ApimlErrorController.class);
         when(mockErrorController.getErrorPath()).thenReturn(ERROR_PATH);
 
-        underTest = new ZuulErrorControllerHandler(mockRouteLocator, mockZuulController, mockErrorController);
+        List<ApimlErrorController> mockErrorControllersList = new ArrayList<>();
+        mockErrorControllersList.add(mockErrorController);
+
+        underTest = new ZuulErrorControllerHandler(mockRouteLocator, mockZuulController, mockErrorControllersList);
         zuulHandlerMapping = new ZuulHandlerMapping(mockRouteLocator, mockZuulController);
     }
 
