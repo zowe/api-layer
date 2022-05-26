@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+import * as OpenAPISnippet from 'openapi-snippet';
 import { generateSnippet, wrapSelectors } from './generateSnippets';
 
 describe('>>> Code snippet generator', () => {
@@ -103,5 +104,46 @@ describe('>>> Code snippet generator', () => {
         mutatedRequestFor(state, path, method);
         expect(ori).toHaveBeenCalledWith(path, method);
         expect(ori).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return a snippet for the given system, title, syntax, and target', () => {
+        const system = {
+            Im: {
+                fromJS: jest.fn().mockImplementation(() => ({
+                    title: 'test title',
+                    syntax: 'test syntax',
+                    fn: (req) => {
+                        // get extended info about request
+                        const { spec, oasPathMethod } = req.toJS();
+                        const { path, method } = oasPathMethod;
+                        // run OpenAPISnippet for target node
+                        // eslint-disable-next-line no-use-before-define
+                        const targets = ['test target'];
+                        let snippet;
+                        try {
+                            // set request snippet content
+                            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
+                        } catch (err) {
+                            snippet = JSON.stringify(snippet);
+                        }
+                        return snippet;
+                    },
+                })),
+            },
+        };
+
+        const title = 'test title';
+        const syntax = 'test syntax';
+        const target = 'test target';
+
+        const result = generateSnippet(system, title, syntax, target);
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                title: expect.any(String),
+                syntax: expect.any(String),
+                fn: expect.any(Function),
+            })
+        );
     });
 });
