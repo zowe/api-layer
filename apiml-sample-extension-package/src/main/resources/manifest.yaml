@@ -20,4 +20,3 @@ build:
 # (or file path) that will be included in the API ML
 gatewaySharedLibs:
     - bin/apiml-sample-extension.jar
-

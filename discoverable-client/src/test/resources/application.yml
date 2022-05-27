@@ -12,10 +12,17 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
 
 spring:
+    config:
+        useLegacyProcessing: true
+    cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
     application:
         name: ${apiml.service.serviceId}
     mvc:
         throw-exception-if-no-handler-found: true
+        pathmatch:
+            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output:
         ansi:
             enabled: detect

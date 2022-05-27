@@ -99,8 +99,16 @@ apiml:
                 corsEnabled: false
 
 spring:
+    config:
+        useLegacyProcessing: true
+    cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
     application:
         name: Caching service
+    mvc:
+        pathmatch:
+            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output.ansi.enabled: always
 
 server:

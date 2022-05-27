@@ -27,7 +27,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.gateway.config.MessageServiceConfiguration;
 import org.zowe.apiml.gateway.error.ErrorUtils;
-import org.zowe.apiml.gateway.error.InternalServerErrorController;
+import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
 import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
