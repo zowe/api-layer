@@ -28,6 +28,22 @@ export const wrapSelectors = {
     },
 };
 
+export function getSnippetContent(req, target) {
+    // get extended info about request
+    const { spec, oasPathMethod } = req.toJS();
+    const { path, method } = oasPathMethod;
+    // run OpenAPISnippet for target node
+    const targets = [target];
+    let snippet;
+    try {
+        // set request snippet content
+        snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
+    } catch (err) {
+        snippet = JSON.stringify(snippet);
+    }
+    return snippet;
+}
+
 /**
  * Generate the code snippets for each of the APIs
  * @param system
@@ -40,21 +56,7 @@ export function generateSnippet(system, title, syntax, target) {
     return system.Im.fromJS({
         title,
         syntax,
-        fn: (req) => {
-            // get extended info about request
-            const { spec, oasPathMethod } = req.toJS();
-            const { path, method } = oasPathMethod;
-            // run OpenAPISnippet for target node
-            const targets = [target];
-            let snippet;
-            try {
-                // set request snippet content
-                snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
-            } catch (err) {
-                snippet = JSON.stringify(snippet);
-            }
-            return snippet;
-        },
+        fn: (req) => getSnippetContent(req, target),
     });
 }
 

@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as OpenAPISnippet from 'openapi-snippet';
-import { generateSnippet, wrapSelectors } from './generateSnippets';
+import { generateSnippet, getSnippetContent, wrapSelectors } from './generateSnippets';
 
 describe('>>> Code snippet generator', () => {
-    test('generate a snippet', () => {
+    it('generate a snippet', () => {
         const system = {
             Im: {
                 fromJS: jest.fn().mockImplementation(() => ({
@@ -33,7 +33,7 @@ describe('>>> Code snippet generator', () => {
         });
     });
 
-    test('generateSnippet function should return correct snippet content', () => {
+    it('generateSnippet function should return correct snippet content', () => {
         const system = {
             Im: {
                 fromJS: (obj) => obj,
@@ -146,5 +146,41 @@ describe('>>> Code snippet generator', () => {
                 fn: expect.any(Function),
             })
         );
+    });
+
+    it('should call getSnippetContent and return the snippet', () => {
+        const target = 'java_unirest';
+        const result =
+            'HttpResponse<String> response = Unirest.get("http://undefinedundefined/path/to/api")\n' + '  .asString();';
+        const spec = {
+            paths: {
+                '/path/to/api': {
+                    get: {
+                        responses: {
+                            200: {
+                                description: 'Response description',
+                                schema: {
+                                    $ref: '#/definitions/SomeSchema',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+
+        const oasPathMethod = {
+            path: '/path/to/api',
+            method: 'get',
+        };
+
+        const req = {
+            toJS: () => ({
+                spec,
+                oasPathMethod,
+            }),
+        };
+        const snippet = getSnippetContent(req, target);
+        expect(snippet).toEqual(result);
     });
 });
