@@ -150,7 +150,8 @@ describe('>>> Code snippet generator', () => {
 
     it('should call getSnippetContent and return the snippet', () => {
         const target = 'java_unirest';
-        const result =
+        const expectedResult =
+            // eslint-disable-next-line no-useless-concat
             'HttpResponse<String> response = Unirest.get("http://undefinedundefined/path/to/api")\n' + '  .asString();';
         const spec = {
             paths: {
@@ -181,6 +182,6 @@ describe('>>> Code snippet generator', () => {
             }),
         };
         const snippet = getSnippetContent(req, target);
-        expect(snippet).toEqual(result);
+        expect(snippet).toEqual(expectedResult);
     });
 });
