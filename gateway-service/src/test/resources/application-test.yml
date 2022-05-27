@@ -50,6 +50,8 @@ apiml:
                 verify: https://localhost:10013/zss/saf/verify
 
 spring:
+    config:
+        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:

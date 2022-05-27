@@ -39,7 +39,7 @@ import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
-import org.zowe.apiml.gateway.error.InternalServerErrorController;
+import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
