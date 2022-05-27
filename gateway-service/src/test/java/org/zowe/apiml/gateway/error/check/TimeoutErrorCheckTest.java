@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.error.ErrorUtils;
-import org.zowe.apiml.gateway.error.InternalServerErrorController;
+import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;

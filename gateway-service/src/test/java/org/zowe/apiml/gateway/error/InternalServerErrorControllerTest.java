@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.error;
 
 
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;

@@ -1,7 +1,8 @@
 ext {
-    springBootVersion = '2.3.12.RELEASE'
+    springBootVersion = '2.5.13'
     springCloudVersion = '2.2.10.RELEASE'
-    springCloudCommonsVersion = '2.2.9.RELEASE'
+    springCloudCommonsVersion = '2.2.9.RELEASE!!'
+    springCloudVersion3 = '3.1.2'
     springSecurityVersion = '5.7.1!!'
     springFrameworkVersion = '5.3.20!!'
     springRetryVersion = '1.2.4.RELEASE'
@@ -43,18 +44,19 @@ ext {
     jsonVersion = '20180813'
     jsoupVersion = '1.8.3'
     jsr305Version = '3.0.2'
-    junitJupiterVersion = '5.5.2'
+    junitJupiterVersion = '5.7.2'
+    junitPlatformVersion = '1.7.2'
     jqueryVersion = '3.6.0!!'
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
     lombokVersion = '1.18.20'
-    mockitoCoreVersion = '3.6.0'
+    mockitoCoreVersion = '3.9.0'
     netflixServoVersion = '0.13.2'
     nettyVersion = '4.1.77.Final'
     nimbusJoseJwtVersion = '8.21.1'
     openApiDiffVersion = '2.0.0-beta.10'
     reactorTestVersion = '3.4.9'
-    restAssuredVersion = '3.0.7'
+    restAssuredVersion = '4.4.0'
     slf4jVersion = '1.7.31'
     snakeyamlVersion = '1.27'
     springFoxVersion = '2.9.2'
@@ -84,6 +86,7 @@ ext {
         spring_boot_starter_webflux        : "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}",
 
         spring_cloud_hystrix_dashboard     : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard:${springCloudVersion}",
+        spring_cloud_starter_bootstrap     : "org.springframework.cloud:spring-cloud-starter-bootstrap:${springCloudVersion3}",
         spring_cloud_starter_zuul          : "org.springframework.cloud:spring-cloud-starter-netflix-zuul:${springCloudVersion}",
         spring_cloud_starter_eureka        : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:${springCloudVersion}",
         spring_cloud_starter_eureka_server : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:${springCloudVersion}",
@@ -158,6 +161,9 @@ ext {
         jsoup                              : "org.jsoup:jsoup:${jsoupVersion}",
         jsr305                             : "com.google.code.findbugs:jsr305:${jsr305Version}",
         junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
+        junit_platform_launcher            : "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}",
+        junit_platform_commons             : "org.junit.platform:junit-platform-commons:${junitPlatformVersion}",
+        junit_platform_engine              : "org.junit.platform:junit-platform-engine:${junitPlatformVersion}",
         jquery                             : "org.webjars:jquery:${jqueryVersion}",
         lettuce                            : "io.lettuce:lettuce-core:${lettuceVersion}",
         logback_classic                    : "ch.qos.logback:logback-classic:${logbackVersion}",
@@ -197,6 +203,8 @@ ext {
         openapidiff                        : "org.openapitools.openapidiff:openapi-diff-core:${openApiDiffVersion}",
         reactorTest                        : "io.projectreactor:reactor-test:${reactorTestVersion}",
         rest_assured                       : "io.rest-assured:rest-assured:${restAssuredVersion}",
+        rest_assured_json_path              : "io.rest-assured:json-path:${restAssuredVersion}",
+        rest_assured_xml_path              : "io.rest-assured:xml-path:${restAssuredVersion}",
         slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
         snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
         spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
