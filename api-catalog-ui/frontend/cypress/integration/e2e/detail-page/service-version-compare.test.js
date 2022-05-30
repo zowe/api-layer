@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 const PATH_TO_VERSION_SELECTORS = '.detail-page > div.content-description-container > div > div.serviceTab > div.api-diff-container > div.api-diff-form > div:nth-child(2) > div > div';
 const PATH_TO_VERSION_SELECTORS2 = '.detail-page > div.content-description-container > div > div.serviceTab > div.api-diff-container > div.api-diff-form > div:nth-child(4) > div > div';
 const PATH_TO_VERSION_SELECTOR_ITEMS = '#menu- > div.MuiPaper-root.MuiMenu-paper.MuiPopover-paper.MuiPaper-elevation8.MuiPaper-rounded > ul> li';
