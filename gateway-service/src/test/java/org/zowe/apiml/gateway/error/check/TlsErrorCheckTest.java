@@ -11,7 +11,7 @@ package org.zowe.apiml.gateway.error.check;
 
 
 import org.zowe.apiml.gateway.error.ErrorUtils;
-import org.zowe.apiml.gateway.error.InternalServerErrorController;
+import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;

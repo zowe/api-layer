@@ -11,9 +11,13 @@ apiml:
         preferIpAddress: false
 
 spring:
+    config:
+        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
@@ -44,6 +48,8 @@ management:
     endpoints:
         web:
             base-path: /application
+            exposure:
+                include: health,info
     health:
         defaults:
             enabled: false

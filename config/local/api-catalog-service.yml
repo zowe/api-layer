@@ -42,6 +42,8 @@ apiml:
         staticApiDefinitionsDirectories: config/local/api-defs
 
 spring:
+    config:
+        useLegacyProcessing: true
     output:
         ansi:
             enabled: always
