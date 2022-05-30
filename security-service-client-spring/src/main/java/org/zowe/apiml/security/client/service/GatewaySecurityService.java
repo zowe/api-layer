@@ -13,9 +13,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.*;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
@@ -23,7 +28,11 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Core class of security client
@@ -36,7 +45,7 @@ public class GatewaySecurityService {
 
     private final GatewayClient gatewayClient;
     private final AuthConfigurationProperties authConfigurationProperties;
-    private final RestTemplate restTemplate;
+    private final CloseableHttpClient closeableHttpClient;
     private final RestResponseHandler responseHandler;
 
     /**
@@ -58,21 +67,21 @@ public class GatewaySecurityService {
         if (StringUtils.isNotEmpty(newPassword)) {
             loginRequest.put("newPassword", newPassword);
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                uri,
-                HttpMethod.POST,
-                new HttpEntity<>(loginRequest, headers),
-                String.class);
-
-            return extractToken(response.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
-        } catch (HttpClientErrorException | ResourceAccessException | HttpServerErrorException e) {
-            ErrorType errorType = getErrorType(e);
-            responseHandler.handleBadResponse(e, errorType,
-                "Cannot access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
+            HttpPost post = new HttpPost(uri);
+            String json = mapper.writeValueAsString(loginRequest);
+            post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
+            CloseableHttpResponse response = closeableHttpClient.execute(post);
+            if (response.getStatusLine().getStatusCode() > 299) {
+                String responseBody = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+                ErrorType errorType = getErrorType(responseBody);
+                responseHandler.handleErrorType(response, errorType,
+                    "Cannot access Gateway service. Uri '{}' returned: {}", uri);
+                return Optional.empty();
+            }
+            return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
+        } catch (IOException e) {
+            responseHandler.handleException(e);
         }
         return Optional.empty();
     }
@@ -89,26 +98,27 @@ public class GatewaySecurityService {
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
         String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.COOKIE, cookie);
 
         try {
-            ResponseEntity<QueryResponse> response = restTemplate.exchange(
-                uri,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                QueryResponse.class);
-
-            return response.getBody();
-        } catch (HttpClientErrorException | ResourceAccessException | HttpServerErrorException e) {
-            responseHandler.handleBadResponse(e, ErrorType.TOKEN_NOT_VALID,
-                "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
+            HttpGet get = new HttpGet(uri);
+            get.addHeader(HttpHeaders.COOKIE, cookie);
+            CloseableHttpResponse response = closeableHttpClient.execute(get);
+            String responseBody = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+            if (response.getStatusLine().getStatusCode() > 299) {
+                ErrorType errorType = getErrorType(responseBody);
+                responseHandler.handleErrorType(response, errorType,
+                    "Cannot access Gateway service. Uri '{}' returned: {}", uri);
+                return null;
+            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(responseBody, QueryResponse.class);
+        } catch (IOException e) {
+            responseHandler.handleException(e);
         }
         return null;
     }
 
-    private ErrorType getErrorType(RestClientException ex) {
-        String detailMessage = ex.getMessage();
+    private ErrorType getErrorType(String detailMessage) {
         if (detailMessage == null) {
             return ErrorType.AUTH_GENERAL;
         }

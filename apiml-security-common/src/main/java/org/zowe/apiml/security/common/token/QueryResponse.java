@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.security.common.token;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,13 +24,13 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryResponse implements EntryExpiration {
 
     private String domain;
     private String userId;
     private Date creation;
     private Date expiration;
-    @JsonIgnore
     private Source source;
 
     @Override
