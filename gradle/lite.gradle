@@ -57,7 +57,6 @@ task liteLibJarAll(type: Jar) {
     }.collect() }
 }
 
-build.dependsOn(liteLibJarAll)
 liteLibJarAll.dependsOn(":gateway-service:build")
 liteLibJarAll.dependsOn(":discovery-service:build")
 liteLibJarAll.dependsOn(":api-catalog-services:build")

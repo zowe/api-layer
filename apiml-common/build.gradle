@@ -1,20 +1,20 @@
 dependencies {
-    compileOnly project(':apiml-utility')
-    compileOnly project(':apiml-tomcat-common')
-    compileOnly libraries.spring_boot_starter_web
-    compileOnly libraries.spring_boot_starter_validation
-    compileOnly libraries.jackson_databind
-    compileOnly libraries.apache_commons_lang3
-    compileOnly libraries.http_client
-    compileOnly libraries.http_core 
-    compileOnly libraries.janino
-    compileOnly libraries.xstream
+    implementation project(':apiml-utility')
+    implementation project(':apiml-tomcat-common')
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_boot_starter_validation
+    implementation libraries.jackson_databind
+    implementation libraries.apache_commons_lang3
+    implementation libraries.http_client
+    implementation libraries.http_core 
+    implementation libraries.janino
+    implementation libraries.xstream
 
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_security_crypto
 
-    compileOnly libraries.spring_boot_configuration_processor
-    compileOnly libraries.lombok
+    implementation libraries.spring_boot_configuration_processor
+    implementation libraries.lombok
     annotationProcessor libraries.lombok
 
     testImplementation libraries.javax_servlet_api

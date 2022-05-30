@@ -17,6 +17,7 @@ ext {
     commonsIoVersion = '2.7!!'
     ehCacheVersion = '2.10.9.2'
     eurekaClientVersion = '1.10.17'
+    findBugsVersion = '3.0.2'
     gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
     gradleNodeVersion = '3.0.1' // Used in classpath dependencies
     gsonVersion = '2.9.0'
@@ -122,6 +123,7 @@ ext {
         commons_io                         : "commons-io:commons-io:${commonsIoVersion}",
         eh_cache                           : "net.sf.ehcache:ehcache:${ehCacheVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
+        findbugs                           : "com.google.code.findbugs:jsr305:${findBugsVersion}",
         gson                               : "com.google.code.gson:gson:${gsonVersion}",
         guava                              : "com.google.guava:guava:${guavaVersion}",
         hamcrest                           : "org.hamcrest:hamcrest-all:${hamcrestVersion}",

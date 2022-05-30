@@ -1,35 +1,35 @@
 dependencies {
-    compileOnly libraries.gson
-    compileOnly(libraries.eureka_client) {
+    implementation libraries.gson
+    implementation(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
     }
 
-    compileOnly libraries.netflix_servo
+    implementation libraries.netflix_servo
 
-    compileOnly(libraries.http_client)
-    compileOnly(libraries.http_core)
-    compileOnly(libraries.jackson_annotations)
-    compileOnly(libraries.jackson_databind)
-    compileOnly(libraries.slf4j_api)
-    compileOnly(libraries.snakeyaml)
+    implementation(libraries.http_client)
+    implementation(libraries.http_core)
+    implementation(libraries.jackson_annotations)
+    implementation(libraries.jackson_databind)
+    implementation(libraries.slf4j_api)
+    implementation(libraries.snakeyaml)
 
-    compileOnly libraries.apache_commons_codec
-    compileOnly libraries.apache_commons_lang3
-    compileOnly libraries.apache_commons_text
-    compileOnly libraries.xstream
-    compileOnly libraries.logback_core
-    compileOnly libraries.logback_classic
+    implementation libraries.apache_commons_codec
+    implementation libraries.apache_commons_lang3
+    implementation libraries.apache_commons_text
+    implementation libraries.xstream
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
-    compileOnly libraries.jsr305
+    implementation libraries.jsr305
 
-    compileOnly(libraries.javax_servlet_api)
+    implementation(libraries.javax_servlet_api)
 
-    compileOnly libraries.lombok
+    implementation libraries.lombok
     annotationProcessor libraries.lombok
 
-    compileOnly(libraries.spring_boot_starter_cache)
-    compileOnly(libraries.eh_cache)
+    implementation(libraries.spring_boot_starter_cache)
+    implementation(libraries.eh_cache)
 
     testImplementation(libraries.spring_boot_starter_cache)
     testImplementation(libraries.spring_boot_starter_test)

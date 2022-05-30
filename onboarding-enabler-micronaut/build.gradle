@@ -20,8 +20,8 @@ micronaut {
 }
 
 dependencies {
-    compileOnly project(':onboarding-enabler-java')
-    compileOnly project(':common-service-core')
+    implementation project(':onboarding-enabler-java')
+    implementation project(':common-service-core')
     implementation("io.micronaut:micronaut-validation")
     implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut:micronaut-http-client")

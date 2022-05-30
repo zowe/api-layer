@@ -1,16 +1,17 @@
 dependencies {
-    compileOnly(project(':common-service-core'))
+    implementation(project(':common-service-core'))
 
-    compileOnly libraries.jackson_databind
-    compileOnly libraries.apache_commons_lang3
-    compileOnly libraries.http_client
-    compileOnly libraries.http_core
-    compileOnly libraries.jetty_websocket_client
+    implementation libraries.jackson_databind
+    implementation libraries.apache_commons_lang3
+    implementation libraries.http_client
+    implementation libraries.http_core
+    implementation libraries.jetty_websocket_client
 
-    compileOnly libraries.spring_boot_starter_web
-    
-    compileOnly libraries.spring_boot_configuration_processor
-    compileOnly libraries.lombok
+    implementation libraries.spring_boot_starter_web
+
+    implementation libraries.spring_boot_configuration_processor
+    implementation libraries.lombok
+    implementation libraries.findbugs
     annotationProcessor libraries.lombok
 
     testImplementation libraries.javax_servlet_api

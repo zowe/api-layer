@@ -1,15 +1,15 @@
 dependencies {
-    compileOnly libraries.spring_boot_starter_web
-    compileOnly libraries.zowe_attls
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.zowe_attls
 
-    compileOnly libraries.spring_aop
-    compileOnly libraries.spring_beans
-    compileOnly libraries.spring_context
-    compileOnly libraries.spring_core
-    compileOnly libraries.spring_expression
-    compileOnly libraries.tomcat_embed_core
-    compileOnly libraries.tomcat_embed_websocket
-    compileOnly libraries.logback_classic
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
+    implementation libraries.logback_classic
 
     implementation libraries.jackson_core
     implementation libraries.jackson_databind    

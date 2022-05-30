@@ -1,10 +1,10 @@
 dependencies {
-    compileOnly(project(':common-service-core'))
-    compileOnly libraries.spring_boot_starter_web
+    implementation(project(':common-service-core'))
+    implementation libraries.spring_boot_starter_web
 
     implementation libraries.jackson_dataformat_yaml
 
-    compileOnly libraries.lombok
+    implementation libraries.lombok
     annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test

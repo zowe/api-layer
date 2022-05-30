@@ -1,7 +1,7 @@
 dependencies {
-    compileOnly(project(':common-service-core'))
-    compileOnly(project(':apiml-utility'))
-    compileOnly libraries.jaxb_api
+    implementation(project(':common-service-core'))
+    implementation(project(':apiml-utility'))
+    implementation libraries.jaxb_api
     implementation libraries.javax_annotation
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml
@@ -10,11 +10,11 @@ dependencies {
         exclude group: "com.google.code.gson", module: "gson"
     }
 
-    compileOnly libraries.lombok
+    implementation libraries.lombok
     annotationProcessor libraries.lombok
 
-    compileOnly libraries.javax_servlet_api
-    compileOnly libraries.javax_inject
+    implementation libraries.javax_servlet_api
+    implementation libraries.javax_inject
 
     testImplementation libraries.mockito_core
     testImplementation libraries.spring4Mvc
