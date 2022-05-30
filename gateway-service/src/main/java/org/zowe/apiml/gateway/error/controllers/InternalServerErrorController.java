@@ -7,11 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.error;
+package org.zowe.apiml.gateway.error.controllers;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -19,10 +18,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.zowe.apiml.gateway.error.ErrorUtils;
 import org.zowe.apiml.gateway.error.check.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.List;
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
-public class InternalServerErrorController implements ErrorController {
+public class InternalServerErrorController implements ApimlErrorController {
     public static final String ERROR_ENDPOINT = "/internal_error";
 
     private final MessageService messageService;

@@ -75,9 +75,13 @@ apiml:
                 verify: https://localhost:10013/zss/saf/verify
 
 spring:
+    config:
+        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
@@ -284,6 +288,7 @@ server:
     max-http-header-size: 40000
 
 zuul.debug.request: true
+
 ---
 spring:
     profiles: dev
@@ -320,6 +325,7 @@ eureka:
                         gatewayUrl: api/v1
                         swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
                         documentationUrl: https://zowe.github.io/docs-site/
+
 ---
 spring:
     profiles: securityFilterchainDebug

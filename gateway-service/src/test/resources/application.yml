@@ -50,11 +50,15 @@ apiml:
                 verify: https://localhost:10013/zss/saf/verify
 
 spring:
+    config:
+        useLegacyProcessing: true
     profiles:
         include: diag
     application:
         name: ${apiml.service.id}
     cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
@@ -248,5 +252,6 @@ spring:
     profiles.include:
         - debug
         - diag
+
 
 logbackServiceName: ZWEAGW1

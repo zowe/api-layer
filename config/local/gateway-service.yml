@@ -24,6 +24,8 @@ eureka:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
 spring:
+    config:
+        useLegacyProcessing: true
     output:
         ansi:
             enabled: always

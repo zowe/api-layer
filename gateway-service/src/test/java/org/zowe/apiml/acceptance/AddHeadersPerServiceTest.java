@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.acceptance;
 
+import io.restassured.response.Response;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.message.BasicHeader;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.reset;
 
 @AcceptanceTest
@@ -90,12 +92,12 @@ public class AddHeadersPerServiceTest extends AcceptanceTestWithTwoServices {
 
         @Test
         void whenGetResponse_thenHeaderIsNotAdded() {
-            given()
+            Response response = given()
                 .when()
-                .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .header(HEADER, (String) null);
+                .get(basePath + serviceWithDefaultConfiguration.getPath());
+
+            response.then().statusCode(HttpStatus.SC_OK);
+            assertThat(response.getHeader(HEADER)).isNull();
         }
     }
 }

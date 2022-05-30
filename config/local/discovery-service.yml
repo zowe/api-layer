@@ -13,6 +13,8 @@ apiml:
     banner: console
 
 spring:
+    config:
+        useLegacyProcessing: true
     output:
         ansi:
             enabled: always
