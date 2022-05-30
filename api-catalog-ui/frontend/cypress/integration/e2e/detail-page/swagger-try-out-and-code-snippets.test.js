@@ -1,4 +1,13 @@
-describe('>>> Swagger Test', () => {
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+describe('>>> Swagger Try Out and Code Snippets Test', () => {
     beforeEach(() => {
         cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
 
@@ -53,5 +62,23 @@ describe('>>> Swagger Test', () => {
         cy.get('table.live-responses-table')
             .find('.response-col_status')
             .should('contain', '401');
+    });
+
+    it('Should execute request and display basic code snippets', () => {
+        cy.get('.opblock-summary').eq(0).click();
+        cy.get('.try-out').should('exist');
+        cy.get('.try-out').click();
+
+        cy.get('button.execute').click();
+        // check the first tab of the code snippet panel. The order should be always the same
+        cy.get(
+            '#operations-API_Catalog-getAllAPIContainersUsingGET > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div:nth-child(1)'
+        ).should('exist');
+        cy.get('div.curl-command > div:nth-child(1) > div:nth-child(1) > h4').should('contain', 'cURL (CMD)');
+        cy.get(
+            '#operations-API_Catalog-getAllAPIContainersUsingGET > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div.curl-command > div:nth-child(3) > pre'
+        ).should('exist');
+        cy.get('div.curl-command > div:nth-child(1) > div:nth-child(2)').click();
+        cy.get('div.curl-command > div:nth-child(3) > pre').should('exist');
     });
 });
