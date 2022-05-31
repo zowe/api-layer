@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -209,18 +210,18 @@ class ZaasJwtService implements TokenService {
         }
     }
 
-    private void handleErrorMessage(JsonNode message) throws ZaasClientException {
+    private void handleErrorMessage(JsonNode message, Predicate<ZaasClientErrorCodes> condition) throws ZaasClientException {
         JsonNode messageNumberNode = message.get("messageNumber");
         if ((messageNumberNode != null) && (messageNumberNode.getNodeType() == JsonNodeType.STRING)) {
             String messageNumber = messageNumberNode.asText();
             ZaasClientErrorCodes zaasClientErrorCode = ZaasClientErrorCodes.byErrorNumber(messageNumber);
-            if (zaasClientErrorCode != null) {
+            if (condition.test(zaasClientErrorCode)) {
                 throw new ZaasClientException(zaasClientErrorCode, zaasClientErrorCode.getMessage());
             }
         }
     }
 
-    private void handleErrorMessage(HttpEntity httpEntity) throws ZaasClientException, IOException {
+    private void handleErrorMessage(HttpEntity httpEntity, Predicate<ZaasClientErrorCodes> condition) throws ZaasClientException, IOException {
         InputStream inputStream = httpEntity.getContent();
         if (inputStream == null) return;
 
@@ -229,7 +230,7 @@ class ZaasJwtService implements TokenService {
         if ((messages != null) && (messages.getNodeType() == JsonNodeType.ARRAY)) {
             ArrayNode messagesArray = (ArrayNode) messages;
             for (JsonNode message : messagesArray) {
-                handleErrorMessage(message);
+                handleErrorMessage(message, condition);
             }
         }
     }
@@ -249,8 +250,8 @@ class ZaasJwtService implements TokenService {
             return token;
         }
 
-        handleErrorMessage(response.getEntity());
         if (statusCode == 401) {
+            handleErrorMessage(response.getEntity(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
         }
         throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, EntityUtils.toString(response.getEntity()));
@@ -270,9 +271,9 @@ class ZaasJwtService implements TokenService {
             return token;
         }
 
-        handleErrorMessage(response.getEntity());
         String obtainedMessage = EntityUtils.toString(response.getEntity());
         if (httpResponseCode == 401) {
+            handleErrorMessage(response.getEntity(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
         }
         if (httpResponseCode == 400) {
