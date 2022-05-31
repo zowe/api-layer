@@ -86,6 +86,21 @@ if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
 fi
+
+if [ -z "${ZWE_configs_storage_infinispan_persistence_dataLocation}" ]; then
+  if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
+    ZWE_configs_storage_infinispan_persistence_dataLocation="${ZWE_zowe_workspaceDirectory}/caching-service/data"
+  fi
+fi
+if [ -z "${ZWE_configs_storage_infinispan_persistence_indexLocation}" ]; then
+  if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
+    ZWE_configs_storage_infinispan_persistence_indexLocation="${ZWE_zowe_workspaceDirectory}/caching-service/index"
+  fi
+fi
+if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ]; then
+  ZWE_configs_storage_infinispan_initialHosts="${ZWE_haInstance_hostname:-localhost}[${ZWE_configs_storage_infinispan_jgroups_port:-7098}]"
+fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -120,6 +135,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Djgroups.bind.address=${ZWE_haInstance_hostname:-localhost} \
+  -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7098} \
+  -Dcaching.storage.infinispan.persistence.dataLocation=${ZWE_configs_storage_infinispan_persistence_dataLocation:-data} \
+  -Dcaching.storage.infinispan.persistence.indexLocation=${ZWE_configs_storage_infinispan_persistence_indexLocation:-index} \
+  -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
   -Dserver.ssl.keyStore="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}" \

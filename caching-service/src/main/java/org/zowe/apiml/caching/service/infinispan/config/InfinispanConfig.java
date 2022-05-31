@@ -38,6 +38,8 @@ public class InfinispanConfig {
     private String initialHosts;
     @Value("${caching.storage.infinispan.persistence.dataLocation}")
     private String dataLocation;
+    @Value("${caching.storage.infinispan.persistence.indexLocation:index}")
+    private String indexLocation;
     @Value("${server.ssl.keyStoreType}")
     private String keyStoreType;
     @Value("${server.ssl.keyStore}")
@@ -76,7 +78,7 @@ public class InfinispanConfig {
         builder.persistence().passivation(true)
             .addSoftIndexFileStore()
             .shared(false)
-            .dataLocation(dataLocation).indexLocation("index");
+            .dataLocation(dataLocation).indexLocation(indexLocation);
         cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache("zoweCache", builder.build());
