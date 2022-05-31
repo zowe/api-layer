@@ -9,11 +9,13 @@
  */
 package org.zowe.apiml.zaasclient.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ZaasToken {
     private String domain;
     private String userId;
