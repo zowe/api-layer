@@ -124,7 +124,7 @@ class GatewaySecurityServiceTest {
                 Date issued = new Date();
                 Date exp = new Date(System.currentTimeMillis() + 10000);
 
-                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, QueryResponse.Source.ZOWE);
+                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, null);
                 String responseBody = objectMapper.writeValueAsString(expectedQueryResponse);
                 HttpEntity entity = mock(HttpEntity.class);
                 when(entity.getContent()).thenReturn(new ByteArrayInputStream(responseBody.getBytes()));
