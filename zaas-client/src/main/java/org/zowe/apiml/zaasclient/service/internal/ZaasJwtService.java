@@ -9,13 +9,17 @@
  */
 package org.zowe.apiml.zaasclient.service.internal;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -32,12 +36,14 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
 class ZaasJwtService implements TokenService {
+
     private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
     private static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
 
@@ -45,6 +51,8 @@ class ZaasJwtService implements TokenService {
     private final String queryEndpoint;
     private final String logoutEndpoint;
     private final CloseableClientProvider httpClientProvider;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ZaasJwtService(CloseableClientProvider client, String baseUrl) {
         this.httpClientProvider = client;
@@ -71,8 +79,7 @@ class ZaasJwtService implements TokenService {
     private ClientWithResponse loginWithCredentials(String userId, String password, String newPassword) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(loginEndpoint);
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(new Credentials(userId, password, newPassword));
+        String json = objectMapper.writeValueAsString(new Credentials(userId, password, newPassword));
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
         httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -202,10 +209,35 @@ class ZaasJwtService implements TokenService {
         }
     }
 
+    private void handleErrorMessage(JsonNode message) throws ZaasClientException {
+        JsonNode messageNumberNode = message.get("messageNumber");
+        if ((messageNumberNode != null) && (messageNumberNode.getNodeType() == JsonNodeType.STRING)) {
+            String messageNumber = messageNumberNode.asText();
+            ZaasClientErrorCodes zaasClientErrorCode = ZaasClientErrorCodes.byErrorNumber(messageNumber);
+            if (zaasClientErrorCode != null) {
+                throw new ZaasClientException(zaasClientErrorCode, zaasClientErrorCode.getMessage());
+            }
+        }
+    }
+
+    private void handleErrorMessage(HttpEntity httpEntity) throws ZaasClientException, IOException {
+        InputStream inputStream = httpEntity.getContent();
+        if (inputStream == null) return;
+
+        JsonNode jsonNode = objectMapper.readTree(inputStream);
+        JsonNode messages = jsonNode.get("messages");
+        if ((messages != null) && (messages.getNodeType() == JsonNodeType.ARRAY)) {
+            ArrayNode messagesArray = (ArrayNode) messages;
+            for (JsonNode message : messagesArray) {
+                handleErrorMessage(message);
+            }
+        }
+    }
+
     private ZaasToken extractZaasToken(CloseableHttpResponse response) throws IOException, ZaasClientException {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == 200) {
-            ZaasToken token = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
+            ZaasToken token = objectMapper.readValue(response.getEntity().getContent(), ZaasToken.class);
 
             if (token == null) {
                 throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "Queried token is null");
@@ -215,11 +247,13 @@ class ZaasJwtService implements TokenService {
             }
 
             return token;
-        } else if (statusCode == 401) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
-        } else {
-            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, EntityUtils.toString(response.getEntity()));
         }
+
+        handleErrorMessage(response.getEntity());
+        if (statusCode == 401) {
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
+        }
+        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, EntityUtils.toString(response.getEntity()));
     }
 
     private String extractToken(CloseableHttpResponse response) throws ZaasClientException, IOException {
@@ -233,17 +267,18 @@ class ZaasJwtService implements TokenService {
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get().getValue();
             }
-        } else {
-            String obtainedMessage = EntityUtils.toString(response.getEntity());
-            if (httpResponseCode == 401) {
-                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
-            } else if (httpResponseCode == 400) {
-                throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, obtainedMessage);
-            } else {
-                throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
-            }
+            return token;
         }
-        return token;
+
+        handleErrorMessage(response.getEntity());
+        String obtainedMessage = EntityUtils.toString(response.getEntity());
+        if (httpResponseCode == 401) {
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
+        }
+        if (httpResponseCode == 400) {
+            throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, obtainedMessage);
+        }
+        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
     }
 
     private void doRequest(Operation request) throws ZaasClientException {
