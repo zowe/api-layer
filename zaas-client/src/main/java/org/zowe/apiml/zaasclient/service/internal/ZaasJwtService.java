@@ -19,7 +19,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -36,7 +35,6 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -221,11 +219,10 @@ class ZaasJwtService implements TokenService {
         }
     }
 
-    private void handleErrorMessage(HttpEntity httpEntity, Predicate<ZaasClientErrorCodes> condition) throws ZaasClientException, IOException {
-        InputStream inputStream = httpEntity.getContent();
-        if (inputStream == null) return;
+    private void handleErrorMessage(String errorMessage, Predicate<ZaasClientErrorCodes> condition) throws ZaasClientException, IOException {
+        if (errorMessage == null) return;
 
-        JsonNode jsonNode = objectMapper.readTree(inputStream);
+        JsonNode jsonNode = objectMapper.readTree(errorMessage);
         JsonNode messages = jsonNode.get("messages");
         if ((messages != null) && (messages.getNodeType() == JsonNodeType.ARRAY)) {
             ArrayNode messagesArray = (ArrayNode) messages;
@@ -250,11 +247,12 @@ class ZaasJwtService implements TokenService {
             return token;
         }
 
+        String obtainedMessage = EntityUtils.toString(response.getEntity());
         if (statusCode == 401) {
-            handleErrorMessage(response.getEntity(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
+            handleErrorMessage(obtainedMessage, ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
         }
-        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, EntityUtils.toString(response.getEntity()));
+        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
     }
 
     private String extractToken(CloseableHttpResponse response) throws ZaasClientException, IOException {
@@ -273,7 +271,7 @@ class ZaasJwtService implements TokenService {
 
         String obtainedMessage = EntityUtils.toString(response.getEntity());
         if (httpResponseCode == 401) {
-            handleErrorMessage(response.getEntity(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
+            handleErrorMessage(obtainedMessage, ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
         }
         if (httpResponseCode == 400) {
