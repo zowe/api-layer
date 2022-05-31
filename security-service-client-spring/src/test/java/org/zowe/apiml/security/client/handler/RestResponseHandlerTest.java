@@ -18,8 +18,6 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ErrorType;
@@ -29,9 +27,12 @@ import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class RestResponseHandlerTest {
     private final static String GENERIC_LOG_MESSAGE = "Generic Log Message";
@@ -91,7 +92,7 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithCredentialsNotFound() {
-        HttpClientErrorException badRequestException = new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+        when(statusLine.getStatusCode()).thenReturn(400);
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
             handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
@@ -99,7 +100,7 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithAuthMethodNotSupported() {
-//        HttpClientErrorException methodNotAllowedException = new HttpClientErrorException(HttpStatus.METHOD_NOT_ALLOWED);
+        when(statusLine.getStatusCode()).thenReturn(405);
         assertThrows(AuthMethodNotSupportedException.class, () -> {
             handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
@@ -107,6 +108,7 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithNoLogMessage() {
+        when(statusLine.getStatusCode()).thenReturn(504);
         assertThrows(AuthenticationServiceException.class, () -> {
             handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE);
         });
@@ -114,6 +116,7 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithLogMessage() {
+        when(statusLine.getStatusCode()).thenReturn(504);
         assertThrows(AuthenticationServiceException.class, () -> {
             handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
@@ -121,23 +124,14 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithGatewayNotAvailable() {
-        ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
         assertThrows(GatewayNotAvailableException.class, () -> {
-            handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
-
-    @Test
-    void handleBadResponseWithGatewayNotAvailableWithCause() {
-        ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
-        assertThrows(GatewayNotAvailableException.class, () -> {
-            handler.handleErrorType(response, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+            handler.handleException(new IOException("Resource Access Exception"));
         });
     }
 
     @Test
     void handleBadResponseWithServiceUnavailable() {
-        HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE, "Authentication service unavailable");
+        when(statusLine.getStatusCode()).thenReturn(503);
         assertThrows(ServiceNotAccessibleException.class, () -> {
             handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
@@ -145,7 +139,7 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithHttpServerError() {
-        HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some server error");
+        when(statusLine.getStatusCode()).thenReturn(500);
         assertThrows(ServiceNotAccessibleException.class, () -> {
             handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
