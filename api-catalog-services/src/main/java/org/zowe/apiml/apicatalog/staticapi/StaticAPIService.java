@@ -11,6 +11,10 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -18,12 +22,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +44,8 @@ public class StaticAPIService {
     @Value("${apiml.discovery.password:password}")
     private String eurekaPassword;
 
-    @Qualifier("restTemplateWithKeystore")
-    private final RestTemplate restTemplate;
+    @Qualifier("secureHttpClientWithKeystore")
+    private final CloseableHttpClient httpClient;
 
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
@@ -51,14 +57,15 @@ public class StaticAPIService {
         for (int i = 0; i < discoveryServiceUrls.size(); i++) {
 
             String discoveryServiceUrl = discoveryServiceUrls.get(i);
-            HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl);
 
             try {
-                ResponseEntity<String> response = restTemplate.exchange(discoveryServiceUrl, HttpMethod.POST, entity, String.class);
+                HttpPost post = getHttpRequest(discoveryServiceUrl);
+                CloseableHttpResponse response = httpClient.execute(post);
 
                 // Return response if successful response or if none have been successful and this is the last URL to try
-                if (response.getStatusCode().is2xxSuccessful() || i == discoveryServiceUrls.size() - 1) {
-                    return new StaticAPIResponse(response.getStatusCode().value(), response.getBody());
+                if (isSuccessful(response) || i == discoveryServiceUrls.size() - 1) {
+                    String body = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+                    return new StaticAPIResponse(response.getStatusLine().getStatusCode(), body);
                 }
 
             } catch (Exception e) {
@@ -69,16 +76,18 @@ public class StaticAPIService {
         return new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
     }
 
-    private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
+    private boolean isSuccessful(CloseableHttpResponse response){
+        return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() <=299;
+    }
+    private HttpPost getHttpRequest(String discoveryServiceUrl) {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Accept", "application/json");
+        HttpPost post = new HttpPost(discoveryServiceUrl);
+        post.addHeader("Accept", "application/json");
         if (isHttp && !isAttlsEnabled) {
             String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
-            httpHeaders.add("Authorization", basicToken);
+            post.addHeader("Authorization", basicToken);
         }
-
-        return new HttpEntity<>(null, httpHeaders);
+        return post;
     }
 
     private List<String> getDiscoveryServiceUrls() {
