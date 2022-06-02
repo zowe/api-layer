@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -146,14 +147,16 @@ public class InstanceRetrievalService {
             httpGet.setHeader(header);
         }
         CloseableHttpResponse response = httpClient.execute(httpGet);
-        if (response.getStatusLine().getStatusCode() == 200) {
+        final int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
             final HttpEntity responseEntity = response.getEntity();
             if (responseEntity != null) {
                 return EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
         }
         apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
-            response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase(), requestInfo.getLeft());
+            statusCode, response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : "",
+            requestInfo.getLeft());
         return null;
     }
 

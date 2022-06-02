@@ -15,6 +15,7 @@ import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.AwsInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import lombok.Getter;
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -61,7 +62,7 @@ class GatewayNotifierTest {
         httpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
         httpStatusLine = mock(StatusLine.class);
-        when(httpStatusLine.getStatusCode()).thenReturn(200);
+        when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         when(httpResponse.getStatusLine()).thenReturn(httpStatusLine);
         when(httpClient.execute(any())).thenReturn(httpResponse);
 
@@ -188,7 +189,7 @@ class GatewayNotifierTest {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
-        doThrow(new RuntimeException("any exception")).when(httpClient).execute(any(HttpDelete.class));
+        doThrow(new IOException("any exception")).when(httpClient).execute(any(HttpDelete.class));
         List<InstanceInfo> instances = new LinkedList<>();
         Application application = mock(Application.class);
         when(application.getInstances()).thenReturn(instances);
@@ -214,7 +215,7 @@ class GatewayNotifierTest {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
-        doThrow(new RuntimeException("any exception")).when(httpClient).execute(any(HttpDelete.class));
+        doThrow(new IOException("any exception")).when(httpClient).execute(any(HttpDelete.class));
         List<InstanceInfo> instances = new LinkedList<>();
         Application application = mock(Application.class);
         when(application.getInstances()).thenReturn(instances);
@@ -264,7 +265,7 @@ class GatewayNotifierTest {
         assertEquals(gatewayUrl, argument.getValue().getURI().toString());
 
         // error on notification
-        when(httpClient.execute(any(HttpGet.class))).thenThrow(new RuntimeException());
+        when(httpClient.execute(any(HttpGet.class))).thenThrow(new IOException());
         gatewayNotifierSync.distributeInvalidatedCredentials(targetInstanceId);
         verify(messageService, times(1)).createMessage(messageKey, gatewayUrl, targetInstanceId);
     }

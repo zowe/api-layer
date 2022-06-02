@@ -13,12 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -28,11 +31,9 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Core class of security client
@@ -72,8 +73,13 @@ public class GatewaySecurityService {
             String json = mapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
             CloseableHttpResponse response = closeableHttpClient.execute(post);
-            if (response.getStatusLine().getStatusCode() > 299) {
-                String responseBody = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+            final int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                final HttpEntity responseEntity = response.getEntity();
+                String responseBody = null;
+                if (responseEntity != null) {
+                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                }
                 ErrorType errorType = getErrorType(responseBody);
                 responseHandler.handleErrorType(response, errorType,
                     "Cannot access Gateway service. Uri '{}' returned: {}", uri);
@@ -103,8 +109,13 @@ public class GatewaySecurityService {
             HttpGet get = new HttpGet(uri);
             get.addHeader(HttpHeaders.COOKIE, cookie);
             CloseableHttpResponse response = closeableHttpClient.execute(get);
-            String responseBody = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
-            if (response.getStatusLine().getStatusCode() > 299) {
+            final HttpEntity responseEntity = response.getEntity();
+            String responseBody = null;
+            if (responseEntity != null) {
+                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            }
+            final int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 ErrorType errorType = getErrorType(responseBody);
                 responseHandler.handleErrorType(response, errorType,
                     "Cannot access Gateway service. Uri '{}' returned: {}", uri);

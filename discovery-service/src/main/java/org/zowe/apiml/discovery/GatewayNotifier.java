@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -35,6 +35,7 @@ import org.zowe.apiml.util.EurekaUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -170,10 +171,12 @@ public class GatewayNotifier implements Runnable {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
                 CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
-                if (response.getStatusLine().getStatusCode() >= 300) {
-                    throw new ClientProtocolException("Unexpected response: " + response.getStatusLine());
+                final int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
+                    apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url, instanceId);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 log.debug("Cannot notify the Gateway {} about {}", url, instanceId, e);
                 apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url, instanceId);
             }
@@ -185,10 +188,12 @@ public class GatewayNotifier implements Runnable {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
                 CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
-                if (response.getStatusLine().getStatusCode() >= 300) {
-                    throw new ClientProtocolException("Unexpected response: " + response.getStatusLine());
+                final int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
+                    apimlLogger.log("org.zowe.apiml.discovery.unregistration.gateway.notify", url);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 log.debug("Cannot notify the Gateway {} about service un-registration", url, e);
                 apimlLogger.log("org.zowe.apiml.discovery.unregistration.gateway.notify", url);
             }
@@ -204,11 +209,13 @@ public class GatewayNotifier implements Runnable {
 
             try {
                 CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()));
-                if (response.getStatusLine().getStatusCode() >= 300) {
-                    throw new ClientProtocolException("Unexpected response: " + response.getStatusLine());
+                final int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
+                    apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
                 }
-            } catch (Exception e) {
-                log.debug("Cannot notify the Gateway {} about {}", url.toString(), instanceId, e);
+            } catch (IOException e) {
+                log.debug("Cannot notify the Gateway {} about {}", url, instanceId, e);
                 apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
             }
         });

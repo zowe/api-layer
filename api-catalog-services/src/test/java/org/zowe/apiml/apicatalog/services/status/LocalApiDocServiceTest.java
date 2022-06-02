@@ -11,6 +11,7 @@ package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.BasicHttpEntity;
@@ -80,7 +81,7 @@ class LocalApiDocServiceTest {
         responseStatusLine = mock(StatusLine.class);
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
-        when(responseStatusLine.getStatusCode()).thenReturn(200);
+        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         when(response.getStatusLine()).thenReturn(responseStatusLine);
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
@@ -132,7 +133,7 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-                when(responseStatusLine.getStatusCode()).thenReturn(500);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                 responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
@@ -146,7 +147,7 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                     .thenReturn(getStandardInstance(new HashMap<>(), true));
 
-                when(responseStatusLine.getStatusCode()).thenReturn(200);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
                 responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
@@ -189,7 +190,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
 
-            when(responseStatusLine.getStatusCode()).thenReturn(500);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
             responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
@@ -213,7 +214,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
-            when(responseStatusLine.getStatusCode()).thenReturn(200);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
@@ -231,7 +232,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
 
-            when(responseStatusLine.getStatusCode()).thenReturn(200);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
@@ -252,7 +253,7 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-                when(responseStatusLine.getStatusCode()).thenReturn(200);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
                 responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
@@ -276,7 +277,7 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-                when(responseStatusLine.getStatusCode()).thenReturn(500);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                 responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 ApiDocInfo result = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
@@ -295,7 +296,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
-            when(responseStatusLine.getStatusCode()).thenReturn(200);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
@@ -321,7 +322,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
-            when(responseStatusLine.getStatusCode()).thenReturn(200);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
@@ -345,7 +346,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true));
 
-            when(responseStatusLine.getStatusCode()).thenReturn(200);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
@@ -369,7 +370,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
-            when(responseStatusLine.getStatusCode()).thenReturn(200);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
