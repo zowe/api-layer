@@ -13,9 +13,13 @@ import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
@@ -30,8 +34,9 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +48,7 @@ import java.util.Optional;
 @Slf4j
 public class APIDocRetrievalService {
 
-    private final RestTemplate restTemplate;
+    private final CloseableHttpClient httpClient;
     private final InstanceRetrievalService instanceRetrievalService;
     private final GatewayClient gatewayClient;
 
@@ -159,7 +164,12 @@ public class APIDocRetrievalService {
             }
         }
 
-        String apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
+        String apiDocContent = "";
+        try {
+            apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
+        } catch (IOException e) {
+            log.error("Error retrieving api doc for '{}'", serviceId, e);
+        }
         return new ApiDocInfo(apiInfo, apiDocContent, routes);
     }
 
@@ -283,25 +293,26 @@ public class APIDocRetrievalService {
      * @return the information about ApiDoc content as application/json
      * @throws ApiDocNotFoundException if the response is error
      */
-    private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+    private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) throws IOException {
+        HttpGet httpGet = new HttpGet(apiDocUrl);
+        httpGet.setHeader(org.apache.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
+        String responseBody = null;
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                apiDocUrl,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                String.class);
-
-            if (response.getStatusCode().isError()) {
-                throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId + " server error: '" + response.getBody() + "'.");
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+            final HttpEntity responseEntity = response.getEntity();
+            if (responseEntity != null) {
+                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
-            return response.getBody();
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
+                    " server error: '" + responseBody + "'.");
+            }
         } catch (Exception e) {
             log.error("Error retrieving api doc by url for {} at {}", serviceId, apiDocUrl, e);
             throw e;
         }
+        return responseBody;
     }
 
     /**
