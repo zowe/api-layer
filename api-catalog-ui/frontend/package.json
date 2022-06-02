@@ -23,7 +23,7 @@
         "js-yaml": "4.1.0",
         "lodash": "4.17.21",
         "loglevel": "1.6.1",
-        "npm": "7.20.5",
+        "npm": "8.11.0",
         "openapi-snippet": "0.13.0",
         "react": "17.0.2",
         "react-app-polyfill": "2.0.0",
