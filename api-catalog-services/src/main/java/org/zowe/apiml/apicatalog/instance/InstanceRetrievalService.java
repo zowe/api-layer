@@ -17,11 +17,17 @@ import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
 import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
@@ -33,7 +39,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +49,7 @@ import java.util.List;
 public class InstanceRetrievalService {
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
-    private final RestTemplate restTemplate;
+    private final CloseableHttpClient httpClient;
 
     private static final String APPS_ENDPOINT = "apps/";
     private static final String DELTA_ENDPOINT = "delta";
@@ -55,11 +60,9 @@ public class InstanceRetrievalService {
 
     @Autowired
     public InstanceRetrievalService(DiscoveryConfigProperties discoveryConfigProperties,
-                                    RestTemplate restTemplate) {
+                                    CloseableHttpClient httpClient) {
         this.discoveryConfigProperties = discoveryConfigProperties;
-        this.restTemplate = restTemplate;
-
-        configureUnicode(restTemplate);
+        this.httpClient = httpClient;
     }
 
     /**
@@ -73,19 +76,19 @@ public class InstanceRetrievalService {
             return null;
         }
 
-            List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(serviceId, false);
-            // iterate over list of discovery services, return at first success
-            for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
-                // call Eureka REST endpoint to fetch single or all Instances
-                    try {
-                        ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            return extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
-                        }
-                    } catch (Exception e) {
-                        log.debug("Error getting instance info from {}, error message: {}", requestInfo.getLeft(), e.getMessage());
+        List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(serviceId, false);
+        // iterate over list of discovery services, return at first success
+        for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
+            // call Eureka REST endpoint to fetch single or all Instances
+                try {
+                    String responseBody = queryDiscoveryForInstances(requestInfo);
+                    if (responseBody != null) {
+                        return extractSingleInstanceFromApplication(serviceId, responseBody);
                     }
-            }
+                } catch (Exception e) {
+                    log.debug("Error getting instance info from {}, error message: {}", requestInfo.getLeft(), e.getMessage());
+                }
+        }
         String msg = "An error occurred when trying to get instance info for:  " + serviceId;
         throw new InstanceInitializationException(msg);
     }
@@ -101,8 +104,8 @@ public class InstanceRetrievalService {
         List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(null, delta);
         for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
             try {
-                ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
-                return extractApplications(requestInfo, response);
+                String responseBody = queryDiscoveryForInstances(requestInfo);
+                return extractApplications(responseBody);
             } catch (Exception e) {
                 log.debug("Not able to contact discovery service: " + requestInfo.getKey(), e);
             }
@@ -114,24 +117,20 @@ public class InstanceRetrievalService {
     /**
      * Parse information from the response and extract the Applications object which contains all the registry information returned by eureka server
      *
-     * @param requestInfo contains the pair of discovery URL and discovery credentials (for HTTP access)
-     * @param response    the http response
+     * @param responseBody    the http response body
      * @return Applications object that wraps all the registry information
      */
-    private Applications extractApplications(Pair<String, Pair<String, String>> requestInfo, ResponseEntity<String> response) {
+    private Applications extractApplications(String responseBody) {
         Applications applications = null;
-        if (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null) {
-            apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed", response.getStatusCode(), response.getStatusCode().getReasonPhrase(), requestInfo.getLeft());
-        } else {
-            ObjectMapper mapper = new EurekaJsonJacksonCodec().getObjectMapper(Applications.class);
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            try {
-                applications = mapper.readValue(response.getBody(), Applications.class);
-            } catch (IOException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalParsingFailed", e.getMessage());
-            }
+        ObjectMapper mapper = new EurekaJsonJacksonCodec().getObjectMapper(Applications.class);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        try {
+            applications = mapper.readValue(responseBody, Applications.class);
+        } catch (IOException e) {
+            apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalParsingFailed", e.getMessage());
         }
+
         return applications;
     }
 
@@ -141,41 +140,38 @@ public class InstanceRetrievalService {
      * @param requestInfo information used to query the discovery service
      * @return ResponseEntity<String> query response
      */
-    private ResponseEntity<String> queryDiscoveryForInstances(Pair<String, Pair<String, String>> requestInfo) {
-        HttpEntity<?> entity = new HttpEntity<>(null, createRequestHeader(requestInfo.getRight()));
-        ResponseEntity<String> response = restTemplate.exchange(
-            requestInfo.getLeft(),
-            HttpMethod.GET,
-            entity,
-            String.class);
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            log.debug("Could not locate instance for request: " + requestInfo.getLeft()
-                + ", " + response.getStatusCode() + " = " + response.getStatusCode().getReasonPhrase());
+    private String queryDiscoveryForInstances(Pair<String, Pair<String, String>> requestInfo) throws IOException {
+        HttpGet httpGet = new HttpGet(requestInfo.getLeft());
+        for (Header header : createRequestHeader(requestInfo.getRight())) {
+            httpGet.setHeader(header);
         }
-        return response;
+        CloseableHttpResponse response = httpClient.execute(httpGet);
+        if (response.getStatusLine().getStatusCode() == 200) {
+            final HttpEntity responseEntity = response.getEntity();
+            if (responseEntity != null) {
+                return EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            }
+        }
+        apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
+            response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase(), requestInfo.getLeft());
+        return null;
     }
 
     /**
      * @param serviceId the service to search for
-     * @param url       try to find instance with this discovery url
-     * @param response  the fetch attempt response
+     * @param responseBody  the fetch attempt response body
      * @return service instance
      */
-    private InstanceInfo extractSingleInstanceFromApplication(String serviceId, String url, ResponseEntity<String> response) {
+    private InstanceInfo extractSingleInstanceFromApplication(String serviceId, String responseBody) {
         ApplicationWrapper application = null;
-        if (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null) {
-            log.debug("Could not retrieve service: " + serviceId + " instance info from discovery --" + response.getStatusCode()
-                + " -- " + response.getStatusCode().getReasonPhrase() + " -- URL: " + url);
-            return null;
-        } else {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            try {
-                application = mapper.readValue(response.getBody(), ApplicationWrapper.class);
-            } catch (IOException e) {
-                log.debug("Could not extract service: " + serviceId + " info from discovery --" + e.getMessage(), e);
-            }
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        try {
+            application = mapper.readValue(responseBody, ApplicationWrapper.class);
+        } catch (IOException e) {
+            log.debug("Could not extract service: " + serviceId + " info from discovery --" + e.getMessage(), e);
         }
+
 
         if (application != null
             && application.getApplication() != null
@@ -227,20 +223,15 @@ public class InstanceRetrievalService {
      *
      * @return HTTP Headers
      */
-    private HttpHeaders createRequestHeader(Pair<String, String> credentials) {
-        HttpHeaders headers = new HttpHeaders();
+    private List<Header> createRequestHeader(Pair<String, String> credentials) {
+        List<Header> headers = new ArrayList<>();
         if (credentials != null && credentials.getLeft() != null && credentials.getRight() != null) {
             String basicToken = "Basic " + Base64.getEncoder().encodeToString((credentials.getLeft() + ":"
                 + credentials.getRight()).getBytes());
-            headers.add("Authorization", basicToken);
+            headers.add(new BasicHeader(HttpHeaders.AUTHORIZATION, basicToken));
         }
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(new ArrayList<>(Collections.singletonList(MediaType.APPLICATION_JSON)));
+        headers.add(new BasicHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+        headers.add(new BasicHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE));
         return headers;
-    }
-
-    private void configureUnicode(RestTemplate restTemplate) {
-        restTemplate.getMessageConverters()
-            .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 }

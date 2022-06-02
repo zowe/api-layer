@@ -10,33 +10,38 @@
 
 package org.zowe.apiml.apicatalog.instance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 import org.zowe.apiml.apicatalog.util.ApplicationsWrapper;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.registry.ApplicationWrapper;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -54,43 +59,35 @@ class InstanceRetrievalServiceTest {
     private DiscoveryConfigProperties discoveryConfigProperties;
 
     @Mock
-    RestTemplate restTemplate;
+    CloseableHttpClient httpClient;
 
+    private CloseableHttpResponse response;
+    private StatusLine responseStatusLine;
+    private BasicHttpEntity responseEntity;
     private String discoveryServiceAllAppsUrl;
     private String[] discoveryServiceList;
 
     @BeforeEach
-    void setup() {
-
-        instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, restTemplate);
+    void setup() throws IOException {
+        response = mock(CloseableHttpResponse.class);
+        responseStatusLine = mock(StatusLine.class);
+        responseEntity = new BasicHttpEntity();
+        responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
+        when(responseStatusLine.getStatusCode()).thenReturn(200);
+        when(response.getStatusLine()).thenReturn(responseStatusLine);
+        when(response.getEntity()).thenReturn(responseEntity);
+        when(httpClient.execute(any())).thenReturn(response);
+        instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, httpClient);
         discoveryServiceList = discoveryConfigProperties.getLocations();
         discoveryServiceAllAppsUrl = discoveryServiceList[0] + APPS_ENDPOINT;
     }
 
     @Test
-    void whenDiscoveryServiceIsNotAvailable_thenTryOthersFromTheList() {
-        when(
-            restTemplate.exchange(
-                discoveryServiceList[0] + APPS_ENDPOINT,
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenThrow(RuntimeException.class);
-        when(
-            restTemplate.exchange(
-                discoveryServiceList[1] + APPS_ENDPOINT,
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+    void whenDiscoveryServiceIsNotAvailable_thenTryOthersFromTheList() throws IOException {
+        when(responseStatusLine.getStatusCode()).thenReturn(400).thenReturn(200);
+
         instanceRetrievalService.getAllInstancesFromDiscovery(false);
-        verify(restTemplate
-            , times(1)).exchange(
-            discoveryServiceList[1] + APPS_ENDPOINT,
-            HttpMethod.GET,
-            getHttpEntity(),
-            String.class
-        );
+        verify(httpClient, times(2)).execute(any());
     }
 
     @Test
@@ -102,37 +99,24 @@ class InstanceRetrievalServiceTest {
     @Test
     void providedNoInstanceInfoIsReturned_thenInstanceInitializationExceptionIsThrown() {
         String serviceId = CoreService.API_CATALOG.getServiceId();
-        when(
-            restTemplate.exchange(
-                discoveryServiceAllAppsUrl + serviceId,
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(null, HttpStatus.FORBIDDEN));
+        when(responseStatusLine.getStatusCode()).thenReturn(403);
+
         assertThrows(InstanceInitializationException.class, () -> instanceRetrievalService.getInstanceInfo(serviceId));
 
     }
 
     @Test
-    void testGetInstanceInfo_whenResponseHasNullBody() {
-        when(
-            restTemplate.exchange(
-                discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+    void testGetInstanceInfo_whenResponseHasEmptyBody() {
+        when(responseStatusLine.getStatusCode()).thenReturn(200);
+        responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
 
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
     }
 
     @Test
-    void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
-        mockRetrieveApplicationService(
-            discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
-            "UNPARSED_JSON"
-        );
+    void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() throws IOException {
+        responseEntity.setContent(IOUtils.toInputStream("UNPARSED_JSON", StandardCharsets.UTF_8));
 
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
@@ -140,13 +124,7 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetInstanceInfo_whenUnexpectedErrorHappened() {
-        when(
-            restTemplate.exchange(
-                discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
-                HttpMethod.GET,
-                null,
-                String.class
-            )).thenReturn(new ResponseEntity<>("{}", HttpStatus.OK));
+        responseEntity.setContent(null);
 
         String serviceId = CoreService.API_CATALOG.getServiceId();
         assertThrows(InstanceInitializationException.class, () -> {
@@ -155,7 +133,7 @@ class InstanceRetrievalServiceTest {
     }
 
     @Test
-    void testGetInstanceInfo() throws JsonProcessingException {
+    void testGetInstanceInfo() throws IOException {
         InstanceInfo expectedInstanceInfo = getStandardInstance(
             CoreService.API_CATALOG.getServiceId(),
             InstanceInfo.InstanceStatus.UP
@@ -167,12 +145,7 @@ class InstanceRetrievalServiceTest {
                 CoreService.API_CATALOG.getServiceId(),
                 Collections.singletonList(expectedInstanceInfo)
             )));
-
-
-        mockRetrieveApplicationService(
-            discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
-            bodyCatalog
-        );
+        responseEntity.setContent(IOUtils.toInputStream(bodyCatalog, StandardCharsets.UTF_8));
 
         InstanceInfo actualInstanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
 
@@ -184,33 +157,22 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetAllInstancesFromDiscovery_whenResponseCodeIsNotSuccess() {
-        when(
-            restTemplate.exchange(
-                discoveryServiceAllAppsUrl,
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(null, HttpStatus.FORBIDDEN));
-
+        when(responseStatusLine.getStatusCode()).thenReturn(403);
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
         assertNull(actualApplications);
     }
 
     @Test
-    void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() {
-        mockRetrieveApplicationService(
-            discoveryServiceAllAppsUrl,
-            "UNPARSED_JSON"
-        );
-
+    void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() throws IOException {
+        responseEntity.setContent(IOUtils.toInputStream("UNPARSED_JSON", StandardCharsets.UTF_8));
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
         assertNull(actualApplications);
     }
 
     @Test
-    void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithoutFilter() throws JsonProcessingException {
+    void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithoutFilter() throws IOException {
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
 
@@ -219,7 +181,7 @@ class InstanceRetrievalServiceTest {
 
         ObjectMapper mapper = new ObjectMapper();
         String bodyAll = mapper.writeValueAsString(new ApplicationsWrapper(expectedApplications));
-        mockRetrieveApplicationService(discoveryServiceAllAppsUrl, bodyAll);
+        responseEntity.setContent(IOUtils.toInputStream(bodyAll, StandardCharsets.UTF_8));
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
 
@@ -237,9 +199,7 @@ class InstanceRetrievalServiceTest {
     }
 
     @Test
-    void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithDeltaFilter() throws JsonProcessingException {
-        String discoveryServiceAppsUrl = this.discoveryServiceAllAppsUrl + DELTA_ENDPOINT;
-
+    void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithDeltaFilter() throws IOException {
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
         Applications expectedApplications = new Applications();
@@ -247,7 +207,7 @@ class InstanceRetrievalServiceTest {
 
         ObjectMapper mapper = new ObjectMapper();
         String bodyAll = mapper.writeValueAsString(new ApplicationsWrapper(expectedApplications));
-        mockRetrieveApplicationService(discoveryServiceAppsUrl, bodyAll);
+        responseEntity.setContent(IOUtils.toInputStream(bodyAll, StandardCharsets.UTF_8));
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(true);
 
@@ -291,21 +251,6 @@ class InstanceRetrievalServiceTest {
         return instanceInfoMap;
     }
 
-    private HttpEntity<?> getHttpEntity() {
-        HttpHeaders headers = new HttpHeaders();
-        String encodedCredentials = Base64.getEncoder().encodeToString(
-            (discoveryConfigProperties.getEurekaUserName() + ":" + discoveryConfigProperties.getEurekaUserPassword()).getBytes()
-        );
-
-        headers.add("Authorization", "Basic " + encodedCredentials);
-        headers.add("Content-Type", "application/json");
-        headers.add("Accept", "application/json");
-        List<MediaType> types = new ArrayList<>();
-        types.add(MediaType.APPLICATION_JSON);
-        headers.setAccept(types);
-        return new HttpEntity<>(headers);
-    }
-
     private InstanceInfo getStandardInstance(String serviceId,
                                              InstanceInfo.InstanceStatus status) {
 
@@ -315,15 +260,4 @@ class InstanceRetrievalServiceTest {
             .setStatus(status)
             .build();
     }
-
-    private void mockRetrieveApplicationService(String url, String body) {
-        when(
-            restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(body, HttpStatus.OK));
-    }
-
 }
