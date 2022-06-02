@@ -9,22 +9,19 @@
  */
 package org.zowe.apiml.gateway.security.service.token;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.gateway.cache.CachingServiceClient;
+import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -33,35 +30,20 @@ import java.util.Set;
 @Slf4j
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
-    private static final String CACHING_SERVICE_URI = "cachingservice/api/v1/cache";
-    @Qualifier("secureHttpClientWithKeystore")
-    private final CloseableHttpClient httpClient;
-    private final GatewayClient gatewayClient;
-
+    private final CachingServiceClient cachingServiceClient;
     private static ObjectMapper objectMapper = new ObjectMapper();
+
     static {
         objectMapper.registerModule(new JavaTimeModule());
     }
 
-    public int invalidateToken(String token) {
-        String tokenHash = DigestUtils.sha1Hex(token);
-        return invalidateTokenByKey(tokenHash);
-    }
-
-    private int invalidateTokenByKey(String key) {
-        HttpDelete revokeRequest = new HttpDelete(getCacheUrl() + "/revoke/" + key);
-        try {
-            CloseableHttpResponse resp = httpClient.execute(revokeRequest);
-            log.debug("Revoked hash: " + key + " with status" + resp.getStatusLine().getStatusCode());
-            return resp.getStatusLine().getStatusCode();
-        } catch (IOException e) {
-            log.error("Error while revoking token with hash: " + key);
-            return 500;
-        }
-    }
-
-    private String getCacheUrl(){
-        return String.format("%s://%s/%s",gatewayClient.getGatewayConfigProperties().getScheme(),gatewayClient.getGatewayConfigProperties().getHostname(),CACHING_SERVICE_URI);
+    public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hashedValue = encoder.encode(token);
+        AccessTokenContainer container = new AccessTokenContainer();
+        container.setTokenValue(hashedValue);
+        String json = objectMapper.writeValueAsString(container);
+        cachingServiceClient.appendList(new CachingServiceClient.KeyValue("invalidToken", json));
     }
 
     @Data

@@ -62,6 +62,14 @@ public class CachingServiceClient {
         }
     }
 
+    public void appendList(KeyValue kv) throws CachingServiceClientException {
+        try {
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
+        }
+    }
+
 
     /**
      * Reads {@link KeyValue} from Caching Service
@@ -114,7 +122,7 @@ public class CachingServiceClient {
     @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Data
-    static class KeyValue {
+    public static class KeyValue {
         private final String key;
         private final String value;
 

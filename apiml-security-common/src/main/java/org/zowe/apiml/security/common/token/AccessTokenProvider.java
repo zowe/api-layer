@@ -2,5 +2,5 @@ package org.zowe.apiml.security.common.token;
 
 public interface AccessTokenProvider {
 
-    int invalidateToken(String token);
+    void invalidateToken(String token) throws Exception;
 }

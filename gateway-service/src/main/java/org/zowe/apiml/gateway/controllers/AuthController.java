@@ -80,12 +80,12 @@ public class AuthController {
 
     }
 
-    @DeleteMapping(path = "access-token/revoke/{token}")
+    @DeleteMapping(path = "/access-token/revoke/{token}")
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessToken(@PathVariable() String token) throws IOException{
-        int status = tokenProvider.invalidateToken(token);
-        return new ResponseEntity<>(HttpStatus.valueOf(status));
+    public ResponseEntity<String> revokeAccessToken(@PathVariable() String token) throws Exception{
+        tokenProvider.invalidateToken(token);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(path = DISTRIBUTE_PATH)
