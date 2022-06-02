@@ -73,7 +73,7 @@ public class GatewaySecurityService {
             String json = mapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
             CloseableHttpResponse response = closeableHttpClient.execute(post);
-            final int statusCode = response.getStatusLine().getStatusCode();
+            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 final HttpEntity responseEntity = response.getEntity();
                 String responseBody = null;
@@ -114,7 +114,7 @@ public class GatewaySecurityService {
             if (responseEntity != null) {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
-            final int statusCode = response.getStatusLine().getStatusCode();
+            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 ErrorType errorType = getErrorType(responseBody);
                 responseHandler.handleErrorType(response, errorType,

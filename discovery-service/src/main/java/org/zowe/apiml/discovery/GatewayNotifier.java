@@ -171,7 +171,7 @@ public class GatewayNotifier implements Runnable {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
                 CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
-                final int statusCode = response.getStatusLine().getStatusCode();
+                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                     log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
                     apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url, instanceId);
@@ -188,7 +188,7 @@ public class GatewayNotifier implements Runnable {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
                 CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
-                final int statusCode = response.getStatusLine().getStatusCode();
+                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                     log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
                     apimlLogger.log("org.zowe.apiml.discovery.unregistration.gateway.notify", url);
@@ -209,7 +209,7 @@ public class GatewayNotifier implements Runnable {
 
             try {
                 CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()));
-                final int statusCode = response.getStatusLine().getStatusCode();
+                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                     log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
                     apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);

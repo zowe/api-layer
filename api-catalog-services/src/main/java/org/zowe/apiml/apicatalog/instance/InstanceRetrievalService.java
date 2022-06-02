@@ -147,7 +147,7 @@ public class InstanceRetrievalService {
             httpGet.setHeader(header);
         }
         CloseableHttpResponse response = httpClient.execute(httpGet);
-        final int statusCode = response.getStatusLine().getStatusCode();
+        final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
         if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
             final HttpEntity responseEntity = response.getEntity();
             if (responseEntity != null) {
