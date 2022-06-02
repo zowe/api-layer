@@ -13,14 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
@@ -76,8 +71,8 @@ public class StaticAPIService {
         return new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
     }
 
-    private boolean isSuccessful(CloseableHttpResponse response){
-        return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() <=299;
+    private boolean isSuccessful(CloseableHttpResponse response) {
+        return response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 299;
     }
     private HttpPost getHttpRequest(String discoveryServiceUrl) {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");

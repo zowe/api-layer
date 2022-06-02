@@ -73,7 +73,7 @@ class StaticAPIServiceTest {
         class GivenSingleUrlTest {
 
             @BeforeEach
-            void setup()throws IOException{
+            void setup()throws IOException {
 
                 when(okResponse.getStatusLine()).thenReturn(okStatusLine);
                 when(okStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
@@ -107,9 +107,9 @@ class StaticAPIServiceTest {
         @Nested
         class GivenTwoDiscoveryUrlsTest {
             @Nested
-            class WhenOneSucceedsTest{
+            class WhenOneSucceedsTest {
                 @BeforeEach
-                void setup()throws IOException{
+                void setup()throws IOException {
 
                     when(okResponse.getStatusLine()).thenReturn(okStatusLine);
                     when(okStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
@@ -118,7 +118,7 @@ class StaticAPIServiceTest {
                     when(entity.getContent()).thenReturn(new ByteArrayInputStream(BODY.getBytes()));
                 }
                 @Test
-                void whenFirstSucceeds_thenReturnResponseFromFirst() throws IOException{
+                void whenFirstSucceeds_thenReturnResponseFromFirst() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     mockRestTemplateExchange(DISCOVERY_LOCATION);
                     StaticAPIResponse actualResponse = staticAPIService.refresh();
@@ -127,7 +127,7 @@ class StaticAPIServiceTest {
                 }
 
                 @Test
-                void whenFirstFails_thenReturnResponseFromSecond() throws IOException{
+                void whenFirstFails_thenReturnResponseFromSecond() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     when(notFoundResponse.getStatusLine()).thenReturn(notFoundStatusLine);
                     when(notFoundStatusLine.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND.value());
@@ -138,9 +138,9 @@ class StaticAPIServiceTest {
                 }
             }
             @Nested
-            class WhenBothFailsTest{
+            class WhenBothFailsTest {
                 @Test
-                void whenBothFail_thenReturnResponseFromSecond() throws IOException{
+                void whenBothFail_thenReturnResponseFromSecond() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     when(notFoundResponse.getStatusLine()).thenReturn(notFoundStatusLine);
                     when(notFoundStatusLine.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND.value());
@@ -170,11 +170,11 @@ class StaticAPIServiceTest {
     private void mockRestTemplateExchange(String discoveryUrl) throws IOException {
         HttpPost post = new HttpPost(discoveryUrl.replace("/eureka", "") + REFRESH_ENDPOINT);
 
-        when(httpClient.execute(any())).thenAnswer((invocation)-> {
+        when(httpClient.execute(any())).thenAnswer((invocation) -> {
            HttpPost httpRequest = (HttpPost) invocation.getArguments()[0];
            URI uri = httpRequest.getURI();
            int i = uri.compareTo(post.getURI());
-           if(i == 0){
+           if (i == 0) {
                return okResponse;
            } else {
                return notFoundResponse;
