@@ -65,6 +65,11 @@ public class RedisStorage implements Storage {
     }
 
     @Override
+    public List<String> retrieveAllInvalidatedTokens(String serviceId) throws StoreInvalidatedTokenException {
+        throw new StoreInvalidatedTokenException("The retrieval of invalidated tokens is supported only on Infinispan.");
+    }
+
+    @Override
     @Retryable(value = RetryableRedisException.class)
     public KeyValue read(String serviceId, String key) {
         log.info("Reading entry: {}|{}", serviceId, key);

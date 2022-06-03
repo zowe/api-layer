@@ -17,11 +17,9 @@ import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
 
 import javax.transaction.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class InfinispanStorage implements Storage {
@@ -65,6 +63,13 @@ public class InfinispanStorage implements Storage {
             throw new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), toCreate.getKey());
         }
         return null;
+    }
+
+    @Override
+    public List<String> retrieveAllInvalidatedTokens(String serviceId) {
+        log.info("Reading all revoked tokens for service {} ", serviceId);
+        return tokenCache.values().stream()
+            .flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     @Override

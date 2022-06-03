@@ -117,6 +117,23 @@ public class CachingController {
             keyValue, request, HttpStatus.CREATED);
     }
 
+    @GetMapping(value = "/revokedTokens", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Retrieves all invalidated tokens in the cache",
+        notes = "Values returned for the calling service")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> getAllInvalidatedTokens(HttpServletRequest request) {
+        return getServiceId(request).<ResponseEntity<Object>>map(
+            s -> {
+                try {
+                    return new ResponseEntity<>(storage.retrieveAllInvalidatedTokens(s), HttpStatus.OK);
+                } catch (Exception exception) {
+                    return handleInternalError(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
+    }
+
     @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Update key in the cache",
         notes = "Value at the key in the provided key-value pair will be updated to the provided value")

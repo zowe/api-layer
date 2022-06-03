@@ -18,6 +18,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,6 +66,11 @@ public class InMemoryStorage implements Storage {
     @Override
     public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) throws StoreInvalidatedTokenException {
         throw new StoreInvalidatedTokenException("The storage of invalidated tokens is supported only on Infinispan.");
+    }
+
+    @Override
+    public List<String> retrieveAllInvalidatedTokens(String serviceId) throws StoreInvalidatedTokenException {
+        throw new StoreInvalidatedTokenException("The retrieval of invalidated tokens is supported only on Infinispan.");
     }
 
     @Override

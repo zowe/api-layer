@@ -13,7 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.*;
+import org.zowe.apiml.caching.service.EvictionStrategy;
+import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 
@@ -95,6 +98,11 @@ public class VsamStorage implements Storage {
     @Override
     public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) throws StoreInvalidatedTokenException {
         throw new StoreInvalidatedTokenException("The storage of invalidated tokens is supported only on Infinispan.");
+    }
+
+    @Override
+    public List<String> retrieveAllInvalidatedTokens(String serviceId) throws StoreInvalidatedTokenException {
+        throw new StoreInvalidatedTokenException("The retrieval of invalidated tokens is supported only on Infinispan.");
     }
 
     private boolean aboveThreshold(int currentSize) {
