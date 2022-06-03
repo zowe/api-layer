@@ -19,6 +19,8 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 
 /**
  * Client for interaction with Caching Service

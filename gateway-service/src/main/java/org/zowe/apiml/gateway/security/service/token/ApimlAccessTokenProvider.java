@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -30,6 +31,7 @@ import java.util.Set;
 @Slf4j
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
+    public static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
     private final CachingServiceClient cachingServiceClient;
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -38,12 +40,24 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String hashedValue = encoder.encode(token);
+        String hashedValue = getHash(token);
         AccessTokenContainer container = new AccessTokenContainer();
         container.setTokenValue(hashedValue);
         String json = objectMapper.writeValueAsString(container);
         cachingServiceClient.appendList(new CachingServiceClient.KeyValue("invalidToken", json));
+    }
+
+    public boolean isInvalidated(String token) {
+
+        return false;
+    }
+
+    private String getHash(String token){
+        return ENCODER.encode(token);
+    }
+
+    private boolean verifyPassword(String token, String hash) {
+        return ENCODER.matches(token,hash);
     }
 
     @Data
