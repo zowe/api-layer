@@ -107,7 +107,7 @@ public class CachingController {
             keyValue, request, HttpStatus.CREATED);
     }
 
-    @PostMapping(value = "/revokeToken", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/invalidTokens", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Add a new invalidated token in the cache",
         notes = "A new key-value pair will be added to the cache")
     @ResponseBody
@@ -117,7 +117,7 @@ public class CachingController {
             keyValue, request, HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/revokedTokens", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/invalidTokens", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Retrieves all invalidated tokens in the cache",
         notes = "Values returned for the calling service")
     @ResponseBody
