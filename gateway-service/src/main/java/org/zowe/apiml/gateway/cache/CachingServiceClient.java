@@ -15,11 +15,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
 
 
 /**
@@ -28,7 +29,6 @@ import java.util.List;
  * Assumes calling caching service through Gateway. Uses rest template with client certificate
  * as Gateway will forward the certificates in headers to caching service, which in turn uses this
  * as a distinguishing factor to store the keys.
- *
  */
 @SuppressWarnings({"squid:S1192"}) // literals are repeating in debug logs only
 public class CachingServiceClient {
@@ -52,6 +52,7 @@ public class CachingServiceClient {
 
     /**
      * Creates {@link KeyValue} in Caching Service.
+     *
      * @param kv {@link KeyValue} to store
      * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or cache conflict
      */
@@ -75,6 +76,7 @@ public class CachingServiceClient {
 
     /**
      * Reads {@link KeyValue} from Caching Service
+     *
      * @param key Key to read
      * @return {@link KeyValue}
      * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
@@ -94,6 +96,7 @@ public class CachingServiceClient {
 
     /**
      * Updates {@link KeyValue} in Caching Service
+     *
      * @param kv {@link KeyValue} to update
      * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
      */
@@ -107,6 +110,7 @@ public class CachingServiceClient {
 
     /**
      * Deletes {@link KeyValue} from Caching Service
+     *
      * @param key Key to delete
      * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
      */
