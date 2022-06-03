@@ -25,6 +25,7 @@ import org.zowe.apiml.product.version.BuildInfo;
 @EnableEurekaClient
 @ComponentScan(value = {
     "org.zowe.apiml.apicatalog",
+    "org.zowe.apiml.product.compatibility",
     "org.zowe.apiml.product.security",
     "org.zowe.apiml.product.web",
     "org.zowe.apiml.product.gateway"

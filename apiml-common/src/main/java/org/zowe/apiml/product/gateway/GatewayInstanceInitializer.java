@@ -12,6 +12,7 @@ package org.zowe.apiml.product.gateway;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -53,7 +54,7 @@ public class GatewayInstanceInitializer {
 
     }
 
-    @EventListener(HeartbeatEvent.class)
+    @EventListener({HeartbeatEvent.class, ApplicationReadyEvent.class})
     public void init() {
 
         log.info("GatewayInstanceInitializer starting asynchronous initialization of Gateway configuration");

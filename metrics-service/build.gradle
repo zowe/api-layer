@@ -63,7 +63,12 @@ dependencies {
     implementation libraries.jetty_util
     implementation libraries.springFox
     implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_cloud_starter_eureka
+    implementation(libraries.spring_cloud_starter_eureka){
+        exclude group: "com.google.code.gson", module: "gson"
+    }
+    implementation libraries.gson
+    implementation libraries.spring_cloud_commons
+    implementation libraries.spring_cloud_starter_bootstrap
     implementation libraries.spring_cloud_starter_turbine
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
@@ -71,6 +76,7 @@ dependencies {
     implementation libraries.spring_security_crypto
     implementation libraries.tomcat_annotations_api
     implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_el
     implementation libraries.tomcat_embed_websocket
     implementation libraries.gson
     implementation libraries.xstream
@@ -87,6 +93,8 @@ dependencies {
     implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
     
 
     compileOnly libraries.lombok
