@@ -22,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 
 /**
  * Client for interaction with Caching Service
@@ -70,6 +72,19 @@ public class CachingServiceClient {
             restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
+        }
+    }
+
+    public String[] readList(String key) throws CachingServiceClientException {
+        try {
+           ResponseEntity<String[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.GET, null, String[].class);
+           if(response.getStatusCode().is2xxSuccessful()){
+               return response.getBody();
+           } else {
+               throw new CachingServiceClientException("Unable to read key: " + key + ", caused by response from caching service is null or has no body");
+           }
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to read key: " + key + ", caused by: " + e.getMessage(), e);
         }
     }
 
