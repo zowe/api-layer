@@ -21,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
 
 
 /**
@@ -73,9 +74,9 @@ public class CachingServiceClient {
         }
     }
 
-    public String[] readList(String key) throws CachingServiceClientException {
+    public ApimlAccessTokenProvider.AccessTokenContainer[] readList(String key) throws CachingServiceClientException {
         try {
-           ResponseEntity<String[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.GET, null, String[].class);
+           ResponseEntity<ApimlAccessTokenProvider.AccessTokenContainer[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.GET, null, ApimlAccessTokenProvider.AccessTokenContainer[].class);
            if(response.getStatusCode().is2xxSuccessful()){
                return response.getBody();
            } else {

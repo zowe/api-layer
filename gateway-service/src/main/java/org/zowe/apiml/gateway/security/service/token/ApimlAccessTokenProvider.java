@@ -47,10 +47,10 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException{
-       String[] invalidatedTokenList = cachingServiceClient.readList(token);
+       AccessTokenContainer[] invalidatedTokenList = cachingServiceClient.readList(token);
        if(invalidatedTokenList != null && invalidatedTokenList.length > 0) {
-           for (String invalidatedToken : invalidatedTokenList) {
-              if(validateToken(token,invalidatedToken)){
+           for (AccessTokenContainer invalidatedToken : invalidatedTokenList) {
+              if(validateToken(token,invalidatedToken.getTokenValue())){
                   return true;
               }
            }
