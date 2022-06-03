@@ -11,6 +11,7 @@ package org.zowe.apiml.caching.service.redis;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
+import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -56,6 +57,11 @@ public class RedisStorage implements Storage {
             throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus());
         }
         return toCreate;
+    }
+
+    @Override
+    public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) throws StoreInvalidatedTokenException {
+        throw new StoreInvalidatedTokenException("The storage of invalidated tokens is supported only on Infinispan.");
     }
 
     @Override

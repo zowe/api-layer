@@ -16,6 +16,9 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.transaction.LockingMode;
+import org.infinispan.transaction.TransactionMode;
+import org.infinispan.transaction.lookup.GenericTransactionManagerLookup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -78,17 +81,24 @@ public class InfinispanConfig {
         builder.persistence().passivation(true)
             .addSoftIndexFileStore()
             .shared(false)
-            .dataLocation(dataLocation).indexLocation(indexLocation);
+            .dataLocation(dataLocation).indexLocation(indexLocation)
+            .transaction().transactionMode(TransactionMode.TRANSACTIONAL)
+            .lockingMode(LockingMode.PESSIMISTIC)
+            .useSynchronization(true)
+            .transactionManagerLookup(new GenericTransactionManagerLookup());
         cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache("zoweCache", builder.build());
+        cacheManager.administration()
+            .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+            .getOrCreateCache("zoweInvalidatedTokenCache", builder.build());
         return cacheManager;
     }
 
 
     @Bean
     public Storage storage(DefaultCacheManager cacheManager) {
-        return new InfinispanStorage(cacheManager.getCache("zoweCache"));
+        return new InfinispanStorage(cacheManager.getCache("zoweCache"), cacheManager.getCache("zoweInvalidatedTokenCache"));
     }
 
 }

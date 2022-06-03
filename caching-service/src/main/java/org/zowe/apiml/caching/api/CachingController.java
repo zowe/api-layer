@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -103,6 +104,16 @@ public class CachingController {
     @HystrixCommand
     public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         return keyValueRequest(storage::create,
+            keyValue, request, HttpStatus.CREATED);
+    }
+
+    @PostMapping(value = "/revokeToken", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Add a new invalidated token in the cache",
+        notes = "A new key-value pair will be added to the cache")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> storeInvalidatedToken(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        return keyValueRequest(storage::storeInvalidatedToken,
             keyValue, request, HttpStatus.CREATED);
     }
 
@@ -233,6 +244,6 @@ public class CachingController {
 
     @FunctionalInterface
     interface KeyValueOperation {
-        KeyValue storageRequest(String serviceId, KeyValue keyValue);
+        KeyValue storageRequest(String serviceId, KeyValue keyValue) throws StoreInvalidatedTokenException;
     }
 }

@@ -10,12 +10,16 @@
 package org.zowe.apiml.caching.service.infinispan.storage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.infinispan.AdvancedCache;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
 
+import javax.transaction.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -24,9 +28,11 @@ public class InfinispanStorage implements Storage {
 
 
     private final ConcurrentMap<String, KeyValue> cache;
+    private final ConcurrentMap<String, List<String>> tokenCache;
 
-    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache) {
+    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, List<String>> tokenCache) {
         this.cache = cache;
+        this.tokenCache = tokenCache;
     }
 
     @Override
@@ -38,6 +44,25 @@ public class InfinispanStorage implements Storage {
 
         if (serviceCache != null) {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
+        }
+        return null;
+    }
+
+    @Override
+    public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) {
+        try {
+            TransactionManager tm = ((AdvancedCache)tokenCache).getAdvancedCache().getTransactionManager();
+            tm.begin();
+            if (!tokenCache.get(serviceId + toCreate.getKey()).contains(toCreate.getValue())) {
+                log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
+
+                List<String> tokensList = tokenCache.computeIfAbsent(serviceId + toCreate.getKey(), k -> new ArrayList<>());
+                tokensList.add(toCreate.getValue());
+                tokenCache.put(serviceId + toCreate.getKey(), tokensList);
+            }
+            tm.commit();
+        } catch (NotSupportedException| SystemException | HeuristicRollbackException | HeuristicMixedException | RollbackException e) {
+            throw new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), toCreate.getKey());
         }
         return null;
     }

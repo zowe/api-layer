@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.*;
 import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
@@ -59,6 +60,11 @@ public class InMemoryStorage implements Storage {
         serviceStorage.put(toCreate.getKey(), toCreate);
 
         return toCreate;
+    }
+
+    @Override
+    public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) throws StoreInvalidatedTokenException {
+        throw new StoreInvalidatedTokenException("The storage of invalidated tokens is supported only on Infinispan.");
     }
 
     @Override

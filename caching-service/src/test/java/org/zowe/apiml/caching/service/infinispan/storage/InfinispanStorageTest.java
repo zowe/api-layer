@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,13 +28,15 @@ class InfinispanStorageTest {
     public static final KeyValue TO_CREATE = new KeyValue("key1", "val1");
     public static final KeyValue TO_UPDATE = new KeyValue("key1", "val2");
     Cache<String, KeyValue> cache;
+    Cache<String, List<String>> tokenCache;
     InfinispanStorage storage;
     String serviceId1 = "service1";
 
     @BeforeEach
     void setup() {
         cache = mock(Cache.class);
-        storage = new InfinispanStorage(cache);
+        tokenCache = mock(Cache.class);
+        storage = new InfinispanStorage(cache, tokenCache);
     }
 
     @Nested
@@ -111,7 +114,7 @@ class InfinispanStorageTest {
         @Test
         void itemIsDeleted() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
             assertNull(storage.create(serviceId1, TO_CREATE));
             assertEquals(TO_CREATE, storage.delete(serviceId1, TO_CREATE.getKey()));
         }
@@ -119,7 +122,7 @@ class InfinispanStorageTest {
         @Test
         void returnAll() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
@@ -128,7 +131,7 @@ class InfinispanStorageTest {
         @Test
         void removeAll() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
