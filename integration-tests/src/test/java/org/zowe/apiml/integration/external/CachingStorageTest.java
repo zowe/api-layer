@@ -16,6 +16,7 @@ import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.KeyValue;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
+import org.zowe.apiml.util.categories.InfinispanStorageTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
@@ -97,6 +98,25 @@ class CachingStorageTest implements TestWithStartedInstances {
             .body("21", isEmptyOrNullString())
             .body("22", isEmptyOrNullString())
             .statusCode(200);
+    }
+
+    @Test
+    @InfinispanStorageTest
+    void givenMultipleUpdates_correctResultReturned(){
+        ExecutorService service = Executors.newFixedThreadPool(8);
+
+        AtomicInteger ai = new AtomicInteger(20);
+        for (int i = 0; i < 3; i++) {
+            service.execute(() -> given().config(SslContext.clientCertValid)
+                .contentType(JSON)
+                .body(new KeyValue("invalidTokens", String.valueOf(ai.getAndIncrement())))
+                .when()
+                .post(CACHING_PATH).then().statusCode(201));
+        }
+        given().config(SslContext.clientCertValid)
+            .contentType(JSON)
+            .when()
+            .get(CACHING_PATH + "/invalidTokens").then().statusCode(200).body("size()",is(3));
     }
 
     @Nested

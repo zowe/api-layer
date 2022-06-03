@@ -420,6 +420,24 @@ task runCachingServiceTests(type: Test) {
         includeTags(
             'CachingServiceTest'
         )
+        excludeTags(
+            'InfinispanStorageTest'
+        )
+    }
+}
+
+task runInfinispanServiceTests(type: Test) {
+    group "integration tests"
+    description "Run Caching service with infinispan storage tests"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest',
+            'InfinispanStorageTest'
+        )
     }
 }
 
