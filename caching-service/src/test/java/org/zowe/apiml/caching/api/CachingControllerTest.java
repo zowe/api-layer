@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -26,7 +27,9 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -306,6 +309,62 @@ class CachingControllerTest {
 
             Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
             assertThat(result, is(values));
+        }
+    }
+
+    @Nested
+    class WhenInvalidatedTokenIsStored {
+        @Test
+        void givenCorrectPayload_thenStore() {
+            KeyValue keyValue = new KeyValue(KEY, VALUE);
+            ResponseEntity<?> response = underTest.storeInvalidatedToken(keyValue, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+            assertThat(response.getBody(), is(nullValue()));
+        }
+
+        @Test
+        void givenIncorrectPayload_thenReturnBadRequest() {
+            KeyValue keyValue = new KeyValue(null, VALUE);
+            ResponseEntity<?> response = underTest.storeInvalidatedToken(keyValue, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        }
+
+        @Test
+        void givenErrorOnTransaction_thenReturnInternalError() throws StoreInvalidatedTokenException {
+            when(mockStorage.storeInvalidatedToken(any(), any())).thenThrow(new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), new Exception("the cause"), KEY));
+            KeyValue keyValue = new KeyValue(KEY, VALUE);
+            ResponseEntity<?> response = underTest.storeInvalidatedToken(keyValue, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @Nested
+    class WhenRetrieveInvalidatedTokens {
+        @Test
+        void givenCorrectRequest_thenReturnList() throws StoreInvalidatedTokenException {
+            List<String> tokens = Arrays.asList("token1", "token2");
+            when(mockStorage.retrieveAllInvalidatedTokens(any())).thenReturn(tokens);
+            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+            assertThat(response.getBody(), is(tokens));
+        }
+
+        @Test
+        void givenNoCertificateInformation_thenReturnUnauthorized() throws StoreInvalidatedTokenException {
+            List<String> tokens = Arrays.asList("token1", "token2");
+            when(mockStorage.retrieveAllInvalidatedTokens(any())).thenReturn(tokens);
+            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(mockRequest);
+
+            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        }
+
+        @Test
+        void givenErrorReadingStorage_thenResponseInternalError() throws StoreInvalidatedTokenException {
+            when(mockStorage.retrieveAllInvalidatedTokens(any())).thenThrow(new RuntimeException("error"));
+
+            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 }

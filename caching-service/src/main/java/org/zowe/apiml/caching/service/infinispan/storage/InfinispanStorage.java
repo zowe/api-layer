@@ -59,7 +59,7 @@ public class InfinispanStorage implements Storage {
                 tokenCache.put(serviceId + toCreate.getKey(), tokensList);
             }
             tm.commit();
-        } catch (NotSupportedException| SystemException | HeuristicRollbackException | HeuristicMixedException | RollbackException e) {
+        } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException | RollbackException e) {
             throw new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), toCreate.getKey());
         }
         return null;
