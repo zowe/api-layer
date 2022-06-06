@@ -30,6 +30,7 @@
 }
 
 .swagger-ui *, .swagger-ui :after, .swagger-ui :before {
+    background-color: transparent;
     box-sizing: inherit
 }
 
@@ -1742,5 +1743,13 @@ body {
 
 /* Hide Swagger JSON document */
 div.info > hgroup.main > a {
+    display: none;
+}
+
+button.opblock-summary-control {
+    display: contents;
+}
+
+svg.svg-assets {
     display: none;
 }

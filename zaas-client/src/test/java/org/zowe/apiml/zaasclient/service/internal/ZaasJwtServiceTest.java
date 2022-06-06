@@ -51,6 +51,18 @@ class ZaasJwtServiceTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private static final String EXPIRED_PASSWORD_RESPONSE =
+        "{\n" +
+        "    \"messages\": [\n" +
+        "        {\n" +
+        "            \"messageType\": \"ERROR\",\n" +
+        "            \"messageNumber\": \"ZWEAT412E\",\n" +
+        "            \"messageContent\": \"The password for the specified identity has expired\",\n" +
+        "            \"messageKey\": \"org.zowe.apiml.security.platform.errno.EMVSEXPIRE\"\n" +
+        "        }\n" +
+        "    ]\n" +
+        "}";
+
     @Mock
     private CloseableHttpClient closeableHttpClient;
 
@@ -172,6 +184,20 @@ class ZaasJwtServiceTest {
         mockRequest.addHeader(HttpHeaders.AUTHORIZATION, "");
 
         zaasClientTestAssertThrows(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided", () -> zaasJwtService.query(mockRequest));
+    }
+
+    @Test
+    void givenExpiredPassword_whenLogin_thenThrowException() throws IOException {
+        mockHttpClient(401, EXPIRED_PASSWORD_RESPONSE);
+        zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_PASSWORD, "The specified password is expired",
+            () -> zaasJwtService.login("user", "password"));
+    }
+
+    @Test
+    void givenExpiredPassword_whenQuery_thenThrowException() throws IOException {
+        mockHttpClient(401, EXPIRED_PASSWORD_RESPONSE);
+        zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_PASSWORD, "The specified password is expired",
+                () -> zaasJwtService.query("jwt"));
     }
 
     private void mockHttpClient(int statusCode) throws IOException {

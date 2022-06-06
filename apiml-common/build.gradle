@@ -1,16 +1,21 @@
 dependencies {
     implementation project(':apiml-utility')
     implementation project(':apiml-tomcat-common')
+    implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_cloud_commons
+    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_eureka){
+        exclude group: "com.google.code.gson", module: "gson"
+    }
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_validation
     implementation libraries.jackson_databind
     implementation libraries.apache_commons_lang3
     implementation libraries.http_client
-    implementation libraries.http_core 
+    implementation libraries.http_core
     implementation libraries.janino
     implementation libraries.xstream
 
-    implementation libraries.spring_cloud_commons
     implementation libraries.spring_security_crypto
 
     implementation libraries.spring_boot_configuration_processor

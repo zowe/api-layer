@@ -12,7 +12,9 @@ package org.zowe.apiml.gateway.context;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -27,7 +29,10 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,6 +41,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@ContextConfiguration(classes = ConfigurableNamedContextFactoryTest.MainContextConfiguration.class)
 class ConfigurableNamedContextFactoryTest {
 
     //This is here to load context fast by creating just this bean
@@ -110,6 +116,7 @@ class ConfigurableNamedContextFactoryTest {
             return DayOfWeek.TUESDAY;
         }
     }
+
     public static class SpecConfigSpecific {
 
         @Bean
@@ -136,7 +143,7 @@ class ConfigurableNamedContextFactoryTest {
             doReturn(new Class[]{SpecConfigDefault.class}).when(spec1).getConfiguration();
             doReturn("specificContext").when(spec2).getName();
             doReturn(new Class[]{SpecConfigSpecific.class}).when(spec2).getConfiguration();
-            underTest  = new ConfigurableNamedContextFactory(null, "aa", "aa");
+            underTest = new ConfigurableNamedContextFactory(null, "aa", "aa");
             underTest.setConfigurations(Arrays.asList(spec1, spec2));
         }
 
@@ -212,10 +219,10 @@ class ConfigurableNamedContextFactoryTest {
         void contextCanBeRebuilt() {
             ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(ContextProbe.class, "aa", "aa");
             underTest.addInitializer("ctx", context ->
-                    context.getEnvironment().getPropertySources().addFirst(
-                        new MapPropertySource("PropertySouceName", Collections.singletonMap("context.name", "JessicaAlba"))
-                    )
-                );
+                context.getEnvironment().getPropertySources().addFirst(
+                    new MapPropertySource("PropertySouceName", Collections.singletonMap("context.name", "JessicaAlba"))
+                )
+            );
 
             ContextProbe.BeanClass bean = underTest.getInstance("ctx", ContextProbe.BeanClass.class);
             assertThat(bean.getName(), is("JessicaAlba"));
