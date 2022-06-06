@@ -46,6 +46,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 class CachingStorageTest implements TestWithStartedInstances {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway(CACHING_CACHE);
+    private static final URI CACHING_INVALIDATE_TOKEN_PATH = HttpRequestUtils.getUriFromGateway(CACHING_CACHE_LIST);
     private static final String SPECIFIC_SERVICE_HEADER = "X-CS-Service-ID";
 
     @BeforeAll
@@ -111,12 +112,12 @@ class CachingStorageTest implements TestWithStartedInstances {
                 .contentType(JSON)
                 .body(new KeyValue("invalidTokens", String.valueOf(ai.getAndIncrement())))
                 .when()
-                .post(CACHING_PATH + "/cache-list").then().statusCode(201));
+                .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(201));
         }
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .when()
-            .get(CACHING_PATH + "/cache-list").then().statusCode(200).body("size()",is(3));
+            .get(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(200).body("size()",is(3));
     }
 
     @Nested
