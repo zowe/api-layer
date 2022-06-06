@@ -38,6 +38,8 @@ public class CachingServiceClient {
     private final String gatewayProtocolHostPort;
     @Value("${apiml.cachingServiceClient.apiPath}")
     private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
+    @Value("${apiml.cachingServiceClient.list.apiPath}")
+    private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list"; //NOSONAR parametrization provided by @Value annotation
 
     public CachingServiceClient(RestTemplate restTemplate, String gatewayProtocolHostPort) {
         if (gatewayProtocolHostPort == null || gatewayProtocolHostPort.isEmpty()) {
@@ -68,7 +70,7 @@ public class CachingServiceClient {
 
     public void appendList(KeyValue kv) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
         }
@@ -76,7 +78,7 @@ public class CachingServiceClient {
 
     public ApimlAccessTokenProvider.AccessTokenContainer[] readList(String key) throws CachingServiceClientException {
         try {
-           ResponseEntity<ApimlAccessTokenProvider.AccessTokenContainer[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.GET, null, ApimlAccessTokenProvider.AccessTokenContainer[].class);
+           ResponseEntity<ApimlAccessTokenProvider.AccessTokenContainer[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.GET, null, ApimlAccessTokenProvider.AccessTokenContainer[].class);
            if(response.getStatusCode().is2xxSuccessful()){
                return response.getBody();
            } else {

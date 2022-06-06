@@ -9,6 +9,9 @@
  */
 package org.zowe.apiml.product.web;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
@@ -22,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -205,7 +209,22 @@ public class HttpConfig {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         factory.setReadTimeout(readTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
-        return new RestTemplate(factory);
+        RestTemplate restTemplate = new RestTemplate(factory);
+        restTemplate.getMessageConverters().add(0,messageConverter());
+        return restTemplate;
+    }
+
+    private MappingJackson2HttpMessageConverter messageConverter() {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper());
+        return converter;
+    }
+
+    private ObjectMapper objectMapper(){
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+        return objectMapper;
     }
 
     /**

@@ -88,6 +88,16 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PostMapping(path = "/access-token/validate/{token}")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> validateAccessToken(@PathVariable() String token) throws Exception{
+        if(!tokenProvider.isInvalidated(token)){
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
     @GetMapping(path = DISTRIBUTE_PATH)
     @HystrixCommand
     public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
