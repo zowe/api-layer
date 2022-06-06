@@ -51,13 +51,16 @@ public class InfinispanStorage implements Storage {
         try {
             TransactionManager tm = ((AdvancedCache)tokenCache).getAdvancedCache().getTransactionManager();
             tm.begin();
-            if (!tokenCache.get(serviceId + toCreate.getKey()).contains(toCreate.getValue())) {
-                log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
-                List<String> tokensList = tokenCache.computeIfAbsent(serviceId + toCreate.getKey(), k -> new ArrayList<>());
-                tokensList.add(toCreate.getValue());
-                tokenCache.put(serviceId + toCreate.getKey(), tokensList);
+            if (tokenCache.get(serviceId + toCreate.getKey()) != null &&
+                tokenCache.get(serviceId + toCreate.getKey()).contains(toCreate.getValue())) {
+                throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
             }
+            log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
+
+            List<String> tokensList = tokenCache.computeIfAbsent(serviceId + toCreate.getKey(), k -> new ArrayList<>());
+            tokensList.add(toCreate.getValue());
+            tokenCache.put(serviceId + toCreate.getKey(), tokensList);
             tm.commit();
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException | RollbackException e) {
             throw new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), toCreate.getKey());

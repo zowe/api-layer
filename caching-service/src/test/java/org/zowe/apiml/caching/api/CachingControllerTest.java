@@ -336,6 +336,16 @@ class CachingControllerTest {
             ResponseEntity<?> response = underTest.storeInvalidatedToken(keyValue, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
+
+        @Test
+        void givenStorageWithExistingValue_thenResponseConflict() throws StoreInvalidatedTokenException {
+            when(mockStorage.storeInvalidatedToken(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), VALUE));
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.duplicateValue", VALUE).mapToView();
+
+            ResponseEntity<?> response = underTest.storeInvalidatedToken(KEY_VALUE, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
+            assertThat(response.getBody(), is(expectedBody));
+        }
     }
 
     @Nested
