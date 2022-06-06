@@ -353,8 +353,8 @@ class CachingControllerTest {
         @Test
         void givenCorrectRequest_thenReturnList() throws StoreInvalidatedTokenException {
             List<String> tokens = Arrays.asList("token1", "token2");
-            when(mockStorage.retrieveAllInvalidatedTokens(any())).thenReturn(tokens);
-            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(mockRequest);
+            when(mockStorage.retrieveAllInvalidatedTokens(any(), any())).thenReturn(tokens);
+            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.OK));
             assertThat(response.getBody(), is(tokens));
         }
@@ -362,18 +362,18 @@ class CachingControllerTest {
         @Test
         void givenNoCertificateInformation_thenReturnUnauthorized() throws StoreInvalidatedTokenException {
             List<String> tokens = Arrays.asList("token1", "token2");
-            when(mockStorage.retrieveAllInvalidatedTokens(any())).thenReturn(tokens);
+            when(mockStorage.retrieveAllInvalidatedTokens(any(), any())).thenReturn(tokens);
             when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
-            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(mockRequest);
+            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(any(), mockRequest);
 
             assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         }
 
         @Test
         void givenErrorReadingStorage_thenResponseInternalError() throws StoreInvalidatedTokenException {
-            when(mockStorage.retrieveAllInvalidatedTokens(any())).thenThrow(new RuntimeException("error"));
+            when(mockStorage.retrieveAllInvalidatedTokens(any(), any())).thenThrow(new RuntimeException("error"));
 
-            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(mockRequest);
+            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }

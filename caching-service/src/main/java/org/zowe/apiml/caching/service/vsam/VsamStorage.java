@@ -101,7 +101,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    public List<String> retrieveAllInvalidatedTokens(String serviceId) throws StoreInvalidatedTokenException {
+    public List<String> retrieveAllInvalidatedTokens(String serviceId, String key) throws StoreInvalidatedTokenException {
         throw new StoreInvalidatedTokenException("The retrieval of invalidated tokens is supported only on Infinispan.");
     }
 
