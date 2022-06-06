@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum Messages {
     DUPLICATE_KEY("org.zowe.apiml.cache.keyCollision", HttpStatus.CONFLICT),
+    DUPLICATE_VALUE("org.zowe.apiml.cache.duplicateValue", HttpStatus.CONFLICT),
     KEY_NOT_PROVIDED("org.zowe.apiml.cache.keyNotProvided", HttpStatus.BAD_REQUEST),
     KEY_NOT_IN_CACHE("org.zowe.apiml.cache.keyNotInCache", HttpStatus.NOT_FOUND),
     INVALID_PAYLOAD("org.zowe.apiml.cache.invalidPayload", HttpStatus.BAD_REQUEST),
