@@ -17,13 +17,13 @@ const branchToMerge = process.argv[6];
     }).map(line => {
         return line.replace("* feat:", "* Feature: ")
     }).join("\n");
-
+// fixes are here, don't get added
     const addedFixes = lines.filter(line => {
         return line.startsWith("* fix:");
     }).map(line => {
         return line.replace("* fix:", "* Bugfix: ")
     }).join("\n");
-
+// change here
     const currentChangelog = await readFile("../../CHANGELOG.md");
     const changeLogLines = currentChangelog.toString().split(/\r?\n/)
     // Remove first 4 lines as they will be replaces by the header that\s visible below
