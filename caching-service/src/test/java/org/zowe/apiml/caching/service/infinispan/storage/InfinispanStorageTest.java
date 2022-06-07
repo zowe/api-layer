@@ -9,16 +9,22 @@
  */
 package org.zowe.apiml.caching.service.infinispan.storage;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.commons.tx.TransactionManagerImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 
+import javax.transaction.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,17 +34,17 @@ class InfinispanStorageTest {
     public static final KeyValue TO_CREATE = new KeyValue("key1", "val1");
     public static final KeyValue TO_UPDATE = new KeyValue("key1", "val2");
     Cache<String, KeyValue> cache;
-    Cache<String, List<String>> tokenCache;
+    AdvancedCache<String, List<String>> tokenCache;
     InfinispanStorage storage;
     String serviceId1 = "service1";
+    TransactionManager transactionManage;
 
     @BeforeEach
     void setup() {
         cache = mock(Cache.class);
-        tokenCache = mock(Cache.class);
+        tokenCache = mock(AdvancedCache.class);
         storage = new InfinispanStorage(cache, tokenCache);
     }
-
     @Nested
     class WhenEntryDoesntExist {
 
@@ -78,7 +84,6 @@ class InfinispanStorageTest {
         }
 
     }
-
 
     @Nested
     class WhenEntryExists {
@@ -141,5 +146,65 @@ class InfinispanStorageTest {
 
     }
 
+    @Nested
+    class WhenTokenExistsDoesntExist {
+        KeyValue keyValue;
+
+        @BeforeEach
+        void createEmptyStore() {
+            keyValue = null;
+        }
+
+        @BeforeEach
+        void createStoreWithEntry() {
+            transactionManage = new TransactionManagerImpl() {
+                @Override
+                protected Transaction createTransaction() {
+                    return null;
+                }
+
+                @Override
+                public void commit() {
+                    return;
+                }
+            };
+            when(tokenCache.getAdvancedCache()).thenReturn(tokenCache);
+            when(tokenCache.getAdvancedCache().getTransactionManager()).thenReturn(transactionManage);
+            when(tokenCache.computeIfAbsent(anyString(), any())).thenAnswer(k -> new ArrayList<>());
+        }
+
+        @Test
+        void addToken() {
+            List<String> list = new ArrayList<>();
+            list.add("token");
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
+            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
+            assertNull(storage.storeInvalidatedToken(serviceId1, new KeyValue("key", "value")));
+            verify(tokenCache, times(1)).put(serviceId1 + "key", list);
+        }
+
+        @Test
+        void throwException() {
+            List<String> list = new ArrayList<>();
+            list.add("token");
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
+            when(tokenCache.get(serviceId1 + "key")).thenReturn(Collections.singletonList("token"));
+            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
+            assertThrows(StorageException.class, () -> storage.storeInvalidatedToken(serviceId1, new KeyValue("key", "token")));
+        }
+    }
+
+    @Nested
+    class WhenRetrieveToken {
+
+        @Test
+        void returnTokenList() {
+            List<String> list = new ArrayList<>();
+            list.add("token");
+            list.add("token2");
+            when(tokenCache.get(serviceId1 + "key")).thenReturn(list);
+            assertEquals(2, storage.retrieveAllInvalidatedTokens(serviceId1, "key").size());
+        }
+    }
 
 }
