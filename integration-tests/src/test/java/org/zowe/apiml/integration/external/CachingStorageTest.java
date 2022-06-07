@@ -12,9 +12,8 @@ package org.zowe.apiml.integration.external;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.KeyValue;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
@@ -48,6 +47,7 @@ import static org.zowe.apiml.util.requests.Endpoints.CACHING_CACHE_LIST;
  */
 @TestsNotMeantForZowe
 @CachingServiceTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CachingStorageTest implements TestWithStartedInstances {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway(CACHING_CACHE);
@@ -108,21 +108,34 @@ class CachingStorageTest implements TestWithStartedInstances {
 
     @Test
     @InfinispanStorageTest
+    @Order(1)
     void givenMultipleUpdates_correctResultReturned() {
         ExecutorService service = Executors.newFixedThreadPool(8);
 
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
-            service.execute(() -> given().config(SslContext.clientCertValid)
+            service.execute(() -> given().config(SslContext.clientCertApiml)
                 .contentType(JSON)
                 .body(new KeyValue("invalidTokens", String.valueOf(ai.getAndIncrement())))
                 .when()
                 .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(201));
         }
-        given().config(SslContext.clientCertValid)
+        given().config(SslContext.clientCertApiml)
             .contentType(JSON)
             .when()
             .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(200).body("size()", is(3));
+    }
+
+    @Test
+    @InfinispanStorageTest
+    @Order(2)
+    void givenDuplicateValue_ConflictCodeIsReturned(){
+
+        given().config(SslContext.clientCertApiml)
+            .contentType(JSON)
+            .body(new KeyValue("invalidTokens", "21"))
+            .when()
+            .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(HttpStatus.CONFLICT.value());
     }
 
     @Nested
