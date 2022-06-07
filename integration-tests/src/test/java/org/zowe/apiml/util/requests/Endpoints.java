@@ -31,6 +31,9 @@ public class Endpoints {
     public final static String ROUTED_SERVICE = "/gateway/api/v1/services";
     public final static String ROUTED_SERVICE_NOT_VERSIONED = "/gateway/services";
 
+    public final static String REVOKE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/revoke";
+    public final static String VALIDATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/validate";
+
     public final static String DISCOVERY_STATIC_API = "/discovery/api/v1/staticApi";
 
     public final static String CACHING_CACHE = "/cachingservice/api/v1/cache";
