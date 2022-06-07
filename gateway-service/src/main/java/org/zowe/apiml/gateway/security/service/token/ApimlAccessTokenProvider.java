@@ -17,7 +17,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
@@ -27,7 +26,6 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashSet;
 import java.util.Set;
 
 @Service
@@ -56,24 +54,24 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         cachingServiceClient.appendList(new CachingServiceClient.KeyValue("invalidTokens", json));
     }
 
-    public boolean isInvalidated(String token) throws CachingServiceClientException{
-       AccessTokenContainer[] invalidatedTokenList = cachingServiceClient.readList(token);
-       if(invalidatedTokenList != null && invalidatedTokenList.length > 0) {
-           for (AccessTokenContainer invalidatedToken : invalidatedTokenList) {
-              if(validateToken(token,invalidatedToken.getTokenValue())){
-                  return true;
-              }
-           }
-       }
+    public boolean isInvalidated(String token) throws CachingServiceClientException {
+        AccessTokenContainer[] invalidatedTokenList = cachingServiceClient.readList(token);
+        if (invalidatedTokenList != null && invalidatedTokenList.length > 0) {
+            for (AccessTokenContainer invalidatedToken : invalidatedTokenList) {
+                if (validateToken(token, invalidatedToken.getTokenValue())) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
-    public String getHash(String token){
+    public String getHash(String token) {
         return ENCODER.encode(token);
     }
 
     private boolean validateToken(String token, String hash) {
-        return ENCODER.matches(token,hash);
+        return ENCODER.matches(token, hash);
     }
 
     @Data

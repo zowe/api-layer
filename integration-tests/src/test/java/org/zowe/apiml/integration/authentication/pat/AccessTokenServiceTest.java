@@ -39,7 +39,7 @@ public class AccessTokenServiceTest {
     }
 
     @Test
-    void givenValidJWT_invalidateTheToken(){
+    void givenValidJWT_invalidateTheToken() {
         String jwt = SecurityUtils.gatewayToken();
         Map<String, String> bodyContent = new HashMap<>();
         bodyContent.put("token", jwt);

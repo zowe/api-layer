@@ -86,8 +86,8 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String,String> token) throws Exception{
-        if(tokenProvider.isInvalidated(token.get("token"))){
+    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> token) throws Exception {
+        if (tokenProvider.isInvalidated(token.get("token"))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         tokenProvider.invalidateToken(token.get("token"));
@@ -97,8 +97,8 @@ public class AuthController {
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> validateAccessToken(@RequestBody() Map<String,String> token) throws Exception{
-        if(!tokenProvider.isInvalidated(token.get("token"))){
+    public ResponseEntity<String> validateAccessToken(@RequestBody() Map<String, String> token) throws Exception {
+        if (!tokenProvider.isInvalidated(token.get("token"))) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -120,6 +120,7 @@ public class AuthController {
     /**
      * Return all public keys involved at the moment in the Gateway as well as in zOSMF. Keys used for verification of
      * tokens
+     *
      * @return List of keys composed of zOSMF and Gateway ones
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
@@ -135,6 +136,7 @@ public class AuthController {
     /**
      * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
      * configured one is used.
+     *
      * @return The key actually used to verify the JWT tokens.
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
@@ -153,7 +155,7 @@ public class AuthController {
     /**
      * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
      * configured one is used. The key is provided in the PEM format.
-     *
+     * <p>
      * Until the key to be produced is resolved, this returns 500 with the message code ZWEAG716.
      *
      * @return The key actually used to verify the JWT tokens.
