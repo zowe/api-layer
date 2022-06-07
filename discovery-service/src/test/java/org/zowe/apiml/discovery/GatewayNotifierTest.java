@@ -22,6 +22,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.zowe.apiml.message.core.Message;
@@ -31,8 +32,6 @@ import org.zowe.apiml.message.template.MessageTemplate;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,7 +46,6 @@ class GatewayNotifierTest {
     private PeerAwareInstanceRegistry registry;
 
     private CloseableHttpClient httpClient;
-    private CloseableHttpResponse httpResponse;
     private StatusLine httpStatusLine;
     private MessageService messageService;
     private GatewayNotifier gatewayNotifierSync;
@@ -60,7 +58,7 @@ class GatewayNotifierTest {
         EurekaServerContextHolder.initialize(context);
 
         httpClient = mock(CloseableHttpClient.class);
-        httpResponse = mock(CloseableHttpResponse.class);
+        CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
         httpStatusLine = mock(StatusLine.class);
         when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         when(httpResponse.getStatusLine()).thenReturn(httpStatusLine);
@@ -91,201 +89,273 @@ class GatewayNotifierTest {
         mt.setType(MessageType.INFO);
         return Message.of(messageKey, mt, params);
     }
+    @Nested
+    class GivenNoGateway {
+        private final String messageKey = "org.zowe.apiml.discovery.errorNotifyingGateway";
 
-    @Test
-    void testServiceRegistrationCancelled() throws IOException {
-        verify(httpClient, never()).execute(any(HttpDelete.class));
+        @BeforeEach
+        void setup() {
+            when(registry.getApplication(anyString())).thenReturn(null);
+            when(messageService.createMessage(messageKey)).thenReturn(createMessage(messageKey));
+        }
 
-        List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("hostname1", 1000, 1433, true),
-            createInstanceInfo("hostname2", 1000, 0, false)
-        );
-
-        Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(instances);
-        when(registry.getApplication("GATEWAY")).thenReturn(application);
-
-        gatewayNotifierSync.serviceCancelledRegistration("testService");
-        ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
-        verify(httpClient, times(2)).execute(argument.capture());
-        assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getURI().toString());
-        assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getURI().toString());
+        @Test
+        void testMissingGateway() {
+            gatewayNotifierSync.serviceUpdated("serviceX", null);
+            verify(messageService, times(1)).createMessage(messageKey);
+        }
     }
 
-    @Test
-    void testNullServiceRegistrationCancelled() throws IOException {
-        verify(httpClient, never()).execute(any(HttpDelete.class));
+    @Nested
+    class GivenTwoInstances {
 
-        List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("hostname1", 1000, 1433, true),
-            createInstanceInfo("hostname2", 1000, 0, false)
-        );
+        @BeforeEach
+        void setup() {
+            List<InstanceInfo> instances = Arrays.asList(
+                createInstanceInfo("hostname1", 1000, 1433, true),
+                createInstanceInfo("hostname2", 1000, 0, false)
+            );
 
-        Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(instances);
-        when(registry.getApplication("GATEWAY")).thenReturn(application);
+            Application application = mock(Application.class);
+            when(application.getInstances()).thenReturn(instances);
+            when(registry.getApplication("GATEWAY")).thenReturn(application);
+        }
 
-        gatewayNotifierSync.serviceCancelledRegistration(null);
-        ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
-        verify(httpClient, times(2)).execute(argument.capture());
-        assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getURI().toString());
-        assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getURI().toString());
-    }
+        @Nested
+        class WhenCancelRegistration {
+            @Test
+            void thenAPIisCalledWithGivenServiceId() throws IOException {
+                verify(httpClient, never()).execute(any(HttpDelete.class));
 
-    @Test
-    void testServiceUpdated() throws IOException {
-        verify(httpClient, never()).execute(any(HttpDelete.class));
+                gatewayNotifierSync.serviceCancelledRegistration("testService");
+                ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
+                verify(httpClient, times(2)).execute(argument.capture());
+                assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getURI().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getURI().toString());
+            }
 
-        List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("hostname1", 1000, 1433, true),
-            createInstanceInfo("hostname2", 1000, 0, false)
-        );
+            @Test
+            void thenAPIisCalledWithoutServiceId() throws IOException {
+                verify(httpClient, never()).execute(any(HttpDelete.class));
 
-        Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(instances);
-        when(registry.getApplication("GATEWAY")).thenReturn(application);
+                gatewayNotifierSync.serviceCancelledRegistration(null);
+                ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
+                verify(httpClient, times(2)).execute(argument.capture());
+                assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getURI().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getURI().toString());
+            }
+        }
+        @Nested
+        class WhenServiceUpdated {
+            @Test
+            void thenAPIisCalledWithGivenServiceId() throws IOException {
+                verify(httpClient, never()).execute(any(HttpDelete.class));
 
-        gatewayNotifierSync.serviceUpdated("testService", null);
-        ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
-        verify(httpClient, times(2)).execute(argument.capture());
-        assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getURI().toString());
-        assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getURI().toString());
-    }
+                gatewayNotifierSync.serviceUpdated("testService", null);
+                ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
+                verify(httpClient, times(2)).execute(argument.capture());
+                assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getURI().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getURI().toString());
+            }
 
-    @Test
-    void testNullServiceUpdated() throws IOException {
-        verify(httpClient, never()).execute(any(HttpDelete.class));
+            @Test
+            void thenAPIisCalledWithoutServiceId() throws IOException {
+                verify(httpClient, never()).execute(any(HttpDelete.class));
 
-        List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("hostname1", 1000, 1433, true),
-            createInstanceInfo("hostname2", 1000, 0, false)
-        );
+                gatewayNotifierSync.serviceUpdated(null, null);
+                ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
+                verify(httpClient, times(2)).execute(argument.capture());
+                assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getURI().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getURI().toString());
+            }
+        }
 
-        Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(instances);
-        when(registry.getApplication("GATEWAY")).thenReturn(application);
+        @Nested
+        class WhenDistributeInvalidatedCredentials {
+            @Test
+            void testDistributeInvalidatedCredentials() throws IOException {
+                verify(httpClient, never()).execute(any(HttpGet.class));
 
-        gatewayNotifierSync.serviceUpdated(null, null);
-        ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
-        verify(httpClient, times(2)).execute(argument.capture());
-        assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getURI().toString());
-        assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getURI().toString());
-    }
+                gatewayNotifierSync.distributeInvalidatedCredentials("instance");
+                ArgumentCaptor<HttpGet> argument = ArgumentCaptor.forClass(HttpGet.class);
+                verify(httpClient, times(2)).execute(argument.capture());
+                assertEquals("https://hostname1:1433/gateway/auth/distribute/instance", argument.getAllValues().get(0).getURI().toString());
+                assertEquals("http://hostname2:1000/gateway/auth/distribute/instance", argument.getAllValues().get(1).getURI().toString());
+            }
+        }
 
-    @Test
-    void testMissingGateway() {
-        final String messageKey = "org.zowe.apiml.discovery.errorNotifyingGateway";
+        @Nested
+        class GivenHttpErrorDuringCancelRegistration {
 
-        when(registry.getApplication(anyString())).thenReturn(null);
-        when(messageService.createMessage(messageKey)).thenReturn(createMessage(messageKey));
+            @BeforeEach
+            void setup() {
+                MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+                Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+                when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
+            }
 
-        gatewayNotifierSync.serviceUpdated("serviceX", null);
+            @Test
+            void whenHttpExceptionThenErrorLogged() throws IOException {
+                doThrow(new IOException("any exception")).when(httpClient).execute(any(HttpDelete.class));
+                gatewayNotifierSync.serviceCancelledRegistration("service");
 
-        verify(messageService, times(1)).createMessage(messageKey);
-    }
+                verify(httpClient, times(2)).execute(any(HttpDelete.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.unregistration.gateway.notify"), argument.capture());
+                assertEquals("https://hostname1:1433/gateway/cache/services/service", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/cache/services/service", argument.getAllValues().get(1));
+            }
 
-    @Test
-    void testServiceRegistrationCancelledNotificationFailed() throws IOException {
-        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
-        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
-        when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
-        doThrow(new IOException("any exception")).when(httpClient).execute(any(HttpDelete.class));
-        List<InstanceInfo> instances = new LinkedList<>();
-        Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(instances);
-        when(registry.getApplication("GATEWAY")).thenReturn(application);
+            @Test
+            void whenHttpResponseForbiddenThenErrorLogged() throws IOException {
+                when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+                gatewayNotifierSync.serviceCancelledRegistration("service");
 
-        // no gateway is registered
-        gatewayNotifierSync.serviceCancelledRegistration("service");
-        verify(httpClient, never()).execute(any(HttpDelete.class));
+                verify(httpClient, times(2)).execute(any(HttpDelete.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.unregistration.gateway.notify"), argument.capture());
+                assertEquals("https://hostname1:1433/gateway/cache/services/service", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/cache/services/service", argument.getAllValues().get(1));
+            }
 
+            @Test
+            void whenHttpResponseProcessingThenErrorLogged() throws IOException {
+                when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_PROCESSING);
+                gatewayNotifierSync.serviceCancelledRegistration("service");
 
-        // notify gateway and restTemplate failed
-        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433, true));
-        gatewayNotifierSync.serviceCancelledRegistration("service");
-        verify(httpClient, times(1)).execute(any(HttpDelete.class));
-        verify(messageService).createMessage(
-            "org.zowe.apiml.discovery.unregistration.gateway.notify",
-            "https://host:1433/gateway/cache/services/service"
-        );
-    }
+                verify(httpClient, times(2)).execute(any(HttpDelete.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.unregistration.gateway.notify"), argument.capture());
+                assertEquals("https://hostname1:1433/gateway/cache/services/service", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/cache/services/service", argument.getAllValues().get(1));
+            }
+        }
 
-    @Test
-    void testServiceUpdatedNotificationFailed() throws IOException {
-        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
-        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
-        when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
-        doThrow(new IOException("any exception")).when(httpClient).execute(any(HttpDelete.class));
-        List<InstanceInfo> instances = new LinkedList<>();
-        Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(instances);
-        when(registry.getApplication("GATEWAY")).thenReturn(application);
+        @Nested
+        class GivenHttpErrorDuringServiceUpdate {
 
-        // no gateway is registered
-        gatewayNotifierSync.serviceUpdated("service", "host:service:1433");
-        verify(httpClient, never()).execute(any(HttpDelete.class));
+            @BeforeEach
+            void setup() {
+                MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+                Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+                when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
+            }
 
-        // notify gateway itself
-        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433, true));
-        gatewayNotifierSync.serviceUpdated("GATEWAY", "host:GATEWAY:1433");
-        verify(httpClient, never()).execute(any(HttpDelete.class));
+            @Test
+            void whenHttpExceptionThenErrorLogged() throws IOException {
+                doThrow(new IOException("any exception")).when(httpClient).execute(any(HttpDelete.class));
+                gatewayNotifierSync.serviceUpdated("service", "instance");
 
-        // notify gateway and restTemplate failed
-        gatewayNotifierSync.serviceUpdated("service", "host2:service:123");
-        verify(httpClient, times(1)).execute(any(HttpDelete.class));
-        verify(messageService).createMessage(
-            "org.zowe.apiml.discovery.registration.gateway.notify",
-            "https://host:1433/gateway/cache/services/service",
-            "host2:service:123"
-        );
-    }
+                verify(httpClient, times(2)).execute(any(HttpDelete.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.registration.gateway.notify"), argument.capture(), eq("instance"));
+                assertEquals("https://hostname1:1433/gateway/cache/services/service", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/cache/services/service", argument.getAllValues().get(1));
+            }
 
-    @Test
-    void testDistributeInvalidatedCredentials() throws IOException {
-        InstanceInfo targetInstanceInfo = createInstanceInfo("host", 1000, 1433, true);
-        String targetInstanceId = targetInstanceInfo.getInstanceId();
+            @Test
+            void whenHttpResponseForbiddenThenErrorLogged() throws IOException {
+                when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+                gatewayNotifierSync.serviceUpdated("service", "instance");
 
-        InstanceInfo gatewayInstance = createInstanceInfo("gateway", 111, 123, true);
-        String gatewayUrl = "https://gateway:123/gateway/auth/distribute/" + targetInstanceId;
+                verify(httpClient, times(2)).execute(any(HttpDelete.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.registration.gateway.notify"), argument.capture(), eq("instance"));
+                assertEquals("https://hostname1:1433/gateway/cache/services/service", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/cache/services/service", argument.getAllValues().get(1));
+            }
 
-        Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(Collections.singletonList(gatewayInstance));
-        when(registry.getApplication("GATEWAY")).thenReturn(application);
+            @Test
+            void whenHttpResponseProcessingThenErrorLogged() throws IOException {
+                when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_PROCESSING);
+                gatewayNotifierSync.serviceUpdated("service", "instance");
 
-        final String messageNotifyError = "org.zowe.apiml.discovery.errorNotifyingGateway";
-        when(messageService.createMessage(messageNotifyError)).thenReturn(createMessage(messageNotifyError));
-        final String messageKey = "org.zowe.apiml.discovery.registration.gateway.notify";
-        Message msg = createMessage(messageKey, gatewayUrl, targetInstanceId);
-        when(messageService.createMessage(messageKey, gatewayUrl, targetInstanceId)).thenReturn(msg);
+                verify(httpClient, times(2)).execute(any(HttpDelete.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.registration.gateway.notify"), argument.capture(), eq("instance"));
+                assertEquals("https://hostname1:1433/gateway/cache/services/service", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/cache/services/service", argument.getAllValues().get(1));
+            }
+        }
 
-        // succeed notified
-        gatewayNotifierSync.distributeInvalidatedCredentials(targetInstanceId);
-        ArgumentCaptor<HttpGet> argument = ArgumentCaptor.forClass(HttpGet.class);
-        verify(httpClient, times(1)).execute(argument.capture());
-        assertEquals(gatewayUrl, argument.getValue().getURI().toString());
+        @Nested
+        class GivenHttpErrorDuringDistributeInvalidatedCredentials {
 
-        // error on notification
-        when(httpClient.execute(any(HttpGet.class))).thenThrow(new IOException());
-        gatewayNotifierSync.distributeInvalidatedCredentials(targetInstanceId);
-        verify(messageService, times(1)).createMessage(messageKey, gatewayUrl, targetInstanceId);
-    }
+            @BeforeEach
+            void setup() {
+                MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+                Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+                when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
+            }
 
-    @Test
-    void testAsynchronousTreatment() {
-        GatewayNotifierHandler gatewayNotifier = new GatewayNotifierHandler(httpClient, messageService);
-        gatewayNotifier.afterPropertiesSet();
+            @Test
+            void whenHttpExceptionThenErrorLogged() throws IOException {
+                doThrow(new IOException("any exception")).when(httpClient).execute(any(HttpGet.class));
+                gatewayNotifierSync.distributeInvalidatedCredentials("instance");
 
-        gatewayNotifier.serviceUpdated("serviceId", "instanceId");
-        await().atMost(TIMEOUT_ASYNC_CALL_SEC, TimeUnit.SECONDS).untilAsserted(
-            () -> assertEquals("serviceUpdatedProcess(serviceId,instanceId)", gatewayNotifier.getLastCall())
-        );
+                verify(httpClient, times(2)).execute(any(HttpGet.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.registration.gateway.notify"), argument.capture(), eq("instance"));
+                assertEquals("https://hostname1:1433/gateway/auth/distribute/instance", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/auth/distribute/instance", argument.getAllValues().get(1));
+            }
 
-        gatewayNotifier.distributeInvalidatedCredentials("instanceId");
-        await().atMost(TIMEOUT_ASYNC_CALL_SEC, TimeUnit.SECONDS).untilAsserted(
-            () -> assertEquals("distributeInvalidatedCredentialsProcess(instanceId)", gatewayNotifier.getLastCall())
-        );
+            @Test
+            void whenHttpResponseForbiddenThenErrorLogged() throws IOException {
+                when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+                gatewayNotifierSync.distributeInvalidatedCredentials("instance");
 
-        gatewayNotifier.preDestroy();
+                verify(httpClient, times(2)).execute(any(HttpGet.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.registration.gateway.notify"), argument.capture(), eq("instance"));
+                assertEquals("https://hostname1:1433/gateway/auth/distribute/instance", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/auth/distribute/instance", argument.getAllValues().get(1));
+            }
+
+            @Test
+            void whenHttpResponseProcessingThenErrorLogged() throws IOException {
+                when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_PROCESSING);
+                gatewayNotifierSync.distributeInvalidatedCredentials("instance");
+
+                verify(httpClient, times(2)).execute(any(HttpGet.class));
+                ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+                verify(messageService, times(2)).createMessage(
+                    eq("org.zowe.apiml.discovery.registration.gateway.notify"), argument.capture(), eq("instance"));
+                assertEquals("https://hostname1:1433/gateway/auth/distribute/instance", argument.getAllValues().get(0));
+                assertEquals("http://hostname2:1000/gateway/auth/distribute/instance", argument.getAllValues().get(1));
+            }
+        }
+
+        @Nested
+        class WhenAsynchronousRequests {
+
+            @Test
+            void thenRequestsfinishedOk() {
+                GatewayNotifierHandler gatewayNotifier = new GatewayNotifierHandler(httpClient, messageService);
+                gatewayNotifier.afterPropertiesSet();
+
+                gatewayNotifier.serviceUpdated("serviceId", "instanceId");
+                await().atMost(TIMEOUT_ASYNC_CALL_SEC, TimeUnit.SECONDS).untilAsserted(
+                    () -> assertEquals("serviceUpdatedProcess(serviceId,instanceId)", gatewayNotifier.getLastCall())
+                );
+
+                gatewayNotifier.distributeInvalidatedCredentials("instanceId");
+                await().atMost(TIMEOUT_ASYNC_CALL_SEC, TimeUnit.SECONDS).untilAsserted(
+                    () -> assertEquals("distributeInvalidatedCredentialsProcess(instanceId)", gatewayNotifier.getLastCall())
+                );
+
+                gatewayNotifier.preDestroy();
+            }
+
+        }
     }
 
     private static class GatewayNotifierSync extends GatewayNotifier {
@@ -323,5 +393,4 @@ class GatewayNotifierTest {
         }
 
     }
-
 }
