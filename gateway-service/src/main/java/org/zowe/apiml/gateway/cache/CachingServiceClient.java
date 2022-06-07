@@ -88,7 +88,7 @@ public class CachingServiceClient {
         try {
             ResponseEntity<String[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens" , HttpMethod.GET, null, String[].class);
             if (response.getStatusCode().is2xxSuccessful()) {
-                if (response.getBody() != null) {
+                if (response.getBody() != null && response.getBody().length > 0) {
                     ApimlAccessTokenProvider.AccessTokenContainer[] atc = new ApimlAccessTokenProvider.AccessTokenContainer[response.getBody().length];
                     for (int i = 0; i < response.getBody().length; i++) {
                         atc[i] = objectMapper.readValue(response.getBody()[i], ApimlAccessTokenProvider.AccessTokenContainer.class);
