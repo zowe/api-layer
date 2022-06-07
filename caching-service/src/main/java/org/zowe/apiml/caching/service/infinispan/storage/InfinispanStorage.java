@@ -49,7 +49,7 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) {
+    public synchronized KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) {
         try {
             TransactionManager tm = ((AdvancedCache)tokenCache).getAdvancedCache().getTransactionManager();
             tm.begin();
@@ -71,7 +71,7 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public List<String> retrieveAllInvalidatedTokens(String serviceId, String key) {
+    public synchronized List<String> retrieveAllInvalidatedTokens(String serviceId, String key) {
         log.info("Reading all revoked tokens for service {} ", serviceId);
         return tokenCache.get(serviceId + key);
     }
