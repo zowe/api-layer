@@ -13,19 +13,24 @@ import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 import org.zowe.apiml.security.common.error.PlatformPwdErrno;
 
 public class MockPlatformUser implements PlatformUser {
+
     public static final String VALID_USERID = "USER";
     public static final String VALID_PASSWORD = "validPassword";
+    public static final String EXPIRED_PASSWORD = "expiredPassword";
     public static final String INVALID_USERID = "notuser";
     public static final String INVALID_PASSWORD = "notuser"; //NOSONAR
 
     @Override
     public PlatformReturned authenticate(String userid, String password) {
-        if (userid.equalsIgnoreCase(VALID_USERID) && password.equalsIgnoreCase(VALID_PASSWORD)) {
-            return null;
+        if (userid.equalsIgnoreCase(VALID_USERID)) {
+            if (password.equalsIgnoreCase(VALID_PASSWORD)) {
+                return null;
+            }
+            if (password.equalsIgnoreCase(EXPIRED_PASSWORD)) {
+                return PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EMVSEXPIRE.errno).build();
+            }
         }
-        else {
-            return PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
-        }
+        return PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
     }
 
     @Override
@@ -36,4 +41,5 @@ public class MockPlatformUser implements PlatformUser {
             return PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EMVSPASSWORD.errno).build();
         }
     }
+
 }
