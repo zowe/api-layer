@@ -335,7 +335,8 @@ task runBaseTests(type: Test) {
             'ServiceIdPrefixReplacerTest',
             'NodeEnablerTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'InfinispanStorageTest'
         )
     }
 }
