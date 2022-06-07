@@ -48,6 +48,7 @@ public class GatewaySecurityService {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final CloseableHttpClient closeableHttpClient;
     private final RestResponseHandler responseHandler;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Logs into the gateway with username and password, and retrieves valid JWT token
@@ -61,8 +62,7 @@ public class GatewaySecurityService {
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode loginRequest = mapper.createObjectNode();
+        ObjectNode loginRequest = objectMapper.createObjectNode();
         loginRequest.put("username", username);
         loginRequest.put("password", password);
         if (StringUtils.isNotEmpty(newPassword)) {
@@ -70,7 +70,7 @@ public class GatewaySecurityService {
         }
         try {
             HttpPost post = new HttpPost(uri);
-            String json = mapper.writeValueAsString(loginRequest);
+            String json = objectMapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
             CloseableHttpResponse response = closeableHttpClient.execute(post);
             final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
@@ -121,7 +121,6 @@ public class GatewaySecurityService {
                     "Cannot access Gateway service. Uri '{}' returned: {}", uri);
                 return null;
             }
-            ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(responseBody, QueryResponse.class);
         } catch (IOException e) {
             responseHandler.handleException(e);
