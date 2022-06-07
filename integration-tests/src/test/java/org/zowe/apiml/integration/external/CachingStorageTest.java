@@ -117,7 +117,7 @@ class CachingStorageTest implements TestWithStartedInstances {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .when()
-            .get(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(200).body("size()",is(3));
+            .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(200).body("size()",is(3));
     }
 
     @Nested

@@ -40,9 +40,10 @@ public interface Storage {
      * Return the list of all the invalidated tokens.
      *
      * @param serviceId Id of the service to load all key/value pairs
+     * @param key       key to lookup
      * @return Map with the key/value pairs or null if there is none existing.
      */
-    List<String> retrieveAllInvalidatedTokens(String serviceId) throws StoreInvalidatedTokenException;
+    List<String> retrieveAllInvalidatedTokens(String serviceId, String key) throws StoreInvalidatedTokenException;
 
     /**
      * Returns the keys associated with the provided keys.
