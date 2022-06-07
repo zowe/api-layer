@@ -86,7 +86,7 @@ public class CachingServiceClient {
 
     public ApimlAccessTokenProvider.AccessTokenContainer[] readList(String key) throws CachingServiceClientException {
         try {
-            ResponseEntity<String[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.GET, null, String[].class);
+            ResponseEntity<String[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens" , HttpMethod.GET, null, String[].class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null) {
                     ApimlAccessTokenProvider.AccessTokenContainer[] atc = new ApimlAccessTokenProvider.AccessTokenContainer[response.getBody().length];
