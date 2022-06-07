@@ -116,14 +116,14 @@ class CachingStorageTest implements TestWithStartedInstances {
         for (int i = 0; i < 3; i++) {
             service.execute(() -> given().config(SslContext.clientCertApiml)
                 .contentType(JSON)
-                .body(new KeyValue("invalidTokens", String.valueOf(ai.getAndIncrement())))
+                .body(new KeyValue("testTokens", String.valueOf(ai.getAndIncrement())))
                 .when()
                 .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(201));
         }
         given().config(SslContext.clientCertApiml)
             .contentType(JSON)
             .when()
-            .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(200).body("size()", is(3));
+            .get(CACHING_INVALIDATE_TOKEN_PATH + "/testTokens").then().statusCode(200).body("size()", is(3));
     }
 
     @Test
@@ -133,7 +133,7 @@ class CachingStorageTest implements TestWithStartedInstances {
 
         given().config(SslContext.clientCertApiml)
             .contentType(JSON)
-            .body(new KeyValue("invalidTokens", "21"))
+            .body(new KeyValue("testTokens", "21"))
             .when()
             .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(HttpStatus.CONFLICT.value());
     }
