@@ -16,13 +16,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
+import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.Set;
 
 @Service
@@ -30,9 +35,10 @@ import java.util.Set;
 @Slf4j
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
-    public static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
+    public static final Argon2PasswordEncoder ENCODER = new Argon2PasswordEncoder();
     private final CachingServiceClient cachingServiceClient;
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private final AuthenticationService authenticationService;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
@@ -40,10 +46,14 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
         String hashedValue = getHash(token);
+        QueryResponse queryResponse = authenticationService.parseJwtToken(token);
         AccessTokenContainer container = new AccessTokenContainer();
         container.setTokenValue(hashedValue);
+        container.setIssuedAt(LocalDateTime.ofInstant(queryResponse.getCreation().toInstant(), ZoneId.systemDefault()));
+        container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
+        container.setUserId(queryResponse.getUserId());
         String json = objectMapper.writeValueAsString(container);
-        cachingServiceClient.appendList(new CachingServiceClient.KeyValue("invalidToken", json));
+        cachingServiceClient.appendList(new CachingServiceClient.KeyValue("invalidTokens", json));
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException{
@@ -58,7 +68,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return false;
     }
 
-    private String getHash(String token){
+    public String getHash(String token){
         return ENCODER.encode(token);
     }
 

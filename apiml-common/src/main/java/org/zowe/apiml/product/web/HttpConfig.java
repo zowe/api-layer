@@ -209,22 +209,7 @@ public class HttpConfig {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         factory.setReadTimeout(readTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
-        RestTemplate restTemplate = new RestTemplate(factory);
-        restTemplate.getMessageConverters().add(0,messageConverter());
-        return restTemplate;
-    }
-
-    private MappingJackson2HttpMessageConverter messageConverter() {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.setObjectMapper(objectMapper());
-        return converter;
-    }
-
-    private ObjectMapper objectMapper(){
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-        return objectMapper;
+        return new RestTemplate(factory);
     }
 
     /**

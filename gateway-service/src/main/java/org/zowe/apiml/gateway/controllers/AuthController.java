@@ -34,6 +34,7 @@ import java.io.StringWriter;
 import java.security.PublicKey;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
@@ -59,6 +60,8 @@ public class AuthController {
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
+    public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
+    public static final String ACCESS_TOKEN_VALIDATE = "/access-token/validate"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
 
@@ -80,19 +83,22 @@ public class AuthController {
 
     }
 
-    @DeleteMapping(path = "/access-token/revoke/{token}")
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessToken(@PathVariable() String token) throws Exception{
-        tokenProvider.invalidateToken(token);
+    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String,String> token) throws Exception{
+        if(tokenProvider.isInvalidated(token.get("token"))){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        tokenProvider.invalidateToken(token.get("token"));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping(path = "/access-token/validate/{token}")
+    @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> validateAccessToken(@PathVariable() String token) throws Exception{
-        if(!tokenProvider.isInvalidated(token)){
+    public ResponseEntity<String> validateAccessToken(@RequestBody() Map<String,String> token) throws Exception{
+        if(!tokenProvider.isInvalidated(token.get("token"))){
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

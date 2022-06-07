@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +43,11 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.list.apiPath}")
     private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list"; //NOSONAR parametrization provided by @Value annotation
 
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
+    static {
+        objectMapper.registerModule(new JavaTimeModule());
+    }
     public CachingServiceClient(RestTemplate restTemplate, String gatewayProtocolHostPort) {
         if (gatewayProtocolHostPort == null || gatewayProtocolHostPort.isEmpty()) {
             throw new IllegalStateException("gatewayProtocolHostPort has to have value in format <protocol>://<host>:<port> and not be null");
@@ -78,13 +85,20 @@ public class CachingServiceClient {
 
     public ApimlAccessTokenProvider.AccessTokenContainer[] readList(String key) throws CachingServiceClientException {
         try {
-           ResponseEntity<ApimlAccessTokenProvider.AccessTokenContainer[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.GET, null, ApimlAccessTokenProvider.AccessTokenContainer[].class);
+           ResponseEntity<String[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.GET, null, String[].class);
            if(response.getStatusCode().is2xxSuccessful()){
-               return response.getBody();
+               if(response.getBody()!=null) {
+                   ApimlAccessTokenProvider.AccessTokenContainer[] atc = new ApimlAccessTokenProvider.AccessTokenContainer[response.getBody().length];
+                   for (int i = 0; i < response.getBody().length; i++) {
+                       atc[i] = objectMapper.readValue(response.getBody()[i], ApimlAccessTokenProvider.AccessTokenContainer.class);
+                   }
+                   return atc;
+               }
+               return null;
            } else {
                throw new CachingServiceClientException("Unable to read key: " + key + ", caused by response from caching service is null or has no body");
            }
-        } catch (RestClientException e) {
+        } catch (Exception e) {
             throw new CachingServiceClientException("Unable to read key: " + key + ", caused by: " + e.getMessage(), e);
         }
     }

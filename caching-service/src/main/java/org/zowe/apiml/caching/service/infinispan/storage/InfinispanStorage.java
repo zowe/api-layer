@@ -63,7 +63,7 @@ public class InfinispanStorage implements Storage {
             tokenCache.put(serviceId + toCreate.getKey(), tokensList);
             tm.commit();
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException | RollbackException e) {
-            throw new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), toCreate.getKey());
+            throw new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), e.getMessage());
         }
         return null;
     }
@@ -71,8 +71,7 @@ public class InfinispanStorage implements Storage {
     @Override
     public List<String> retrieveAllInvalidatedTokens(String serviceId) {
         log.info("Reading all revoked tokens for service {} ", serviceId);
-        return tokenCache.values().stream()
-            .flatMap(Collection::stream).collect(Collectors.toList());
+        return tokenCache.get(serviceId + "invalidToken");
     }
 
     @Override
