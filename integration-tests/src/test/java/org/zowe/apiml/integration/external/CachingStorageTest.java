@@ -138,7 +138,7 @@ class CachingStorageTest implements TestWithStartedInstances {
             int finalStatusCode = statusCode;
             service.execute(() ->  given().config(SslContext.clientCertApiml)
                 .contentType(JSON)
-                .body(new KeyValue("testTokens", "duplicateToken"))
+                .body(new KeyValue("testTokens2", "duplicateToken"))
                 .when()
                 .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(finalStatusCode));
         }
