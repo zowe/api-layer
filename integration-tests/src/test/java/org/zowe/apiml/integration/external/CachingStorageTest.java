@@ -47,7 +47,6 @@ import static org.zowe.apiml.util.requests.Endpoints.CACHING_CACHE_LIST;
  */
 @TestsNotMeantForZowe
 @CachingServiceTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CachingStorageTest implements TestWithStartedInstances {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway(CACHING_CACHE);
@@ -108,7 +107,6 @@ class CachingStorageTest implements TestWithStartedInstances {
 
     @Test
     @InfinispanStorageTest
-    @Order(1)
     void givenMultipleUpdates_correctResultReturned() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(8);
 
@@ -130,14 +128,22 @@ class CachingStorageTest implements TestWithStartedInstances {
 
     @Test
     @InfinispanStorageTest
-    @Order(2)
-    void givenDuplicateValue_ConflictCodeIsReturned() {
-
-        given().config(SslContext.clientCertApiml)
-            .contentType(JSON)
-            .body(new KeyValue("testTokens", "21"))
-            .when()
-            .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(HttpStatus.CONFLICT.value());
+    void givenDuplicateValue_conflictCodeIsReturned() throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(8);
+        int statusCode = HttpStatus.CREATED.value();
+        for (int i = 0; i < 2; i++) {
+            if (i == 1) {
+                statusCode = HttpStatus.CONFLICT.value();
+            }
+            int finalStatusCode = statusCode;
+            service.execute(() ->  given().config(SslContext.clientCertApiml)
+                .contentType(JSON)
+                .body(new KeyValue("testTokens", "duplicateToken"))
+                .when()
+                .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(finalStatusCode));
+        }
+        service.shutdown();
+        service.awaitTermination(30L, TimeUnit.SECONDS);
     }
 
     @Nested
