@@ -61,7 +61,7 @@ class CachingStorageTest implements TestWithStartedInstances {
 
     @Test
     void givenMultipleConcurrentCalls_correctResponseInTheEnd() throws InterruptedException {
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(3);
 
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
@@ -108,7 +108,7 @@ class CachingStorageTest implements TestWithStartedInstances {
     @Test
     @InfinispanStorageTest
     void givenMultipleUpdates_correctResultReturned() throws InterruptedException {
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(3);
 
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
@@ -129,7 +129,7 @@ class CachingStorageTest implements TestWithStartedInstances {
     @Test
     @InfinispanStorageTest
     void givenDuplicateValue_conflictCodeIsReturned() throws InterruptedException {
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(2);
         int statusCode = HttpStatus.CREATED.value();
         for (int i = 0; i < 2; i++) {
             if (i == 1) {
@@ -143,7 +143,6 @@ class CachingStorageTest implements TestWithStartedInstances {
                 .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(finalStatusCode));
         }
         service.shutdown();
-        service.awaitTermination(30L, TimeUnit.SECONDS);
     }
 
     @Test
