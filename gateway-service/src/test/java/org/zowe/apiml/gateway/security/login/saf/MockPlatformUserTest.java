@@ -10,12 +10,13 @@
 
 package org.zowe.apiml.gateway.security.login.saf;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 import org.zowe.apiml.security.common.error.PlatformPwdErrno;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MockPlatformUserTest {
 
@@ -31,7 +32,7 @@ class MockPlatformUserTest {
         class Success {
             @Test
             void givenValidCredentials_whenAuthenticate_thenReturnNull() {
-                assertEquals(null, mockPlatformUser.authenticate("USER", "validPassword"));
+                assertNull(mockPlatformUser.authenticate("USER", "validPassword"));
             }
         }
 
@@ -41,6 +42,13 @@ class MockPlatformUserTest {
             void givenInValidCredentials_whenAuthenticate_thenReturnPlatformReturnedSuccessFalse() {
                 PlatformReturned platformReturned = PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
                 assertEquals(platformReturned, mockPlatformUser.authenticate("USER", "invalidPassword"));
+            }
+
+            @Test
+            void givenExpiredPassword_whenAuthenticate_thenReturnEmvsExpire() {
+                PlatformReturned platformReturned = mockPlatformUser.authenticate("USER", "expiredPassword");
+                assertFalse(platformReturned.success);
+                assertEquals(PlatformPwdErrno.EMVSEXPIRE.errno, platformReturned.errno);
             }
         }
 
