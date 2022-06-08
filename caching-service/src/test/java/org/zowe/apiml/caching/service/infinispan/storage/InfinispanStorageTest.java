@@ -174,7 +174,7 @@ class InfinispanStorageTest {
             list.add("token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
-            assertNull(storage.storeInvalidatedToken(serviceId1, new KeyValue("key", "value")));
+            assertNull(storage.storeListItem(serviceId1, new KeyValue("key", "value")));
             verify(tokenCache, times(1)).put(serviceId1 + "key", list);
         }
 
@@ -185,7 +185,7 @@ class InfinispanStorageTest {
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             when(tokenCache.get(serviceId1 + "key")).thenReturn(Collections.singletonList("token"));
             when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
-            assertThrows(StorageException.class, () -> storage.storeInvalidatedToken(serviceId1, new KeyValue("key", "token")));
+            assertThrows(StorageException.class, () -> storage.storeListItem(serviceId1, new KeyValue("key", "token")));
         }
     }
 
@@ -198,7 +198,7 @@ class InfinispanStorageTest {
             list.add("token");
             list.add("token2");
             when(tokenCache.get(serviceId1 + "key")).thenReturn(list);
-            assertEquals(2, storage.retrieveAllInvalidatedTokens(serviceId1, "key").size());
+            assertEquals(2, storage.getAllListItems(serviceId1, "key").size());
         }
     }
 

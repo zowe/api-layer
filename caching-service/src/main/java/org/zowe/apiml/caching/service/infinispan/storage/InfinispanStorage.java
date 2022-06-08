@@ -53,9 +53,9 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) {
+    public KeyValue storeListItem(String serviceId, KeyValue toCreate) {
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
-            if (r) {
+            if (Boolean.TRUE.equals(r)) {
                 try {
                     if (tokenCache.get(serviceId + toCreate.getKey()) != null &&
                         tokenCache.get(serviceId + toCreate.getKey()).contains(toCreate.getValue())) {
@@ -85,7 +85,7 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public List<String> retrieveAllInvalidatedTokens(String serviceId, String key) {
+    public List<String> getAllListItems(String serviceId, String key) {
         log.info("Reading all revoked tokens for service {} ", serviceId);
         return tokenCache.get(serviceId + key);
     }

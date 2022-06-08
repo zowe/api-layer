@@ -64,6 +64,13 @@ messages:
         reason: "Value is already in the cache."
         action: "Provide a value that is in the cache."
 
+    -   key: org.zowe.apiml.cache.incompatibleStorageMethod
+        number: ZWECS136
+        type: ERROR
+        text: "The storage of list items is supported only on Infinispan."
+        reason: "This caching storage method doesn't support this API."
+        action: "Switch to Infinispan to be able to use this API."
+
     # Storage messages (151 - 160)
     -   key: org.zowe.apiml.cache.errorInitializingStorage
         number: ZWECS151

@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.caching.service;
 
-import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
 
 import java.util.List;
@@ -29,21 +28,21 @@ public interface Storage {
     KeyValue create(String serviceId, KeyValue toCreate);
 
     /**
-     * Store new KeyValue pair in the storage. This method is specific for storing the invalidated token entry to be revoked.
+     * Store new KeyValue pair in the storage. The entry will be stored in a list for a specific key.
      *
      * @param serviceId Id of the service to store the value for
      * @param toCreate  KeyValue pair to be created.
      */
-    KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) throws StoreInvalidatedTokenException;
+    KeyValue storeListItem(String serviceId, KeyValue toCreate) throws StorageException;
 
     /**
-     * Return the list of all the invalidated tokens.
+     * Return all the items in the list for a specific key.
      *
      * @param serviceId Id of the service to load all key/value pairs
      * @param key       key to lookup
      * @return Map with the key/value pairs or null if there is none existing.
      */
-    List<String> retrieveAllInvalidatedTokens(String serviceId, String key) throws StoreInvalidatedTokenException;
+    List<String> getAllListItems(String serviceId, String key) throws StorageException;
 
     /**
      * Returns the keys associated with the provided keys.

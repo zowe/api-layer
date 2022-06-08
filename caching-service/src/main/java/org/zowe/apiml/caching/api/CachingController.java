@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -108,25 +107,25 @@ public class CachingController {
     }
 
     @PostMapping(value = "/cache-list", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Add a new invalidated token in the cache",
+    @ApiOperation(value = "Add a new list item in the cache",
         notes = "A new key-value pair will be added to the cache")
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<Object> storeInvalidatedToken(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        return keyValueRequest(storage::storeInvalidatedToken,
+    public ResponseEntity<Object> storeListItem(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        return keyValueRequest(storage::storeListItem,
             keyValue, request, HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/cache-list/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Retrieves all invalidated tokens in the cache",
+    @ApiOperation(value = "Retrieves all the list items in the cache",
         notes = "Values returned for the calling service")
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<Object> getAllInvalidatedTokens(@PathVariable String key, HttpServletRequest request) {
+    public ResponseEntity<Object> getAllListItems(@PathVariable String key, HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 try {
-                    return new ResponseEntity<>(storage.retrieveAllInvalidatedTokens(s, key), HttpStatus.OK);
+                    return new ResponseEntity<>(storage.getAllListItems(s, key), HttpStatus.OK);
                 } catch (Exception exception) {
                     return handleInternalError(exception, request.getRequestURL());
                 }
@@ -261,6 +260,6 @@ public class CachingController {
 
     @FunctionalInterface
     interface KeyValueOperation {
-        KeyValue storageRequest(String serviceId, KeyValue keyValue) throws StoreInvalidatedTokenException;
+        KeyValue storageRequest(String serviceId, KeyValue keyValue) throws StorageException;
     }
 }

@@ -17,7 +17,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.caching.exceptions.StoreInvalidatedTokenException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -317,7 +316,7 @@ class CachingControllerTest {
         @Test
         void givenCorrectPayload_thenStore() {
             KeyValue keyValue = new KeyValue(KEY, VALUE);
-            ResponseEntity<?> response = underTest.storeInvalidatedToken(keyValue, mockRequest);
+            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
             assertThat(response.getBody(), is(nullValue()));
         }
@@ -325,24 +324,24 @@ class CachingControllerTest {
         @Test
         void givenIncorrectPayload_thenReturnBadRequest() {
             KeyValue keyValue = new KeyValue(null, VALUE);
-            ResponseEntity<?> response = underTest.storeInvalidatedToken(keyValue, mockRequest);
+            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         }
 
         @Test
-        void givenErrorOnTransaction_thenReturnInternalError() throws StoreInvalidatedTokenException {
-            when(mockStorage.storeInvalidatedToken(any(), any())).thenThrow(new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), new Exception("the cause"), KEY));
+        void givenErrorOnTransaction_thenReturnInternalError() throws StorageException {
+            when(mockStorage.storeListItem(any(), any())).thenThrow(new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), new Exception("the cause"), KEY));
             KeyValue keyValue = new KeyValue(KEY, VALUE);
-            ResponseEntity<?> response = underTest.storeInvalidatedToken(keyValue, mockRequest);
+            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test
-        void givenStorageWithExistingValue_thenResponseConflict() throws StoreInvalidatedTokenException {
-            when(mockStorage.storeInvalidatedToken(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), VALUE));
+        void givenStorageWithExistingValue_thenResponseConflict() throws StorageException {
+            when(mockStorage.storeListItem(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), VALUE));
             ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.duplicateValue", VALUE).mapToView();
 
-            ResponseEntity<?> response = underTest.storeInvalidatedToken(KEY_VALUE, mockRequest);
+            ResponseEntity<?> response = underTest.storeListItem(KEY_VALUE, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
             assertThat(response.getBody(), is(expectedBody));
         }
@@ -351,29 +350,29 @@ class CachingControllerTest {
     @Nested
     class WhenRetrieveInvalidatedTokens {
         @Test
-        void givenCorrectRequest_thenReturnList() throws StoreInvalidatedTokenException {
+        void givenCorrectRequest_thenReturnList() throws StorageException {
             List<String> tokens = Arrays.asList("token1", "token2");
-            when(mockStorage.retrieveAllInvalidatedTokens(any(), any())).thenReturn(tokens);
-            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(any(), mockRequest);
+            when(mockStorage.getAllListItems(any(), any())).thenReturn(tokens);
+            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.OK));
             assertThat(response.getBody(), is(tokens));
         }
 
         @Test
-        void givenNoCertificateInformation_thenReturnUnauthorized() throws StoreInvalidatedTokenException {
+        void givenNoCertificateInformation_thenReturnUnauthorized() throws StorageException {
             List<String> tokens = Arrays.asList("token1", "token2");
-            when(mockStorage.retrieveAllInvalidatedTokens(any(), any())).thenReturn(tokens);
+            when(mockStorage.getAllListItems(any(), any())).thenReturn(tokens);
             when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
-            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(any(), mockRequest);
+            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
 
             assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         }
 
         @Test
-        void givenErrorReadingStorage_thenResponseInternalError() throws StoreInvalidatedTokenException {
-            when(mockStorage.retrieveAllInvalidatedTokens(any(), any())).thenThrow(new RuntimeException("error"));
+        void givenErrorReadingStorage_thenResponseInternalError() throws StorageException {
+            when(mockStorage.getAllListItems(any(), any())).thenThrow(new RuntimeException("error"));
 
-            ResponseEntity<?> response = underTest.getAllInvalidatedTokens(any(), mockRequest);
+            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
