@@ -53,8 +53,6 @@ dependencies {
     implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')
 
-    // https://mvnrepository.com/artifact/org.infinispan/infinispan-clustered-lock
-    implementation 'org.infinispan:infinispan-clustered-lock:13.0.2.Final'
 
     implementation libraries.zowe_attls
     implementation libraries.jjwt
@@ -62,6 +60,7 @@ dependencies {
     implementation libraries.jjwt_jackson
     implementation libraries.infinispan_core
     implementation libraries.infinispan_jboss_marshalling
+    implementation libraries.infinispan_lock
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
