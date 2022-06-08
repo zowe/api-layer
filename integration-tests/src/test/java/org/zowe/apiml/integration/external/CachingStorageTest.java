@@ -146,6 +146,16 @@ class CachingStorageTest implements TestWithStartedInstances {
         service.awaitTermination(30L, TimeUnit.SECONDS);
     }
 
+    @Test
+    @InfinispanStorageTest
+    void givenUntrustedClientCert_returnForbidden() {
+        given().config(SslContext.selfSignedUntrusted)
+            .header(SPECIFIC_SERVICE_HEADER, "service1")
+            .contentType(JSON)
+            .when()
+            .get(CACHING_INVALIDATE_TOKEN_PATH + "/testTokens").then().statusCode(HttpStatus.FORBIDDEN.value());
+    }
+
     @Nested
     class WhenCreatingKey {
         @Nested
