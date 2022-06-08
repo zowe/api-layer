@@ -15,6 +15,9 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
+import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
+import org.infinispan.lock.api.ClusteredLock;
+import org.infinispan.lock.api.ClusteredLockManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
@@ -95,10 +98,17 @@ public class InfinispanConfig {
         return cacheManager;
     }
 
+    @Bean
+    public ClusteredLock lock(DefaultCacheManager cacheManager) {
+        ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
+        clm.defineLock("zoweInvalidatedTokenLock");
+        return clm.get("zoweInvalidatedTokenLock");
+    }
+
 
     @Bean
-    public Storage storage(DefaultCacheManager cacheManager) {
-        return new InfinispanStorage(cacheManager.getCache("zoweCache"), cacheManager.getCache("zoweInvalidatedTokenCache"));
+    public Storage storage(DefaultCacheManager cacheManager, ClusteredLock clusteredLock) {
+        return new InfinispanStorage(cacheManager.getCache("zoweCache"), cacheManager.getCache("zoweInvalidatedTokenCache"), clusteredLock);
     }
 
 }

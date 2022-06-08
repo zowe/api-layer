@@ -10,18 +10,20 @@
 package org.zowe.apiml.caching.service.infinispan.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.infinispan.AdvancedCache;
+import org.infinispan.lock.api.ClusteredLock;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
 
-import javax.transaction.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class InfinispanStorage implements Storage {
@@ -29,10 +31,12 @@ public class InfinispanStorage implements Storage {
 
     private final ConcurrentMap<String, KeyValue> cache;
     private final ConcurrentMap<String, List<String>> tokenCache;
+    private final ClusteredLock lock;
 
-    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, List<String>> tokenCache) {
+    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, List<String>> tokenCache, ClusteredLock lock) {
         this.cache = cache;
         this.tokenCache = tokenCache;
+        this.lock = lock;
     }
 
     @Override
@@ -49,29 +53,39 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public synchronized KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) {
-        try {
-            TransactionManager tm = ((AdvancedCache)tokenCache).getAdvancedCache().getTransactionManager();
-            tm.begin();
+    public KeyValue storeInvalidatedToken(String serviceId, KeyValue toCreate) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (r) {
+                try {
+                    if (tokenCache.get(serviceId + toCreate.getKey()) != null &&
+                        tokenCache.get(serviceId + toCreate.getKey()).contains(toCreate.getValue())) {
+                        throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
+                    }
+                    log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
-            if (tokenCache.get(serviceId + toCreate.getKey()) != null &&
-                tokenCache.get(serviceId + toCreate.getKey()).contains(toCreate.getValue())) {
-                throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
+                    List<String> tokensList = tokenCache.computeIfAbsent(serviceId + toCreate.getKey(), k -> new ArrayList<>());
+                    tokensList.add(toCreate.getValue());
+                    tokenCache.put(serviceId + toCreate.getKey(), tokensList);
+                } finally {
+                    lock.unlock();
+                }
             }
-            log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
-
-            List<String> tokensList = tokenCache.computeIfAbsent(serviceId + toCreate.getKey(), k -> new ArrayList<>());
-            tokensList.add(toCreate.getValue());
-            tokenCache.put(serviceId + toCreate.getKey(), tokensList);
-            tm.commit();
-        } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException | RollbackException e) {
-            throw new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), e);
+        });
+        try {
+            complete.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof StorageException) {
+                throw (StorageException) e.getCause();
+            } else {
+                log.error("Unexpected error while acquiring the lock ", e);
+                throw e;
+            }
         }
         return null;
     }
 
     @Override
-    public synchronized List<String> retrieveAllInvalidatedTokens(String serviceId, String key) {
+    public List<String> retrieveAllInvalidatedTokens(String serviceId, String key) {
         log.info("Reading all revoked tokens for service {} ", serviceId);
         return tokenCache.get(serviceId + key);
     }

@@ -11,19 +11,20 @@ package org.zowe.apiml.caching.service.infinispan.storage;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.commons.tx.TransactionManagerImpl;
+import org.infinispan.lock.api.ClusteredLock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 
-import javax.transaction.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,14 +38,16 @@ class InfinispanStorageTest {
     AdvancedCache<String, List<String>> tokenCache;
     InfinispanStorage storage;
     String serviceId1 = "service1";
-    TransactionManager transactionManage;
+    ClusteredLock lock;
 
     @BeforeEach
     void setup() {
         cache = mock(Cache.class);
         tokenCache = mock(AdvancedCache.class);
-        storage = new InfinispanStorage(cache, tokenCache);
+        storage = new InfinispanStorage(cache, tokenCache, lock);
+        lock = mock(ClusteredLock.class);
     }
+
     @Nested
     class WhenEntryDoesntExist {
 
@@ -119,7 +122,7 @@ class InfinispanStorageTest {
         @Test
         void itemIsDeleted() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             assertNull(storage.create(serviceId1, TO_CREATE));
             assertEquals(TO_CREATE, storage.delete(serviceId1, TO_CREATE.getKey()));
         }
@@ -127,7 +130,7 @@ class InfinispanStorageTest {
         @Test
         void returnAll() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
@@ -136,7 +139,7 @@ class InfinispanStorageTest {
         @Test
         void removeAll() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
@@ -157,27 +160,19 @@ class InfinispanStorageTest {
 
         @BeforeEach
         void createStoreWithEntry() {
-            transactionManage = new TransactionManagerImpl() {
-                @Override
-                protected Transaction createTransaction() {
-                    return null;
-                }
-
-                @Override
-                public void commit() {
-                    return;
-                }
-            };
             when(tokenCache.getAdvancedCache()).thenReturn(tokenCache);
-            when(tokenCache.getAdvancedCache().getTransactionManager()).thenReturn(transactionManage);
+            CompletableFuture<Boolean> cmpl = new CompletableFuture<>();
+            cmpl.complete(true);
+            when(lock.tryLock(4, TimeUnit.SECONDS)).thenReturn(cmpl);
             when(tokenCache.computeIfAbsent(anyString(), any())).thenAnswer(k -> new ArrayList<>());
         }
 
         @Test
         void addToken() {
+
             List<String> list = new ArrayList<>();
             list.add("token");
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
             assertNull(storage.storeInvalidatedToken(serviceId1, new KeyValue("key", "value")));
             verify(tokenCache, times(1)).put(serviceId1 + "key", list);
@@ -187,7 +182,7 @@ class InfinispanStorageTest {
         void throwException() {
             List<String> list = new ArrayList<>();
             list.add("token");
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             when(tokenCache.get(serviceId1 + "key")).thenReturn(Collections.singletonList("token"));
             when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
             assertThrows(StorageException.class, () -> storage.storeInvalidatedToken(serviceId1, new KeyValue("key", "token")));

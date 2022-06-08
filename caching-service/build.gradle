@@ -52,6 +52,10 @@ dependencies {
     implementation project(':common-service-core')
     implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')
+
+    // https://mvnrepository.com/artifact/org.infinispan/infinispan-clustered-lock
+    implementation 'org.infinispan:infinispan-clustered-lock:13.0.2.Final'
+
     implementation libraries.zowe_attls
     implementation libraries.jjwt
     implementation libraries.jjwt_impl

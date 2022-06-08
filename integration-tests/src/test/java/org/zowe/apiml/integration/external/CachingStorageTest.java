@@ -109,7 +109,7 @@ class CachingStorageTest implements TestWithStartedInstances {
     @Test
     @InfinispanStorageTest
     @Order(1)
-    void givenMultipleUpdates_correctResultReturned() {
+    void givenMultipleUpdates_correctResultReturned() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(8);
 
         AtomicInteger ai = new AtomicInteger(20);
@@ -120,6 +120,8 @@ class CachingStorageTest implements TestWithStartedInstances {
                 .when()
                 .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(201));
         }
+        service.shutdown();
+        service.awaitTermination(30L, TimeUnit.SECONDS);
         given().config(SslContext.clientCertApiml)
             .contentType(JSON)
             .when()
@@ -129,7 +131,7 @@ class CachingStorageTest implements TestWithStartedInstances {
     @Test
     @InfinispanStorageTest
     @Order(2)
-    void givenDuplicateValue_ConflictCodeIsReturned(){
+    void givenDuplicateValue_ConflictCodeIsReturned() {
 
         given().config(SslContext.clientCertApiml)
             .contentType(JSON)
