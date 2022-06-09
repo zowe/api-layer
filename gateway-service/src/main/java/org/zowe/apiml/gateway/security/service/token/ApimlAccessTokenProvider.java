@@ -26,6 +26,8 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -34,6 +36,7 @@ import java.util.Set;
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public static final Argon2PasswordEncoder ENCODER = new Argon2PasswordEncoder();
+
     private final CachingServiceClient cachingServiceClient;
     private final AuthenticationService authenticationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -49,19 +52,30 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         container.setTokenValue(hashedValue);
         container.setIssuedAt(LocalDateTime.ofInstant(queryResponse.getCreation().toInstant(), ZoneId.systemDefault()));
         container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
+
         String json = objectMapper.writeValueAsString(container);
-        cachingServiceClient.appendList(new CachingServiceClient.KeyValue("invalidTokens", json));
+        cachingServiceClient.appendList(new CachingServiceClient.KeyValue(token, json));
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
-        AccessTokenContainer[] invalidatedTokenList = cachingServiceClient.readList(token);
-        if (invalidatedTokenList != null && invalidatedTokenList.length > 0) {
-            for (AccessTokenContainer invalidatedToken : invalidatedTokenList) {
-                if (validateToken(token, invalidatedToken.getTokenValue())) {
-                    return true;
-                }
-            }
-        }
+        Map<String,String> map = cachingServiceClient.readList(token);
+       if(map != null && !map.isEmpty()) {
+
+           String s = map.get(token);
+           try {
+               AccessTokenContainer c = objectMapper.readValue(s,AccessTokenContainer.class);
+               return true;
+           } catch (JsonProcessingException e) {
+               e.printStackTrace();
+           }
+       }
+//        if (invalidatedTokenList != null && invalidatedTokenList.length > 0) {
+//            for (AccessTokenContainer invalidatedToken : invalidatedTokenList) {
+//                if (validateToken(token, invalidatedToken.getTokenValue())) {
+//                    return true;
+//                }
+//            }
+//        }
         return false;
     }
 

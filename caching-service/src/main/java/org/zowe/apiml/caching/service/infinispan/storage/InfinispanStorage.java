@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.caching.service.infinispan.storage;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.lock.api.ClusteredLock;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -16,9 +18,7 @@ import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -30,10 +30,10 @@ public class InfinispanStorage implements Storage {
 
 
     private final ConcurrentMap<String, KeyValue> cache;
-    private final ConcurrentMap<String, List<String>> tokenCache;
+    private final ConcurrentMap<String, Map<String,String>> tokenCache;
     private final ClusteredLock lock;
 
-    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, List<String>> tokenCache, ClusteredLock lock) {
+    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
         this.cache = cache;
         this.tokenCache = tokenCache;
         this.lock = lock;
@@ -57,15 +57,15 @@ public class InfinispanStorage implements Storage {
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
-                    if (tokenCache.get(serviceId + toCreate.getKey()) != null &&
-                        tokenCache.get(serviceId + toCreate.getKey()).contains(toCreate.getValue())) {
+                    if (tokenCache.get(serviceId + "invalidTokens") != null &&
+                        tokenCache.get(serviceId + "invalidTokens").containsKey(toCreate.getKey())) {
                         throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
                     }
                     log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
-                    List<String> tokensList = tokenCache.computeIfAbsent(serviceId + toCreate.getKey(), k -> new ArrayList<>());
-                    tokensList.add(toCreate.getValue());
-                    tokenCache.put(serviceId + toCreate.getKey(), tokensList);
+                    Map<String, String> tokensList = tokenCache.computeIfAbsent(serviceId + "invalidTokens", k -> new HashMap<>());
+                    tokensList.put(toCreate.getKey(),toCreate.getValue());
+                    tokenCache.put(serviceId + "invalidTokens", tokensList);
                 } finally {
                     lock.unlock();
                 }
@@ -85,7 +85,7 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public List<String> getAllListItems(String serviceId, String key) {
+    public Map<String, String> getAllMapItems(String serviceId, String key) {
         log.info("Reading all revoked tokens for service {} ", serviceId);
         return tokenCache.get(serviceId + key);
     }

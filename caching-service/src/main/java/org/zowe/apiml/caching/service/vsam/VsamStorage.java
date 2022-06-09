@@ -100,7 +100,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    public List<String> getAllListItems(String serviceId, String key) throws StorageException {
+    public Map<String, String> getAllMapItems(String serviceId, String key) throws StorageException {
         throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
     }
 

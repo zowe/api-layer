@@ -125,7 +125,7 @@ public class CachingController {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 try {
-                    return new ResponseEntity<>(storage.getAllListItems(s, key), HttpStatus.OK);
+                    return new ResponseEntity<>(storage.getAllMapItems(s, key), HttpStatus.OK);
                 } catch (Exception exception) {
                     return handleInternalError(exception, request.getRequestURL());
                 }

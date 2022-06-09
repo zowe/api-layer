@@ -17,7 +17,6 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -68,7 +67,7 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
-    public List<String> getAllListItems(String serviceId, String key) throws StorageException {
+    public Map<String, String> getAllMapItems(String serviceId, String key) throws StorageException {
         throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
     }
 

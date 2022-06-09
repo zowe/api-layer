@@ -11,7 +11,6 @@ package org.zowe.apiml.caching.service;
 
 import org.zowe.apiml.caching.model.KeyValue;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,7 +41,7 @@ public interface Storage {
      * @param key       key to lookup
      * @return Map with the key/value pairs or null if there is none existing.
      */
-    List<String> getAllListItems(String serviceId, String key) throws StorageException;
+    Map<String, String> getAllMapItems(String serviceId, String key) throws StorageException;
 
     /**
      * Returns the keys associated with the provided keys.

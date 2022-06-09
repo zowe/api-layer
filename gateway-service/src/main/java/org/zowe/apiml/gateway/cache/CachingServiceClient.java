@@ -17,13 +17,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
+
+import java.util.Map;
 
 
 /**
@@ -84,16 +86,16 @@ public class CachingServiceClient {
         }
     }
 
-    public ApimlAccessTokenProvider.AccessTokenContainer[] readList(String key) throws CachingServiceClientException {
+    public Map<String,String> readList(String key) throws CachingServiceClientException {
         try {
-            ResponseEntity<String[]> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens" , HttpMethod.GET, null, String[].class);
+            ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<Map<String, String>>() {};
+            ResponseEntity<Map<String,String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens" , HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
-                if (response.getBody() != null && response.getBody().length > 0) {
-                    ApimlAccessTokenProvider.AccessTokenContainer[] atc = new ApimlAccessTokenProvider.AccessTokenContainer[response.getBody().length];
-                    for (int i = 0; i < response.getBody().length; i++) {
-                        atc[i] = objectMapper.readValue(response.getBody()[i], ApimlAccessTokenProvider.AccessTokenContainer.class);
-                    }
-                    return atc;
+                if (response.getBody() != null && !response.getBody().isEmpty()) {
+
+
+                    return response.getBody();
                 }
                 return null;
             } else {
