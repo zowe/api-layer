@@ -112,9 +112,10 @@ class CachingStorageTest implements TestWithStartedInstances {
 
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
+            int index = i;
             service.execute(() -> given().config(SslContext.clientCertApiml)
                 .contentType(JSON)
-                .body(new KeyValue("testTokens", String.valueOf(ai.getAndIncrement())))
+                .body(new KeyValue("testTokens" + index, String.valueOf(ai.getAndIncrement())))
                 .when()
                 .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(201));
         }
@@ -123,12 +124,17 @@ class CachingStorageTest implements TestWithStartedInstances {
         given().config(SslContext.clientCertApiml)
             .contentType(JSON)
             .when()
-            .get(CACHING_INVALIDATE_TOKEN_PATH + "/testTokens").then().statusCode(200).body("size()", is(3));
+            .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens")
+            .then()
+            .statusCode(200)
+            .body("testTokens0", is(not(isEmptyOrNullString())))
+            .body("testTokens1", is(not(isEmptyOrNullString())))
+            .body("testTokens2", is(not(isEmptyOrNullString())));
     }
 
     @Test
     @InfinispanStorageTest
-    void givenDuplicateValue_conflictCodeIsReturned() throws InterruptedException {
+    void givenDuplicateValue_conflictCodeIsReturned() {
         ExecutorService service = Executors.newFixedThreadPool(2);
         int statusCode = HttpStatus.CREATED.value();
         for (int i = 0; i < 2; i++) {
@@ -138,7 +144,7 @@ class CachingStorageTest implements TestWithStartedInstances {
             int finalStatusCode = statusCode;
             service.execute(() ->  given().config(SslContext.clientCertApiml)
                 .contentType(JSON)
-                .body(new KeyValue("testTokens2", "duplicateToken"))
+                .body(new KeyValue("testTokens4", "duplicateToken"))
                 .when()
                 .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(finalStatusCode));
         }
@@ -151,7 +157,7 @@ class CachingStorageTest implements TestWithStartedInstances {
         given().config(SslContext.selfSignedUntrusted)
             .contentType(JSON)
             .when()
-            .get(CACHING_INVALIDATE_TOKEN_PATH + "/testTokens").then().statusCode(HttpStatus.FORBIDDEN.value());
+            .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Nested
