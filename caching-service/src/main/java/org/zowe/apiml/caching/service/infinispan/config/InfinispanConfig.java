@@ -19,9 +19,6 @@ import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
 import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.lock.api.ClusteredLockManager;
 import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.transaction.TransactionMode;
-import org.infinispan.transaction.lookup.GenericTransactionManagerLookup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -84,11 +81,7 @@ public class InfinispanConfig {
         builder.persistence().passivation(true)
             .addSoftIndexFileStore()
             .shared(false)
-            .dataLocation(dataLocation).indexLocation(indexLocation)
-            .transaction().transactionMode(TransactionMode.TRANSACTIONAL)
-            .lockingMode(LockingMode.PESSIMISTIC)
-            .useSynchronization(true)
-            .transactionManagerLookup(new GenericTransactionManagerLookup());
+            .dataLocation(dataLocation).indexLocation(indexLocation);
         cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache("zoweCache", builder.build());
