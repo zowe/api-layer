@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.caching.service.infinispan.storage;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.lock.api.ClusteredLock;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -30,7 +28,7 @@ public class InfinispanStorage implements Storage {
 
 
     private final ConcurrentMap<String, KeyValue> cache;
-    private final ConcurrentMap<String, Map<String,String>> tokenCache;
+    private final ConcurrentMap<String, Map<String, String>> tokenCache;
     private final ClusteredLock lock;
 
     public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
@@ -57,15 +55,16 @@ public class InfinispanStorage implements Storage {
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
-                    if (tokenCache.get(serviceId + "invalidTokens") != null &&
-                        tokenCache.get(serviceId + "invalidTokens").containsKey(toCreate.getKey())) {
+                    String cacheKey = serviceId + "invalidTokens";
+                    if (tokenCache.get(cacheKey) != null &&
+                        tokenCache.get(cacheKey).containsKey(toCreate.getKey())) {
                         throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
                     }
                     log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
-                    Map<String, String> tokensList = tokenCache.computeIfAbsent(serviceId + "invalidTokens", k -> new HashMap<>());
-                    tokensList.put(toCreate.getKey(),toCreate.getValue());
-                    tokenCache.put(serviceId + "invalidTokens", tokensList);
+                    Map<String, String> tokensList = tokenCache.computeIfAbsent(cacheKey, k -> new HashMap<>());
+                    tokensList.put(toCreate.getKey(), toCreate.getValue());
+                    tokenCache.put(cacheKey, tokensList);
                 } finally {
                     lock.unlock();
                 }

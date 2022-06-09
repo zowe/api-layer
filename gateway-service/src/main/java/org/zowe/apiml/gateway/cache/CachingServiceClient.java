@@ -86,7 +86,7 @@ public class CachingServiceClient {
         }
     }
 
-    public Map<String,String> readList(String key) throws CachingServiceClientException {
+    public Map<String,String> readInvalidatedTokens(String key) throws CachingServiceClientException {
         try {
             ParameterizedTypeReference<Map<String, String>> responseType =
                 new ParameterizedTypeReference<Map<String, String>>() {};

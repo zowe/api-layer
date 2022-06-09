@@ -16,7 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
@@ -24,9 +23,12 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,11 +37,11 @@ import java.util.Set;
 @Slf4j
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
-    public static final Argon2PasswordEncoder ENCODER = new Argon2PasswordEncoder();
 
     private final CachingServiceClient cachingServiceClient;
     private final AuthenticationService authenticationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private byte[] salt;
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
@@ -54,37 +56,77 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
 
         String json = objectMapper.writeValueAsString(container);
-        cachingServiceClient.appendList(new CachingServiceClient.KeyValue(token, json));
+        cachingServiceClient.appendList(new CachingServiceClient.KeyValue(hashedValue, json));
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
-        Map<String,String> map = cachingServiceClient.readList(token);
-       if(map != null && !map.isEmpty()) {
-
-           String s = map.get(token);
-           try {
-               AccessTokenContainer c = objectMapper.readValue(s,AccessTokenContainer.class);
-               return true;
-           } catch (JsonProcessingException e) {
-               e.printStackTrace();
-           }
-       }
-//        if (invalidatedTokenList != null && invalidatedTokenList.length > 0) {
-//            for (AccessTokenContainer invalidatedToken : invalidatedTokenList) {
-//                if (validateToken(token, invalidatedToken.getTokenValue())) {
-//                    return true;
-//                }
-//            }
-//        }
+        String hash = getHash(token);
+        Map<String, String> map = cachingServiceClient.readInvalidatedTokens(token);
+        if (map != null && !map.isEmpty() && map.containsKey(hash)) {
+            String s = map.get(hash);
+            try {
+                AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
+                return c != null;
+            } catch (JsonProcessingException e) {
+                log.error("Not able to parse json", e);
+            }
+        }
         return false;
     }
 
-    public String getHash(String token) {
-        return ENCODER.encode(token);
+    public String getHash(String token) throws CachingServiceClientException {
+        return getSecurePassword(token, getSalt());
     }
 
-    private boolean validateToken(String token, String hash) {
-        return ENCODER.matches(token, hash);
+    public String initializeSalt() throws CachingServiceClientException {
+        String salt;
+        try {
+            CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
+            salt = keyValue.getValue();
+        } catch (CachingServiceClientException e) {
+            byte[] newSalt = generateSalt();
+            storeSalt(newSalt);
+            salt = new String(newSalt);
+        }
+
+        return salt;
+    }
+
+    public byte[] getSalt() throws CachingServiceClientException {
+        if (this.salt != null) {
+            return this.salt;
+        }
+        this.salt = initializeSalt().getBytes();
+        return this.salt;
+    }
+
+    private void storeSalt(byte[] salt) throws CachingServiceClientException {
+        cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", new String(salt)));
+    }
+
+    public static byte[] generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return salt;
+    }
+
+    public static String getSecurePassword(String password, byte[] salt) {
+
+        String generatedPassword = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(salt);
+            byte[] bytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte aByte : bytes) {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+            generatedPassword = sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Could not generate hash", e);
+        }
+        return generatedPassword;
     }
 
     @Data

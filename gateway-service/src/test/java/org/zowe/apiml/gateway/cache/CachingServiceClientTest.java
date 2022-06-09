@@ -15,10 +15,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -118,38 +122,44 @@ class CachingServiceClientTest {
 
     @Nested
     class GivenAppendListTest {
-        ResponseEntity<String[]> response;
+        ResponseEntity<Map<String, String>> response;
 
         @BeforeEach
         void setup() {
-            response = (ResponseEntity<String[]>) mock(ResponseEntity.class);
-            when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), eq(String[].class))).thenReturn(response);
+            ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<Map<String, String>>() {
+                };
+            response = (ResponseEntity<Map<String, String>>) mock(ResponseEntity.class);
+            when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), eq(responseType))).thenReturn(response);
         }
 
         @Test
         void whenClientReturnsBody_thenParseTheResponse() throws CachingServiceClientException, JsonProcessingException {
-            ApimlAccessTokenProvider.AccessTokenContainer container = new ApimlAccessTokenProvider.AccessTokenContainer(null, "token", null, null, null, null);
+            String key = "token";
+            ApimlAccessTokenProvider.AccessTokenContainer container = new ApimlAccessTokenProvider.AccessTokenContainer(null, key, null, null, null, null);
             ObjectMapper mapper = new ObjectMapper();
-            String[] responseBody = new String[]{mapper.writeValueAsString(container)};
+            Map<String, String> responseBody = new HashMap<>();
+            String json = mapper.writeValueAsString(container);
+            responseBody.put(key, json);
             when(response.getBody()).thenReturn(responseBody);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            ApimlAccessTokenProvider.AccessTokenContainer[] parsedResponseBody = underTest.readList("key");
-            assertEquals(container.getTokenValue(), parsedResponseBody[0].getTokenValue());
+            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("key");
+            assertEquals(json, parsedResponseBody.get(key));
         }
 
         @Test
         void whenClientReturnsEmptyBody_thenReturnNull() throws CachingServiceClientException {
-            String[] responseBody = new String[]{};
+            Map<String, String> responseBody = new HashMap<>();
             when(response.getBody()).thenReturn(responseBody);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            ApimlAccessTokenProvider.AccessTokenContainer[] parsedResponseBody = underTest.readList("key");
+            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("key");
             assertNull(parsedResponseBody);
         }
 
         @Test
         void whenClientReturnsNotOk_thenThrowException() {
             when(response.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
-            assertThrows(CachingServiceClientException.class, () -> underTest.readList("key"));
+            assertThrows(CachingServiceClientException.class, () -> underTest.readInvalidatedTokens("key"));
         }
     }
 
