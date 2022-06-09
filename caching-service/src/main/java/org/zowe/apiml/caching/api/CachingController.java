@@ -127,7 +127,7 @@ public class CachingController {
                 try {
                     return new ResponseEntity<>(storage.getAllMapItems(s, key), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleInternalError(exception, request.getRequestURL());
+                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse);
@@ -225,6 +225,12 @@ public class CachingController {
 
     private ResponseEntity<Object> handleInternalError(Exception exception, StringBuffer requestURL) {
         Messages internalServerError = Messages.INTERNAL_SERVER_ERROR;
+        Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
+        return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
+    }
+
+    private ResponseEntity<Object> handleIncompatibleStorageMethod(Exception exception, StringBuffer requestURL) {
+        Messages internalServerError = Messages.INCOMPATIBLE_STORAGE_METHOD;
         Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
     }
