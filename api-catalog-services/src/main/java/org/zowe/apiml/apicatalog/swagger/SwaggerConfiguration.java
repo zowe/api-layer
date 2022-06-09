@@ -9,23 +9,15 @@
  */
 package org.zowe.apiml.apicatalog.swagger;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.ApiKey;
-import springfox.documentation.service.BasicAuth;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 @Configuration
-@EnableSwagger2
 public class SwaggerConfiguration {
 
     @Value("${apiml.service.apiDoc.title}")
@@ -38,31 +30,16 @@ public class SwaggerConfiguration {
     private String apiDescription;
 
     @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-            .select()
-            .apis(RequestHandlerSelectors.basePackage("org.zowe.apiml.apicatalog.controllers.api"))
-            .paths(
-                PathSelectors.any()
+    public OpenAPI openApi() {
+        return new OpenAPI()
+            .info(new Info()
+                .title(apiTitle)
+                .description(apiDescription)
+                .version(apiVersion)
             )
-            .build()
-            .securitySchemes(
-                Arrays.asList(
-                    new BasicAuth("LoginBasicAuth"),
-                    new ApiKey("CookieAuth", "apimlAuthenticationToken", "header")
-                )
-            )
-            .apiInfo(
-                new ApiInfo(
-                    apiTitle,
-                    apiDescription,
-                    apiVersion,
-                    null,
-                    null,
-                    null,
-                    null,
-                    Collections.emptyList()
-                )
+            .components(new Components()
+                .addSecuritySchemes("LoginBasicAuth", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic"))
+                .addSecuritySchemes("CookieAuth", new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("apimlAuthenticationToken"))
             );
     }
 }

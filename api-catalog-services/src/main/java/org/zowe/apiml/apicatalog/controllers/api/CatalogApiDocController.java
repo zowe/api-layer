@@ -10,7 +10,12 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +30,7 @@ import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
  */
 @RestController
 @RequestMapping("/apidoc")
-@Api(tags = {"API Documentation"})
+@Tag(name = "API Documentation")
 public class CatalogApiDocController {
 
     private final APIServiceStatusService apiServiceStatusService;
@@ -49,25 +54,24 @@ public class CatalogApiDocController {
      * @return api-doc info (as JSON)
      */
     @GetMapping(value = "/{serviceId}/{apiId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Retrieves the API documentation for a specific service version",
-        notes = "Returns the API documentation for a specific service {serviceId} and version {apiId}. When " +
+    @Operation(summary = "Retrieves the API documentation for a specific service version",
+        description = "Returns the API documentation for a specific service {serviceId} and version {apiId}. When " +
             " the API documentation for the specified version is not found, the first discovered version will be used.",
-        authorizations = {
-            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
-        },
-        response = String.class)
+        security = {
+            @SecurityRequirement(name = "LoginBasicAuth"), @SecurityRequirement(name = "CookieAuth")
+        })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 401, message = "Unauthorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "URI not found"),
-        @ApiResponse(code = 500, message = "An unexpected condition occurred"),
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "URI not found"),
+        @ApiResponse(responseCode = "500", description = "An unexpected condition occurred"),
     })
     @HystrixCommand
     public ResponseEntity<String> getApiDocInfo(
-        @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
+        @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
-        @ApiParam(name = "apiId", value = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
+        @Parameter(name = "apiId", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
         return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiId);
     }
@@ -79,47 +83,45 @@ public class CatalogApiDocController {
      * @return api-doc info (as JSON)
      */
     @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Retrieves the API documentation for the default service version",
-        notes = "Returns the API documentation for a specific service {serviceId} and its default version.",
-        authorizations = {
-            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
-        },
-        response = String.class)
+    @Operation(summary = "Retrieves the API documentation for the default service version",
+        description = "Returns the API documentation for a specific service {serviceId} and its default version.",
+        security = {
+            @SecurityRequirement(name = "LoginBasicAuth"), @SecurityRequirement(name = "CookieAuth")
+        })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 401, message = "Unauthorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "URI not found"),
-        @ApiResponse(code = 500, message = "An unexpected condition occurred"),
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "URI not found"),
+        @ApiResponse(responseCode = "500", description = "An unexpected condition occurred"),
     })
     @HystrixCommand
     public ResponseEntity<String> getDefaultApiDocInfo(
-        @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
+        @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId) {
         return this.apiServiceStatusService.getServiceCachedDefaultApiDocInfo(serviceId);
     }
 
     @GetMapping(value = "/{serviceId}/{apiId1}/{apiId2}", produces = MediaType.TEXT_HTML_VALUE)
-    @ApiOperation(value = "Retrieve diff of two api versions for a specific service",
-        notes = "Returns an HTML document which details the difference between two versions of a API service",
-        authorizations = {
-            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
-        },
-        response = String.class)
+    @Operation(summary = "Retrieve diff of two api versions for a specific service",
+        description = "Returns an HTML document which details the difference between two versions of a API service",
+        security = {
+            @SecurityRequirement(name = "LoginBasicAuth"), @SecurityRequirement(name = "CookieAuth")
+        })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 401, message = "Unauthorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "URI not found"),
-        @ApiResponse(code = 500, message = "An unexpected condition occurred"),
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "URI not found"),
+        @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
     @HystrixCommand
     public ResponseEntity<String> getApiDiff(
-        @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
+        @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
-        @ApiParam(name = "apiId1", value = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
+        @Parameter(name = "apiId1", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId1") String apiId1,
-        @ApiParam(name = "apiId2", value = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v2.0.0")
+        @Parameter(name = "apiId2", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v2.0.0")
         @PathVariable(value = "apiId2") String apiId2) {
         return this.apiServiceStatusService.getApiDiffInfo(serviceId, apiId1, apiId2);
     }
