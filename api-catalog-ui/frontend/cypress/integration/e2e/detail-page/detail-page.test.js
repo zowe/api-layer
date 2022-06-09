@@ -48,7 +48,7 @@ describe('>>> Detail page test', () => {
         ];
         const regex = new RegExp(`${values.join('|')}`, 'g');
 
-        cy.get('pre.base-url')
+        cy.get('pre.servers')
             .should('exist')
             .then(element => {
                 const text = element.text();
