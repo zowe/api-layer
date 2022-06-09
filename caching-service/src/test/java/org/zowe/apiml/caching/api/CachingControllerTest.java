@@ -26,10 +26,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -351,17 +348,20 @@ class CachingControllerTest {
     class WhenRetrieveInvalidatedTokens {
         @Test
         void givenCorrectRequest_thenReturnList() throws StorageException {
-            List<String> tokens = Arrays.asList("token1", "token2");
-            when(mockStorage.getAllListItems(any(), any())).thenReturn(tokens);
+            HashMap<String, String> hashMap = new HashMap();
+            hashMap.put("key", "token1");
+            hashMap.put("key2", "token2");
+            HashMap expectedMap = new HashMap();
+            expectedMap.put("invalidTokens", hashMap);
+            when(mockStorage.getAllMapItems(any(), any())).thenReturn(expectedMap);
             ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.OK));
-            assertThat(response.getBody(), is(tokens));
+            assertThat(response.getBody(), is(expectedMap));
         }
 
         @Test
         void givenNoCertificateInformation_thenReturnUnauthorized() throws StorageException {
-            List<String> tokens = Arrays.asList("token1", "token2");
-            when(mockStorage.getAllListItems(any(), any())).thenReturn(tokens);
+            when(mockStorage.getAllMapItems(any(), any())).thenReturn(any());
             when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
             ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
 
@@ -370,10 +370,10 @@ class CachingControllerTest {
 
         @Test
         void givenErrorReadingStorage_thenResponseInternalError() throws StorageException {
-            when(mockStorage.getAllListItems(any(), any())).thenThrow(new RuntimeException("error"));
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
 
             ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
-            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         }
     }
 }

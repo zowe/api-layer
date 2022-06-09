@@ -19,12 +19,9 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +32,7 @@ class InfinispanStorageTest {
     public static final KeyValue TO_CREATE = new KeyValue("key1", "val1");
     public static final KeyValue TO_UPDATE = new KeyValue("key1", "val2");
     Cache<String, KeyValue> cache;
-    AdvancedCache<String, List<String>> tokenCache;
+    AdvancedCache<String, Map<String,String>> tokenCache;
     InfinispanStorage storage;
     String serviceId1 = "service1";
     ClusteredLock lock;
@@ -169,23 +166,22 @@ class InfinispanStorageTest {
 
         @Test
         void addToken() {
-
-            List<String> list = new ArrayList<>();
-            list.add("token");
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("key", "token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
-            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
-            assertNull(storage.storeListItem(serviceId1, new KeyValue("key", "value")));
-            verify(tokenCache, times(1)).put(serviceId1 + "key", list);
+            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> hashMap);
+            assertNull(storage.storeListItem(serviceId1, new KeyValue("invalidTokens", "value")));
+            verify(tokenCache, times(1)).put(serviceId1 + "invalidTokens", hashMap);
         }
 
         @Test
-        void throwException() {
-            List<String> list = new ArrayList<>();
-            list.add("token");
+        void throwCompletionException() {
+            HashMap<String, String> hashMap = new HashMap();
+            hashMap.put("key", "token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
-            when(tokenCache.get(serviceId1 + "key")).thenReturn(Collections.singletonList("token"));
-            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> list);
-            assertThrows(StorageException.class, () -> storage.storeListItem(serviceId1, new KeyValue("key", "token")));
+            when(tokenCache.get(serviceId1 + "key")).thenReturn(hashMap);
+            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> null);
+            assertThrows(CompletionException.class, () -> storage.storeListItem(serviceId1, new KeyValue("key", "token")));
         }
     }
 
@@ -194,11 +190,12 @@ class InfinispanStorageTest {
 
         @Test
         void returnTokenList() {
-            List<String> list = new ArrayList<>();
-            list.add("token");
-            list.add("token2");
-            when(tokenCache.get(serviceId1 + "key")).thenReturn(list);
-            assertEquals(2, storage.getAllListItems(serviceId1, "key").size());
+            HashMap<String, String> expectedMap = new HashMap();
+            expectedMap.put("key", "token1");
+            expectedMap.put("key2", "token2");
+
+            when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(expectedMap);
+            assertEquals(2, storage.getAllMapItems(serviceId1, "invalidTokens").size());
         }
     }
 
