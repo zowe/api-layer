@@ -10,9 +10,11 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,7 +43,7 @@ import java.util.stream.StreamSupport;
 @Slf4j
 @RestController
 @RequestMapping("/")
-@Api(tags = {"API Catalog"})
+@Tag(name = "API Catalog")
 public class ApiCatalogController {
 
     private final CachedProductFamilyService cachedProductFamilyService;
@@ -70,12 +72,19 @@ public class ApiCatalogController {
      * @return a list of all containers
      */
     @GetMapping(value = "/containers", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Lists catalog dashboard tiles",
-        notes = "Returns a list of tiles including status and tile description",
-        authorizations = {
-            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
+    @Operation(summary = "Lists catalog dashboard tiles",
+        description = "Returns a list of tiles including status and tile description",
+        security = {
+            @SecurityRequirement(name = "LoginBasicAuth"), @SecurityRequirement(name = "CookieAuth")
         }
     )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "URI not found"),
+        @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
+    })
     @HystrixCommand
     public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
         try {
@@ -100,12 +109,19 @@ public class ApiCatalogController {
      * @return a containers by id
      */
     @GetMapping(value = "/containers/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Retrieves a specific dashboard tile information",
-        notes = "Returns information for a specific tile {id} including status and tile description",
-        authorizations = {
-            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
+    @Operation(summary = "Retrieves a specific dashboard tile information",
+        description = "Returns information for a specific tile {id} including status and tile description",
+        security = {
+            @SecurityRequirement(name = "LoginBasicAuth"), @SecurityRequirement(name = "CookieAuth")
         }
     )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "URI not found"),
+        @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
+    })
     @HystrixCommand
     public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
