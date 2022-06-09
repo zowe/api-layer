@@ -78,7 +78,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return getSecurePassword(token, getSalt());
     }
 
-    public String initializeSalt() throws CachingServiceClientException {
+    private String initializeSalt() throws CachingServiceClientException {
         String salt;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
@@ -112,7 +112,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public static String getSecurePassword(String password, byte[] salt) {
-
         String generatedPassword = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");

@@ -93,8 +93,6 @@ public class CachingServiceClient {
             ResponseEntity<Map<String,String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens" , HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {
-
-
                     return response.getBody();
                 }
                 return null;
