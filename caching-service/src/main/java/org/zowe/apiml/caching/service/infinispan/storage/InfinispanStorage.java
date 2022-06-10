@@ -61,8 +61,10 @@ public class InfinispanStorage implements Storage {
                         throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
                     }
                     log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
-
-                    Map<String, String> tokensList = tokenCache.computeIfAbsent(cacheKey, k -> new HashMap<>());
+                    Map<String, String> tokensList = tokenCache.get(cacheKey);
+                    if (tokensList == null) {
+                        tokensList = new HashMap<>();
+                    }
                     tokensList.put(toCreate.getKey(), toCreate.getValue());
                     tokenCache.put(cacheKey, tokensList);
                 } finally {
