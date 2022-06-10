@@ -1,7 +1,3 @@
-springdoc:
-    api-docs.path: /v2/api-docs
-    packagesToScan: org.zowe.apiml.apicatalog.controllers.api
-
 spring:
     config:
         useLegacyProcessing: true
@@ -20,6 +16,9 @@ spring:
             enabled: detect
     main:
         banner-mode: ${apiml.banner:"off"}
+
+springdoc:
+    packagesToScan: org.zowe.apiml.apicatalog.controllers.api
 
 logging:
     level:
@@ -145,7 +144,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 
                 service:
                     title: API Catalog
@@ -238,7 +237,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 apiml:
     service:
         scheme: http
