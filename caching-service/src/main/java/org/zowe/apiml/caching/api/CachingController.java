@@ -106,6 +106,33 @@ public class CachingController {
             keyValue, request, HttpStatus.CREATED);
     }
 
+    @PostMapping(value = "/cache-list", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Add a new list item in the cache",
+        notes = "A new key-value pair will be added to the cache")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> storeListItem(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        return keyValueRequest(storage::storeListItem,
+            keyValue, request, HttpStatus.CREATED);
+    }
+
+    @GetMapping(value = "/cache-list/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Retrieves all the list items in the cache",
+        notes = "Values returned for the calling service")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> getAllListItems(@PathVariable String key, HttpServletRequest request) {
+        return getServiceId(request).<ResponseEntity<Object>>map(
+            s -> {
+                try {
+                    return new ResponseEntity<>(storage.getAllMapItems(s, key), HttpStatus.OK);
+                } catch (Exception exception) {
+                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
+    }
+
     @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Update key in the cache",
         notes = "Value at the key in the provided key-value pair will be updated to the provided value")
@@ -202,6 +229,12 @@ public class CachingController {
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
     }
 
+    private ResponseEntity<Object> handleIncompatibleStorageMethod(Exception exception, StringBuffer requestURL) {
+        Messages internalServerError = Messages.INCOMPATIBLE_STORAGE_METHOD;
+        Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
+        return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
+    }
+
     private void keyNotInCache() {
         throw new StorageException(Messages.KEY_NOT_PROVIDED.getKey(), Messages.KEY_NOT_PROVIDED.getStatus());
     }
@@ -233,6 +266,6 @@ public class CachingController {
 
     @FunctionalInterface
     interface KeyValueOperation {
-        KeyValue storageRequest(String serviceId, KeyValue keyValue);
+        KeyValue storageRequest(String serviceId, KeyValue keyValue) throws StorageException;
     }
 }

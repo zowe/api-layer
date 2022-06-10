@@ -13,16 +13,20 @@ import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.KeyValue;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
+import org.zowe.apiml.util.categories.InfinispanStorageTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
@@ -32,12 +36,13 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.CACHING_CACHE;
+import static org.zowe.apiml.util.requests.Endpoints.CACHING_CACHE_LIST;
 
 /**
  * This test is verifying integration with the different Storage mechanisms for the Caching service. If these tests pass,
  * we are ok with the stability and quality of the integration.
- *
+ * <p>
  * As such we need to run this suite against the different implemented storage mechanisms.
  */
 @TestsNotMeantForZowe
@@ -45,6 +50,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 class CachingStorageTest implements TestWithStartedInstances {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway(CACHING_CACHE);
+    private static final URI CACHING_INVALIDATE_TOKEN_PATH = HttpRequestUtils.getUriFromGateway(CACHING_CACHE_LIST);
     private static final String SPECIFIC_SERVICE_HEADER = "X-CS-Service-ID";
 
     @BeforeAll
@@ -55,14 +61,14 @@ class CachingStorageTest implements TestWithStartedInstances {
 
     @Test
     void givenMultipleConcurrentCalls_correctResponseInTheEnd() throws InterruptedException {
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(3);
 
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
             service.execute(() -> given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(new KeyValue(String.valueOf(ai.getAndIncrement()), "someValue"))
-            .when()
+                .when()
                 .post(CACHING_PATH).then().statusCode(201));
         }
 
@@ -71,7 +77,7 @@ class CachingStorageTest implements TestWithStartedInstances {
 
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
-        .when()
+            .when()
             .get(CACHING_PATH).then().body("20", is(not(isEmptyString())))
             .body("21", is(not(isEmptyString())))
             .body("22", is(not(isEmptyString())))
@@ -92,11 +98,66 @@ class CachingStorageTest implements TestWithStartedInstances {
 
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
-        .when()
+            .when()
             .get(CACHING_PATH).then().body("20", isEmptyOrNullString())
             .body("21", isEmptyOrNullString())
             .body("22", isEmptyOrNullString())
             .statusCode(200);
+    }
+
+    @Test
+    @InfinispanStorageTest
+    void givenMultipleUpdates_correctResultReturned() throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(3);
+
+        AtomicInteger ai = new AtomicInteger(20);
+        for (int i = 0; i < 3; i++) {
+            int index = i;
+            service.execute(() -> given().config(SslContext.clientCertApiml)
+                .contentType(JSON)
+                .body(new KeyValue("testTokens" + index, String.valueOf(ai.getAndIncrement())))
+                .when()
+                .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(201));
+        }
+        service.shutdown();
+        service.awaitTermination(30L, TimeUnit.SECONDS);
+        given().config(SslContext.clientCertApiml)
+            .contentType(JSON)
+            .when()
+            .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens")
+            .then()
+            .statusCode(200)
+            .body("testTokens0", is(not(isEmptyOrNullString())))
+            .body("testTokens1", is(not(isEmptyOrNullString())))
+            .body("testTokens2", is(not(isEmptyOrNullString())));
+    }
+
+    @Test
+    @InfinispanStorageTest
+    void givenDuplicateValue_conflictCodeIsReturned() {
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        int statusCode = HttpStatus.CREATED.value();
+        for (int i = 0; i < 2; i++) {
+            if (i == 1) {
+                statusCode = HttpStatus.CONFLICT.value();
+            }
+            int finalStatusCode = statusCode;
+            service.execute(() ->  given().config(SslContext.clientCertApiml)
+                .contentType(JSON)
+                .body(new KeyValue("testTokens4", "duplicateToken"))
+                .when()
+                .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(finalStatusCode));
+        }
+        service.shutdown();
+    }
+
+    @Test
+    @InfinispanStorageTest
+    void givenUntrustedClientCert_returnForbidden() {
+        given().config(SslContext.selfSignedUntrusted)
+            .contentType(JSON)
+            .when()
+            .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Nested
@@ -111,9 +172,9 @@ class CachingStorageTest implements TestWithStartedInstances {
                     given().config(SslContext.clientCertValid)
                         .contentType(JSON)
                         .body(keyValue)
-                    .when()
+                        .when()
                         .post(CACHING_PATH)
-                    .then()
+                        .then()
                         .statusCode(is(SC_CREATED));
                 } finally {
                     deleteValueUnderServiceIdWithoutValidation("testKey", SslContext.clientCertValid);
@@ -128,9 +189,9 @@ class CachingStorageTest implements TestWithStartedInstances {
             void givenEmptyBody() {
                 given().config(SslContext.clientCertValid)
                     .contentType(JSON)
-                .when()
+                    .when()
                     .post(CACHING_PATH)
-                .then()
+                    .then()
                     .statusCode(is(SC_BAD_REQUEST));
             }
         }
@@ -148,9 +209,9 @@ class CachingStorageTest implements TestWithStartedInstances {
 
                     given().config(SslContext.clientCertValid)
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH + "/testKey")
-                    .then()
+                        .then()
                         .body(not(isEmptyString()))
                         .statusCode(is(SC_OK));
                 } finally {
@@ -165,9 +226,9 @@ class CachingStorageTest implements TestWithStartedInstances {
             void givenNonExistingKeyParameter() {
                 given().config(SslContext.clientCertValid)
                     .contentType(JSON)
-                .when()
+                    .when()
                     .get(CACHING_PATH + "/invalidKey")
-                .then()
+                    .then()
                     .body(not(isEmptyString()))
                     .statusCode(is(SC_NOT_FOUND));
             }
@@ -204,9 +265,9 @@ class CachingStorageTest implements TestWithStartedInstances {
                     given().config(user1)
                         .log().uri()
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH)
-                    .then().log().all()
+                        .then().log().all()
                         .body("testKey1", is(not(isEmptyString())),
                             "testKey2", is(not(isEmptyString())),
                             "testKey3", isEmptyOrNullString(),
@@ -216,9 +277,9 @@ class CachingStorageTest implements TestWithStartedInstances {
                     given().config(user2)
                         .log().uri()
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH)
-                    .then().log().all()
+                        .then().log().all()
                         .body("testKey3", is(not(isEmptyString())),
                             "testKey4", is(not(isEmptyString())),
                             "testKey1", isEmptyOrNullString(),
@@ -256,9 +317,9 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId1)
                         .log().uri()
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH)
-                    .then().log().all()
+                        .then().log().all()
                         .body("testKey1", is(not(isEmptyString())),
                             "testKey2", isEmptyOrNullString(),
                             "testKey3", isEmptyOrNullString(),
@@ -269,9 +330,9 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId2)
                         .log().uri()
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH)
-                    .then().log().all()
+                        .then().log().all()
                         .body("testKey2", is(not(isEmptyString())),
                             "testKey1", isEmptyOrNullString(),
                             "testKey3", isEmptyOrNullString(),
@@ -282,9 +343,9 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId1)
                         .log().uri()
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH)
-                    .then().log().all()
+                        .then().log().all()
                         .body("testKey3", is(not(isEmptyString())),
                             "testKey4", is(not(isEmptyString())),
                             "testKey1", isEmptyOrNullString(),
@@ -295,9 +356,9 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId2)
                         .log().uri()
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH)
-                    .then().log().all()
+                        .then().log().all()
                         .body("testKey4", is(not(isEmptyString())),
                             "testKey3", isEmptyOrNullString(),
                             "testKey1", isEmptyOrNullString(),
@@ -331,17 +392,17 @@ class CachingStorageTest implements TestWithStartedInstances {
                     .log()
                     .uri()
                     .contentType(JSON)
-                .when()
+                    .when()
                     .delete(CACHING_PATH)
-                .then()
+                    .then()
                     .log().all()
                     .statusCode(is(SC_OK));
 
                 given().config(clientCert)
                     .contentType(JSON)
-                .when()
+                    .when()
                     .get(CACHING_PATH + "/testKey1")
-                .then()
+                    .then()
                     .body(not(isEmptyString()))
                     .statusCode(is(SC_NOT_FOUND));
             }
@@ -363,16 +424,16 @@ class CachingStorageTest implements TestWithStartedInstances {
                     given().config(SslContext.clientCertValid)
                         .contentType(JSON)
                         .body(newValue)
-                    .when()
+                        .when()
                         .put(CACHING_PATH)
-                    .then()
+                        .then()
                         .statusCode(is(SC_NO_CONTENT));
 
                     given().config(SslContext.clientCertValid)
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH + "/testKey")
-                    .then()
+                        .then()
                         .body("value", Matchers.is("newValue"))
                         .statusCode(is(SC_OK));
                 } finally {
@@ -394,16 +455,16 @@ class CachingStorageTest implements TestWithStartedInstances {
 
                     given().config(SslContext.clientCertValid)
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .delete(CACHING_PATH + "/testKey")
-                    .then()
+                        .then()
                         .statusCode(is(SC_NO_CONTENT));
 
                     given().config(SslContext.clientCertValid)
                         .contentType(JSON)
-                    .when()
+                        .when()
                         .get(CACHING_PATH + "/testKey")
-                    .then()
+                        .then()
                         .statusCode(is(SC_NOT_FOUND));
                 } finally {
                     deleteValueUnderServiceIdWithoutValidation("testkey", SslContext.clientCertValid);
@@ -417,9 +478,9 @@ class CachingStorageTest implements TestWithStartedInstances {
             void givenInvalidKey() {
                 given().config(SslContext.clientCertValid)
                     .contentType(JSON)
-                .when()
+                    .when()
                     .delete(CACHING_PATH + "/invalidKey")
-                .then()
+                    .then()
                     .statusCode(is(SC_NOT_FOUND));
             }
         }
@@ -429,9 +490,9 @@ class CachingStorageTest implements TestWithStartedInstances {
         given().config(config)
             .contentType(JSON)
             .body(value)
-        .when()
+            .when()
             .post(CACHING_PATH)
-        .then()
+            .then()
             .statusCode(is(SC_CREATED));
     }
 
@@ -440,16 +501,16 @@ class CachingStorageTest implements TestWithStartedInstances {
             .header(SPECIFIC_SERVICE_HEADER, specificServiceId)
             .contentType(JSON)
             .body(value)
-        .when()
+            .when()
             .post(CACHING_PATH)
-        .then()
+            .then()
             .statusCode(is(SC_CREATED));
     }
 
     private static void deleteValueUnderServiceIdWithoutValidation(String value, RestAssuredConfig config) {
         given().config(config)
             .contentType(JSON)
-        .when()
+            .when()
             .delete(CACHING_PATH + "/" + value);
     }
 
@@ -457,7 +518,7 @@ class CachingStorageTest implements TestWithStartedInstances {
         given().config(config)
             .header(SPECIFIC_SERVICE_HEADER, specificServiceId)
             .contentType(JSON)
-        .when()
+            .when()
             .delete(CACHING_PATH + "/" + value);
     }
 }

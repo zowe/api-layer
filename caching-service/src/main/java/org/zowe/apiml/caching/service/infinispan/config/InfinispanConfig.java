@@ -15,6 +15,9 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
+import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
+import org.infinispan.lock.api.ClusteredLock;
+import org.infinispan.lock.api.ClusteredLockManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -82,13 +85,23 @@ public class InfinispanConfig {
         cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache("zoweCache", builder.build());
+        cacheManager.administration()
+            .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+            .getOrCreateCache("zoweInvalidatedTokenCache", builder.build());
         return cacheManager;
+    }
+
+    @Bean
+    public ClusteredLock lock(DefaultCacheManager cacheManager) {
+        ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
+        clm.defineLock("zoweInvalidatedTokenLock");
+        return clm.get("zoweInvalidatedTokenLock");
     }
 
 
     @Bean
-    public Storage storage(DefaultCacheManager cacheManager) {
-        return new InfinispanStorage(cacheManager.getCache("zoweCache"));
+    public Storage storage(DefaultCacheManager cacheManager, ClusteredLock clusteredLock) {
+        return new InfinispanStorage(cacheManager.getCache("zoweCache"), cacheManager.getCache("zoweInvalidatedTokenCache"), clusteredLock);
     }
 
 }

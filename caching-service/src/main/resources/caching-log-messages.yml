@@ -57,6 +57,20 @@ messages:
         reason: "The storage space is full."
         action: "Change the definition of the VSAM and the configuration for the maximum records stored or replace Reject strategy with Remove Oldest."
 
+    -   key: org.zowe.apiml.cache.duplicateValue
+        number: ZWECS135
+        type: ERROR
+        text: "Adding value '%s' resulted in a collision in the cache."
+        reason: "Value is already in the cache."
+        action: "Provide a value that is not in the cache."
+
+    -   key: org.zowe.apiml.cache.incompatibleStorageMethod
+        number: ZWECS136
+        type: ERROR
+        text: "The storage of list items is supported only on Infinispan."
+        reason: "This caching storage method doesn't support this API."
+        action: "Switch to Infinispan to be able to use this API."
+
     # Storage messages (151 - 160)
     -   key: org.zowe.apiml.cache.errorInitializingStorage
         number: ZWECS151

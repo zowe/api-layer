@@ -132,6 +132,7 @@ ext {
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
         infinispan_core                    : "org.infinispan:infinispan-core:${infinispanVersion}",
+        infinispan_lock                    : "org.infinispan:infinispan-clustered-lock:${infinispanVersion}",
         infinispan_jboss_marshalling       : "org.infinispan:infinispan-jboss-marshalling:${infinispanVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",

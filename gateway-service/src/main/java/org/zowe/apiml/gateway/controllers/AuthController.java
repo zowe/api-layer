@@ -24,6 +24,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +34,7 @@ import java.io.StringWriter;
 import java.security.PublicKey;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
@@ -52,10 +54,14 @@ public class AuthController {
     private final ZosmfService zosmfService;
     private final MessageService messageService;
 
+    private final AccessTokenProvider tokenProvider;
+
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
+    public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
+    public static final String ACCESS_TOKEN_VALIDATE = "/access-token/validate"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
 
@@ -77,6 +83,27 @@ public class AuthController {
 
     }
 
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> token) throws Exception {
+        if (tokenProvider.isInvalidated(token.get("token"))) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        tokenProvider.invalidateToken(token.get("token"));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping(path = ACCESS_TOKEN_VALIDATE)
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> validateAccessToken(@RequestBody() Map<String, String> token) throws Exception {
+        if (!tokenProvider.isInvalidated(token.get("token"))) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
     @GetMapping(path = DISTRIBUTE_PATH)
     @HystrixCommand
     public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
@@ -93,6 +120,7 @@ public class AuthController {
     /**
      * Return all public keys involved at the moment in the Gateway as well as in zOSMF. Keys used for verification of
      * tokens
+     *
      * @return List of keys composed of zOSMF and Gateway ones
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
@@ -108,6 +136,7 @@ public class AuthController {
     /**
      * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
      * configured one is used.
+     *
      * @return The key actually used to verify the JWT tokens.
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
@@ -126,7 +155,7 @@ public class AuthController {
     /**
      * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
      * configured one is used. The key is provided in the PEM format.
-     *
+     * <p>
      * Until the key to be produced is resolved, this returns 500 with the message code ZWEAG716.
      *
      * @return The key actually used to verify the JWT tokens.

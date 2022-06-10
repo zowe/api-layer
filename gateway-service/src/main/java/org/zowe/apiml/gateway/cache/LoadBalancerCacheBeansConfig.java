@@ -28,7 +28,6 @@ public class LoadBalancerCacheBeansConfig {
     private final GatewayConfigProperties gatewayConfigProperties;
 
     @Bean
-    @ConditionalOnProperty(name = "apiml.loadBalancer.distribute", havingValue = "true")
     public CachingServiceClient cachingServiceClient(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
         String gatewayUri = String.format("%s://%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname());
         return new CachingServiceClient(restTemplate, gatewayUri);
