@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -147,7 +146,7 @@ class InfinispanStorageTest {
     }
 
     @Nested
-    class WhenTokenExistsDoesntExist {
+    class WhenStoreToken {
         KeyValue keyValue;
 
         @BeforeEach
@@ -169,19 +168,18 @@ class InfinispanStorageTest {
             HashMap<String, String> hashMap = new HashMap<>();
             hashMap.put("key", "token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
-            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> hashMap);
+            when(tokenCache.get(anyString())).thenAnswer(invocation -> hashMap);
             assertNull(storage.storeListItem(serviceId1, new KeyValue("invalidTokens", "value")));
             verify(tokenCache, times(1)).put(serviceId1 + "invalidTokens", hashMap);
         }
 
         @Test
-        void throwCompletionException() {
+        void throwStorageException() {
             HashMap<String, String> hashMap = new HashMap();
             hashMap.put("key", "token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
-            when(tokenCache.get(serviceId1 + "key")).thenReturn(hashMap);
-            when(tokenCache.computeIfAbsent(anyString(), any(Function.class))).thenAnswer(invocation -> null);
-            assertThrows(CompletionException.class, () -> storage.storeListItem(serviceId1, new KeyValue("key", "token")));
+            when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(hashMap);
+            assertThrows(StorageException.class, () -> storage.storeListItem(serviceId1, new KeyValue("key", "token")));
         }
     }
 
