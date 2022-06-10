@@ -9,7 +9,10 @@
  */
 package org.zowe.apiml.sample.enable.controller;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,18 +27,16 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1")
-@Api(tags = {"V1EnablerSampleApp"})
+@Tag(name = "V1EnablerSampleApp")
 public class SampleController {
 
     @GetMapping(value = "/samples", produces = "application/json")
-    @ApiOperation(value = "Retrieve all samples",
-        notes = "Simple method to demonstrate how to expose an API endpoint with Open API information",
-        responseContainer = "List",
-        response = Sample.class)
+    @Operation(summary = "Retrieve all samples",
+        description = "Simple method to demonstrate how to expose an API endpoint with Open API information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 404, message = "URI not found"),
-        @ApiResponse(code = 500, message = "Internal Error"),
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "404", description = "URI not found"),
+        @ApiResponse(responseCode = "500", description = "Internal Error"),
     })
     public ResponseEntity<List<Sample>> list() {
         List<Sample> samples;

@@ -11,6 +11,7 @@ logging:
     level:
         ROOT: INFO
         org.springframework: INFO
+        org.springdoc: WARN
         org.apache: DEBUG
         org.zowe.apiml: DEBUG
 
@@ -94,3 +95,6 @@ server:
         keyStorePassword: password
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+springdoc:
+    pathsToMatch: /api/v1/**
