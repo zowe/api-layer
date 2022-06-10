@@ -86,21 +86,22 @@ public class CachingServiceClient {
         }
     }
 
-    public Map<String,String> readInvalidatedTokens(String key) throws CachingServiceClientException {
+    public Map<String, String> readInvalidatedTokens() throws CachingServiceClientException {
         try {
             ParameterizedTypeReference<Map<String, String>> responseType =
-                new ParameterizedTypeReference<Map<String, String>>() {};
-            ResponseEntity<Map<String,String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens" , HttpMethod.GET, null, responseType);
+                new ParameterizedTypeReference<Map<String, String>>() {
+                };
+            ResponseEntity<Map<String, String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens", HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
                     return response.getBody();
                 }
                 return null;
             } else {
-                throw new CachingServiceClientException("Unable to read key: " + key + ", caused by response from caching service is null or has no body");
+                throw new CachingServiceClientException("Unable to read invalidTokens, caused by response from caching service is null or has no body");
             }
         } catch (Exception e) {
-            throw new CachingServiceClientException("Unable to read key: " + key + ", caused by: " + e.getMessage(), e);
+            throw new CachingServiceClientException("Unable to read invalidTokens, caused by: " + e.getMessage(), e);
         }
     }
 

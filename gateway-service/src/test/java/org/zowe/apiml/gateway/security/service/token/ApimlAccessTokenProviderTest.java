@@ -62,7 +62,7 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> map = new HashMap<>();
         map.put(tokenHash, s);
-        when(csc.readInvalidatedTokens(token)).thenReturn(map);
+        when(csc.readInvalidatedTokens()).thenReturn(map);
         assertTrue(accessTokenProvider.isInvalidated(token));
     }
 
@@ -80,7 +80,7 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> map = new HashMap<>();
         map.put(tokenHash, s);
-        when(csc.readInvalidatedTokens(differentToken)).thenReturn(map);
+        when(csc.readInvalidatedTokens()).thenReturn(map);
 
         assertFalse(accessTokenProvider.isInvalidated(differentToken));
     }

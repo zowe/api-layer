@@ -61,7 +61,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
         String hash = getHash(token);
-        Map<String, String> map = cachingServiceClient.readInvalidatedTokens(token);
+        Map<String, String> map = cachingServiceClient.readInvalidatedTokens();
         if (map != null && !map.isEmpty() && map.containsKey(hash)) {
             String s = map.get(hash);
             try {
