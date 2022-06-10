@@ -92,7 +92,7 @@ public class CachingServiceClient {
                 new ParameterizedTypeReference<Map<String, String>>() {};
             ResponseEntity<Map<String,String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens" , HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
-                if (response.getBody() != null && !response.getBody().isEmpty()) {
+                if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
                     return response.getBody();
                 }
                 return null;

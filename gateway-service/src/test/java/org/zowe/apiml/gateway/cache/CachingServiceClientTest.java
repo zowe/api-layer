@@ -161,6 +161,14 @@ class CachingServiceClientTest {
             when(response.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
             assertThrows(CachingServiceClientException.class, () -> underTest.readInvalidatedTokens("key"));
         }
+
+        @Test
+        void whenResponseBodyIsNull_thenReturnNull() throws CachingServiceClientException {
+            when(response.getBody()).thenReturn(null);
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("key");
+            assertNull(parsedResponseBody);
+        }
     }
 
     @Test

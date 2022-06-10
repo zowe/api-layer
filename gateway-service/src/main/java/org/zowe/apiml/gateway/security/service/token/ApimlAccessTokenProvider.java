@@ -79,17 +79,17 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     private String initializeSalt() throws CachingServiceClientException {
-        String salt;
+        String localSalt;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
-            salt = keyValue.getValue();
+            localSalt = keyValue.getValue();
         } catch (CachingServiceClientException e) {
             byte[] newSalt = generateSalt();
             storeSalt(newSalt);
-            salt = new String(newSalt);
+            localSalt = new String(newSalt);
         }
 
-        return salt;
+        return localSalt;
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
