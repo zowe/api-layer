@@ -59,7 +59,7 @@ dependencies {
     implementation libraries.infinispan_core
     implementation libraries.infinispan_jboss_marshalling
 
-    implementation libraries.springFox
+    implementation libraries.spring_doc
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
