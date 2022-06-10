@@ -179,7 +179,8 @@ class InfinispanStorageTest {
             hashMap.put("key", "token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(hashMap);
-            assertThrows(StorageException.class, () -> storage.storeListItem(serviceId1, new KeyValue("key", "token")));
+            KeyValue keyValue = new KeyValue("key", "token");
+            assertThrows(StorageException.class, () -> storage.storeListItem(serviceId1, keyValue));
         }
     }
 
