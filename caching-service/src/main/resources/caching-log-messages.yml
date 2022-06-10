@@ -62,7 +62,7 @@ messages:
         type: ERROR
         text: "Adding value '%s' resulted in a collision in the cache."
         reason: "Value is already in the cache."
-        action: "Provide a value that is in the cache."
+        action: "Provide a value that is not in the cache."
 
     -   key: org.zowe.apiml.cache.incompatibleStorageMethod
         number: ZWECS136
