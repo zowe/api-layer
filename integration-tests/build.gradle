@@ -290,7 +290,8 @@ task runContainerTests(type: Test) {
             'ServiceIdPrefixReplacerTest',
             'NodeEnablerTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'InfinispanStorageTest'
         )
     }
 }
@@ -335,7 +336,8 @@ task runBaseTests(type: Test) {
             'ServiceIdPrefixReplacerTest',
             'NodeEnablerTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'InfinispanStorageTest'
         )
     }
 }
@@ -419,6 +421,24 @@ task runCachingServiceTests(type: Test) {
     useJUnitPlatform {
         includeTags(
             'CachingServiceTest'
+        )
+        excludeTags(
+            'InfinispanStorageTest'
+        )
+    }
+}
+
+task runInfinispanServiceTests(type: Test) {
+    group "integration tests"
+    description "Run Caching service with infinispan storage tests"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest',
+            'InfinispanStorageTest'
         )
     }
 }

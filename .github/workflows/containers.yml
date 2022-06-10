@@ -1022,7 +1022,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runInfinispanServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   uses: ./.github/actions/dump-jacoco

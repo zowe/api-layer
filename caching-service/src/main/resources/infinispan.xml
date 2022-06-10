@@ -83,6 +83,7 @@
             <allow-list>
                 <class>org.zowe.apiml.caching.model.KeyValue</class>
                 <class>java.util.HashMap</class>
+                <class>java.util.Arrays$ArrayList</class>
             </allow-list>
         </serialization>
 
