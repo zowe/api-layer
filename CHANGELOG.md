@@ -2,6 +2,27 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.1.2 (2022-06-09)`
+
+
+Adding changes...
+
+## 1.0.0 (2022-06-13)
+
+* fix: testing if fix gets replaced by changelog as the last commit ([02e5498](https://github.com/zowe/api-layer/commit/02e5498))
+
+
+
+
+
+Features...
+
+
+
+Fixes...
+
+* Bugfix:  testing if fix gets replaced by changelog as the last commit ([02e5498](https://github.com/zowe/api-layer/commit/02e5498))
+
 ## `2.1.0 (2022-05-31)`
 
 * Feature:  Add trivial schema files for lib components. Update manifests to remove build metadata (#2379) ([6eba58f](https://github.com/zowe/api-layer/commit/6eba58f)), closes [#2379](https://github.com/zowe/api-layer/issues/2379)
