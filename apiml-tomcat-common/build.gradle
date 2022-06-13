@@ -11,7 +11,10 @@ dependencies {
     compile libraries.tomcat_embed_websocket
     compile libraries.logback_classic
     implementation libraries.jackson_core
-    implementation libraries.jackson_databind    
+    implementation libraries.jackson_databind
+
+    compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     testCompile libraries.mockito_core
     testCompile libraries.mockito_jupiter
