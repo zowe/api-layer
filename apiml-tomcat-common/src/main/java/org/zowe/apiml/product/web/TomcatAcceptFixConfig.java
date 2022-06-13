@@ -24,9 +24,13 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.SocketAddress;
 import java.nio.channels.*;
+import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -126,7 +130,7 @@ public class TomcatAcceptFixConfig {
     }
 
     /**
-     * Socket implemtation wrapper to handle rebinding on TCP Stack restart
+     * Socket implementation wrapper to handle rebinding on TCP Stack restart
      */
     private class FixedServerSocketChannel extends ServerSocketChannel {
 
@@ -151,6 +155,23 @@ public class TomcatAcceptFixConfig {
          */
         private final Runnable rebindHandler;
 
+        private final MethodHandle IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE;
+        private final MethodHandle IMPL_CONFIGURE_BLOCKING;
+
+        {
+            try {
+                Method implCloseSelectableChannel = AbstractSelectableChannel.class.getDeclaredMethod("implCloseSelectableChannel");
+                implCloseSelectableChannel.setAccessible(true);
+                IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE = MethodHandles.lookup().unreflect(implCloseSelectableChannel);
+
+                Method implConfigureBlocking = AbstractSelectableChannel.class.getDeclaredMethod("implConfigureBlocking", boolean.class);
+                implConfigureBlocking.setAccessible(true);
+                IMPL_CONFIGURE_BLOCKING = MethodHandles.lookup().unreflect(implConfigureBlocking);
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                throw new IllegalStateException("Unsupported structure of NIO channel", e);
+            }
+        }
+
         private FixedServerSocketChannel(ServerSocketChannel socket, AbstractEndpoint<?, ?> abstractEndpoint, Runnable rebindHandler) {
             super(socket.provider());
             this.socket = socket;
@@ -159,13 +180,29 @@ public class TomcatAcceptFixConfig {
         }
 
         @Override
-        protected void implCloseSelectableChannel() {
-            // the real implementation is in the delegate
+        protected void implCloseSelectableChannel() throws IOException {
+            try {
+                IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE.invoke(socket);
+            } catch (IOException ioe) {
+                throw ioe;
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (Throwable t) {
+                throw new IllegalStateException(t);
+            }
         }
 
         @Override
-        protected void implConfigureBlocking(boolean block) {
-            // the real implementation is in the delegate
+        protected void implConfigureBlocking(boolean block) throws IOException {
+            try {
+                IMPL_CONFIGURE_BLOCKING.invoke(socket, block);
+            } catch (IOException ioe) {
+                throw ioe;
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (Throwable t) {
+                throw new IllegalStateException(t);
+            }
         }
 
         /**
