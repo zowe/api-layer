@@ -50,8 +50,11 @@ public class TomcatAcceptFixConfig {
     @Value("${server.tomcat.retryRebindTimeoutSecs:10}")
     int retryRebindTimeoutSecs;
 
-    private static final Field endpointField;
-    private static final Field nioSocketField;
+    private static final Field ENDPOINT_FIELD;
+    private static final Field NIO_SOCKET_FIELD;
+
+    private static final MethodHandle IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE; // NOSONAR
+    private static final MethodHandle IMPL_CONFIGURE_BLOCKING; // NOSONAR
 
     /**
      * To mitigate parallel treatment of socket rebinding
@@ -60,13 +63,21 @@ public class TomcatAcceptFixConfig {
 
     static {
         try {
-            endpointField = AbstractProtocol.class.getDeclaredField("endpoint");
-            nioSocketField = NioEndpoint.class.getDeclaredField("serverSock");
-        } catch (NoSuchFieldException e) {
+            ENDPOINT_FIELD = AbstractProtocol.class.getDeclaredField("endpoint");
+            NIO_SOCKET_FIELD = NioEndpoint.class.getDeclaredField("serverSock");
+
+            Method implCloseSelectableChannel = AbstractSelectableChannel.class.getDeclaredMethod("implCloseSelectableChannel");
+            implCloseSelectableChannel.setAccessible(true); // NOSONAR
+            IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE = MethodHandles.lookup().unreflect(implCloseSelectableChannel);
+
+            Method implConfigureBlocking = AbstractSelectableChannel.class.getDeclaredMethod("implConfigureBlocking", boolean.class);
+            implConfigureBlocking.setAccessible(true); // NOSONAR
+            IMPL_CONFIGURE_BLOCKING = MethodHandles.lookup().unreflect(implConfigureBlocking);
+        } catch (NoSuchFieldException | NoSuchMethodException | SecurityException | IllegalAccessException e) {
             throw new IllegalStateException("Unknown structure of protocols", e);
         }
-        endpointField.setAccessible(true); // NOSONAR
-        nioSocketField.setAccessible(true); // NOSONAR
+        ENDPOINT_FIELD.setAccessible(true); // NOSONAR
+        NIO_SOCKET_FIELD.setAccessible(true); // NOSONAR
     }
 
     /**
@@ -78,12 +89,12 @@ public class TomcatAcceptFixConfig {
      */
     private void update(AbstractProtocol<?> abstractProtocol, Runnable rebindHandler) {
         try {
-            AbstractEndpoint<?, ?> abstractEndpoint = (AbstractEndpoint<Object, Object>) endpointField.get(abstractProtocol);
+            AbstractEndpoint<?, ?> abstractEndpoint = (AbstractEndpoint<Object, Object>) ENDPOINT_FIELD.get(abstractProtocol);
 
             if (abstractEndpoint instanceof NioEndpoint) {
-                ServerSocketChannel serverSocketChannel = (ServerSocketChannel) nioSocketField.get(abstractEndpoint);
+                ServerSocketChannel serverSocketChannel = (ServerSocketChannel) NIO_SOCKET_FIELD.get(abstractEndpoint);
                 serverSocketChannel = new FixedServerSocketChannel(serverSocketChannel, abstractEndpoint, rebindHandler);
-                nioSocketField.set(abstractEndpoint, serverSocketChannel); // NOSONAR
+                NIO_SOCKET_FIELD.set(abstractEndpoint, serverSocketChannel); // NOSONAR
             } else {
                 log.warn("Unsupported protocol: {}", abstractEndpoint.getClass().getName());
             }
@@ -154,23 +165,6 @@ public class TomcatAcceptFixConfig {
          * Handler to call after successful rebind of server socket
          */
         private final Runnable rebindHandler;
-
-        private final MethodHandle IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE;
-        private final MethodHandle IMPL_CONFIGURE_BLOCKING;
-
-        {
-            try {
-                Method implCloseSelectableChannel = AbstractSelectableChannel.class.getDeclaredMethod("implCloseSelectableChannel");
-                implCloseSelectableChannel.setAccessible(true);
-                IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE = MethodHandles.lookup().unreflect(implCloseSelectableChannel);
-
-                Method implConfigureBlocking = AbstractSelectableChannel.class.getDeclaredMethod("implConfigureBlocking", boolean.class);
-                implConfigureBlocking.setAccessible(true);
-                IMPL_CONFIGURE_BLOCKING = MethodHandles.lookup().unreflect(implConfigureBlocking);
-            } catch (NoSuchMethodException | IllegalAccessException e) {
-                throw new IllegalStateException("Unsupported structure of NIO channel", e);
-            }
-        }
 
         private FixedServerSocketChannel(ServerSocketChannel socket, AbstractEndpoint<?, ?> abstractEndpoint, Runnable rebindHandler) {
             super(socket.provider());
