@@ -23,8 +23,6 @@ spring:
         name: ${apiml.service.serviceId}
     mvc:
         throw-exception-if-no-handler-found: true
-        pathmatch:
-            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output:
         ansi:
             enabled: detect
