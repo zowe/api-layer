@@ -27,8 +27,7 @@ import org.zowe.apiml.util.http.HttpSecurityUtils;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,13 +67,13 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
                 LinkedHashMap swaggerInfo = jsonContext.read("$.info");
-                String swaggerBasePath = jsonContext.read("$.basePath");
+                String swaggerServer = jsonContext.read("$.servers[0].url");
                 LinkedHashMap paths = jsonContext.read("$.paths");
-                LinkedHashMap definitions = jsonContext.read("$.definitions");
+                LinkedHashMap definitions = jsonContext.read("$.components.schemas");
                 LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
 
                 assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
-                assertEquals("/discoverableclient/api/v2", swaggerBasePath, apiCatalogSwagger);
+                assertThat(swaggerServer, endsWith(""));
                 assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
 
                 assertFalse(paths.isEmpty(), apiCatalogSwagger);
@@ -162,14 +161,14 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
         // When
         LinkedHashMap swaggerInfo = jsonContext.read("$.info");
-        String swaggerBasePath = jsonContext.read("$.basePath");
+        String swaggerServer = jsonContext.read("$.servers[0].url");
         LinkedHashMap paths = jsonContext.read("$.paths");
-        LinkedHashMap definitions = jsonContext.read("$.definitions");
+        LinkedHashMap definitions = jsonContext.read("$.components.schemas");
         LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
 
         // Then
         assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
-        assertEquals("/discoverableclient/api/v1", swaggerBasePath, apiCatalogSwagger);
+        assertThat(swaggerServer, endsWith("/discoverableclient/api/v1"));
         assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
 
         assertFalse(paths.isEmpty(), apiCatalogSwagger);
@@ -177,8 +176,6 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
         assertFalse(definitions.isEmpty(), apiCatalogSwagger);
 
-        assertNotNull(definitions.get("ApiMessage"), apiCatalogSwagger);
-        assertNotNull(definitions.get("ApiMessageView"), apiCatalogSwagger);
         assertNotNull(definitions.get("Greeting"), apiCatalogSwagger);
         assertNotNull(definitions.get("Pet"), apiCatalogSwagger);
         assertNotNull(definitions.get("RedirectLocation"), apiCatalogSwagger);
