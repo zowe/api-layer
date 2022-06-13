@@ -178,6 +178,54 @@ class TomcatAcceptFixConfigTest {
         assertThrows(IOException.class, testEndpoint::serverSocketAccept);
     }
 
+    @Test
+    void givenIoException_whenImplCloseSelectableChannel_thenIsPropagated() {
+        ServerSocketChannel socket = new TestServerSocketChannel(null) {
+            @Override
+            public void implCloseSelectableChannel() throws IOException {
+                throw new IOException("ioe message");
+            }
+        };
+        TomcatAcceptFixConfig.FixedServerSocketChannel fixedServerSocketChannel = tomcatAcceptFixConfig.new FixedServerSocketChannel(socket, null, null);
+        assertThrows(IOException.class, fixedServerSocketChannel::implCloseSelectableChannel);
+    }
+
+    @Test
+    void givenRuntimeException_whenImplCloseSelectableChannel_thenIsPropagated() {
+        ServerSocketChannel socket = new TestServerSocketChannel(null) {
+            @Override
+            public void implCloseSelectableChannel() {
+                throw new IllegalStateException("IllegalStateException message");
+            }
+        };
+        TomcatAcceptFixConfig.FixedServerSocketChannel fixedServerSocketChannel = tomcatAcceptFixConfig.new FixedServerSocketChannel(socket, null, null);
+        assertThrows(IllegalStateException.class, fixedServerSocketChannel::implCloseSelectableChannel);
+    }
+
+    @Test
+    void givenIoException_whenImplConfigureBlocking_thenIsPropagated() {
+        ServerSocketChannel socket = new TestServerSocketChannel(null) {
+            @Override
+            public void implConfigureBlocking(boolean block) throws IOException {
+                throw new IOException("ioe message");
+            }
+        };
+        TomcatAcceptFixConfig.FixedServerSocketChannel fixedServerSocketChannel = tomcatAcceptFixConfig.new FixedServerSocketChannel(socket, null, null);
+        assertThrows(IOException.class, () -> fixedServerSocketChannel.implConfigureBlocking(true));
+    }
+
+    @Test
+    void givenRuntimeException_whenImplConfigureBlocking_thenIsPropagated() {
+        ServerSocketChannel socket = new TestServerSocketChannel(null) {
+            @Override
+            public void implConfigureBlocking(boolean block) {
+                throw new IllegalStateException("IllegalStateException message");
+            }
+        };
+        TomcatAcceptFixConfig.FixedServerSocketChannel fixedServerSocketChannel = tomcatAcceptFixConfig.new FixedServerSocketChannel(socket, null, null);
+        assertThrows(IllegalStateException.class, () -> fixedServerSocketChannel.implConfigureBlocking(true));
+    }
+
     private static class TestEndpoint extends NioEndpoint {
 
         public TestEndpoint(ServerSocketChannel serverSocket) {
@@ -231,7 +279,7 @@ class TomcatAcceptFixConfigTest {
         }
 
         @Override
-        protected void implConfigureBlocking(boolean block) {
+        protected void implConfigureBlocking(boolean block) throws IOException {
 
         }
 

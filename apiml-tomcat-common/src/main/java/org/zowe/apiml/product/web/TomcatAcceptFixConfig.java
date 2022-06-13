@@ -143,7 +143,7 @@ public class TomcatAcceptFixConfig {
     /**
      * Socket implementation wrapper to handle rebinding on TCP Stack restart
      */
-    private class FixedServerSocketChannel extends ServerSocketChannel {
+    class FixedServerSocketChannel extends ServerSocketChannel {
 
         /**
          * Wrapper server socket inside
@@ -166,7 +166,7 @@ public class TomcatAcceptFixConfig {
          */
         private final Runnable rebindHandler;
 
-        private FixedServerSocketChannel(ServerSocketChannel socket, AbstractEndpoint<?, ?> abstractEndpoint, Runnable rebindHandler) {
+        FixedServerSocketChannel(ServerSocketChannel socket, AbstractEndpoint<?, ?> abstractEndpoint, Runnable rebindHandler) {
             super(socket.provider());
             this.socket = socket;
             this.abstractEndpoint = abstractEndpoint;
@@ -177,10 +177,8 @@ public class TomcatAcceptFixConfig {
         protected void implCloseSelectableChannel() throws IOException {
             try {
                 IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE.invoke(socket);
-            } catch (IOException ioe) {
-                throw ioe;
-            } catch (RuntimeException re) {
-                throw re;
+            } catch (IOException | RuntimeException e) {
+                throw e;
             } catch (Throwable t) {
                 throw new IllegalStateException(t);
             }
@@ -190,10 +188,8 @@ public class TomcatAcceptFixConfig {
         protected void implConfigureBlocking(boolean block) throws IOException {
             try {
                 IMPL_CONFIGURE_BLOCKING.invoke(socket, block);
-            } catch (IOException ioe) {
-                throw ioe;
-            } catch (RuntimeException re) {
-                throw re;
+            } catch (IOException | RuntimeException e) {
+                throw e;
             } catch (Throwable t) {
                 throw new IllegalStateException(t);
             }
