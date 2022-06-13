@@ -26,8 +26,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -306,6 +305,75 @@ class CachingControllerTest {
 
             Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
             assertThat(result, is(values));
+        }
+    }
+
+    @Nested
+    class WhenInvalidatedTokenIsStored {
+        @Test
+        void givenCorrectPayload_thenStore() {
+            KeyValue keyValue = new KeyValue(KEY, VALUE);
+            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+            assertThat(response.getBody(), is(nullValue()));
+        }
+
+        @Test
+        void givenIncorrectPayload_thenReturnBadRequest() {
+            KeyValue keyValue = new KeyValue(null, VALUE);
+            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        }
+
+        @Test
+        void givenErrorOnTransaction_thenReturnInternalError() throws StorageException {
+            when(mockStorage.storeListItem(any(), any())).thenThrow(new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), new Exception("the cause"), KEY));
+            KeyValue keyValue = new KeyValue(KEY, VALUE);
+            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+
+        @Test
+        void givenStorageWithExistingValue_thenResponseConflict() throws StorageException {
+            when(mockStorage.storeListItem(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), VALUE));
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.duplicateValue", VALUE).mapToView();
+
+            ResponseEntity<?> response = underTest.storeListItem(KEY_VALUE, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
+            assertThat(response.getBody(), is(expectedBody));
+        }
+    }
+
+    @Nested
+    class WhenRetrieveInvalidatedTokens {
+        @Test
+        void givenCorrectRequest_thenReturnList() throws StorageException {
+            HashMap<String, String> hashMap = new HashMap();
+            hashMap.put("key", "token1");
+            hashMap.put("key2", "token2");
+            HashMap expectedMap = new HashMap();
+            expectedMap.put("invalidTokens", hashMap);
+            when(mockStorage.getAllMapItems(any(), any())).thenReturn(expectedMap);
+            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+            assertThat(response.getBody(), is(expectedMap));
+        }
+
+        @Test
+        void givenNoCertificateInformation_thenReturnUnauthorized() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenReturn(any());
+            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
+
+            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        }
+
+        @Test
+        void givenErrorReadingStorage_thenResponseInternalError() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
+
+            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         }
     }
 }

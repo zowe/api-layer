@@ -24,6 +24,7 @@ import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -52,6 +53,9 @@ class AuthControllerTest {
     @Mock
     private ZosmfService zosmfService;
 
+    @Mock
+    private AccessTokenProvider tokenProvider;
+
     private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
@@ -59,7 +63,7 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() throws ParseException {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
-        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService);
+        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
         jwk1 = getJwk(1);

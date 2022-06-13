@@ -62,6 +62,16 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
+    public KeyValue storeListItem(String serviceId, KeyValue toCreate) throws StorageException {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
+    public Map<String, String> getAllMapItems(String serviceId, String key) throws StorageException {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
     public KeyValue read(String serviceId, String key) {
         log.info("Reading Record: {}|{}|{}", serviceId, key, "-");
 
