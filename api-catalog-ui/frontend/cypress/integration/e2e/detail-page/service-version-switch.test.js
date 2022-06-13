@@ -56,6 +56,6 @@ describe('>>> Service version change Test', () => {
         cy.get('.nav-tab')
             .eq(3)
             .click();
-        cy.get('#servers', { timeout: 10000 }).contains( '/discoverableclient/api/v2');
+        cy.get('.servers', { timeout: 10000 }).contains( '/discoverableclient/api/v2');
     });
 });
