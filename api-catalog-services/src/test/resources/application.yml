@@ -34,7 +34,6 @@ logging:
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.eclipse.jetty: WARN
-        springfox: WARN
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 ##############################################################################################
@@ -189,7 +188,6 @@ logging:
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
-        springfox: INFO
         net.sf.ehcache: INFO
 
 ---
