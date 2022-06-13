@@ -7,7 +7,7 @@ const version = process.argv[3];
 const releaseDate = process.argv[4];
 const amountOfVersions = process.argv[5];
 const branchToMerge = process.argv[6];
-
+// function records changes, (output is string), conventional-changelog is installed properly bc output is showing.
 (async function () {
     const changes = execSync(`conventional-changelog -r ${amountOfVersions}`).toString();
 
@@ -44,9 +44,11 @@ Adding changes...
 
 ${changes}
 
+Features...
 
 ${addedFeatures}
 
+Fixes...
 
 ${addedFixes}
 
