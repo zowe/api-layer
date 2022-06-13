@@ -58,7 +58,6 @@ public class HttpsFactory {
 
 
     public CloseableHttpClient createSecureHttpClient() {
-        "h,e,l".sp
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
             .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
