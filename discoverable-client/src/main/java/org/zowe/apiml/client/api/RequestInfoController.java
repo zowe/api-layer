@@ -10,7 +10,12 @@
 package org.zowe.apiml.client.api;
 
 import com.google.common.io.CharStreams;
-import io.swagger.annotations.*;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Getter;
 import lombok.Value;
 import org.springframework.http.MediaType;
@@ -18,7 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -36,22 +40,21 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/v1/request")
-@Api(
-    value = "/api/v1/request",
-    consumes = "application/json",
-    tags = {"The request info API"})
+@Tag(
+    description = "/api/v1/request",
+    name = "The request info API")
 public class RequestInfoController {
 
     @GetMapping(
         value = "",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ApiOperation(
-        value = "Returns all base information about request",
-        notes = "Data contains sign information, headers and content")
-    @ApiResponses( value = {
-        @ApiResponse(code = 200, message = "Information from request", response = RequestInfo.class),
-        @ApiResponse(code = 500, message = "Error in parsing of request ")
+    @Operation(
+        summary = "Returns all base information about request",
+        description = "Data contains sign information, headers and content")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Information from request"),
+        @ApiResponse(responseCode = "500", description = "Error in parsing of request ")
     })
     @ResponseBody
     @HystrixCommand
@@ -102,28 +105,28 @@ public class RequestInfoController {
         requestInfo.content = CharStreams.toString(httpServletRequest.getReader());
     }
 
-    @ApiModel(description = "Request info detail")
+    @Schema(description = "Request info detail")
     @Getter
     public class RequestInfo {
 
-        @ApiModelProperty(value = "Any certificate sign the request")
+        @Schema(description = "Any certificate sign the request")
         private boolean signed;
 
-        @ApiModelProperty(value = "Certificates used to sign the request")
+        @Schema(description = "Certificates used to sign the request")
         private Certificate[] certs;
 
-        @ApiModelProperty(value = "Requests header in the original request")
+        @Schema(description = "Requests header in the original request")
         private Map<String, String> headers = new HashMap<>();
 
-        @ApiModelProperty(value = "Requests cookie in the original request")
+        @Schema(description = "Requests cookie in the original request")
         private Map<String, String> cookies = new HashMap<>();
 
-        @ApiModelProperty(value = "Text content in the original request")
+        @Schema(description = "Text content in the original request")
         private String content;
 
     }
 
-    @ApiModel(description = "Certificate info detail")
+    @Schema(description = "Certificate info detail")
     @Value
     public class Certificate {
 

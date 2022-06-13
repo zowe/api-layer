@@ -9,35 +9,34 @@
  */
 package org.zowe.apiml.client.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.zowe.apiml.client.model.state.Existing;
 import org.zowe.apiml.client.model.state.New;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
-
 import java.util.Objects;
 
 /**
  * This is an example of a model class.
  */
-@ApiModel(description = "A Pet Object")
+@Schema(description = "A Pet Object")
 public class Pet {
     @Null(groups = New.class, message = "Id should be null for pet creation")
     @NotNull(groups = Existing.class, message = "Id should be not null for pet update")
-    @ApiModelProperty(value = "The id is of the pet", example = "1")
+    @Schema(description = "The id is of the pet", example = "1")
     private Long id;
 
-    @NotEmpty(groups = { New.class, Existing.class }, message = "Name should not be empty string")
-    @ApiModelProperty(value = "The name of the pet", example = "Falco")
+    @NotEmpty(groups = {New.class, Existing.class}, message = "Name should not be empty string")
+    @Schema(description = "The name of the pet", example = "Falco")
     private String name;
 
     /**
      * Pet object
-     * @param id Pet ID
+     *
+     * @param id   Pet ID
      * @param name Pet name
      */
     public Pet(@JsonProperty("id") Long id,
@@ -48,6 +47,7 @@ public class Pet {
 
     /**
      * Gets Pet ID
+     *
      * @return Pet ID
      */
     public Long getId() {
@@ -56,6 +56,7 @@ public class Pet {
 
     /**
      * Gets Pet name
+     *
      * @return Pet name
      */
     public String getName() {
@@ -64,6 +65,7 @@ public class Pet {
 
     /**
      * Sets Pet ID
+     *
      * @param id Pet ID
      */
     public void setId(Long id) {
@@ -72,6 +74,7 @@ public class Pet {
 
     /**
      * Sets Pet name
+     *
      * @param name Pet name
      */
     public void setName(String name) {

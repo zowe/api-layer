@@ -9,15 +9,19 @@
  */
 package org.zowe.apiml.client.api;
 
-import org.zowe.apiml.client.model.RedirectLocation;
-import io.swagger.annotations.*;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.zowe.apiml.client.model.RedirectLocation;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,7 +33,7 @@ import static org.springframework.http.HttpHeaders.LOCATION;
  * Response Header and returns status code 307
  */
 @RestController
-@Api(tags = {"Other Operations"})
+@Tag(name = "Other Operations")
 public class PageRedirectionController {
 
     /**
@@ -45,14 +49,14 @@ public class PageRedirectionController {
         consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.TEMPORARY_REDIRECT)
-    @ApiOperation(
-        value = "/redirect",
-        notes = "Redirect to location")
+    @Operation(
+        summary = "/redirect",
+        description = "Redirect to location")
     @ApiResponses(value = {
-        @ApiResponse(code = 307, message = "Redirect to specified location", response = String.class)
+        @ApiResponse(responseCode = "307", description = "Redirect to specified location")
     })
     @HystrixCommand
-    public RedirectLocation redirectPage(@ApiParam(value = "Location that need to be redirected to", required = true, example = "https://host:port/context/path")
+    public RedirectLocation redirectPage(@Parameter(description = "Location that need to be redirected to", required = true, example = "https://host:port/context/path")
                                          @RequestBody RedirectLocation redirectLocation,
                                          HttpServletResponse response) {
         response.setHeader(LOCATION, redirectLocation.getLocation());
