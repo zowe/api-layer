@@ -44,19 +44,13 @@ Starting changes...
 
 ${changes}
 
-
-Starting lines...
-
-
-${lines}
-
-
-Added features...
-
-${addedFeatures}
-
-
-${addedFixes}
+//
+//Added features...
+//
+//${addedFeatures}
+//
+//
+//${addedFixes}
 
 ${restOfChangelog}`;
 
