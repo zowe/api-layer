@@ -9,13 +9,11 @@
  */
 package org.zowe.apiml.client.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.Tag;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.model.Greeting;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import java.util.Date;
 
@@ -24,9 +22,7 @@ import java.util.Date;
  * Version 1 of the controller that returns greetings.
  */
 @RestController
-@Api(tags = {"Other Operations"})
-@SwaggerDefinition(tags = {
-    @Tag(name = "Other Operations", description = "General Operations")})
+@Tag(name = "Other Operations", description = "General Operations")
 @RequestMapping("/api/v1")
 public class GreetingController {
     private static final String TEMPLATE = "Hello, %s!";
@@ -35,8 +31,7 @@ public class GreetingController {
      * Gets a greeting for anyone.
      */
     @GetMapping(value = "/greeting")
-    @ApiOperation(value = "Get a greeting", response = Greeting.class,
-        tags = {"Other Operations"})
+    @Operation(summary = "Get a greeting", tags = {"Other Operations"})
     @HystrixCommand()
     public Greeting greeting(@RequestParam(value = "name", defaultValue = "world") String name,
                              @RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs) {
@@ -54,8 +49,7 @@ public class GreetingController {
      * Gets a custom greeting.
      */
     @GetMapping(value = {"/{yourName}/greeting"})
-    @ApiOperation(value = "Get a greeting", response = Greeting.class,
-        tags = {"Other Operations"})
+    @Operation(summary = "Get a greeting", tags = {"Other Operations"})
     @HystrixCommand()
     public Greeting customGreeting(@PathVariable(value = "yourName") String yourName) {
         return new Greeting(new Date(), String.format(TEMPLATE, yourName));
