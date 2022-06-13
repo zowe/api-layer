@@ -28,7 +28,7 @@ public class SwaggerConfiguration {
     private String apiVersionRest1;
 
     @Value("${apiml.service.apiInfo[1].version}")
-    private String apiVersionGraphql;
+    private String graphqlVersion;
 
     @Value("${apiml.service.apiInfo[2].version}")
     private String apiVersionRest2;
@@ -41,8 +41,7 @@ public class SwaggerConfiguration {
         return new OpenAPI()
             .info(new Info()
                 .title(apiTitle)
-                .description(apiDescription)
-                .version(apiVersionRest1)) // TODO
+                .description(apiDescription))
             .components(new Components().addSecuritySchemes("ESM token",
                 new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("esmToken"))
             );
@@ -53,6 +52,7 @@ public class SwaggerConfiguration {
         return GroupedOpenApi.builder()
             .group("apiv1")
             .pathsToMatch("/api/v1/**")
+            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest1)))
             .build();
     }
 
@@ -61,6 +61,7 @@ public class SwaggerConfiguration {
         return GroupedOpenApi.builder()
             .group("apiv2")
             .pathsToMatch("/api/v2/**")
+            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest2)))
             .build();
     }
 
@@ -69,6 +70,7 @@ public class SwaggerConfiguration {
         return GroupedOpenApi.builder()
             .group("graphv1")
             .pathsToMatch("/graphql/v1/**")
+            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(graphqlVersion)))
             .build();
     }
 }
