@@ -3,6 +3,7 @@ logging:
         ROOT: INFO
         org.zowe.apiml: INFO
         org.springframework: WARN
+        org.springdoc: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
@@ -22,8 +23,6 @@ spring:
         name: ${apiml.service.serviceId}
     mvc:
         throw-exception-if-no-handler-found: true
-        pathmatch:
-            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output:
         ansi:
             enabled: detect
@@ -73,18 +72,18 @@ apiml:
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 1.0.0
                 gatewayUrl: api/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/apiv1
                 documentationUrl: https://www.zowe.org
                 defaultApi: true
             -   apiId: zowe.apiml.discoverableclient.ws
                 version: 1.0.0
                 gatewayUrl: graphql/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=graphv1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/graphv1
                 documentationUrl: https://www.zowe.org
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 2.0.0
                 gatewayUrl: api/v2
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=apiv2
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/apiv2
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
