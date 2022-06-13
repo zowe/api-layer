@@ -39,18 +39,10 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## \`${version} (${releaseDate})\`
 
-Starting changes...
+${addedFeatures}
 
 
-${changes}
-
-//
-//Added features...
-//
-//${addedFeatures}
-//
-//
-//${addedFixes}
+${addedFixes}
 
 ${restOfChangelog}`;
 
