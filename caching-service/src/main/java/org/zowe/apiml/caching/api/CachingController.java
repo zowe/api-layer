@@ -10,7 +10,7 @@
 package org.zowe.apiml.caching.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -36,8 +36,8 @@ public class CachingController {
 
 
     @GetMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Retrieves all values in the cache",
-        notes = "Values returned for the calling service")
+    @Operation(summary = "Retrieves all values in the cache",
+        description = "Values returned for the calling service")
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
@@ -53,8 +53,8 @@ public class CachingController {
     }
 
     @DeleteMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Delete all values for service from the cache",
-        notes = "Will delete all key-value pairs for specific service")
+    @Operation(summary = "Delete all values for service from the cache",
+        description = "Will delete all key-value pairs for specific service")
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> deleteAllValues(HttpServletRequest request) {
@@ -77,8 +77,8 @@ public class CachingController {
     }
 
     @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Retrieves a specific value in the cache",
-        notes = "Value returned is for the provided {key}")
+    @Operation(summary = "Retrieves a specific value in the cache",
+        description = "Value returned is for the provided {key}")
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
@@ -87,8 +87,8 @@ public class CachingController {
     }
 
     @DeleteMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Delete key from the cache",
-        notes = "Will delete key-value pair for the provided {key}")
+    @Operation(summary = "Delete key from the cache",
+        description = "Will delete key-value pair for the provided {key}")
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> delete(@PathVariable String key, HttpServletRequest request) {
@@ -97,8 +97,8 @@ public class CachingController {
     }
 
     @PostMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Create a new key in the cache",
-        notes = "A new key-value pair will be added to the cache")
+    @Operation(summary = "Create a new key in the cache",
+        description = "A new key-value pair will be added to the cache")
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
@@ -107,8 +107,8 @@ public class CachingController {
     }
 
     @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Update key in the cache",
-        notes = "Value at the key in the provided key-value pair will be updated to the provided value")
+    @Operation(summary = "Update key in the cache",
+        description = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {

@@ -10,8 +10,8 @@
 package org.zowe.apiml.client.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.model.Registered;
@@ -20,9 +20,9 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 
 @RestController
 @RequestMapping("/api/v1/apiMediationClient")
-@Api(
-    value = "/api/v1/apiMediationClient",
-    tags = {"API Mediation Client test call"}
+@Tag(
+    description = "/api/v1/apiMediationClient",
+    name = "API Mediation Client test call"
 )
 public class ApiMediationClientTestController {
     private final ApiMediationClientService apiMediationClientService;
@@ -32,7 +32,7 @@ public class ApiMediationClientTestController {
     }
 
     @PostMapping
-    @ApiOperation(value = "Forward registration to discovery service via API mediation client")
+    @Operation(summary = "Forward registration to discovery service via API mediation client")
     @HystrixCommand
     public ResponseEntity<String> forwardRegistration() {
         try {
@@ -44,7 +44,7 @@ public class ApiMediationClientTestController {
     }
 
     @DeleteMapping
-    @ApiOperation(value = "Forward un-registration to discovery service via API mediation client")
+    @Operation(summary = "Forward un-registration to discovery service via API mediation client")
     @HystrixCommand
     public ResponseEntity<String> forwardUnRegistration() {
         apiMediationClientService.unregister();
@@ -52,7 +52,7 @@ public class ApiMediationClientTestController {
     }
 
     @GetMapping
-    @ApiOperation(value = "Indicate if registration with discovery service via API mediation client was successful")
+    @Operation(summary = "Indicate if registration with discovery service via API mediation client was successful")
     public Registered isRegistered() {
         boolean isRegistered = apiMediationClientService.isRegistered();
         return new Registered(isRegistered);

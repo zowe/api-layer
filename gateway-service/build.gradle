@@ -73,7 +73,6 @@ dependencies {
     implementation libraries.xstream
     implementation libraries.json_smart
 
-    implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
@@ -153,7 +152,6 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation libraries.springFox
     testCompile libraries.mockito_core
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test

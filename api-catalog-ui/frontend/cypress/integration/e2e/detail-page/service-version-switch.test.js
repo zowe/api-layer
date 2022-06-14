@@ -37,7 +37,7 @@ describe('>>> Service version change Test', () => {
 
     it('Should pre select default version', () => {
         cy.get('.version-text').should('exist');
-        cy.get('.base-url').should('contain.text', '/discoverableclient/api/v1');
+        cy.get('.servers').should('contain.text', '/discoverableclient/api/v1');
     });
 
     it('Should change version when clicking version 2', () => {
@@ -47,6 +47,6 @@ describe('>>> Service version change Test', () => {
         cy.get('.nav-tab')
             .eq(2)
             .click();
-        cy.get('.base-url', { timeout: 10000 }).should('contain.text', '/discoverableclient/api/v2');
+        cy.get('.servers', { timeout: 10000 }).should('contain.text', '/discoverableclient/api/v2');
     });
 });
