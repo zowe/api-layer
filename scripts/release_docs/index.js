@@ -9,6 +9,8 @@ const amountOfVersions = process.argv[5];
 const branchToMerge = process.argv[6];
 // function records changes, (output is string), conventional-changelog is installed properly bc output is showing.
 // last commit in this script is recorded but not the previous commit history, will only filter on that one last commit (if it's not feat or fix, then nothing gets recorded). Shift is not the issue.
+// order of changelog is in alphabetical order, with priority fix -> feat -> chore -> no prefix
+// gets commits from latest -> last release
 (async function () {
     const changes = execSync(`conventional-changelog -r ${amountOfVersions}`).toString();
 
