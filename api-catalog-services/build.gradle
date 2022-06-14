@@ -74,9 +74,6 @@ dependencies {
     implementation libraries.gson
     implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_retry
-    implementation libraries.swagger_core
-    implementation libraries.swagger3_core
-    implementation libraries.swagger3_parser
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
     implementation libraries.jackson_databind
@@ -114,12 +111,11 @@ dependencies {
     implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
+    implementation libraries.spring_doc
     implementation libraries.thymeleaf
     implementation libraries.thymeleafSpring
     implementation libraries.logback_core
     implementation libraries.logback_classic
-
-    implementation libraries.springFox
 
     testCompile libraries.rest_assured
     testCompile libraries.spring_mock_mvc
