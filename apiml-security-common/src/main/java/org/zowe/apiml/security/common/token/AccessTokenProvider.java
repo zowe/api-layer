@@ -13,4 +13,5 @@ public interface AccessTokenProvider {
 
     void invalidateToken(String token) throws Exception;
     boolean isInvalidated(String token) throws Exception;
+    String getToken(String username);
 }

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.common.config;
 
+import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.handler.BasicAuthUnauthorizedHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
@@ -31,17 +32,20 @@ public class HandlerInitializer {
     private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
+    private final SuccessfulAccessTokenHandler successfulAuthAccessTokenHandler;
 
     public HandlerInitializer(SuccessfulLoginHandler successfulLoginHandler,
                               @Qualifier("plainAuth")
                                   UnauthorizedHandler unAuthorizedHandler,
                               BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
                               FailedAuthenticationHandler authenticationFailureHandler,
-                              ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
+                              ResourceAccessExceptionHandler resourceAccessExceptionHandler,
+                              SuccessfulAccessTokenHandler successfulAuthAccessTokenHandler) {
         this.successfulLoginHandler = successfulLoginHandler;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
+        this.successfulAuthAccessTokenHandler = successfulAuthAccessTokenHandler;
     }
 }

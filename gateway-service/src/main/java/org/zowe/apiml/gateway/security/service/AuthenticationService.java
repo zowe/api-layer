@@ -89,17 +89,30 @@ public class AuthenticationService {
     public String createJwtToken(@NonNull String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
         long expiration = calculateExpiration(now, username);
+        Map<String, String> claims = new HashMap<>();
+        claims.put(DOMAIN_CLAIM_NAME, domain);
+        claims.put(LTPA_CLAIM_NAME, ltpaToken);
+        return createJWT(username, claims, now, expiration);
+    }
 
-        return Jwts.builder()
+    public String createLongLivedJwtToken(@NonNull String username, int daysToLive) {
+        long now = System.currentTimeMillis();
+        long expiration = now + (daysToLive * 1_000L);
+        return createJWT(username, Collections.emptyMap(), now, expiration);
+    }
+
+    private String createJWT(String username, Map<String, String> claims, long issuedAt, long expiration) {
+        JwtBuilder builder = Jwts.builder()
             .setSubject(username)
-            .claim(DOMAIN_CLAIM_NAME, domain)
-            .claim(LTPA_CLAIM_NAME, ltpaToken)
-            .setIssuedAt(new Date(now))
+            .setIssuedAt(new Date(issuedAt))
             .setExpiration(new Date(expiration))
             .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm())
-            .compact();
+            .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm());
+
+        claims.forEach(builder::claim);
+        return builder.compact();
+
     }
 
     /**
@@ -304,11 +317,11 @@ public class AuthenticationService {
         Claims claims = getJwtClaims(jwtToken);
 
         return new QueryResponse(
-                claims.get(DOMAIN_CLAIM_NAME, String.class),
-                claims.getSubject(),
-                claims.getIssuedAt(),
-                claims.getExpiration(),
-                QueryResponse.Source.valueByIssuer(claims.getIssuer())
+            claims.get(DOMAIN_CLAIM_NAME, String.class),
+            claims.getSubject(),
+            claims.getIssuedAt(),
+            claims.getExpiration(),
+            QueryResponse.Source.valueByIssuer(claims.getIssuer())
         );
     }
 
