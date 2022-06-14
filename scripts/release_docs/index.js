@@ -12,7 +12,9 @@ const branchToMerge = process.argv[6];
 // order of changelog is in alphabetical order, with priority fix -> feat -> chore -> no prefix
 // gets commits from latest -> last release
 (async function () {
-    const changes = execSync(`conventional-changelog -r ${amountOfVersions}`).toString();
+//    const changes = execSync(`conventional-changelog -r ${amountOfVersions}`).toString();
+
+      const changes = "a\nb\nc"
 
     const lines = changes.split(/\r?\n/);
     const addedFeatures = lines.filter(line => {
