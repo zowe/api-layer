@@ -11,8 +11,20 @@ const branchToMerge = process.argv[6];
 // last commit in this script is recorded but not the previous commit history, will only filter on that one last commit (if it's not feat or fix, then nothing gets recorded). Shift is not the issue.
 // order of changelog is in alphabetical order, with priority fix -> feat -> chore -> no prefix
 // gets commits from latest -> last release
+//
 (async function () {
+
+    console.log("execSync for changes...manually putting 1")
+    try {
+        const changesTest = execSync(`conventional-changelog -r 1`, {encoding: 'utf-8'}).toString();
+        console.log("printing out changes: " + changesTest)
+    } catch (error) {
+        console.log("error got thrown")
+        console.log(error);
+    }
+
     const changes = execSync(`conventional-changelog -r ${amountOfVersions}`, {encoding: 'utf-8'}).toString();
+
 //
 //      const changes = "a\nb\nc"
 
@@ -64,7 +76,7 @@ ${restOfChangelog}`;
     const octokit = new Octokit({auth: githubToken});
     const branch = `apiml/release/${version.replace(/\./g, "_")}`;
 
-    let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
+    let gitCommitPush = `git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog try catch" && git push origin ${branch}`;
     execSync(gitCommitPush, {
         cwd: '../../'
     });
