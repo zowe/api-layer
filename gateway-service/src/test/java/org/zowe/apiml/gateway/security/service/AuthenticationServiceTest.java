@@ -62,7 +62,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     public static final String ZOSMF = "zosmf";
     private static final String ZOSMF_HOSTNAME = "zosmfhostname";
     private static final int ZOSMF_PORT = 1433;
-    protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
     private static final String USER = "Me";
     private static final String DOMAIN = "this.com";
@@ -117,7 +116,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
             zosmfService, discoveryClient, restTemplate, cacheManager, cacheUtils
         );
-        ReflectionTestUtils.setField(authService,"meAsProxy",authService);
+        ReflectionTestUtils.setField(authService, "meAsProxy", authService);
     }
 
     private String mockZosmfUrl(DiscoveryClient discoveryClient) {
@@ -134,7 +133,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
 
     @Nested
-    class GivenCorrectInputsTest{
+    class GivenCorrectInputsTest {
 
         @Test
         void thenCreateJwtToken() {
@@ -189,8 +188,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         }
 
     }
+
     @Nested
-    class GivenInvalidTokenAuthenticationTest{
+    class GivenInvalidTokenAuthenticationTest {
 
         @Test
         void thenThrowTokenNotValidException() {
@@ -202,6 +202,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 () -> authService.validateJwtToken(token)
             );
         }
+
         @Test
         void givenNullValue_thenThrowTokenNotValidException() {
             assertThrows(
@@ -219,6 +220,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             );
         }
     }
+
     @Nested
     class GivenInvalidTokenStringTest {
         @Test
@@ -270,10 +272,11 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             MockHttpServletRequest request;
 
             @BeforeEach
-            void setup(){
+            void setup() {
                 request = new MockHttpServletRequest();
                 request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwtInAuthHeader");
             }
+
             @Test
             void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
                 String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
@@ -283,6 +286,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 assertTrue(token.isPresent());
                 assertEquals("jwtInCookies", token.get());
             }
+
             @Test
             void givenOtherCookiesAndJwtInHeader_whenGetJwtTokenFromRequest_thenTakeFromHeader() {
                 request.setCookies(new Cookie("cookie", "value"));
@@ -304,6 +308,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
             assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
         }
+
         @Test
         void givenInvalidJWT_thenThrowTokenNotValidException() {
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
@@ -326,7 +331,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void givenIncorrectLTPAToken_thenThrowTokenNotValidException() {
             for (String jwtToken : new String[]{"header.body.sign", "wrongJwtToken", ""}) {
-                Throwable t = assertThrows(TokenNotValidException.class, () ->authService.getLtpaToken(jwtToken));
+                Throwable t = assertThrows(TokenNotValidException.class, () -> authService.getLtpaToken(jwtToken));
                 assertTrue(t.getMessage().contains("Token is not valid."));
             }
         }
@@ -356,7 +361,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     @Nested
-    class GivenInvalidateZosmfTokenTest{
+    class GivenInvalidateZosmfTokenTest {
 
         public static final String JWT_TOKEN = "zosmfJwtToken";
         public static final String LTPA_TOKEN = "zosmfLtpaToken";
@@ -364,8 +369,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         private ZosmfService zosmfService;
         AuthenticationService authService;
+
         @BeforeEach
-        void setup(){
+        void setup() {
             zosmfService = getSpiedZosmfService();
             authService = getSpiedAuthenticationService(zosmfService);
             doReturn(true).when(zosmfService).logoutEndpointExists();
@@ -375,6 +381,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             )).when(authService).parseJwtToken(JWT_TOKEN);
 
         }
+
         @Test
         void givenNoInstancesAvailable_thenReturnFalse() {
 
@@ -382,6 +389,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
 
         }
+
         @Test
         void givenMultipleInstances_thenReturnTrue() {
             Application application = mock(Application.class);
@@ -485,23 +493,23 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         CacheConfig.class,
         MockedAuthenticationServiceContext.class
     })
-    class GivenCacheJWTTest{
+    class GivenCacheJWTTest {
         @Autowired
         private AuthenticationService authService;
 
         @Autowired
-        private  JwtSecurity jwtSecurityInitializer;
+        private JwtSecurity jwtSecurityInitializer;
 
         @Autowired
-        private  RestTemplate restTemplate;
+        private RestTemplate restTemplate;
 
         @Autowired
-        private  ZosmfService zosmfService;
+        private ZosmfService zosmfService;
         @Autowired
-        private  DiscoveryClient discoveryClient;
+        private DiscoveryClient discoveryClient;
 
         @BeforeEach
-        void setup(){
+        void setup() {
             KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
             if (keyPair != null) {
                 privateKey = keyPair.getPrivate();
@@ -579,8 +587,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
 
-
-
     @Nested
     class GivenDistributedInvalidationTest {
 
@@ -632,9 +638,5 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         }
 
     }
-
-
-
-
 
 }
