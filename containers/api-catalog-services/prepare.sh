@@ -44,7 +44,7 @@ apiml_common_package="apiml-common-lib-package"
 
 ignoredUiTasks="$(getIgnoredUiTasks "api-catalog-ui")"
 buildPackage $api_catalog_package "packageApiCatalog ${ignoredUiTasks}"
-buildPackage $apiml_common_package "packageCommonLib"
+buildApimlCommonPackage
 
 preparePackage $api_catalog_package
 preparePackage $apiml_common_package "apiml-common-lib"
