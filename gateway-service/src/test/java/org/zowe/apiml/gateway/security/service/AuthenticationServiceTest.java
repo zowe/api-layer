@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
@@ -92,7 +91,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Mock
     private CacheManager cacheManager;
 
-    public static ObjectMapper securityObjectMapper = new ObjectMapper();
 
     static {
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
@@ -161,7 +159,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenGetTokenWithDefaultExpiration() {
-            String jwt1 = authService.createJwtToken("user", "domain", "ltpaToken");
+            String jwt1 = authService.createJwtToken("user", DOMAIN, LTPA);
 
             QueryResponse qr1 = authService.parseJwtToken(jwt1);
             Date toBeExpired = DateUtils.addSeconds(qr1.getCreation(), authConfigurationProperties.getTokenProperties().getExpirationInSeconds());
@@ -170,7 +168,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenGetShortLivedToken() {
-            String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
+            String jwt2 = authService.createJwtToken("expire", DOMAIN, LTPA);
             QueryResponse qr2 = authService.parseJwtToken(jwt2);
             Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
             assertEquals(qr2.getExpiration(), toBeExpired2);
@@ -343,7 +341,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             .compact();
     }
 
-    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int port, int securePort, boolean isSecureEnabled) {
+    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int securePort, boolean isSecureEnabled) {
         InstanceInfo out = mock(InstanceInfo.class);
         when(out.getInstanceId()).thenReturn(instanceId);
         when(out.getHostName()).thenReturn(hostName);
@@ -370,7 +368,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         void givenTokenWasNotInvalidateOnAnotherInstance_thenRethrowException() {
 
             stubJWTSecurityForSign();
-            authConfigurationProperties.getTokenProperties().setIssuer("zosmf");
+            authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", "dom", null);
             Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
@@ -398,8 +396,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(instanceInfo2.getHostName()).thenReturn("localhost");
 
             stubJWTSecurityForSign();
-            authConfigurationProperties.getTokenProperties().setIssuer("zosmf");
-            String token = authService.createJwtToken("user", "dom", null);
+            authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
+            String token = authService.createJwtToken("user", DOMAIN, null);
             doNothing().when(restTemplate).delete("http://localhost:0/gateway/auth/invalidate/" + token);
             Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
@@ -409,8 +407,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void invalidateZosmfJwtToken() {
             stubJWTSecurityForSign();
-            authConfigurationProperties.getTokenProperties().setIssuer("zosmf");
-            String token = authService.createJwtToken("user", "dom", null);
+            authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
+            String token = authService.createJwtToken("user", DOMAIN, null);
 
             assertTrue(authService.invalidateJwtToken(token, false));
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, token);
@@ -420,7 +418,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         void invalidateZosmfLtpaToken() {
 
             stubJWTSecurityForSign();
-            String token = authService.createJwtToken("user", "dom", LTPA_TOKEN);
+            String token = authService.createJwtToken("user", DOMAIN, LTPA_TOKEN);
 
             assertTrue(authService.invalidateJwtToken(token, false));
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.LTPA, LTPA_TOKEN);
@@ -432,7 +430,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             final String userId = "userIdSource";
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
-            String zosmfJwt = authService.createJwtToken(userId, "domain", LTPA_TOKEN);
+            String zosmfJwt = authService.createJwtToken(userId, DOMAIN, LTPA_TOKEN);
 
             when(zosmfService.validate(zosmfJwt)).thenReturn(true);
             TokenAuthentication tokenAuthentication = authService.validateJwtToken(zosmfJwt);
@@ -535,7 +533,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void whenInstancesAvailable_thenReturnSuccess() {
 
-            InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433, true);
+            InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1433, true);
 
             Application application = mock(Application.class);
             when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
