@@ -108,9 +108,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         }
-        Mockito.lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
-        Mockito.lenient().when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
-        Mockito.lenient().when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
         zosmfUrl = mockZosmfUrl(discoveryClient);
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
@@ -500,14 +500,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Autowired
         private JwtSecurity jwtSecurityInitializer;
 
-        @Autowired
-        private RestTemplate restTemplate;
-
-        @Autowired
-        private ZosmfService zosmfService;
-        @Autowired
-        private DiscoveryClient discoveryClient;
-
         @BeforeEach
         void setup() {
             KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
@@ -607,7 +599,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void whenInstancesAvailable_thenReturnSuccess() {
-            reset(restTemplate);
+            RestTemplate restTemplate = mock(RestTemplate.class);
 
             InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433, true);
 
@@ -632,9 +624,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authenticationService.distributeInvalidate(instanceInfo.getInstanceId());
 
-            verify(restTemplate, times(2)).delete(anyString(), anyString());
             verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
+            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "b");
         }
 
     }
