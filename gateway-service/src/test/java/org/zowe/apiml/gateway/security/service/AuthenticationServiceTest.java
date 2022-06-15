@@ -14,23 +14,23 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -57,11 +57,6 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
-    CacheConfig.class,
-    MockedAuthenticationServiceContext.class
-})
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     public static final String ZOSMF = "zosmf";
@@ -79,29 +74,36 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     private String zosmfUrl;
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private static ApplicationContext applicationContext;
 
-    @Autowired
     private AuthenticationService authService;
 
-    @Autowired
-    private AuthConfigurationProperties authConfigurationProperties;
+    private static AuthConfigurationProperties authConfigurationProperties;
 
-    @Autowired
-    private JwtSecurity jwtSecurityInitializer;
+    private static JwtSecurity jwtSecurityInitializer;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private static RestTemplate restTemplate;
 
-    @Autowired
-    private DiscoveryClient discoveryClient;
+    private static ZosmfService zosmfService;
+    private static DiscoveryClient discoveryClient;
 
     public static ObjectMapper securityObjectMapper = new ObjectMapper();
 
-    private void mockJwtSecurityInitializer() {
-        reset(restTemplate);
-        reset(jwtSecurityInitializer);
+    @BeforeEach
+    void setup() {
+        CacheManager cacheManager = mock(CacheManager.class);
+        CacheUtils cacheUtils = mock(CacheUtils.class);
+
+
+        applicationContext = mock(ApplicationContext.class);
+        when(applicationContext.getBean(AuthenticationService.class)).thenReturn(authService);
+        discoveryClient = mock(DiscoveryClient.class);
+        restTemplate = mock(RestTemplate.class);
+        jwtSecurityInitializer = mock(JwtSecurity.class);
+        authConfigurationProperties = new AuthConfigurationProperties();
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
+        zosmfService = mock(ZosmfService.class);
+
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
@@ -111,6 +113,11 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         Mockito.lenient().when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
         Mockito.lenient().when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
         zosmfUrl = mockZosmfUrl(discoveryClient);
+        authService = new AuthenticationService(
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer,
+            zosmfService, discoveryClient, restTemplate, cacheManager, cacheUtils
+        );
+        ReflectionTestUtils.setField(authService,"meAsProxy",authService);
     }
 
     private String mockZosmfUrl(DiscoveryClient discoveryClient) {
@@ -125,145 +132,205 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         return EurekaUtils.getUrl(instanceInfo);
     }
 
-    @BeforeEach
-    void setUp() {
-        mockJwtSecurityInitializer();
+
+    @Nested
+    class GivenCorrectInputsTest{
+
+        @Test
+        void thenCreateJwtToken() {
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+
+            assertFalse(jwtToken.isEmpty());
+            assertEquals("java.lang.String", jwtToken.getClass().getName());
+        }
+
+        @Test
+        void thenCreateValidatJwtToken() {
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+
+            TokenAuthentication token = new TokenAuthentication(jwtToken);
+            TokenAuthentication jwtValidation = authService.validateJwtToken(token);
+
+            assertEquals(USER, jwtValidation.getPrincipal());
+            assertEquals(jwtValidation.getCredentials(), jwtToken);
+            assertTrue(jwtValidation.isAuthenticated());
+        }
+
+        @Test
+        void thenParseJwtTokenAsQueryResponse() {
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+
+            String dateNow = new Date().toString().substring(0, 16);
+            QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
+
+            assertEquals(QueryResponse.class, parsedToken.getClass());
+            assertEquals(DOMAIN, parsedToken.getDomain());
+            assertEquals(USER, parsedToken.getUserId());
+            assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);
+            Date toBeExpired = DateUtils.addHours(parsedToken.getCreation(), 8);
+            assertEquals(parsedToken.getExpiration(), toBeExpired);
+        }
+
+        @Test
+        void thenGetTkenWithDefaultExpireation() {
+            String jwt1 = authService.createJwtToken("user", "domain", "ltpaToken");
+
+            QueryResponse qr1 = authService.parseJwtToken(jwt1);
+            Date toBeExpired = DateUtils.addSeconds(qr1.getCreation(), authConfigurationProperties.getTokenProperties().getExpirationInSeconds());
+            assertEquals(qr1.getExpiration(), toBeExpired);
+        }
+
+        @Test
+        void thenGetShortLivedToken() {
+            String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
+            QueryResponse qr2 = authService.parseJwtToken(jwt2);
+            Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
+            assertEquals(qr2.getExpiration(), toBeExpired2);
+        }
+
+    }
+    @Nested
+    class GivenInvalidTokenAuthenticationTest{
+
+        @Test
+        void thenThrowTokenNotValidException() {
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            String brokenToken = jwtToken + "not";
+            TokenAuthentication token = new TokenAuthentication(brokenToken);
+            assertThrows(
+                TokenNotValidException.class,
+                () -> authService.validateJwtToken(token)
+            );
+        }
+        @Test
+        void givenNullValue_thenThrowTokenNotValidException() {
+            assertThrows(
+                TokenNotValidException.class,
+                () -> authService.validateJwtToken((TokenAuthentication) null)
+            );
+        }
+
+        @Test
+        void givenExpiredToken_thenThrowsTokenExpireException() {
+            TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
+            assertThrows(
+                TokenExpireException.class,
+                () -> authService.validateJwtToken(token)
+            );
+        }
+    }
+    @Nested
+    class GivenInvalidTokenStringTest {
+        @Test
+        void thenThrowsTokenNotValidException() {
+            assertThrows(
+                TokenNotValidException.class,
+                () -> authService.validateJwtToken((String) null)
+            );
+        }
+
     }
 
-    @Test
-    void shouldCreateJwtToken() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+    @Nested
+    class GivenReadJWTFromRequestTest {
 
-        assertFalse(jwtToken.isEmpty());
-        assertEquals("java.lang.String", jwtToken.getClass().getName());
+        @Test
+        void givenJwtInCookie_thenReadJwtTokenFromRequestCookie() {
+            String jwtToken = "token";
+            MockHttpServletRequest request = new MockHttpServletRequest();
+
+            Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
+            assertFalse(optionalToken.isPresent());
+
+            request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
+
+            optionalToken = authService.getJwtTokenFromRequest(request);
+            assertTrue(optionalToken.isPresent());
+            assertEquals(optionalToken.get(), jwtToken);
+        }
+
+        @Test
+        void givenJwtInAuthorizationHeader_thenReadJwtFromRequestHeader() {
+            String jwtToken = "token";
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.addHeader("Authorization", "Bearer ");
+            Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
+            assertFalse(optionalToken.isPresent());
+
+            request = new MockHttpServletRequest();
+            request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
+            optionalToken = authService.getJwtTokenFromRequest(request);
+            assertTrue(optionalToken.isPresent());
+            assertEquals(optionalToken.get(), jwtToken);
+        }
+
+        @Nested
+        class GivenPriorityOfTokensTest {
+
+            MockHttpServletRequest request;
+
+            @BeforeEach
+            void setup(){
+                request = new MockHttpServletRequest();
+                request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwtInAuthHeader");
+            }
+            @Test
+            void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
+                String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+                request.setCookies(new Cookie(cookieName, "jwtInCookies"));
+
+                Optional<String> token = authService.getJwtTokenFromRequest(request);
+                assertTrue(token.isPresent());
+                assertEquals("jwtInCookies", token.get());
+            }
+            @Test
+            void givenOtherCookiesAndJwtInHeader_whenGetJwtTokenFromRequest_thenTakeFromHeader() {
+                request.setCookies(new Cookie("cookie", "value"));
+
+                Optional<String> token = authService.getJwtTokenFromRequest(request);
+                assertTrue(token.isPresent());
+                assertEquals("jwtInAuthHeader", token.get());
+            }
+
+        }
+
     }
 
-    @Test
-    void shouldThrowExceptionWithNullSecret() {
-        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(null);
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> authService.createJwtToken(USER, DOMAIN, LTPA)
-        );
-    }
+    @Nested
+    class GivenReadLTPATokenTest {
 
-    @Test
-    void shouldValidateJwtToken() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+        @Test
+        void givenLTPAExists_thenReadLtpaTokenFromJwtToken() {
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
+        }
+        @Test
+        void givenInvalidJWT_thenThrowTokenNotValidException() {
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            String brokenToken = jwtToken + "not";
+            assertThrows(
+                TokenNotValidException.class,
+                () -> authService.getLtpaTokenWithValidation(brokenToken)
+            );
+        }
 
-        TokenAuthentication token = new TokenAuthentication(jwtToken);
-        TokenAuthentication jwtValidation = authService.validateJwtToken(token);
+        @Test
+        void givenExpiredJWT_thenThrowTokenExpireException() {
+            String expiredJwtToken = createExpiredJwtToken(privateKey);
+            assertThrows(
+                TokenExpireException.class,
+                () -> authService.getLtpaTokenWithValidation(expiredJwtToken)
+            );
+        }
 
-        assertEquals(USER, jwtValidation.getPrincipal());
-        assertEquals(jwtValidation.getCredentials(), jwtToken);
-        assertTrue(jwtValidation.isAuthenticated());
-    }
+        @Test
+        void givenIncorrectLTPAToken_thenThrowTokenNotValidException() {
+            for (String jwtToken : new String[]{"header.body.sign", "wrongJwtToken", ""}) {
+                Throwable t = assertThrows(TokenNotValidException.class, () ->authService.getLtpaToken(jwtToken));
+                assertTrue(t.getMessage().contains("Token is not valid."));
+            }
+        }
 
-    @Test
-    void shouldThrowExceptionWhenTokenIsInvalid() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-        String brokenToken = jwtToken + "not";
-        TokenAuthentication token = new TokenAuthentication(brokenToken);
-        assertThrows(
-            TokenNotValidException.class,
-            () -> authService.validateJwtToken(token)
-        );
-    }
-
-    @Test
-    void shouldThrowExceptionWhenTokenIsExpired() {
-        TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
-        assertThrows(
-            TokenExpireException.class,
-            () -> authService.validateJwtToken(token)
-        );
-    }
-
-
-    @Test
-    void shouldThrowExceptionWhenOccurUnexpectedException() {
-        assertThrows(
-            TokenNotValidException.class,
-            () -> authService.validateJwtToken((String) null)
-        );
-    }
-
-    @Test
-    void shouldThrowExceptionWhenOccurUnexpectedException2() {
-        assertThrows(
-            TokenNotValidException.class,
-            () -> authService.validateJwtToken((TokenAuthentication) null)
-        );
-    }
-
-    @Test
-    void shouldParseJwtTokenAsQueryResponse() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-
-        String dateNow = new Date().toString().substring(0, 16);
-        QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
-
-        assertEquals("org.zowe.apiml.security.common.token.QueryResponse", parsedToken.getClass().getTypeName());
-        assertEquals(DOMAIN, parsedToken.getDomain());
-        assertEquals(USER, parsedToken.getUserId());
-        assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);
-        Date toBeExpired = DateUtils.addHours(parsedToken.getCreation(), 8);
-        assertEquals(parsedToken.getExpiration(), toBeExpired);
-    }
-
-    @Test
-    void shouldReadJwtTokenFromRequestCookie() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-        MockHttpServletRequest request = new MockHttpServletRequest();
-
-        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
-        assertFalse(optionalToken.isPresent());
-
-        request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
-
-        optionalToken = authService.getJwtTokenFromRequest(request);
-        assertTrue(optionalToken.isPresent());
-        assertEquals(optionalToken.get(), jwtToken);
-    }
-
-    @Test
-    void shouldExtractJwtFromRequestHeader() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer ");
-        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
-        assertFalse(optionalToken.isPresent());
-
-        request = new MockHttpServletRequest();
-        request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
-        optionalToken = authService.getJwtTokenFromRequest(request);
-        assertTrue(optionalToken.isPresent());
-        assertEquals(optionalToken.get(), jwtToken);
-    }
-
-    @Test
-    void shouldReadLtpaTokenFromJwtToken() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-        assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenTokenIsInvalidWhileExtractingLtpa() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-        String brokenToken = jwtToken + "not";
-        assertThrows(
-            TokenNotValidException.class,
-            () -> authService.getLtpaTokenWithValidation(brokenToken)
-        );
-    }
-
-    @Test
-    void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
-        String expiredJwtToken = createExpiredJwtToken(privateKey);
-        assertThrows(
-            TokenExpireException.class,
-            () -> authService.getLtpaTokenWithValidation(expiredJwtToken)
-        );
     }
 
     private String createExpiredJwtToken(Key secretKey) {
@@ -288,149 +355,189 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         return out;
     }
 
-    @Test
-    void invalidateTokenIfDistributedButNoInstancesAvailable_thenReturnFalse() {
-        final String jwtToken = "zosmfJwtToken";
-        final String ltpaToken = "zosmfLtpaToken";
-        final ZosmfService zosmfService = getSpiedZosmfService();
-        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).logoutEndpointExists();
-        doReturn(new QueryResponse(
-            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
-        )).when(authService).parseJwtToken(jwtToken);
-        doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
-        when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
-        assertFalse(authService.invalidateJwtToken(jwtToken, true));
+    @Nested
+    class GivenInvalidateZosmfTokenTest{
+
+        public static final String JWT_TOKEN = "zosmfJwtToken";
+        public static final String LTPA_TOKEN = "zosmfLtpaToken";
+        final String url = zosmfUrl + "/zosmf/services/authenticate";
+
+        private ZosmfService zosmfService;
+        AuthenticationService authService;
+        @BeforeEach
+        void setup(){
+            zosmfService = getSpiedZosmfService();
+            authService = getSpiedAuthenticationService(zosmfService);
+            doReturn(true).when(zosmfService).logoutEndpointExists();
+            doReturn(LTPA_TOKEN).when(authService).getLtpaToken(JWT_TOKEN);
+            doReturn(new QueryResponse(
+                "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
+            )).when(authService).parseJwtToken(JWT_TOKEN);
+
+        }
+        @Test
+        void givenNoInstancesAvailable_thenReturnFalse() {
+
+            when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
+            assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
+
+        }
+        @Test
+        void givenMultipleInstances_thenReturnTrue() {
+            Application application = mock(Application.class);
+            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+            InstanceInfo instanceInfo = mock(InstanceInfo.class);
+            InstanceInfo instanceInfo2 = mock(InstanceInfo.class);
+            when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+            when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
+            when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
+            when(instanceInfo.getInstanceId()).thenReturn("instanceId");
+            when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo2));
+            when(instanceInfo2.getInstanceId()).thenReturn("insncId2");
+            when(instanceInfo2.getSecurePort()).thenReturn(100);
+            when(instanceInfo2.getHostName()).thenReturn("localhost");
+            Mockito.doNothing().when(restTemplate).delete("");
+            Mockito.doThrow(new BadCredentialsException("")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, JWT_TOKEN);
+            assertTrue(authService.invalidateJwtToken(JWT_TOKEN, true));
+
+        }
+
+        @Test
+        void givenInvalidZosmfLtpaToken_thenExceptionIsThrown() {
+
+            Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, JWT_TOKEN);
+
+            Exception exception = assertThrows(BadCredentialsException.class, () -> {
+                authService.invalidateJwtToken(JWT_TOKEN, false);
+            });
+
+            assertEquals("Invalid Credentials", exception.getMessage());
+            verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, JWT_TOKEN);
+        }
+
+        @Test
+        void invalidateZosmfJwtToken() {
+            final String url = zosmfUrl + "/zosmf/services/authenticate";
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-CSRF-ZOSMF-HEADER", "");
+            headers.add(HttpHeaders.COOKIE, "jwtToken=" + JWT_TOKEN);
+            HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+            doReturn(new ResponseEntity<>(HttpStatus.OK)).when(restTemplate)
+                .exchange(url, HttpMethod.DELETE, httpEntity, String.class);
+
+            assertTrue(authService.invalidateJwtToken(JWT_TOKEN, false));
+            verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, JWT_TOKEN);
+            verify(restTemplate, times(1))
+                .exchange(url, HttpMethod.DELETE, httpEntity, String.class);
+        }
+
+        @Test
+        void invalidateZosmfLtpaToken() {
+
+            final ZosmfService zosmfService = getSpiedZosmfService();
+            ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
+            final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
+            doReturn(new QueryResponse(
+                "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOWE
+            )).when(authService).parseJwtToken(JWT_TOKEN);
+
+            doReturn(LTPA_TOKEN).when(authService).getLtpaToken(JWT_TOKEN);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-CSRF-ZOSMF-HEADER", "");
+            headers.add(HttpHeaders.COOKIE, "LtpaToken2=" + LTPA_TOKEN);
+            HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+            doReturn(new ResponseEntity<>(HttpStatus.OK)).when(restTemplate)
+                .exchange(url, HttpMethod.DELETE, httpEntity, String.class);
+
+            assertTrue(authService.invalidateJwtToken(JWT_TOKEN, false));
+            verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.LTPA, LTPA_TOKEN);
+        }
+
+
+        @Test
+        void testValidateZosmfJwtToken() {
+            final String jwtToken = "jwtTokenSource";
+            final String userId = "userIdSource";
+            final QueryResponse queryResponse = new QueryResponse("domain", userId, new Date(), new Date(), QueryResponse.Source.ZOSMF);
+
+            final ZosmfService zosmfService = mock(ZosmfService.class);
+            doReturn(true).when(zosmfService).validate(jwtToken);
+
+            final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
+
+            doAnswer((Answer<Object>) invocation -> {
+                assertEquals(jwtToken, invocation.getArgument(0));
+                return queryResponse;
+            }).when(authService).parseJwtToken(jwtToken);
+
+            TokenAuthentication tokenAuthentication = authService.validateJwtToken(jwtToken);
+            assertTrue(tokenAuthentication.isAuthenticated());
+            assertEquals(jwtToken, tokenAuthentication.getCredentials());
+            assertEquals(userId, tokenAuthentication.getPrincipal());
+            verify(zosmfService, times(1)).validate(jwtToken);
+        }
 
     }
 
-    @Test
-    void invalidateTokenWithMultipleInstances() {
-        final String jwtToken = "zosmfJwtToken";
-        final String ltpaToken = "zosmfLtpaToken";
-        final ZosmfService zosmfService = getSpiedZosmfService();
-        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).logoutEndpointExists();
-        doReturn(new QueryResponse(
-            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
-        )).when(authService).parseJwtToken(jwtToken);
-        doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
-        Application application = mock(Application.class);
-        ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
-        InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        InstanceInfo instanceInfo2 = mock(InstanceInfo.class);
-        when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
-        when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
-        when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
-        when(instanceInfo.getInstanceId()).thenReturn("instanceId");
-        when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo2));
-        when(instanceInfo2.getInstanceId()).thenReturn("insncId2");
-        when(instanceInfo2.getSecurePort()).thenReturn(100);
-        when(instanceInfo2.getHostName()).thenReturn("localhost");
-        Mockito.doNothing().when(restTemplate).delete("");
-        Mockito.doThrow(new BadCredentialsException("")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, jwtToken);
-        assertTrue(authService.invalidateJwtToken(jwtToken, true));
+    @Nested
+    @SpringBootTest
+    @ContextConfiguration(classes = {
+        CacheConfig.class,
+        MockedAuthenticationServiceContext.class
+    })
+    class GivenCacheJWTTest{
+        @Autowired
+        private AuthenticationService authService;
 
-    }
+        @Autowired
+        private  JwtSecurity jwtSecurityInitializer;
 
-    @Test
-    void invalidateInvalidZosmfLtpaToken_thenExceptionIsThrown() {
-        final String jwtToken = "zosmfJwtToken";
-        final String ltpaToken = "zosmfLtpaToken";
-        final ZosmfService zosmfService = getSpiedZosmfService();
-        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).logoutEndpointExists();
-        doReturn(new QueryResponse(
-            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
-        )).when(authService).parseJwtToken(jwtToken);
-        doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
+        @Autowired
+        private  RestTemplate restTemplate;
 
-        Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, jwtToken);
+        @Autowired
+        private  ZosmfService zosmfService;
+        @Autowired
+        private  DiscoveryClient discoveryClient;
 
-        Exception exception = assertThrows(BadCredentialsException.class, () -> {
-            authService.invalidateJwtToken(jwtToken, false);
-        });
+        @BeforeEach
+        void setup(){
+            KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+            if (keyPair != null) {
+                privateKey = keyPair.getPrivate();
+                publicKey = keyPair.getPublic();
+            }
+            when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+            when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+            when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
-        assertEquals("Invalid Credentials", exception.getMessage());
-        verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, jwtToken);
-    }
+        }
 
-    @Test
-    void invalidateToken() {
-        TokenAuthentication tokenAuthentication;
+        @Test
+        void thenUseCache() {
+            String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
+            String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
 
-        String jwt1 = authService.createJwtToken("user1", "domain1", "ltpa1");
-        assertFalse(authService.isInvalidated(jwt1));
-        tokenAuthentication = authService.validateJwtToken(jwt1);
-        assertTrue(tokenAuthentication.isAuthenticated());
+            assertFalse(authService.isInvalidated(jwtToken01));
+            assertFalse(authService.isInvalidated(jwtToken02));
 
-        InstanceInfo myInstance = mock(InstanceInfo.class);
-        when(myInstance.getInstanceId()).thenReturn("myInstance01");
-        ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
-        when(applicationInfoManager.getInfo()).thenReturn(myInstance);
-        when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
+            verify(jwtSecurityInitializer, never()).getJwtPublicKey();
 
-        when(restTemplate.exchange(zosmfUrl + "/zosmf/services/authenticate", HttpMethod.DELETE, new HttpEntity<>(null, null), String.class))
-            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(ZOSMF_CSRF_HEADER, "");
-        headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.LTPA.getCookieName() + "=" + "ltpa1");
-        when(restTemplate.exchange(zosmfUrl + "/zosmf/services/authenticate", HttpMethod.DELETE, new HttpEntity<>(null, headers), String.class))
-            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+            assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
+            verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
+            assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
+            verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
 
-        Application application = mock(Application.class);
-        List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("instance02", "hostname1", 10000, 10433, true),
-            createInstanceInfo("myInstance01", "localhost", 10000, 10433, true),
-            createInstanceInfo("instance03", "hostname2", 10001, 0, false)
-        );
-        when(application.getInstances()).thenReturn(instances);
-        when(discoveryClient.getApplication("gateway")).thenReturn(application);
+            assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
+            verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
 
-        authService.invalidateJwtToken(jwt1, true);
-        assertTrue(authService.isInvalidated(jwt1));
-        tokenAuthentication = authService.validateJwtToken(jwt1);
-        assertFalse(tokenAuthentication.isAuthenticated());
-        verify(restTemplate, times(2)).delete(anyString(), (Object[]) any());
-        verify(restTemplate).delete("https://hostname1:10433/gateway/auth/invalidate/" + jwt1);
-        verify(restTemplate).delete("http://hostname2:10001/gateway/auth/invalidate/" + jwt1);
-        verify(restTemplate, times(1))
-            .exchange(zosmfUrl + "/zosmf/services/authenticate", HttpMethod.DELETE, new HttpEntity<>(null, headers), String.class);
-    }
+            authService.invalidateJwtToken(jwtToken01, false);
+            assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
+            verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
+            assertFalse(authService.validateJwtToken(jwtToken01).isAuthenticated());
+            verify(jwtSecurityInitializer, times(3)).getJwtPublicKey();
+        }
 
-    @Test
-    void invalidateTokenCache() {
-        String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
-        String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
-
-        assertFalse(authService.isInvalidated(jwtToken01));
-        assertFalse(authService.isInvalidated(jwtToken02));
-
-        verify(jwtSecurityInitializer, never()).getJwtPublicKey();
-
-        assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
-        verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
-        assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
-        verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
-
-        assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
-        verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
-
-        when(restTemplate.exchange(zosmfUrl + "/zosmf/services/authenticate", HttpMethod.DELETE, new HttpEntity<>(null, null), String.class))
-            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(ZOSMF_CSRF_HEADER, "");
-        headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.LTPA.getCookieName() + "=" + "ltpa01");
-        when(restTemplate.exchange(zosmfUrl + "/zosmf/services/authenticate", HttpMethod.DELETE, new HttpEntity<>(null, headers), String.class))
-            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
-        authService.invalidateJwtToken(jwtToken01, false);
-        assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
-        verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
-        verify(restTemplate, times(1))
-            .exchange(zosmfUrl + "/zosmf/services/authenticate", HttpMethod.DELETE, new HttpEntity<>(null, headers), String.class);
-
-        assertFalse(authService.validateJwtToken(jwtToken01).isAuthenticated());
-        verify(jwtSecurityInitializer, times(3)).getJwtPublicKey();
     }
 
     private ZosmfService getSpiedZosmfService() {
@@ -457,80 +564,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     @Test
-    void invalidateZosmfJwtToken() {
-        final String token = "zosmfJwtToken";
-        final String url = zosmfUrl + "/zosmf/services/authenticate";
-
-        final ZosmfService zosmfService = getSpiedZosmfService();
-        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).logoutEndpointExists();
-        doReturn(new QueryResponse(
-            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
-        )).when(authService).parseJwtToken(token);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("X-CSRF-ZOSMF-HEADER", "");
-        headers.add(HttpHeaders.COOKIE, "jwtToken=" + token);
-        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
-        doReturn(new ResponseEntity<>(HttpStatus.OK)).when(restTemplate)
-            .exchange(url, HttpMethod.DELETE, httpEntity, String.class);
-
-        assertTrue(authService.invalidateJwtToken(token, false));
-        verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, token);
-        verify(restTemplate, times(1))
-            .exchange(url, HttpMethod.DELETE, httpEntity, String.class);
-    }
-
-    @Test
-    void invalidateZosmfLtpaToken() {
-        final String jwtToken = "zosmfJwtToken";
-        final String ltpaToken = "zosmfLtpaToken";
-        final String url = zosmfUrl + "/zosmf/services/authenticate";
-
-        final ZosmfService zosmfService = getSpiedZosmfService();
-        ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
-        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(new QueryResponse(
-            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOWE
-        )).when(authService).parseJwtToken(jwtToken);
-
-        doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("X-CSRF-ZOSMF-HEADER", "");
-        headers.add(HttpHeaders.COOKIE, "LtpaToken2=" + ltpaToken);
-        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
-        doReturn(new ResponseEntity<>(HttpStatus.OK)).when(restTemplate)
-            .exchange(url, HttpMethod.DELETE, httpEntity, String.class);
-
-        assertTrue(authService.invalidateJwtToken(jwtToken, false));
-        verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.LTPA, ltpaToken);
-    }
-
-
-    @Test
-    void testValidateZosmfJwtToken() {
-        final String jwtToken = "jwtTokenSource";
-        final String userId = "userIdSource";
-        final QueryResponse queryResponse = new QueryResponse("domain", userId, new Date(), new Date(), QueryResponse.Source.ZOSMF);
-
-        final ZosmfService zosmfService = mock(ZosmfService.class);
-        doReturn(true).when(zosmfService).validate(jwtToken);
-
-        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-
-        doAnswer((Answer<Object>) invocation -> {
-            assertEquals(jwtToken, invocation.getArgument(0));
-            return queryResponse;
-        }).when(authService).parseJwtToken(jwtToken);
-
-        TokenAuthentication tokenAuthentication = authService.validateJwtToken(jwtToken);
-        assertTrue(tokenAuthentication.isAuthenticated());
-        assertEquals(jwtToken, tokenAuthentication.getCredentials());
-        assertEquals(userId, tokenAuthentication.getPrincipal());
-        verify(zosmfService, times(1)).validate(jwtToken);
-    }
-
-    @Test
-    void testCreateTokenAuthentication() {
+    void givenCreateTokenAuthentication_thenCreateCorrectObject() {
         Consumer<TokenAuthentication> assertTokenAuthentication = x -> {
             assertNotNull(x);
             assertTrue(x.isAuthenticated());
@@ -542,118 +576,65 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         tokenAuthentication = authService.createTokenAuthentication("userXYZ", "jwtTokenXYZ");
         assertTokenAuthentication.accept(tokenAuthentication);
-
-        tokenAuthentication = authService.validateJwtToken("jwtTokenXYZ");
-        assertTokenAuthentication.accept(tokenAuthentication);
     }
 
-    @Test
-    void testGetLtpaTokenException() {
-        for (String jwtToken : new String[]{"header.body.sign", "wrongJwtToken", ""}) {
-            try {
-                authService.getLtpaToken(jwtToken);
-                fail();
-            } catch (TokenNotValidException e) {
-                assertTrue(e.getMessage().contains("Token is not valid."));
-            }
+
+
+
+    @Nested
+    class GivenDistributedInvalidationTest {
+
+        @Test
+        void whenNoServiceAvailable_thenReturnFailure() {
+            when(discoveryClient.getApplication("gateway")).thenReturn(null);
+            assertFalse(authService.distributeInvalidate("instanceId"));
         }
+
+        @Test
+        void whenNoInstanceAvailable_thenReturnFailure() {
+            Application application = mock(Application.class);
+            when(application.getByInstanceId("instanceId")).thenReturn(null);
+
+            when(discoveryClient.getApplication("gateway")).thenReturn(application);
+            assertFalse(authService.distributeInvalidate("instanceId"));
+        }
+
+        @Test
+        void whenInstancesAvailable_thenReturnSuccess() {
+            reset(restTemplate);
+
+            InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433, true);
+
+            Application application = mock(Application.class);
+            when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
+            when(discoveryClient.getApplication("gateway")).thenReturn(application);
+
+            ApplicationContext applicationContext = mock(ApplicationContext.class);
+
+            CacheUtils cacheUtils = mock(CacheUtils.class);
+            List<Object> elementsInCache = new ArrayList<>();
+            elementsInCache.add("a");
+            elementsInCache.add("b");
+            when(cacheUtils.getAllRecords(any(), any())).thenReturn(elementsInCache);
+
+            AuthenticationService authenticationService = new AuthenticationService(
+                applicationContext, authConfigurationProperties, jwtSecurityInitializer, getSpiedZosmfService(),
+                discoveryClient, restTemplate, mock(CacheManager.class), cacheUtils
+            );
+
+            when(applicationContext.getBean(AuthenticationService.class)).thenReturn(authenticationService);
+
+            authenticationService.distributeInvalidate(instanceInfo.getInstanceId());
+
+            verify(restTemplate, times(2)).delete(anyString(), anyString());
+            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
+            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
+        }
+
     }
 
-    @Test
-    void testCreateOrdinaryJwtTokenAndCheckExpiration() {
-        String jwt1 = authService.createJwtToken("user", "domain", "ltpaToken");
-
-        QueryResponse qr1 = authService.parseJwtToken(jwt1);
-        Date toBeExpired = DateUtils.addSeconds(qr1.getCreation(), authConfigurationProperties.getTokenProperties().getExpirationInSeconds());
-        assertEquals(qr1.getExpiration(), toBeExpired);
-    }
-
-    @Test
-    void testCreateShortLivedJwtTokenAndCheckExpiration() {
-        String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
-        QueryResponse qr2 = authService.parseJwtToken(jwt2);
-        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
-        assertEquals(qr2.getExpiration(), toBeExpired2);
-    }
 
 
-    @Test
-    void testDistributeInvalidateNotFoundApplication() {
-        when(discoveryClient.getApplication("gateway")).thenReturn(null);
-        assertFalse(authService.distributeInvalidate("instanceId"));
-    }
 
-    @Test
-    void testDistributeInvalidateNotFoundInstance() {
-        Application application = mock(Application.class);
-        when(application.getByInstanceId("instanceId")).thenReturn(null);
-
-        when(discoveryClient.getApplication("gateway")).thenReturn(application);
-        assertFalse(authService.distributeInvalidate("instanceId"));
-    }
-
-    @Test
-    void testDistributeInvalidateSuccess() {
-        reset(restTemplate);
-
-        InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433, true);
-
-        Application application = mock(Application.class);
-        when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
-        when(discoveryClient.getApplication("gateway")).thenReturn(application);
-
-        ApplicationContext applicationContext = mock(ApplicationContext.class);
-
-        CacheUtils cacheUtils = mock(CacheUtils.class);
-        List<Object> elementsInCache = new ArrayList<>();
-        elementsInCache.add("a");
-        elementsInCache.add("b");
-        when(cacheUtils.getAllRecords(any(), any())).thenReturn(elementsInCache);
-
-        AuthenticationService authenticationService = new AuthenticationService(
-            applicationContext, authConfigurationProperties, jwtSecurityInitializer, getSpiedZosmfService(),
-            discoveryClient, restTemplate, mock(CacheManager.class), cacheUtils
-        );
-
-        when(applicationContext.getBean(AuthenticationService.class)).thenReturn(authenticationService);
-
-        authenticationService.distributeInvalidate(instanceInfo.getInstanceId());
-
-        verify(restTemplate, times(2)).delete(anyString(), anyString());
-        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
-        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
-    }
-
-    @Test
-    void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
-        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setCookies(new Cookie(cookieName, "jwt1"));
-        request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwt2");
-        Optional<String> token = authService.getJwtTokenFromRequest(request);
-        assertTrue(token.isPresent());
-        assertEquals("jwt1", token.get());
-    }
-
-    @Test
-    void givenOtherCookiesAndJwtInHeader_whenGetJwtTokenFromRequest_thenTakeFromHeader() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setCookies(new Cookie("cookie", "value"));
-        request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwt");
-        Optional<String> token = authService.getJwtTokenFromRequest(request);
-        assertTrue(token.isPresent());
-        assertEquals("jwt", token.get());
-    }
-
-    @Test
-    void givenAValidToken_whenGetJwtTokenFromRequest_thenReturnTheToken() {
-        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
-        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
-        assertTrue(optionalToken.isPresent());
-        assertEquals(optionalToken.get(), jwtToken);
-    }
 
 }
