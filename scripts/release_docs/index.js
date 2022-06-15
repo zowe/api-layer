@@ -18,7 +18,7 @@ const branchToMerge = process.argv[6];
     console.log("execSync for changes...manually putting 1")
     try {
         let convChange = `conventional-changelog -r`;
-        const changesTest = execSync(convChange, {cwd: '../../'});
+        const changesTest = execSync(convChange, {maxBuffer: 107374182000});
         console.log("printing out changes from execSync: \n" + changesTest)
         const changesTestToString = changesTest.toString();
         console.log("printing out changes toString: \n" + changesTestToString)
