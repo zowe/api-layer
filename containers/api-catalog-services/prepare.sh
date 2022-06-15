@@ -43,7 +43,7 @@ api_catalog_package="api-catalog-package"
 apiml_common_package="apiml-common-lib-package"
 
 ignoredUiTasks="$(getIgnoredUiTasks "api-catalog-ui")"
-buildPackage $api_catalog_package "packageApiCatalog ${ignoredUiTasks}"
+buildPackage $api_catalog_package "packageApiCatalog -PomitDevDependencies ${ignoredUiTasks}"
 buildApimlCommonPackage
 
 preparePackage $api_catalog_package
