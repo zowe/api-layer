@@ -11,12 +11,14 @@ const branchToMerge = process.argv[6];
 // last commit in this script is recorded but not the previous commit history, will only filter on that one last commit (if it's not feat or fix, then nothing gets recorded). Shift is not the issue.
 // order of changelog is in alphabetical order, with priority fix -> feat -> chore -> no prefix
 // gets commits from latest -> last release
-//
+// test out if any other command with output works
+// maxBuffer 1073741820??
 (async function () {
 
     console.log("execSync for changes...manually putting 1")
     try {
-        const changesTest = execSync(`conventional-changelog -r 1`, {encoding: 'utf-8'});
+        let convChange = `conventional-changelog -r`;
+        const changesTest = execSync(convChange, {cwd: '../../'});
         console.log("printing out changes from execSync: \n" + changesTest)
         const changesTestToString = changesTest.toString();
         console.log("printing out changes toString: \n" + changesTestToString)
