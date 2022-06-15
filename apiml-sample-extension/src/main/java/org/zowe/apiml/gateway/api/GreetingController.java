@@ -9,14 +9,16 @@
  */
 package org.zowe.apiml.gateway.api;
 
-import io.swagger.annotations.Api;
-import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller that returns greetings.
  */
 @RestController
-@Api(tags = {"Other Operations"})
+@Tag(name = "Other Operations")
 @RequestMapping("/api/v1")
 public class GreetingController {
     private static final String GREETING = "Hello, I'm a sample extension!";

@@ -5,6 +5,7 @@ logging:
         org.zowe.apiml.enable: WARN
         org.springframework: WARN
         org.springframework.boot: WARN
+        org.springdoc: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
@@ -55,7 +56,7 @@ apiml:
             -   apiId: zowe.apiml.metricsservice
                 version: 1.0.0
                 gatewayUrl: api/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
@@ -92,6 +93,9 @@ spring:
     application:
         name: Metrics Service
     output.ansi.enabled: always
+
+springdoc:
+    pathsToMatch: /api/v1/**
 
 server:
     port: ${apiml.service.port}

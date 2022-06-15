@@ -50,7 +50,7 @@ describe('>>> Detail page test', () => {
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
-        cy.get('#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > pre')
+        cy.get('#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option')
             .should('exist')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1`);
 

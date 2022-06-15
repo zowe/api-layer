@@ -46,7 +46,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         String[] noSecurityAntMatchers = {
             "/application/health",
             "/application/info",
-            "/v2/api-docs"
+            "/v3/api-docs"
         };
         web.ignoring().antMatchers(noSecurityAntMatchers);
 
