@@ -42,7 +42,8 @@ cleanUpWorkingFolder
 api_catalog_package="api-catalog-package"
 apiml_common_package="apiml-common-lib-package"
 
-buildPackage $api_catalog_package "packageApiCatalog"
+ignoredUiTasks="$(getIgnoredUiTasks "api-catalog-ui")"
+buildPackage $api_catalog_package "packageApiCatalog ${ignoredUiTasks}"
 buildPackage $apiml_common_package "packageCommonLib"
 
 preparePackage $api_catalog_package
