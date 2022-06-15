@@ -13,6 +13,8 @@ const branchToMerge = process.argv[6];
 // gets commits from latest -> last release
 // test out if any other command with output works
 // maxBuffer 1073741820??
+// not getting truncated by maxBuffer (shouldn't), can execute line from above before putting in execSync
+// look up execSync and potentially downgrade the option?
 (async function () {
 
     console.log("execSync for changes...manually putting 1")
