@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
@@ -22,8 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ApimlAccessTokenProviderTest {
@@ -84,4 +84,18 @@ class ApimlAccessTokenProviderTest {
 
         assertFalse(accessTokenProvider.isInvalidated(differentToken));
     }
+
+    @Nested
+    class givenUserAndValidExpiration {
+        @Test
+        void tokenIsCreated() {
+            AuthenticationService as = mock(AuthenticationService.class);
+            ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(csc, as);
+            when(as.createLongLivedJwtToken("user", 55)).thenReturn("token");
+            String token = accessTokenProvider.getToken("user", 55);
+            assertNotNull(token);
+            assertEquals("token", token);
+        }
+    }
+
 }
