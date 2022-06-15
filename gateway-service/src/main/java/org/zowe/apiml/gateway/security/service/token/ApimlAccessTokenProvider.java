@@ -92,8 +92,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return localSalt;
     }
 
-    public String getToken(String username){
-       return authenticationService.createLongLivedJwtToken(username, 90);
+    public String getToken(String username, int expirationTime) {
+       expirationTime = Math.min(expirationTime, 90);
+       return authenticationService.createLongLivedJwtToken(username, expirationTime);
     }
 
     public byte[] getSalt() throws CachingServiceClientException {

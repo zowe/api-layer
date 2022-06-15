@@ -32,6 +32,7 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 @Configuration
 @ComponentScan({
     "org.zowe.apiml.security.common",
+    "org.zowe.apiml.gateway.security.login"
 })
 @EnableWebSecurity
 @RequiredArgsConstructor

@@ -9,6 +9,9 @@
  */
 package org.zowe.apiml.gateway.security.login;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -19,16 +22,31 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandler {
 
     private final AccessTokenProvider accessTokenProvider;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        String token = accessTokenProvider.getToken(authentication.getPrincipal().toString());
-        response.getWriter().write(token);
+        String validity = request.getAttribute("expirationTime").toString();
+        String token = accessTokenProvider.getToken(authentication.getPrincipal().toString(), Integer.parseInt(validity));
+        response.getWriter().print(token);
         response.getWriter().flush();
+        response.getWriter().close();
+        if (!response.isCommitted()) {
+            throw new IOException("Authentication response has not been committed.");
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AccessTokenRequest {
+        private int validity;
+        private Set<String> scopes;
     }
 }
