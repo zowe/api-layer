@@ -16,8 +16,10 @@ const branchToMerge = process.argv[6];
 
     console.log("execSync for changes...manually putting 1")
     try {
-        const changesTest = execSync(`conventional-changelog -r 1`, {encoding: 'utf-8'}).toString();
-        console.log("printing out changes: " + changesTest)
+        const changesTest = execSync(`conventional-changelog -r 1`, {encoding: 'utf-8'});
+        console.log("printing out changes from execSync: \n" + changesTest)
+        const changesTestToString = changesTest.toString();
+        console.log("printing out changes toString: \n" + changesTestToString)
     } catch (error) {
         console.log("error got thrown")
         console.log(error);
