@@ -122,11 +122,10 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         }
 
         @Test
-        void thenCreateJwtToken() {
-            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-
-            assertFalse(jwtToken.isEmpty());
-            assertEquals("java.lang.String", jwtToken.getClass().getName());
+        void thenCreatePersonalAccessToken() {
+            String pat = authService.createLongLivedJwtToken(USER,60);
+            QueryResponse parsedPAT = authService.parseJwtToken(pat);
+            assertEquals(QueryResponse.Source.ZOWE_PAT,parsedPAT.getSource());
         }
 
         @Test
