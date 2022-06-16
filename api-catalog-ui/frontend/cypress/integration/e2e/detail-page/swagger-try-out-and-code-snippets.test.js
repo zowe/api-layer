@@ -72,11 +72,11 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         cy.get('button.execute').click();
         // check the first tab of the code snippet panel. The order should be always the same
         cy.get(
-            '#operations-API_Catalog-getAllAPIContainersUsingGET > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div:nth-child(1)'
+            '#operations-API_Catalog-getAllAPIContainers > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div:nth-child(1)'
         ).should('exist');
         cy.get('div.curl-command > div:nth-child(1) > div:nth-child(1) > h4').should('contain', 'cURL (CMD)');
         cy.get(
-            '#operations-API_Catalog-getAllAPIContainersUsingGET > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div.curl-command > div:nth-child(3) > pre'
+            '#operations-API_Catalog-getAllAPIContainers > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div.curl-command > div:nth-child(3) > pre'
         ).should('exist');
         cy.get('div.curl-command > div:nth-child(1) > div:nth-child(2)').click();
         cy.get('div.curl-command > div:nth-child(3) > pre').should('exist');

@@ -9,96 +9,68 @@
  */
 package org.zowe.apiml.client.configuration;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.Collections;
 
 @Configuration
-@EnableSwagger2
 public class SwaggerConfiguration {
 
     @Value("${apiml.service.title}")
     private String apiTitle;
 
     @Value("${apiml.service.apiInfo[0].version}")
-    private String apiVersion;
+    private String apiVersionRest1;
+
+    @Value("${apiml.service.apiInfo[1].version}")
+    private String graphqlVersion;
+
+    @Value("${apiml.service.apiInfo[2].version}")
+    private String apiVersionRest2;
 
     @Value("${apiml.service.description}")
     private String apiDescription;
 
     @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-            .select()
-            .apis(RequestHandlerSelectors.any())
-            .paths(PathSelectors.ant("/api/v1/**"))
-            .build()
-            .apiInfo(
-                new ApiInfo(
-                    apiTitle,
-                    apiDescription,
-                    apiVersion,
-                    null,
-                    null,
-                    null,
-                    null,
-                    Collections.emptyList()
-                )
-            );
-    }
-
-    @Value("${apiml.service.apiInfo[1].version}")
-    private String apiVersion2;
-
-    @Bean
-    public Docket apiv2() {
-        return new Docket(DocumentationType.SWAGGER_2)
-            .groupName("apiv2")
-            .select()
-            .apis(RequestHandlerSelectors.any())
-            .paths(PathSelectors.ant("/api/v2/**"))
-            .build()
-            .apiInfo(
-                new ApiInfo(
-                    apiTitle,
-                    apiDescription,
-                    apiVersion2,
-                    null,
-                    null,
-                    null,
-                    null,
-                    Collections.emptyList()
-                )
+    public OpenAPI openAPI() {
+        return new OpenAPI()
+            .info(new Info()
+                .title(apiTitle)
+                .description(apiDescription))
+            .components(new Components().addSecuritySchemes("ESM token",
+                new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("esmToken"))
             );
     }
 
     @Bean
-    public Docket graphv1() {
-        return new Docket(DocumentationType.SWAGGER_2)
-            .groupName("graphv1")
-            .select()
-            .apis(RequestHandlerSelectors.any())
-            .paths(PathSelectors.ant("/graphql/v1/**"))
-            .build()
-            .apiInfo(
-                new ApiInfo(
-                    apiTitle,
-                    apiDescription,
-                    apiVersion2,
-                    null,
-                    null,
-                    null,
-                    null,
-                    Collections.emptyList()
-                )
-            );
+    public GroupedOpenApi apiV1() {
+        return GroupedOpenApi.builder()
+            .group("apiv1")
+            .pathsToMatch("/api/v1/**")
+            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest1)))
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi apiV2() {
+        return GroupedOpenApi.builder()
+            .group("apiv2")
+            .pathsToMatch("/api/v2/**")
+            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest2)))
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi graphV1() {
+        return GroupedOpenApi.builder()
+            .group("graphv1")
+            .pathsToMatch("/graphql/v1/**")
+            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(graphqlVersion)))
+            .build();
     }
 }

@@ -10,7 +10,7 @@
 package org.zowe.apiml.apicatalog.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,22 +27,22 @@ public class APIContainer implements Serializable {
 
     private static final long serialVersionUID = 1905122041950251207L;
 
-    @ApiModelProperty(notes = "The version of the API container")
+    @Schema(description = "The version of the API container")
     private String version;
 
-    @ApiModelProperty(notes = "The API Container Id")
+    @Schema(description = "The API Container Id")
     private String id;
 
-    @ApiModelProperty(notes = "The API Container title")
+    @Schema(description = "The API Container title")
     private String title;
 
-    @ApiModelProperty(notes = "The Status of the container")
+    @Schema(description = "The Status of the container")
     private String status;
 
-    @ApiModelProperty(notes = "The description of the API")
+    @Schema(description = "The description of the API")
     private String description;
 
-    @ApiModelProperty(notes = "A collection of services which are registered with this API")
+    @Schema(description = "A collection of services which are registered with this API")
     private Set<APIService> services;
 
     private Integer totalServices;
@@ -55,7 +55,7 @@ public class APIContainer implements Serializable {
     // used to determine if container is new
     private Calendar createdTimestamp;
 
-    @ApiModelProperty(notes = "The SSO support of all services and instances in the container")
+    @Schema(description = "The SSO support of all services and instances in the container")
     private boolean sso;
 
     public APIContainer() {

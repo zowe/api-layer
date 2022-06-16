@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.model;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -24,49 +24,49 @@ public class APIService implements Serializable {
 
     private static final long serialVersionUID = 5119572678327579985L;
 
-    @ApiModelProperty(notes = "The service id")
+    @Schema(description = "The service id")
     private String serviceId;
 
-    @ApiModelProperty(notes = "The API service name")
+    @Schema(description = "The API service name")
     private String title;
 
-    @ApiModelProperty(notes = "The description of the API service")
+    @Schema(description = "The description of the API service")
     private String description;
 
-    @ApiModelProperty(notes = "The status of the API service")
+    @Schema(description = "The status of the API service")
     private String status;
 
-    @ApiModelProperty(notes = "The security status of the API service")
+    @Schema(description = "The security status of the API service")
     private boolean secured;
 
-    @ApiModelProperty(notes = "The instance home URL")
+    @Schema(description = "The instance home URL")
     private String baseUrl;
 
-    @ApiModelProperty(notes = "The service home page of the API service")
+    @Schema(description = "The service home page of the API service")
     private String homePageUrl;
 
-    @ApiModelProperty(notes = "The service API base path of the API service")
+    @Schema(description = "The service API base path of the API service")
     private String basePath;
 
-    @ApiModelProperty(notes = "The API documentation for this service")
+    @Schema(description = "The API documentation for this service")
     private String apiDoc;
 
-    @ApiModelProperty(notes = "The default API version for this service")
+    @Schema(description = "The default API version for this service")
     private String defaultApiVersion = "v1";
 
-    @ApiModelProperty(notes = "The available API versions for this service")
+    @Schema(description = "The available API versions for this service")
     private List<String> apiVersions;
 
-    @ApiModelProperty(notes = "The SSO support for this instance")
+    @Schema(description = "The SSO support for this instance")
     private boolean sso;
 
-    @ApiModelProperty(notes = "The SSO support for all instances")
+    @Schema(description = "The SSO support for all instances")
     private boolean ssoAllInstances;
 
-    @ApiModelProperty(notes = "The API ID for this service")
+    @Schema(description = "The API ID for this service")
     private Map<String, String> apiId;
 
-    @ApiModelProperty(notes = "The Gateway URLs used within this service")
+    @Schema(description = "The Gateway URLs used within this service")
     private Map<String, String> gatewayUrls;
 
     private List<String> instances = new ArrayList<>();
@@ -75,6 +75,7 @@ public class APIService implements Serializable {
         this.serviceId = serviceId;
         this.status = "UP";
     }
+
     public static class Builder {
         private APIService apiService;
 

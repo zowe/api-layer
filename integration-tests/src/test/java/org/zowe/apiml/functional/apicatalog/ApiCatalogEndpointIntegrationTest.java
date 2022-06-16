@@ -131,23 +131,23 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                     "\n**************************\n";
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
-                String swaggerHost = jsonContext.read("$.host");
-                String swaggerBasePath = jsonContext.read("$.basePath");
+                String swaggerServer = jsonContext.read("$.servers[0].url");
                 LinkedHashMap paths = jsonContext.read("$.paths");
-                LinkedHashMap definitions = jsonContext.read("$.definitions");
+                LinkedHashMap componentSchemas = jsonContext.read("$.components.schemas");
+                LinkedHashMap securitySchemes = jsonContext.read("$.components.securitySchemes");
 
                 // Then
                 assertFalse(paths.isEmpty(), apiCatalogSwagger);
-                assertFalse(definitions.isEmpty(), apiCatalogSwagger);
-                assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
-                assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
+                assertFalse(componentSchemas.isEmpty(), apiCatalogSwagger);
+                assertEquals("https://" + baseHost + "/apicatalog/api/v1", swaggerServer, apiCatalogSwagger);
                 assertNull(paths.get("/status/updates"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers"), apiCatalogSwagger);
                 assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
-                assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
-                assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
-                assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
+                assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
+                assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get("Basic authorization"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
 
             @Test
@@ -164,23 +164,23 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                     "\n**************************\n";
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
-                String swaggerHost = jsonContext.read("$.host");
-                String swaggerBasePath = jsonContext.read("$.basePath");
+                String swaggerServer = jsonContext.read("$.servers[0].url");
                 LinkedHashMap paths = jsonContext.read("$.paths");
-                LinkedHashMap definitions = jsonContext.read("$.definitions");
+                LinkedHashMap componentSchemas = jsonContext.read("$.components.schemas");
+                LinkedHashMap securitySchemes = jsonContext.read("$.components.securitySchemes");
 
                 // Then
                 assertFalse(paths.isEmpty(), apiCatalogSwagger);
-                assertFalse(definitions.isEmpty(), apiCatalogSwagger);
-                assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
-                assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
+                assertFalse(componentSchemas.isEmpty(), apiCatalogSwagger);
+                assertEquals("https://" + baseHost + "/apicatalog/api/v1", swaggerServer, apiCatalogSwagger);
                 assertNull(paths.get("/status/updates"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers"), apiCatalogSwagger);
                 assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
-                assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
-                assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
-                assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
+                assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
+                assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get("Basic authorization"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
         }
 

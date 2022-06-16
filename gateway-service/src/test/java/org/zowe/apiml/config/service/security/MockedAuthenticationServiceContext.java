@@ -15,14 +15,13 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.*;
-import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.CacheUtils;
-
-import java.util.ArrayList;
 
 import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.gateway.security.service.AuthenticationServiceTest.ZOSMF;
@@ -40,6 +39,7 @@ public class MockedAuthenticationServiceContext {
     }
 
     @Bean
+    @Primary
     public JwtSecurity getJwtSecurityInitializer() {
         return mock(JwtSecurity.class);
     }
@@ -56,16 +56,11 @@ public class MockedAuthenticationServiceContext {
 
     @Bean
     public ZosmfService getZosmfService() {
-        return new ZosmfService(
-            getAuthConfigurationProperties(),
-            getDiscoveryClient(),
-            getRestTemplate(),
-            AuthenticationServiceTest.securityObjectMapper,applicationContext,
-            new ArrayList<TokenValidationStrategy>()
-        );
+        return mock(ZosmfService.class);
     }
 
     @Bean
+    @Primary
     public AuthenticationService getAuthenticationService(CacheManager cacheManager, CacheUtils cacheUtils) {
         return new AuthenticationService(
             applicationContext, getAuthConfigurationProperties(), getJwtSecurityInitializer(),
