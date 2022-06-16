@@ -17,44 +17,46 @@ const branchToMerge = process.argv[6];
 // look up execSync and potentially downgrade the conventional-changelog?
 (async function () {
 
-    console.log("execSync for changes...manually putting 1")
-    try {
-        let convChange = `git --no-pager log -n 10`; // testing if this is related to conventional-changelog potentially being truncated. Expected out put should put all the commits.
-        const changesTest = execSync(convChange, {maxBuffer: 107374182000});
-        console.log("printing out git log changes from execSync: \n" + changesTest)
-        const changesTestToString = changesTest.toString();
-        console.log("printing out git log changes toString: \n" + changesTestToString)
+//    try {
+//        let convChange = `git --no-pager log -n 10`; // testing if this is related to conventional-changelog potentially being truncated. Expected out put should put all the commits.
+//        const changesTest = execSync(convChange, {maxBuffer: 107374182000});
+//        console.log("printing out git log changes from execSync: \n" + changesTest)
+//        const changesTestToString = changesTest.toString();
+//        console.log("printing out git log changes toString: \n" + changesTestToString)
+//
+//        console.log("printing out git branch changes...")
+//        let convChangeBranch = `git branch`;
+//        const convChangeBranchExecSync = execSync(convChangeBranch, {maxBuffer: 107374182000});
+//        console.log("printing out git branch changes from execSync: \n" + convChangeBranchExecSync)
+//        const changesTestBranch = convChangeBranchExecSync.toString();
+//        console.log("printing out git branch changes toString: \n" + changesTestBranch)
+//
+//
+//        console.log("printing out pwd changes...")
+//        let convChangePwd = `pwd`;
+//        const convChangePwdExecSync = execSync(convChangePwd, {maxBuffer: 107374182000});
+//        console.log("printing out pwd changes from execSync: \n" + convChangePwdExecSync)
+//        const changesTestPwd = convChangePwdExecSync.toString();
+//        console.log("printing out pwd changes toString: \n" + changesTestPwd)
+//
+//        console.log("testing /dev/null")
+//        let devNull = `echo "abc" > /dev/null && echo "def"`;
+//        const convChangedevNull = execSync(devNull, {maxBuffer: 107374182000}).toString();
+//        console.log(convChangedevNull)
 
-        console.log("printing out git branch changes...")
-        let convChangeBranch = `git branch`;
-        const convChangeBranchExecSync = execSync(convChangeBranch, {maxBuffer: 107374182000});
-        console.log("printing out git branch changes from execSync: \n" + convChangeBranchExecSync)
-        const changesTestBranch = convChangeBranchExecSync.toString();
-        console.log("printing out git branch changes toString: \n" + changesTestBranch)
+    console.log("git checkout...test conventional changelog")
+    let convChange = `git fetch --unshallow --tags origin ${branchToMerge} --quiet
+        && git checkout origin/${branchToMerge} --quiet
+        && conventional-changelog -r ${amountOfVersions}`;
 
+    const changes = execSync(convChange);
+    console.log("printing out checkout changes from execSync: \n" + changes)
+//    } catch (error) {
+//        console.log("error got thrown")
+//        console.log(error);
+//    }
 
-        console.log("printing out pwd changes...")
-        let convChangePwd = `pwd`;
-        const convChangePwdExecSync = execSync(convChangePwd, {maxBuffer: 107374182000});
-        console.log("printing out pwd changes from execSync: \n" + convChangePwdExecSync)
-        const changesTestPwd = convChangePwdExecSync.toString();
-        console.log("printing out pwd changes toString: \n" + changesTestPwd)
-
-        console.log("testing /dev/null")
-        let devNull = `echo "abc" > /dev/null && echo "def"`;
-        const convChangedevNull = execSync(devNull, {maxBuffer: 107374182000}).toString();
-        console.log(convChangedevNull)
-
-        console.log("git checkout...test conventional changelog")
-        let convChangeCheckout = `git fetch --unshallow --tags origin apiml/GH2405/fix_gh_workflow > /dev/null 2>&1 && git checkout origin/apiml/GH2405/fix_gh_workflow > /dev/null 2>&1 && conventional-changelog -r`;
-        const convChangeCheckoutExecSync = execSync(convChangeCheckout, {maxBuffer: 107374182000});
-        console.log("printing out checkout changes from execSync: \n" + convChangeCheckoutExecSync)
-    } catch (error) {
-        console.log("error got thrown")
-        console.log(error);
-    }
-
-    const changes = execSync(`conventional-changelog -r ${amountOfVersions}`, {encoding: 'utf-8'}).toString();
+//    const changes = execSync(`conventional-changelog -r ${amountOfVersions}`, {encoding: 'utf-8'}).toString();
 
 //
 //      const changes = "a\nb\nc"
@@ -80,6 +82,10 @@ const branchToMerge = process.argv[6];
     changeLogLines.shift();
     changeLogLines.shift();
     const restOfChangelog = changeLogLines.join("\n");
+
+    console.log("printing out bugs and fixes...")
+    console.log(addedFeatures)
+    console.log(addedFixes)
 
     const changelogToStore = `# API Mediation Layer Changelog
 
