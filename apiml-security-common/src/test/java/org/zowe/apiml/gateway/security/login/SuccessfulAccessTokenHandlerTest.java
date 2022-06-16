@@ -57,6 +57,15 @@ class SuccessfulAccessTokenHandlerTest {
         }
 
         @Test
+        void givenNullExpiration_thenReturn200() throws ServletException, IOException {
+            httpServletRequest.setAttribute("expirationTime", "");
+            when(accessTokenProvider.getToken(any(), anyInt())).thenReturn("jwtToken");
+            executeLoginHandler();
+
+            assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
+        }
+
+        @Test
         void givenResponseNotCommitted_thenThrowIOException() throws IOException {
             httpServletRequest.setAttribute("expirationTime", 90);
             when(accessTokenProvider.getToken(any(), anyInt())).thenReturn("jwtToken");
