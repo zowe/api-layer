@@ -74,14 +74,14 @@ class StoreAccessTokenInfoFilterTest {
         }
 
         @Test
-        void whenInvalidValue_thenThrowException() throws ServletException {
+        void whenInvalidValue_thenReturn400() throws ServletException {
             request.setContent(INVALID_JSON.getBytes());
             underTest.doFilterInternal(request, response, chain);
             assertThat(response.getStatus(), is(400));
         }
 
         @Test
-        void whenInvalidKey_thenThrowException() throws ServletException {
+        void whenInvalidKey_thenReturn400() throws ServletException {
             request.setContent(INVALID_JSON2.getBytes());
             underTest.doFilterInternal(request, response, chain);
             assertThat(response.getStatus(), is(400));
