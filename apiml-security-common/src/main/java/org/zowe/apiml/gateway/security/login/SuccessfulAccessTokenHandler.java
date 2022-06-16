@@ -32,7 +32,7 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        String validity = request.getAttribute("expirationTime").toString();
+        String validity = request.getAttribute("expirationTime") == null ? "0" : request.getAttribute("expirationTime").toString();
         String token = accessTokenProvider.getToken(authentication.getPrincipal().toString(), Integer.parseInt(validity));
         response.getWriter().print(token);
         response.getWriter().flush();

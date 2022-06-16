@@ -25,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
-class StoreTokenExpirationFilterTest {
-    StoreTokenExpirationFilter underTest;
+class StoreAccessTokenInfoFilterTest {
+    StoreAccessTokenInfoFilter underTest;
     private MockHttpServletRequest request;
     private ServletResponse response;
     private FilterChain chain;
@@ -37,7 +37,7 @@ class StoreTokenExpirationFilterTest {
         request = new MockHttpServletRequest();
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
-        underTest = new StoreTokenExpirationFilter();
+        underTest = new StoreAccessTokenInfoFilter();
         request.setMethod(HttpMethod.POST.name());
         request.setContent(VALID_JSON.getBytes());
     }

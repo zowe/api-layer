@@ -16,21 +16,26 @@ import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RequiredArgsConstructor
 /**
- * This filter will store the personal access token expiration time from the body as request attribute
+ * This filter will store the personal access information from the body as request attribute
  */
-public class StoreTokenExpirationFilter extends OncePerRequestFilter {
+public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
     private static final String EXPIRATION_TIME = "expirationTime";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        int validity = new ObjectMapper().readValue(request.getInputStream(), SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
-        request.setAttribute(EXPIRATION_TIME, validity);
+        ServletInputStream inputStream = request.getInputStream();
+        if (inputStream.available() != 0) {
+            int validity = new ObjectMapper().readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
+            request.setAttribute(EXPIRATION_TIME, validity);
+        }
+
         filterChain.doFilter(request, response);
     }
 }
