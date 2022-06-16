@@ -2,6 +2,26 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.1.3 (2022-06-16)`
+
+* Feature:  feature commit for branch ([7a281e8](https://github.com/zowe/api-layer/commit/7a281e8))
+* Feature:  revoke personal access token (#2422) ([c7f79d5](https://github.com/zowe/api-layer/commit/c7f79d5)), closes [#2422](https://github.com/zowe/api-layer/issues/2422)
+* Feature:  second feat commit for branch ([89ea7eb](https://github.com/zowe/api-layer/commit/89ea7eb))
+* Feature:  testing feat prefix again ([e256f1d](https://github.com/zowe/api-layer/commit/e256f1d))
+* Feature:  testing feature prefix, changes not using execSync ([dbcb4af](https://github.com/zowe/api-layer/commit/dbcb4af))
+
+* Bugfix:  added encoding in execSync to print multiple lines in changelog ([2ff30bb](https://github.com/zowe/api-layer/commit/2ff30bb))
+* Bugfix:  conventional-changelog on separate line ([4080017](https://github.com/zowe/api-layer/commit/4080017))
+* Bugfix:  conventional-changelog testing maxBuffer on execSync, shouldn't affect ([00594ef](https://github.com/zowe/api-layer/commit/00594ef))
+* Bugfix:  downgrade conventional-changelog version ([7a57452](https://github.com/zowe/api-layer/commit/7a57452))
+* Bugfix:  downgrade conventional-changelog version after uninstalling ([0895ed6](https://github.com/zowe/api-layer/commit/0895ed6))
+* Bugfix:  downgrade conventional-changelog version, try uninstalling first ([89a8946](https://github.com/zowe/api-layer/commit/89a8946))
+* Bugfix:  fix commit for branch ([f8c30bd](https://github.com/zowe/api-layer/commit/f8c30bd))
+* Bugfix:  investigating changes  with console log ([8b34835](https://github.com/zowe/api-layer/commit/8b34835))
+* Bugfix:  recovering after TCP/IP stack was restarted (#2421) ([a851b8f](https://github.com/zowe/api-layer/commit/a851b8f)), closes [#2421](https://github.com/zowe/api-layer/issues/2421)
+* Bugfix:  testing fix prefix, updating changes and logging any errors, replace amo9unt of versions with h ([01aa42a](https://github.com/zowe/api-layer/commit/01aa42a))
+* Bugfix:  testing if fix gets replaced by changelog as the last commit ([688fbd7](https://github.com/zowe/api-layer/commit/688fbd7))
+
 ## `2.1.0 (2022-05-31)`
 
 * Feature:  Add trivial schema files for lib components. Update manifests to remove build metadata (#2379) ([6eba58f](https://github.com/zowe/api-layer/commit/6eba58f)), closes [#2379](https://github.com/zowe/api-layer/issues/2379)
