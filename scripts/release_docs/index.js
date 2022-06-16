@@ -39,6 +39,13 @@ const branchToMerge = process.argv[6];
         console.log("printing out pwd changes from execSync: \n" + convChangePwdExecSync)
         const changesTestPwd = convChangePwdExecSync.toString();
         console.log("printing out pwd changes toString: \n" + changesTestPwd)
+
+
+
+        console.log("git checkout...")
+        let convChangeCheckout = `git checkout origin/apiml/GH2405/fix_gh_workflow && git --no-pager log -n 10`;
+        const convChangeCheckoutExecSync = execSync(convChangeCheckout, {maxBuffer: 107374182000});
+        console.log("printing out checkout changes from execSync: \n" + convChangeCheckoutExecSync)
     } catch (error) {
         console.log("error got thrown")
         console.log(error);
