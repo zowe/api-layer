@@ -42,7 +42,7 @@ const branchToMerge = process.argv[6];
 
         console.log("testing /dev/null")
         let devNull = `echo "abc" > /dev/null && echo "def"`;
-        const convChangeCheckoutExecSync = execSync(devNull, {maxBuffer: 107374182000});
+        const convChangeCheckoutExecSync = execSync(devNull, {maxBuffer: 107374182000}).toString();
         console.log(convChangeCheckoutExecSync)
 
 //        console.log("git checkout...test conventional changelog")
