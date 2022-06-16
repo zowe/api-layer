@@ -28,7 +28,7 @@ const branchToMerge = process.argv[6];
 
     const currentChangelog = await readFile("../../CHANGELOG.md");
     const changeLogLines = currentChangelog.toString().split(/\r?\n/)
-
+    // Remove first 4 lines as they will be replaces by the header that\s visible below
     changeLogLines.shift();
     changeLogLines.shift();
     changeLogLines.shift();
@@ -42,6 +42,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## \`${version} (${releaseDate})\`
 
 ${addedFeatures}
+
 
 ${addedFixes}
 
