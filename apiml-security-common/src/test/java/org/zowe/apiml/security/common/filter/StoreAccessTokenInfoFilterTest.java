@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -28,18 +28,19 @@ import static org.mockito.Mockito.*;
 class StoreAccessTokenInfoFilterTest {
     StoreAccessTokenInfoFilter underTest;
     private MockHttpServletRequest request;
-    private ServletResponse response;
+    private HttpServletResponse response;
     private FilterChain chain;
     private static final String VALID_JSON = "{\"validity\": 90, \"scopes\": [\"service\"]}";
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
 
     @BeforeEach
     public void setUp() {
         request = new MockHttpServletRequest();
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
-        underTest = new StoreAccessTokenInfoFilter();
+        underTest = new StoreAccessTokenInfoFilter(resourceAccessExceptionHandler);
         request.setMethod(HttpMethod.POST.name());
-        request.setContent(VALID_JSON.getBytes());
+
     }
 
     @Nested
@@ -47,7 +48,8 @@ class StoreAccessTokenInfoFilterTest {
 
         @Test
         void thenStoreExpirationTime() throws ServletException, IOException {
-            underTest.doFilter(request, response, chain);
+            request.setContent(VALID_JSON.getBytes());
+            underTest.doFilterInternal(request, response, chain);
             String expirationTime = request.getAttribute("expirationTime").toString();
             assertNotNull(expirationTime);
             assertEquals("90", expirationTime);

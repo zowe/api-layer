@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
+import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -27,15 +29,20 @@ import java.io.IOException;
  */
 public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
     private static final String EXPIRATION_TIME = "expirationTime";
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        ServletInputStream inputStream = request.getInputStream();
-        if (inputStream.available() != 0) {
-            int validity = new ObjectMapper().readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
-            request.setAttribute(EXPIRATION_TIME, validity);
-        }
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException {
+        try {
+            ServletInputStream inputStream = request.getInputStream();
+            if (inputStream.available() != 0) {
+                int validity = new ObjectMapper().readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
+                request.setAttribute(EXPIRATION_TIME, validity);
+            }
 
-        filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
+        } catch (IOException e) {
+            resourceAccessExceptionHandler.handleException(request, response, new AccessTokenBodyNotValidException("The request body you provided is not valid"));
+        }
     }
 }
