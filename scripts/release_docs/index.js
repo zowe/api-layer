@@ -9,10 +9,9 @@ const amountOfVersions = process.argv[5];
 const branchToMerge = process.argv[6];
 
 (async function () {
-    let convChange = `git fetch --unshallow --tags origin ${branchToMerge} --quiet && git checkout origin/${branchToMerge} --quiet && conventional-changelog -r ${amountOfVersions}`;
+    let convChangeLog = `git fetch --unshallow --tags origin ${branchToMerge} --quiet && git checkout origin/${branchToMerge} --quiet && conventional-changelog -r ${amountOfVersions}`;
 
-    const changes = execSync(convChange).toString();
-    console.log("printing out checkout changes from execSync: \n" + changes)
+    const changes = execSync(convChangeLog).toString();
 
     const lines = changes.split(/\r?\n/);
     const addedFeatures = lines.filter(line => {
@@ -35,9 +34,6 @@ const branchToMerge = process.argv[6];
     changeLogLines.shift();
     changeLogLines.shift();
     const restOfChangelog = changeLogLines.join("\n");
-
-    console.log(addedFeatures)
-    console.log(addedFixes)
 
     const changelogToStore = `# API Mediation Layer Changelog
 
