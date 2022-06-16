@@ -45,9 +45,7 @@ const branchToMerge = process.argv[6];
 //        console.log(convChangedevNull)
 
     console.log("git checkout...test conventional changelog")
-    let convChange = `git fetch --unshallow --tags origin ${branchToMerge} --quiet
-        && git checkout origin/${branchToMerge} --quiet
-        && conventional-changelog -r ${amountOfVersions}`;
+    let convChange = `git fetch --unshallow --tags origin ${branchToMerge} --quiet && git checkout origin/${branchToMerge} --quiet && conventional-changelog -r ${amountOfVersions}`;
 
     const changes = execSync(convChange);
     console.log("printing out checkout changes from execSync: \n" + changes)
