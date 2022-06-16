@@ -180,63 +180,7 @@ public class NewSecurityConfiguration {
         }
     }
 
-    /**
-     * Access token endpoint share single filter that handles auth with and without certificate.
-     */
-    @Configuration
-    @RequiredArgsConstructor
-    @Order(7)
-    class AccessToken extends WebSecurityConfigurerAdapter {
-        private final CompoundAuthProvider compoundAuthProvider;
-        private final AuthenticationProvider tokenAuthenticationProvider;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
-            auth.authenticationProvider(tokenAuthenticationProvider);
-            auth.authenticationProvider(new CertificateAuthenticationProvider()); // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                authConfigurationProperties.getGatewayAccessTokenEndpoint()
-            ).and())
-                .authorizeRequests()
-                .anyRequest().permitAll()
-                .and()
-
-                .x509()
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(new SimpleUserDetailService())
-                .and()
-
-                //drive filter order this way
-                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new StoreTokenExpirationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(accessTokenFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
-                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
-
-        }
-
-        private LoginFilter accessTokenFilter(String endpoint, AuthenticationManager authenticationManager) {
-            return new LoginFilter(
-                endpoint,
-                handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
-                handlerInitializer.getAuthenticationFailureHandler(),
-                securityObjectMapper,
-                authenticationManager,
-                handlerInitializer.getResourceAccessExceptionHandler());
-        }
-
-        private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
-            return new X509AuthenticationFilter(loginEndpoint,
-                handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
-                x509AuthenticationProvider);
-        }
-
-    }
 
     /**
      * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
@@ -367,6 +311,62 @@ public class NewSecurityConfiguration {
                 true,
                 authenticationManager);
         }
+    }
+
+    /**
+     * Access token endpoint share single filter that handles auth with and without certificate.
+     */
+    @Configuration
+    @RequiredArgsConstructor
+    @Order(7)
+    class AccessTokenEndpoint extends WebSecurityConfigurerAdapter {
+        private final CompoundAuthProvider compoundAuthProvider;
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) {
+            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
+            auth.authenticationProvider(new CertificateAuthenticationProvider()); // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
+                authConfigurationProperties.getGatewayAccessTokenEndpoint()
+            ).and())
+                .authorizeRequests()
+                .anyRequest().permitAll()
+                .and()
+
+                .x509()
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                .userDetailsService(new SimpleUserDetailService())
+                .and()
+
+                //drive filter order this way
+                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterBefore(new StoreTokenExpirationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterBefore(accessTokenFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
+                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+
+        }
+
+        private LoginFilter accessTokenFilter(String endpoint, AuthenticationManager authenticationManager) {
+            return new LoginFilter(
+                endpoint,
+                handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
+                handlerInitializer.getAuthenticationFailureHandler(),
+                securityObjectMapper,
+                authenticationManager,
+                handlerInitializer.getResourceAccessExceptionHandler());
+        }
+
+        private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
+            return new X509AuthenticationFilter(loginEndpoint,
+                handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
+                x509AuthenticationProvider);
+        }
+
     }
 
     /**

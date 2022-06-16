@@ -37,9 +37,9 @@ public class AccessTokenServiceTest {
     void setup() throws Exception {
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
         RestAssured.useRelaxedHTTPSValidation();
-        String jwt = SecurityUtils.gatewayToken();
+        String pat = SecurityUtils.personalAccessToken();
         bodyContent = new HashMap<>();
-        bodyContent.put("token", jwt);
+        bodyContent.put("token", pat);
     }
 
     @Test

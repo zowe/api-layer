@@ -11,6 +11,7 @@ package org.zowe.apiml.util;
 
 
 import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
+import com.nimbusds.jose.util.Base64;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
@@ -21,6 +22,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -42,6 +44,7 @@ import java.util.Optional;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
@@ -112,6 +115,26 @@ public class SecurityUtils {
 
         RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         return cookie;
+    }
+
+    public static String personalAccessToken() {
+        URI gatewayLoginEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
+        SuccessfulAccessTokenHandler.AccessTokenRequest loginRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60,null);
+
+        SSLConfig originalConfig = RestAssured.config().getSSLConfig();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+
+        String token = given()
+            .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
+            .body(loginRequest)
+            .when()
+            .post(gatewayLoginEndpoint)
+            .then()
+            .statusCode(is(SC_OK))
+            .extract().body().asString();
+
+        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        return token;
     }
 
     public static void logoutOnGateway(String url, String jwtToken) {
