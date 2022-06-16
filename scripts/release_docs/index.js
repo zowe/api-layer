@@ -27,8 +27,9 @@ const branchToMerge = process.argv[6];
 
         console.log("printing out git branch changes...")
         let convChangeBranch = `git branch`;
-        console.log("printing out git branch changes from execSync: \n" + convChangeBranch)
-        const changesTestBranch = convChangeBranch.toString();
+        const convChangeBranchExecSync = execSync(convChangeBranch, {maxBuffer: 107374182000});
+        console.log("printing out git branch changes from execSync: \n" + convChangeBranchExecSync)
+        const changesTestBranch = convChangeBranchExecSync.toString();
         console.log("printing out git branch changes toString: \n" + changesTestBranch)
     } catch (error) {
         console.log("error got thrown")
