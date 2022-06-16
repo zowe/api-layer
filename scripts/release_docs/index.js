@@ -25,7 +25,7 @@ const branchToMerge = process.argv[6];
         const changesTestToString = changesTest.toString();
         console.log("printing out git log changes toString: \n" + changesTestToString)
 
-        console.log("printing out git branch changes...)
+        console.log("printing out git branch changes...")
         let convChangeBranch = `git branch`;
         console.log("printing out git branch changes from execSync: \n" + convChangeBranch)
         const changesTestBranch = convChangeBranch.toString();
