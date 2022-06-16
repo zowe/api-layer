@@ -26,6 +26,7 @@ import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -127,6 +128,21 @@ public class SecurityUtils {
         String token = given()
             .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
             .body(loginRequest)
+            .when()
+            .post(gatewayLoginEndpoint)
+            .then()
+            .statusCode(is(SC_OK))
+            .extract().body().asString();
+
+        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        return token;
+    }
+    public static String personalAccessTokenWithClientCert() {
+        URI gatewayLoginEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
+
+        SSLConfig originalConfig = RestAssured.config().getSSLConfig();
+
+        String token = given().config(SslContext.clientCertUser)
             .when()
             .post(gatewayLoginEndpoint)
             .then()
