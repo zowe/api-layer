@@ -45,10 +45,10 @@ const branchToMerge = process.argv[6];
         const convChangeCheckoutExecSync = execSync(devNull, {maxBuffer: 107374182000}).toString();
         console.log(convChangeCheckoutExecSync)
 
-//        console.log("git checkout...test conventional changelog")
-//        let convChangeCheckout = `git fetch --unshallow origin apiml/GH2405/fix_gh_workflow > /dev/null && git checkout origin/apiml/GH2405/fix_gh_workflow > /dev/null && conventional-changelog -r`;
-//        const convChangeCheckoutExecSync = execSync(convChangeCheckout, {maxBuffer: 107374182000});
-//        console.log("printing out checkout changes from execSync: \n" + convChangeCheckoutExecSync)
+        console.log("git checkout...test conventional changelog")
+        let convChangeCheckout = `git fetch --unshallow origin apiml/GH2405/fix_gh_workflow > /dev/null 2 > &1 && git checkout origin/apiml/GH2405/fix_gh_workflow > /dev/null 2 > &1 && git --no-pager log`;
+        const convChangeCheckoutExecSync = execSync(convChangeCheckout, {maxBuffer: 107374182000});
+        console.log("printing out checkout changes from execSync: \n" + convChangeCheckoutExecSync)
     } catch (error) {
         console.log("error got thrown")
         console.log(error);
