@@ -28,8 +28,7 @@ import org.zowe.apiml.product.version.BuildInfo;
     "org.zowe.apiml.product.compatibility",
     "org.zowe.apiml.product.security",
     "org.zowe.apiml.product.web",
-    "org.zowe.apiml.product.gateway",
-    "org.zowe.apiml.gateway.security.login"
+    "org.zowe.apiml.product.gateway"
 })
 @EnableScheduling
 @EnableRetry
