@@ -33,6 +33,7 @@ public class Endpoints {
 
     public final static String REVOKE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/revoke";
     public final static String VALIDATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/validate";
+    public final static String GENERATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/generate";
 
     public final static String DISCOVERY_STATIC_API = "/discovery/api/v1/staticApi";
 
