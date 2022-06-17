@@ -42,8 +42,9 @@ cleanUpWorkingFolder
 api_catalog_package="api-catalog-package"
 apiml_common_package="apiml-common-lib-package"
 
-buildPackage $api_catalog_package "packageApiCatalog"
-buildPackage $apiml_common_package "packageCommonLib"
+ignoredUiTasks="$(getIgnoredUiTasks "api-catalog-ui")"
+buildPackage $api_catalog_package "packageApiCatalog -PomitDevDependencies ${ignoredUiTasks}"
+buildApimlCommonPackage
 
 preparePackage $api_catalog_package
 preparePackage $apiml_common_package "apiml-common-lib"
