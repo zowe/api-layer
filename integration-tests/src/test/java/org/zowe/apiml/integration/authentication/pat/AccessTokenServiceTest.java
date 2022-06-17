@@ -33,6 +33,7 @@ public class AccessTokenServiceTest {
     public static final URI REVOKE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKEN);
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
     Map<String, String> bodyContent;
+
     @Nested
     class GivenUserCredentialsAsAuthTest {
 
@@ -44,6 +45,7 @@ public class AccessTokenServiceTest {
             bodyContent = new HashMap<>();
             bodyContent.put("token", pat);
         }
+
         @Test
         void givenValidToken_invalidateTheToken() {
             given().contentType(ContentType.JSON).body(bodyContent).when()
@@ -70,7 +72,7 @@ public class AccessTokenServiceTest {
     class GivenClientCertAsAuthTest {
 
         @Test
-        void thenReturnValidToken() throws Exception{
+        void thenReturnValidToken() throws Exception {
             SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
             RestAssured.useRelaxedHTTPSValidation();
             String pat = SecurityUtils.personalAccessTokenWithClientCert();
@@ -81,7 +83,6 @@ public class AccessTokenServiceTest {
                 .then().statusCode(200);
         }
     }
-
 
 
 }

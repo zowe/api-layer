@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
@@ -30,13 +31,14 @@ import java.io.IOException;
 public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
     private static final String EXPIRATION_TIME = "expirationTime";
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
+    private static final ObjectReader mapper = new ObjectMapper().reader();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException {
         try {
             ServletInputStream inputStream = request.getInputStream();
             if (inputStream.available() != 0) {
-                int validity = new ObjectMapper().readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
+                int validity = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
                 request.setAttribute(EXPIRATION_TIME, validity);
             }
 
