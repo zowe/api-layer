@@ -40,8 +40,6 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
             if (inputStream.available() != 0) {
                 int validity = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
                 request.setAttribute(EXPIRATION_TIME, validity);
-            } else {
-                throw new IOException();
             }
 
             filterChain.doFilter(request, response);

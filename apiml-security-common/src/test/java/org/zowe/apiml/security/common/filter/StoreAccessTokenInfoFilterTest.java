@@ -86,12 +86,5 @@ class StoreAccessTokenInfoFilterTest {
             underTest.doFilterInternal(request, response, chain);
             assertThat(response.getStatus(), is(400));
         }
-
-        @Test
-        void whenEmptyBody_thenReturn400() throws ServletException {
-            request.setContent(null);
-            underTest.doFilterInternal(request, response, chain);
-            assertThat(response.getStatus(), is(400));
-        }
     }
 }
