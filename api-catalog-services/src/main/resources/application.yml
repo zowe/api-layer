@@ -1,4 +1,3 @@
-
 spring:
     config:
         useLegacyProcessing: true
@@ -18,11 +17,15 @@ spring:
     main:
         banner-mode: ${apiml.banner:"off"}
 
+springdoc:
+    packagesToScan: org.zowe.apiml.apicatalog.controllers.api
+
 logging:
     level:
         ROOT: INFO
         org.zowe.apiml: INFO
         org.springframework: WARN
+        org.springdoc: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
@@ -34,7 +37,6 @@ logging:
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.eclipse.jetty: WARN
-        springfox: WARN
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 ##############################################################################################
@@ -141,7 +143,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 
                 service:
                     title: API Catalog
@@ -191,7 +193,6 @@ logging:
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
-        springfox: INFO
         net.sf.ehcache: INFO
 
 ---
@@ -234,7 +235,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 apiml:
     service:
         scheme: http

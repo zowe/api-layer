@@ -10,10 +10,8 @@
 package org.zowe.apiml.client.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +20,7 @@ import org.zowe.apiml.client.model.Greeting;
 import java.util.Date;
 
 @RestController
-@Api(tags = {"Web Service"})
-@SwaggerDefinition(tags = {
-    @Tag(name = "Web Service", description = "Test handling of URL containing \"ws\"")})
+@Tag(name = "Web Service", description = "Test handling of URL containing \"ws\"")
 @RequestMapping("/api/v1")
 public class WebServiceController {
 
@@ -34,8 +30,7 @@ public class WebServiceController {
      * Gets a custom greeting from Web Service.
      */
     @GetMapping(value = {"/ws", "/sse"})
-    @ApiOperation(value = "Get a greeting", response = Greeting.class,
-        tags = {"Web Service"})
+    @Operation(summary = "Get a greeting", tags = {"Web Service"})
     @HystrixCommand()
     public Greeting weServiceGreet() {
 

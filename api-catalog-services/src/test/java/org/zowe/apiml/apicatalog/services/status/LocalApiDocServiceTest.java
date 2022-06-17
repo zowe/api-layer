@@ -10,6 +10,12 @@
 package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,8 +24,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
@@ -27,6 +31,8 @@ import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundExcepti
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +42,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -57,7 +65,10 @@ class LocalApiDocServiceTest {
     private static final String SWAGGER_URL = "https://service:8080/service/api-doc";
 
     @Mock
-    private RestTemplate restTemplate;
+    private CloseableHttpClient httpClient;
+    private CloseableHttpResponse response;
+    private StatusLine responseStatusLine;
+    private BasicHttpEntity responseEntity;
 
     @Mock
     private InstanceRetrievalService instanceRetrievalService;
@@ -65,10 +76,19 @@ class LocalApiDocServiceTest {
     private APIDocRetrievalService apiDocRetrievalService;
 
     @BeforeEach
-    void setup() {
+    void setup() throws IOException {
+        response = mock(CloseableHttpResponse.class);
+        responseStatusLine = mock(StatusLine.class);
+        responseEntity = new BasicHttpEntity();
+        responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
+        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        when(response.getStatusLine()).thenReturn(responseStatusLine);
+        when(response.getEntity()).thenReturn(responseEntity);
+        when(httpClient.execute(any())).thenReturn(response);
+
         GatewayClient gatewayClient = new GatewayClient(getProperties());
         apiDocRetrievalService = new APIDocRetrievalService(
-            restTemplate,
+            httpClient,
             instanceRetrievalService,
             gatewayClient);
     }
@@ -82,9 +102,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -115,9 +133,8 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                    .thenReturn(expectedResponse);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+                responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
@@ -130,9 +147,8 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                     .thenReturn(getStandardInstance(new HashMap<>(), true));
 
-                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                    .thenReturn(expectedResponse);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+                responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
@@ -174,9 +190,8 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -199,9 +214,8 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -218,9 +232,8 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            when(restTemplate.exchange("http://service:8080/service/api-doc", HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -240,9 +253,8 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                    .thenReturn(expectedResponse);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+                responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
 
@@ -265,9 +277,8 @@ class LocalApiDocServiceTest {
                 when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-                ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-                when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                    .thenReturn(expectedResponse);
+                when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+                responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
                 ApiDocInfo result = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
                 assertThat(result.getApiDocContent(), is(notNullValue()));
@@ -285,9 +296,8 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -312,9 +322,8 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -337,9 +346,8 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -362,9 +370,8 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
-                .thenReturn(expectedResponse);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            responseEntity.setContent(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8));
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -429,13 +436,6 @@ class LocalApiDocServiceTest {
             });
             assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
         }
-    }
-
-    private HttpEntity<Object> getObjectHttpEntity() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        return new HttpEntity<>(headers);
     }
 
     private InstanceInfo getStandardInstance(Map<String, String> metadata, Boolean isPortSecure) {

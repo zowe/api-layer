@@ -10,14 +10,11 @@
 package org.zowe.apiml.security.client.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
@@ -28,7 +25,7 @@ import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import javax.validation.constraints.NotNull;
+import java.io.IOException;
 
 /**
  * Handler for exceptions that are thrown during the security client rest calls
@@ -37,38 +34,14 @@ import javax.validation.constraints.NotNull;
 @Component
 public class RestResponseHandler {
 
-    /**
-     * Consumes an exception and transforms it into manageable exception
-     *
-     * @param exception              Input exception, can not be null
-     * @param errorType              Error type enum, see {@link ErrorType}
-     * @param genericLogErrorMessage Generic message that gets printed in log
-     * @param logParameters          Additional messages are printed into the log after the generic message log line
-     */
-    public void handleBadResponse(@NotNull Exception exception, ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
-        if (exception instanceof HttpClientErrorException) {
-            handleHttpClientError(exception, errorType, genericLogErrorMessage, logParameters);
-        } else if (exception instanceof ResourceAccessException) {
-            throw new GatewayNotAvailableException(ErrorType.GATEWAY_NOT_AVAILABLE.getDefaultMessage(), exception);
-        } else if (exception instanceof HttpServerErrorException) {
-            HttpServerErrorException hseException = (HttpServerErrorException) exception;
-            if (hseException.getStatusCode().equals(HttpStatus.SERVICE_UNAVAILABLE) || hseException.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR)) {
-                throw new ServiceNotAccessibleException(ErrorType.SERVICE_UNAVAILABLE.getDefaultMessage(), exception);
-            } else {
-                throw hseException;
-            }
-        }
-    }
-
-    private void handleHttpClientError(@NotNull Exception exception, ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
-        HttpClientErrorException hceException = (HttpClientErrorException) exception;
-        switch (hceException.getStatusCode()) {
-            case UNAUTHORIZED:
+    public void handleErrorType(CloseableHttpResponse response, ErrorType errorType, Object... logParameters) {
+        switch (response.getStatusLine().getStatusCode()) {
+            case 401:
                 if (errorType != null) {
                     if (errorType.equals(ErrorType.BAD_CREDENTIALS)) {
-                        throw new BadCredentialsException(errorType.getDefaultMessage(), exception);
+                        throw new BadCredentialsException(errorType.getDefaultMessage());
                     } else if (errorType.equals(ErrorType.TOKEN_NOT_VALID)) {
-                        throw new TokenNotValidException(errorType.getDefaultMessage(), exception);
+                        throw new TokenNotValidException(errorType.getDefaultMessage());
                     } else if (errorType.equals(ErrorType.TOKEN_NOT_PROVIDED)) {
                         throw new TokenNotProvidedException(errorType.getDefaultMessage());
                     } else if (errorType.equals(ErrorType.INVALID_TOKEN_TYPE)) {
@@ -81,15 +54,21 @@ public class RestResponseHandler {
                         throw new ZosAuthenticationException(PlatformReturned.builder().errno(168).errnoMsg("org.zowe.apiml.security.platform.errno.EMVSEXPIRE").build());
                     }
                 }
-                throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage(), exception);
-            case BAD_REQUEST:
-                throw new AuthenticationCredentialsNotFoundException(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getDefaultMessage(), exception);
-            case METHOD_NOT_ALLOWED:
+                throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage());
+            case 400:
+                throw new AuthenticationCredentialsNotFoundException(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getDefaultMessage());
+            case 405:
                 throw new AuthMethodNotSupportedException(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getDefaultMessage());
+            case 500: case 503:
+                throw new ServiceNotAccessibleException(ErrorType.SERVICE_UNAVAILABLE.getDefaultMessage());
             default:
-                addDebugMessage(exception, genericLogErrorMessage, logParameters);
-                throw new AuthenticationServiceException(ErrorType.AUTH_GENERAL.getDefaultMessage(), exception);
+                addDebugMessage(null, ErrorType.AUTH_GENERAL.getDefaultMessage(), logParameters);
+                throw new AuthenticationServiceException(ErrorType.AUTH_GENERAL.getDefaultMessage());
         }
+    }
+
+    public void handleException(IOException exception) {
+        throw new GatewayNotAvailableException(ErrorType.GATEWAY_NOT_AVAILABLE.getDefaultMessage(), exception);
     }
 
     private void addDebugMessage(Exception exception, String genericLogErrorMessage, Object... logParameters) {

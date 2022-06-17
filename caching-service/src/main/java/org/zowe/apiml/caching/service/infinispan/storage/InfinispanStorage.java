@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.infinispan.storage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.infinispan.lock.api.ClusteredLock;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -17,16 +18,23 @@ import org.zowe.apiml.caching.service.StorageException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class InfinispanStorage implements Storage {
 
 
     private final ConcurrentMap<String, KeyValue> cache;
+    private final ConcurrentMap<String, Map<String, String>> tokenCache;
+    private final ClusteredLock lock;
 
-    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache) {
+    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
         this.cache = cache;
+        this.tokenCache = tokenCache;
+        this.lock = lock;
     }
 
     @Override
@@ -40,6 +48,47 @@ public class InfinispanStorage implements Storage {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
         return null;
+    }
+
+    @Override
+    public KeyValue storeListItem(String serviceId, KeyValue toCreate) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
+                try {
+                    String cacheKey = serviceId + "invalidTokens";
+                    if (tokenCache.get(cacheKey) != null &&
+                        tokenCache.get(cacheKey).containsKey(toCreate.getKey())) {
+                        throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
+                    }
+                    log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
+                    Map<String, String> tokensList = tokenCache.get(cacheKey);
+                    if (tokensList == null) {
+                        tokensList = new HashMap<>();
+                    }
+                    tokensList.put(toCreate.getKey(), toCreate.getValue());
+                    tokenCache.put(cacheKey, tokensList);
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+        try {
+            complete.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof StorageException) {
+                throw (StorageException) e.getCause();
+            } else {
+                log.error("Unexpected error while acquiring the lock ", e);
+                throw e;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getAllMapItems(String serviceId, String key) {
+        log.info("Reading all revoked tokens for service {} ", serviceId);
+        return tokenCache.get(serviceId + key);
     }
 
     @Override

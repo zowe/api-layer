@@ -9,20 +9,24 @@
  */
 package org.zowe.apiml.client.api;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.exception.PetIdMismatchException;
 import org.zowe.apiml.client.exception.PetNotFoundException;
 import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.model.state.Existing;
 import org.zowe.apiml.client.model.state.New;
 import org.zowe.apiml.client.service.PetService;
-import org.zowe.apiml.message.api.ApiMessageView;
-import io.swagger.annotations.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +37,15 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1")
-@Api(
-    value = "/api/v1/pets",
-    consumes = "application/json",
-    tags = {"The pet API"})
+@Tag(
+    description = "/api/v1/pets",
+    name = "The pet API")
 public class PetController {
     private final PetService petService;
 
     /**
      * Constructor for {@link PetController}.
+     *
      * @param petService service for working with {@link Pet} objects.
      */
     @Autowired
@@ -58,11 +62,11 @@ public class PetController {
         value = "/pets",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ApiOperation(
-        value = "List all existing pets",
-        notes = "Returns information about all existing pets")
-    @ApiResponses( value = {
-        @ApiResponse(code = 200, message = "List of pets", response = Pet.class, responseContainer = "List")
+    @Operation(
+        summary = "List all existing pets",
+        description = "Returns information about all existing pets")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "List of pets")
     })
     @HystrixCommand()
     public List<Pet> getAllPets() {
@@ -85,21 +89,21 @@ public class PetController {
         consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(
-        value = "Add a new pet",
-        notes = "Creates a new pet",
-        authorizations = {
-            @Authorization(
-                value = "ESM token"
+    @Operation(
+        summary = "Add a new pet",
+        description = "Creates a new pet",
+        security = {
+            @SecurityRequirement(
+                name = "ESM token"
             )
         })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "New created pet", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
-        @ApiResponse(code = 400, message = "Request object is not valid", response = ApiMessageView.class)
+        @ApiResponse(responseCode = "200", description = "New created pet"),
+        @ApiResponse(responseCode = "401", description = "Authentication is required"),
+        @ApiResponse(responseCode = "400", description = "Request object is not valid")
     })
     @HystrixCommand()
-    public Pet addPet(@ApiParam(value = "Pet object that needs to be added", required = true)
+    public Pet addPet(@Parameter(description = "Pet object that needs to be added", required = true)
                       @Validated(value = {New.class})
                       @RequestBody Pet pet) {
         return petService.save(pet);
@@ -115,19 +119,19 @@ public class PetController {
         value = "/pets/{id}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ApiOperation(value = "Find pet by id", notes = "Returns a single pet",
-        authorizations = {
-            @Authorization(
-                value = "ESM token"
+    @Operation(summary = "Find pet by id", description = "Returns a single pet",
+        security = {
+            @SecurityRequirement(
+                name = "ESM token"
             )
         })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
-        @ApiResponse(code = 404, message = "The pet with id is not found.", response = ApiMessageView.class)
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Authentication is required"),
+        @ApiResponse(responseCode = "404", description = "The pet with id is not found.")
     })
     @HystrixCommand()
-    public Pet getPetById(@ApiParam(value = "Pet id to return", required = true, example = "1")
+    public Pet getPetById(@Parameter(description = "Pet id to return", required = true, example = "1")
                           @PathVariable("id") Long id) {
         Pet pet = petService.getById(id);
         if (pet == null) {
@@ -149,21 +153,21 @@ public class PetController {
         consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.OK)
-    @ApiOperation(value = "Update an existing pet", notes = "Change information for an existing pet",
-        authorizations = {
-            @Authorization(
-                value = "ESM token"
+    @Operation(summary = "Update an existing pet", description = "Change information for an existing pet",
+        security = {
+            @SecurityRequirement(
+                name = "ESM token"
             )
         })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Pet updated", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
-        @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
+        @ApiResponse(responseCode = "200", description = "Pet updated"),
+        @ApiResponse(responseCode = "401", description = "Authentication is required"),
+        @ApiResponse(responseCode = "404", description = "Pet not found")
     })
     @HystrixCommand()
-    public Pet updatePetById(@ApiParam(value = "Pet id to update", required = true, example = "1")
+    public Pet updatePetById(@Parameter(description = "Pet id to update", required = true, example = "1")
                              @PathVariable("id") Long id,
-                             @ApiParam(value = "Pet object that needs to be updated", required = true)
+                             @Parameter(description = "Pet object that needs to be updated", required = true)
                              @Validated(value = {Existing.class})
                              @RequestBody Pet pet) {
         if (!id.equals(pet.getId())) {
@@ -186,20 +190,20 @@ public class PetController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ApiOperation(value = "Delete a pet", notes = "Removes an existing pet",
-        authorizations = {
-            @Authorization(
-                value = "ESM token"
+    @Operation(summary = "Delete a pet", description = "Removes an existing pet",
+        security = {
+            @SecurityRequirement(
+                name = "ESM token"
             )
         })
     @ApiResponses(value = {
-        @ApiResponse(code = 204, message = "Pet updated", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
-        @ApiResponse(code = 403, message = "Forbidden", response = ApiMessageView.class),
-        @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
+        @ApiResponse(responseCode = "204", description = "Pet updated"),
+        @ApiResponse(responseCode = "401", description = "Authentication is required"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Pet not found")
     })
     @HystrixCommand()
-    public void deletePetById(@ApiParam(value = "Pet id to delete", required = true, example = "1")
+    public void deletePetById(@Parameter(description = "Pet id to delete", required = true, example = "1")
                               @PathVariable("id") Long id) {
         petService.deleteById(id);
     }

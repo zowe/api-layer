@@ -198,7 +198,11 @@ task runBaseTestsInternalPort(dependsOn: ":integration-tests:runBaseTestsInterna
     group "Integration tests"
 }
 task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTests") {
-    description "Run base tests on internal port"
+    description "Run caching service tests"
+    group "Integration tests"
+}
+task runInfinispanServiceTests(dependsOn: ":integration-tests:runInfinispanServiceTests") {
+    description "Run tests for caching service with infinispan storage option"
     group "Integration tests"
 }
 task runHATests(dependsOn: ":integration-tests:runHATests") {

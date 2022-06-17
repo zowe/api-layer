@@ -61,7 +61,7 @@ dependencies {
     implementation libraries.jetty_http
     implementation libraries.jetty_io
     implementation libraries.jetty_util
-    implementation libraries.springFox
+    implementation libraries.spring_doc
     implementation libraries.spring_boot_starter_actuator
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
@@ -95,7 +95,7 @@ dependencies {
     implementation libraries.spring_websocket
     implementation libraries.logback_core
     implementation libraries.logback_classic
-    
+
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

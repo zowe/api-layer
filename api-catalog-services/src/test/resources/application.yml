@@ -34,7 +34,6 @@ logging:
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.eclipse.jetty: WARN
-        springfox: WARN
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 ##############################################################################################
@@ -141,7 +140,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 
                 service:
                     title: API Catalog
@@ -189,7 +188,6 @@ logging:
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
-        springfox: INFO
         net.sf.ehcache: INFO
 
 ---
@@ -232,7 +230,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 apiml:
     service:
         scheme: http

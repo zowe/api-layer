@@ -12,7 +12,10 @@ package org.zowe.apiml.caching.service.vsam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.*;
+import org.zowe.apiml.caching.service.EvictionStrategy;
+import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 
@@ -89,6 +92,16 @@ public class VsamStorage implements Storage {
         }
 
         return result;
+    }
+
+    @Override
+    public KeyValue storeListItem(String serviceId, KeyValue toCreate) throws StorageException {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
+    public Map<String, String> getAllMapItems(String serviceId, String key) throws StorageException {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
     }
 
     private boolean aboveThreshold(int currentSize) {
