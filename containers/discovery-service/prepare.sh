@@ -43,7 +43,7 @@ discovery_package="discovery-package"
 apiml_common_package="apiml-common-lib-package"
 
 buildPackage $discovery_package "packageDiscovery"
-buildPackage $apiml_common_package "packageCommonLib"
+buildApimlCommonPackage
 
 preparePackage $discovery_package
 preparePackage $apiml_common_package "apiml-common-lib"

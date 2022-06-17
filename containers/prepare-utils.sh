@@ -63,6 +63,11 @@ function cleanUpWorkingFolder {
     mkdir -p "${BASE_DIR}/${WORK_DIR}"
 }
 
+function getIgnoredUiTasks {
+    ui_project=$1
+    echo "-x ${ui_project}:test -x ${ui_project}:npmLint"
+}
+
 function buildPackage {
     service_package=$1
     package_task=$2
@@ -73,6 +78,10 @@ function buildPackage {
       echo "Error: failed to build ${service_package}.zip"
       exit 3
     fi
+}
+
+function buildApimlCommonPackage {
+    buildPackage "apiml-common-lib-package" "packageCommonLib -x gateway-service:test -x discovery-service:test -x api-catalog-services:test -x api-catalog-ui:test -x api-catalog-ui:npmLint"
 }
 
 function preparePackage {

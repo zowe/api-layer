@@ -43,7 +43,7 @@ gateway_package="gateway-package"
 apiml_common_package="apiml-common-lib-package"
 
 buildPackage $gateway_package "packageApiGateway"
-buildPackage $apiml_common_package "packageCommonLib"
+buildApimlCommonPackage
 
 preparePackage $gateway_package
 preparePackage $apiml_common_package "apiml-common-lib"

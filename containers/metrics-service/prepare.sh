@@ -42,8 +42,9 @@ cleanUpWorkingFolder
 metrics_package="metrics-service-package"
 apiml_common_package="apiml-common-lib-package"
 
-buildPackage $metrics_package "packageMetricsService"
-buildPackage $apiml_common_package "packageCommonLib"
+ignoredUiTasks="$(getIgnoredUiTasks "metrics-service-ui")"
+buildPackage $metrics_package "packageMetricsService -P omitDevDependencies ${ignoredUiTasks}"
+buildApimlCommonPackage
 
 preparePackage $metrics_package
 preparePackage $apiml_common_package "apiml-common-lib"
