@@ -30,7 +30,6 @@ import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.util.CookieUtil;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -101,7 +100,7 @@ public class SafIdtScheme implements IAuthenticationScheme {
         return applId;
     }
 
-    private String generateSafIdentityToken(@NotNull AuthSource.Parsed parsedAuthSource , @NotNull String applId) {
+    private String generateSafIdentityToken(@NotNull AuthSource.Parsed parsedAuthSource, @NotNull String applId) {
         String safIdentityToken;
 
         String userId = parsedAuthSource.getUserId();
