@@ -93,4 +93,18 @@ class ApimlAccessTokenProviderTest {
         assertEquals("token", token);
     }
 
+    @Test
+    void givenTokenWithValidScope_validateIt() {
+        String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjU1NzQwMDAxLCJleHAiOjE2NjM1MTYwMDEsImlzcyI6IkFQSU1MX1BBVCIsImp0aSI6IjI3Yjk2ZWVmLTMyMzAtNDg1Ni1iOTRiLTE4NGQ2M2Q2MjEzNiIsImF1dGgucHJvdiI6IkFQSU1MIiwic2NvcGVzIjpbImhlbGxvIiwiZ2F0ZXdheSJdfQ.e1w7yrtMlbfYTwaJ7uG7_8mZR6C7O3QSP_HKXVw0abZyryhsoSvLwpGqMbjNQgl7NhYTWd90u9CUr5fZGDdJOYoN0qrUzkguzh7X4FItTSGdlhtL96lZep50ORX--F9ifw41ccFIjrupjgy-B6Cp-bEhZloW8Y4xOlHCbt7uE_yCDn-2PSHX0vNNogJQuq3HQBIoqnGVGcfPdTDtOsagLMcggU2qtpoTNA-QlmKiicvij2pDZ9IRpRJimG_jAAo4Nq9cZqbn-fK2yHPwxQl5aisqYLJgFEzV33xAYh9iD5o_6GDX-2OtcyA01H8LYhPyl6Mr_ER6vezenSJCEtMZjA";
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        assertTrue(accessTokenProvider.isValidForScopes(token, "gateway"));
+    }
+
+    @Test
+    void givenTokenWithInvalidScope_returnInvalid() {
+        String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjU1NzQwMDAxLCJleHAiOjE2NjM1MTYwMDEsImlzcyI6IkFQSU1MX1BBVCIsImp0aSI6IjI3Yjk2ZWVmLTMyMzAtNDg1Ni1iOTRiLTE4NGQ2M2Q2MjEzNiIsImF1dGgucHJvdiI6IkFQSU1MIiwic2NvcGVzIjpbImhlbGxvIiwiZ2F0ZXdheSJdfQ.e1w7yrtMlbfYTwaJ7uG7_8mZR6C7O3QSP_HKXVw0abZyryhsoSvLwpGqMbjNQgl7NhYTWd90u9CUr5fZGDdJOYoN0qrUzkguzh7X4FItTSGdlhtL96lZep50ORX--F9ifw41ccFIjrupjgy-B6Cp-bEhZloW8Y4xOlHCbt7uE_yCDn-2PSHX0vNNogJQuq3HQBIoqnGVGcfPdTDtOsagLMcggU2qtpoTNA-QlmKiicvij2pDZ9IRpRJimG_jAAo4Nq9cZqbn-fK2yHPwxQl5aisqYLJgFEzV33xAYh9iD5o_6GDX-2OtcyA01H8LYhPyl6Mr_ER6vezenSJCEtMZjA";
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        assertFalse(accessTokenProvider.isValidForScopes(token, "invalidService"));
+    }
+
 }
