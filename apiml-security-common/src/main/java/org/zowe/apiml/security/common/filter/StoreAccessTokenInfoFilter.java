@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -23,28 +23,38 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 
-@RequiredArgsConstructor
 /**
  * This filter will store the personal access information from the body as request attribute
  */
+@RequiredArgsConstructor
 public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
     private static final String EXPIRATION_TIME = "expirationTime";
-    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
+    private static final String SCOPES = "scopes";
     private static final ObjectReader mapper = new ObjectMapper().reader();
+    private final AuthExceptionHandler authExceptionHandler;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException {
         try {
             ServletInputStream inputStream = request.getInputStream();
             if (inputStream.available() != 0) {
-                int validity = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class).getValidity();
+                SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class);
+                Set<String> scopes = accessTokenRequest.getScopes();
+                if (scopes == null || scopes.isEmpty()) {
+                    authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("The request body you provided is not valid"));
+                }
+                scopes = Collections.unmodifiableSet(scopes);
+                int validity = accessTokenRequest.getValidity();
                 request.setAttribute(EXPIRATION_TIME, validity);
+                request.setAttribute(SCOPES, scopes);
             }
 
             filterChain.doFilter(request, response);
         } catch (IOException e) {
-            resourceAccessExceptionHandler.handleException(request, response, new AccessTokenBodyNotValidException("The request body you provided is not valid"));
+            authExceptionHandler.handleException(request, response, new AccessTokenBodyNotValidException("The request body you provided is not valid"));
         }
     }
 }

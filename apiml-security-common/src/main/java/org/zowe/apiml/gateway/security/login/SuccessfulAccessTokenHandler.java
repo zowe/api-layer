@@ -34,7 +34,8 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         Object expirationTime = request.getAttribute("expirationTime");
         String validity = expirationTime == null || expirationTime.equals("") ? "0" : request.getAttribute("expirationTime").toString();
-        String token = accessTokenProvider.getToken(authentication.getPrincipal().toString(), Integer.parseInt(validity));
+        Set<String> scopes = (Set<String>) request.getAttribute("scopes");
+        String token = accessTokenProvider.getToken(authentication.getPrincipal().toString(), Integer.parseInt(validity), scopes);
         response.getWriter().print(token);
         response.getWriter().flush();
         response.getWriter().close();

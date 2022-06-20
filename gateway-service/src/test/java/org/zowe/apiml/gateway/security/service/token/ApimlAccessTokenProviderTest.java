@@ -18,9 +18,7 @@ import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -85,9 +83,12 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenUserAndValidExpirationTest_thenTokenIsCreated() {
+        Set<String> scopes = new HashSet<>();
+        scopes.add("Service1");
+        scopes.add("Service2");
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
-        when(as.createLongLivedJwtToken("user", 55)).thenReturn("token");
-        String token = accessTokenProvider.getToken("user", 55);
+        when(as.createLongLivedJwtToken("user", 55, scopes)).thenReturn("token");
+        String token = accessTokenProvider.getToken("user", 55, scopes);
         assertNotNull(token);
         assertEquals("token", token);
     }

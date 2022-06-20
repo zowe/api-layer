@@ -63,6 +63,8 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleTokenExpire(request, response, ex);
         } else if (ex instanceof TokenFormatNotValidException) {
             handleTokenFormatException(request, response, ex);
+        } else if (ex instanceof AccessTokenBodyNotValidException) {
+            handleInvalidAccessTokenBodyException(request, response, ex);
         } else if (ex instanceof InvalidCertificateException) {
             handleInvalidCertificate(response, ex);
         } else if (ex instanceof ZosAuthenticationException) {
@@ -133,6 +135,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleInvalidTokenTypeException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
         writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
+    }
+
+    private void handleInvalidAccessTokenBodyException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        writeErrorResponse(ErrorType.BAD_ACCESS_TOKEN_BODY.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
     }
 
     //500
