@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
+
+import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
 @Service
 @RequiredArgsConstructor
@@ -98,6 +102,16 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
            expirationTime = 90;
        }
        return authenticationService.createLongLivedJwtToken(username, expirationTime, scopes);
+    }
+
+    public boolean isValidForScopes(String jwtToken, String serviceId) {
+        Claims jwtClaims = getJwtClaims(jwtToken);
+        if (jwtClaims != null) {
+            ArrayList<String> scopes = (ArrayList<String>) jwtClaims.get("scopes");
+
+            return scopes.stream().anyMatch(serviceId::equalsIgnoreCase);
+        }
+        return false;
     }
 
     public byte[] getSalt() throws CachingServiceClientException {

@@ -38,6 +38,11 @@ public class AccessTokenProviderConfig {
             public String getToken(String username, int expirationTime, Set<String> scopes) {
                 throw new NotImplementedException();
             }
+
+            @Override
+            public boolean isValidForScopes(String token, String serviceId) {
+                throw new NotImplementedException();
+            }
         };
     }
 }
