@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
  * General configuration of security client
  */
 @Configuration
-@ComponentScan({"org.zowe.apiml.security", "org.zowe.apiml.product.gateway"})
+@ComponentScan({"org.zowe.apiml.security", "org.zowe.apiml.product.gateway", "org.zowe.apiml.gateway.security.login"})
 public class SecurityServiceConfiguration {
 
     @Bean

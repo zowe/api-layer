@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.authentication.pat;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.InfinispanStorageTest;
@@ -33,32 +34,55 @@ public class AccessTokenServiceTest {
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
     Map<String, String> bodyContent;
 
-    @BeforeEach
-    void setup() throws Exception {
-        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-        RestAssured.useRelaxedHTTPSValidation();
-        String jwt = SecurityUtils.gatewayToken();
-        bodyContent = new HashMap<>();
-        bodyContent.put("token", jwt);
+    @Nested
+    class GivenUserCredentialsAsAuthTest {
+
+        @BeforeEach
+        void setup() throws Exception {
+            SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+            RestAssured.useRelaxedHTTPSValidation();
+            String pat = SecurityUtils.personalAccessToken();
+            bodyContent = new HashMap<>();
+            bodyContent.put("token", pat);
+        }
+
+        @Test
+        void givenValidToken_invalidateTheToken() {
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .delete(REVOKE_ENDPOINT)
+                .then().statusCode(200);
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
+        @Test
+        void givenTokenInvalidated_returnUnauthorized() {
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .delete(REVOKE_ENDPOINT)
+                .then().statusCode(200);
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .delete(REVOKE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
     }
 
-    @Test
-    void givenValidJWT_invalidateTheToken() {
-        given().contentType(ContentType.JSON).body(bodyContent).when()
-            .delete(REVOKE_ENDPOINT)
-            .then().statusCode(200);
-        given().contentType(ContentType.JSON).body(bodyContent).when()
-            .post(VALIDATE_ENDPOINT)
-            .then().statusCode(401);
+    @Nested
+    class GivenClientCertAsAuthTest {
+
+        @Test
+        void thenReturnValidToken() throws Exception {
+            SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+            RestAssured.useRelaxedHTTPSValidation();
+            String pat = SecurityUtils.personalAccessTokenWithClientCert();
+            bodyContent = new HashMap<>();
+            bodyContent.put("token", pat);
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+        }
     }
 
-    @Test
-    void givenJWTInvalidated_returnUnauthorized() {
-        given().contentType(ContentType.JSON).body(bodyContent).when()
-            .delete(REVOKE_ENDPOINT)
-            .then().statusCode(200);
-        given().contentType(ContentType.JSON).body(bodyContent).when()
-            .delete(REVOKE_ENDPOINT)
-            .then().statusCode(401);
-    }
+
 }

@@ -54,3 +54,11 @@ messages:
       number: ZWEAS131
       type: ERROR
       text: "No authorization token provided for URL '%s'"
+
+    # Personal access token messages
+    - key: org.zowe.apiml.security.query.invalidAccessTokenBody
+      number: ZWEAT605
+      type: ERROR
+      text: "Invalid body provided in request to create personal access token"
+      reason: "The request body is not valid"
+      action: "Use a valid body in the request"

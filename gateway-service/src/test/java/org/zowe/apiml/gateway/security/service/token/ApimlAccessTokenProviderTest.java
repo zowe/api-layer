@@ -22,38 +22,37 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ApimlAccessTokenProviderTest {
 
-    CachingServiceClient csc;
+    CachingServiceClient cachingServiceClient;
+    AuthenticationService as;
 
     @BeforeEach
     void setup() throws CachingServiceClientException {
-        csc = mock(CachingServiceClient.class);
-        when(csc.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
+        cachingServiceClient = mock(CachingServiceClient.class);
+        as = mock(AuthenticationService.class);
+        when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
     }
 
     @Test
     void invalidateToken() throws Exception {
         String token = "token";
 
-        AuthenticationService as = mock(AuthenticationService.class);
         Date issued = new Date(System.currentTimeMillis());
         when(as.parseJwtToken(token)).thenReturn(new QueryResponse(null, "user", issued, issued, null));
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(csc, as);
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         accessTokenProvider.invalidateToken(token);
-        verify(csc, times(1)).appendList(any());
+        verify(cachingServiceClient, times(1)).appendList(any());
 
     }
 
     @Test
     void givenSameToken_returnInvalidated() throws Exception {
         String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkA";
-        AuthenticationService as = mock(AuthenticationService.class);
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(csc, as);
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(token);
 
         ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
@@ -62,7 +61,7 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> map = new HashMap<>();
         map.put(tokenHash, s);
-        when(csc.readInvalidatedTokens()).thenReturn(map);
+        when(cachingServiceClient.readInvalidatedTokens()).thenReturn(map);
         assertTrue(accessTokenProvider.isInvalidated(token));
     }
 
@@ -70,8 +69,7 @@ class ApimlAccessTokenProviderTest {
     void givenDifferentToken_returnNotInvalidated() throws Exception {
         String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkA";
         String differentToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkdA";
-        AuthenticationService as = mock(AuthenticationService.class);
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(csc, as);
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(token);
 
         ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
@@ -80,8 +78,18 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> map = new HashMap<>();
         map.put(tokenHash, s);
-        when(csc.readInvalidatedTokens()).thenReturn(map);
+        when(cachingServiceClient.readInvalidatedTokens()).thenReturn(map);
 
         assertFalse(accessTokenProvider.isInvalidated(differentToken));
     }
+
+    @Test
+    void givenUserAndValidExpirationTest_thenTokenIsCreated() {
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        when(as.createLongLivedJwtToken("user", 55)).thenReturn("token");
+        String token = accessTokenProvider.getToken("user", 55);
+        assertNotNull(token);
+        assertEquals("token", token);
+    }
+
 }

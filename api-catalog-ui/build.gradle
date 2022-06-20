@@ -15,6 +15,10 @@ node {
     nodeProjectDir = file("${project.projectDir}/frontend")
 }
 
+if (project.hasProperty('omitDevDependencies')) {
+    npmInstall.args = ['--production', '--omit=dev'] // different args for different npm versions
+}
+
 // =================================================
 //
 //  Please manage all task dependencies in here and

@@ -16,6 +16,7 @@ package org.zowe.apiml.security.common.error;
 public enum ErrorType {
     BAD_CREDENTIALS("org.zowe.apiml.security.login.invalidCredentials", "Invalid Credentials", "Provide a valid username and password."),
     TOKEN_NOT_VALID("org.zowe.apiml.security.query.invalidToken", "Token is not valid.", "Provide a valid token."),
+    BAD_ACCESS_TOKEN_BODY("org.zowe.apiml.security.query.invalidAccessTokenBody", "Personal Access Token body in the request is not valid.", "Provide a valid body."),
     TOKEN_NOT_PROVIDED("org.zowe.apiml.security.query.tokenNotProvided", "No authorization token provided.", "Provide a valid authorization token."),
     TOKEN_EXPIRED("org.zowe.apiml.security.expiredToken", "Token is expired.", "Obtain a new token by performing an authentication request."),
     AUTH_CREDENTIALS_NOT_FOUND("org.zowe.apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid.", "Provide valid authentication."),

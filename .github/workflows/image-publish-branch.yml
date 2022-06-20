@@ -19,7 +19,7 @@ on:
                 default: 'all'
 
 jobs:
-    build-services:
+    build-test-services:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
@@ -41,8 +41,8 @@ jobs:
 
     publish-images:
         needs:
-            - build-services
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
+            - build-test-services
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
         with:
             service: ${{ github.event.inputs.service }}
             forceNoRelease: true
