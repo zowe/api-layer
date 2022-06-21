@@ -23,7 +23,9 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This filter will store the personal access information from the body as request attribute
@@ -45,6 +47,7 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
                     authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
                     return;
                 }
+                accessTokenRequest.setScopes(scopes.stream().map(String::toLowerCase).collect(Collectors.toSet()));
                 request.setAttribute(TOKEN_REQUEST, accessTokenRequest);
                 filterChain.doFilter(request, response);
             } else {
