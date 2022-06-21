@@ -139,7 +139,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
 
     private void handleInvalidAccessTokenBodyException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
-        writeErrorResponse(ErrorType.BAD_ACCESS_TOKEN_BODY.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
+        writeErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, response);
     }
 
     //500

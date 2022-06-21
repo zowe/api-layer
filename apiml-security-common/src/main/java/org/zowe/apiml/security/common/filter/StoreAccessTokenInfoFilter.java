@@ -23,7 +23,6 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -31,8 +30,7 @@ import java.util.Set;
  */
 @RequiredArgsConstructor
 public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
-    private static final String EXPIRATION_TIME = "expirationTime";
-    private static final String SCOPES = "scopes";
+    public static final String TOKEN_REQUEST = "tokenRequest";
     private static final ObjectReader mapper = new ObjectMapper().reader();
     private final AuthExceptionHandler authExceptionHandler;
 
@@ -44,17 +42,17 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
                 SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class);
                 Set<String> scopes = accessTokenRequest.getScopes();
                 if (scopes == null || scopes.isEmpty()) {
-                    authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("The request body you provided is not valid"));
+                    authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
+                    return;
                 }
-                scopes = Collections.unmodifiableSet(scopes);
-                int validity = accessTokenRequest.getValidity();
-                request.setAttribute(EXPIRATION_TIME, validity);
-                request.setAttribute(SCOPES, scopes);
+                request.setAttribute(TOKEN_REQUEST, accessTokenRequest);
+                filterChain.doFilter(request, response);
+            } else {
+                authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
             }
 
-            filterChain.doFilter(request, response);
         } catch (IOException e) {
-            authExceptionHandler.handleException(request, response, new AccessTokenBodyNotValidException("The request body you provided is not valid"));
+            authExceptionHandler.handleException(request, response, new AccessTokenBodyNotValidException("org.zowe.apiml.security.query.invalidAccessTokenBody"));
         }
     }
 }
