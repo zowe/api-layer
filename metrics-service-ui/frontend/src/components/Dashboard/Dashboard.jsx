@@ -57,7 +57,7 @@ export default function Dashboard() {
         }, 30000);
     });
 
-    const handleChange = (event, newValue) => {
+    const handleChange = (_event, newValue) => {
         setMetricsDisplay(newValue);
     };
 

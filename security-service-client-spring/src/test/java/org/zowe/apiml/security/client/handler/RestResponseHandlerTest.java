@@ -124,8 +124,9 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithGatewayNotAvailable() {
+        IOException rootException = new IOException("Resource Access Exception");
         assertThrows(GatewayNotAvailableException.class, () -> {
-            handler.handleException(new IOException("Resource Access Exception"));
+            handler.handleException(rootException);
         });
     }
 

@@ -100,7 +100,7 @@ export const retryMechanism =
             })
         );
 
-export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
+export const fetchTilesPollingEpic = (action$, _store, { ajax, scheduler }) =>
     action$.pipe(
         ofType(FETCH_TILES_REQUEST),
         debounceTime(debounce, scheduler),

@@ -32,7 +32,7 @@ public class GeneralConfig {
     @Bean
     @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
     public <S, U> WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
-        return new ApimlTomcatCustomizer<S, U>();
+        return new ApimlTomcatCustomizer<>();
     }
 
 

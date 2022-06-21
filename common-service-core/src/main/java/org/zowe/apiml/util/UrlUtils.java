@@ -28,7 +28,7 @@ public class UrlUtils {
      * @return input without removed trailing slashes.
      */
     public static String trimSlashes(String string) {
-        return string.replaceAll("(?:^/)|(?:/$)", "");
+        return string.replaceAll("(^/|/$)", "");
     }
 
     /**
