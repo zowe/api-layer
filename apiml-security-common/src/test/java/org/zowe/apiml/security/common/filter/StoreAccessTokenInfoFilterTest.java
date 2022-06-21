@@ -27,15 +27,18 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
-import static org.hamcrest.Matchers.*;
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 
 class StoreAccessTokenInfoFilterTest {
@@ -50,6 +53,7 @@ class StoreAccessTokenInfoFilterTest {
     private final MessageService messageService = new YamlMessageService("/security-service-messages.yml");
 
     private final AuthExceptionHandler authExceptionHandler = new AuthExceptionHandler(messageService, new ObjectMapper());
+
     @BeforeEach
     public void setUp() {
         request = new MockHttpServletRequest();
@@ -68,16 +72,17 @@ class StoreAccessTokenInfoFilterTest {
         void thenStoreExpirationTimeAndScopes() throws ServletException, IOException {
             request.setContent(VALID_JSON.getBytes());
             underTest.doFilterInternal(request, response, chain);
-            SuccessfulAccessTokenHandler.AccessTokenRequest tokenRequest = (SuccessfulAccessTokenHandler.AccessTokenRequest)request.getAttribute(TOKEN_REQUEST);
+            SuccessfulAccessTokenHandler.AccessTokenRequest tokenRequest = (SuccessfulAccessTokenHandler.AccessTokenRequest) request.getAttribute(TOKEN_REQUEST);
             Set<String> scopes = tokenRequest.getScopes();
             assertEquals(90, tokenRequest.getValidity());
-            assertTrue( scopes.contains("service"));
+            assertTrue(scopes.contains("service"));
             verify(chain, times(1)).doFilter(request, response);
         }
 
-        Stream<byte[]> values(){
-            return Stream.of(VALID_JSON_NO_SCOPES.getBytes(),null);
+        Stream<byte[]> values() {
+            return Stream.of(VALID_JSON_NO_SCOPES.getBytes(), null);
         }
+
         @ParameterizedTest
         @MethodSource("values")
         void givenNoScopesInRequest_thenThrowException(byte[] body) throws ServletException, IOException {
@@ -87,7 +92,7 @@ class StoreAccessTokenInfoFilterTest {
             PrintWriter writer = new PrintWriter(out);
             when(response.getWriter()).thenReturn(writer);
             underTest.doFilterInternal(request, response, chain);
-            assertThat(out.toString(),containsString("ZWEAT606E"));
+            assertThat(out.toString(), containsString("ZWEAT606E"));
             verify(chain, times(0)).doFilter(request, response);
         }
     }
