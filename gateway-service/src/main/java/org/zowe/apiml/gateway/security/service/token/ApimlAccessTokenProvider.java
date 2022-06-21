@@ -109,7 +109,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
                 Object scopesObject = jwtClaims.get("scopes");
                 if(scopesObject instanceof List<?>) {
                     List<String>scopes = (List<String>) scopesObject;
-                    return scopes.contains(serviceId);
+                    return scopes.contains(serviceId.toLowerCase());
                 }
             }
         }

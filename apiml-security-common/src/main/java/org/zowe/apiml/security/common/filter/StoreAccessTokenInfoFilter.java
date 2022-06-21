@@ -24,7 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This filter will store the personal access information from the body as request attribute
@@ -46,6 +48,7 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
                 if (scopes == null || scopes.isEmpty()) {
                     authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("The request body you provided is not valid"));
                 }
+                scopes = Objects.requireNonNull(scopes).stream().map(String::toLowerCase).collect(Collectors.toSet());
                 scopes = Collections.unmodifiableSet(scopes);
                 int validity = accessTokenRequest.getValidity();
                 request.setAttribute(EXPIRATION_TIME, validity);
