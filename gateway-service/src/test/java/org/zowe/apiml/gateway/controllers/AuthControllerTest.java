@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -27,15 +28,12 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 
 import static org.apache.http.HttpStatus.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -193,6 +191,78 @@ class AuthControllerTest {
 
                 mockMvc.perform(get("/gateway/auth/keys/public"))
                     .andExpect(status().is(SC_OK));
+            }
+        }
+
+        @Nested
+        class GivenValidateAccessTokenRequest {
+
+            @Nested
+            class WhenValidateToken {
+                @Test
+                void validateAccessToken() throws Exception {
+                    when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+                    String payload = "{\n" +
+                        "    \"token\": \"token\",\n" +
+                        "    \"serviceId\": \"service\"\n" +
+                        "}";
+                    mockMvc.perform(post("/gateway/auth/access-token/validate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                        .andExpect(status().is(SC_OK));
+                }
+
+                @Test
+                void return401() throws Exception {
+                    when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+                    String payload = "{\n" +
+                        "    \"token\": \"token\",\n" +
+                        "    \"serviceId\": \"service\"\n" +
+                        "}";
+                    mockMvc.perform(post("/gateway/auth/access-token/validate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                        .andExpect(status().is(SC_UNAUTHORIZED));
+                }
+            }
+        }
+
+        @Nested
+        class GivenRevokeAccessTokenRequest {
+            @Nested
+            class WhenTokenAlreadyInvalidated {
+
+                @Test
+                void thenReturn401() throws Exception {
+                    String payload = "{\n" +
+                        "    \"token\": \"token\"\n" +
+                        "}";
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                        .andExpect(status().is(SC_UNAUTHORIZED));
+                }
+            }
+
+            @Nested
+            class WhenNotInvalidated {
+
+                @Test
+                void thenInvalidate() throws Exception {
+                    String payload = "{\n" +
+                        "    \"token\": \"token\"\n" +
+                        "}";
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                        .andExpect(status().is(SC_OK));
+                }
             }
         }
     }
