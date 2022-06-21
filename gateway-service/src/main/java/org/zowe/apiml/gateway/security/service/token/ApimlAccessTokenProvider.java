@@ -103,11 +103,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {
-        if(serviceId != null) {
+        if (serviceId != null) {
             Claims jwtClaims = getJwtClaims(jwtToken);
             if (jwtClaims != null) {
                 Object scopesObject = jwtClaims.get("scopes");
-                if(scopesObject instanceof List<?>) {
+                if (scopesObject instanceof List<?>) {
                     List<String>scopes = (List<String>) scopesObject;
                     return scopes.contains(serviceId.toLowerCase());
                 }
