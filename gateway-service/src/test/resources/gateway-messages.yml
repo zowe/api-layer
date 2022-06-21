@@ -309,3 +309,9 @@ messages:
       reason: "The JWT token or client certificate is not valid"
       action: "Configure your client to provide valid authentication."
 
+    - key: org.zowe.apiml.gateway.security.scheme.missingApplid
+      number: ZWEAG169
+      type: ERROR
+      text: "The 'apiml.authentication.applid' parameter is not specified for a service."
+      reason: "The applid parameter is required for the calling service."
+      action: "Provide the 'apiml.authentication.applid' parameter."
