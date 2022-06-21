@@ -11,28 +11,31 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.Jwts;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
+import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
 
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
@@ -50,8 +53,12 @@ class SafIdtSchemeTest {
         safIdtProvider = mock(SafIdtProvider.class);
 
         underTest = new SafIdtScheme(authConfigurationProperties, authSourceService, passTicketService, safIdtProvider);
-        underTest.initCookieName();
         underTest.defaultIdtExpiration = 10;
+    }
+
+    @AfterEach
+    void tearDown() {
+        RequestContext.getCurrentContext().clear();
     }
 
     @Test
@@ -86,6 +93,17 @@ class SafIdtSchemeTest {
 
             @Nested
             class WhenApply {
+                private RequestContext requestContext;
+                private HttpServletRequest request;
+
+                @BeforeEach
+                void setup() {
+                    requestContext = spy(new RequestContext());
+                    RequestContext.testSetCurrentContext(requestContext);
+
+                    request = new MockHttpServletRequest();
+                    requestContext.setRequest(request);
+                }
 
                 @Test
                 void givenAuthenticatedJwtToken() {
@@ -101,7 +119,8 @@ class SafIdtSchemeTest {
                     assertTrue(ac.isRequiredValidSource());
 
                     ac.apply(null);
-                    assertThat(getValueOfZuulHeader(), is(safIdt));
+                    assertThat(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER), is(safIdt));
+                    assertNull(getValueOfZuulHeader(AUTH_FAIL_HEADER));
                 }
 
                 @Test
@@ -115,6 +134,11 @@ class SafIdtSchemeTest {
                     AuthenticationCommand ac = underTest.createCommand(auth, authSource);
                     assertNotNull(ac);
                     assertFalse(ac.isExpired());
+                    assertTrue(ac.isRequiredValidSource());
+
+                    ac.apply(null);
+                    assertThat(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER), is(safIdt));
+                    assertNull(getValueOfZuulHeader(AUTH_FAIL_HEADER));
                 }
             }
         }
@@ -122,31 +146,112 @@ class SafIdtSchemeTest {
         @Nested
         class ThenNoTokenIsProduced {
             @Test
-            void givenNoJwtToken() {
-                AuthenticationCommand ac = underTest.createCommand(auth, authSource);
-                assertThat(ac, is(AuthenticationCommand.EMPTY));
+            void givenNullAuthSource() {
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, null));
+                assertEquals("org.zowe.apiml.gateway.security.schema.missingAuthentication", exc.getMessage());
             }
 
             @Test
-            void givenInvalidJwtToken() throws IRRPassTicketGenerationException {
+            void givenNoRawAuthSource() {
+                AuthSource emptySource = new JwtAuthSource(null);
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, emptySource));
+                assertEquals("org.zowe.apiml.gateway.security.schema.missingAuthentication", exc.getMessage());
+            }
+
+            @Test
+            void givenSafIdtException() throws IRRPassTicketGenerationException {
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
+                when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
+                String errorMessage = "Error generating saf idt token";
+                when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenThrow(new SafIdtException(errorMessage));
+
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.security.idt.failed", exc.getMessage());
+            }
+
+            @Test
+            void givenPassTicketException() throws IRRPassTicketGenerationException {
                 when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
                 when(passTicketService.generate(USERNAME, APPLID))
                     .thenThrow(new IRRPassTicketGenerationException(8, 8, 0));
 
-                PassTicketException ex = assertThrows(PassTicketException.class,
-                    () -> underTest.createCommand(auth, authSource));
-                assertThat(ex.getMessage(), allOf(containsString(USERNAME), containsString(APPLID)));
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.security.ticket.generateFailed", exc.getMessage());
+            }
+
+            @Test
+            void givenAuthTokenNotValidException() {
+                when(authSourceService.parse(authSource)).thenThrow(TokenNotValidException.class);
+
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.invalidToken", exc.getMessage());
+            }
+
+            @Test
+            void givenAuthTokenExpiredException() {
+                String safIdt = Jwts.builder()
+                    .setExpiration(new Date(System.currentTimeMillis() - 1000L))
+                    .compact();
+
+                when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(safIdt);
+                when(authSourceService.parse(authSource)).thenThrow(TokenExpireException.class);
+
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.expiredToken", exc.getMessage());
+            }
+
+            @Test
+            void givenSafIdTokenNotValidException() throws IRRPassTicketGenerationException {
+                String invalidSafIdt = "invalid_saf_id_token";
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
+                when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
+                when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(invalidSafIdt);
+
+
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.invalidToken", exc.getMessage());
+            }
+
+            @Test
+            void givenSafIdTokenExpired() throws IRRPassTicketGenerationException {
+                String expiredSafIdt = Jwts.builder()
+                    .setExpiration(new Date(System.currentTimeMillis() - 1000L))
+                    .compact();
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
+                when(passTicketService.generate(USERNAME, APPLID)).thenReturn(PASSTICKET);
+                when(safIdtProvider.generate(USERNAME, PASSTICKET.toCharArray(), APPLID)).thenReturn(expiredSafIdt);
+
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.expiredToken", exc.getMessage());
+            }
+
+            @Test
+            void givenNoUserIdFromAuthSource() {
+                X509AuthSource.Parsed emptyAuthSource = new X509AuthSource.Parsed(null,null,null,null, null, null);
+                when(authSourceService.parse(authSource)).thenReturn(emptyAuthSource);
+
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.schema.x509.mappingFailed", exc.getMessage());
+            }
+
+            @Test
+            void givenNoApplIdFromAuthentication() {
+                when(authSourceService.parse(authSource)).thenReturn(parsedAuthSource);
+                Authentication authNoApplId = new Authentication(SAF_IDT, null);
+
+                Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(authNoApplId, authSource));
+                assertEquals("org.zowe.apiml.gateway.security.scheme.missingApplid", exc.getMessage());
             }
         }
     }
 
-    private String getValueOfZuulHeader() {
+    private String getValueOfZuulHeader(String headerName) {
         final RequestContext context = RequestContext.getCurrentContext();
-        String valueOfHeader = context.getZuulRequestHeaders().get("x-saf-token");
+        String valueOfHeader = context.getZuulRequestHeaders().get(headerName.toLowerCase());
         if (valueOfHeader == null) {
             return null;
         }
 
-        return valueOfHeader.replace("x-saf-token=", "");
+        return valueOfHeader.replace(headerName + "=", "");
     }
 }
