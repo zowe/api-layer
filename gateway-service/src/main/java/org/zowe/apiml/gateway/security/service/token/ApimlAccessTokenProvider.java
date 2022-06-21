@@ -30,9 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
@@ -105,11 +103,15 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {
-        Claims jwtClaims = getJwtClaims(jwtToken);
-        if (jwtClaims != null) {
-            ArrayList<String> scopes = (ArrayList<String>) jwtClaims.get("scopes");
-
-            return scopes.stream().anyMatch(serviceId::equalsIgnoreCase);
+        if(serviceId != null) {
+            Claims jwtClaims = getJwtClaims(jwtToken);
+            if (jwtClaims != null) {
+                Object scopesObject = jwtClaims.get("scopes");
+                if(scopesObject instanceof List<?>) {
+                    List<String>scopes = (List<String>) scopesObject;
+                    return scopes.contains(serviceId);
+                }
+            }
         }
         return false;
     }

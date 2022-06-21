@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
 import javax.servlet.FilterChain;
@@ -42,12 +43,13 @@ class StoreAccessTokenInfoFilterTest {
     private final MessageService messageService = new YamlMessageService("/security-service-messages.yml");
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, new ObjectMapper());
 
+    private final AuthExceptionHandler authExceptionHandler = new AuthExceptionHandler(messageService, new ObjectMapper());
     @BeforeEach
     public void setUp() {
         request = new MockHttpServletRequest();
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
-        underTest = new StoreAccessTokenInfoFilter(resourceAccessExceptionHandler);
+        underTest = new StoreAccessTokenInfoFilter(authExceptionHandler);
         request.setMethod(HttpMethod.POST.name());
 
     }

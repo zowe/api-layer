@@ -11,14 +11,19 @@ package org.zowe.apiml.gateway.security.service.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.jsonwebtoken.Jwts;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,11 +33,25 @@ class ApimlAccessTokenProviderTest {
     CachingServiceClient cachingServiceClient;
     AuthenticationService as;
 
+    private static String SCOPED_TOKEN;
+    private static String TOKEN_WITHOUT_SCOPES;
+
     @BeforeEach
     void setup() throws CachingServiceClientException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
+    }
+
+    @BeforeAll
+    static void initTokens() {
+        HashSet<String> scopes = new HashSet<>();
+        scopes.add("gateway");
+        scopes.add("api-catalog");
+        Map<String, Object> scopesClaim = new HashMap<>();
+        scopesClaim.put("scopes", scopes);
+        SCOPED_TOKEN = createTestToken("user", scopesClaim);
+        TOKEN_WITHOUT_SCOPES = createTestToken("user", null);
     }
 
     @Test
@@ -49,9 +68,8 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenSameToken_returnInvalidated() throws Exception {
-        String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkA";
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
-        String tokenHash = accessTokenProvider.getHash(token);
+        String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
 
         ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
         ObjectMapper mapper = new ObjectMapper();
@@ -60,15 +78,14 @@ class ApimlAccessTokenProviderTest {
         Map<String, String> map = new HashMap<>();
         map.put(tokenHash, s);
         when(cachingServiceClient.readInvalidatedTokens()).thenReturn(map);
-        assertTrue(accessTokenProvider.isInvalidated(token));
+        assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
 
     @Test
     void givenDifferentToken_returnNotInvalidated() throws Exception {
-        String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkA";
         String differentToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkdA";
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
-        String tokenHash = accessTokenProvider.getHash(token);
+        String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
 
         ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
         ObjectMapper mapper = new ObjectMapper();
@@ -94,17 +111,37 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
-    void givenTokenWithValidScope_validateIt() {
-        String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjU1NzQwMDAxLCJleHAiOjE2NjM1MTYwMDEsImlzcyI6IkFQSU1MX1BBVCIsImp0aSI6IjI3Yjk2ZWVmLTMyMzAtNDg1Ni1iOTRiLTE4NGQ2M2Q2MjEzNiIsImF1dGgucHJvdiI6IkFQSU1MIiwic2NvcGVzIjpbImhlbGxvIiwiZ2F0ZXdheSJdfQ.e1w7yrtMlbfYTwaJ7uG7_8mZR6C7O3QSP_HKXVw0abZyryhsoSvLwpGqMbjNQgl7NhYTWd90u9CUr5fZGDdJOYoN0qrUzkguzh7X4FItTSGdlhtL96lZep50ORX--F9ifw41ccFIjrupjgy-B6Cp-bEhZloW8Y4xOlHCbt7uE_yCDn-2PSHX0vNNogJQuq3HQBIoqnGVGcfPdTDtOsagLMcggU2qtpoTNA-QlmKiicvij2pDZ9IRpRJimG_jAAo4Nq9cZqbn-fK2yHPwxQl5aisqYLJgFEzV33xAYh9iD5o_6GDX-2OtcyA01H8LYhPyl6Mr_ER6vezenSJCEtMZjA";
+    void givenScopedToken_whenScopeIsListed_thenReturnValid() {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
-        assertTrue(accessTokenProvider.isValidForScopes(token, "gateway"));
+        assertTrue(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, "gateway"));
     }
 
-    @Test
-    void givenTokenWithInvalidScope_returnInvalid() {
-        String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjU1NzQwMDAxLCJleHAiOjE2NjM1MTYwMDEsImlzcyI6IkFQSU1MX1BBVCIsImp0aSI6IjI3Yjk2ZWVmLTMyMzAtNDg1Ni1iOTRiLTE4NGQ2M2Q2MjEzNiIsImF1dGgucHJvdiI6IkFQSU1MIiwic2NvcGVzIjpbImhlbGxvIiwiZ2F0ZXdheSJdfQ.e1w7yrtMlbfYTwaJ7uG7_8mZR6C7O3QSP_HKXVw0abZyryhsoSvLwpGqMbjNQgl7NhYTWd90u9CUr5fZGDdJOYoN0qrUzkguzh7X4FItTSGdlhtL96lZep50ORX--F9ifw41ccFIjrupjgy-B6Cp-bEhZloW8Y4xOlHCbt7uE_yCDn-2PSHX0vNNogJQuq3HQBIoqnGVGcfPdTDtOsagLMcggU2qtpoTNA-QlmKiicvij2pDZ9IRpRJimG_jAAo4Nq9cZqbn-fK2yHPwxQl5aisqYLJgFEzV33xAYh9iD5o_6GDX-2OtcyA01H8LYhPyl6Mr_ER6vezenSJCEtMZjA";
+    static Stream<String> invalidScopes() {
+        return Stream.of("invalidService", "", null);
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidScopes")
+    void givenScopedToken_whenScopeIsNotListed_thenReturnInvalid(String scope) {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
-        assertFalse(accessTokenProvider.isValidForScopes(token, "invalidService"));
+        assertFalse(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, scope));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidScopes")
+    void givenTokenWithoutScopes_thenReturnInvalid(String scope) {
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        assertFalse(accessTokenProvider.isValidForScopes(TOKEN_WITHOUT_SCOPES, scope));
+    }
+
+    static String createTestToken(String username, Map<String, Object> claims) {
+        return Jwts.builder()
+            .setSubject(username)
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + 10_000L))
+            .setIssuer(QueryResponse.Source.ZOWE_PAT.value)
+            .setId(UUID.randomUUID().toString())
+            .addClaims(claims).compact();
     }
 
 }
