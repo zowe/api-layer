@@ -12,12 +12,11 @@ package org.zowe.apiml.security.client.handler;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.client.HttpClientErrorException;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ErrorType;
@@ -38,8 +37,6 @@ class RestResponseHandlerTest {
     private final static String GENERIC_LOG_MESSAGE = "Generic Log Message";
     private final static String LOG_PARAMETERS = "https://localhost:8080/api/test/url";
 
-    private HttpClientErrorException unauthorizedException;
-    private HttpClientErrorException forbiddenException;
     private RestResponseHandler handler;
     private CloseableHttpResponse response;
     private StatusLine statusLine;
@@ -47,126 +44,109 @@ class RestResponseHandlerTest {
     @BeforeEach
     void setUp() {
         handler = new RestResponseHandler();
-        unauthorizedException = new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
-        forbiddenException = new HttpClientErrorException(HttpStatus.NOT_FOUND);
         response = mock(CloseableHttpResponse.class);
         statusLine = mock(StatusLine.class);
         when(statusLine.getStatusCode()).thenReturn(401);
         when(response.getStatusLine()).thenReturn(statusLine);
     }
 
-    @Test
-    void handleBadResponseWithBadCredentials() {
+    @Nested
+    class WhenHandleError {
+        @Nested
+        class GivenBadResponse {
+            @Test
+            void thenBadCredentialsError() {
+                assertThrows(BadCredentialsException.class, () -> handler.handleErrorType(response, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-        assertThrows(BadCredentialsException.class, () -> {
-            handler.handleErrorType(response, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenTokenNotValidError() {
+                assertThrows(TokenNotValidException.class, () -> handler.handleErrorType(response, ErrorType.TOKEN_NOT_VALID, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-    @Test
-    void handleBadResponseWithTokenNotValid() {
-        assertThrows(TokenNotValidException.class, () -> {
-            handler.handleErrorType(response, ErrorType.TOKEN_NOT_VALID, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenTokenNotProvidedError() {
+                assertThrows(TokenNotProvidedException.class, () -> handler.handleErrorType(response, ErrorType.TOKEN_NOT_PROVIDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-    @Test
-    void handleBadResponseWithTokenNotProvided() {
-        assertThrows(TokenNotProvidedException.class, () -> {
-            handler.handleErrorType(response, ErrorType.TOKEN_NOT_PROVIDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenTokenNotInResponseError() {
+                assertThrows(InvalidTokenTypeException.class,
+                    () -> handler.handleErrorType(response, ErrorType.INVALID_TOKEN_TYPE, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-    @Test
-    void handleBadResponseWithTokenNotInResponse() {
-        assertThrows(InvalidTokenTypeException.class,
-            () -> handler.handleErrorType(response, ErrorType.INVALID_TOKEN_TYPE, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
-    }
+            @Test
+            void thenAuthGeneralError() {
+                assertThrows(BadCredentialsException.class, () -> handler.handleErrorType(response, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-    @Test
-    void handleBadResponseWithAuthGeneral() {
-        assertThrows(BadCredentialsException.class, () -> {
-            handler.handleErrorType(response, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenCredentialsNotFoundError() {
+                when(statusLine.getStatusCode()).thenReturn(400);
+                assertThrows(AuthenticationCredentialsNotFoundException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-    @Test
-    void handleBadResponseWithCredentialsNotFound() {
-        when(statusLine.getStatusCode()).thenReturn(400);
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenAuthMethodNotSupportedError() {
+                when(statusLine.getStatusCode()).thenReturn(405);
+                assertThrows(AuthMethodNotSupportedException.class, () -> {
+                    handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+                });
+            }
 
-    @Test
-    void handleBadResponseWithAuthMethodNotSupported() {
-        when(statusLine.getStatusCode()).thenReturn(405);
-        assertThrows(AuthMethodNotSupportedException.class, () -> {
-            handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenGenericErrorWithNoLogMessage() {
+                when(statusLine.getStatusCode()).thenReturn(504);
+                assertThrows(AuthenticationServiceException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE));
+            }
 
-    @Test
-    void handleBadResponseWithNoLogMessage() {
-        when(statusLine.getStatusCode()).thenReturn(504);
-        assertThrows(AuthenticationServiceException.class, () -> {
-            handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE);
-        });
-    }
+            @Test
+            void thenGenericErrorWithLogMessage() {
+                when(statusLine.getStatusCode()).thenReturn(504);
+                assertThrows(AuthenticationServiceException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-    @Test
-    void handleBadResponseWithLogMessage() {
-        when(statusLine.getStatusCode()).thenReturn(504);
-        assertThrows(AuthenticationServiceException.class, () -> {
-            handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenGatewayNotAvailableError() {
+                IOException rootException = new IOException("Resource Access Exception");
+                assertThrows(GatewayNotAvailableException.class, () -> handler.handleException(rootException));
+            }
 
-    @Test
-    void handleBadResponseWithGatewayNotAvailable() {
-        IOException rootException = new IOException("Resource Access Exception");
-        assertThrows(GatewayNotAvailableException.class, () -> {
-            handler.handleException(rootException);
-        });
-    }
+            @Test
+            void thenServiceUnavailableError() {
+                when(statusLine.getStatusCode()).thenReturn(503);
+                assertThrows(ServiceNotAccessibleException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
 
-    @Test
-    void handleBadResponseWithServiceUnavailable() {
-        when(statusLine.getStatusCode()).thenReturn(503);
-        assertThrows(ServiceNotAccessibleException.class, () -> {
-            handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+            @Test
+            void thenHttpServerError() {
+                when(statusLine.getStatusCode()).thenReturn(500);
+                assertThrows(ServiceNotAccessibleException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
+        }
 
-    @Test
-    void handleBadResponseWithHttpServerError() {
-        when(statusLine.getStatusCode()).thenReturn(500);
-        assertThrows(ServiceNotAccessibleException.class, () -> {
-            handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-    }
+        @Test
+        void thenUserSuspendedError() {
+            ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class,
+                () -> handler.handleErrorType(response, ErrorType.USER_SUSPENDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            assertEquals(163, exception.getPlatformError().errno);
+        }
 
-    @Test
-    void handleUserSuspendedError() {
-        ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class, () -> {
-            handler.handleErrorType(response, ErrorType.USER_SUSPENDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-        assertEquals(163, exception.getPlatformError().errno);
-    }
+        @Nested
+        class GivenBadPassword {
+            @Test
+            void thenInvalidNewPasswordError() {
+                ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class,
+                    () -> handler.handleErrorType(response, ErrorType.NEW_PASSWORD_INVALID, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+                assertEquals(169, exception.getPlatformError().errno);
+            }
 
-    @Test
-    void handleInvalidNewPasswordError() {
-        ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class, () -> {
-            handler.handleErrorType(response, ErrorType.NEW_PASSWORD_INVALID, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-        assertEquals(169, exception.getPlatformError().errno);
-    }
-
-    @Test
-    void handleExpiredPasswordError() {
-        ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class, () -> {
-            handler.handleErrorType(response, ErrorType.PASSWORD_EXPIRED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-        });
-        assertEquals(168, exception.getPlatformError().errno);
+            @Test
+            void thenExpiredPasswordError() {
+                ZosAuthenticationException exception = assertThrows(ZosAuthenticationException.class,
+                    () -> handler.handleErrorType(response, ErrorType.PASSWORD_EXPIRED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+                assertEquals(168, exception.getPlatformError().errno);
+            }
+        }
     }
 }
