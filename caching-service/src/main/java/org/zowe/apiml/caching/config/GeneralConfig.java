@@ -28,12 +28,9 @@ public class GeneralConfig {
     @Value("${caching.storage.size:100}")
     private int maxDataSize;
 
-
     @Bean
     @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
-    public <S, U> WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
         return new ApimlTomcatCustomizer<>();
     }
-
-
 }
