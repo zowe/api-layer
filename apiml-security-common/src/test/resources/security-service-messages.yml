@@ -61,7 +61,7 @@ messages:
       type: ERROR
       text: "Invalid body provided in request to create personal access token"
       reason: "The request body is not valid"
-      action: "Use a valid body in the request"
+      action: "Use a valid body in the request. Format of a message: {validity: int , scopes: [string]}."
 
     # Personal access token messages
     - key: org.zowe.apiml.security.token.accessTokenBodyMissingScopes

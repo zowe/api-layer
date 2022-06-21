@@ -22,12 +22,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 
 class SuccessfulAccessTokenHandlerTest {
     private final TokenAuthentication dummyAuth = new TokenAuthentication("user", "TEST_TOKEN_STRING");
@@ -35,6 +39,12 @@ class SuccessfulAccessTokenHandlerTest {
     private AccessTokenProvider accessTokenProvider;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
+    static Set<String> scopes = new HashSet<>();
+    static SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(80, scopes);
+
+    static {
+        scopes.add("gateway");
+    }
 
     @BeforeEach
     void setup() {
@@ -43,14 +53,14 @@ class SuccessfulAccessTokenHandlerTest {
         accessTokenProvider = mock(AccessTokenProvider.class);
 
         underTest = new SuccessfulAccessTokenHandler(accessTokenProvider);
+        httpServletRequest.setAttribute(TOKEN_REQUEST, accessTokenRequest);
     }
 
     @Nested
     class WhenCallingOnAuthentication {
         @Test
         void thenReturn200() throws ServletException, IOException {
-            httpServletRequest.setAttribute("expirationTime", 90);
-            when(accessTokenProvider.getToken(any(), anyInt(),any())).thenReturn("jwtToken");
+            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
             executeLoginHandler();
 
             assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
@@ -58,7 +68,6 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void givenNullExpiration_thenReturn200() throws ServletException, IOException {
-            httpServletRequest.setAttribute("expirationTime", "");
             when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
             executeLoginHandler();
 
@@ -67,7 +76,6 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void givenResponseNotCommitted_thenThrowIOException() throws IOException {
-            httpServletRequest.setAttribute("expirationTime", 90);
             when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
             HttpServletResponse servletResponse = mock(HttpServletResponse.class);
             PrintWriter mockWriter = mock(PrintWriter.class);
