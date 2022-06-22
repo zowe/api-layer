@@ -11,14 +11,17 @@ package org.zowe.apiml.metrics.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -44,7 +47,7 @@ import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 @RequiredArgsConstructor
 @EnableApimlAuth
 @ComponentScan("org.zowe.apiml.product.web")
-public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SpringSecurityConfiguration {
 
     private final ObjectMapper securityObjectMapper;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -52,14 +55,8 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(gatewayLoginProvider);
-        auth.authenticationProvider(gatewayTokenProvider);
-    }
-
-    @Override
-    public void configure(WebSecurity web) {
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
             "/application/health",
             "/application/info",
@@ -67,11 +64,11 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
             "/hystrix-dashboard/**",
             "/"
         };
-        web.ignoring().antMatchers(noSecurityAntMatchers);
+        return (web -> web.ignoring().antMatchers(noSecurityAntMatchers));
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf().disable()   // NOSONAR
             .headers()
@@ -93,11 +90,11 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
 
             // login endpoint
-            .and()
-            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getServiceLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll()
 
@@ -109,19 +106,32 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // endpoints protection
             .and()
-            .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
-            .antMatchers("/application/health", "/application/info").permitAll();
+            .antMatchers("/application/health", "/application/info").permitAll()
+            .and().apply(new CustomSecurityFilters());
+
+        return http.build();
     }
 
-    private LoginFilter loginFilter(String loginEndpoint) throws Exception {
+    class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+        @Override
+        public void configure(HttpSecurity http) throws Exception {
+            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+
+            http.addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getServiceLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint(), authenticationManager), ShouldBeAlreadyAuthenticatedFilter.class)
+                .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+        }
+    }
+
+    private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) throws Exception {
         return new LoginFilter(
             loginEndpoint,
             handlerInitializer.getSuccessfulLoginHandler(),
             handlerInitializer.getAuthenticationFailureHandler(),
             securityObjectMapper,
-            authenticationManager(),
+            authenticationManager,
             handlerInitializer.getResourceAccessExceptionHandler()
         );
     }
@@ -129,9 +139,9 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
     /**
      * Secures content with a basic authentication
      */
-    private BasicContentFilter basicFilter() throws Exception {
+    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) throws Exception {
         return new BasicContentFilter(
-            authenticationManager(),
+            authenticationManager,
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler()
         );
@@ -140,9 +150,9 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
     /**
      * Secures content with a token stored in a cookie
      */
-    private CookieContentFilter cookieFilter() throws Exception {
+    private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) throws Exception {
         return new CookieContentFilter(
-            authenticationManager(),
+            authenticationManager,
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties);
