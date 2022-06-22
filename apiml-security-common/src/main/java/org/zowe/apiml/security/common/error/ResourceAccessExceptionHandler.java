@@ -46,17 +46,9 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
             handleGatewayNotAvailable(request, response, ex);
         } else if (ex instanceof ServiceNotAccessibleException) {
             handleServiceNotAccessible(request, response, ex);
-        } else if (ex instanceof AccessTokenBodyNotValidException) {
-            handleInvalidAccessTokenBodyException(request, response, ex);
         } else {
             throw ex;
         }
-    }
-
-    //400
-    private void handleInvalidAccessTokenBodyException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
-        writeErrorResponse(ErrorType.BAD_ACCESS_TOKEN_BODY.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
     }
 
     //500

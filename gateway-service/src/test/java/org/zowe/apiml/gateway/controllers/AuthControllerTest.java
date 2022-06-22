@@ -11,11 +11,14 @@ package org.zowe.apiml.gateway.controllers;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -32,10 +35,9 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -59,12 +61,16 @@ class AuthControllerTest {
     private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
+    private JSONObject body;
 
     @BeforeEach
-    void setUp() throws ParseException {
+    void setUp() throws ParseException, JSONException {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
         authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        body = new JSONObject()
+            .put("token", "token")
+            .put("serviceId", "service");
 
         jwk1 = getJwk(1);
         jwk2 = getJwk(2);
@@ -193,6 +199,71 @@ class AuthControllerTest {
 
                 mockMvc.perform(get("/gateway/auth/keys/public"))
                     .andExpect(status().is(SC_OK));
+            }
+        }
+
+        @Nested
+        class GivenValidateAccessTokenRequest {
+
+            @Nested
+            class WhenValidateToken {
+                @Test
+                void validateAccessToken() throws Exception {
+                    when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+                    mockMvc.perform(post("/gateway/auth/access-token/validate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_OK));
+                }
+
+                @Test
+                void return401() throws Exception {
+                    when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+                    mockMvc.perform(post("/gateway/auth/access-token/validate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_UNAUTHORIZED));
+                }
+            }
+        }
+
+        @Nested
+        class GivenRevokeAccessTokenRequest {
+
+            @BeforeEach
+            void setUp() throws JSONException {
+                body = new JSONObject()
+                    .put("token", "token");
+            }
+
+            @Nested
+            class WhenTokenAlreadyInvalidated {
+
+                @Test
+                void thenReturn401() throws Exception {
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_UNAUTHORIZED));
+                }
+            }
+
+            @Nested
+            class WhenNotInvalidated {
+
+                @Test
+                void thenInvalidate() throws Exception {
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_OK));
+                }
             }
         }
     }

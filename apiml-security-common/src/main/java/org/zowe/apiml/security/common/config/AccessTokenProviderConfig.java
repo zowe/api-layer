@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
+import java.util.Set;
+
 @Configuration
 public class AccessTokenProviderConfig {
 
@@ -33,7 +35,12 @@ public class AccessTokenProviderConfig {
             }
 
             @Override
-            public String getToken(String username, int expirationTime) {
+            public String getToken(String username, int expirationTime, Set<String> scopes) {
+                throw new NotImplementedException();
+            }
+
+            @Override
+            public boolean isValidForScopes(String token, String serviceId) {
                 throw new NotImplementedException();
             }
         };
