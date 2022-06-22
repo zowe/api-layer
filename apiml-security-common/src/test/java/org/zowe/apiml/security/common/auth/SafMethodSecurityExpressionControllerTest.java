@@ -25,10 +25,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -74,17 +76,17 @@ class SafMethodSecurityExpressionControllerTest {
     private MockMvc mockMvc;
 
     @ParameterizedTest
-    @ValueSource(strings = { "hasSafResourceAccess", "hasSafServiceResourceAccess" })
+    @ValueSource(strings = {"hasSafResourceAccess", "hasSafServiceResourceAccess"})
     void testHasSafResourceAccess_whenHaveSafResourceAccess_thenReturn200(String testPrefix) throws Exception {
         mockMvc
             .perform(
                 get("/gateway/" + testPrefix + "Read")
-                .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_HEADER))
+                    .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_HEADER))
             .andExpect(status().isOk());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "hasSafResourceAccess", "hasSafServiceResourceAccess" })
+    @ValueSource(strings = {"hasSafResourceAccess", "hasSafServiceResourceAccess"})
     void testHasSafResourceAccess_whenDontHaveSafResourceAccess_thenReturn403(String testPrefix) throws Exception {
         mockMvc
             .perform(
@@ -104,7 +106,7 @@ class SafMethodSecurityExpressionControllerTest {
 
     @Configuration
     @EnableGlobalMethodSecurity(prePostEnabled = true)
-    public static class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+    public static class SecurityConfiguration {
 
         @Bean
         public SafResourceAccessVerifying safResourceAccessVerifying() throws IOException {
@@ -144,16 +146,26 @@ class SafMethodSecurityExpressionControllerTest {
             return new SafMethodSecurityExpressionHandler(safSecurityConfigurationProperties, safResourceAccessVerifying);
         }
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            http
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+            return http
                 .authorizeRequests().anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new BasicContentFilter(
-                        authenticationManager(),
-                        failedAuthenticationHandler(),
-                        resourceAccessExceptionHandler()
-                    ), UsernamePasswordAuthenticationFilter.class);
+                .apply(new CustomSecurityFilters())
+                .and().build();
+        }
+
+        class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+            @Override
+            public void configure(HttpSecurity http) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+
+                http.addFilterBefore(new BasicContentFilter(
+                    authenticationManager,
+                    failedAuthenticationHandler(),
+                    resourceAccessExceptionHandler()
+                ), UsernamePasswordAuthenticationFilter.class);
+            }
         }
 
         @Autowired
