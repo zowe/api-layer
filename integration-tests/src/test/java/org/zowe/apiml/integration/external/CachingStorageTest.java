@@ -117,7 +117,7 @@ class CachingStorageTest implements TestWithStartedInstances {
                 .contentType(JSON)
                 .body(new KeyValue("testTokens" + index, String.valueOf(ai.getAndIncrement())))
                 .when()
-                .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(201));
+                .post(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(201));
         }
         service.shutdown();
         service.awaitTermination(30L, TimeUnit.SECONDS);
@@ -146,7 +146,7 @@ class CachingStorageTest implements TestWithStartedInstances {
                 .contentType(JSON)
                 .body(new KeyValue("testTokens4", "duplicateToken"))
                 .when()
-                .post(CACHING_INVALIDATE_TOKEN_PATH).then().statusCode(finalStatusCode));
+                .post(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(finalStatusCode));
         }
         service.shutdown();
     }
