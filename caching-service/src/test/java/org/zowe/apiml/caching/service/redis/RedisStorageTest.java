@@ -183,7 +183,7 @@ public class RedisStorageTest {
         void thenThrowException() {
             KeyValue keyValue = new KeyValue("key", "value");
             assertThrows(StorageException.class, () -> {
-                underTest.storeListItem(SERVICE_ID, keyValue);
+                underTest.storeMapItem(SERVICE_ID, "mapKey", keyValue);
             });
         }
     }

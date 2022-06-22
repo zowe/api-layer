@@ -222,7 +222,7 @@ class InMemoryStorageTest {
         void thenThrowException() {
             KeyValue keyValue = new KeyValue("key", "value");
             assertThrows(StorageException.class, () -> {
-                underTest.storeListItem(serviceId, keyValue);
+                underTest.storeMapItem(serviceId, "mapKey", keyValue);
             });
         }
     }

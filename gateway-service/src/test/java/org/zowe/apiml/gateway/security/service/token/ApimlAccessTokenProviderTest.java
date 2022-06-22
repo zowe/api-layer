@@ -62,7 +62,7 @@ class ApimlAccessTokenProviderTest {
         when(as.parseJwtToken(token)).thenReturn(new QueryResponse(null, "user", issued, issued, null));
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         accessTokenProvider.invalidateToken(token);
-        verify(cachingServiceClient, times(1)).appendList(any());
+        verify(cachingServiceClient, times(1)).appendList(anyString(), any());
 
     }
 

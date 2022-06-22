@@ -21,7 +21,10 @@ import org.zowe.apiml.caching.service.StorageException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -34,6 +37,8 @@ class InfinispanStorageTest {
     AdvancedCache<String, Map<String,String>> tokenCache;
     InfinispanStorage storage;
     String serviceId1 = "service1";
+
+    String serviceId2 = "service2";
     ClusteredLock lock;
 
     @BeforeEach
@@ -169,18 +174,19 @@ class InfinispanStorageTest {
             hashMap.put("key", "token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             when(tokenCache.get(anyString())).thenAnswer(invocation -> hashMap);
-            assertNull(storage.storeListItem(serviceId1, new KeyValue("invalidTokens", "value")));
+            assertNull(storage.storeMapItem(serviceId1, "invalidTokens", new KeyValue("newkey", "newvalue")));
             verify(tokenCache, times(1)).put(serviceId1 + "invalidTokens", hashMap);
         }
 
         @Test
-        void throwStorageException() {
+        void updateToken() {
             HashMap<String, String> hashMap = new HashMap();
             hashMap.put("key", "token");
             InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
             when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(hashMap);
-            KeyValue keyValue = new KeyValue("key", "token");
-            assertThrows(StorageException.class, () -> storage.storeListItem(serviceId1, keyValue));
+            KeyValue keyValue = new KeyValue("key", "token2");
+            assertNull(storage.storeMapItem(serviceId1, "invalidTokens", keyValue));
+            verify(tokenCache, times(1)).put(serviceId1 + "invalidTokens", hashMap);
         }
     }
 
@@ -190,11 +196,63 @@ class InfinispanStorageTest {
         @Test
         void returnTokenList() {
             HashMap<String, String> expectedMap = new HashMap();
-            expectedMap.put("key", "token1");
+            expectedMap.put("key1", "token1");
             expectedMap.put("key2", "token2");
 
             when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(expectedMap);
             assertEquals(2, storage.getAllMapItems(serviceId1, "invalidTokens").size());
+        }
+    }
+
+    @Nested
+    class WhenRetrieveInvalidTokensAndRules {
+
+        InfinispanStorage underTest;
+        @BeforeEach
+        void createStorage() {
+            Map<String, String> tokensService1 = new HashMap();
+            tokensService1.put("key1", "token1");
+            tokensService1.put("key2", "token2");
+            Map<String, String> tokensService2 = new HashMap();
+            tokensService2.put("key3", "token3");
+            Map<String, String> rulesService1 = new HashMap();
+            rulesService1.put("key1", "rule1");
+            rulesService1.put("key2", "rule2");
+            ConcurrentMap<String, Map<String, String>> tokenCache = new ConcurrentHashMap<>();
+            tokenCache.put(serviceId1 + "invalidTokens", tokensService1);
+            tokenCache.put(serviceId1 + "invalidTokenRules", rulesService1);
+            tokenCache.put(serviceId2 + "invalidTokens", tokensService2);
+            underTest = new InfinispanStorage(cache, tokenCache, lock);
+        }
+
+
+        @Test
+        void returnAllForGivenService() {
+            Map<String, Map<String, String>> result = underTest.getAllMaps(serviceId1);
+
+            assertEquals(2, result.size());
+            assertNotNull(result.get("invalidTokens"));
+            assertEquals(2, result.get("invalidTokens").size());
+            assertNotNull(result.get("invalidTokenRules"));
+            assertEquals(2, result.get("invalidTokenRules").size());
+        }
+
+        @Test
+        void returnAllForAnotherService() {
+            Map<String, Map<String, String>> result = underTest.getAllMaps(serviceId2);
+
+            assertEquals(1, result.size());
+            assertNotNull(result.get("invalidTokens"));
+            assertEquals(1, result.get("invalidTokens").size());
+            assertNull(result.get("invalidTokenRules"));
+        }
+
+        @Test
+        void returnNoneForUnknownService() {
+            Map<String, Map<String, String>> result = underTest.getAllMaps("unknown_service");
+
+            assertEquals(0, result.size());
+
         }
     }
 

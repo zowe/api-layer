@@ -58,7 +58,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
 
         String json = objectMapper.writeValueAsString(container);
-        cachingServiceClient.appendList(new CachingServiceClient.KeyValue(hashedValue, json));
+        cachingServiceClient.appendList("invalidTokens", new CachingServiceClient.KeyValue(hashedValue, json));
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {

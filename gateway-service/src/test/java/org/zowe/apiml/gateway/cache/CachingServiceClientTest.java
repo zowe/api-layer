@@ -174,7 +174,7 @@ class CachingServiceClientTest {
     @Test
     void whenClientThrowsException_thenTranslateException() {
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class))).thenThrow(new RestClientException("error"));
-        assertThrows(CachingServiceClientException.class, () -> underTest.appendList(new CachingServiceClient.KeyValue()));
+        assertThrows(CachingServiceClientException.class, () -> underTest.appendList("mapKey", new CachingServiceClient.KeyValue()));
     }
 
 

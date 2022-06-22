@@ -43,7 +43,7 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.apiPath}")
     private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
     @Value("${apiml.cachingServiceClient.list.apiPath}")
-    private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list"; //NOSONAR parametrization provided by @Value annotation
+    private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list/"; //NOSONAR parametrization provided by @Value annotation
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -78,9 +78,9 @@ public class CachingServiceClient {
         }
     }
 
-    public void appendList(KeyValue kv) throws CachingServiceClientException {
+    public void appendList(String mapKey, KeyValue kv) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + mapKey, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
         }
@@ -91,7 +91,7 @@ public class CachingServiceClient {
             ParameterizedTypeReference<Map<String, String>> responseType =
                 new ParameterizedTypeReference<Map<String, String>>() {
                 };
-            ResponseEntity<Map<String, String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens", HttpMethod.GET, null, responseType);
+            ResponseEntity<Map<String, String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "invalidTokens", HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
                     return response.getBody();
