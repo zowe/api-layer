@@ -21,6 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.ApplicationConfiguration;
+import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -35,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {ZaasClientTestController.class})
-@Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class, AnnotationConfigContextLoader.class})
+@Import(value = {SecurityConfiguration.class, SpringComponentsConfiguration.class, ApplicationConfiguration.class, AnnotationConfigContextLoader.class})
 class ZaasClientTestControllerTest {
     @Autowired
     private MockMvc mockMvc;
