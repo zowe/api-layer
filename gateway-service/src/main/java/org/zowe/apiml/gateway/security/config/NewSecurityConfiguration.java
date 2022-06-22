@@ -16,18 +16,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
@@ -81,8 +84,6 @@ import java.util.Set;
 @Slf4j
 public class NewSecurityConfiguration {
 
-    private String applicationContextPath = "/gateway"; //NOSONAR this is hardcoded as there is no value for this in config
-
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
 
     private final ObjectMapper securityObjectMapper;
@@ -113,24 +114,18 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(1)
-    class AuthenticationFunctionality extends WebSecurityConfigurerAdapter {
+    class AuthenticationFunctionality {
 
         private final CompoundAuthProvider compoundAuthProvider;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
-            auth.authenticationProvider(new CertificateAuthenticationProvider()); // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain authenticationFunctionalityFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getGatewayLoginEndpoint(),
                 authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
                 authConfigurationProperties.getGatewayLogoutEndpoint(),
                 authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
-                ).and())
+            ).and())
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
@@ -150,12 +145,23 @@ public class NewSecurityConfiguration {
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                 .and()
 
-                //drive filter order this way
-                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
-                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+                .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                .authenticationProvider(new CertificateAuthenticationProvider()) // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
+                .apply(new CustomSecurityFilters());
 
+            return http.build();
+        }
+
+        class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+            @Override
+            public void configure(HttpSecurity http) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                //drive filter order this way
+                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(loginFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
+                    .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+            }
         }
 
         private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
@@ -186,19 +192,12 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(7)
-    class AccessToken extends WebSecurityConfigurerAdapter {
+    class AccessToken {
         private final CompoundAuthProvider compoundAuthProvider;
         private final AuthenticationProvider tokenAuthenticationProvider;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
-            auth.authenticationProvider(tokenAuthenticationProvider);
-            auth.authenticationProvider(new CertificateAuthenticationProvider()); // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain accessTokenFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getGatewayAccessTokenEndpoint()
             ).and())
@@ -211,13 +210,25 @@ public class NewSecurityConfiguration {
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
 
-                //drive filter order this way
-                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new StoreAccessTokenInfoFilter(handlerInitializer.getUnAuthorizedHandler().getHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(accessTokenFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
-                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+                .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                .authenticationProvider(tokenAuthenticationProvider)
+                .authenticationProvider(new CertificateAuthenticationProvider()) // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
+                .apply(new CustomSecurityFilters());
 
+            return http.build();
+        }
+
+        class CustomSecurityFilters extends AbstractHttpConfigurer<AuthenticationFunctionality.CustomSecurityFilters, HttpSecurity> {
+            @Override
+            public void configure(HttpSecurity http) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                //drive filter order this way
+                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(new StoreAccessTokenInfoFilter(handlerInitializer.getUnAuthorizedHandler().getHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(accessTokenFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
+                    .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+            }
         }
 
         private LoginFilter accessTokenFilter(String endpoint, AuthenticationManager authenticationManager) {
@@ -245,25 +256,31 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(2)
-    class Query extends WebSecurityConfigurerAdapter {
+    class Query {
 
         private final TokenAuthenticationProvider tokenAuthenticationProvider;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(tokenAuthenticationProvider);
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers(
                     authConfigurationProperties.getGatewayQueryEndpoint(),
                     authConfigurationProperties.getGatewayQueryEndpointOldFormat())
                 .and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
+                .authenticationProvider(tokenAuthenticationProvider)
                 .logout().disable() // logout filter in this chain not needed
-                .addFilterBefore(queryFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+                .apply(new CustomSecurityFilters());
+
+            return http.build();
+        }
+
+        class CustomSecurityFilters extends AbstractHttpConfigurer<AuthenticationFunctionality.CustomSecurityFilters, HttpSecurity> {
+            @Override
+            public void configure(HttpSecurity http) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                http.addFilterBefore(queryFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            }
         }
 
         private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) {
@@ -286,29 +303,34 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(3)
-    class Ticket extends WebSecurityConfigurerAdapter {
+    class Ticket {
 
         private final AuthenticationProvider tokenAuthenticationProvider;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers(
                 authConfigurationProperties.getGatewayTicketEndpoint(),
                 authConfigurationProperties.getGatewayTicketEndpointOldFormat()
-                ).and()).authorizeRequests()
+            ).and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
+                .authenticationProvider(tokenAuthenticationProvider)
                 .logout().disable() // logout filter in this chain not needed
                 .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
-                .and()
-                .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+                .and().apply(new CustomSecurityFilters());
+
+            return http.build();
+        }
+
+        class CustomSecurityFilters extends AbstractHttpConfigurer<AuthenticationFunctionality.CustomSecurityFilters, HttpSecurity> {
+            @Override
+            public void configure(HttpSecurity http) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                http.addFilterBefore(ticketFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            }
         }
 
         private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
@@ -332,29 +354,35 @@ public class NewSecurityConfiguration {
     @RequiredArgsConstructor
     @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true", matchIfMissing = false)
     @Order(6)
-    class Refresh extends WebSecurityConfigurerAdapter {
+    class Refresh {
 
         private final AuthenticationProvider tokenAuthenticationProvider;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers(
                 authConfigurationProperties.getGatewayRefreshEndpoint(),
                 authConfigurationProperties.getGatewayRefreshEndpointOldFormat()
             ).and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
+                .authenticationProvider(tokenAuthenticationProvider)
                 .logout().disable() // logout filter in this chain not needed
                 .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
-                .addFilterBefore(refreshFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+                .apply(new CustomSecurityFilters());
+
+            return http.build();
+        }
+
+        class CustomSecurityFilters extends AbstractHttpConfigurer<AuthenticationFunctionality.CustomSecurityFilters, HttpSecurity> {
+            @Override
+            public void configure(HttpSecurity http) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                http.addFilterBefore(refreshFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            }
         }
 
         private QueryFilter refreshFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
@@ -376,11 +404,10 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(4)
-    class CertificateProtectedEndpoints extends WebSecurityConfigurerAdapter {
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers()
+    class CertificateProtectedEndpoints {
+        @Bean
+        public SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) throws Exception {
+            return baseConfigure(http.requestMatchers()
                 .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH + "/**")
                 .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
             ).authorizeRequests()
@@ -389,7 +416,8 @@ public class NewSecurityConfiguration {
                 .logout().disable() // logout filter in this chain not needed
                 .x509() // default x509 filter, authenticates trusted cert
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(new SimpleUserDetailService());
+                .userDetailsService(new SimpleUserDetailService())
+                .and().build();
         }
     }
 
@@ -401,7 +429,7 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(5)
-    class CertificateOrAuthProtectedEndpoints extends WebSecurityConfigurerAdapter {
+    class CertificateOrAuthProtectedEndpoints {
 
         private final CompoundAuthProvider compoundAuthProvider;
         private final AuthenticationProvider tokenAuthenticationProvider;
@@ -412,15 +440,8 @@ public class NewSecurityConfiguration {
             ServicesInfoController.SERVICES_URL
         };
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
-            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
-            auth.authenticationProvider(new CertificateAuthenticationProvider());
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers()
                 .antMatchers("/application/**")
                 .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
@@ -441,11 +462,26 @@ public class NewSecurityConfiguration {
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                     .userDetailsService(new SimpleUserDetailService());
             }
+
             http
+                .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                .authenticationProvider(tokenAuthenticationProvider) // for authenticating Tokens
+                .authenticationProvider(new CertificateAuthenticationProvider())
+                .apply(new CustomSecurityFilters());
+
+            return http.build();
+        }
+
+        class CustomSecurityFilters extends AbstractHttpConfigurer<AuthenticationFunctionality.CustomSecurityFilters, HttpSecurity> {
+            @Override
+            public void configure(HttpSecurity http) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                 // place the following filters before the x509 filter
-                .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(bearerContentFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                http
+                    .addFilterBefore(basicFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(cookieFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(bearerContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+            }
         }
 
         private CategorizeCertsFilter reversedCategorizeCertFilter() {
@@ -456,7 +492,7 @@ public class NewSecurityConfiguration {
         }
 
         /**
-         * Processes basic authenticaiton credentials and authenticates them
+         * Processes basic authentication credentials and authenticates them
          */
         private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
             return new BasicContentFilter(
@@ -499,26 +535,28 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(100)
-    class DefaultSecurity extends WebSecurityConfigurerAdapter {
+    class DefaultSecurity {
 
-        /**
-         * "Singleton" configuration of web security
-         */
-        @Override
-        public void configure(WebSecurity web) throws Exception {
-            configureWebSecurity(web);
+        @Bean
+        public WebSecurityCustomizer webSecurityCustomizer() {
+            return NewSecurityConfiguration.this::configureWebSecurity;
         }
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers("/**", applicationContextPath + "/version").and())
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+            return baseConfigure(http.requestMatchers().antMatchers("/**", "/gateway/version").and())
                 .authorizeRequests()
                 .anyRequest()
                 .permitAll()
                 .and().logout().disable()
                 // sort out client and apiml internal certificates
-                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), AnonymousAuthenticationFilter.class);
+                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), AnonymousAuthenticationFilter.class)
+                .build();
         }
+    }
+
+    private AuthenticationManager authenticationManager(HttpSecurity http) {
+        return http.getSharedObject(AuthenticationManager.class);
     }
 
     /**
@@ -564,6 +602,11 @@ public class NewSecurityConfiguration {
         if (isMetricsEnabled) {
             web.ignoring().antMatchers("/application/hystrix.stream");
         }
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 
