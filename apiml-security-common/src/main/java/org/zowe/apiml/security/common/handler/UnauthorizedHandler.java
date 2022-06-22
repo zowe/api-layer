@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.security.common.handler;
 
+import lombok.Getter;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 @Component("plainAuth")
 @RequiredArgsConstructor
+@Getter
 public class UnauthorizedHandler implements AuthenticationEntryPoint {
     private final AuthExceptionHandler handler;
 

@@ -63,6 +63,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     public static final String ZOSMF = "zosmf";
 
     private static final String USER = "Me";
+    private Set<String> scopes;
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
     private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
@@ -110,6 +111,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
             zosmfService, discoveryClient, restTemplate, cacheManager, cacheUtils
         );
+        scopes = new HashSet<>();
+        scopes.add("Service1");
+        scopes.add("Service2");
         ReflectionTestUtils.setField(authService, "meAsProxy", authService);
     }
 
@@ -123,7 +127,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenCreatePersonalAccessToken() {
-            String pat = authService.createLongLivedJwtToken(USER,60);
+            String pat = authService.createLongLivedJwtToken(USER,60, scopes);
             QueryResponse parsedPAT = authService.parseJwtToken(pat);
             assertEquals(QueryResponse.Source.ZOWE_PAT,parsedPAT.getSource());
         }
