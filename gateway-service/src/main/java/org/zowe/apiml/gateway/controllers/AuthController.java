@@ -57,6 +57,8 @@ public class AuthController {
 
     private final AccessTokenProvider tokenProvider;
 
+    private static final String TOKEN_KEY = "token";
+
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
@@ -88,10 +90,10 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> token) throws Exception {
-        if (tokenProvider.isInvalidated(token.get("token"))) {
+        if (tokenProvider.isInvalidated(token.get(TOKEN_KEY))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        tokenProvider.invalidateToken(token.get("token"));
+        tokenProvider.invalidateToken(token.get(TOKEN_KEY));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

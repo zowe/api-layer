@@ -20,16 +20,18 @@ function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
 
     if (swagger.servers !== null && swagger.servers !== undefined) {
-        for (let i = 0; i < swagger.servers.length; i += 1) {
+        swagger.servers.forEach((server) => {
             const location = `${window.location.protocol}//${window.location.host}`;
             try {
-                const swaggerUrl = new URL(swagger.servers[i].url);
-                swagger.servers[i].url = location + swaggerUrl.pathname;
+                const swaggerUrl = new URL(server.url);
+                server.url = location + swaggerUrl.pathname;
             } catch (e) {
                 // not a proper url, assume it is an endpoint
-                swagger.servers[i].url = location + swagger.servers[i];
+                server.url = location + server;
             }
-        }
+            // eslint-disable-next-line no-console
+            console.log(`Resulting server url: ${server.url}`);
+        });
     }
 
     return swagger;

@@ -83,8 +83,8 @@ public class StaticDefinitionGenerator {
     }
 
     private String normalizeToUnixLineEndings(String file) {
-        file = file.replaceAll("\\r\\n", "\n");
-        file = file.replaceAll("\\r", "\n");
+        file = file.replace("\\r\\n", "\n");
+        file = file.replace("\\r", "\n");
         return file;
     }
 
