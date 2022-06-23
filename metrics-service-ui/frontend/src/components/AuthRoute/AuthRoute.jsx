@@ -25,7 +25,7 @@ export default function AuthRoute(props) {
                 setIsAuthenticated(true);
                 setIsLoading(false);
             })
-            .catch((error) => {
+            .catch(() => {
                 setIsAuthenticated(false);
                 setIsLoading(false);
             });
