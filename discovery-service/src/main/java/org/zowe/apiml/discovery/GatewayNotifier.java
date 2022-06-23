@@ -57,6 +57,9 @@ public class GatewayNotifier implements Runnable {
 
     public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.getServiceId().toUpperCase();
 
+    private static final String GW_UNEXPECTED_RESPONSE_LOG = "Unexpected response from the Gateway {} -- {}";
+    private static final String GW_REGISTRATION_NOTIFY_LOG_KEY = "org.zowe.apiml.discovery.registration.gateway.notify";
+    private static final String GW_UNREGISTRATION_NOTIFY_LOG_KEY = "org.zowe.apiml.discovery.unregistration.gateway.notify";
     private static final String DISTRIBUTE_PATH = "/gateway/auth/distribute/";  // NOSONAR: URL is always using / to separate path segments
     private static final String CACHE_PATH = "/gateway/cache/services";  // NOSONAR: URL is always using / to separate path segments
 
@@ -173,12 +176,12 @@ public class GatewayNotifier implements Runnable {
                 CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
                 final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                    log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
-                    apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url, instanceId);
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url, instanceId);
                 }
             } catch (IOException e) {
                 log.debug("Cannot notify the Gateway {} about {}", url, instanceId, e);
-                apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url, instanceId);
+                apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url, instanceId);
             }
         });
     }
@@ -190,12 +193,12 @@ public class GatewayNotifier implements Runnable {
                 CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
                 final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                    log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
-                    apimlLogger.log("org.zowe.apiml.discovery.unregistration.gateway.notify", url);
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    apimlLogger.log(GW_UNREGISTRATION_NOTIFY_LOG_KEY, url);
                 }
             } catch (IOException e) {
                 log.debug("Cannot notify the Gateway {} about service un-registration", url, e);
-                apimlLogger.log("org.zowe.apiml.discovery.unregistration.gateway.notify", url);
+                apimlLogger.log(GW_UNREGISTRATION_NOTIFY_LOG_KEY, url);
             }
         });
     }
@@ -211,12 +214,12 @@ public class GatewayNotifier implements Runnable {
                 CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()));
                 final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                    log.debug("Unexpected response from the Gateway {} -- {}", url, response.getStatusLine());
-                    apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url.toString(), instanceId);
                 }
             } catch (IOException e) {
                 log.debug("Cannot notify the Gateway {} about {}", url, instanceId, e);
-                apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
+                apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url.toString(), instanceId);
             }
         });
     }
