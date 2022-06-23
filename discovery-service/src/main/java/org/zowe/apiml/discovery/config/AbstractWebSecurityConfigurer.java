@@ -10,10 +10,9 @@
 package org.zowe.apiml.discovery.config;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
-public abstract class AbstractWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
+public abstract class AbstractWebSecurityConfigurer {
 
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
         return http.csrf().disable()    // NOSONAR
