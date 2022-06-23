@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
@@ -44,6 +45,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final AuthenticationService authenticationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private byte[] salt;
+    private final static String TOKEN_KEY = "invalidTokens";
+    private final static String RULES_KEY = "invalidTokenRules";
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
@@ -58,16 +61,21 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
 
         String json = objectMapper.writeValueAsString(container);
-        cachingServiceClient.appendList("invalidTokens", new CachingServiceClient.KeyValue(hashedValue, json));
+        cachingServiceClient.appendList(TOKEN_KEY, new CachingServiceClient.KeyValue(hashedValue, json));
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
         String hash = getHash(token);
-        Map<String, String> map = cachingServiceClient.readInvalidatedTokens("invalidTokens");
+        Map<String, String> map = cachingServiceClient.readInvalidatedTokens(TOKEN_KEY);
+        Map<String, String> rule = cachingServiceClient.readInvalidatedTokens(RULES_KEY);
         if (map != null && !map.isEmpty() && map.containsKey(hash)) {
             String s = map.get(hash);
             try {
                 AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
+                if (rule != null && c != null && StringUtils.isNotEmpty(c.getUserId())) {
+                    String decodedRuleId = getHash(c.getUserId());
+                    return rule.get(decodedRuleId) != null;
+                }
                 return c != null;
             } catch (JsonProcessingException e) {
                 log.error("Not able to parse json", e);
@@ -78,7 +86,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public boolean ruleExists(String ruleId) throws CachingServiceClientException {
         String hash = getHash(ruleId);
-        Map<String, String> map = cachingServiceClient.readInvalidatedTokens("invalidTokenRules");
+        Map<String, String> map = cachingServiceClient.readInvalidatedTokens(RULES_KEY);
         return map != null && !map.isEmpty() && map.containsKey(hash);
     }
 
@@ -124,7 +132,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public void invalidateTokensUsingRules(String ruleId, String timeStamp) throws Exception {
         String hashedValue = getHash(ruleId);
-        cachingServiceClient.appendList("invalidTokenRules", new CachingServiceClient.KeyValue(hashedValue, timeStamp));
+        cachingServiceClient.appendList(RULES_KEY, new CachingServiceClient.KeyValue(hashedValue, timeStamp));
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
