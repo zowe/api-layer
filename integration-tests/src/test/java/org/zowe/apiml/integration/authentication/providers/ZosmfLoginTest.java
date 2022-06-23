@@ -20,11 +20,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -50,37 +54,34 @@ class ZosmfLoginTest implements TestWithStartedInstances {
 
     @Nested
     class WhenCallingZosmfTest {
-        @Nested
-        class ReturnExistingDatasets {
 
-            @Test
-            void givenValidCertificate() {
+        @Test
+        void givenValidCertificate_thenReturnExistingDatasets() {
 
-                String dsname1 = "SYS1.PARMLIB";
-                String dsname2 = "SYS1.PROCLIB";
+            String dsname1 = "SYS1.PARMLIB";
+            String dsname2 = "SYS1.PROCLIB";
 
-                List<NameValuePair> arguments = new ArrayList<>();
-                arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
+            List<NameValuePair> arguments = new ArrayList<>();
+            arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
 
-                given()
-                    .config(SslContext.clientCertValid)
-                    .header("X-CSRF-ZOSMF-HEADER", "")
-                    .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-                    .then()
-                    .statusCode(is(SC_OK))
-                    .body(
-                        "items.dsname", hasItems(dsname1, dsname2)
-                    );
-            }
-            }
+            given()
+                .config(SslContext.clientCertValid)
+                .header("X-CSRF-ZOSMF-HEADER", "")
+                .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                .statusCode(is(SC_OK))
+                .body(
+                    "items.dsname", hasItems(dsname1, dsname2)
+                );
         }
     }
+
 
     @Nested
     class WhenUserAuthenticatesTests {
         @Nested
-        class ReturnValidToken {
+        class ReturnValidTokenTest {
             @ParameterizedTest(name = "givenClientX509Cert {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenClientX509Cert(URI loginUrl) {
@@ -116,3 +117,4 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             }
         }
     }
+}
