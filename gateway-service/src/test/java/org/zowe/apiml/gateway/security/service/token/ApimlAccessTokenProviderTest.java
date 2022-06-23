@@ -67,6 +67,17 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
+    void invalidateRules() throws Exception {
+        String ruleId = "user";
+        String timeStamp = "1234";
+
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        accessTokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
+        verify(cachingServiceClient, times(1)).appendList(anyString(), any());
+
+    }
+
+    @Test
     void givenSameToken_returnInvalidated() throws Exception {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
@@ -77,8 +88,19 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> map = new HashMap<>();
         map.put(tokenHash, s);
-        when(cachingServiceClient.readInvalidatedTokens()).thenReturn(map);
+        when(cachingServiceClient.readInvalidatedTokens("invalidTokens")).thenReturn(map);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+    }
+
+    @Test
+    void givenSameRule_returnInvalidated() throws Exception {
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        String tokenHash = accessTokenProvider.getHash("user");
+
+        Map<String, String> map = new HashMap<>();
+        map.put(tokenHash, "timestamp");
+        when(cachingServiceClient.readInvalidatedTokens("invalidTokenRules")).thenReturn(map);
+        assertTrue(accessTokenProvider.ruleExists("user"));
     }
 
     @Test
@@ -102,7 +124,7 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> map = new HashMap<>();
         map.put(tokenHash, s);
-        when(cachingServiceClient.readInvalidatedTokens()).thenReturn(map);
+        when(cachingServiceClient.readInvalidatedTokens("invalidTokens")).thenReturn(map);
 
         assertFalse(accessTokenProvider.isInvalidated(differentToken));
     }

@@ -43,6 +43,16 @@ public class AccessTokenProviderConfig {
             public boolean isValidForScopes(String token, String serviceId) {
                 throw new NotImplementedException();
             }
+
+            @Override
+            public void invalidateTokensUsingRules(String ruleId, String timeStamp) {
+                throw new NotImplementedException();
+            }
+
+            @Override
+            public boolean ruleExists(String ruleId) {
+                throw new NotImplementedException();
+            }
         };
     }
 }

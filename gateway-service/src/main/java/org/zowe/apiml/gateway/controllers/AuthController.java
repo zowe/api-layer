@@ -95,6 +95,19 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE + "/rules")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
+        String ruleId = rulesRequestModel.getRuleId();
+        String timeStamp = rulesRequestModel.getTimeStamp();
+        if (tokenProvider.ruleExists(ruleId)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
     @HystrixCommand
@@ -210,5 +223,11 @@ public class AuthController {
     private static class ValidateRequestModel {
         private String token;
         private String serviceId;
+    }
+
+    @Data
+    private static class RulesRequestModel {
+        private String ruleId;
+        private String timeStamp;
     }
 }

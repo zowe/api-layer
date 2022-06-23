@@ -143,7 +143,7 @@ class CachingServiceClientTest {
             responseBody.put(key, json);
             when(response.getBody()).thenReturn(responseBody);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens();
+            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("invalidTokens");
             assertEquals(json, parsedResponseBody.get(key));
         }
 
@@ -152,21 +152,21 @@ class CachingServiceClientTest {
             Map<String, String> responseBody = new HashMap<>();
             when(response.getBody()).thenReturn(responseBody);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens();
+            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("invalidTokens");
             assertNull(parsedResponseBody);
         }
 
         @Test
         void whenClientReturnsNotOk_thenThrowException() {
             when(response.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
-            assertThrows(CachingServiceClientException.class, () -> underTest.readInvalidatedTokens());
+            assertThrows(CachingServiceClientException.class, () -> underTest.readInvalidatedTokens("invalidTokens"));
         }
 
         @Test
         void whenResponseBodyIsNull_thenReturnNull() throws CachingServiceClientException {
             when(response.getBody()).thenReturn(null);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens();
+            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("invalidTokens");
             assertNull(parsedResponseBody);
         }
     }

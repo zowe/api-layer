@@ -266,5 +266,44 @@ class AuthControllerTest {
                 }
             }
         }
+
+        @Nested
+        class GivenRevokeAccessTokenWithRulesRequest {
+
+            @BeforeEach
+            void setUp() throws JSONException {
+                body = new JSONObject()
+                    .put("ruleId", "user")
+                    .put("timeStamp", "1234");
+            }
+
+            @Nested
+            class WhenRuleAlreadyExists {
+
+                @Test
+                void thenReturn401() throws Exception {
+                    when(tokenProvider.ruleExists("user")).thenReturn(true);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke/rules")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_UNAUTHORIZED));
+                }
+            }
+
+            @Nested
+            class WhenNotInvalidated {
+
+                @Test
+                void thenInvalidate() throws Exception {
+                    when(tokenProvider.ruleExists("token")).thenReturn(false);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke/rules")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_OK));
+                }
+            }
+        }
     }
 }

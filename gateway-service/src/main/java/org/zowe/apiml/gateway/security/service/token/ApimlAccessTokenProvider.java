@@ -63,7 +63,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
         String hash = getHash(token);
-        Map<String, String> map = cachingServiceClient.readInvalidatedTokens();
+        Map<String, String> map = cachingServiceClient.readInvalidatedTokens("invalidTokens");
         if (map != null && !map.isEmpty() && map.containsKey(hash)) {
             String s = map.get(hash);
             try {
@@ -74,6 +74,12 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             }
         }
         return false;
+    }
+
+    public boolean ruleExists(String ruleId) throws CachingServiceClientException {
+        String hash = getHash(ruleId);
+        Map<String, String> map = cachingServiceClient.readInvalidatedTokens("invalidTokenRules");
+        return map != null && !map.isEmpty() && map.containsKey(hash);
     }
 
     public String getHash(String token) throws CachingServiceClientException {
@@ -114,6 +120,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             }
         }
         return false;
+    }
+
+    public void invalidateTokensUsingRules(String ruleId, String timeStamp) throws Exception {
+        String hashedValue = getHash(ruleId);
+        cachingServiceClient.appendList("invalidTokenRules", new CachingServiceClient.KeyValue(hashedValue, timeStamp));
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
