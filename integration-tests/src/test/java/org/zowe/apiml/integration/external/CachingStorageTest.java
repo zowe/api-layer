@@ -134,19 +134,15 @@ class CachingStorageTest implements TestWithStartedInstances {
 
     @Test
     @InfinispanStorageTest
-    void givenDuplicateValue_conflictCodeIsReturned() {
+    void givenDuplicateKey_entryIsUpdated() {
         ExecutorService service = Executors.newFixedThreadPool(2);
-        int statusCode = HttpStatus.CREATED.value();
         for (int i = 0; i < 2; i++) {
-            if (i == 1) {
-                statusCode = HttpStatus.CONFLICT.value();
-            }
-            int finalStatusCode = statusCode;
+            int index = i;
             service.execute(() ->  given().config(SslContext.clientCertApiml)
                 .contentType(JSON)
-                .body(new KeyValue("testTokens4", "duplicateToken"))
+                .body(new KeyValue("testTokens4", "duplicateToken" + index))
                 .when()
-                .post(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(finalStatusCode));
+                .post(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(HttpStatus.CREATED.value()));
         }
         service.shutdown();
     }
@@ -158,6 +154,47 @@ class CachingStorageTest implements TestWithStartedInstances {
             .contentType(JSON)
             .when()
             .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @InfinispanStorageTest
+    void givenTokensAndRules_correctResultReturned() throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(3);
+
+        AtomicInteger ai = new AtomicInteger(20);
+        for (int i = 0; i < 3; i++) {
+            int index = i;
+            service.execute(() -> given().config(SslContext.clientCertApiml)
+                .contentType(JSON)
+                .body(new KeyValue("hashed_token" + index, String.valueOf(ai.getAndIncrement())))
+                .when()
+                .post(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens").then().statusCode(201));
+        }
+        for (int i = 0; i < 3; i++) {
+            int index = i;
+            service.execute(() -> given().config(SslContext.clientCertApiml)
+                .contentType(JSON)
+                .body(new KeyValue("hashed_rule" + index, String.valueOf(ai.getAndIncrement())))
+                .when()
+                .post(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokenRules").then().statusCode(201));
+        }
+        service.shutdown();
+        service.awaitTermination(30L, TimeUnit.SECONDS);
+        // get all tokens and rules at once
+        given().config(SslContext.clientCertApiml)
+            .contentType(JSON)
+            .when()
+            .get(CACHING_INVALIDATE_TOKEN_PATH)
+            .then()
+            .statusCode(200)
+            .body("invalidTokens", is(not(isEmptyOrNullString())))
+            .body("invalidTokenRules", is(not(isEmptyOrNullString())))
+            .body("invalidTokens.hashed_token0", is(not(isEmptyOrNullString())))
+            .body("invalidTokens.hashed_token1", is(not(isEmptyOrNullString())))
+            .body("invalidTokens.hashed_token2", is(not(isEmptyOrNullString())))
+            .body("invalidTokenRules.hashed_rule0", is(not(isEmptyOrNullString())))
+            .body("invalidTokenRules.hashed_rule1", is(not(isEmptyOrNullString())))
+            .body("invalidTokenRules.hashed_rule2", is(not(isEmptyOrNullString())));
     }
 
     @Nested
