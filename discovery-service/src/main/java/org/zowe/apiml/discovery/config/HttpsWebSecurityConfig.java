@@ -69,7 +69,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private boolean isMetricsEnabled;
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
+    public WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
             "/eureka/css/**",
             "/eureka/js/**",
@@ -102,7 +102,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
             .authorizeRequests()
-            .antMatchers("/**").permitAll()
+            .antMatchers("/**").authenticated()
             .and()
             .httpBasic().realmName(DISCOVERY_REALM);
         if (isAttlsEnabled) {
@@ -121,7 +121,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         baseConfigure(http.antMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
             http.authorizeRequests()
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
                 .and().x509().userDetailsService(x509UserDetailsService());
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);

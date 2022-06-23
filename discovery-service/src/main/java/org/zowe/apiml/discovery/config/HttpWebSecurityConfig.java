@@ -72,7 +72,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http)
             .httpBasic().realmName(DISCOVERY_REALM)
             .and()
