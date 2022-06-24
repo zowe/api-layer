@@ -93,17 +93,6 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
-    void givenSameRule_returnInvalidated() throws Exception {
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
-        String tokenHash = accessTokenProvider.getHash("user");
-
-        Map<String, String> map = new HashMap<>();
-        map.put(tokenHash, "timestamp");
-        when(cachingServiceClient.readInvalidatedTokens("invalidTokenRules")).thenReturn(map);
-        assertTrue(accessTokenProvider.ruleExists("user"));
-    }
-
-    @Test
     void givenSaltNotAlreadyInCache_thenGenerateAndStoreNew() throws CachingServiceClientException {
         when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException(""));
         doNothing().when(cachingServiceClient).create(any());

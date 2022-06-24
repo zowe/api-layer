@@ -49,10 +49,6 @@ public class AccessTokenProviderConfig {
                 throw new NotImplementedException();
             }
 
-            @Override
-            public boolean ruleExists(String ruleId) {
-                throw new NotImplementedException();
-            }
         };
     }
 }

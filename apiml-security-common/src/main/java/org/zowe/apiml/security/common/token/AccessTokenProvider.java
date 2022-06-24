@@ -18,5 +18,4 @@ public interface AccessTokenProvider {
     String getToken(String username, int expirationTime, Set<String> scopes);
     boolean isValidForScopes(String token, String serviceId);
     void invalidateTokensUsingRules(String ruleId, String timeStamp) throws Exception;
-    boolean ruleExists(String ruleId) throws Exception;
 }

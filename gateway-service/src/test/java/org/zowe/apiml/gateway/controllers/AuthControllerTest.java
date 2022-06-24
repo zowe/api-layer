@@ -282,7 +282,6 @@ class AuthControllerTest {
 
                 @Test
                 void thenInvalidate() throws Exception {
-                    when(tokenProvider.ruleExists("token")).thenReturn(false);
 
                     mockMvc.perform(delete("/gateway/auth/access-token/revoke/rules")
                             .contentType(MediaType.APPLICATION_JSON)

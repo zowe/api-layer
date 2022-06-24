@@ -84,12 +84,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return false;
     }
 
-    public boolean ruleExists(String ruleId) throws CachingServiceClientException {
-        String hash = getHash(ruleId);
-        Map<String, String> map = cachingServiceClient.readInvalidatedTokens(RULES_KEY);
-        return map != null && !map.isEmpty() && map.containsKey(hash);
-    }
-
     public String getHash(String token) throws CachingServiceClientException {
         return getSecurePassword(token, getSalt());
     }
