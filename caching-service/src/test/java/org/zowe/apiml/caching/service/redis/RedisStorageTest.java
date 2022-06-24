@@ -197,4 +197,14 @@ public class RedisStorageTest {
             });
         }
     }
+
+    @Nested
+    class WhenTryingToGetAllMaps {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMaps(SERVICE_ID);
+            });
+        }
+    }
 }

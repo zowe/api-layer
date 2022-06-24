@@ -271,4 +271,14 @@ class VsamStorageTest {
             });
         }
     }
+
+    @Nested
+    class WhenTryingToGetAllMaps {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMaps("serviceId");
+            });
+        }
+    }
 }
