@@ -37,7 +37,7 @@ public class SecurityConfiguration {
     public InMemoryUserDetailsManager userDetailsService() {
         UserDetails user = User.withDefaultPasswordEncoder() // NOSONAR deprecated only to indicate not acceptable for production
             .username("user")
-            .password("{noop}pass")
+            .password("pass")
             .roles("ADMIN")
             .build();
         return new InMemoryUserDetailsManager(user);
