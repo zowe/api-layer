@@ -103,9 +103,6 @@ public class AuthController {
     public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
         String ruleId = rulesRequestModel.getRuleId();
         String timeStamp = rulesRequestModel.getTimeStamp();
-        if (tokenProvider.ruleExists(ruleId)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
         tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
         return new ResponseEntity<>(HttpStatus.OK);
     }

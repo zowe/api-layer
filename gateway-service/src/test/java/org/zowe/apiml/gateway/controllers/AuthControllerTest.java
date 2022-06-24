@@ -278,20 +278,6 @@ class AuthControllerTest {
             }
 
             @Nested
-            class WhenRuleAlreadyExists {
-
-                @Test
-                void thenReturn401() throws Exception {
-                    when(tokenProvider.ruleExists("user")).thenReturn(true);
-
-                    mockMvc.perform(delete("/gateway/auth/access-token/revoke/rules")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(body.toString()))
-                        .andExpect(status().is(SC_UNAUTHORIZED));
-                }
-            }
-
-            @Nested
             class WhenNotInvalidated {
 
                 @Test
