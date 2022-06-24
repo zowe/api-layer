@@ -45,8 +45,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final AuthenticationService authenticationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private byte[] salt;
-    private final static String TOKEN_KEY = "invalidTokens";
-    private final static String RULES_KEY = "invalidTokenRules";
+    private static final String TOKEN_KEY = "invalidTokens";
+    private static final String RULES_KEY = "invalidTokenRules";
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
@@ -124,7 +124,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return false;
     }
 
-    public void invalidateTokensUsingRules(String ruleId, String timeStamp) throws Exception {
+    public void invalidateTokensUsingRules(String ruleId, String timeStamp) throws CachingServiceClientException {
         String hashedValue = getHash(ruleId);
         cachingServiceClient.appendList(RULES_KEY, new CachingServiceClient.KeyValue(hashedValue, timeStamp));
     }
