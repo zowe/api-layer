@@ -23,7 +23,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -352,7 +351,7 @@ public class NewSecurityConfiguration {
      */
     @Configuration
     @RequiredArgsConstructor
-    @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")
     @Order(6)
     class Refresh {
 
@@ -450,6 +449,7 @@ public class NewSecurityConfiguration {
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable();  // logout filter in this chain not needed
+
             if (isAttlsEnabled) {
                 http.x509()
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
@@ -463,13 +463,11 @@ public class NewSecurityConfiguration {
                     .userDetailsService(new SimpleUserDetailService());
             }
 
-            http
-                .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+            return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
                 .authenticationProvider(tokenAuthenticationProvider) // for authenticating Tokens
                 .authenticationProvider(new CertificateAuthenticationProvider())
-                .apply(new CustomSecurityFilters());
-
-            return http.build();
+                .apply(new CustomSecurityFilters())
+                .and().build();
         }
 
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
@@ -555,10 +553,6 @@ public class NewSecurityConfiguration {
         }
     }
 
-    private AuthenticationManager authenticationManager(HttpSecurity http) {
-        return http.getSharedObject(AuthenticationManager.class);
-    }
-
     /**
      * Common configuration for all filterchains
      */
@@ -603,11 +597,4 @@ public class NewSecurityConfiguration {
             web.ignoring().antMatchers("/application/hystrix.stream");
         }
     }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-
-
 }
