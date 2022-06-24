@@ -211,6 +211,7 @@ class AuthControllerTest {
                 void validateAccessToken() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
                     when(tokenProvider.isInvalidated("token")).thenReturn(false);
+                    when(tokenProvider.isInvalidatedByRules("token", "service")).thenReturn(false);
                     mockMvc.perform(post("/gateway/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
@@ -221,6 +222,7 @@ class AuthControllerTest {
                 void return401() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
                     when(tokenProvider.isInvalidated("token")).thenReturn(true);
+                    when(tokenProvider.isInvalidatedByRules("token", "service")).thenReturn(true);
                     mockMvc.perform(post("/gateway/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))

@@ -113,7 +113,9 @@ public class AuthController {
     public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) throws Exception {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
-        if (tokenProvider.isValidForScopes(token, serviceId) && !tokenProvider.isInvalidated(token)) {
+        if (tokenProvider.isValidForScopes(token, serviceId) &&
+            !tokenProvider.isInvalidated(token) &&
+            !tokenProvider.isInvalidatedByRules(token, serviceId)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

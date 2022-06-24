@@ -49,6 +49,11 @@ public class AccessTokenProviderConfig {
                 throw new NotImplementedException();
             }
 
+            @Override
+            public boolean isInvalidatedByRules(String token, String serviceId) {
+                throw new NotImplementedException();
+            }
+
         };
     }
 }

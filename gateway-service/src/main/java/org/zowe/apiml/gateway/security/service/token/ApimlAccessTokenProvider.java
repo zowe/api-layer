@@ -67,19 +67,25 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     public boolean isInvalidated(String token) throws CachingServiceClientException {
         String hash = getHash(token);
         Map<String, String> map = cachingServiceClient.readInvalidatedTokens(TOKEN_KEY);
-        Map<String, String> rule = cachingServiceClient.readInvalidatedTokens(RULES_KEY);
         if (map != null && !map.isEmpty() && map.containsKey(hash)) {
             String s = map.get(hash);
             try {
                 AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
-                if (rule != null && c != null && StringUtils.isNotEmpty(c.getUserId())) {
-                    String decodedRuleId = getHash(c.getUserId());
-                    return rule.get(decodedRuleId) != null;
-                }
                 return c != null;
             } catch (JsonProcessingException e) {
                 log.error("Not able to parse json", e);
             }
+        }
+        return false;
+    }
+
+    public boolean isInvalidatedByRules(String token, String serviceId) throws CachingServiceClientException {
+        QueryResponse queryResponse = authenticationService.parseJwtToken(token);
+        Map<String, String> rule = cachingServiceClient.readInvalidatedTokens(RULES_KEY);
+        if (rule != null && StringUtils.isNotEmpty(queryResponse.getUserId())) {
+            String hashedUserId = getHash(queryResponse.getUserId());
+            String hashedServiceId = getHash(serviceId);
+            return rule.get(hashedUserId) != null || rule.get(hashedServiceId) != null;
         }
         return false;
     }
