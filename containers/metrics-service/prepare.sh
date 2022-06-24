@@ -43,7 +43,7 @@ metrics_package="metrics-service-package"
 apiml_common_package="apiml-common-lib-package"
 
 ignoredUiTasks="$(getIgnoredUiTasks "metrics-service-ui")"
-buildPackage $metrics_package "packageMetricsService -P omitDevDependencies ${ignoredUiTasks}"
+buildPackage $metrics_package "packageMetricsService ${ignoredUiTasks}"
 buildApimlCommonPackage
 
 preparePackage $metrics_package
