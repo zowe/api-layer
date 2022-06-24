@@ -2,7 +2,7 @@ name: Image snapshot release
 
 on:
     push:
-        branches: [ master, v1, v2.x.x ]
+        branches: [ master, v1.x.x, v2.x.x ]
 
 jobs:
     build-test-services:

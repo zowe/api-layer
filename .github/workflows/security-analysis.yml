@@ -2,7 +2,7 @@ name: "Flag the PRs touching security related code"
 
 on:
     pull_request:
-        branches: [ master, v1, v2.x.x ]
+        branches: [ master, v1.x.x, v2.x.x ]
 
 jobs:
     analyze:
