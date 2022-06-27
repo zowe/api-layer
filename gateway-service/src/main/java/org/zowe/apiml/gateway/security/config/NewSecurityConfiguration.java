@@ -130,8 +130,6 @@ public class NewSecurityConfiguration {
                 .and()
 
                 .x509()
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(new SimpleUserDetailService())
 
                 .and()
                 .logout()
@@ -205,8 +203,6 @@ public class NewSecurityConfiguration {
                 .and()
 
                 .x509()
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(new SimpleUserDetailService())
                 .and()
 
                 .authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -452,15 +448,11 @@ public class NewSecurityConfiguration {
 
             if (isAttlsEnabled) {
                 http.x509()
-                    .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                    .userDetailsService(new SimpleUserDetailService())
                     .and()
                     // filter out API ML certificate
                     .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
             } else {
-                http.x509() // default x509 filter, authenticates trusted cert
-                    .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                    .userDetailsService(new SimpleUserDetailService());
+                http.x509(); // default x509 filter, authenticates trusted cert
             }
 
             return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials

@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 class CertificateAuthenticationProviderTest {
 
-    @Test
+
     void authenticate() {
         CertificateAuthenticationProvider cap = new CertificateAuthenticationProvider();
         Authentication authentication = mock(Authentication.class);
