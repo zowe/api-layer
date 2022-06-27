@@ -82,26 +82,26 @@ public class CachingServiceClient {
         try {
             restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + mapKey, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
-            throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
+            throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + " in a map under " + mapKey + "key, caused by: " + e.getMessage(), e);
         }
     }
 
-    public Map<String, String> readInvalidatedTokens(String key) throws CachingServiceClientException {
+    public Map<String, Map<String, String>> readAllMaps() throws CachingServiceClientException {
         try {
-            ParameterizedTypeReference<Map<String, String>> responseType =
-                new ParameterizedTypeReference<Map<String, String>>() {
+            ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
+                new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
                 };
-            ResponseEntity<Map<String, String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + key, HttpMethod.GET, null, responseType);
+            ResponseEntity<Map<String, Map<String, String>>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
                     return response.getBody();
                 }
                 return null;
             } else {
-                throw new CachingServiceClientException("Unable to read invalidTokens, caused by response from caching service is null or has no body");
+                throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by response from caching service is null or has no body");
             }
         } catch (Exception e) {
-            throw new CachingServiceClientException("Unable to read invalidTokens, caused by: " + e.getMessage(), e);
+            throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by: " + e.getMessage(), e);
         }
     }
 

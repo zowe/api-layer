@@ -30,7 +30,7 @@ public class AccessTokenProviderConfig {
             }
 
             @Override
-            public boolean isInvalidated(String token) {
+            public boolean isInvalidated(String token, String serviceId) {
                 throw new NotImplementedException();
             }
 
@@ -45,15 +45,9 @@ public class AccessTokenProviderConfig {
             }
 
             @Override
-            public void invalidateTokensUsingRules(String ruleId, String timeStamp) {
+            public void invalidateTokensUsingRules(String ruleId, long timeStamp) {
                 throw new NotImplementedException();
             }
-
-            @Override
-            public boolean isInvalidatedByRules(String token, String serviceId) {
-                throw new NotImplementedException();
-            }
-
         };
     }
 }

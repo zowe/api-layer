@@ -14,9 +14,8 @@ import java.util.Set;
 public interface AccessTokenProvider {
 
     void invalidateToken(String token) throws Exception;
-    boolean isInvalidated(String token) throws Exception;
+    boolean isInvalidated(String token, String serviceId) throws Exception;
     String getToken(String username, int expirationTime, Set<String> scopes);
     boolean isValidForScopes(String token, String serviceId);
-    void invalidateTokensUsingRules(String ruleId, String timeStamp) throws Exception;
-    boolean isInvalidatedByRules(String token, String serviceId) throws Exception;
+    void invalidateTokensUsingRules(String ruleId, long timeStamp) throws Exception;
 }

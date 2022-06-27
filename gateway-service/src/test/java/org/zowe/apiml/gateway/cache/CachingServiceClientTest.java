@@ -122,14 +122,14 @@ class CachingServiceClientTest {
 
     @Nested
     class GivenAppendListTest {
-        ResponseEntity<Map<String, String>> response;
+        ResponseEntity<Map<String, Map<String, String>>> response;
 
         @BeforeEach
         void setup() {
-            ParameterizedTypeReference<Map<String, String>> responseType =
-                new ParameterizedTypeReference<Map<String, String>>() {
+            ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
+                new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
                 };
-            response = (ResponseEntity<Map<String, String>>) mock(ResponseEntity.class);
+            response = (ResponseEntity<Map<String, Map<String, String>>>) mock(ResponseEntity.class);
             when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), eq(responseType))).thenReturn(response);
         }
 
@@ -138,35 +138,37 @@ class CachingServiceClientTest {
             String key = "token";
             ApimlAccessTokenProvider.AccessTokenContainer container = new ApimlAccessTokenProvider.AccessTokenContainer(null, key, null, null, null, null);
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, String> responseBody = new HashMap<>();
+            Map<String, String> tokens = new HashMap<>();
             String json = mapper.writeValueAsString(container);
-            responseBody.put(key, json);
+            tokens.put(key, json);
+            Map<String, Map<String, String>> responseBody = new HashMap<>();
+            responseBody.put("tokens", tokens);
             when(response.getBody()).thenReturn(responseBody);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("invalidTokens");
-            assertEquals(json, parsedResponseBody.get(key));
+            Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
+            assertEquals(json, parsedResponseBody.get("tokens").get(key));
         }
 
         @Test
         void whenClientReturnsEmptyBody_thenReturnNull() throws CachingServiceClientException {
-            Map<String, String> responseBody = new HashMap<>();
+            Map<String, Map<String, String>> responseBody = new HashMap<>();
             when(response.getBody()).thenReturn(responseBody);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("invalidTokens");
+            Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
             assertNull(parsedResponseBody);
         }
 
         @Test
         void whenClientReturnsNotOk_thenThrowException() {
             when(response.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
-            assertThrows(CachingServiceClientException.class, () -> underTest.readInvalidatedTokens("invalidTokens"));
+            assertThrows(CachingServiceClientException.class, () -> underTest.readAllMaps());
         }
 
         @Test
         void whenResponseBodyIsNull_thenReturnNull() throws CachingServiceClientException {
             when(response.getBody()).thenReturn(null);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            Map<String, String> parsedResponseBody = underTest.readInvalidatedTokens("invalidTokens");
+            Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
             assertNull(parsedResponseBody);
         }
     }
