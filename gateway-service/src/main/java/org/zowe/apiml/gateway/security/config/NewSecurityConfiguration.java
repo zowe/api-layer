@@ -53,6 +53,7 @@ import org.zowe.apiml.gateway.services.ServicesInfoController;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.config.SimpleUserDetailService;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
@@ -83,7 +84,6 @@ import java.util.Set;
 @Slf4j
 public class NewSecurityConfiguration {
 
-    private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
 
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
@@ -313,7 +313,6 @@ public class NewSecurityConfiguration {
                 .authenticationProvider(tokenAuthenticationProvider)
                 .logout().disable() // logout filter in this chain not needed
                 .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
                 .and().apply(new CustomSecurityFilters());
 
@@ -364,7 +363,6 @@ public class NewSecurityConfiguration {
                 .authenticationProvider(tokenAuthenticationProvider)
                 .logout().disable() // logout filter in this chain not needed
                 .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
                 .apply(new CustomSecurityFilters());
@@ -410,7 +408,6 @@ public class NewSecurityConfiguration {
                 .and()
                 .logout().disable() // logout filter in this chain not needed
                 .x509() // default x509 filter, authenticates trusted cert
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
                 .and().build();
         }

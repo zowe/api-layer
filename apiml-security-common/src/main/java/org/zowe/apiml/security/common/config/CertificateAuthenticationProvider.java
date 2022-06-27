@@ -12,12 +12,11 @@ package org.zowe.apiml.security.common.config;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
 
 /**
  * This authentication provider is to marking authentication via certificate as authentication.
@@ -44,23 +43,6 @@ public class CertificateAuthenticationProvider implements AuthenticationProvider
     public boolean supports(Class<?> authentication) {
         return PreAuthenticatedAuthenticationToken.class.isAssignableFrom(authentication);
 
-    }
-
-    public static class SimpleUserDetailService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>, UserDetailsService {
-
-        private UserDetails constructUserDetails(String username) {
-            return new User(username, "", Collections.singletonList(new SimpleGrantedAuthority("TRUSTED_CERTIFICATE")));
-        }
-
-        @Override
-        public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
-            return constructUserDetails(token.getPrincipal().toString());
-        }
-
-        @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-            return constructUserDetails(username);
-        }
     }
 
 }
