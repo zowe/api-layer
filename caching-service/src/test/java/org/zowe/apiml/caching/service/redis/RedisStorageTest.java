@@ -183,7 +183,7 @@ public class RedisStorageTest {
         void thenThrowException() {
             KeyValue keyValue = new KeyValue("key", "value");
             assertThrows(StorageException.class, () -> {
-                underTest.storeListItem(SERVICE_ID, keyValue);
+                underTest.storeMapItem(SERVICE_ID, "mapKey", keyValue);
             });
         }
     }
@@ -194,6 +194,16 @@ public class RedisStorageTest {
         void thenThrowException() {
             assertThrows(StorageException.class, () -> {
                 underTest.getAllMapItems(SERVICE_ID, "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToGetAllMaps {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMaps(SERVICE_ID);
             });
         }
     }
