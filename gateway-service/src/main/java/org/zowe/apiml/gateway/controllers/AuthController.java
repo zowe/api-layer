@@ -64,6 +64,7 @@ public class AuthController {
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
     public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
+    public static final String ACCESS_TOKEN_REVOKE_FOR_USER = "/access-token/revoke/for-user"; // NOSONAR
     public static final String ACCESS_TOKEN_VALIDATE = "/access-token/validate"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
@@ -101,6 +102,16 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
+        String ruleId = rulesRequestModel.getRuleId();
+        long timeStamp = rulesRequestModel.getTimeStamp();
+        tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER)
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
         String ruleId = rulesRequestModel.getRuleId();
         long timeStamp = rulesRequestModel.getTimeStamp();
         tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);

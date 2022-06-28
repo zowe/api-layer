@@ -127,16 +127,16 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @param request the http request
      * @return the decoded credentials
      */
-    private Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
+    public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
         return Optional.ofNullable(
-            request.getHeader(HttpHeaders.AUTHORIZATION)
-        ).filter(
-            header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
-        ).map(
-            header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
-        )
+                request.getHeader(HttpHeaders.AUTHORIZATION)
+            ).filter(
+                header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
+            ).map(
+                header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
+            )
             .filter(base64Credentials -> !base64Credentials.isEmpty())
-            .map(this::mapBase64Credentials);
+            .map(LoginFilter::mapBase64Credentials);
     }
 
     /**
@@ -145,7 +145,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @param base64Credentials the credentials encoded in base64
      * @return the decoded credentials in {@link LoginRequest}
      */
-    private LoginRequest mapBase64Credentials(String base64Credentials) {
+    private static LoginRequest mapBase64Credentials(String base64Credentials) {
         String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
         int i = credentials.indexOf(':');
         if (i > 0) {
