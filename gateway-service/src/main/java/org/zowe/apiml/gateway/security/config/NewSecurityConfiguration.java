@@ -275,17 +275,17 @@ public class NewSecurityConfiguration {
                     AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                     http.addFilterBefore(queryFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
                 }
-            }
 
-            private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) {
-                return new QueryFilter(
-                    queryEndpoint,
-                    successfulQueryHandler,
-                    handlerInitializer.getAuthenticationFailureHandler(),
-                    authenticationService,
-                    HttpMethod.GET,
-                    false,
-                    authenticationManager);
+                private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) {
+                    return new QueryFilter(
+                        queryEndpoint,
+                        successfulQueryHandler,
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        authenticationService,
+                        HttpMethod.GET,
+                        false,
+                        authenticationManager);
+                }
             }
         }
 

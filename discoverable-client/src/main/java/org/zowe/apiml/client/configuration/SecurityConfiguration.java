@@ -25,7 +25,7 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable()
+        return http.csrf().disable() // NOSONAR
             .authorizeRequests()
             .antMatchers("/ws/**").authenticated()
             .antMatchers("/**").permitAll()
