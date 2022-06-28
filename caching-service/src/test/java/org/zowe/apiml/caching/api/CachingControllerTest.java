@@ -39,6 +39,7 @@ class CachingControllerTest {
     private static final String SERVICE_ID = "test-service";
     private static final String KEY = "key";
     private static final String VALUE = "value";
+    private static final String MAP_KEY = "map-key";
 
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
 
@@ -313,7 +314,7 @@ class CachingControllerTest {
         @Test
         void givenCorrectPayload_thenStore() {
             KeyValue keyValue = new KeyValue(KEY, VALUE);
-            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
+            ResponseEntity<?> response = underTest.storeMapItem(MAP_KEY, keyValue, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
             assertThat(response.getBody(), is(nullValue()));
         }
@@ -321,24 +322,24 @@ class CachingControllerTest {
         @Test
         void givenIncorrectPayload_thenReturnBadRequest() {
             KeyValue keyValue = new KeyValue(null, VALUE);
-            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
+            ResponseEntity<?> response = underTest.storeMapItem(MAP_KEY, keyValue, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         }
 
         @Test
         void givenErrorOnTransaction_thenReturnInternalError() throws StorageException {
-            when(mockStorage.storeListItem(any(), any())).thenThrow(new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), new Exception("the cause"), KEY));
+            when(mockStorage.storeMapItem(any(), any(), any())).thenThrow(new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), new Exception("the cause"), KEY));
             KeyValue keyValue = new KeyValue(KEY, VALUE);
-            ResponseEntity<?> response = underTest.storeListItem(keyValue, mockRequest);
+            ResponseEntity<?> response = underTest.storeMapItem(MAP_KEY, keyValue, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test
         void givenStorageWithExistingValue_thenResponseConflict() throws StorageException {
-            when(mockStorage.storeListItem(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), VALUE));
+            when(mockStorage.storeMapItem(SERVICE_ID, MAP_KEY, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), VALUE));
             ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.duplicateValue", VALUE).mapToView();
 
-            ResponseEntity<?> response = underTest.storeListItem(KEY_VALUE, mockRequest);
+            ResponseEntity<?> response = underTest.storeMapItem(MAP_KEY, KEY_VALUE, mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
             assertThat(response.getBody(), is(expectedBody));
         }
@@ -348,13 +349,29 @@ class CachingControllerTest {
     class WhenRetrieveInvalidatedTokens {
         @Test
         void givenCorrectRequest_thenReturnList() throws StorageException {
-            HashMap<String, String> hashMap = new HashMap();
-            hashMap.put("key", "token1");
-            hashMap.put("key2", "token2");
-            HashMap expectedMap = new HashMap();
-            expectedMap.put("invalidTokens", hashMap);
-            when(mockStorage.getAllMapItems(any(), any())).thenReturn(expectedMap);
-            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
+            HashMap<String, String> expectedMap = new HashMap();
+            expectedMap.put("key", "token1");
+            expectedMap.put("key2", "token2");
+
+            when(mockStorage.getAllMapItems(anyString(), any())).thenReturn(expectedMap);
+            ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+            assertThat(response.getBody(), is(expectedMap));
+        }
+
+        @Test
+        void givenCorrectRequest_thenReturnAllLists() throws StorageException {
+            Map<String, String> invalidTokens = new HashMap();
+            invalidTokens.put("key", "token1");
+            invalidTokens.put("key2", "token2");
+            Map<String, String> invalidTokenRules = new HashMap();
+            invalidTokens.put("key", "rule1");
+            invalidTokens.put("key2", "rule2");
+            Map<String, Map<String, String>> expectedMap = new HashMap();
+            expectedMap.put("invalidTokens", invalidTokens);
+            expectedMap.put("invalidTokenRules", invalidTokenRules);
+            when(mockStorage.getAllMaps(anyString())).thenReturn(expectedMap);
+            ResponseEntity<?> response = underTest.getAllMaps(mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.OK));
             assertThat(response.getBody(), is(expectedMap));
         }
@@ -363,7 +380,7 @@ class CachingControllerTest {
         void givenNoCertificateInformation_thenReturnUnauthorized() throws StorageException {
             when(mockStorage.getAllMapItems(any(), any())).thenReturn(any());
             when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
-            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
+            ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
 
             assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         }
@@ -372,7 +389,7 @@ class CachingControllerTest {
         void givenErrorReadingStorage_thenResponseInternalError() throws StorageException {
             when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
 
-            ResponseEntity<?> response = underTest.getAllListItems(any(), mockRequest);
+            ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         }
     }

@@ -36,6 +36,8 @@ class ApimlAccessTokenProviderTest {
     private static String SCOPED_TOKEN;
     private static String TOKEN_WITHOUT_SCOPES;
 
+    private static final String SERVICE_ID = "serviceId1";
+
     @BeforeEach
     void setup() throws CachingServiceClientException {
         cachingServiceClient = mock(CachingServiceClient.class);
@@ -62,7 +64,18 @@ class ApimlAccessTokenProviderTest {
         when(as.parseJwtToken(token)).thenReturn(new QueryResponse(null, "user", issued, issued, null));
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         accessTokenProvider.invalidateToken(token);
-        verify(cachingServiceClient, times(1)).appendList(any());
+        verify(cachingServiceClient, times(1)).appendList(anyString(), any());
+
+    }
+
+    @Test
+    void invalidateRules() throws Exception {
+        String ruleId = "user";
+        int timeStamp = 1234;
+
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        accessTokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
+        verify(cachingServiceClient, times(1)).appendList(anyString(), any());
 
     }
 
@@ -70,15 +83,18 @@ class ApimlAccessTokenProviderTest {
     void givenSameToken_returnInvalidated() throws Exception {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+        when(as.parseJwtToken(TOKEN_WITHOUT_SCOPES)).thenReturn(new QueryResponse(null, "user", new Date(), new Date(), null));
 
         ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         String s = mapper.writeValueAsString(invalidateToken);
-        Map<String, String> map = new HashMap<>();
-        map.put(tokenHash, s);
-        when(cachingServiceClient.readInvalidatedTokens()).thenReturn(map);
-        assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        Map<String, String> invalidTokens = new HashMap<>();
+        invalidTokens.put(tokenHash, s);
+        Map<String, Map<String, String>> cacheMap = new HashMap<>();
+        cacheMap.put("invalidTokens", invalidTokens);
+        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES, SERVICE_ID));
     }
 
     @Test
@@ -93,6 +109,7 @@ class ApimlAccessTokenProviderTest {
     @Test
     void givenDifferentToken_returnNotInvalidated() throws Exception {
         String differentToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkdA";
+        when(as.parseJwtToken(differentToken)).thenReturn(new QueryResponse(null, "user", new Date(), new Date(), null));
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
 
@@ -100,12 +117,43 @@ class ApimlAccessTokenProviderTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         String s = mapper.writeValueAsString(invalidateToken);
-        Map<String, String> map = new HashMap<>();
-        map.put(tokenHash, s);
-        when(cachingServiceClient.readInvalidatedTokens()).thenReturn(map);
+        Map<String, String> invalidTokens = new HashMap<>();
+        invalidTokens.put(tokenHash, s);
+        Map<String, Map<String, String>> cacheMap = new HashMap<>();
+        cacheMap.put("invalidTokens", invalidTokens);
+        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
 
-        assertFalse(accessTokenProvider.isInvalidated(differentToken));
+        assertFalse(accessTokenProvider.isInvalidated(differentToken, SERVICE_ID));
     }
+
+    @Test
+    void givenTokenWithUserMatchingRule_returnInvalidated() throws Exception {
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        String ruleId = accessTokenProvider.getHash("user");
+        Date issued = new Date(System.currentTimeMillis() - 100000L);
+        when(as.parseJwtToken(TOKEN_WITHOUT_SCOPES)).thenReturn(new QueryResponse(null, "user", issued, issued, null));
+        Map<String, String> tokenRules = new HashMap<>();
+        tokenRules.put(ruleId, String.valueOf(System.currentTimeMillis()));
+        Map<String, Map<String, String>> cacheMap = new HashMap<>();
+        cacheMap.put("invalidTokenRules", tokenRules);
+        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES, SERVICE_ID));
+    }
+
+    @Test
+    void givenTokenWithServiceIdMatchingRule_returnInvalidated() throws Exception {
+        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        String ruleId = accessTokenProvider.getHash(SERVICE_ID);
+        Date issued = new Date(System.currentTimeMillis() - 100000L);
+        when(as.parseJwtToken(TOKEN_WITHOUT_SCOPES)).thenReturn(new QueryResponse(null, "user", issued, issued, null));
+        Map<String, String> tokenRules = new HashMap<>();
+        tokenRules.put(ruleId, String.valueOf(System.currentTimeMillis()));
+        Map<String, Map<String, String>> cacheMap = new HashMap<>();
+        cacheMap.put("invalidTokenRules", tokenRules);
+        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES, SERVICE_ID));
+    }
+
 
     @Test
     void givenUserAndValidExpirationTest_thenTokenIsCreated() {

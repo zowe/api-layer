@@ -106,26 +106,43 @@ public class CachingController {
             keyValue, request, HttpStatus.CREATED);
     }
 
-    @PostMapping(value = "/cache-list", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Add a new list item in the cache",
-        description = "A new key-value pair will be added to the cache")
+    @PostMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Add a new item in the cache map",
+        description = "A new key-value pair will be added to the specific cache map with given map key.")
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<Object> storeListItem(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        return keyValueRequest(storage::storeListItem,
-            keyValue, request, HttpStatus.CREATED);
+    public ResponseEntity<Object> storeMapItem(@PathVariable String mapKey, @RequestBody KeyValue keyValue, HttpServletRequest request) {
+        return mapKeyValueRequest(storage::storeMapItem,
+            mapKey, keyValue, request, HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/cache-list/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Retrieves all the list items in the cache",
-        description = "Values returned for the calling service")
+    @GetMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Retrieves all the items in the cache map",
+        description = "Values returned for the calling service and specific cache map.")
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<Object> getAllListItems(@PathVariable String key, HttpServletRequest request) {
+    public ResponseEntity<Object> getAllMapItems(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 try {
-                    return new ResponseEntity<>(storage.getAllMapItems(s, key), HttpStatus.OK);
+                    return new ResponseEntity<>(storage.getAllMapItems(s, mapKey), HttpStatus.OK);
+                } catch (Exception exception) {
+                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
+    }
+
+    @GetMapping(value = "/cache-list", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Retrieves all the maps in the cache",
+        description = "Values returned for the calling service")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> getAllMaps(HttpServletRequest request) {
+        return getServiceId(request).<ResponseEntity<Object>>map(
+            s -> {
+                try {
+                    return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
                     return handleIncompatibleStorageMethod(exception, request.getRequestURL());
                 }
@@ -201,6 +218,26 @@ public class CachingController {
         }
     }
 
+    private ResponseEntity<Object> mapKeyValueRequest(MapKeyValueOperation operation, String mapKey, KeyValue keyValue,
+                                                      HttpServletRequest request, HttpStatus successStatus) {
+        Optional<String> serviceId = getServiceId(request);
+        if (!serviceId.isPresent()) {
+            return getUnauthorizedResponse();
+        }
+
+        try {
+            checkForInvalidPayload(keyValue);
+
+            operation.storageRequest(serviceId.get(), mapKey, keyValue);
+
+            return new ResponseEntity<>(successStatus);
+        } catch (StorageException exception) {
+            return exceptionToResponse(exception);
+        } catch (Exception exception) {
+            return handleInternalError(exception, request.getRequestURL());
+        }
+    }
+
     private Optional<String> getServiceId(HttpServletRequest request) {
         Optional<String> certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
         Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
@@ -267,5 +304,10 @@ public class CachingController {
     @FunctionalInterface
     interface KeyValueOperation {
         KeyValue storageRequest(String serviceId, KeyValue keyValue) throws StorageException;
+    }
+
+    @FunctionalInterface
+    interface MapKeyValueOperation {
+        KeyValue storageRequest(String serviceId, String mapKey, KeyValue keyValue);
     }
 }

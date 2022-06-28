@@ -70,6 +70,12 @@ class ApimlTomcatCustomizerTest {
 
     SocketWrapperBase getSocketWarapper(NioChannel socket) {
         return new SocketWrapperBase(socket, new NioEndpoint()) {
+
+            @Override
+            protected boolean flushNonBlocking() throws IOException {
+                return true;
+            }
+
             @Override
             protected void populateRemoteHost() {
 

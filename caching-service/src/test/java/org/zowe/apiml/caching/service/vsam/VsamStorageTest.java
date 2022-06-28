@@ -257,7 +257,7 @@ class VsamStorageTest {
         void thenThrowException() {
             KeyValue keyValue = new KeyValue("key", "value");
             assertThrows(StorageException.class, () -> {
-                underTest.storeListItem("serviceId", keyValue);
+                underTest.storeMapItem("serviceId", "mapkey", keyValue);
             });
         }
     }
@@ -268,6 +268,16 @@ class VsamStorageTest {
         void thenThrowException() {
             assertThrows(StorageException.class, () -> {
                 underTest.getAllMapItems("serviceId", "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToGetAllMaps {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMaps("serviceId");
             });
         }
     }

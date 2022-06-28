@@ -210,7 +210,7 @@ class AuthControllerTest {
                 @Test
                 void validateAccessToken() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
-                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(false);
                     mockMvc.perform(post("/gateway/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
@@ -220,7 +220,7 @@ class AuthControllerTest {
                 @Test
                 void return401() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
-                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(true);
                     mockMvc.perform(post("/gateway/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
@@ -242,13 +242,13 @@ class AuthControllerTest {
             class WhenTokenAlreadyInvalidated {
 
                 @Test
-                void thenReturn401() throws Exception {
-                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+                void thenInvalidateAgain() throws Exception {
+                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(true);
 
                     mockMvc.perform(delete("/gateway/auth/access-token/revoke")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
-                        .andExpect(status().is(SC_UNAUTHORIZED));
+                        .andExpect(status().is(SC_OK));
                 }
             }
 
@@ -257,9 +257,33 @@ class AuthControllerTest {
 
                 @Test
                 void thenInvalidate() throws Exception {
-                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(false);
 
                     mockMvc.perform(delete("/gateway/auth/access-token/revoke")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_OK));
+                }
+            }
+        }
+
+        @Nested
+        class GivenRevokeAccessTokenWithRulesRequest {
+
+            @BeforeEach
+            void setUp() throws JSONException {
+                body = new JSONObject()
+                    .put("ruleId", "user")
+                    .put("timeStamp", "1234");
+            }
+
+            @Nested
+            class WhenNotInvalidated {
+
+                @Test
+                void thenInvalidate() throws Exception {
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke/rules")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_OK));

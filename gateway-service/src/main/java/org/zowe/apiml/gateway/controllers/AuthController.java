@@ -90,10 +90,20 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> token) throws Exception {
-        if (tokenProvider.isInvalidated(token.get(TOKEN_KEY))) {
+        if (tokenProvider.isInvalidated(token.get(TOKEN_KEY), "null_service")) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         tokenProvider.invalidateToken(token.get(TOKEN_KEY));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE + "/rules")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
+        String ruleId = rulesRequestModel.getRuleId();
+        long timeStamp = rulesRequestModel.getTimeStamp();
+        tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -103,7 +113,8 @@ public class AuthController {
     public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) throws Exception {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
-        if (tokenProvider.isValidForScopes(token, serviceId) && !tokenProvider.isInvalidated(token)) {
+        if (tokenProvider.isValidForScopes(token, serviceId) &&
+            !tokenProvider.isInvalidated(token, serviceId)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -212,5 +223,11 @@ public class AuthController {
     private static class ValidateRequestModel {
         private String token;
         private String serviceId;
+    }
+
+    @Data
+    private static class RulesRequestModel {
+        private String ruleId;
+        private long timeStamp;
     }
 }
