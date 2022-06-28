@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Set;
 
+import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
+
 @Component
 @RequiredArgsConstructor
 public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandler {
@@ -32,9 +34,8 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        Object expirationTime = request.getAttribute("expirationTime");
-        String validity = expirationTime == null || expirationTime.equals("") ? "0" : request.getAttribute("expirationTime").toString();
-        String token = accessTokenProvider.getToken(authentication.getPrincipal().toString(), Integer.parseInt(validity));
+        AccessTokenRequest accessTokenRequest = (AccessTokenRequest)request.getAttribute(TOKEN_REQUEST);
+        String token = accessTokenProvider.getToken(authentication.getPrincipal().toString(), accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
         response.getWriter().print(token);
         response.getWriter().flush();
         response.getWriter().close();

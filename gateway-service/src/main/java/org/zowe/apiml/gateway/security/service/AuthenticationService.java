@@ -58,6 +58,7 @@ public class AuthenticationService {
     private static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String AUTH_PROV_CLAIM = "auth.prov";
+    private static final String SCOPES = "scopes";
     private static final String CACHE_VALIDATION_JWT_TOKEN = "validationJwtToken";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
@@ -97,11 +98,12 @@ public class AuthenticationService {
         return createJWT(username,issuer, claims, now, expiration);
     }
 
-    public String createLongLivedJwtToken(@NonNull String username, int daysToLive) {
+    public String createLongLivedJwtToken(@NonNull String username, int daysToLive, Set<String> scopes) {
         long now = System.currentTimeMillis();
         long expiration = now + (daysToLive * 86_400_000L);
         Map<String, Object> claims = new HashMap<>();
         claims.put(AUTH_PROV_CLAIM, authConfigurationProperties.getTokenProperties().getIssuer());
+        claims.put(SCOPES, scopes);
         String issuer = QueryResponse.Source.ZOWE_PAT.value;
         return createJWT(username,issuer, claims, now, expiration);
     }

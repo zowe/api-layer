@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class InfinispanStorage implements Storage {
@@ -51,22 +52,18 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public KeyValue storeListItem(String serviceId, KeyValue toCreate) {
+    public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) {
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
-                    String cacheKey = serviceId + "invalidTokens";
-                    if (tokenCache.get(cacheKey) != null &&
-                        tokenCache.get(cacheKey).containsKey(toCreate.getKey())) {
-                        throw new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), toCreate.getValue());
+                    String cacheKey = serviceId + mapKey;
+                    log.info("Storing the item into token cache: {} -> {}|{}", cacheKey, toCreate.getKey(), toCreate.getValue());
+                    Map<String, String> tokenCacheItem = tokenCache.get(cacheKey);
+                    if (tokenCacheItem == null) {
+                        tokenCacheItem = new HashMap<>();
                     }
-                    log.info("Storing the invalidated token: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
-                    Map<String, String> tokensList = tokenCache.get(cacheKey);
-                    if (tokensList == null) {
-                        tokensList = new HashMap<>();
-                    }
-                    tokensList.put(toCreate.getKey(), toCreate.getValue());
-                    tokenCache.put(cacheKey, tokensList);
+                    tokenCacheItem.put(toCreate.getKey(), toCreate.getValue());
+                    tokenCache.put(cacheKey, tokenCacheItem);
                 } finally {
                     lock.unlock();
                 }
@@ -86,9 +83,18 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public Map<String, String> getAllMapItems(String serviceId, String key) {
-        log.info("Reading all revoked tokens for service {} ", serviceId);
-        return tokenCache.get(serviceId + key);
+    public Map<String, String> getAllMapItems(String serviceId, String mapKey) {
+        log.info("Reading all records from token cache for service {} under the {} key.", serviceId, mapKey);
+        return tokenCache.get(serviceId + mapKey);
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getAllMaps(String serviceId) {
+        log.info("Reading all records from token cache for service {} ", serviceId);
+        // filter all maps which belong given service and remove the service name from key names.
+        return tokenCache.entrySet().stream().filter(
+            entry -> entry.getKey().startsWith(serviceId))
+            .collect(Collectors.toMap(e -> e.getKey().substring(serviceId.length()), Map.Entry::getValue));
     }
 
     @Override

@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +47,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final AuthenticationService authenticationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private byte[] salt;
+    private static final String TOKEN_KEY = "invalidTokens";
+    private static final String RULES_KEY = "invalidTokenRules";
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
@@ -56,22 +63,56 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
 
         String json = objectMapper.writeValueAsString(container);
-        cachingServiceClient.appendList(new CachingServiceClient.KeyValue(hashedValue, json));
+        cachingServiceClient.appendList(TOKEN_KEY, new CachingServiceClient.KeyValue(hashedValue, json));
     }
 
-    public boolean isInvalidated(String token) throws CachingServiceClientException {
-        String hash = getHash(token);
-        Map<String, String> map = cachingServiceClient.readInvalidatedTokens();
-        if (map != null && !map.isEmpty() && map.containsKey(hash)) {
-            String s = map.get(hash);
-            try {
-                AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
-                return c != null;
-            } catch (JsonProcessingException e) {
-                log.error("Not able to parse json", e);
+    public boolean isInvalidated(String token, String serviceId) throws CachingServiceClientException {
+        QueryResponse parsedToken = authenticationService.parseJwtToken(token);
+        String hashedToken = getHash(token);
+        String hashedUserId = getHash(parsedToken.getUserId());
+        String hashedServiceId = getHash(serviceId);
+
+        Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
+        if (cacheMap != null && !cacheMap.isEmpty()) {
+            Map<String, String> invalidTokens = cacheMap.get(TOKEN_KEY);
+            Map<String, String> tokenRules = cacheMap.get(RULES_KEY);
+            Optional<Boolean> isInvalidated = checkInvalidToken(invalidTokens, hashedToken);
+            if (!isInvalidated.isPresent()) {
+                isInvalidated = checkRule(tokenRules, hashedUserId, parsedToken);
+            }
+            if (!isInvalidated.isPresent()) {
+                isInvalidated = checkRule(tokenRules, hashedServiceId, parsedToken);
+            }
+            if (isInvalidated.isPresent()) {
+                return isInvalidated.get();
             }
         }
         return false;
+    }
+
+    private Optional<Boolean> checkInvalidToken(Map<String, String> invalidTokens, String tokenId) {
+        if (invalidTokens != null && !invalidTokens.isEmpty() && invalidTokens.containsKey(tokenId)) {
+            String s = invalidTokens.get(tokenId);
+            try {
+                AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
+                return Optional.of(c != null);
+            } catch (JsonProcessingException e) {
+                log.error("Not able to parse invalidToken json value.", e);
+            }
+        }
+        return Optional.empty();
+    }
+    private Optional<Boolean> checkRule(Map<String, String> tokenRules, String ruleId, QueryResponse parsedToken) {
+        if (tokenRules != null && !tokenRules.isEmpty() && tokenRules.containsKey(ruleId)) {
+            String timestampStr = tokenRules.get(ruleId);
+            try {
+                long timestamp = Long.parseLong(timestampStr);
+                return Optional.of(parsedToken.getCreation().getTime() < timestamp);
+            } catch (NumberFormatException e) {
+                log.error("Not able to convert invalidTokenRules timestamp value to number.", e);
+            }
+        }
+        return Optional.empty();
     }
 
     public String getHash(String token) throws CachingServiceClientException {
@@ -92,12 +133,31 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return localSalt;
     }
 
-    public String getToken(String username, int expirationTime) {
+    public String getToken(String username, int expirationTime, Set<String> scopes) {
        expirationTime = Math.min(expirationTime, 90);
        if (expirationTime <= 0) {
            expirationTime = 90;
        }
-       return authenticationService.createLongLivedJwtToken(username, expirationTime);
+       return authenticationService.createLongLivedJwtToken(username, expirationTime, scopes);
+    }
+
+    public boolean isValidForScopes(String jwtToken, String serviceId) {
+        if (serviceId != null) {
+            Claims jwtClaims = getJwtClaims(jwtToken);
+            if (jwtClaims != null) {
+                Object scopesObject = jwtClaims.get("scopes");
+                if (scopesObject instanceof List<?>) {
+                    List<String>scopes = (List<String>) scopesObject;
+                    return scopes.contains(serviceId.toLowerCase());
+                }
+            }
+        }
+        return false;
+    }
+
+    public void invalidateTokensUsingRules(String ruleId, long timeStamp) throws CachingServiceClientException {
+        String hashedValue = getHash(ruleId);
+        cachingServiceClient.appendList(RULES_KEY, new CachingServiceClient.KeyValue(hashedValue, Long.toString(timeStamp)));
     }
 
     public byte[] getSalt() throws CachingServiceClientException {

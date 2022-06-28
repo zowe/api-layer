@@ -43,7 +43,7 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.apiPath}")
     private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
     @Value("${apiml.cachingServiceClient.list.apiPath}")
-    private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list"; //NOSONAR parametrization provided by @Value annotation
+    private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list/"; //NOSONAR parametrization provided by @Value annotation
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -78,30 +78,30 @@ public class CachingServiceClient {
         }
     }
 
-    public void appendList(KeyValue kv) throws CachingServiceClientException {
+    public void appendList(String mapKey, KeyValue kv) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + mapKey, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
-            throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
+            throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + " in a map under " + mapKey + "key, caused by: " + e.getMessage(), e);
         }
     }
 
-    public Map<String, String> readInvalidatedTokens() throws CachingServiceClientException {
+    public Map<String, Map<String, String>> readAllMaps() throws CachingServiceClientException {
         try {
-            ParameterizedTypeReference<Map<String, String>> responseType =
-                new ParameterizedTypeReference<Map<String, String>>() {
+            ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
+                new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
                 };
-            ResponseEntity<Map<String, String>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "/invalidTokens", HttpMethod.GET, null, responseType);
+            ResponseEntity<Map<String, Map<String, String>>> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH, HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
                     return response.getBody();
                 }
                 return null;
             } else {
-                throw new CachingServiceClientException("Unable to read invalidTokens, caused by response from caching service is null or has no body");
+                throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by response from caching service is null or has no body");
             }
         } catch (Exception e) {
-            throw new CachingServiceClientException("Unable to read invalidTokens, caused by: " + e.getMessage(), e);
+            throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by: " + e.getMessage(), e);
         }
     }
 

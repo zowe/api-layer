@@ -13,6 +13,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -89,18 +90,31 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> token) throws Exception {
-        if (tokenProvider.isInvalidated(token.get(TOKEN_KEY))) {
+        if (tokenProvider.isInvalidated(token.get(TOKEN_KEY), "null_service")) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         tokenProvider.invalidateToken(token.get(TOKEN_KEY));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE + "/rules")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
+        String ruleId = rulesRequestModel.getRuleId();
+        long timeStamp = rulesRequestModel.getTimeStamp();
+        tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> validateAccessToken(@RequestBody() Map<String, String> token) throws Exception {
-        if (!tokenProvider.isInvalidated(token.get(TOKEN_KEY))) {
+    public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) throws Exception {
+        String token = validateRequestModel.getToken();
+        String serviceId = validateRequestModel.getServiceId();
+        if (tokenProvider.isValidForScopes(token, serviceId) &&
+            !tokenProvider.isInvalidated(token, serviceId)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -203,5 +217,17 @@ public class AuthController {
         pemWriter.flush();
         pemWriter.close();
         return writer.toString();
+    }
+
+    @Data
+    private static class ValidateRequestModel {
+        private String token;
+        private String serviceId;
+    }
+
+    @Data
+    private static class RulesRequestModel {
+        private String ruleId;
+        private long timeStamp;
     }
 }

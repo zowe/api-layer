@@ -40,7 +40,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.Optional;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -119,17 +119,20 @@ public class SecurityUtils {
     }
 
     public static String personalAccessToken() {
-        URI gatewayLoginEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
-        SuccessfulAccessTokenHandler.AccessTokenRequest loginRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60,null);
+        URI gatewayGenerateAccessTokenEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
+        Set<String> scopes = new HashSet<>();
+        scopes.add("service");
+
+        SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60, scopes);
 
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         String token = given()
             .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
-            .body(loginRequest)
+            .body(accessTokenRequest)
             .when()
-            .post(gatewayLoginEndpoint)
+            .post(gatewayGenerateAccessTokenEndpoint)
             .then()
             .statusCode(is(SC_OK))
             .extract().body().asString();
@@ -138,13 +141,17 @@ public class SecurityUtils {
         return token;
     }
     public static String personalAccessTokenWithClientCert() {
-        URI gatewayLoginEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
+        URI gatewayGenerateAccessTokenEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
+        Set<String> scopes = new HashSet<>();
+        scopes.add("service");
 
+        SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60, scopes);
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
 
         String token = given().config(SslContext.clientCertUser)
+            .body(accessTokenRequest)
             .when()
-            .post(gatewayLoginEndpoint)
+            .post(gatewayGenerateAccessTokenEndpoint)
             .then()
             .statusCode(is(SC_OK))
             .extract().body().asString();

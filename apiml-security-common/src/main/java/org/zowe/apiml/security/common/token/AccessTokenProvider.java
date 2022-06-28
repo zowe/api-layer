@@ -9,9 +9,13 @@
  */
 package org.zowe.apiml.security.common.token;
 
+import java.util.Set;
+
 public interface AccessTokenProvider {
 
     void invalidateToken(String token) throws Exception;
-    boolean isInvalidated(String token) throws Exception;
-    String getToken(String username, int expirationTime);
+    boolean isInvalidated(String token, String serviceId) throws Exception;
+    String getToken(String username, int expirationTime, Set<String> scopes);
+    boolean isValidForScopes(String token, String serviceId);
+    void invalidateTokensUsingRules(String ruleId, long timeStamp) throws Exception;
 }

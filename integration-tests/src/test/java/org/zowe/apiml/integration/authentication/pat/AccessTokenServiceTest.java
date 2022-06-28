@@ -22,8 +22,6 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.requests.Endpoints;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
@@ -32,7 +30,7 @@ public class AccessTokenServiceTest {
 
     public static final URI REVOKE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKEN);
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
-    Map<String, String> bodyContent;
+    ValidateRequestModel bodyContent;
 
     @Nested
     class GivenUserCredentialsAsAuthTest {
@@ -42,8 +40,9 @@ public class AccessTokenServiceTest {
             SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
             RestAssured.useRelaxedHTTPSValidation();
             String pat = SecurityUtils.personalAccessToken();
-            bodyContent = new HashMap<>();
-            bodyContent.put("token", pat);
+            bodyContent = new ValidateRequestModel();
+            bodyContent.setServiceId("service");
+            bodyContent.setToken(pat);
         }
 
         @Test
@@ -66,6 +65,25 @@ public class AccessTokenServiceTest {
                 .then().statusCode(401);
         }
 
+        @Test
+        void givenMatchingScopes_validateTheToken() throws Exception {
+            SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+            RestAssured.useRelaxedHTTPSValidation();
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+        }
+
+        @Test
+        void givenInvalidScopes_returnUnauthorized() throws Exception {
+            SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+            RestAssured.useRelaxedHTTPSValidation();
+            bodyContent.setServiceId("differentService");
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
     }
 
     @Nested
@@ -76,8 +94,9 @@ public class AccessTokenServiceTest {
             SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
             RestAssured.useRelaxedHTTPSValidation();
             String pat = SecurityUtils.personalAccessTokenWithClientCert();
-            bodyContent = new HashMap<>();
-            bodyContent.put("token", pat);
+            bodyContent = new ValidateRequestModel();
+            bodyContent.setToken(pat);
+            bodyContent.setServiceId("service");
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(200);
