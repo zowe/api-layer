@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -527,13 +526,14 @@ public class NewSecurityConfiguration {
             // Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
             @Bean
             public WebSecurityCustomizer webSecurityCustomizer() {
+                StrictHttpFirewall firewall = new StrictHttpFirewall();
+                firewall.setAllowUrlEncodedSlash(true);
+                firewall.setAllowBackSlash(true);
+                firewall.setAllowUrlEncodedPercent(true);
+                firewall.setAllowUrlEncodedPeriod(true);
+                firewall.setAllowSemicolon(true);
+
                 return web -> {
-                    StrictHttpFirewall firewall = new StrictHttpFirewall();
-                    firewall.setAllowUrlEncodedSlash(true);
-                    firewall.setAllowBackSlash(true);
-                    firewall.setAllowUrlEncodedPercent(true);
-                    firewall.setAllowUrlEncodedPeriod(true);
-                    firewall.setAllowSemicolon(true);
                     web.httpFirewall(firewall);
 
                     // Endpoints that skip Spring Security completely
