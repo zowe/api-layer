@@ -60,7 +60,7 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
         @Nested
         class WhenCallingToServiceMultipleTimes {
 
-            @RepeatedTest(10)
+            @RepeatedTest(3)
             void thenCallTheSameInstance(RepetitionInfo repetitionInfo) throws IOException {
 
                 // initialize the cache and registry only once on first repetition
