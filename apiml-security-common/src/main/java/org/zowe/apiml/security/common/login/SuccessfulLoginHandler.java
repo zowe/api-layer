@@ -57,16 +57,14 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         // so specify Set-Cookie header directly
 
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
-        String cookieHeader = CookieUtil.setCookieHeader(
-            cp.getCookieName(),
-            token,
-            cp.getCookieComment(),
-            cp.getCookiePath(),
-            cp.getCookieSameSite().getValue(),
-            cp.getCookieMaxAge(),
-            true,
-            cp.isCookieSecure()
-        );
+        String cookieHeader = new CookieUtil.CookieHeaderBuilder(cp.getCookieName(), token)
+            .comment(cp.getCookieComment())
+            .path(cp.getCookiePath())
+            .sameSite(cp.getCookieSameSite().getValue())
+            .maxAge(cp.getCookieMaxAge())
+            .httpOnly(true)
+            .secure(cp.isCookieSecure())
+            .build();
 
         response.addHeader("Set-Cookie", cookieHeader);
     }
