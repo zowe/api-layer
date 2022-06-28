@@ -228,50 +228,50 @@ public class SecurityConfiguration {
                 .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
         }
-    }
 
-    private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
-        return new LoginFilter(
-            loginEndpoint,
-            handlerInitializer.getSuccessfulLoginHandler(),
-            handlerInitializer.getAuthenticationFailureHandler(),
-            securityObjectMapper,
-            authenticationManager,
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
-    }
+        private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
+            return new LoginFilter(
+                loginEndpoint,
+                handlerInitializer.getSuccessfulLoginHandler(),
+                handlerInitializer.getAuthenticationFailureHandler(),
+                securityObjectMapper,
+                authenticationManager,
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
 
-    /**
-     * Secures content with a basic authentication
-     */
-    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-        return new BasicContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
-    }
+        /**
+         * Secures content with a basic authentication
+         */
+        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+            return new BasicContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
 
-    /**
-     * Secures content with a token stored in a cookie
-     */
-    private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
-        return new CookieContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler(),
-            authConfigurationProperties);
-    }
+        /**
+         * Secures content with a token stored in a cookie
+         */
+        private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
+            return new CookieContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler(),
+                authConfigurationProperties);
+        }
 
-    /**
-     * Secures content with a Bearer token
-     */
-    private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
-        return new BearerContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
+        /**
+         * Secures content with a Bearer token
+         */
+        private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+            return new BearerContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
     }
 
     @Bean

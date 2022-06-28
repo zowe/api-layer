@@ -159,22 +159,22 @@ public class NewSecurityConfiguration {
                     .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                     .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
             }
-        }
 
-        private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
-            return new LoginFilter(
-                loginEndpoint,
-                handlerInitializer.getSuccessfulLoginHandler(),
-                handlerInitializer.getAuthenticationFailureHandler(),
-                securityObjectMapper,
-                authenticationManager,
-                handlerInitializer.getResourceAccessExceptionHandler());
-        }
+            private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
+                return new LoginFilter(
+                    loginEndpoint,
+                    handlerInitializer.getSuccessfulLoginHandler(),
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    securityObjectMapper,
+                    authenticationManager,
+                    handlerInitializer.getResourceAccessExceptionHandler());
+            }
 
-        private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
-            return new X509AuthenticationFilter(loginEndpoint,
-                handlerInitializer.getSuccessfulLoginHandler(),
-                x509AuthenticationProvider);
+            private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
+                return new X509AuthenticationFilter(loginEndpoint,
+                    handlerInitializer.getSuccessfulLoginHandler(),
+                    x509AuthenticationProvider);
+            }
         }
 
         private LogoutHandler logoutHandler() {
@@ -224,309 +224,331 @@ public class NewSecurityConfiguration {
                     .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                     .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
             }
-        }
 
-        private LoginFilter accessTokenFilter(String endpoint, AuthenticationManager authenticationManager) {
-            return new LoginFilter(
-                endpoint,
-                handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
-                handlerInitializer.getAuthenticationFailureHandler(),
-                securityObjectMapper,
-                authenticationManager,
-                handlerInitializer.getResourceAccessExceptionHandler());
-        }
-
-        private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
-            return new X509AuthenticationFilter(loginEndpoint,
-                handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
-                x509AuthenticationProvider);
-        }
-
-    }
-
-    /**
-     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
-     * Query endpoint does not require certificate to be present in RequestContext. It verifies JWT token.
-     */
-    @Configuration
-    @RequiredArgsConstructor
-    @Order(2)
-    class Query {
-
-        private final TokenAuthenticationProvider tokenAuthenticationProvider;
-
-        @Bean
-        public SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(
-                    authConfigurationProperties.getGatewayQueryEndpoint(),
-                    authConfigurationProperties.getGatewayQueryEndpointOldFormat())
-                .and()).authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .authenticationProvider(tokenAuthenticationProvider)
-                .logout().disable() // logout filter in this chain not needed
-                .apply(new CustomSecurityFilters());
-
-            return http.build();
-        }
-
-        private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
-            @Override
-            public void configure(HttpSecurity http) throws Exception {
-                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                http.addFilterBefore(queryFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            private LoginFilter accessTokenFilter(String endpoint, AuthenticationManager authenticationManager) {
+                return new LoginFilter(
+                    endpoint,
+                    handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    securityObjectMapper,
+                    authenticationManager,
+                    handlerInitializer.getResourceAccessExceptionHandler());
             }
-        }
 
-        private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) {
-            return new QueryFilter(
-                queryEndpoint,
-                successfulQueryHandler,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                authenticationService,
-                HttpMethod.GET,
-                false,
-                authenticationManager);
-        }
-    }
-
-    /**
-     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
-     * Ticket endpoint does require certificate to be present in RequestContext. It verifies the JWT token.
-     */
-
-    @Configuration
-    @RequiredArgsConstructor
-    @Order(3)
-    class Ticket {
-
-        private final AuthenticationProvider tokenAuthenticationProvider;
-
-        @Bean
-        public SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(
-                authConfigurationProperties.getGatewayTicketEndpoint(),
-                authConfigurationProperties.getGatewayTicketEndpointOldFormat()
-            ).and()).authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .authenticationProvider(tokenAuthenticationProvider)
-                .logout().disable() // logout filter in this chain not needed
-                .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
-                .userDetailsService(new SimpleUserDetailService())
-                .and().apply(new CustomSecurityFilters());
-
-            return http.build();
-        }
-
-        private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
-            @Override
-            public void configure(HttpSecurity http) throws Exception {
-                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                http.addFilterBefore(ticketFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
+                return new X509AuthenticationFilter(loginEndpoint,
+                    handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
+                    x509AuthenticationProvider);
             }
+
+
         }
 
-        private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
-            return new QueryFilter(
-                ticketEndpoint,
-                successfulTicketHandler,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                authenticationService,
-                HttpMethod.POST,
-                true,
-                authenticationManager);
-        }
-    }
+        /**
+         * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+         * Query endpoint does not require certificate to be present in RequestContext. It verifies JWT token.
+         */
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(2)
+        class Query {
 
-    /**
-     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate.
-     * Refresh endpoint does require certificate to be present in RequestContext. It verifies the JWT token and based
-     * on valid token and client certificate issues a new valid token
-     */
-    @Configuration
-    @RequiredArgsConstructor
-    @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")
-    @Order(6)
-    class Refresh {
+            private final TokenAuthenticationProvider tokenAuthenticationProvider;
 
-        private final AuthenticationProvider tokenAuthenticationProvider;
-
-        @Bean
-        public SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(
-                authConfigurationProperties.getGatewayRefreshEndpoint(),
-                authConfigurationProperties.getGatewayRefreshEndpointOldFormat()
-            ).and()).authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .authenticationProvider(tokenAuthenticationProvider)
-                .logout().disable() // logout filter in this chain not needed
-                .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
-                .userDetailsService(new SimpleUserDetailService())
-                .and()
-                .apply(new CustomSecurityFilters());
-
-            return http.build();
-        }
-
-        private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
-            @Override
-            public void configure(HttpSecurity http) throws Exception {
-                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                http.addFilterBefore(refreshFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
-            }
-        }
-
-        private QueryFilter refreshFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
-            return new QueryFilter(
-                ticketEndpoint,
-                successfulRefreshHandler,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                authenticationService,
-                HttpMethod.POST,
-                true,
-                authenticationManager);
-        }
-    }
-
-    /**
-     * Endpoints which are protected by client certificate
-     * Default Spring security x509 filter authenticates any trusted certificate
-     */
-    @Configuration
-    @RequiredArgsConstructor
-    @Order(4)
-    class CertificateProtectedEndpoints {
-        @Bean
-        public SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) throws Exception {
-            return baseConfigure(http.requestMatchers()
-                .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH + "/**")
-                .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
-            ).authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .logout().disable() // logout filter in this chain not needed
-                .x509() // default x509 filter, authenticates trusted cert
-                .userDetailsService(new SimpleUserDetailService())
-                .and().build();
-        }
-    }
-
-    /**
-     * Endpoints which require either authentication or client certificate
-     * Filters for tokens and credentials are placed in front of certificate filter for precedence
-     * Default Spring security x509 filter authenticates any trusted certificate
-     */
-    @Configuration
-    @RequiredArgsConstructor
-    @Order(5)
-    class CertificateOrAuthProtectedEndpoints {
-
-        private final CompoundAuthProvider compoundAuthProvider;
-        private final AuthenticationProvider tokenAuthenticationProvider;
-
-        private final String[] protectedEndpoints = {
-            "/application",
-            SafResourceAccessController.FULL_CONTEXT_PATH,
-            ServicesInfoController.SERVICES_URL
-        };
-
-        @Bean
-        public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers()
-                .antMatchers("/application/**")
-                .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
-                .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
-            ).authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .logout().disable();  // logout filter in this chain not needed
-
-            if (isAttlsEnabled) {
-                http.x509()
+            @Bean
+            public SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers().antMatchers(
+                        authConfigurationProperties.getGatewayQueryEndpoint(),
+                        authConfigurationProperties.getGatewayQueryEndpointOldFormat())
+                    .and()).authorizeRequests()
+                    .anyRequest().authenticated()
                     .and()
-                    // filter out API ML certificate
-                    .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-            } else {
-                http.x509(); // default x509 filter, authenticates trusted cert
+                    .authenticationProvider(tokenAuthenticationProvider)
+                    .logout().disable() // logout filter in this chain not needed
+                    .apply(new CustomSecurityFilters());
+
+                return http.build();
             }
 
-            return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
-                .authenticationProvider(tokenAuthenticationProvider) // for authenticating Tokens
-                .authenticationProvider(new CertificateAuthenticationProvider())
-                .apply(new CustomSecurityFilters())
-                .and().build();
-        }
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) throws Exception {
+                    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                    http.addFilterBefore(queryFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+                }
+            }
 
-        private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
-            @Override
-            public void configure(HttpSecurity http) throws Exception {
-                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                // place the following filters before the x509 filter
-                http
-                    .addFilterBefore(basicFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                    .addFilterBefore(cookieFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                    .addFilterBefore(bearerContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+            private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) {
+                return new QueryFilter(
+                    queryEndpoint,
+                    successfulQueryHandler,
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    authenticationService,
+                    HttpMethod.GET,
+                    false,
+                    authenticationManager);
             }
         }
 
-        private CategorizeCertsFilter reversedCategorizeCertFilter() {
-            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64);
-            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            return out;
+        /**
+         * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+         * Ticket endpoint does require certificate to be present in RequestContext. It verifies the JWT token.
+         */
+
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(3)
+        class Ticket {
+
+            private final AuthenticationProvider tokenAuthenticationProvider;
+
+            @Bean
+            public SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers().antMatchers(
+                    authConfigurationProperties.getGatewayTicketEndpoint(),
+                    authConfigurationProperties.getGatewayTicketEndpointOldFormat()
+                ).and()).authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .authenticationProvider(tokenAuthenticationProvider)
+                    .logout().disable() // logout filter in this chain not needed
+                    .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
+                    .userDetailsService(new SimpleUserDetailService())
+                    .and().apply(new CustomSecurityFilters());
+
+                return http.build();
+            }
+
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) throws Exception {
+                    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                    http.addFilterBefore(ticketFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+                }
+
+                private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
+                    return new QueryFilter(
+                        ticketEndpoint,
+                        successfulTicketHandler,
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        authenticationService,
+                        HttpMethod.POST,
+                        true,
+                        authenticationManager);
+                }
+            }
         }
 
         /**
-         * Processes basic authentication credentials and authenticates them
+         * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate.
+         * Refresh endpoint does require certificate to be present in RequestContext. It verifies the JWT token and based
+         * on valid token and client certificate issues a new valid token
          */
-        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-            return new BasicContentFilter(
-                authenticationManager,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                handlerInitializer.getResourceAccessExceptionHandler(),
-                protectedEndpoints);
+        @Configuration
+        @RequiredArgsConstructor
+        @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")
+        @Order(6)
+        class Refresh {
+
+            private final AuthenticationProvider tokenAuthenticationProvider;
+
+            @Bean
+            public SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers().antMatchers(
+                    authConfigurationProperties.getGatewayRefreshEndpoint(),
+                    authConfigurationProperties.getGatewayRefreshEndpointOldFormat()
+                ).and()).authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .authenticationProvider(tokenAuthenticationProvider)
+                    .logout().disable() // logout filter in this chain not needed
+                    .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
+                    .userDetailsService(new SimpleUserDetailService())
+                    .and()
+                    .apply(new CustomSecurityFilters());
+
+                return http.build();
+            }
+
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) throws Exception {
+                    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                    http.addFilterBefore(refreshFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+                }
+
+                private QueryFilter refreshFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
+                    return new QueryFilter(
+                        ticketEndpoint,
+                        successfulRefreshHandler,
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        authenticationService,
+                        HttpMethod.POST,
+                        true,
+                        authenticationManager);
+                }
+            }
         }
 
         /**
-         * Processes token credentials stored in cookie and authenticates them
+         * Endpoints which are protected by client certificate
+         * Default Spring security x509 filter authenticates any trusted certificate
          */
-        private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
-            return new CookieContentFilter(
-                authenticationManager,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                handlerInitializer.getResourceAccessExceptionHandler(),
-                authConfigurationProperties,
-                protectedEndpoints);
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(4)
+        class CertificateProtectedEndpoints {
+            @Bean
+            public SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) throws Exception {
+                return baseConfigure(http.requestMatchers()
+                    .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH + "/**")
+                    .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
+                ).authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .logout().disable() // logout filter in this chain not needed
+                    .x509() // default x509 filter, authenticates trusted cert
+                    .userDetailsService(new SimpleUserDetailService())
+                    .and().build();
+            }
         }
 
         /**
-         * Secures content with a Bearer token
+         * Endpoints which require either authentication or client certificate
+         * Filters for tokens and credentials are placed in front of certificate filter for precedence
+         * Default Spring security x509 filter authenticates any trusted certificate
          */
-        private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
-            return new BearerContentFilter(
-                authenticationManager,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                handlerInitializer.getResourceAccessExceptionHandler(),
-                protectedEndpoints);
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(5)
+        class CertificateOrAuthProtectedEndpoints {
+
+            private final CompoundAuthProvider compoundAuthProvider;
+            private final AuthenticationProvider tokenAuthenticationProvider;
+
+            private final String[] protectedEndpoints = {
+                "/application",
+                SafResourceAccessController.FULL_CONTEXT_PATH,
+                ServicesInfoController.SERVICES_URL
+            };
+
+            @Bean
+            public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers()
+                    .antMatchers("/application/**")
+                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
+                    .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
+                ).authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .logout().disable();  // logout filter in this chain not needed
+
+                if (isAttlsEnabled) {
+                    http.x509()
+                        .and()
+                        // filter out API ML certificate
+                        .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                } else {
+                    http.x509(); // default x509 filter, authenticates trusted cert
+                }
+
+                return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                    .authenticationProvider(tokenAuthenticationProvider) // for authenticating Tokens
+                    .authenticationProvider(new CertificateAuthenticationProvider())
+                    .apply(new CustomSecurityFilters())
+                    .and().build();
+            }
+
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) throws Exception {
+                    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                    // place the following filters before the x509 filter
+                    http
+                        .addFilterBefore(basicFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterBefore(cookieFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterBefore(bearerContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                }
+
+                /**
+                 * Processes basic authentication credentials and authenticates them
+                 */
+                private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+                    return new BasicContentFilter(
+                        authenticationManager,
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        handlerInitializer.getResourceAccessExceptionHandler(),
+                        protectedEndpoints);
+                }
+
+                /**
+                 * Processes token credentials stored in cookie and authenticates them
+                 */
+                private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
+                    return new CookieContentFilter(
+                        authenticationManager,
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        handlerInitializer.getResourceAccessExceptionHandler(),
+                        authConfigurationProperties,
+                        protectedEndpoints);
+                }
+
+                /**
+                 * Secures content with a Bearer token
+                 */
+                private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+                    return new BearerContentFilter(
+                        authenticationManager,
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        handlerInitializer.getResourceAccessExceptionHandler(),
+                        protectedEndpoints);
+                }
+            }
+
+            private CategorizeCertsFilter reversedCategorizeCertFilter() {
+                CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64);
+                out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+                out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+                return out;
+            }
         }
-    }
 
-    /**
-     * Fallback filterchain for all other requests
-     * All Routing goes through here
-     * The filterchain does not require authentication
-     * Web security is configured here and only here
-     */
-    @Configuration
-    @RequiredArgsConstructor
-    @Order(100)
-    class DefaultSecurity {
+        /**
+         * Fallback filterchain for all other requests
+         * All Routing goes through here
+         * The filterchain does not require authentication
+         * Web security is configured here and only here
+         */
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(100)
+        class DefaultSecurity {
 
-        @Bean
-        public WebSecurityCustomizer webSecurityCustomizer() {
-            return NewSecurityConfiguration.this::configureWebSecurity;
+            // Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
+            @Bean
+            public WebSecurityCustomizer webSecurityCustomizer() {
+                return web -> {
+                    StrictHttpFirewall firewall = new StrictHttpFirewall();
+                    firewall.setAllowUrlEncodedSlash(true);
+                    firewall.setAllowBackSlash(true);
+                    firewall.setAllowUrlEncodedPercent(true);
+                    firewall.setAllowUrlEncodedPeriod(true);
+                    firewall.setAllowSemicolon(true);
+                    web.httpFirewall(firewall);
+
+                    // Endpoints that skip Spring Security completely
+                    // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
+                    web.ignoring()
+                        .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
+                            "/application/health", "/application/info", "/application/version",
+                            AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
+                            AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
+
+                    if (isMetricsEnabled) {
+                        web.ignoring().antMatchers("/application/hystrix.stream");
+                    }
+                };
+            }
         }
 
         @Bean
@@ -560,30 +582,5 @@ public class NewSecurityConfiguration {
             .and()
             .exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
             .and();
-    }
-
-    /**
-     * Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
-     */
-    public void configureWebSecurity(WebSecurity web) {
-        StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setAllowUrlEncodedSlash(true);
-        firewall.setAllowBackSlash(true);
-        firewall.setAllowUrlEncodedPercent(true);
-        firewall.setAllowUrlEncodedPeriod(true);
-        firewall.setAllowSemicolon(true);
-        web.httpFirewall(firewall);
-
-        // Endpoints that skip Spring Security completely
-        // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
-        web.ignoring()
-            .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                "/application/health", "/application/info", "/application/version",
-                AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
-                AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
-
-        if (isMetricsEnabled) {
-            web.ignoring().antMatchers("/application/hystrix.stream");
-        }
     }
 }

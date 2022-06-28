@@ -164,32 +164,32 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
         }
-    }
 
-    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-        return new BasicContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler());
-    }
+        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+            return new BasicContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler());
+        }
 
-    private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
-        return new CookieContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler(),
-            securityConfigurationProperties);
-    }
+        private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
+            return new CookieContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler(),
+                securityConfigurationProperties);
+        }
 
-    /**
-     * Secures content with a Bearer token
-     */
-    private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
-        return new BearerContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
+        /**
+         * Secures content with a Bearer token
+         */
+        private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+            return new BearerContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
     }
 
     private UserDetailsService x509UserDetailsService() {

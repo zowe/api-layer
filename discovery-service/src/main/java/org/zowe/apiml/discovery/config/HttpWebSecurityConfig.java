@@ -93,10 +93,9 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
             http.addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
         }
-    }
 
-    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-        return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
+        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+            return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
+        }
     }
-
 }

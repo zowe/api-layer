@@ -50,7 +50,7 @@ public class SpringSecurityConfig {
             "/v3/api-docs"
         };
 
-        return (web) -> {
+        return web -> {
             web.ignoring().antMatchers(noSecurityAntMatchers);
 
             if (isMetricsEnabled) {
