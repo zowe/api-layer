@@ -9,17 +9,18 @@
  */
 package org.zowe.apiml.client.api;
 
-import org.zowe.apiml.client.configuration.ApplicationConfiguration;
-import org.zowe.apiml.client.model.Pet;
-import org.zowe.apiml.client.service.PetService;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.zowe.apiml.client.configuration.ApplicationConfiguration;
+import org.zowe.apiml.client.configuration.SecurityConfiguration;
+import org.zowe.apiml.client.model.Pet;
+import org.zowe.apiml.client.service.PetService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PetController.class})
-@Import(ApplicationConfiguration.class)
+@Import(value = {SecurityConfiguration.class, ApplicationConfiguration.class})
 class PetControllerGetAllTest {
     @Autowired
     private MockMvc mockMvc;

@@ -12,14 +12,17 @@ package org.zowe.apiml.discovery.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
@@ -56,8 +59,8 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     private final HandlerInitializer handlerInitializer;
 
-    @Override
-    public void configure(WebSecurity web) {
+    @Bean
+    public WebSecurityCustomizer httpWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
             "/favicon.ico",
             "/eureka/css/**",
@@ -65,13 +68,12 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/fonts/**",
             "/eureka/images/**"
         };
-        web.ignoring().antMatchers(noSecurityAntMatchers);
+        return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http)
-            .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
             .httpBasic().realmName(DISCOVERY_REALM)
             .and()
             .authorizeRequests()
@@ -81,10 +83,19 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
         if (isMetricsEnabled) {
             http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
         }
+
+        return http.apply(new CustomSecurityFilters()).and().build();
     }
 
-    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-        return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
-    }
+    private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+        @Override
+        public void configure(HttpSecurity http) {
+            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+            http.addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+        }
 
+        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+            return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
+        }
+    }
 }

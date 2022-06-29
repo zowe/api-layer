@@ -9,37 +9,42 @@
  */
 package org.zowe.apiml.client.configuration;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http.csrf().disable() // NOSONAR
             .authorizeRequests()
             .antMatchers("/ws/**").authenticated()
             .antMatchers("/**").permitAll()
-            .and().httpBasic();
+            .and().httpBasic()
+            .and().build();
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-            .withUser("user")
-            .password("{noop}pass").roles("ADMIN");
+    @Bean
+    public InMemoryUserDetailsManager userDetailsService() {
+        UserDetails user = User.withDefaultPasswordEncoder() // NOSONAR deprecated only to indicate not acceptable for production
+            .username("user")
+            .password("pass")
+            .roles("ADMIN")
+            .build();
+        return new InMemoryUserDetailsManager(user);
     }
 
-    @Override
-    public void configure(WebSecurity web) {
-        web.ignoring()
-            .antMatchers("/api/**");
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring().antMatchers("/api/**");
     }
 }

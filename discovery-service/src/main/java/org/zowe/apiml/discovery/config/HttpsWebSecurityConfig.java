@@ -12,16 +12,18 @@ package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.zowe.apiml.filter.AttlsFilter;
@@ -47,7 +49,7 @@ import java.util.Collections;
 @EnableWebSecurity
 @EnableApimlAuth
 @Profile({"https", "attls"})
-public class HttpsWebSecurityConfig {
+public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     private final HandlerInitializer handlerInitializer;
     private final AuthConfigurationProperties securityConfigurationProperties;
@@ -57,154 +59,137 @@ public class HttpsWebSecurityConfig {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
-    /**
-     * Filter chain for protecting endpoints with MF credentials (basic or token)
-     */
-    @Configuration
-    @Order(1)
-    public class FilterChainBasicAuthOrToken extends AbstractWebSecurityConfigurer {
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(gatewayLoginProvider);
-            auth.authenticationProvider(gatewayTokenProvider);
-        }
+    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifySslCertificatesOfServices;
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
 
-            baseConfigure(http.requestMatchers().antMatchers(
-                    "/application/**",
-                    "/*"
-                )
-                .and())
-                .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(bearerContentFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .authorizeRequests()
-                .antMatchers("/**").authenticated()
-                .and()
-                .httpBasic().realmName(DISCOVERY_REALM);
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new SecureConnectionFilter(), CookieContentFilter.class);
-            }
-        }
-    }
-
-    /**
-     * Filter chain for protecting endpoints with client certificate
-     */
-    @Configuration
-    @Order(2)
-    public class FilterChainClientCertificate extends AbstractWebSecurityConfigurer {
-
-        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-        private boolean verifySslCertificatesOfServices;
-
-        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-        private boolean nonStrictVerifySslCertificatesOfServices;
-
-        @Value("${apiml.metrics.enabled:false}")
-        private boolean isMetricsEnabled;
-
-        @Override
-        public void configure(WebSecurity web) {
-            String[] noSecurityAntMatchers = {
-                "/eureka/css/**",
-                "/eureka/js/**",
-                "/eureka/fonts/**",
-                "/eureka/images/**",
-                "/application/health",
-                "/application/info",
-                "/favicon.ico"
-            };
+    @Bean
+    public WebSecurityCustomizer httpsWebSecurityCustomizer() {
+        String[] noSecurityAntMatchers = {
+            "/eureka/css/**",
+            "/eureka/js/**",
+            "/eureka/fonts/**",
+            "/eureka/images/**",
+            "/application/health",
+            "/application/info",
+            "/favicon.ico"
+        };
+        return web -> {
             web.ignoring().antMatchers(noSecurityAntMatchers);
 
             if (isMetricsEnabled) {
                 web.ignoring().antMatchers("/application/hystrix.stream");
             }
+        };
+    }
+
+    /**
+     * Filter chain for protecting endpoints with MF credentials (basic or token)
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
+        baseConfigure(http.requestMatchers().antMatchers(
+                "/application/**",
+                "/*"
+            )
+            .and())
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
+            .authorizeRequests()
+            .antMatchers("/**").authenticated()
+            .and()
+            .httpBasic().realmName(DISCOVERY_REALM);
+        if (isAttlsEnabled) {
+            http.addFilterBefore(new SecureConnectionFilter(), CookieContentFilter.class);
         }
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.antMatcher("/eureka/**"));
-            if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
-                http.authorizeRequests()
-                    .anyRequest().authenticated()
-                    .and().x509().userDetailsService(x509UserDetailsService());
-                if (isAttlsEnabled) {
-                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-                }
-            } else {
-                http.authorizeRequests().anyRequest().permitAll();
+        return http.apply(new CustomSecurityFilters()).and().build();
+    }
+
+    /**
+     * Filter chain for protecting endpoints with client certificate
+     */
+    @Bean
+    @Order(2)
+    public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
+        baseConfigure(http.antMatcher("/eureka/**"));
+        if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
+            http.authorizeRequests()
+                .anyRequest().authenticated()
+                .and().x509().userDetailsService(x509UserDetailsService());
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
+        } else {
+            http.authorizeRequests().anyRequest().permitAll();
         }
+        return http.build();
     }
 
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token) or x509 certificate
      */
-    @Configuration
+    @Bean
     @Order(3)
-    public class FilterChainBasicAuthOrTokenOrCert extends AbstractWebSecurityConfigurer {
-
-        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-        private boolean verifySslCertificatesOfServices;
-
-        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-        private boolean nonStrictVerifySslCertificatesOfServices;
-
-
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(gatewayLoginProvider);
-            auth.authenticationProvider(gatewayTokenProvider);
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.antMatcher("/discovery/**"))
-                .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(bearerContentFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .httpBasic().realmName(DISCOVERY_REALM);
-            if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
-                http.authorizeRequests().anyRequest().authenticated().and()
-                    .x509().userDetailsService(x509UserDetailsService());
-                if (isAttlsEnabled) {
-                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-                }
+    public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
+        baseConfigure(http.antMatcher("/discovery/**"))
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
+            .httpBasic().realmName(DISCOVERY_REALM);
+        if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
+            http.authorizeRequests().anyRequest().authenticated().and()
+                .x509().userDetailsService(x509UserDetailsService());
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         }
+
+        return http.apply(new CustomSecurityFilters()).and().build();
     }
 
+    private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+        @Override
+        public void configure(HttpSecurity http) {
+            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
 
-    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-        return new BasicContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler());
-    }
+            http.addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+        }
 
-    private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
-        return new CookieContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler(),
-            securityConfigurationProperties);
-    }
+        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+            return new BasicContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler());
+        }
 
-    /**
-     * Secures content with a Bearer token
-     */
-    private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
-        return new BearerContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
+        private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
+            return new CookieContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler(),
+                securityConfigurationProperties);
+        }
+
+        /**
+         * Secures content with a Bearer token
+         */
+        private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+            return new BearerContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
     }
 
     private UserDetailsService x509UserDetailsService() {
