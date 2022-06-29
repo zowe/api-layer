@@ -126,15 +126,15 @@ const Login = (props) => {
         setSubmitted(true);
     }
 
-    let error = { messageText: null, expired: false, invalidNewPassword: true, invalidCredentials: false };
+    let errorData = { messageText: null, expired: false, invalidNewPassword: true, invalidCredentials: false };
     if (
         authentication !== undefined &&
         authentication !== null &&
         authentication.error !== undefined &&
         authentication.error !== null
     ) {
-        error = handleError(authentication);
-        if (error.isSuspended) {
+        errorData = handleError(authentication);
+        if (errorData.isSuspended) {
             return (
                 <div className="login-object">
                     <div className="susp-card">
@@ -143,7 +143,7 @@ const Login = (props) => {
                                 <div className="susp-acc">
                                     <WarningIcon style={{ color: '#de1b1b' }} fontSize="medium" />
                                     <Typography className="susp-msg" variant="h6">
-                                        {error.messageText}
+                                        {errorData.messageText}
                                     </Typography>
                                 </div>
                             </CardContent>
@@ -180,7 +180,7 @@ const Login = (props) => {
             );
         }
     } else if (errorMessage) {
-        error.messageText = errorMessage;
+        errorData.messageText = errorMessage;
     }
 
     return (
@@ -198,29 +198,29 @@ const Login = (props) => {
                         <CssBaseline />
                         <div className="text-block-4">API Catalog</div>
                         <br />
-                        {error.messageText !== undefined &&
-                            error.messageText !== null &&
+                        {errorData.messageText !== undefined &&
+                            errorData.messageText !== null &&
                             !authentication.expiredWarning && (
                                 <div id="error-message">
                                     <div id="warn-first-line">
                                         <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
                                         <Typography className="susp-msg" variant="body1">
-                                            {error.messageText}
+                                            {errorData.messageText}
                                         </Typography>
                                     </div>
                                     <Typography variant="body2">
-                                        {error.expired && (
+                                        {errorData.expired && (
                                             <p>
                                                 {enterNewPassMsg} <b>{username}</b>
                                             </p>
                                         )}
-                                        {error.invalidCredentials && <p>{invalidPassMsg}</p>}
+                                        {errorData.invalidCredentials && <p>{invalidPassMsg}</p>}
                                     </Typography>
                                 </div>
                             )}
-                        {error.messageText !== undefined &&
-                            error.messageText !== null &&
-                            error.expired &&
+                        {errorData.messageText !== undefined &&
+                            errorData.messageText !== null &&
+                            errorData.expired &&
                             authentication.expiredWarning && (
                                 <div id="warn-message">
                                     <div id="warn-first-line">
@@ -234,7 +234,7 @@ const Login = (props) => {
                                     </Typography>
                                 </div>
                             )}
-                        {!error.expired && (
+                        {!errorData.expired && (
                             <div>
                                 <Typography className="login-typo" variant="subtitle1" gutterBottom component="div">
                                     Login
@@ -248,7 +248,7 @@ const Login = (props) => {
                                     variant="outlined"
                                     data-testid="user"
                                     required
-                                    error={!!error.messageText}
+                                    error={!!errorData.messageText}
                                     inputProps={{ 'data-testid': 'username' }}
                                     fullWidth
                                     id="username"
@@ -266,7 +266,7 @@ const Login = (props) => {
                                         className="formfield"
                                         data-testid="pass"
                                         aria-describedby="my-helper-text"
-                                        error={!!error.messageText}
+                                        error={!!errorData.messageText}
                                         name="password"
                                         inputProps={{ 'data-testid': 'password' }}
                                         type={showPassword ? 'text' : 'password'}
@@ -278,7 +278,7 @@ const Login = (props) => {
                                         label="Password"
                                         endAdornment={
                                             <InputAdornment position="end">
-                                                {error.messageText && <WarningIcon className="errorIcon" />}
+                                                {errorData.messageText && <WarningIcon className="errorIcon" />}
                                                 <IconButton
                                                     className="visibility-icon"
                                                     aria-label="toggle password visibility"
@@ -317,13 +317,13 @@ const Login = (props) => {
                                 </div>
                             </div>
                         )}
-                        {error.expired && (
+                        {errorData.expired && (
                             <div>
                                 <FormControl required fullWidth>
                                     <InputLabel variant="outlined">New Password</InputLabel>
                                     <OutlinedInput
                                         id="newPass"
-                                        error={error.invalidNewPassword}
+                                        error={errorData.invalidNewPassword}
                                         name="newPassword"
                                         data-testid="newPassword"
                                         type={showPassword ? 'text' : 'password'}
@@ -335,7 +335,7 @@ const Login = (props) => {
                                         label="New Password"
                                         endAdornment={
                                             <InputAdornment position="end">
-                                                {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
+                                                {errorData.invalidNewPassword && <WarningIcon className="errorIcon" />}
                                                 <IconButton
                                                     className="visibility-icon"
                                                     aria-label="toggle password visibility"
@@ -355,7 +355,7 @@ const Login = (props) => {
                                         id="component-outlined"
                                         aria-describedby="my-helper-text"
                                         data-testid="repeatNewPassword"
-                                        error={error.invalidNewPassword}
+                                        error={errorData.invalidNewPassword}
                                         name="repeatNewPassword"
                                         type={showPassword ? 'text' : 'password'}
                                         value={repeatNewPassword}
@@ -367,7 +367,7 @@ const Login = (props) => {
                                         label="Repeat New Password"
                                         endAdornment={
                                             <InputAdornment position="end">
-                                                {error.invalidNewPassword && <WarningIcon className="errorIcon" />}
+                                                {errorData.invalidNewPassword && <WarningIcon className="errorIcon" />}
                                                 <IconButton
                                                     className="visibility-icon"
                                                     aria-label="toggle password visibility"

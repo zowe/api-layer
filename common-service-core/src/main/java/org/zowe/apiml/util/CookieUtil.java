@@ -18,34 +18,82 @@ import org.apache.commons.lang3.StringUtils;
 @UtilityClass
 public final class CookieUtil {
 
-    public static String setCookieHeader(String name, String value, String comment, String path, String sameSite,
-                                         Integer maxAge, boolean isHttpOnly, boolean isSecure) {
-        String cookieHeader = String.format(
-            "%s=%s; Comment=%s; Path=%s; SameSite=%s;",
-            name,
-            value,
-            comment,
-            path,
-            sameSite
-        );
+    public static class CookieHeaderBuilder {
+        private final String name;
+        private final String value;
+        private String comment;
+        private String path = "/";
+        private String sameSite = "Strict";
+        private Integer maxAge = null;
+        private boolean isHttpOnly = false;
+        private boolean isSecure = false;
 
-        if (maxAge != null) {
-            cookieHeader += " Max-Age=" + maxAge + ";";
+        public CookieHeaderBuilder(String name, String value) {
+            this.name = name;
+            this.value = value;
         }
 
-        if (isHttpOnly) {
-            cookieHeader += " HttpOnly;";
+        public CookieHeaderBuilder comment(String comment) {
+            this.comment = comment;
+            return this;
         }
 
-        if (isSecure) {
-            cookieHeader += " Secure;";
+        public CookieHeaderBuilder path(String comment) {
+            this.path = comment;
+            return this;
         }
 
-        return cookieHeader;
+        public CookieHeaderBuilder sameSite(String sameSite) {
+            this.sameSite = sameSite;
+            return this;
+        }
+
+        public CookieHeaderBuilder maxAge(Integer maxAge) {
+            this.maxAge = maxAge;
+            return this;
+        }
+
+        public CookieHeaderBuilder httpOnly(boolean isHttpOnly) {
+            this.isHttpOnly = isHttpOnly;
+            return this;
+        }
+
+        public CookieHeaderBuilder secure(boolean isSecure) {
+            this.isSecure = isSecure;
+            return this;
+        }
+
+        public String build() {
+            String cookieHeader = String.format(
+                "%s=%s; Path=%s; SameSite=%s;",
+                name,
+                value,
+                path,
+                sameSite
+            );
+
+            if (comment != null) {
+                cookieHeader += " Comment=" + comment + ";";
+            }
+
+            if (maxAge != null) {
+                cookieHeader += " Max-Age=" + maxAge + ";";
+            }
+
+            if (isHttpOnly) {
+                cookieHeader += " HttpOnly;";
+            }
+
+            if (isSecure) {
+                cookieHeader += " Secure;";
+            }
+
+            return cookieHeader;
+        }
     }
 
     /**
-     * It replace or add cookie into header string value (see header with name "Cookie").
+     * It replaces or add cookie into header string value (see header with name "Cookie").
      *
      * @param cookieHeader original header string value
      * @param name         name of cookie to add or replace

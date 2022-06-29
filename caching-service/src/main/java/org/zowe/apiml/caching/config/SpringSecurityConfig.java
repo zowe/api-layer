@@ -11,23 +11,24 @@
 package org.zowe.apiml.caching.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 
 import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
-public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
+public class SpringSecurityConfig {
 
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
@@ -41,22 +42,25 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
-    @Override
-    public void configure(WebSecurity web) throws Exception {
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
             "/application/health",
             "/application/info",
             "/v3/api-docs"
         };
-        web.ignoring().antMatchers(noSecurityAntMatchers);
 
-        if (isMetricsEnabled) {
-            web.ignoring().antMatchers("/application/hystrix.stream");
-        }
+        return web -> {
+            web.ignoring().antMatchers(noSecurityAntMatchers);
+
+            if (isMetricsEnabled) {
+                web.ignoring().antMatchers("/application/hystrix.stream");
+            }
+        };
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()   // NOSONAR
             .headers().httpStrictTransportSecurity().disable()
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -71,6 +75,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
+
+        return http.build();
     }
 
     private UserDetailsService x509UserDetailsService() {

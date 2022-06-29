@@ -17,16 +17,18 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CertificateAuthenticationProviderTest {
 
     @Test
-    void authenticate() {
+    void givenExistingPrincipal_thenReturnAuthenticated() {
         CertificateAuthenticationProvider cap = new CertificateAuthenticationProvider();
-        Authentication authentication = mock(Authentication.class);
-        cap.authenticate(authentication);
-        verify(authentication, times(1)).setAuthenticated(true);
+        Authentication authentication = mock(PreAuthenticatedAuthenticationToken.class);
+        when(authentication.getPrincipal()).thenReturn("user");
+        Authentication result = cap.authenticate(authentication);
+        assertTrue(result.isAuthenticated());
     }
 
     @Test

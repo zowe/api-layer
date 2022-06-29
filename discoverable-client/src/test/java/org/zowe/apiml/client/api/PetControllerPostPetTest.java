@@ -10,6 +10,7 @@
 package org.zowe.apiml.client.api;
 
 import org.zowe.apiml.client.configuration.ApplicationConfiguration;
+import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
 import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.service.PetService;
@@ -35,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PetController.class})
-@Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
+@Import(value = {SecurityConfiguration.class, SpringComponentsConfiguration.class, ApplicationConfiguration.class})
 class PetControllerPostPetTest {
     @Autowired
     private MockMvc mockMvc;

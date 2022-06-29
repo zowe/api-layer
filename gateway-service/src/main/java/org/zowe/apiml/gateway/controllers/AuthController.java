@@ -190,7 +190,7 @@ public class AuthController {
     @GetMapping(path = PUBLIC_KEYS_PATH)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<?> getPublicKeyUsedForSigning() {
+    public ResponseEntity<Object> getPublicKeyUsedForSigning() {
         JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 
         JWKSet currentKey = new JWKSet();

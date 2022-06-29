@@ -40,50 +40,71 @@ class CookieUtilTest {
     }
 
     @Nested
-    class WhenGetSetCookieHeader {
+    class WhenBuildSetCookieHeader {
         private static final String NAME = "name";
         private static final String VALUE = "value";
         private static final String COMMENT = "comment";
         private static final String PATH = "/";
         private static final String SAME_SITE = "samesite";
+        private static final int MAX_AGE = 1;
 
         @Test
         void givenAllAttributesSet_thenReturnSetCookieWithAttributes() {
-            String setCookieHeader = CookieUtil.setCookieHeader(
-                NAME, VALUE, COMMENT, PATH, SAME_SITE, 1, true, true
-            );
+            String setCookieHeader = new CookieUtil.CookieHeaderBuilder(NAME, VALUE)
+                .comment(COMMENT)
+                .path(PATH)
+                .sameSite(SAME_SITE)
+                .maxAge(MAX_AGE)
+                .httpOnly(true)
+                .secure(true)
+                .build();
 
-            assertEquals(setCookieHeader, String.format("%s=%s; Comment=%s; Path=%s; SameSite=%s; Max-Age=%d; HttpOnly; Secure;",
+            assertEquals(String.format("%s=%s; Path=%s; SameSite=%s; Comment=%s; Max-Age=%d; HttpOnly; Secure;",
                 NAME,
                 VALUE,
-                COMMENT,
                 PATH,
                 SAME_SITE,
-                1
-            ));
+                COMMENT,
+                MAX_AGE
+            ), setCookieHeader);
         }
 
         @Test
         void givenNullMaxAge_thenReturnSetCookieWithNoMaxAge() {
-            String setCookieHeader = CookieUtil.setCookieHeader(
-                NAME, VALUE, COMMENT, PATH, SAME_SITE, null, true, true
-            );
+            String setCookieHeader = new CookieUtil.CookieHeaderBuilder(NAME, VALUE)
+                .comment(COMMENT)
+                .path(PATH)
+                .sameSite(SAME_SITE)
+                .maxAge(null)
+                .httpOnly(true)
+                .secure(true)
+                .build();
             assertThat(setCookieHeader, not(containsString("Max-Age")));
         }
 
         @Test
         void givenNotHttpOnly_thenReturnSetCookieWithoutHttpOnly() {
-            String setCookieHeader = CookieUtil.setCookieHeader(
-                NAME, VALUE, COMMENT, PATH, SAME_SITE, 1, false, true
-            );
+            String setCookieHeader = new CookieUtil.CookieHeaderBuilder(NAME, VALUE)
+                .comment(COMMENT)
+                .path(PATH)
+                .sameSite(SAME_SITE)
+                .maxAge(MAX_AGE)
+                .httpOnly(false)
+                .secure(true)
+                .build();
             assertThat(setCookieHeader, not(containsString("HttpOnly")));
         }
 
         @Test
         void givenNotSecure_thenReturnSetCookieWithoutSecure() {
-            String setCookieHeader = CookieUtil.setCookieHeader(
-                NAME, VALUE, COMMENT, PATH, SAME_SITE, 1, true, false
-            );
+            String setCookieHeader = new CookieUtil.CookieHeaderBuilder(NAME, VALUE)
+                .comment(COMMENT)
+                .path(PATH)
+                .sameSite(SAME_SITE)
+                .maxAge(MAX_AGE)
+                .httpOnly(true)
+                .secure(false)
+                .build();
             assertThat(setCookieHeader, not(containsString("Secure")));
         }
     }
