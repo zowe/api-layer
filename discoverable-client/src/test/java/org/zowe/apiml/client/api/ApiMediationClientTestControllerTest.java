@@ -15,8 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.service.ApiMediationClientService;
 
 import static org.hamcrest.core.Is.is;
@@ -27,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {ApiMediationClientTestController.class})
+@Import(SecurityConfiguration.class)
 class ApiMediationClientTestControllerTest {
     private static final String MEDIATION_CLIENT_URI = "/api/v1/apiMediationClient";
 

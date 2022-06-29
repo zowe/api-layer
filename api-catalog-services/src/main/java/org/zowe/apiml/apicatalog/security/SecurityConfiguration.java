@@ -18,14 +18,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
@@ -81,7 +81,7 @@ public class SecurityConfiguration {
      */
     @Configuration
     @Order(1)
-    public class FilterChainBasicAuthOrTokenOrCertForApiDoc extends WebSecurityConfigurerAdapter {
+    public class FilterChainBasicAuthOrTokenOrCertForApiDoc {
 
         @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
         private boolean verifySslCertificatesOfServices;
@@ -89,21 +89,17 @@ public class SecurityConfiguration {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(gatewayLoginProvider);
-            auth.authenticationProvider(gatewayTokenProvider);
-            auth.authenticationProvider(new CertificateAuthenticationProvider());
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
-                baseConfiguration(http.requestMatchers().antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).and()),
-                authenticationManager()
+                baseConfiguration(http.requestMatchers().antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).and())
             )
                 .authorizeRequests()
-                .antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated();
+                .antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated()
+                .and()
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider)
+                .authenticationProvider(new CertificateAuthenticationProvider());
 
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 if (isAttlsEnabled) {
@@ -118,6 +114,8 @@ public class SecurityConfiguration {
                         .userDetailsService(x509UserDetailsService());
                 }
             }
+
+            return http.build();
         }
 
         private UserDetailsService x509UserDetailsService() {
@@ -136,50 +134,41 @@ public class SecurityConfiguration {
      * Default filter chain to protect all routes with MF credentials.
      */
     @Configuration
-    public class FilterChainBasicAuthOrTokenAllEndpoints extends WebSecurityConfigurerAdapter {
+    public class FilterChainBasicAuthOrTokenAllEndpoints {
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(gatewayLoginProvider);
-            auth.authenticationProvider(gatewayTokenProvider);
-        }
-
-        @Override
-        public void configure(WebSecurity web) {
-            // skip security filters matchers
+        @Bean
+        public WebSecurityCustomizer webSecurityCustomizer() {
             String[] noSecurityAntMatchers = {
                 "/",
                 "/static/**",
                 "/favicon.ico",
                 "/api-doc"
             };
-
-            web.ignoring().antMatchers(noSecurityAntMatchers);
+            return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
         }
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            mainframeCredentialsConfiguration(
-                baseConfiguration(http),
-                authenticationManager()
-            )
+        @Bean
+        public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
+            mainframeCredentialsConfiguration(baseConfiguration(http))
                 .authorizeRequests()
                 .antMatchers("/static-api/**").authenticated()
                 .antMatchers("/containers/**").authenticated()
                 .antMatchers(APIDOC_ROUTES).authenticated()
-                .antMatchers("/application/health", "/application/info").permitAll();
+                .antMatchers("/application/health", "/application/info").permitAll()
+                .and()
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider);
 
             if (isMetricsEnabled) {
                 http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
             }
-
 
             http.authorizeRequests().antMatchers("/application/**").authenticated();
 
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), BasicContentFilter.class);
             }
-
+            return http.build();
         }
     }
 
@@ -212,11 +201,9 @@ public class SecurityConfiguration {
         return http;
     }
 
-    private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http) throws Exception {
         http
             // login endpoint
-            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getServiceLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint(), authenticationManager), ShouldBeAlreadyAuthenticatedFilter.class)
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll()
 
@@ -225,58 +212,66 @@ public class SecurityConfiguration {
             .logout()
             .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
             .logoutSuccessHandler(logoutSuccessHandler())
-
-            // endpoints protection
-            .and()
-            .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+            .and().apply(new CustomSecurityFilters());
 
         return http;
     }
 
-    private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
-        return new LoginFilter(
-            loginEndpoint,
-            handlerInitializer.getSuccessfulLoginHandler(),
-            handlerInitializer.getAuthenticationFailureHandler(),
-            securityObjectMapper,
-            authenticationManager,
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
-    }
+    private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+        @Override
+        public void configure(HttpSecurity http) throws Exception {
+            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
 
-    /**
-     * Secures content with a basic authentication
-     */
-    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-        return new BasicContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
-    }
+            http.addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getServiceLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint(), authenticationManager), ShouldBeAlreadyAuthenticatedFilter.class)
+                .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+        }
 
-    /**
-     * Secures content with a token stored in a cookie
-     */
-    private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
-        return new CookieContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler(),
-            authConfigurationProperties);
-    }
+        private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
+            return new LoginFilter(
+                loginEndpoint,
+                handlerInitializer.getSuccessfulLoginHandler(),
+                handlerInitializer.getAuthenticationFailureHandler(),
+                securityObjectMapper,
+                authenticationManager,
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
 
-    /**
-     * Secures content with a Bearer token
-     */
-    private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
-        return new BearerContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler()
-        );
+        /**
+         * Secures content with a basic authentication
+         */
+        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+            return new BasicContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
+
+        /**
+         * Secures content with a token stored in a cookie
+         */
+        private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
+            return new CookieContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler(),
+                authConfigurationProperties);
+        }
+
+        /**
+         * Secures content with a Bearer token
+         */
+        private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
+            return new BearerContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
     }
 
     @Bean

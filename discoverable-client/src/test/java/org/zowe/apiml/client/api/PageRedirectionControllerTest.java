@@ -10,6 +10,7 @@
 package org.zowe.apiml.client.api;
 
 import org.zowe.apiml.client.configuration.ApplicationConfiguration;
+import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
 import org.zowe.apiml.client.model.RedirectLocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PageRedirectionController.class})
-@Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
+@Import(value = {SecurityConfiguration.class, SpringComponentsConfiguration.class, ApplicationConfiguration.class})
 class PageRedirectionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
