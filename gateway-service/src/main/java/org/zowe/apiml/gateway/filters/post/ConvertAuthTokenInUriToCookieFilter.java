@@ -45,16 +45,14 @@ public class ConvertAuthTokenInUriToCookieFilter extends PostZuulFilter {
 
         // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
         // so specify Set-Cookie header directly
-        String cookieHeader = CookieUtil.setCookieHeader(
-            cp.getCookieName(),
-            context.getRequestQueryParams().get(cp.getCookieName()).get(0),
-            cp.getCookieComment(),
-            cp.getCookiePath(),
-            cp.getCookieSameSite().getValue(),
-            cp.getCookieMaxAge(),
-            true,
-            true
-        );
+        String cookieHeader = new CookieUtil.CookieHeaderBuilder(cp.getCookieName(), context.getRequestQueryParams().get(cp.getCookieName()).get(0))
+            .comment(cp.getCookieComment())
+            .path(cp.getCookiePath())
+            .sameSite(cp.getCookieSameSite().getValue())
+            .maxAge(cp.getCookieMaxAge())
+            .httpOnly(true)
+            .secure(true)
+            .build();
         servletResponse.addHeader("Set-Cookie", cookieHeader);
 
         String url = context.getRequest().getRequestURL().toString();

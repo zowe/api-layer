@@ -22,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.Collections;
 
-import static org.springframework.util.StringUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasLength;
 
 /**
  * Authentication provider implementation for the SafIdt Tokens that gets and verifies the tokens across the Restfull
@@ -53,17 +53,17 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     @Override
     public String generate(String username, char[] password, String applId) {
         Authentication authentication = Authentication.builder()
-                .username(username)
-                .pass(password)
-                .appl(applId)
-                .build();
+            .username(username)
+            .pass(password)
+            .appl(applId)
+            .build();
 
         try {
             ResponseEntity<Token> response = restTemplate.exchange(
-                    URI.create(authenticationUrl),
-                    HttpMethod.POST,
-                    new HttpEntity<>(authentication, HEADERS),
-                    Token.class);
+                URI.create(authenticationUrl),
+                HttpMethod.POST,
+                new HttpEntity<>(authentication, HEADERS),
+                Token.class);
 
             Token responseBody = response.getBody();
             if (responseBody == null || StringUtils.isEmpty(responseBody.getJwt())) {
@@ -78,16 +78,16 @@ public class SafRestAuthenticationService implements SafIdtProvider {
 
     @Override
     public boolean verify(String safToken, String applid) {
-        if (isEmpty(safToken)) {
+        if (!hasLength(safToken)) {
             return false;
         }
 
         try {
             ResponseEntity<Void> response = restTemplate.exchange(
-                    URI.create(verifyUrl),
-                    HttpMethod.POST,
-                    new HttpEntity<>(new Token(safToken, applid), HEADERS),
-                    Void.class);
+                URI.create(verifyUrl),
+                HttpMethod.POST,
+                new HttpEntity<>(new Token(safToken, applid), HEADERS),
+                Void.class);
 
             return response.getStatusCode().is2xxSuccessful();
         } catch (RestClientException e) {

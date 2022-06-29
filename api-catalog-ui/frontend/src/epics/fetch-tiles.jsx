@@ -85,14 +85,15 @@ export const retryMechanism =
             mergeMap((error, i) => {
                 const retryAttempt = i + 1;
                 if (shouldTerminate(error)) {
-                    return throwError(error);
+                    return throwError(() => error);
                 }
                 // used for display Toast retry notification
                 fetchTilesRetry(retryAttempt, maxRetries);
                 if (retryAttempt > maxRetries) {
                     const message = `Could not retrieve tile info after ${maxRetries} attempts. Stopping fetch process.`;
                     log.error(message);
-                    return throwError(new Error(message));
+                    const err = new Error(message);
+                    return throwError(() => err);
                 }
                 const msg = `Attempt ${retryAttempt}: retrying in ${scalingDuration * retryAttempt}s`;
                 log.warn(msg);

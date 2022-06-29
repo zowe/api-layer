@@ -15,12 +15,13 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
-import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -45,30 +46,33 @@ class ApimlRetryableClientTest {
     LoadBalancedRetryFactory retryFactory = mock(LoadBalancedRetryFactory.class);
     ILoadBalancer lb = mock(ILoadBalancer.class);
 
-    @Test
-    void givenServiceId_whenChoose_thenProducesServiceInstance() {
-        ApimlRetryableClient client = new ApimlRetryableClient(
-            httpClient, config, introspector, retryFactory
-        );
-        doReturn(new Server("aaa", 22)).when(lb).chooseServer(any());
-        RequestContextUtils.setInstanceInfo(
-            InstanceInfo.Builder.newBuilder().setAppName("Sonya").build()
-        );
-        client.setLoadBalancer(lb);
+    @Nested
+    class GivenServiceId {
+        @Test
+        void whenChoose_thenProducesServiceInstance() {
+            ApimlRetryableClient client = new ApimlRetryableClient(
+                httpClient, config, introspector, retryFactory
+            );
+            doReturn(new Server("aaa", 22)).when(lb).chooseServer(any());
+            RequestContextUtils.setInstanceInfo(
+                InstanceInfo.Builder.newBuilder().setAppName("Sonya").build()
+            );
+            client.setLoadBalancer(lb);
 
-        ServiceInstance instance = client.choose("service1");
+            ServiceInstance instance = client.choose("service1");
 
-        assertThat(instance, instanceOf(EurekaDiscoveryClient.EurekaServiceInstance.class));
-    }
+            assertThat(instance, instanceOf(EurekaServiceInstance.class));
+        }
 
-    @Test
-    void givenServiceId_whenChooseAndNoInstanceAvailabe_thenReturnNull() {
-        ApimlRetryableClient client = new ApimlRetryableClient(
-            httpClient, config, introspector, retryFactory
-        );
-        doReturn(null).when(lb).chooseServer(any());
-        client.setLoadBalancer(lb);
+        @Test
+        void whenChooseAndNoInstanceAvailable_thenReturnNull() {
+            ApimlRetryableClient client = new ApimlRetryableClient(
+                httpClient, config, introspector, retryFactory
+            );
+            doReturn(null).when(lb).chooseServer(any());
+            client.setLoadBalancer(lb);
 
-        assertThat(client.choose("service1"), is(nullValue()));
+            assertThat(client.choose("service1"), is(nullValue()));
+        }
     }
 }
