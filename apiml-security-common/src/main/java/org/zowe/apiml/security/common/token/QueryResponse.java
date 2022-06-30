@@ -31,6 +31,7 @@ public class QueryResponse implements EntryExpiration {
     private String userId;
     private Date creation;
     private Date expiration;
+    @JsonIgnore
     private List<String> scopes;
     @JsonIgnore
     private Source source;
