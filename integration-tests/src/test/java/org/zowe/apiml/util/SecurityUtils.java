@@ -121,10 +121,9 @@ public class SecurityUtils {
         return cookie;
     }
 
-    public static String personalAccessToken() {
+    public static String personalAccessToken(Set<String> scopes) {
         URI gatewayGenerateAccessTokenEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
-        Set<String> scopes = new HashSet<>();
-        scopes.add("service");
+
 
         SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60, scopes);
 

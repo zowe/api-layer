@@ -24,7 +24,9 @@ import org.zowe.apiml.util.requests.Endpoints;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 
@@ -43,7 +45,9 @@ public class AccessTokenServiceTest {
         void setup() throws Exception {
             SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
             RestAssured.useRelaxedHTTPSValidation();
-            String pat = SecurityUtils.personalAccessToken();
+            Set<String> scopes = new HashSet<>();
+            scopes.add("service");
+            String pat = SecurityUtils.personalAccessToken(scopes);
             bodyContent = new ValidateRequestModel();
             bodyContent.setServiceId("service");
             bodyContent.setToken(pat);
@@ -101,7 +105,9 @@ public class AccessTokenServiceTest {
 
         @Test
         void givenAuthorizedRequest_thenRevokeTokenForUser() {
-            String pat = SecurityUtils.personalAccessToken();
+            Set<String> scopes = new HashSet<>();
+            scopes.add("service");
+            String pat = SecurityUtils.personalAccessToken(scopes);
             bodyContent = new ValidateRequestModel();
             bodyContent.setServiceId("service");
             bodyContent.setToken(pat);
@@ -112,6 +118,31 @@ public class AccessTokenServiceTest {
 //            revoke all tokens fro USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
+            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+                .when().delete(REVOKE_FOR_USER_ENDPOINT)
+                .then().statusCode(204);
+//            validate after revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
+        @Test
+        void givenAuthorizedRequest_thenRevokeTokensForScope() {
+            Set<String> scopes = new HashSet<>();
+            scopes.add("gateway");
+            scopes.add("api-catalog");
+            String pat = SecurityUtils.personalAccessToken(scopes);
+            bodyContent = new ValidateRequestModel();
+            bodyContent.setServiceId("gateway");
+            bodyContent.setToken(pat);
+//            validate before revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+//            revoke all tokens fro USERNAME
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("serviceId", "api-catalog");
             given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
