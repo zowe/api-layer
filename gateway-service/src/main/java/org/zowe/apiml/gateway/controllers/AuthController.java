@@ -71,7 +71,7 @@ public class AuthController {
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
     public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
-    public static final String ACCESS_TOKEN_REVOKE_FOR_USER = "/access-token/revoke/tokens"; // NOSONAR
+    public static final String ACCESS_TOKEN_REVOKE_MULTIPLE = "/access-token/revoke/tokens"; // NOSONAR
     public static final String ACCESS_TOKEN_VALIDATE = "/access-token/validate"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
@@ -97,33 +97,33 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> token) throws Exception {
-        if (tokenProvider.isInvalidated(token.get(TOKEN_KEY), "null_service")) {
+    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> body) throws Exception {
+        if (tokenProvider.isInvalidated(body.get(TOKEN_KEY), "null_service")) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        tokenProvider.invalidateToken(token.get(TOKEN_KEY));
+        tokenProvider.invalidateToken(body.get(TOKEN_KEY));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER)
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
+    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody(required = false) RulesRequestModel rulesRequestModel) throws Exception {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        long timeStamp = rulesRequestModel.getTimeStamp();
+        long timeStamp = rulesRequestModel.getTimestamp();
         tokenProvider.invalidateTokensUsingRules(userId, timeStamp);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER + "/user")
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
     @ResponseBody
     @HystrixCommand
     @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
     public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws Exception {
-        long timeStamp = requestModel.getTimeStamp();
+        long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
         if (userId == null) {
             return badRequest();
@@ -138,12 +138,12 @@ public class AuthController {
         return new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST);
     }
 
-    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER + "/scope")
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
     @ResponseBody
     @HystrixCommand
     @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
     public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws Exception {
-        long timeStamp = requestModel.getTimeStamp();
+        long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
         if (serviceId == null) {
             return badRequest();
@@ -275,6 +275,6 @@ public class AuthController {
     private static class RulesRequestModel {
         private String serviceId;
         private String userId;
-        private long timeStamp;
+        private long timestamp;
     }
 }

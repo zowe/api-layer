@@ -279,7 +279,7 @@ class AuthControllerTest {
                 void thenInvalidateForUser() throws Exception {
                     body = new JSONObject()
                         .put("userId", "user")
-                        .put("timeStamp", "1234");
+                        .put("timestamp", "1234");
                     mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/user")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
@@ -290,7 +290,7 @@ class AuthControllerTest {
                 void thenInvalidateForScope() throws Exception {
                     body = new JSONObject()
                         .put("serviceId", "user")
-                        .put("timeStamp", "1234");
+                        .put("timestamp", "1234");
                     mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/scope")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
