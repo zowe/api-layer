@@ -17,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -293,6 +295,16 @@ class AuthControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_NO_CONTENT));
+                }
+
+                @ParameterizedTest
+                @ValueSource(strings = {"scope", "user"})
+                void thenReturnErrorMessage(String value) throws Exception {
+                    body = new JSONObject();
+                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/" + value)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_BAD_REQUEST)).andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAT607E")));
                 }
             }
         }
