@@ -13,7 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -73,8 +76,12 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
 
         Optional<LoginRequest> credentialFromHeader = getCredentialFromAuthorizationHeader(request);
         Optional<LoginRequest> credentialsFromBody = getCredentialsFromBody(request);
-
         LoginRequest loginRequest = credentialFromHeader.orElse(credentialsFromBody.orElse(null));
+        return doAuth(request, response, loginRequest);
+
+    }
+
+    public Authentication doAuth(HttpServletRequest request, HttpServletResponse response, LoginRequest loginRequest) throws ServletException {
 
         if (loginRequest == null) {
             return null;
@@ -95,7 +102,6 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             resourceAccessExceptionHandler.handleException(request, response, ex);
         }
         return auth;
-
     }
 
 

@@ -20,6 +20,7 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
@@ -111,11 +112,15 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER)
     @ResponseBody
     @HystrixCommand
+    @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
     public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
-        String ruleId = rulesRequestModel.getRuleId();
+        String userId = rulesRequestModel.getRuleId();
         long timeStamp = rulesRequestModel.getTimeStamp();
-        tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
-        return new ResponseEntity<>(HttpStatus.OK);
+        if (timeStamp == 0) {
+            timeStamp = System.currentTimeMillis();
+        }
+        tokenProvider.invalidateTokensUsingRules(userId, timeStamp);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)

@@ -59,8 +59,7 @@ import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
-import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+import org.zowe.apiml.security.common.login.*;
 
 import java.util.Set;
 
@@ -200,10 +199,8 @@ public class NewSecurityConfiguration {
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
-
                 .x509()
                 .and()
-
                 .authenticationProvider(compoundAuthProvider) // for authenticating credentials
                 .authenticationProvider(tokenAuthenticationProvider)
                 .authenticationProvider(new CertificateAuthenticationProvider()) // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
@@ -239,129 +236,57 @@ public class NewSecurityConfiguration {
                     handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
                     x509AuthenticationProvider);
             }
-    }
-
-    @Configuration
-    @RequiredArgsConstructor
-    @Order(8)
-    class AuthenticationProtectedEndpoints extends WebSecurityConfigurerAdapter {
-
-        private final CompoundAuthProvider compoundAuthProvider;
-
-        private final AuthenticationProvider tokenAuthenticationProvider;
-
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
-            auth.authenticationProvider(tokenAuthenticationProvider);
-            auth.authenticationProvider(new CertificateAuthenticationProvider()); // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
         }
 
-        protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                HttpMethod.DELETE, authConfigurationProperties.getRevokeAccessTokenForUser()
-            ).and())
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(8)
+        class AuthenticationProtectedEndpoints {
 
-                .x509()
+            private final CompoundAuthProvider compoundAuthProvider;
 
-                .and()
+            private final AuthenticationProvider tokenAuthenticationProvider;
 
-                .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
-//                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+            @Bean
+            public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
+                    authConfigurationProperties.getRevokeAccessTokenForUser()
+                ).and())
+                    .authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .x509()
+                    .and()
+                    .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                    .apply(new CustomSecurityFilters());
+                return http.build();
+            }
+
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<AccessToken.CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) {
+                    http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                }
+            }
+
+            private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                return new BasicAuthFilter("/**",
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    securityObjectMapper,
+                    authenticationManager,
+                    handlerInitializer.getResourceAccessExceptionHandler());
+            }
 
 
+            private X509AuthenticationFilter x509AuthenticationFilter() {
+                return new X509AuthAwareFilter("/**",
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    x509AuthenticationProvider);
+            }
         }
-
-        private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
-            return new NonCompulsoryAuthenticationProcessingFilter("/**") {
-                @Override
-                public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-
-                    Optional<LoginRequest> credentialFromHeader = LoginFilter.getCredentialFromAuthorizationHeader(request);
-
-                    LoginRequest loginRequest = credentialFromHeader.orElse(credentialFromHeader.orElse(null));
-
-
-        }
-                    if (loginRequest == null) {
-                        return null;
-                    }
-
-                    if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-                        throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
-                    }
-
-                    UsernamePasswordAuthenticationToken authentication
-                        = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
-
-                    Authentication auth = null;
-
-                    try {
-                        auth = http.getSharedObject(AuthenticationManager.class).authenticate(authentication);
-                    } catch (RuntimeException ex) {
-                        handlerInitializer.getResourceAccessExceptionHandler().handleException(request, response, ex);
-                    }
-                    return auth;
-
-                }
-
-
-                /**
-                 * Calls successful login handler
-                 */
-                @Override
-                protected void successfulAuthentication(HttpServletRequest request,
-                                                        HttpServletResponse response,
-                                                        FilterChain chain,
-                                                        Authentication authResult) throws ServletException, IOException {
-                    SecurityContext context = SecurityContextHolder.createEmptyContext();
-                    context.setAuthentication(authResult);
-                    SecurityContextHolder.setContext(context);
-                    chain.doFilter(request, response);
-                }
-
-                /**
-                 * Calls unauthorized handler
-                 */
-                @Override
-                protected void unsuccessfulAuthentication(HttpServletRequest request,
-                                                          HttpServletResponse response,
-                                                          AuthenticationException failed) throws IOException, ServletException {
-                    SecurityContextHolder.clearContext();
-                    handlerInitializer.getAuthenticationFailureHandler().onAuthenticationFailure(request, response, failed);
-                }
-            };
-        }
-
-        private X509AuthenticationFilter x509AuthenticationFilter() {
-            return new X509AuthenticationFilter("/**",
-                null,
-                x509AuthenticationProvider) {
-
-                @Override
-                protected void successfulAuthentication(HttpServletRequest request,
-                                                        HttpServletResponse response,
-                                                        FilterChain chain,
-                                                        Authentication authResult) throws IOException, ServletException {
-                    SecurityContext context = SecurityContextHolder.createEmptyContext();
-                    context.setAuthentication(authResult);
-                    SecurityContextHolder.setContext(context);
-                    chain.doFilter(request, response);
-                }
-
-                @Override
-                protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-                    handlerInitializer.getAuthenticationFailureHandler().onAuthenticationFailure(request, response, failed);
-                }
-            };
-        }
-
-    }
 
 
         /**

@@ -15,6 +15,7 @@ import com.nimbusds.jose.util.Base64;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import org.apache.http.HttpHeaders;
@@ -26,7 +27,6 @@ import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -40,7 +40,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -56,7 +58,8 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
 
-    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();;
+    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    ;
 
     private final static String gatewayScheme = serviceConfiguration.getScheme();
     private final static String gatewayHost = serviceConfiguration.getHost();
@@ -107,9 +110,9 @@ public class SecurityUtils {
         String cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(gatewayLoginEndpoint)
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
@@ -140,7 +143,8 @@ public class SecurityUtils {
         RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         return token;
     }
-    public static String personalAccessTokenWithClientCert() {
+
+    public static String personalAccessTokenWithClientCert(RestAssuredConfig sslConfig) {
         URI gatewayGenerateAccessTokenEndpoint = HttpRequestUtils.getUriFromGateway(GENERATE_ACCESS_TOKEN);
         Set<String> scopes = new HashSet<>();
         scopes.add("service");
@@ -148,7 +152,7 @@ public class SecurityUtils {
         SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60, scopes);
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
 
-        String token = given().config(SslContext.clientCertUser)
+        String token = given().config(sslConfig)
             .body(accessTokenRequest)
             .when()
             .post(gatewayGenerateAccessTokenEndpoint)
@@ -196,18 +200,18 @@ public class SecurityUtils {
 
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-        .when()
+            .when()
             .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY))
-        .then()
+            .then()
             .statusCode(status.value());
     }
 
     public static void assertLogout(String url, String jwtToken, int expectedStatusCode) {
         given()
             .cookie(COOKIE_NAME, jwtToken)
-        .when()
+            .when()
             .post(url)
-        .then()
+            .then()
             .statusCode(is(expectedStatusCode));
     }
 

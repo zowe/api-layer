@@ -7,13 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.config;
+package org.zowe.apiml.security.common.login;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.zowe.apiml.security.common.login.NonCompulsoryAuthenticationProcessingFilter;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
 import javax.servlet.FilterChain;
