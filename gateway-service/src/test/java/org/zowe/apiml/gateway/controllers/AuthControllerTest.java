@@ -299,9 +299,9 @@ class AuthControllerTest {
 
                 @ParameterizedTest
                 @ValueSource(strings = {"scope", "user"})
-                void thenReturnErrorMessage(String value) throws Exception {
+                void thenReturnErrorMessage(String endpoint) throws Exception {
                     body = new JSONObject();
-                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/" + value)
+                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/" + endpoint)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_BAD_REQUEST)).andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAT607E")));

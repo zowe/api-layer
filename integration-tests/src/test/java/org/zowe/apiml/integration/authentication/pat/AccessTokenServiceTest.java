@@ -35,6 +35,7 @@ public class AccessTokenServiceTest {
 
     public static final URI REVOKE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKEN);
     public static final URI REVOKE_FOR_USER_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_USER);
+    public static final URI REVOKE_FOR_SCOPE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_SCOPE);
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
     ValidateRequestModel bodyContent;
 
@@ -144,7 +145,7 @@ public class AccessTokenServiceTest {
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("serviceId", "api-catalog");
             given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
-                .when().delete(REVOKE_FOR_USER_ENDPOINT)
+                .when().delete(REVOKE_FOR_SCOPE_ENDPOINT)
                 .then().statusCode(204);
 //            validate after revocation rule
             given().contentType(ContentType.JSON).body(bodyContent).when()

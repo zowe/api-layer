@@ -67,11 +67,17 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public void invalidateAllTokensForUser(String userId, long timestamp) throws CachingServiceClientException {
         String hashedUserId = getHash(userId);
+        if (timestamp == 0) {
+            timestamp = System.currentTimeMillis();
+        }
         cachingServiceClient.appendList(INVALID_USERS_KEY, new CachingServiceClient.KeyValue(hashedUserId, Long.toString(timestamp)));
     }
 
     public void invalidateAllTokensForService(String serviceId, long timestamp) throws CachingServiceClientException {
         String hashedServiceId = getHash(serviceId);
+        if (timestamp == 0) {
+            timestamp = System.currentTimeMillis();
+        }
         cachingServiceClient.appendList(INVALID_SCOPES_KEY, new CachingServiceClient.KeyValue(hashedServiceId, Long.toString(timestamp)));
     }
 
