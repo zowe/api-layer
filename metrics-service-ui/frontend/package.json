@@ -68,7 +68,7 @@
         "includeFailureMsg": true
     },
     "engines": {
-        "node": "=10.23.3"
+        "node": "14.19.3"
     },
     "browserslist": [
         ">0.2%",
