@@ -32,7 +32,7 @@ public class Endpoints {
     public final static String ROUTED_SERVICE_NOT_VERSIONED = "/gateway/services";
 
     public final static String REVOKE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/revoke";
-    public static final String REVOKE_ACCESS_TOKEN_FOR_USER = "/gateway/auth/access-token/revoke/for-user";
+    public static final String REVOKE_ACCESS_TOKENS_FOR_USER = "/gateway/auth/access-token/revoke/tokens/user";
     public final static String VALIDATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/validate";
     public final static String GENERATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/generate";
 

@@ -9,6 +9,9 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -21,10 +24,12 @@ import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -59,13 +64,14 @@ public class AuthController {
     private final AccessTokenProvider tokenProvider;
 
     private static final String TOKEN_KEY = "token";
+    private static final ObjectWriter writer = new ObjectMapper().writer();
 
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
     public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
-    public static final String ACCESS_TOKEN_REVOKE_FOR_USER = "/access-token/revoke/for-user"; // NOSONAR
+    public static final String ACCESS_TOKEN_REVOKE_FOR_USER = "/access-token/revoke/tokens"; // NOSONAR
     public static final String ACCESS_TOKEN_VALIDATE = "/access-token/validate"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
@@ -99,27 +105,51 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = ACCESS_TOKEN_REVOKE + "/rules")
-    @ResponseBody
-    @HystrixCommand
-    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
-        String ruleId = rulesRequestModel.getRuleId();
-        long timeStamp = rulesRequestModel.getTimeStamp();
-        tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER)
     @ResponseBody
     @HystrixCommand
-    @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
-    public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
-        String userId = rulesRequestModel.getRuleId();
+    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         long timeStamp = rulesRequestModel.getTimeStamp();
-        if (timeStamp == 0) {
-            timeStamp = System.currentTimeMillis();
+        tokenProvider.invalidateTokensUsingRules(userId, timeStamp);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER + "/user")
+    @ResponseBody
+    @HystrixCommand
+    @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
+    public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws Exception {
+        long timeStamp = requestModel.getTimeStamp();
+        String userId = requestModel.getUserId();
+        if (userId == null) {
+            return badRequest();
         }
         tokenProvider.invalidateTokensUsingRules(userId, timeStamp);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    ResponseEntity<String> badRequest() throws JsonProcessingException {
+        final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
+        return new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST);
+    }
+
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_FOR_USER + "/scope")
+    @ResponseBody
+    @HystrixCommand
+    @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
+    public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws Exception {
+        long timeStamp = requestModel.getTimeStamp();
+        String serviceId = requestModel.getServiceId();
+        if (serviceId == null) {
+            return badRequest();
+        }
+        tokenProvider.invalidateTokensUsingRules(serviceId, timeStamp);
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -243,7 +273,8 @@ public class AuthController {
 
     @Data
     private static class RulesRequestModel {
-        private String ruleId;
+        private String serviceId;
+        private String userId;
         private long timeStamp;
     }
 }

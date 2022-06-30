@@ -32,7 +32,7 @@ import static io.restassured.RestAssured.given;
 public class AccessTokenServiceTest {
 
     public static final URI REVOKE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKEN);
-    public static final URI REVOKE_FOR_USER_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKEN_FOR_USER);
+    public static final URI REVOKE_FOR_USER_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_USER);
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
     ValidateRequestModel bodyContent;
 
@@ -111,7 +111,7 @@ public class AccessTokenServiceTest {
                 .then().statusCode(200);
 //            revoke all tokens fro USERNAME
             Map<String, String> requestBody = new HashMap<>();
-            requestBody.put("ruleId", SecurityUtils.USERNAME);
+            requestBody.put("userId", SecurityUtils.USERNAME);
             given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
@@ -133,7 +133,7 @@ public class AccessTokenServiceTest {
                 .then().statusCode(200);
 //            revoke all tokens fro USERNAME
             Map<String, String> requestBody = new HashMap<>();
-            requestBody.put("ruleId", SecurityUtils.USERNAME);
+            requestBody.put("userId", SecurityUtils.USERNAME);
             given().contentType(ContentType.JSON).config(SslContext.clientCertApiml).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(401);

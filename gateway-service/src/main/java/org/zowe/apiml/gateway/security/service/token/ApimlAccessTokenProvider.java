@@ -157,6 +157,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public void invalidateTokensUsingRules(String ruleId, long timeStamp) throws CachingServiceClientException {
         String hashedValue = getHash(ruleId);
+        if (timeStamp == 0) {
+            timeStamp = System.currentTimeMillis();
+        }
         cachingServiceClient.appendList(RULES_KEY, new CachingServiceClient.KeyValue(hashedValue, Long.toString(timeStamp)));
     }
 

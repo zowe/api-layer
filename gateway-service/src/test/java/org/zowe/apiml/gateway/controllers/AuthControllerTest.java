@@ -106,7 +106,7 @@ class AuthControllerTest {
             "\"n\":\"kWp2zRA23Z3vTL4uoe8kTFptxBVFunIoP4t_8TDYJrOb7D1iZNDXVeEsYKp6ppmrTZDAgd-cNOTKLd4M39WJc5FN0maTAVKJc7NxklDeKc4dMe1BGvTZNG4MpWBo-taKULlYUu0ltYJuLzOjIrTHfarucrGoRWqM0sl3z2-fv9k\",\n" +
             "\"kty\":\"RSA\",\n" +
             "\"kid\":\"" + i + "\"" +
-        "}");
+            "}");
     }
 
     private void initPublicKeys(boolean zosmfKeys) {
@@ -270,23 +270,29 @@ class AuthControllerTest {
         @Nested
         class GivenRevokeAccessTokenWithRulesRequest {
 
-            @BeforeEach
-            void setUp() throws JSONException {
-                body = new JSONObject()
-                    .put("ruleId", "user")
-                    .put("timeStamp", "1234");
-            }
-
             @Nested
             class WhenNotInvalidated {
 
                 @Test
-                void thenInvalidate() throws Exception {
-
-                    mockMvc.perform(delete("/gateway/auth/access-token/revoke/rules")
+                void thenInvalidateForUser() throws Exception {
+                    body = new JSONObject()
+                        .put("userId", "user")
+                        .put("timeStamp", "1234");
+                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/user")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
-                        .andExpect(status().is(SC_OK));
+                        .andExpect(status().is(SC_NO_CONTENT));
+                }
+
+                @Test
+                void thenInvalidateForScope() throws Exception {
+                    body = new JSONObject()
+                        .put("serviceId", "user")
+                        .put("timeStamp", "1234");
+                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/scope")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_NO_CONTENT));
                 }
             }
         }
