@@ -98,7 +98,7 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> body) throws Exception {
-        if (tokenProvider.isInvalidated(body.get(TOKEN_KEY), "null_service")) {
+        if (tokenProvider.isInvalidated(body.get(TOKEN_KEY))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         tokenProvider.invalidateToken(body.get(TOKEN_KEY));
@@ -108,13 +108,13 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody(required = false) RulesRequestModel rulesRequestModel) throws Exception {
+    public ResponseEntity<String> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) throws Exception {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         long timeStamp = rulesRequestModel.getTimestamp();
-        tokenProvider.invalidateTokensUsingRules(userId, timeStamp);
+        tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -128,7 +128,7 @@ public class AuthController {
         if (userId == null) {
             return badRequest();
         }
-        tokenProvider.invalidateTokensUsingRules(userId, timeStamp);
+        tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -148,7 +148,7 @@ public class AuthController {
         if (serviceId == null) {
             return badRequest();
         }
-        tokenProvider.invalidateTokensUsingRules(serviceId, timeStamp);
+        tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -160,7 +160,7 @@ public class AuthController {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
         if (tokenProvider.isValidForScopes(token, serviceId) &&
-            !tokenProvider.isInvalidated(token, serviceId)) {
+            !tokenProvider.isInvalidated(token)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

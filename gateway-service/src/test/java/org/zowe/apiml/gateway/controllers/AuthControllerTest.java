@@ -212,7 +212,7 @@ class AuthControllerTest {
                 @Test
                 void validateAccessToken() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
-                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(false);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
                     mockMvc.perform(post("/gateway/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
@@ -222,7 +222,7 @@ class AuthControllerTest {
                 @Test
                 void return401() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
-                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
                     mockMvc.perform(post("/gateway/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
@@ -245,12 +245,12 @@ class AuthControllerTest {
 
                 @Test
                 void thenInvalidateAgain() throws Exception {
-                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
 
                     mockMvc.perform(delete("/gateway/auth/access-token/revoke")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
-                        .andExpect(status().is(SC_OK));
+                        .andExpect(status().is(SC_UNAUTHORIZED));
                 }
             }
 
@@ -259,7 +259,7 @@ class AuthControllerTest {
 
                 @Test
                 void thenInvalidate() throws Exception {
-                    when(tokenProvider.isInvalidated("token", "service")).thenReturn(false);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
 
                     mockMvc.perform(delete("/gateway/auth/access-token/revoke")
                             .contentType(MediaType.APPLICATION_JSON)

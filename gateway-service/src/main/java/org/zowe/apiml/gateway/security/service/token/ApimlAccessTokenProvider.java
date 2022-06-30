@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +45,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final AuthenticationService authenticationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private byte[] salt;
-    private static final String TOKEN_KEY = "invalidTokens";
-    private static final String RULES_KEY = "invalidTokenRules";
+    static final String INVALID_TOKENS_KEY = "invalidTokens";
+    static final String INVALID_USERS_KEY = "invalidUsers";
+    static final String INVALID_SCOPES_KEY = "invalidScopes";
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
@@ -63,25 +62,40 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
 
         String json = objectMapper.writeValueAsString(container);
-        cachingServiceClient.appendList(TOKEN_KEY, new CachingServiceClient.KeyValue(hashedValue, json));
+        cachingServiceClient.appendList(INVALID_TOKENS_KEY, new CachingServiceClient.KeyValue(hashedValue, json));
     }
 
-    public boolean isInvalidated(String token, String serviceId) throws CachingServiceClientException {
+    public void invalidateAllTokensForUser(String userId, long timestamp) throws CachingServiceClientException {
+        String hashedUserId = getHash(userId);
+        cachingServiceClient.appendList(INVALID_USERS_KEY, new CachingServiceClient.KeyValue(hashedUserId, Long.toString(timestamp)));
+    }
+
+    public void invalidateAllTokensForService(String serviceId, long timestamp) throws CachingServiceClientException {
+        String hashedServiceId = getHash(serviceId);
+        cachingServiceClient.appendList(INVALID_SCOPES_KEY, new CachingServiceClient.KeyValue(hashedServiceId, Long.toString(timestamp)));
+    }
+
+    public boolean isInvalidated(String token) throws CachingServiceClientException {
         QueryResponse parsedToken = authenticationService.parseJwtToken(token);
         String hashedToken = getHash(token);
         String hashedUserId = getHash(parsedToken.getUserId());
-        String hashedServiceId = getHash(serviceId);
+        List<String> hashedServiceIds = parsedToken.getScopes().stream().map(this::getHash).collect(Collectors.toList());
 
         Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
         if (cacheMap != null && !cacheMap.isEmpty()) {
-            Map<String, String> invalidTokens = cacheMap.get(TOKEN_KEY);
-            Map<String, String> tokenRules = cacheMap.get(RULES_KEY);
+            Map<String, String> invalidTokens = cacheMap.get(INVALID_TOKENS_KEY);
+            Map<String, String> invalidUsers = cacheMap.get(INVALID_USERS_KEY);
+            Map<String, String> invalidScopes = cacheMap.get(INVALID_SCOPES_KEY);
             Optional<Boolean> isInvalidated = checkInvalidToken(invalidTokens, hashedToken);
             if (!isInvalidated.isPresent()) {
-                isInvalidated = checkRule(tokenRules, hashedUserId, parsedToken);
+                isInvalidated = checkRule(invalidUsers, hashedUserId, parsedToken);
             }
-            if (!isInvalidated.isPresent()) {
-                isInvalidated = checkRule(tokenRules, hashedServiceId, parsedToken);
+            for (String hashedServiceId : hashedServiceIds) {
+                if (!isInvalidated.isPresent()) {
+                    isInvalidated = checkRule(invalidScopes, hashedServiceId, parsedToken);
+                } else {
+                    break;
+                }
             }
             if (isInvalidated.isPresent()) {
                 return isInvalidated.get();
@@ -109,7 +123,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
                 long timestamp = Long.parseLong(timestampStr);
                 return Optional.of(parsedToken.getCreation().getTime() < timestamp);
             } catch (NumberFormatException e) {
-                log.error("Not able to convert invalidTokenRules timestamp value to number.", e);
+                log.error("Not able to convert timestamp value to number.", e);
             }
         }
         return Optional.empty();
@@ -143,24 +157,10 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {
         if (serviceId != null) {
-            Claims jwtClaims = getJwtClaims(jwtToken);
-            if (jwtClaims != null) {
-                Object scopesObject = jwtClaims.get("scopes");
-                if (scopesObject instanceof List<?>) {
-                    List<String>scopes = (List<String>) scopesObject;
-                    return scopes.contains(serviceId.toLowerCase());
-                }
-            }
+            QueryResponse parsedToken = authenticationService.parseJwtToken(jwtToken);
+            return parsedToken.getScopes().contains(serviceId.toLowerCase());
         }
         return false;
-    }
-
-    public void invalidateTokensUsingRules(String ruleId, long timeStamp) throws CachingServiceClientException {
-        String hashedValue = getHash(ruleId);
-        if (timeStamp == 0) {
-            timeStamp = System.currentTimeMillis();
-        }
-        cachingServiceClient.appendList(RULES_KEY, new CachingServiceClient.KeyValue(hashedValue, Long.toString(timeStamp)));
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
