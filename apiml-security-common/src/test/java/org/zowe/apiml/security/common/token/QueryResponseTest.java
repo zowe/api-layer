@@ -12,6 +12,7 @@ package org.zowe.apiml.security.common.token;
 import org.junit.jupiter.api.Test;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,8 +31,8 @@ class QueryResponseTest {
         c.add(Calendar.MINUTE, 2);
         final Date after = c.getTime();
 
-        assertTrue(new QueryResponse("domain", "user", now, before, QueryResponse.Source.ZOWE).isExpired());
-        assertFalse(new QueryResponse("domain", "user", now, after, QueryResponse.Source.ZOWE).isExpired());
+        assertTrue(new QueryResponse("domain", "user", now, before, Collections.emptyList(), QueryResponse.Source.ZOWE).isExpired());
+        assertFalse(new QueryResponse("domain", "user", now, after, Collections.emptyList(), QueryResponse.Source.ZOWE).isExpired());
     }
 
     @Test
