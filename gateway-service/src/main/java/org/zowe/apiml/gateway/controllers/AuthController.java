@@ -97,7 +97,7 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> body) throws Exception {
+    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> body) throws IOException {
         if (tokenProvider.isInvalidated(body.get(TOKEN_KEY))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -108,7 +108,7 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) throws Exception {
+    public ResponseEntity<String> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -125,7 +125,7 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
-    public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws Exception {
+    public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
         if (userId == null) {
@@ -145,7 +145,7 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
-    public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws Exception {
+    public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
         if (serviceId == null) {
@@ -159,7 +159,7 @@ public class AuthController {
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) throws Exception {
+    public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
         if (tokenProvider.isValidForScopes(token, serviceId) &&
@@ -260,12 +260,12 @@ public class AuthController {
     }
 
     private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {
-        StringWriter writer = new StringWriter();
-        PemWriter pemWriter = new PemWriter(writer);
+        StringWriter stringWriter = new StringWriter();
+        PemWriter pemWriter = new PemWriter(stringWriter);
         pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey.getEncoded()));
         pemWriter.flush();
         pemWriter.close();
-        return writer.toString();
+        return stringWriter.toString();
     }
 
     @Data
