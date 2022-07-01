@@ -36,6 +36,7 @@ public class AccessTokenServiceTest {
     public static final URI REVOKE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKEN);
     public static final URI REVOKE_FOR_USER_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_USER);
     public static final URI REVOKE_FOR_SCOPE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_SCOPE);
+    public static final URI REVOKE_OWN_TOKENS_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_OWN_ACCESS_TOKENS);
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
     ValidateRequestModel bodyContent;
 
@@ -121,6 +122,27 @@ public class AccessTokenServiceTest {
             requestBody.put("userId", SecurityUtils.USERNAME);
             given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
+                .then().statusCode(204);
+//            validate after revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
+        //
+        @Test
+        void givenAuthenticatedCall_thenRevokeUserToken() {
+            String pat = SecurityUtils.personalAccessTokenWithClientCert(SslContext.clientCertValid);
+            bodyContent = new ValidateRequestModel();
+            bodyContent.setServiceId("service");
+            bodyContent.setToken(pat);
+//            validate before revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+//            revoke all tokens fro USERNAME
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid)
+                .when().delete(REVOKE_OWN_TOKENS_ENDPOINT)
                 .then().statusCode(204);
 //            validate after revocation rule
             given().contentType(ContentType.JSON).body(bodyContent).when()

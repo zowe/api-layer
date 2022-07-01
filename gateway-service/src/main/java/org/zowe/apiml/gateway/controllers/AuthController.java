@@ -113,9 +113,12 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        long timeStamp = rulesRequestModel.getTimestamp();
+        long timeStamp = 0;
+        if (rulesRequestModel != null) {
+            timeStamp = rulesRequestModel.getTimestamp();
+        }
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")

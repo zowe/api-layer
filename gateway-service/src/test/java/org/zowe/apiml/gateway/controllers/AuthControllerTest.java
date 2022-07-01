@@ -21,6 +21,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -30,6 +33,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -292,6 +296,19 @@ class AuthControllerTest {
                         .put("serviceId", "user")
                         .put("timestamp", "1234");
                     mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/scope")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_NO_CONTENT));
+                }
+
+                @Test
+                void thenInvalidateOwnTokens() throws Exception {
+                    SecurityContext context = new SecurityContextImpl();
+                    context.setAuthentication(TokenAuthentication.createAuthenticated("user", "token"));
+                    SecurityContextHolder.setContext(context);
+                    body = new JSONObject()
+                        .put("timestamp", "1234");
+                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_NO_CONTENT));

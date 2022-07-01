@@ -122,12 +122,16 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
         return Optional.empty();
     }
+
     private Optional<Boolean> checkRule(Map<String, String> tokenRules, String ruleId, QueryResponse parsedToken) {
         if (tokenRules != null && !tokenRules.isEmpty() && tokenRules.containsKey(ruleId)) {
             String timestampStr = tokenRules.get(ruleId);
             try {
                 long timestamp = Long.parseLong(timestampStr);
-                return Optional.of(parsedToken.getCreation().getTime() < timestamp);
+                boolean result = parsedToken.getCreation().getTime() < timestamp;
+                if (result) {
+                    return Optional.of(true);
+                }
             } catch (NumberFormatException e) {
                 log.error("Not able to convert timestamp value to number.", e);
             }
@@ -154,11 +158,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public String getToken(String username, int expirationTime, Set<String> scopes) {
-       expirationTime = Math.min(expirationTime, 90);
-       if (expirationTime <= 0) {
-           expirationTime = 90;
-       }
-       return authenticationService.createLongLivedJwtToken(username, expirationTime, scopes);
+        expirationTime = Math.min(expirationTime, 90);
+        if (expirationTime <= 0) {
+            expirationTime = 90;
+        }
+        return authenticationService.createLongLivedJwtToken(username, expirationTime, scopes);
     }
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {
