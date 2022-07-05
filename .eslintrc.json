@@ -115,7 +115,16 @@
             }
         ],
         "react/no-unused-prop-types": 2,
-        "react/prop-types": 0
+        "react/prop-types": 0,
+        "no-else-return": 0,
+        "import/no-useless-path-segments": 0,
+        "react/no-unused-class-component-methods": 0,
+        "react/sort-comp": 0,
+        "jsx-a11y/label-has-associated-control": 0,
+        "react/jsx-no-bind": 0,
+        "react/jsx-no-useless-fragment": 0,
+        "react/no-unstable-nested-components": 0,
+        "no-promise-executor-return": 0
     },
     "plugins": [
         "flowtype",

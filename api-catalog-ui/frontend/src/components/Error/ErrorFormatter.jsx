@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Typography } from '@material-ui/core';
-import renderHTML from 'react-render-html';
+import htmr from 'htmr';
 import uuidv4 from 'uuid/v4';
 
 const colorDanger = '#de1b1b';
@@ -34,7 +34,7 @@ function extractAjaxError(error) {
 function formaHtmlError(message, color) {
     return (
         <Typography key={uuidv4()} variant="h5" style={{ color, fontWeight: 'semiBold' }}>
-            {renderHTML(message)}
+            {htmr(message)}
         </Typography>
     );
 }
