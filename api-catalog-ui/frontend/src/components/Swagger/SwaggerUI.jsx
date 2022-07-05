@@ -9,7 +9,7 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUiReact, { presets } from 'swagger-ui-react/swagger-ui';
+import SwaggerUi from 'swagger-ui-react';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 

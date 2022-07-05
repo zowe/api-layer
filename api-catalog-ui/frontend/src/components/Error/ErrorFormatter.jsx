@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Text } from 'mineral-ui';
-import renderHTML from 'react-render-html';
+import htmr from 'htmr';
 import uuidv4 from 'uuid/v4';
 
 const colorDanger = '#de1b1b';
