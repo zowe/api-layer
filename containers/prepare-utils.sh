@@ -63,6 +63,11 @@ function cleanUpWorkingFolder {
     mkdir -p "${BASE_DIR}/${WORK_DIR}"
 }
 
+function getIgnoredUiTasks {
+    ui_project=$1
+    echo "-x ${ui_project}:test -x ${ui_project}:npmLint"
+}
+
 function buildPackage {
     service_package=$1
     package_task=$2
