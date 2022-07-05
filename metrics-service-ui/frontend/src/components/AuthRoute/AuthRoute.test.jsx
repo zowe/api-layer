@@ -38,7 +38,7 @@ describe('>>> AuthRoute component tests', () => {
 
         // awaits response from mocked fetch call
         await act(async () => {
-            await new Promise(setImmediate);
+            await new Promise(process.nextTick);
             wrapper.update();
         });
 
@@ -57,7 +57,7 @@ describe('>>> AuthRoute component tests', () => {
 
         // awaits response from mocked fetch call
         await act(async () => {
-            await new Promise(setImmediate);
+            await new Promise(process.nextTick);
             wrapper.update();
         });
         expect(wrapper.find('Route')).toExist();

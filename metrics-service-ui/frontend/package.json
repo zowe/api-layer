@@ -49,6 +49,7 @@
         "jest-enzyme": "7.1.2",
         "jest-html-reporter": "3.4.0",
         "jest-mock": "26.6.2",
+        "jest-watch-typeahead": "0.6.5",
         "nodemon": "2.0.15",
         "npm-force-resolutions": "0.0.10",
         "prettier": "2.3.0"
