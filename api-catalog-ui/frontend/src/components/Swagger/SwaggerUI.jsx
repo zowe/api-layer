@@ -60,6 +60,7 @@ export default class SwaggerUI extends Component {
             this.setSwaggerState();
         }
     }
+
     customPlugins = () => ({
         statePlugins: {
             spec: {

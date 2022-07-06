@@ -31,7 +31,7 @@ import WarningIcon from '@material-ui/icons/Warning';
 import Spinner from '../Spinner/Spinner';
 import './Login.css';
 
-const Login = (props) => {
+function Login(props) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -167,7 +167,7 @@ const Login = (props) => {
                                         label=""
                                         size="medium"
                                         style={{ border: 'none' }}
-                                        onClick={backToLogin}
+                                        onClick={() => backToLogin()}
                                         data-testid="suspendedBackToLogin"
                                     >
                                         RETURN TO LOGIN
@@ -403,7 +403,7 @@ const Login = (props) => {
                                         label=""
                                         size="medium"
                                         style={{ border: 'none' }}
-                                        onClick={backToLogin}
+                                        onClick={() => backToLogin()}
                                         data-testid="backToLogin"
                                         disabled={isFetching}
                                     >
@@ -440,6 +440,6 @@ const Login = (props) => {
             </div>
         </div>
     );
-};
+}
 
 export default Login;

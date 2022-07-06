@@ -23,7 +23,6 @@
     "rules": {
         "class-methods-use-this": 0,
         "header/header": [2, "../../license_header.txt"],
-        "import/no-cycle": 0,
         "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
         "import/no-named-as-default": 1,
         "no-template-curly-in-string": "off",
@@ -48,22 +47,16 @@
         "func-names": 0,
         "space-before-function-paren": 0,
         "comma-dangle": 0,
-        "lines-between-class-members": 0,
-        "max-classes-per-file": 0,
         "max-len": 0,
         "import/extensions": 0,
         "no-underscore-dangle": 0,
         "consistent-return": 0,
         "react/display-name": 1,
         "linebreak-style": "off",
-        "react/destructuring-assignment": 0,
-        "react/function-component-definition": 0,
         "react/react-in-jsx-scope": 0,
         "react/forbid-prop-types": 0,
         "react/no-unescaped-entities": 0,
         "react/prefer-stateless-function": 0,
-        "react/jsx-fragments": 0,
-        "react/jsx-props-no-spreading": 0,
         "react/jsx-filename-extension": [
             1,
             {
@@ -73,6 +66,7 @@
                 ]
             }
         ],
+        "react/no-unused-prop-types": 2,
         "radix": 0,
         "no-shadow": [
             2,
@@ -114,17 +108,15 @@
                 ]
             }
         ],
-        "react/no-unused-prop-types": 2,
         "react/prop-types": 0,
-        "no-else-return": 0,
-        "import/no-useless-path-segments": 0,
-        "react/no-unused-class-component-methods": 0,
+        "react/destructuring-assignment": 0,
+        "react/jsx-props-no-spreading": 0,
         "react/sort-comp": 0,
         "jsx-a11y/label-has-associated-control": 0,
-        "react/jsx-no-bind": 0,
-        "react/jsx-no-useless-fragment": 0,
-        "react/no-unstable-nested-components": 0,
-        "no-promise-executor-return": 0
+        "import/no-cycle": 0,
+
+        "react/no-unused-class-component-methods": 0,
+        "react/no-unstable-nested-components": 0
     },
     "plugins": [
         "flowtype",
