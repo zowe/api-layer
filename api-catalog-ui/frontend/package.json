@@ -44,7 +44,7 @@
         "redux-persist": "6.0.0",
         "redux-persist-transform-filter": "0.0.20",
         "redux-thunk": "2.3.0",
-        "rxjs": "6.6.7",
+        "rxjs": "7.4.0",
         "stream": "0.0.2",
         "swagger-ui-react": "4.12.0",
         "util": "0.12.4",
@@ -108,6 +108,7 @@
         "npm-force-resolutions": "0.0.10",
         "nth-check": "2.0.1",
         "prettier": "2.3.0",
+        "react-error-overlay": "6.0.9",
         "react-testing-library": "5.3.0",
         "rimraf": "3.0.2",
         "source-map-explorer": "2.3.1",
@@ -121,6 +122,9 @@
         "got": "12.1.0"
     },
     "jest": {
+        "transformIgnorePatterns": [
+            "/node_modules/?!(swagger-ui-react/swagger-ui-es-bundle-core.js)"
+        ],
         "collectCoverageFrom": [
             "src/App.{jsx,js}",
             "src/**/*.{jsx,js}",
