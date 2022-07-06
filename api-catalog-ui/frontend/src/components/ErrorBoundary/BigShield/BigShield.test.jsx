@@ -20,10 +20,10 @@ const Child = () => {
 
 describe('>>> BigShield component tests', () => {
     it('Should catches error and renders message', () => {
-        const errorMessage =
+        const errorMessageMatch = new RegExp(
             'An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack\n' +
-            '    at Child\n ' +
-            '   at BigShield';
+                '    at Child\n.*'
+        );
         const container = document.createElement('div');
         act(() => {
             render(
@@ -33,6 +33,6 @@ describe('>>> BigShield component tests', () => {
                 container
             );
         });
-        expect(container.textContent).toMatch(errorMessage);
+        expect(container.textContent).toMatch(errorMessageMatch);
     });
 });
