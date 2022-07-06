@@ -8,14 +8,31 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { ActionsObservable } from 'redux-observable';
-import { of, throwError } from 'rxjs';
+import { ofType } from 'redux-observable';
+import { of, throwError, Observable } from 'rxjs';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { TestScheduler } from 'rxjs/testing';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AjaxError } from 'rxjs/ajax';
 import { fetchTilesPollingEpic } from './fetch-tiles';
 import { fetchTilesFailed, fetchTilesStart, fetchTilesStop, fetchTilesSuccess } from '../actions/catalog-tile-actions';
+
+class ActionsObservable extends Observable {
+    constructor(actionsSubject) {
+        super();
+        this.source = actionsSubject;
+    }
+
+    lift(operator) {
+        const observable = new ActionsObservable(this);
+        observable.operator = operator;
+        return observable;
+    }
+
+    ofType(...keys) {
+        return ofType(...keys)(this);
+    }
+}
 
 const mockResponse = [
     {
@@ -70,7 +87,7 @@ test('it should return a successful result then stop after one cycle', () => {
         scheduler: ts,
     };
 
-    const source = ActionsObservable.from(ts.createColdObservable(marbles1, values));
+    const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
     const actual = fetchTilesPollingEpic(source, null, dependencies);
     ts.expectObservable(actual).toBe(marbles2, values);
     ts.flush();
@@ -95,7 +112,7 @@ test('it should return a successful result then stop after one cycle for a expli
         scheduler: ts,
     };
 
-    const source = ActionsObservable.from(ts.createColdObservable(marbles1, values));
+    const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
     const actual = fetchTilesPollingEpic(source, null, dependencies);
     ts.expectObservable(actual).toBe(marbles2, values);
     ts.flush();
@@ -119,7 +136,7 @@ test('it should request, fail with a terminating FAILED action with an enclosed 
     process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
     process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
     process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
-    const source = ActionsObservable.from(ts.createColdObservable(marbles1, values));
+    const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
     const actual = fetchTilesPollingEpic(source, null, dependencies);
     ts.expectObservable(actual).toBe(marbles2, values);
     ts.flush();
