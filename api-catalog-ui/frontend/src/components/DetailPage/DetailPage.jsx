@@ -22,6 +22,8 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 
 export default class DetailPage extends Component {
+    tileId = null;
+
     componentDidMount() {
         const { fetchTilesStart, match } = this.props;
         fetchTilesStart(match.params.tileID);
@@ -44,8 +46,6 @@ export default class DetailPage extends Component {
         }
         return title;
     };
-
-    tileId = null;
 
     render() {
         const {

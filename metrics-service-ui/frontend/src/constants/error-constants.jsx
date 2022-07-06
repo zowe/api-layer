@@ -7,14 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
+/* eslint-disable max-classes-per-file */
 export const SEND_ERROR = 'SEND_ERROR';
 export const CLEAR_ALL_ERRORS = 'CLEAR_ALL_ERRORS';
 
 export class ApiError {
     key = '';
+
     number = '';
+
     text = '';
+
     messageType = {};
 
     constructor(key, number, messageType, text) {
@@ -27,7 +30,9 @@ export class ApiError {
 
 export class MessageType {
     levelInt = 0;
+
     levelStr = '';
+
     levelChar = '';
 
     constructor(levelInt, levelStr, levelChar) {

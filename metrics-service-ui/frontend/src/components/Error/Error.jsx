@@ -26,10 +26,12 @@ const ErrorTypography = withStyles(() => ({
     },
 }))(Typography);
 
-const Error = (props) => (
-    <ErrorTypography {...props}>
-        <CustomErrorIcon id="erroricon" {...props} /> {props.text}
-    </ErrorTypography>
-);
+function Error(props) {
+    return (
+        <ErrorTypography {...props}>
+            <CustomErrorIcon id="erroricon" {...props} /> {props.text}
+        </ErrorTypography>
+    );
+}
 
 export default Error;

@@ -22,7 +22,7 @@ const CustomIconButton = withStyles((theme) => ({
     },
 }))(IconButton);
 
-const MetricsIconButton = (props) => {
+function MetricsIconButton(props) {
     const dashboard = '/metrics-service/ui/v1/#/dashboard';
     return (
         <CustomIconButton href={dashboard} {...props}>
@@ -38,6 +38,6 @@ const MetricsIconButton = (props) => {
             </svg>
         </CustomIconButton>
     );
-};
+}
 
 export default MetricsIconButton;

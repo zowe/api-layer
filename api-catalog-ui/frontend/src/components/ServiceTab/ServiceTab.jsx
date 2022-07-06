@@ -147,7 +147,7 @@ export default class ServiceTab extends Component {
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
 
         return (
-            <Fragment>
+            <>
                 {currentService === null && (
                     <Text element="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
                         <br />
@@ -228,21 +228,30 @@ export default class ServiceTab extends Component {
 
                                 <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                             </div>
-                            <div className="tabs-container" style={{ width: '100%' }}>
-                                {apiVersions}
-                            </div>
-                            {selectedVersion !== 'diff' ? (
-                                <SwaggerContainer selectedVersion={selectedVersion} />
-                            ) : (
-                                <ServiceVersionDiffContainer
-                                    serviceId={selectedService.serviceId}
-                                    versions={currentService.apiVersions}
-                                />
-                            )}
+
+                            <Typography
+                                data-testid="description"
+                                variant="subtitle2"
+                                style={{ marginTop: '15px', color: 'black' }}
+                            >
+                                {selectedService.description}
+                            </Typography>
+                            <br />
                         </div>
-                    </Fragment>
+                        <div className="tabs-container" style={{ width: '100%' }}>
+                            {apiVersions}
+                        </div>
+                        {selectedVersion !== 'diff' ? (
+                            <SwaggerContainer selectedVersion={selectedVersion} />
+                        ) : (
+                            <ServiceVersionDiffContainer
+                                serviceId={selectedService.serviceId}
+                                versions={currentService.apiVersions}
+                            />
+                        )}
+                    </div>
                 </Shield>
-            </Fragment>
+            </>
         );
     }
 }
