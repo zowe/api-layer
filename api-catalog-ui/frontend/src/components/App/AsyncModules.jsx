@@ -11,7 +11,7 @@ import Loadable from 'react-loadable';
 import { lazy } from 'react';
 
 export const AsyncAppContainer = Loadable({
-    loader: () => import('./AppContainer'),
+    loader: () => import('./AppContainer'), // eslint-disable-line import/no-cycle
     loading: () => null,
 });
 

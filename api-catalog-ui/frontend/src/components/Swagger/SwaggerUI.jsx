@@ -29,8 +29,6 @@ function transformSwaggerToCurrentHost(swagger) {
                 // not a proper url, assume it is an endpoint
                 server.url = location + server;
             }
-            // eslint-disable-next-line no-console
-            console.log(`Resulting server url: ${server.url}`);
         });
     }
 
@@ -83,7 +81,7 @@ export default class SwaggerUI extends Component {
         },
         wrapComponents: {
             // prettier-ignore
-            // eslint-disable-next-line no-shadow
+            // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
             operations: (Original, { React }) => props => { // NOSONAR
                 const { selectedService, selectedVersion } = this.props;
                 return (
