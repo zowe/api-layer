@@ -22,6 +22,11 @@ import Footer from '../Footer/Footer';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
 
 class App extends Component {
+    componentDidMount() {
+        // workaround for missing process polyfill in webpack 5
+        window.process = { ...window.process };
+    }
+
     render() {
         const { history } = this.props;
         const isLoading = true;
