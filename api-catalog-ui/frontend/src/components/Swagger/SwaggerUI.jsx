@@ -39,7 +39,7 @@ export default class SwaggerUI extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            displaySwagger: false,
+            swaggerReady: false,
             swaggerProps: {},
         };
     }
@@ -107,7 +107,7 @@ export default class SwaggerUI extends Component {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
                 this.setState({
-                    displaySwagger: true,
+                    swaggerReady: true,
                     swaggerProps: {
                         dom_id: '#swaggerContainer',
                         spec: swagger,
@@ -122,7 +122,7 @@ export default class SwaggerUI extends Component {
                 const basePath = `${selectedService.serviceId}/${selectedVersion}`;
                 const url = `${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
                 this.setState({
-                    displaySwagger: true,
+                    swaggerReady: true,
                     swaggerProps: {
                         dom_id: '#swaggerContainer',
                         url,
@@ -146,7 +146,7 @@ export default class SwaggerUI extends Component {
 
     render() {
         const { selectedService } = this.props;
-        const { displaySwagger, swaggerProps } = this.state;
+        const { swaggerReady, swaggerProps } = this.state;
         let error = false;
         if (
             selectedService.apiDoc === undefined ||
@@ -157,7 +157,6 @@ export default class SwaggerUI extends Component {
         }
         return (
             <div style={{ width: '100%', background: '#ffffff' }}>
-                {displaySwagger && <SwaggerUi {...swaggerProps} />}
                 {error && (
                     <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
                         <h4 style={{ color: '#de1b1b' }}>
@@ -166,7 +165,11 @@ export default class SwaggerUI extends Component {
                         </h4>
                     </div>
                 )}
-                {!error && <div id="swaggerContainer" data-testid="swagger" />}
+                {!error && swaggerReady && (
+                    <div id="swaggerContainer" data-testid="swagger">
+                        <SwaggerUi {...swaggerProps} />
+                    </div>
+                )}
             </div>
         );
     }
