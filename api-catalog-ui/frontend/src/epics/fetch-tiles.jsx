@@ -132,7 +132,7 @@ export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
                         retryWhen(retryMechanism(scheduler)())
                     )
                 ),
-                takeUntil(action$.ofType(FETCH_TILES_STOP)),
+                takeUntil(action$.pipe(ofType(FETCH_TILES_STOP))),
                 catchError((error) => {
                     if (error.status === 401 || error.status === 403) {
                         return of(userActions.authenticationFailure(error));
