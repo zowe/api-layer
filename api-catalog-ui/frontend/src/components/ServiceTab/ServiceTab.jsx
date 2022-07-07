@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Link, Typography, Tooltip } from '@material-ui/core';
-import { Fragment, Component } from 'react';
+import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
