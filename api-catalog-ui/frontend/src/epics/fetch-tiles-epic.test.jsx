@@ -154,14 +154,20 @@ test('it should fail when runs out of retry attempts', () => {
         c: fetchTilesFailed(retryError),
     };
 
-    const ts = createTestScheduler((actual) => expect(actual).toEqual(expect.arrayContaining([expect.objectContaining({
-       "notification": expect.objectContaining({
-           "value": {
-               "payload": expect.anything(),
-               "type": "FETCH_TILES_FAILED"
-           }
-       })
-   })])));
+    const ts = createTestScheduler((actualResult) =>
+        expect(actualResult).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    notification: expect.objectContaining({
+                        value: {
+                            payload: expect.anything(),
+                            type: 'FETCH_TILES_FAILED',
+                        },
+                    }),
+                }),
+            ])
+        )
+    );
     const dependencies = {
         ajax: () => throwError(retryError),
         scheduler: ts,
@@ -185,7 +191,7 @@ test('it when retries then no response', () => {
         c: fetchTilesFailed(retryError),
     };
 
-    const ts = createTestScheduler((actual) => expect(actual).toEqual([]));
+    const ts = createTestScheduler((actualResult) => expect(actualResult).toEqual([]));
     const dependencies = {
         ajax: () => throwError(retryError),
         scheduler: ts,
