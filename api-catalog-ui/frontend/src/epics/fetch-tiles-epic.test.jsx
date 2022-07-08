@@ -63,11 +63,15 @@ const ajax500Error = new AjaxError(
     null
 );
 
-const deepEquals = (actual, expected) => {
-    expect(actual).toEqual(expected);
+const retryError = {
+    status: 501,
+    response: { message: 'Fetch Failure retry' },
+    responseType: 'json',
 };
 
-const createTestScheduler = () => new TestScheduler(deepEquals);
+const deepEquals = (actual, expected) => expect(actual).toEqual(expected);
+
+const createTestScheduler = (matcher) => new TestScheduler(matcher);
 
 test('it should return a successful result then stop after one cycle', () => {
     const marbles1 = 'a-c|';
@@ -81,7 +85,7 @@ test('it should return a successful result then stop after one cycle', () => {
     process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
     process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
     process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
-    const ts = createTestScheduler();
+    const ts = createTestScheduler(deepEquals);
     const dependencies = {
         ajax: jest.fn(() => of(ajaxResponse)),
         scheduler: ts,
@@ -106,7 +110,7 @@ test('it should return a successful result then stop after one cycle for a expli
     process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
     process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
     process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
-    const ts = createTestScheduler();
+    const ts = createTestScheduler(deepEquals);
     const dependencies = {
         ajax: jest.fn(() => of(ajaxResponse)),
         scheduler: ts,
@@ -127,7 +131,7 @@ test('it should request, fail with a terminating FAILED action with an enclosed 
         c: fetchTilesFailed(ajax500Error),
     };
 
-    const ts = createTestScheduler();
+    const ts = createTestScheduler(deepEquals);
     const dependencies = {
         ajax: () => throwError(ajax500Error),
         scheduler: ts,
@@ -136,6 +140,61 @@ test('it should request, fail with a terminating FAILED action with an enclosed 
     process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
     process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
     process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
+    const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
+    const actual = fetchTilesPollingEpic(source, null, dependencies);
+    ts.expectObservable(actual).toBe(marbles2, values);
+    ts.flush();
+});
+
+test('it should fail when runs out of retry attempts', () => {
+    const marbles1 = '-ac';
+    const marbles2 = '-------------------------------c';
+    const values = {
+        a: fetchTilesStart(''),
+        c: fetchTilesFailed(retryError),
+    };
+
+    const ts = createTestScheduler((actual) => expect(actual).toEqual(expect.arrayContaining([expect.objectContaining({
+       "notification": expect.objectContaining({
+           "value": {
+               "payload": expect.anything(),
+               "type": "FETCH_TILES_FAILED"
+           }
+       })
+   })])));
+    const dependencies = {
+        ajax: () => throwError(retryError),
+        scheduler: ts,
+    };
+
+    process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
+    process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
+    process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
+    process.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES = '0';
+    const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
+    const actual = fetchTilesPollingEpic(source, null, dependencies);
+    ts.expectObservable(actual).toBe(marbles2, values);
+    ts.flush();
+});
+
+test('it when retries then no response', () => {
+    const marbles1 = '-ac';
+    const marbles2 = '-------------------------------c';
+    const values = {
+        a: fetchTilesStart(''),
+        c: fetchTilesFailed(retryError),
+    };
+
+    const ts = createTestScheduler((actual) => expect(actual).toEqual([]));
+    const dependencies = {
+        ajax: () => throwError(retryError),
+        scheduler: ts,
+    };
+
+    process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
+    process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
+    process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
+    process.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES = '1';
     const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
     const actual = fetchTilesPollingEpic(source, null, dependencies);
     ts.expectObservable(actual).toBe(marbles2, values);
