@@ -320,12 +320,17 @@ public class AuthenticationService {
      */
     public QueryResponse parseJwtToken(String jwtToken) {
         Claims claims = getJwtClaims(jwtToken);
-
+        Object scopesObject = claims.get(SCOPES);
+        List<String> scopes = Collections.emptyList();
+        if (scopesObject instanceof List<?>) {
+            scopes = (List<String>) scopesObject;
+        }
         return new QueryResponse(
             claims.get(DOMAIN_CLAIM_NAME, String.class),
             claims.getSubject(),
             claims.getIssuedAt(),
             claims.getExpiration(),
+            scopes,
             QueryResponse.Source.valueByIssuer(claims.getIssuer())
         );
     }

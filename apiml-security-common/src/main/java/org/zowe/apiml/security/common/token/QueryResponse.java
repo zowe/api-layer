@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.cache.EntryExpiration;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Represents the query JSON response with the token information
@@ -30,6 +31,8 @@ public class QueryResponse implements EntryExpiration {
     private String userId;
     private Date creation;
     private Date expiration;
+    @JsonIgnore
+    private List<String> scopes;
     @JsonIgnore
     private Source source;
 

@@ -82,7 +82,7 @@ public class CachingServiceClient {
         try {
             restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + mapKey, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
-            throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + " in a map under " + mapKey + "key, caused by: " + e.getMessage(), e);
+            throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + " in a map under " + mapKey + " key, caused by: " + e.getMessage(), e);
         }
     }
 

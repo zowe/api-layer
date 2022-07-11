@@ -16,6 +16,7 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
 
+import java.util.Collections;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +35,7 @@ class GatewayTokenProviderTest {
 
     @Test
     void shouldAuthenticateValidToken() {
-        when(gatewaySecurityService.query(VALID_TOKEN)).thenReturn(new QueryResponse(DOMAIN, USER, new Date(), new Date(), QueryResponse.Source.ZOWE));
+        when(gatewaySecurityService.query(VALID_TOKEN)).thenReturn(new QueryResponse(DOMAIN, USER, new Date(), new Date(), Collections.emptyList(), QueryResponse.Source.ZOWE));
         TokenAuthentication tokenAuthentication = new TokenAuthentication(VALID_TOKEN);
 
         Authentication processedAuthentication = gatewayTokenProvider.authenticate(tokenAuthentication);
