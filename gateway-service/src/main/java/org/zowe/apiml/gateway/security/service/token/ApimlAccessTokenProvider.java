@@ -158,11 +158,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public String getToken(String username, int expirationTime, Set<String> scopes) {
-        expirationTime = Math.min(expirationTime, 90);
-        if (expirationTime <= 0) {
-            expirationTime = 90;
+        int expiration = Math.min(expirationTime, 90);
+        if (expiration <= 0) {
+            expiration = 90;
         }
-        return authenticationService.createLongLivedJwtToken(username, expirationTime, scopes);
+        return authenticationService.createLongLivedJwtToken(username, expiration, scopes);
     }
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {

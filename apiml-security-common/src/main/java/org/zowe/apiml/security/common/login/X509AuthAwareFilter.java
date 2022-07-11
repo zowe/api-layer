@@ -26,6 +26,7 @@ public class X509AuthAwareFilter extends X509AuthenticationFilter {
     private final AuthenticationFailureHandler failureHandler;
 
     public X509AuthAwareFilter(String endpoint, AuthenticationFailureHandler failureHandler, AuthenticationProvider authenticationProvider) {
+        //no need for success handler implementation, we just need to continue in process chain, this is the reason for lambda rather than pass null
         super(endpoint, ((request, response, authentication) -> {
         }), authenticationProvider);
         this.failureHandler = failureHandler;

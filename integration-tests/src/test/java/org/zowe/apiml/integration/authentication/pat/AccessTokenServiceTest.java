@@ -117,7 +117,7 @@ public class AccessTokenServiceTest {
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(200);
-//            revoke all tokens fro USERNAME
+//            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
             given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
@@ -129,7 +129,6 @@ public class AccessTokenServiceTest {
                 .then().statusCode(401);
         }
 
-        //
         @Test
         void givenAuthenticatedCall_thenRevokeUserToken() {
             String pat = SecurityUtils.personalAccessTokenWithClientCert(SslContext.clientCertValid);
@@ -140,7 +139,7 @@ public class AccessTokenServiceTest {
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(200);
-//            revoke all tokens fro USERNAME
+//            revoke all tokens for USERNAME
             given().contentType(ContentType.JSON).config(SslContext.clientCertValid)
                 .when().delete(REVOKE_OWN_TOKENS_ENDPOINT)
                 .then().statusCode(204);
@@ -163,7 +162,7 @@ public class AccessTokenServiceTest {
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(200);
-//            revoke all tokens fro USERNAME
+//            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("serviceId", "api-catalog");
             given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)

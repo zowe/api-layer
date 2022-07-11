@@ -129,16 +129,11 @@ public class AuthController {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
         if (userId == null) {
-            return badRequest();
+            return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    ResponseEntity<String> badRequest() throws JsonProcessingException {
-        final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
-        return new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
@@ -149,7 +144,7 @@ public class AuthController {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
         if (serviceId == null) {
-            return badRequest();
+            return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
 
@@ -266,6 +261,11 @@ public class AuthController {
         pemWriter.flush();
         pemWriter.close();
         return stringWriter.toString();
+    }
+
+    private ResponseEntity<String> badRequestForPATInvalidation() throws JsonProcessingException {
+        final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
+        return new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST);
     }
 
     @Data

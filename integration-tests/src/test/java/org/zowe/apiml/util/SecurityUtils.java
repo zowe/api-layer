@@ -59,7 +59,6 @@ public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    ;
 
     private final static String gatewayScheme = serviceConfiguration.getScheme();
     private final static String gatewayHost = serviceConfiguration.getHost();

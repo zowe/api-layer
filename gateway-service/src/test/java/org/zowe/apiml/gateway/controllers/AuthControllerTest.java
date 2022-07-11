@@ -279,23 +279,14 @@ class AuthControllerTest {
             @Nested
             class WhenNotInvalidated {
 
-                @Test
-                void thenInvalidateForUser() throws Exception {
+                @ParameterizedTest
+                @ValueSource(strings = {"/gateway/auth/access-token/revoke/tokens/user", "/gateway/auth/access-token/revoke/tokens/scope"})
+                void thenInvalidateForScope(String url) throws Exception {
                     body = new JSONObject()
                         .put("userId", "user")
-                        .put("timestamp", "1234");
-                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/user")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(body.toString()))
-                        .andExpect(status().is(SC_NO_CONTENT));
-                }
-
-                @Test
-                void thenInvalidateForScope() throws Exception {
-                    body = new JSONObject()
                         .put("serviceId", "user")
                         .put("timestamp", "1234");
-                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/scope")
+                    mockMvc.perform(delete(url)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_NO_CONTENT));

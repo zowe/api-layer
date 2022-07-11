@@ -27,6 +27,7 @@ import java.util.Optional;
 public class BasicAuthFilter extends LoginFilter {
 
     public BasicAuthFilter(String authEndpoint, AuthenticationFailureHandler failureHandler, ObjectMapper mapper, AuthenticationManager authenticationManager, ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
+//no need for success handler implementation, we just need to continue in process chain, this is the reason for lambda rather than pass null
         super(authEndpoint, ((request, response, authentication) -> {
         }), failureHandler, mapper, authenticationManager, resourceAccessExceptionHandler);
     }
@@ -34,7 +35,7 @@ public class BasicAuthFilter extends LoginFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         Optional<LoginRequest> credentialFromHeader = LoginFilter.getCredentialFromAuthorizationHeader(request);
-        LoginRequest loginRequest = credentialFromHeader.orElse(credentialFromHeader.orElse(null));
+        LoginRequest loginRequest = credentialFromHeader.orElse(null);
         return doAuth(request, response, loginRequest);
     }
 
