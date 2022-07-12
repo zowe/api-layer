@@ -35,7 +35,6 @@ describe('>>> Dashboard test', () => {
 
         cy.get('#grid-container > div.filtering-container > div > div > input').should('exist');
         cy.contains('Available API services').should('exist');
-
         cy.get('#refresh-api-button')
             .should('exist')
             .click();
@@ -43,7 +42,6 @@ describe('>>> Dashboard test', () => {
         cy.get('.Toastify > div> div')
             .should('have.length', 1)
             .should('contain', 'The refresh of static APIs was successful!');
-
         cy.get('#grid-container > div.filtering-container > div > div > input')
             .as('search')
             .type('API Mediation Layer API');
@@ -84,5 +82,8 @@ describe('>>> Dashboard test', () => {
         cy.contains('API Mediation Layer API').click();
 
         cy.url().should('contain', '/tile/apimediationlayer/');
+        cy.get('#root > div > div.content > div.header > div.right-icons > div').should('exist').click();
+        cy.get('#user-info-text').should('have.length', 1);
+        cy.get('#logout-button').should('have.length', 1).should('contain', 'Log out');
     });
 });
