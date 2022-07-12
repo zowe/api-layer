@@ -13,7 +13,7 @@ import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/core/styles';
 
 import AuthRoute from '../AuthRoute/AuthRouteContainer';
-import { AsyncLoginContainer } from './AsyncModules';
+import { AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
 import Spinner from '../Spinner/Spinner';
 import HeaderContainer from '../Header/HeaderContainer';
 import DashboardContainer from '../Dashboard/DashboardContainer';

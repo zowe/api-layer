@@ -46,8 +46,6 @@ export default class DetailPage extends Component {
         return title;
     };
 
-    tileId = null;
-
     render() {
         const {
             tiles,

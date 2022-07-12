@@ -234,4 +234,8 @@ ext {
         jersey_test_provider_jdk_http      : "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:${jerseyVersion}"
 
     ]
+
+    // for node projects
+    projectNodeVersion = '14.19.3'
+    projectNpmVersion = '8.1.0'
 }

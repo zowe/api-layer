@@ -11,7 +11,8 @@ apply plugin: 'com.github.node-gradle.node'
 
 node {
     download = true
-    version = rootProject.nodejsVersion
+    version = projectNodeVersion
+    npmVersion = projectNpmVersion
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "ci"
     workDir = file("${project.projectDir}/tools/nodejs")

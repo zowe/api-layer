@@ -72,6 +72,7 @@ class WizardNavigation extends Component {
         });
         return navs;
     }
+
     a11yProps = (index) => ({
         id: `vertical-tab-${index}`,
         'aria-controls': `vertical-tabpanel-${index}`,

@@ -51,7 +51,7 @@ const StyledMenu = styled((props) => (
         },
     },
 }));
-const Header = (props) => {
+function Header(props) {
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const { logout } = props;
@@ -127,6 +127,6 @@ const Header = (props) => {
             </div>
         </div>
     );
-};
+}
 
 export default Header;

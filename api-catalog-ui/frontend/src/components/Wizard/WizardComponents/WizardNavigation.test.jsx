@@ -14,14 +14,22 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/extend-expect';
 import WizardNavigation from './WizardNavigation';
 
-jest.mock('../YAML/YAMLVisualizerContainer', () => () => {
-    const YAMLVisualizerContainerMock = 'YAMLVisualizerContainerMock';
-    return <YAMLVisualizerContainerMock />;
-});
-jest.mock('./WizardInputsContainer', () => () => {
-    const WizardInputsContainer = 'WizardInputsContainerMock';
-    return <WizardInputsContainer />;
-});
+jest.mock(
+    '../YAML/YAMLVisualizerContainer',
+    () =>
+        function () {
+            const YAMLVisualizerContainerMock = 'YAMLVisualizerContainerMock';
+            return <YAMLVisualizerContainerMock />;
+        }
+);
+jest.mock(
+    './WizardInputsContainer',
+    () =>
+        function () {
+            const WizardInputsContainer = 'WizardInputsContainerMock';
+            return <WizardInputsContainer />;
+        }
+);
 describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
         const next = jest.fn();

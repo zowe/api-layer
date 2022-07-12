@@ -9,6 +9,6 @@
  */
 
 import { withRouter } from 'react-router-dom';
-import App from './App';
+import App from './App'; // eslint-disable-line import/no-cycle
 
 export default withRouter(App);
