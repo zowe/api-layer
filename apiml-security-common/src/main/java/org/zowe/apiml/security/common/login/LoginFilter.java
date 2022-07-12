@@ -13,7 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -73,8 +76,12 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
 
         Optional<LoginRequest> credentialFromHeader = getCredentialFromAuthorizationHeader(request);
         Optional<LoginRequest> credentialsFromBody = getCredentialsFromBody(request);
-
         LoginRequest loginRequest = credentialFromHeader.orElse(credentialsFromBody.orElse(null));
+        return doAuth(request, response, loginRequest);
+
+    }
+
+    public Authentication doAuth(HttpServletRequest request, HttpServletResponse response, LoginRequest loginRequest) throws ServletException {
 
         if (loginRequest == null) {
             return null;
@@ -95,7 +102,6 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             resourceAccessExceptionHandler.handleException(request, response, ex);
         }
         return auth;
-
     }
 
 
@@ -127,16 +133,16 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @param request the http request
      * @return the decoded credentials
      */
-    private Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
+    public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
         return Optional.ofNullable(
-            request.getHeader(HttpHeaders.AUTHORIZATION)
-        ).filter(
-            header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
-        ).map(
-            header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
-        )
+                request.getHeader(HttpHeaders.AUTHORIZATION)
+            ).filter(
+                header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
+            ).map(
+                header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
+            )
             .filter(base64Credentials -> !base64Credentials.isEmpty())
-            .map(this::mapBase64Credentials);
+            .map(LoginFilter::mapBase64Credentials);
     }
 
     /**
@@ -145,7 +151,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @param base64Credentials the credentials encoded in base64
      * @return the decoded credentials in {@link LoginRequest}
      */
-    private LoginRequest mapBase64Credentials(String base64Credentials) {
+    private static LoginRequest mapBase64Credentials(String base64Credentials) {
         String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
         int i = credentials.indexOf(':');
         if (i > 0) {

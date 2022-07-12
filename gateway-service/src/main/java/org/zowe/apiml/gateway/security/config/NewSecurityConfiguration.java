@@ -59,8 +59,7 @@ import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
-import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+import org.zowe.apiml.security.common.login.*;
 
 import java.util.Set;
 
@@ -200,10 +199,8 @@ public class NewSecurityConfiguration {
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
-
                 .x509()
                 .and()
-
                 .authenticationProvider(compoundAuthProvider) // for authenticating credentials
                 .authenticationProvider(tokenAuthenticationProvider)
                 .authenticationProvider(new CertificateAuthenticationProvider()) // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
@@ -239,9 +236,56 @@ public class NewSecurityConfiguration {
                     handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
                     x509AuthenticationProvider);
             }
-
-
         }
+
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(8)
+        class AuthenticationProtectedEndpoints {
+
+            private final CompoundAuthProvider compoundAuthProvider;
+
+            @Bean
+            public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
+                    authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**"
+                ).and())
+                    .authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .x509()
+                    .and()
+                    .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                    .apply(new CustomSecurityFilters());
+                return http.build();
+            }
+
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<AccessToken.CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) {
+                    http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                }
+            }
+
+            private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                return new BasicAuthFilter("/**",
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    securityObjectMapper,
+                    authenticationManager,
+                    handlerInitializer.getResourceAccessExceptionHandler());
+            }
+
+
+            private X509AuthenticationFilter x509AuthenticationFilter() {
+                return new X509AuthAwareFilter("/**",
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    x509AuthenticationProvider);
+            }
+        }
+
 
         /**
          * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.

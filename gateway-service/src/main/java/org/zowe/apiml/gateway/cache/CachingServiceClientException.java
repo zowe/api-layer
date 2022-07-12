@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.cache;
 
-public class CachingServiceClientException extends Exception {
+public class CachingServiceClientException extends RuntimeException {
 
     public CachingServiceClientException(String message, Throwable cause) {
         super(message, cause);

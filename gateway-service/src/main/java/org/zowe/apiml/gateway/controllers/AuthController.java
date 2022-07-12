@@ -9,6 +9,9 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -20,10 +23,13 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -58,12 +64,14 @@ public class AuthController {
     private final AccessTokenProvider tokenProvider;
 
     private static final String TOKEN_KEY = "token";
+    private static final ObjectWriter writer = new ObjectMapper().writer();
 
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
     public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
+    public static final String ACCESS_TOKEN_REVOKE_MULTIPLE = "/access-token/revoke/tokens"; // NOSONAR
     public static final String ACCESS_TOKEN_VALIDATE = "/access-token/validate"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
@@ -89,32 +97,68 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> token) throws Exception {
-        if (tokenProvider.isInvalidated(token.get(TOKEN_KEY), "null_service")) {
+    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> body) throws IOException {
+        if (tokenProvider.isInvalidated(body.get(TOKEN_KEY))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        tokenProvider.invalidateToken(token.get(TOKEN_KEY));
+        tokenProvider.invalidateToken(body.get(TOKEN_KEY));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = ACCESS_TOKEN_REVOKE + "/rules")
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> revokeAccessTokensWithRules(@RequestBody() RulesRequestModel rulesRequestModel) throws Exception {
-        String ruleId = rulesRequestModel.getRuleId();
-        long timeStamp = rulesRequestModel.getTimeStamp();
-        tokenProvider.invalidateTokensUsingRules(ruleId, timeStamp);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<String> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        long timeStamp = 0;
+        if (rulesRequestModel != null) {
+            timeStamp = rulesRequestModel.getTimestamp();
+        }
+        tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
+    @ResponseBody
+    @HystrixCommand
+    @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
+    public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
+        long timeStamp = requestModel.getTimestamp();
+        String userId = requestModel.getUserId();
+        if (userId == null) {
+            return badRequestForPATInvalidation();
+        }
+        tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
+    @ResponseBody
+    @HystrixCommand
+    @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
+    public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
+        long timeStamp = requestModel.getTimestamp();
+        String serviceId = requestModel.getServiceId();
+        if (serviceId == null) {
+            return badRequestForPATInvalidation();
+        }
+        tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) throws Exception {
+    public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
         if (tokenProvider.isValidForScopes(token, serviceId) &&
-            !tokenProvider.isInvalidated(token, serviceId)) {
+            !tokenProvider.isInvalidated(token)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -211,12 +255,17 @@ public class AuthController {
     }
 
     private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {
-        StringWriter writer = new StringWriter();
-        PemWriter pemWriter = new PemWriter(writer);
+        StringWriter stringWriter = new StringWriter();
+        PemWriter pemWriter = new PemWriter(stringWriter);
         pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey.getEncoded()));
         pemWriter.flush();
         pemWriter.close();
-        return writer.toString();
+        return stringWriter.toString();
+    }
+
+    private ResponseEntity<String> badRequestForPATInvalidation() throws JsonProcessingException {
+        final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
+        return new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST);
     }
 
     @Data
@@ -227,7 +276,8 @@ public class AuthController {
 
     @Data
     private static class RulesRequestModel {
-        private String ruleId;
-        private long timeStamp;
+        private String serviceId;
+        private String userId;
+        private long timestamp;
     }
 }

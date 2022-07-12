@@ -11,6 +11,7 @@ package org.zowe.apiml.integration.authentication.pat;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,10 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.requests.Endpoints;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 
@@ -29,6 +34,9 @@ import static io.restassured.RestAssured.given;
 public class AccessTokenServiceTest {
 
     public static final URI REVOKE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKEN);
+    public static final URI REVOKE_FOR_USER_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_USER);
+    public static final URI REVOKE_FOR_SCOPE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_SCOPE);
+    public static final URI REVOKE_OWN_TOKENS_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_OWN_ACCESS_TOKENS);
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
     ValidateRequestModel bodyContent;
 
@@ -39,7 +47,9 @@ public class AccessTokenServiceTest {
         void setup() throws Exception {
             SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
             RestAssured.useRelaxedHTTPSValidation();
-            String pat = SecurityUtils.personalAccessToken();
+            Set<String> scopes = new HashSet<>();
+            scopes.add("service");
+            String pat = SecurityUtils.personalAccessToken(scopes);
             bodyContent = new ValidateRequestModel();
             bodyContent.setServiceId("service");
             bodyContent.setToken(pat);
@@ -86,17 +96,101 @@ public class AccessTokenServiceTest {
 
     }
 
+    @BeforeAll
+    static void setupSsl() throws Exception {
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+        RestAssured.useRelaxedHTTPSValidation();
+    }
+
     @Nested
     class GivenClientCertAsAuthTest {
 
         @Test
-        void thenReturnValidToken() throws Exception {
-            SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-            RestAssured.useRelaxedHTTPSValidation();
-            String pat = SecurityUtils.personalAccessTokenWithClientCert();
+        void givenAuthorizedRequest_thenRevokeTokenForUser() {
+            Set<String> scopes = new HashSet<>();
+            scopes.add("service");
+            String pat = SecurityUtils.personalAccessToken(scopes);
             bodyContent = new ValidateRequestModel();
-            bodyContent.setToken(pat);
             bodyContent.setServiceId("service");
+            bodyContent.setToken(pat);
+//            validate before revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+//            revoke all tokens for USERNAME
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("userId", SecurityUtils.USERNAME);
+            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+                .when().delete(REVOKE_FOR_USER_ENDPOINT)
+                .then().statusCode(204);
+//            validate after revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
+        @Test
+        void givenAuthenticatedCall_thenRevokeUserToken() {
+            String pat = SecurityUtils.personalAccessTokenWithClientCert(SslContext.clientCertValid);
+            bodyContent = new ValidateRequestModel();
+            bodyContent.setServiceId("service");
+            bodyContent.setToken(pat);
+//            validate before revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+//            revoke all tokens for USERNAME
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid)
+                .when().delete(REVOKE_OWN_TOKENS_ENDPOINT)
+                .then().statusCode(204);
+//            validate after revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
+        @Test
+        void givenAuthorizedRequest_thenRevokeTokensForScope() {
+            Set<String> scopes = new HashSet<>();
+            scopes.add("gateway");
+            scopes.add("api-catalog");
+            String pat = SecurityUtils.personalAccessToken(scopes);
+            bodyContent = new ValidateRequestModel();
+            bodyContent.setServiceId("gateway");
+            bodyContent.setToken(pat);
+//            validate before revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+//            revoke all tokens for USERNAME
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("serviceId", "api-catalog");
+            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+                .when().delete(REVOKE_FOR_SCOPE_ENDPOINT)
+                .then().statusCode(204);
+//            validate after revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(401);
+        }
+
+        @Test
+        void givenNotAuthorizedCall_thenDontAllowToRevokeTokensForUser() {
+            String pat = SecurityUtils.personalAccessTokenWithClientCert(SslContext.clientCertValid);
+            bodyContent = new ValidateRequestModel();
+            bodyContent.setServiceId("service");
+            bodyContent.setToken(pat);
+//            validate before revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+//            revoke all tokens fro USERNAME
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("userId", SecurityUtils.USERNAME);
+            given().contentType(ContentType.JSON).config(SslContext.clientCertApiml).body(requestBody)
+                .when().delete(REVOKE_FOR_USER_ENDPOINT)
+                .then().statusCode(401);
+//            validate after revocation rule
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(200);

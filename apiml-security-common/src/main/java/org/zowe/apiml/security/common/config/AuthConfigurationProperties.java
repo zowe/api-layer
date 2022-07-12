@@ -44,6 +44,8 @@ public class AuthConfigurationProperties {
 
     private String gatewayAccessTokenEndpoint = "/gateway/api/v1/auth/access-token/generate";
 
+    private String revokeMultipleAccessTokens = "/gateway/auth/access-token/revoke/tokens";
+
     private String gatewayRefreshEndpointOldFormat = "/api/v1/gateway/auth/refresh";
     private String gatewayRefreshEndpoint = "/gateway/api/v1/auth/refresh";
 
