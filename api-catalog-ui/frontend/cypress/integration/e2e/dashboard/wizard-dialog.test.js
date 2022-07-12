@@ -18,7 +18,6 @@ function login() {
 }
 
 describe('>>> Wizard Dialog test', () => {
-
     it('should test enabler 1', () => {
         login();
 
@@ -26,12 +25,19 @@ describe('>>> Wizard Dialog test', () => {
 
         cy.get('#onboard-wizard-button').should('exist').click();
         cy.get('[role="menu"] > .MuiListItem-button').should('have.length', 6);
+        cy.get('[role="menu"] > .MuiListItem-button').eq(0).should('contain', 'Plain Java Enabler');
+        cy.get('[role="menu"] > .MuiListItem-button').eq(1).should('contain', 'Spring Enabler');
+        cy.get('[role="menu"] > .MuiListItem-button').eq(2).should('contain', 'Micronaut Enabler');
+        cy.get('[role="menu"] > .MuiListItem-button').eq(3).should('contain', 'Node JS Enabler');
+        cy.get('[role="menu"] > .MuiListItem-button').eq(4).should('contain', 'Static Onboarding');
+        cy.get('[role="menu"] > .MuiListItem-button').eq(5).should('contain', 'Direct Call to Eureka');
+
         cy.get('[role="menu"] > .MuiListItem-button').eq(0).click();
         cy.get('[role="dialog"]').should('exist');
 
         cy.get('#yaml-browser').should('exist');
         cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler1.yaml');
-        
+
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
         cy.get('[role="dialog"]').should('not.exist');
@@ -49,7 +55,7 @@ describe('>>> Wizard Dialog test', () => {
 
         cy.get('#yaml-browser').should('exist');
         cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler2.yaml');
-        
+
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
         cy.get('[role="dialog"]').should('not.exist');
@@ -67,7 +73,7 @@ describe('>>> Wizard Dialog test', () => {
 
         cy.get('#yaml-browser').should('exist');
         cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler3.yaml');
-        
+
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
         cy.get('[role="dialog"]').should('not.exist');
@@ -77,7 +83,7 @@ describe('>>> Wizard Dialog test', () => {
         login();
 
         cy.get('.header').should('exist');
-        
+
         cy.get('#onboard-wizard-button').should('exist').click();
         cy.get('[role="menu"] > .MuiListItem-button').should('have.length', 6);
         cy.get('[role="menu"] > .MuiListItem-button').eq(3).click();
@@ -85,7 +91,7 @@ describe('>>> Wizard Dialog test', () => {
 
         cy.get('#yaml-browser').should('exist');
         cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler4.yaml');
-        
+
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
         cy.get('[role="dialog"]').should('not.exist');
@@ -103,7 +109,7 @@ describe('>>> Wizard Dialog test', () => {
 
         cy.get('#yaml-browser').should('exist');
         cy.get('#yaml-browser').attachFile('enabler-test-files/testEnabler5.yaml');
-        
+
         cy.get('#yaml-file-text').should('exist');
         cy.get('#wizard-cancel-button').click();
         cy.get('[role="dialog"]').should('not.exist');
