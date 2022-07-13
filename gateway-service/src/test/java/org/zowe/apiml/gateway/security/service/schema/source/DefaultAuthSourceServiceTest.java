@@ -38,13 +38,14 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
     private JwtAuthSourceService jwtAuthSourceService;
     private X509AuthSourceService x509MFAuthSourceService;
+    private PATAuthSourceService patAuthSourceService;
     private DefaultAuthSourceService serviceUnderTest;
 
     @BeforeEach
     void init() {
         jwtAuthSourceService = mock(JwtAuthSourceService.class);
         x509MFAuthSourceService = mock(X509AuthSourceService.class);
-        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService);
+        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService);
         x509Certificate = mock(X509Certificate.class);
     }
 

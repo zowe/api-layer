@@ -167,7 +167,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {
         if (serviceId != null) {
-            QueryResponse parsedToken = authenticationService.parseJwtToken(jwtToken);
+            QueryResponse parsedToken = authenticationService.parseJwtWithSignature(jwtToken);
             return parsedToken.getScopes().contains(serviceId.toLowerCase());
         }
         return false;

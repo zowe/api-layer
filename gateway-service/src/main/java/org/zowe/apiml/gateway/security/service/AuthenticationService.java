@@ -13,6 +13,9 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.impl.DefaultJws;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -117,7 +120,14 @@ public class AuthenticationService {
             .setId(UUID.randomUUID().toString())
             .addClaims(claims)
             .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
+    }
 
+    public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
+        Jwt parsedJwt = Jwts.parserBuilder().setSigningKey(jwtSecurityInitializer.getJwtSecret()).build().parse(jwt);
+        if(parsedJwt instanceof DefaultJws) {
+            return parseQueryResponse(((DefaultJws<DefaultClaims>) parsedJwt).getBody());
+        }
+       return null;
     }
 
     /**
@@ -320,6 +330,10 @@ public class AuthenticationService {
      */
     public QueryResponse parseJwtToken(String jwtToken) {
         Claims claims = getJwtClaims(jwtToken);
+        return parseQueryResponse(claims);
+    }
+
+    public QueryResponse parseQueryResponse(Claims claims) {
         Object scopesObject = claims.get(SCOPES);
         List<String> scopes = Collections.emptyList();
         if (scopesObject instanceof List<?>) {

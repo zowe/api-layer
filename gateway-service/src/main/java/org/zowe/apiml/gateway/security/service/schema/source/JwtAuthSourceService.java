@@ -9,9 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -23,42 +21,51 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 /**
  * Implementation of AuthSourceService which supports JWT token as authentication source.
  */
 @Service
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-public class JwtAuthSourceService implements AuthSourceService {
+@RequiredArgsConstructor
+public class JwtAuthSourceService extends TokenAuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
-    @Autowired
-    private AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
-    /**
-     * Core method of the interface. Gets source of authentication (JWT token) from request.
-     * <p>
-     * @return Optional<AuthSource> which hold original source of authentication (JWT token)
-     * or Optional.empty() when no authentication source found.
-     */
-    public Optional<AuthSource> getAuthSourceFromRequest() {
-        final RequestContext context = RequestContext.getCurrentContext();
-        logger.log(MessageType.DEBUG, "Getting JWT token from request.");
-        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-        logger.log(MessageType.DEBUG, String.format("JWT token %s in request.", jwtToken.isPresent() ? "found" : "not found"));
+    @Override
+    protected ApimlLogger getLogger() {
+        return logger;
+    }
 
-        return jwtToken.map(JwtAuthSource::new);
+    @Override
+    public Predicate<QueryResponse.Source> getPredicate() {
+        return QueryResponse.Source.ZOWE_PAT::equals;
+    }
+
+    @Override
+    public Function<String, AuthSource> getMapper() {
+        return JwtAuthSource::new;
+    }
+
+    @Override
+    public AuthenticationService getAuthenticationService() {
+        return authenticationService;
     }
 
     /**
      * Validates authentication source (JWT token) using method of {@link AuthenticationService}
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token)
      * @return true if token is valid, false otherwise
      */
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
-            String jwtToken = ((JwtAuthSource)authSource).getRawSource();
+            String jwtToken = ((JwtAuthSource) authSource).getRawSource();
             logger.log(MessageType.DEBUG, "Validating JWT token.");
             return jwtToken != null && authenticationService.validateJwtToken(jwtToken).isAuthenticated();
         }
@@ -67,12 +74,13 @@ public class JwtAuthSourceService implements AuthSourceService {
 
     /**
      * Validates authentication source (JWT token) using method of {@link AuthenticationService}
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token)
      * @return authentication source in parsed form
      */
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
-            String jwtToken = ((JwtAuthSource)authSource).getRawSource();
+            String jwtToken = ((JwtAuthSource) authSource).getRawSource();
             logger.log(MessageType.DEBUG, "Parsing JWT token.");
             QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken);
             return queryResponse == null ? null : new JwtAuthSource.Parsed(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
@@ -83,12 +91,13 @@ public class JwtAuthSourceService implements AuthSourceService {
 
     /**
      * Generates LTPA token from current source of authentication (JWT token) using method of {@link AuthenticationService}
+     *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token)
      * @return LTPA token
      */
     public String getLtpaToken(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
-            String jwtToken = ((JwtAuthSource)authSource).getRawSource();
+            String jwtToken = ((JwtAuthSource) authSource).getRawSource();
             return jwtToken == null ? null : authenticationService.getLtpaTokenWithValidation(jwtToken);
         }
         return null;
@@ -96,6 +105,6 @@ public class JwtAuthSourceService implements AuthSourceService {
 
     @Override
     public String getJWT(AuthSource authSource) {
-        return ((JwtAuthSource)authSource).getRawSource();
+        return ((JwtAuthSource) authSource).getRawSource();
     }
 }

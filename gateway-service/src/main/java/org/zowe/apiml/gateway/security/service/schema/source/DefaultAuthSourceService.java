@@ -47,9 +47,12 @@ public class DefaultAuthSourceService implements AuthSourceService {
      * @param jwtAuthSourceService  {@link JwtAuthSourceService} service which process authentication source of type JWT
      * @param x509AuthSourceService {@link X509AuthSourceService} service which process authentication source of type client certificate
      */
-    public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService, @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService) {
+    public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
+                                    @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
+                                    PATAuthSourceService patAuthSourceService) {
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
+        map.put(AuthSourceType.PAT, patAuthSourceService);
     }
 
     /**
@@ -67,6 +70,10 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         AuthSourceService service = getService(AuthSourceType.JWT);
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
+        if (!authSource.isPresent()) {
+            service = getService(AuthSourceType.PAT);
+            authSource = service.getAuthSourceFromRequest();
+        }
         if (!authSource.isPresent()) {
             service = getService(AuthSourceType.CLIENT_CERT);
             authSource = service.getAuthSourceFromRequest();
