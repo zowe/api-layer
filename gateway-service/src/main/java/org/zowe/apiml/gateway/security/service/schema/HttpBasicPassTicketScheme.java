@@ -65,7 +65,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        final long before = System.currentTimeMillis();
 
         if (authSource == null || authSource.getRawSource() == null) {
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
@@ -104,11 +103,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
         final String value = "Basic " + encoded;
 
-        final long defaultExpirationTime = before + authConfigurationProperties.getPassTicket().getTimeout() * 1000L;
-        final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
-        final Long expireAt = Math.min(defaultExpirationTime, expirationTime);
-
-        return new PassTicketCommand(value, cookieName, expireAt);
+        return new PassTicketCommand(value, cookieName, System.currentTimeMillis());
     }
 
     @Override
