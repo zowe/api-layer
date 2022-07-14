@@ -13,11 +13,13 @@ package org.zowe.apiml.gateway.ribbon;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.zowe.apiml.gateway.ribbon.RequestContextUtils.DEBUG_INFO_KEY;
 import static org.zowe.apiml.gateway.ribbon.RequestContextUtils.INSTANCE_INFO_KEY;
 
 class RequestContextUtilsTest {
@@ -54,5 +56,29 @@ class RequestContextUtilsTest {
         RequestContext.getCurrentContext().set(INSTANCE_INFO_KEY, info);
         RequestContextUtils.setInstanceInfo(null);
         assertThat(RequestContextUtils.getInstanceInfo().isPresent(), is(false));
+    }
+
+    @Nested
+    class GivenDebugInfo {
+
+        @Nested
+        class WhenAddDifferentDebugInfo {
+            @Test
+            void thenStoreInfo() {
+                RequestContextUtils.addDebugInfo("debugInfo1");
+                RequestContextUtils.addDebugInfo("debugInfo2");
+                assertThat(RequestContext.getCurrentContext().get(DEBUG_INFO_KEY), is("debugInfo1|debugInfo2"));
+            }
+        }
+
+        @Nested
+        class WhenAddDuplicatedDebugInfo {
+            @Test
+            void thenDontStoreDuplicatedRecord() {
+                RequestContextUtils.addDebugInfo("debugInfo1");
+                RequestContextUtils.addDebugInfo("debugInfo1");
+                assertThat(RequestContext.getCurrentContext().get(DEBUG_INFO_KEY), is("debugInfo1"));
+            }
+        }
     }
 }
