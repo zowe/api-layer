@@ -13,6 +13,9 @@ import io.restassured.RestAssured;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
@@ -55,8 +58,20 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             Arguments.of("noSignJwt", SC_OK),
             Arguments.of("publicKeySignedJwt", SC_OK),
             Arguments.of("changedRealmJwt", SC_OK),
-            Arguments.of("changedUserJwt", SC_OK)
+            Arguments.of("changedUserJwt", SC_OK),
+            Arguments.of("personalAccessToken", SC_OK)
         );
+    }
+    static Set<String> scopes = new HashSet<>();
+    static String jwt;
+    static String pat;
+    static {
+        scopes.add("dcpassticket");
+        jwt = gatewayToken();
+        pat = personalAccessToken(scopes);
+    }
+    private static Stream<String> accessTokens(){
+        return Stream.of(jwt);
     }
     @BeforeEach
     void setUp() {
@@ -68,10 +83,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     class WhenUsingPassticketAuthenticationScheme {
         @Nested
         class ResultContainsPassticketAndNoJwt {
-            @Test
-            void givenJwtInBearerHeader() {
-                String jwt = gatewayToken();
-
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            void givenJwtInBearerHeader(String jwt) {
                 verifyPassTicketHeaders(
                     given()
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
@@ -82,9 +96,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
             }
 
-            @Test
-            void givenJwtInCookie() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            void givenJwtInCookie(String jwt) {
 
                 verifyPassTicketHeaders(
                     given()
@@ -107,9 +121,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 );
             }
 
-            @Test
-            void givenJwtInHeaderAndCookie() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            void givenJwtInHeaderAndCookie(String jwt) {
 
                 verifyPassTicketHeaders(
                     given()
@@ -122,9 +136,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
             }
 
-            @Test
-            void givenBasicAndJwtInCookie() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            void givenBasicAndJwtInCookie(String jwt) {
 
                 verifyPassTicketHeaders(
                     given()
@@ -157,9 +171,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
         @Nested
         class VerifyPassTicketIsOk {
-            @Test
-            void givenCorrectToken() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            void givenCorrectToken(String jwt) {
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
                 .when()
@@ -173,10 +187,11 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
         @Nested
         class VerifyPassTicketIsInvalid {
-            @Test
+
             @MainframeDependentTests // The appl id needs to be verified against actual ESM
-            void givenIssuedForIncorrectApplId() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            void givenIssuedForIncorrectApplId(String jwt) {
                 String expectedMessage = "Error on evaluation of PassTicket";
 
                 URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(

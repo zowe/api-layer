@@ -135,11 +135,11 @@ public class GatewayRequests {
         }
     }
 
-    public JsonResponse authenticatedRoute(String path) {
+    public JsonResponse authenticatedRoute(String path, String jwt) {
         try {
             log.info("GatewayRequests#authenticatedRoute - {} Instance: {}", path, instance);
 
-            String jwt = gatewayToken();
+
             log.info("GatewayRequests#authenticatedRoute - {} Token: {}", path, jwt);
 
             return requests.getJsonResponse(getGatewayUriWithPath(path), jwt);

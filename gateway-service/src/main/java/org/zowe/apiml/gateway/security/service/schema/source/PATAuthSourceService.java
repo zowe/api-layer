@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -64,7 +65,9 @@ public class PATAuthSourceService extends TokenAuthSourceService {
         RequestContext context = RequestContext.getCurrentContext();
         String serviceId = (String) context.get(SERVICE_ID_KEY);
         boolean validForScopes = tokenProvider.isValidForScopes(token, serviceId);
+        logger.log(MessageType.DEBUG, "PAT is %s for scope: %s ", validForScopes ? "valid" : "not valid", serviceId);
         boolean invalidate = tokenProvider.isInvalidated(token);
+        logger.log(MessageType.DEBUG, "PAT was %s", invalidate ? "invalidated" : "not invalidated");
         try {
             return validForScopes && !invalidate;
         } catch (SignatureException e) {
@@ -86,18 +89,22 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public String getLtpaToken(AuthSource authSource) {
-        return getJWT(authSource);
+        String zosmfToken = getJWT(authSource);
+        AuthSource.Origin origin = getTokenOrigin(zosmfToken);
+        if (AuthSource.Origin.ZOWE.equals(origin)) {
+            zosmfToken = authenticationService.getLtpaToken(zosmfToken);
+        }
+        return zosmfToken;
     }
 
     @Override
     public String getJWT(AuthSource authSource) {
         PATAuthSource.Parsed parsed = (PATAuthSource.Parsed) parse(authSource);
-        String zosmfToken = tokenService.createJwtTokenWithoutCredentials(parsed.getUserId());
+        return tokenService.createJwtTokenWithoutCredentials(parsed.getUserId());
+    }
+
+    public AuthSource.Origin getTokenOrigin(String zosmfToken) {
         QueryResponse response = authenticationService.parseJwtToken(zosmfToken);
-        AuthSource.Origin origin = AuthSource.Origin.valueByIssuer(response.getSource().name());
-        if (AuthSource.Origin.ZOWE.equals(origin)) {
-            zosmfToken = authenticationService.getLtpaToken(zosmfToken);
-        }
-        return zosmfToken;
+        return AuthSource.Origin.valueByIssuer(response.getSource().name());
     }
 }

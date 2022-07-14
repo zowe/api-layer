@@ -68,7 +68,7 @@ public class ZosmfScheme implements IAuthenticationScheme {
         AuthSource.Parsed parsedAuthSource;
         try {
             // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
-            if (AuthSource.AuthSourceType.CLIENT_CERT.equals(authSource.getType())) {
+            if (AuthSource.AuthSourceType.CLIENT_CERT.equals(authSource.getType()) || AuthSource.AuthSourceType.PAT.equals(authSource.getType())) {
                 authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
             }
             parsedAuthSource = authSourceService.parse(authSource);
@@ -82,9 +82,6 @@ public class ZosmfScheme implements IAuthenticationScheme {
             } else if (AuthSource.Origin.ZOWE.equals(parsedAuthSource.getOrigin())) {
                 logger.log(MessageType.DEBUG, "User use Zowe own JWT token, for communication with z/OSMF there should be LTPA token, use it.");
                 cookieValue = authSourceService.getLtpaToken(authSource);
-            } else if (AuthSource.Origin.ZOWE_PAT.equals(parsedAuthSource.getOrigin())) {
-                logger.log(MessageType.DEBUG, "User use Zowe personal access token, for communication with z/OSMF, it will need to translate it.");
-                cookieValue = authSourceService.getJWT(authSource);
             }
         } catch (TokenNotValidException e) {
             logger.log(MessageType.DEBUG, e.getLocalizedMessage());

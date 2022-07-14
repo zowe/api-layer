@@ -23,11 +23,14 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 
 @zOSMFAuthTest
 @DiscoverableClientDependentTest
@@ -110,6 +113,24 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                     .header("x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
                     .statusCode(200);
             }
+        }
+    }
+
+    @Nested
+    class GivenPAT {
+        @Test
+        void translateIntoJWTAndSendToService() {
+            Set<String> scopes = new HashSet<>();
+            scopes.add("zowejwt");
+            String jwt = personalAccessToken(scopes);
+            given()
+                .config(SslContext.tlsWithoutCert)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .when()
+                .get(URL)
+                .then()
+                .body("headers.cookie", startsWith("apimlAuthenticationToken="))
+                .statusCode(200);
         }
     }
 
