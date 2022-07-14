@@ -2,6 +2,22 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.2.3 (2022-07-14)`
+
+* Feature:  revoke PAT by admin (#2476) ([e4d42a9](https://github.com/zowe/api-layer/commit/e4d42a9)), closes [#2476](https://github.com/zowe/api-layer/issues/2476)
+* Feature:  Caching Service can store invalidated token rules (#2460) ([055aac9](https://github.com/zowe/api-layer/commit/055aac9)), closes [#2460](https://github.com/zowe/api-layer/issues/2460)
+* Feature:  exchange client certificate for SAF IDT (#2455) ([303087c](https://github.com/zowe/api-layer/commit/303087c)), closes [#2455](https://github.com/zowe/api-layer/issues/2455) [#2384](https://github.com/zowe/api-layer/issues/2384)
+* Feature:  Fix SAF IDT scheme and service (#2224) ([7772401](https://github.com/zowe/api-layer/commit/7772401)), closes [#2224](https://github.com/zowe/api-layer/issues/2224)
+* Feature:  generate personal access token (#2452) ([0e39aa7](https://github.com/zowe/api-layer/commit/0e39aa7)), closes [#2452](https://github.com/zowe/api-layer/issues/2452)
+* Feature:  Limit scope of Personal Access Token (#2456) ([cc0aba4](https://github.com/zowe/api-layer/commit/cc0aba4)), closes [#2456](https://github.com/zowe/api-layer/issues/2456)
+* Feature:  revoke personal access token (#2422) ([c7f79d5](https://github.com/zowe/api-layer/commit/c7f79d5)), closes [#2422](https://github.com/zowe/api-layer/issues/2422)
+* Feature:  Validate ServiceId with Endpoint (#2413) ([9f3825f](https://github.com/zowe/api-layer/commit/9f3825f)), closes [#2413](https://github.com/zowe/api-layer/issues/2413)
+* Feature:  Support of expired password in ZAAS client (#2404) ([4eab709](https://github.com/zowe/api-layer/commit/4eab709)), closes [#2404](https://github.com/zowe/api-layer/issues/2404)
+
+
+* Bugfix:  Optimize image builds (#2445) ([e220cbd](https://github.com/zowe/api-layer/commit/e220cbd)), closes [#2445](https://github.com/zowe/api-layer/issues/2445)
+* Bugfix:  recovering after TCP/IP stack was restarted (#2421) ([a851b8f](https://github.com/zowe/api-layer/commit/a851b8f)), closes [#2421](https://github.com/zowe/api-layer/issues/2421)
+
 ## `2.1.0 (2022-05-31)`
 
 * Feature:  Add trivial schema files for lib components. Update manifests to remove build metadata (#2379) ([6eba58f](https://github.com/zowe/api-layer/commit/6eba58f)), closes [#2379](https://github.com/zowe/api-layer/issues/2379)
