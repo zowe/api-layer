@@ -27,6 +27,32 @@ public interface Storage {
     KeyValue create(String serviceId, KeyValue toCreate);
 
     /**
+     * Store new KeyValue pair in the storage. The entry will be stored in a map under a specific map key.
+     *
+     * @param serviceId Id of the service to store the value for
+     * @param mapKey key of the specific map underneath the key-value pair should be stored
+     * @param toCreate  KeyValue pair to be created.
+     */
+    KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) throws StorageException;
+
+    /**
+     * Return all the items in the specific map for a specific service.
+     *
+     * @param serviceId Id of the service to load all key/value pairs
+     * @param mapKey key of the specific map to return
+     * @return Map with the key/value pairs or null if there is none existing.
+     */
+    Map<String, String> getAllMapItems(String serviceId, String mapKey) throws StorageException;
+
+    /**
+     * Return all the items in all the maps for specific service
+     *
+     * @param serviceId Id of the service to load all key/value pairs
+     * @return Map of all lists with the key/value pairs or null if there is none existing.
+     */
+    Map<String, Map<String, String>> getAllMaps(String serviceId) throws StorageException;
+
+    /**
      * Returns the keys associated with the provided keys.
      *
      * @param serviceId Id of the service to read value for

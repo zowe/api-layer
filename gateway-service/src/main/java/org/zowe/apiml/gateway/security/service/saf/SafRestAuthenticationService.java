@@ -9,23 +9,20 @@
  */
 package org.zowe.apiml.gateway.security.service.saf;
 
-import com.netflix.zuul.context.RequestContext;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
+import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.net.URI;
-import java.util.Optional;
+import java.util.Collections;
 
-import static org.springframework.util.StringUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasLength;
 
 /**
  * Authentication provider implementation for the SafIdt Tokens that gets and verifies the tokens across the Restfull
@@ -37,84 +34,82 @@ import static org.springframework.util.StringUtils.isEmpty;
  * - apiml.security.saf.urls.verify - URL to verify the validity of the token
  */
 @RequiredArgsConstructor
-@Slf4j
 public class SafRestAuthenticationService implements SafIdtProvider {
+
     private final RestTemplate restTemplate;
-    private final AuthenticationService authenticationService;
-    private final PassTicketService passTicketService;
+
+    static final HttpHeaders HEADERS = new HttpHeaders();
+
+    static {
+        HEADERS.setContentType(MediaType.APPLICATION_JSON);
+        HEADERS.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+    }
 
     @Value("${apiml.security.saf.urls.authenticate}")
     String authenticationUrl;
     @Value("${apiml.security.saf.urls.verify}")
     String verifyUrl;
-    @Value("${apiml.security.zosmf.applid:IZUDFLT}")
-    protected String zosmfApplId;
 
     @Override
     public String generate(String username, char[] password, String applId) {
-        final RequestContext context = RequestContext.getCurrentContext();
-        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-        if (!jwtToken.isPresent()) {
-            throw new SafIdtException("Provided no JWT token");
-        }
-
-        TokenAuthentication tokenAuthentication = authenticationService.validateJwtToken(jwtToken.get());
-        if (!tokenAuthentication.isAuthenticated()) {
-            throw new SafIdtException("Provided invalid JWT token");
-        }
+        Authentication authentication = Authentication.builder()
+            .username(username)
+            .pass(password)
+            .appl(applId)
+            .build();
 
         try {
-            Authentication authentication = new Authentication();
-            authentication.setJwt(jwtToken.get());
-            authentication.setUsername(username);
-            String passTicket = passTicketService.generate(username, zosmfApplId);
-            log.debug("Generated passticket: {}", passTicket);
-            authentication.setPass(passTicket);
+            ResponseEntity<Token> response = restTemplate.exchange(
+                URI.create(authenticationUrl),
+                HttpMethod.POST,
+                new HttpEntity<>(authentication, HEADERS),
+                Token.class);
 
-            ResponseEntity<Token> re = restTemplate.postForEntity(URI.create(authenticationUrl), authentication, Token.class);
-
-            if (!re.getStatusCode().is2xxSuccessful()) {
-                throw new SafIdtException("ZSS authentication service has not returned the Identity token");
-            }
-
-            Token responseBody = re.getBody();
-            if (responseBody == null) {
+            Token responseBody = response.getBody();
+            if (responseBody == null || StringUtils.isEmpty(responseBody.getJwt())) {
                 throw new SafIdtException("ZSS authentication service has not returned the Identity token");
             }
 
             return responseBody.getJwt();
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden | IRRPassTicketGenerationException e) {
+        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden e) {
             throw new SafIdtAuthException("Authentication to ZSS failed", e);
         }
     }
 
     @Override
-    public boolean verify(String safToken, String applId) {
-        if (isEmpty(safToken)) {
+    public boolean verify(String safToken, String applid) {
+        if (!hasLength(safToken)) {
             return false;
         }
 
         try {
-            Token token = new Token();
-            token.setJwt(safToken);
+            ResponseEntity<Void> response = restTemplate.exchange(
+                URI.create(verifyUrl),
+                HttpMethod.POST,
+                new HttpEntity<>(new Token(safToken, applid), HEADERS),
+                Void.class);
 
-            ResponseEntity<String> re = restTemplate.postForEntity(URI.create(verifyUrl), token, String.class);
-
-            return re.getStatusCode().is2xxSuccessful();
-        } catch (HttpClientErrorException.Unauthorized e) {
+            return response.getStatusCode().is2xxSuccessful();
+        } catch (RestClientException e) {
             return false;
         }
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Token {
         String jwt;
+        String appl;
     }
 
-    @Data
+    @lombok.Value
+    @Builder
     public static class Authentication {
-        String jwt;
         String username;
-        String pass;
+        @JsonSerialize(using = StdArraySerializers.CharArraySerializer.class)
+        char[] pass;
+        String appl;
     }
+
 }

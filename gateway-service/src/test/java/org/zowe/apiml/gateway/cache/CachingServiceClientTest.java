@@ -10,15 +10,23 @@
 
 package org.zowe.apiml.gateway.cache;
 
-import org.junit.jupiter.api.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CachingServiceClientTest {
@@ -44,7 +52,7 @@ class CachingServiceClientTest {
         @Test
         void createWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClientException.class,() -> underTest.create(new CachingServiceClient.KeyValue("Britney", "Spears")));
+            assertThrows(CachingServiceClientException.class, () -> underTest.create(new CachingServiceClient.KeyValue("Britney", "Spears")));
         }
     }
 
@@ -60,7 +68,7 @@ class CachingServiceClientTest {
         @Test
         void updateWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClientException.class,() -> underTest.update(new CachingServiceClient.KeyValue("Britney", "Spears")));
+            assertThrows(CachingServiceClientException.class, () -> underTest.update(new CachingServiceClient.KeyValue("Britney", "Spears")));
         }
     }
 
@@ -98,6 +106,7 @@ class CachingServiceClientTest {
     @Nested
     class givenDeleteOperation {
         private String keyToDelete = "reee";
+
         @Test
         void deleteWithoutProblem() {
             assertDoesNotThrow(() -> underTest.delete(keyToDelete));
@@ -107,8 +116,67 @@ class CachingServiceClientTest {
         @Test
         void deleteWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClientException.class,() -> underTest.delete(keyToDelete));
+            assertThrows(CachingServiceClientException.class, () -> underTest.delete(keyToDelete));
         }
+    }
+
+    @Nested
+    class GivenAppendListTest {
+        ResponseEntity<Map<String, Map<String, String>>> response;
+
+        @BeforeEach
+        void setup() {
+            ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
+                new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
+                };
+            response = (ResponseEntity<Map<String, Map<String, String>>>) mock(ResponseEntity.class);
+            when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), eq(responseType))).thenReturn(response);
+        }
+
+        @Test
+        void whenClientReturnsBody_thenParseTheResponse() throws CachingServiceClientException, JsonProcessingException {
+            String key = "token";
+            ApimlAccessTokenProvider.AccessTokenContainer container = new ApimlAccessTokenProvider.AccessTokenContainer(null, key, null, null, null, null);
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, String> tokens = new HashMap<>();
+            String json = mapper.writeValueAsString(container);
+            tokens.put(key, json);
+            Map<String, Map<String, String>> responseBody = new HashMap<>();
+            responseBody.put("tokens", tokens);
+            when(response.getBody()).thenReturn(responseBody);
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
+            assertEquals(json, parsedResponseBody.get("tokens").get(key));
+        }
+
+        @Test
+        void whenClientReturnsEmptyBody_thenReturnNull() throws CachingServiceClientException {
+            Map<String, Map<String, String>> responseBody = new HashMap<>();
+            when(response.getBody()).thenReturn(responseBody);
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
+            assertNull(parsedResponseBody);
+        }
+
+        @Test
+        void whenClientReturnsNotOk_thenThrowException() {
+            when(response.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+            assertThrows(CachingServiceClientException.class, () -> underTest.readAllMaps());
+        }
+
+        @Test
+        void whenResponseBodyIsNull_thenReturnNull() throws CachingServiceClientException {
+            when(response.getBody()).thenReturn(null);
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
+            assertNull(parsedResponseBody);
+        }
+    }
+
+    @Test
+    void whenClientThrowsException_thenTranslateException() {
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class))).thenThrow(new RestClientException("error"));
+        assertThrows(CachingServiceClientException.class, () -> underTest.appendList("mapKey", new CachingServiceClient.KeyValue()));
     }
 
 

@@ -51,7 +51,7 @@ const ServiceNameHeader = withStyles((theme) => ({
     },
 }))(Link);
 
-const Header = (props) => {
+function Header(props) {
     const theme = useTheme();
     const classes = useStyles();
 
@@ -75,6 +75,6 @@ const Header = (props) => {
             </Tooltip>
         </div>
     );
-};
+}
 
 export default Header;

@@ -9,7 +9,9 @@ const amountOfVersions = process.argv[5];
 const branchToMerge = process.argv[6];
 
 (async function () {
-    const changes = execSync(`conventional-changelog -r ${amountOfVersions}`).toString();
+    let convChangeLog = `git fetch --unshallow --tags origin ${branchToMerge} --quiet && git checkout origin/${branchToMerge} --quiet && conventional-changelog -r ${amountOfVersions}`;
+
+    const changes = execSync(convChangeLog).toString();
 
     const lines = changes.split(/\r?\n/);
     const addedFeatures = lines.filter(line => {

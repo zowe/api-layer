@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.infinispan.storage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.infinispan.lock.api.ClusteredLock;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -17,16 +18,24 @@ import org.zowe.apiml.caching.service.StorageException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class InfinispanStorage implements Storage {
 
 
     private final ConcurrentMap<String, KeyValue> cache;
+    private final ConcurrentMap<String, Map<String, String>> tokenCache;
+    private final ClusteredLock lock;
 
-    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache) {
+    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
         this.cache = cache;
+        this.tokenCache = tokenCache;
+        this.lock = lock;
     }
 
     @Override
@@ -40,6 +49,52 @@ public class InfinispanStorage implements Storage {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
         return null;
+    }
+
+    @Override
+    public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
+                try {
+                    String cacheKey = serviceId + mapKey;
+                    log.info("Storing the item into token cache: {} -> {}|{}", cacheKey, toCreate.getKey(), toCreate.getValue());
+                    Map<String, String> tokenCacheItem = tokenCache.get(cacheKey);
+                    if (tokenCacheItem == null) {
+                        tokenCacheItem = new HashMap<>();
+                    }
+                    tokenCacheItem.put(toCreate.getKey(), toCreate.getValue());
+                    tokenCache.put(cacheKey, tokenCacheItem);
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+        try {
+            complete.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof StorageException) {
+                throw (StorageException) e.getCause();
+            } else {
+                log.error("Unexpected error while acquiring the lock ", e);
+                throw e;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getAllMapItems(String serviceId, String mapKey) {
+        log.info("Reading all records from token cache for service {} under the {} key.", serviceId, mapKey);
+        return tokenCache.get(serviceId + mapKey);
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getAllMaps(String serviceId) {
+        log.info("Reading all records from token cache for service {} ", serviceId);
+        // filter all maps which belong given service and remove the service name from key names.
+        return tokenCache.entrySet().stream().filter(
+            entry -> entry.getKey().startsWith(serviceId))
+            .collect(Collectors.toMap(e -> e.getKey().substring(serviceId.length()), Map.Entry::getValue));
     }
 
     @Override

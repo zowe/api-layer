@@ -36,7 +36,7 @@ ext {
     javaxServletApiVersion = '4.0.1'
     jaxbApiVersion = '2.3.1'
     jerseyVersion = '2.26'
-    jettyWebSocketClientVersion = '9.4.43.v20210629'
+    jettyWebSocketClientVersion = '9.4.48.v20220622'
     jjwtVersion = '0.11.2'
     jjwtFullVersion = '0.9.1'
     jsonPathVersion = '2.6.0'
@@ -61,13 +61,14 @@ ext {
     slf4jVersion = '1.7.31'
     snakeyamlVersion = '1.27'
     springFoxVersion = '2.9.2'
+    springDocVersion = '1.6.9'
     spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
     swagger3CoreVersion = '2.0.0'
     swagger3ParserVersion = '2.0.17'
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
-    tomcatVersion = '9.0.63'
+    tomcatVersion = '9.0.64'
     velocityVersion = '2.3'
     xstreamVersion = '1.4.19!!'
 
@@ -133,6 +134,7 @@ ext {
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
         infinispan_core                    : "org.infinispan:infinispan-core:${infinispanVersion}",
+        infinispan_lock                    : "org.infinispan:infinispan-clustered-lock:${infinispanVersion}",
         infinispan_jboss_marshalling       : "org.infinispan:infinispan-jboss-marshalling:${infinispanVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
@@ -212,6 +214,7 @@ ext {
         spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
         spring4Test                        : "org.springframework:spring-test:${spring4Version}",
         springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
+        spring_doc                         : "org.springdoc:springdoc-openapi-ui:${springDocVersion}",
         spring_mock_mvc                    : "io.rest-assured:spring-mock-mvc:${restAssuredVersion}",
         swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
         swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",
@@ -233,4 +236,8 @@ ext {
         jersey_test_provider_jdk_http      : "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:${jerseyVersion}"
 
     ]
+
+    // for node projects
+    projectNodeVersion = '14.19.3'
+    projectNpmVersion = '8.1.0'
 }

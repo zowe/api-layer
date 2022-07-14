@@ -9,8 +9,12 @@
  */
 package org.zowe.apiml.security.common.config;
 
+import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 
@@ -20,15 +24,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class CertificateAuthenticationProvider implements AuthenticationProvider {
 
+    private AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> userDetailsService = new SimpleUserDetailService();
+    private UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
+
     @Override
     public Authentication authenticate(Authentication authentication) {
-        authentication.setAuthenticated(true);
-        return authentication;
+        UserDetails userDetails = this.userDetailsService
+            .loadUserDetails((PreAuthenticatedAuthenticationToken) authentication);
+        this.userDetailsChecker.check(userDetails);
+        PreAuthenticatedAuthenticationToken result = new PreAuthenticatedAuthenticationToken(userDetails,
+            authentication.getCredentials(), userDetails.getAuthorities());
+        result.setDetails(authentication.getDetails());
+        result.setAuthenticated(true);
+        return result;
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication == PreAuthenticatedAuthenticationToken.class;
+        return PreAuthenticatedAuthenticationToken.class.isAssignableFrom(authentication);
+
     }
 
 }

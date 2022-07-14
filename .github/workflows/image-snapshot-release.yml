@@ -5,8 +5,24 @@ on:
         branches: [ master, v2.x.x ]
 
 jobs:
+    build-test-services:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Build and test services
+                run: ./gradlew build
+
+            -   uses: ./.github/actions/teardown
+
     publish-images:
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
+        needs:
+            - build-test-services
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
         with:
             forceNoRelease: true
         secrets:

@@ -6,13 +6,18 @@ plugins {
 
 node {
     download = true
-    version = rootProject.nodejsVersion
+    version = projectNodeVersion
+    npmVersion = projectNpmVersion
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "ci"
     workDir = file("${project.projectDir}/tools/nodejs")
     npmWorkDir = file("${project.projectDir}/tools/npm")
     yarnWorkDir = file("${project.projectDir}/tools/yarn")
     nodeProjectDir = file("${project.projectDir}/frontend")
+}
+
+if (project.hasProperty('omitDevDependencies')) {
+    npmInstall.args = ['--production', '--omit=dev'] // different args for different npm versions
 }
 
 // =================================================

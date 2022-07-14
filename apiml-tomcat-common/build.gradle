@@ -12,7 +12,10 @@ dependencies {
     implementation libraries.logback_classic
 
     implementation libraries.jackson_core
-    implementation libraries.jackson_databind    
+    implementation libraries.jackson_databind
+
+    compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     testImplementation libraries.mockito_core
     testImplementation libraries.mockito_jupiter

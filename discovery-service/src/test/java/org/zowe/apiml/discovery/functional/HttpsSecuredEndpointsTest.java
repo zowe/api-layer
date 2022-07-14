@@ -15,6 +15,7 @@ import io.restassured.response.Response;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -23,7 +24,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,13 +46,14 @@ class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
 
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;
+
     @Value("${server.ssl.keyStore}")
     private String keystore;
-    private String clientKeystore = "../keystore/client_cert/client-certs.p12";
 
     @Override
     @BeforeEach
     void setUp() throws Exception {
+        String clientKeystore = "../keystore/client_cert/client-certs.p12";
         SslContextConfigurer configurer = new SslContextConfigurer(
             keystorePassword,
             clientKeystore,
@@ -56,82 +61,82 @@ class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
         SslContext.prepareSslAuthentication(configurer);
     }
 
-    @Test
-    void testEurekaEndpoints_whenProvidedCertificate() throws Exception {
-        given().config(SslContext.clientCertApiml)
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
+    @Nested
+    class ThenReturnOk {
+        @Test
+        void testEurekaEndpoints_whenProvidedCertificate() {
+            given().config(SslContext.clientCertApiml)
+                .when()
+                .get(getDiscoveryUriWithPath("/eureka/apps"))
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+        }
+
+        @Test
+        void testDiscoveryEndpoints_whenProvidedCertification() {
+            given().config(SslContext.clientCertApiml)
+                .when()
+                .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+        }
+
+        @ParameterizedTest(name = "givenApplicationEndpoints_whenProvidedNothing {index} {0} ")
+        @ValueSource(strings = {"/application/info", "/application/health"})
+        void givenApplicationEndpoints_whenProvidedNothing(String endpoint) {
+            RestAssured.useRelaxedHTTPSValidation();
+            given()
+                .when()
+                .get(getDiscoveryUriWithPath(endpoint))
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+        }
+    }
+
+    @Nested
+    class GivenTLS {
+        @BeforeEach
+        void setup() {
+            RestAssured.useRelaxedHTTPSValidation();
+        }
+
+        @Nested
+        class ThenReturnForbidden {
+            @Test
+            void whenProvidedNothing() {
+                given()
+                    .when()
+                    .get(getDiscoveryUriWithPath("/eureka/apps"))
+                    .then()
+                    .statusCode(is(HttpStatus.SC_FORBIDDEN))
+                    .header(HttpHeaders.WWW_AUTHENTICATE, nullValue());
+            }
+
+            @Test
+            void whenProvidedBasicAuthentication() {
+                given()
+                    .auth().basic("username", "password")
+                    .when()
+                    .get(getDiscoveryUriWithPath("/eureka/apps"))
+                    .then()
+                    .statusCode(is(HttpStatus.SC_FORBIDDEN));
+            }
+        }
+
+        @ParameterizedTest(name = "whenProvidedNothing_thenReturnUnauthorized {index} {0} ")
+        @ValueSource(strings = {"/application/beans", "/discovery/api/v1/staticApi", "/"})
+        void whenProvidedNothing_thenReturnUnauthorized(String path) {
+            given()
+                .when()
+                .get(getDiscoveryUriWithPath(path))
+                .then()
+                .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
+                .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
+        }
     }
 
     @Test
-    void testDiscoveryEndpoints_whenProvidedCertification() throws Exception {
-        given().config(SslContext.clientCertApiml)
-            .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    @Test
-    void givenTLS_whenProvidedNothing() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .then()
-            .statusCode(is(HttpStatus.SC_FORBIDDEN))
-            .header(HttpHeaders.WWW_AUTHENTICATE, nullValue());
-    }
-
-    @Test
-    void givenTLS_whenProvidedBasicAuthentication() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .auth().basic("username", "password")
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .then()
-            .statusCode(is(HttpStatus.SC_FORBIDDEN));
-    }
-
-    // /application health,info endpoints
-    @Test
-    void testApplicationInfoEndpoints_whenProvidedNothing() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/info"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    @Test
-    void testApplicationHealthEndpoints_whenProvidedNothing() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/health"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    // /application endpoints
-    @ParameterizedTest(name = "givenTLS_testApplicationBeansEndpoints_Get {index} {0} ")
-    @ValueSource(strings = {"/application/beans", "/discovery/api/v1/staticApi", "/"})
-    void givenTLS_testApplicationBeansEndpoints_Get(String path) throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath(path))
-            .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
-            .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
-    }
-
-    @Test
-    void verifyHttpHeadersOnEureka() throws Exception {
+    void whenGetApps_thenCorrectHeadersInResponse() {
         RestAssured.useRelaxedHTTPSValidation();
         Map<String, String> expectedHeaders = new HashMap<>();
         expectedHeaders.put("X-Content-Type-Options", "nosniff");

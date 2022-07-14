@@ -141,7 +141,7 @@ messages:
       text: "The service id provided is invalid: '%s'"
       reason: "The provided id is not valid under conformance criteria."
       action: "Verify that conformance criteria, provide valid service id."
-      
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
@@ -351,3 +351,11 @@ messages:
       reason: "The JWT token or client certificate is not valid"
       action: "Configure your client to provide valid authentication."
 
+
+    # Revoke personal access token
+    - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
+      number: ZWEAT607
+      type: ERROR
+      text: "Body in the revoke request is not valid."
+      reason: "The request body is not valid"
+      action: "Use a valid body in the request. Format of a message: {userId: string, (optional)timestamp: long} or {serviceId: string, (optional)timestamp: long}."

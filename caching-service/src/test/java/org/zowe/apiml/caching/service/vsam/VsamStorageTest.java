@@ -250,4 +250,35 @@ class VsamStorageTest {
             verify(returnedFile).deleteForService(VALID_SERVICE_ID);
         }
     }
+
+    @Nested
+    class WhenTryingToStoreToken {
+        @Test
+        void thenThrowException() {
+            KeyValue keyValue = new KeyValue("key", "value");
+            assertThrows(StorageException.class, () -> {
+                underTest.storeMapItem("serviceId", "mapkey", keyValue);
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToGetTokens {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMapItems("serviceId", "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToGetAllMaps {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMaps("serviceId");
+            });
+        }
+    }
 }

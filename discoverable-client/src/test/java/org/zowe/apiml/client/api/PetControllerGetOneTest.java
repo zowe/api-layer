@@ -9,31 +9,30 @@
  */
 package org.zowe.apiml.client.api;
 
-import org.zowe.apiml.client.configuration.ApplicationConfiguration;
-import org.zowe.apiml.client.model.Pet;
-import org.zowe.apiml.client.service.PetService;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.zowe.apiml.client.configuration.ApplicationConfiguration;
+import org.zowe.apiml.client.configuration.SecurityConfiguration;
+import org.zowe.apiml.client.model.Pet;
+import org.zowe.apiml.client.service.PetService;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PetController.class})
-@Import(ApplicationConfiguration.class)
+@Import(value = {SecurityConfiguration.class, ApplicationConfiguration.class})
 class PetControllerGetOneTest {
     @Autowired
     private MockMvc mockMvc;

@@ -176,4 +176,35 @@ public class RedisStorageTest {
             assertDoesNotThrow(() -> underTest.deleteForService(SERVICE_ID));
         }
     }
+
+    @Nested
+    class WhenTryingToStoreToken {
+        @Test
+        void thenThrowException() {
+            KeyValue keyValue = new KeyValue("key", "value");
+            assertThrows(StorageException.class, () -> {
+                underTest.storeMapItem(SERVICE_ID, "mapKey", keyValue);
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToGetTokens {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMapItems(SERVICE_ID, "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToGetAllMaps {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.getAllMaps(SERVICE_ID);
+            });
+        }
+    }
 }

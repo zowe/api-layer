@@ -119,6 +119,30 @@ messages:
       reason: "Re-entered password does not match for password update."
       action: "Enter the same value as the one entered for new password."
 
+    # Personal access token messages
+    - key: org.zowe.apiml.security.query.invalidAccessTokenBody
+      number: ZWEAT605
+      type: ERROR
+      text: "Invalid body provided in request to create personal access token"
+      reason: "The request body is not valid"
+      action: "Use a valid body in the request. Format of a message: {validity: int , scopes: [string]}."
+
+    # Personal access token messages
+
+    - key: org.zowe.apiml.security.token.accessTokenBodyMissingScopes
+      number: ZWEAT606
+      type: ERROR
+      text: "Body in the HTTP request for Personal Access Token does not contain scopes"
+      reason: "The request body is not valid"
+      action: "Provide a list of services for which this token will be valid"
+
+    # Revoke personal access token
+    - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
+      number: ZWEAT607
+      type: ERROR
+      text: "Body in the revoke request is not valid."
+      reason: "The request body is not valid"
+      action: "Use a valid body in the request. Format of a message: {userId: string, (optional)timestamp: long} or {serviceId: string, (optional)timestamp: long}."
     # Service specific messages
     # 700-999
 

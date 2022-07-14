@@ -57,12 +57,12 @@ export default function Dashboard() {
         }, 30000);
     });
 
-    const handleChange = (event, newValue) => {
+    const handleChange = (_event, newValue) => {
         setMetricsDisplay(newValue);
     };
 
     return (
-        <React.Fragment>
+        <>
             <Typography id="name" variant="h2" component="h1" gutterBottom align="center">
                 Metrics Service
             </Typography>
@@ -82,6 +82,6 @@ export default function Dashboard() {
                 </Box>
             )}
             <Container maxWidth="lg" id="content" className="dependencies" />
-        </React.Fragment>
+        </>
     );
 }

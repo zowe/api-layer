@@ -68,7 +68,7 @@ class SafIdtControllerTest {
             .perform(
                 post("/zss/saf/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"username\": \"validName\", \"pass\": \"validPass\"}"))
+                    .content("{\"username\": \"validName\", \"pass\": \"validPass\", \"appl\": \"ZOWEAPPL\"}"))
             .andExpect(status().is(SC_CREATED))
             .andExpect(content().json("{\"jwt\": \"safJwt\"}"));
     }
@@ -78,7 +78,7 @@ class SafIdtControllerTest {
         mockMvc
             .perform(post("/zss/saf/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\": \"validUser\", \"pass\": \"invalidPass\"}"))
+                .content("{\"username\": \"validUser\", \"pass\": \"invalidPass\", \"appl\": \"ZOWEAPPL\"}"))
             .andExpect(status().is(SC_UNAUTHORIZED));
     }
 

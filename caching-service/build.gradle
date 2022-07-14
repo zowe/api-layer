@@ -52,14 +52,17 @@ dependencies {
     implementation project(':common-service-core')
     implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')
+
+
     implementation libraries.zowe_attls
     implementation libraries.jjwt
     implementation libraries.jjwt_impl
     implementation libraries.jjwt_jackson
     implementation libraries.infinispan_core
     implementation libraries.infinispan_jboss_marshalling
+    implementation libraries.infinispan_lock
 
-    implementation libraries.springFox
+    implementation libraries.spring_doc
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web

@@ -13,14 +13,24 @@ import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';
 
-jest.mock('../Wizard/WizardContainer', () => () => {
-    const WizardContainer = 'WizardContainerMock';
-    return <WizardContainer />;
-});
-jest.mock('../Wizard/ConfirmDialogContainer', () => () => {
-    const ConfirmDialogContainer = 'ConfirmDialogContainerMock';
-    return <ConfirmDialogContainer />;
-});
+jest.mock(
+    '../Wizard/WizardContainer',
+    () =>
+        // eslint-disable-next-line react/display-name
+        function () {
+            const WizardContainer = 'WizardContainerMock';
+            return <WizardContainer />;
+        }
+);
+jest.mock(
+    '../Wizard/ConfirmDialogContainer',
+    () =>
+        // eslint-disable-next-line react/display-name
+        function () {
+            const ConfirmDialogContainer = 'ConfirmDialogContainerMock';
+            return <ConfirmDialogContainer />;
+        }
+);
 
 const ajaxError = {
     message: 'ajax Error 404',

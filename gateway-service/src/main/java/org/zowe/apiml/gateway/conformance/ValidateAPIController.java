@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 
 /**
- * Controller offered methods for validating serviceID under conformance criteria, it offer methods to 
+ * Controller offered methods for validating serviceID under conformance criteria, it offer methods to
  * check the validation of the given serviceID
  */
 @Controller
@@ -39,16 +39,16 @@ public class ValidateAPIController {
 
     /**
      * Accept serviceID and return the JSON file with appropirate message to show if it is valid
-     * 
-     * @param serviceID accepted serviceID to check validation 
+     *
+     * @param serviceID accepted serviceID to check validation
      * @return return the JSON file message of whether the serviceID is valid
      */
     @PostMapping(
         value = "/validate",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> checkValidate(@RequestBody String serviceID) {
-        
+    public ResponseEntity<Object> checkValidate(@RequestBody String serviceID) {
+
         if (!isTooLong.test(serviceID)) {
             String invalidLength = "The serviceid is longer than 64 characters";
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.verifier.wrongServiceId", invalidLength).mapToApiMessage(), HttpStatus.BAD_REQUEST);
@@ -57,20 +57,20 @@ public class ValidateAPIController {
             String invalidPattern = "The serviceid contains symbols or upper case letters";
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.verifier.wrongServiceId", invalidPattern).mapToApiMessage(), HttpStatus.BAD_REQUEST);
         }
-      
+
         return new ResponseEntity<>(HttpStatus.OK);
-        
+
     }
-    
+
     /**
      * Accept serviceID and check if it contains only lower case characters without symbols, return true if it meets the criteria
      * otherwise return false
-     * 
-     * @param serviceID accept serviceID to check 
+     *
+     * @param serviceID accept serviceID to check
      * @return return boolean variable False if it only contains lower case characters without symbols
      */
     private boolean checkValidPatternAPI(String serviceID) {
-        
+
         Matcher findSymbol = symbolPattern.matcher(serviceID);
 
         return findSymbol.find();

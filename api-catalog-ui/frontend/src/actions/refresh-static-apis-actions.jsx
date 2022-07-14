@@ -64,7 +64,8 @@ function fetchHandler(res) {
     const errors = [];
     if (res && !res.errors) {
         return Promise.reject(res.messages[0]);
-    } else if (res && res.errors && res.errors.length !== 0) {
+    }
+    if (res && res.errors && res.errors.length !== 0) {
         res.errors.forEach((item) => {
             errors.push(item.convertedText);
         });

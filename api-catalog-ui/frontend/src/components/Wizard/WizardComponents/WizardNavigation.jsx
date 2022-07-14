@@ -25,7 +25,7 @@ class WizardNavigation extends Component {
      * React on navTab click
      * @param event number - index of the tab to be switched to
      */
-    handleChange = (event, value) => {
+    handleChange = (_event, value) => {
         if (typeof value === 'number') {
             this.setState({ value });
             const navNamesArr = Object.keys(this.props.navsObj);
@@ -72,6 +72,7 @@ class WizardNavigation extends Component {
         });
         return navs;
     }
+
     a11yProps = (index) => ({
         id: `vertical-tab-${index}`,
         'aria-controls': `vertical-tabpanel-${index}`,

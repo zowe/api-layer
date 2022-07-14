@@ -4,7 +4,7 @@
         "airbnb",
         "prettier"
     ],
-    "parser": "babel-eslint",
+    "parser": "@babel/eslint-parser",
     "parserOptions": {
         "ecmaVersion": 6,
         "ecmaFeatures": {
@@ -66,6 +66,7 @@
                 ]
             }
         ],
+        "react/no-unused-prop-types": 2,
         "radix": 0,
         "no-shadow": [
             2,
@@ -107,8 +108,11 @@
                 ]
             }
         ],
-        "react/no-unused-prop-types": 2,
-        "react/prop-types": 0
+        "react/prop-types": 0,
+        "react/destructuring-assignment": 0,
+        "react/jsx-props-no-spreading": 0,
+        "react/sort-comp": 0,
+        "jsx-a11y/label-has-associated-control": 0
     },
     "plugins": [
         "flowtype",

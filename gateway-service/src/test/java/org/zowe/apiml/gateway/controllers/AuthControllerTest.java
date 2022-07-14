@@ -11,11 +11,19 @@ package org.zowe.apiml.gateway.controllers;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -24,6 +32,8 @@ import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.security.common.token.AccessTokenProvider;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -31,10 +41,9 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -52,15 +61,22 @@ class AuthControllerTest {
     @Mock
     private ZosmfService zosmfService;
 
+    @Mock
+    private AccessTokenProvider tokenProvider;
+
     private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
+    private JSONObject body;
 
     @BeforeEach
-    void setUp() throws ParseException {
+    void setUp() throws ParseException, JSONException {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
-        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService);
+        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        body = new JSONObject()
+            .put("token", "token")
+            .put("serviceId", "service");
 
         jwk1 = getJwk(1);
         jwk2 = getJwk(2);
@@ -96,7 +112,7 @@ class AuthControllerTest {
             "\"n\":\"kWp2zRA23Z3vTL4uoe8kTFptxBVFunIoP4t_8TDYJrOb7D1iZNDXVeEsYKp6ppmrTZDAgd-cNOTKLd4M39WJc5FN0maTAVKJc7NxklDeKc4dMe1BGvTZNG4MpWBo-taKULlYUu0ltYJuLzOjIrTHfarucrGoRWqM0sl3z2-fv9k\",\n" +
             "\"kty\":\"RSA\",\n" +
             "\"kid\":\"" + i + "\"" +
-        "}");
+            "}");
     }
 
     private void initPublicKeys(boolean zosmfKeys) {
@@ -189,6 +205,115 @@ class AuthControllerTest {
 
                 mockMvc.perform(get("/gateway/auth/keys/public"))
                     .andExpect(status().is(SC_OK));
+            }
+        }
+
+        @Nested
+        class GivenValidateAccessTokenRequest {
+
+            @Nested
+            class WhenValidateToken {
+                @Test
+                void validateAccessToken() throws Exception {
+                    when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+                    mockMvc.perform(post("/gateway/auth/access-token/validate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_OK));
+                }
+
+                @Test
+                void return401() throws Exception {
+                    when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+                    mockMvc.perform(post("/gateway/auth/access-token/validate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_UNAUTHORIZED));
+                }
+            }
+        }
+
+        @Nested
+        class GivenRevokeAccessTokenRequest {
+
+            @BeforeEach
+            void setUp() throws JSONException {
+                body = new JSONObject()
+                    .put("token", "token");
+            }
+
+            @Nested
+            class WhenTokenAlreadyInvalidated {
+
+                @Test
+                void thenInvalidateAgain() throws Exception {
+                    when(tokenProvider.isInvalidated("token")).thenReturn(true);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_UNAUTHORIZED));
+                }
+            }
+
+            @Nested
+            class WhenNotInvalidated {
+
+                @Test
+                void thenInvalidate() throws Exception {
+                    when(tokenProvider.isInvalidated("token")).thenReturn(false);
+
+                    mockMvc.perform(delete("/gateway/auth/access-token/revoke")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_OK));
+                }
+            }
+        }
+
+        @Nested
+        class GivenRevokeAccessTokenWithRulesRequest {
+
+            @Nested
+            class WhenNotInvalidated {
+
+                @ParameterizedTest
+                @ValueSource(strings = {"/gateway/auth/access-token/revoke/tokens/user", "/gateway/auth/access-token/revoke/tokens/scope"})
+                void thenInvalidateForScope(String url) throws Exception {
+                    body = new JSONObject()
+                        .put("userId", "user")
+                        .put("serviceId", "user")
+                        .put("timestamp", "1234");
+                    mockMvc.perform(delete(url)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_NO_CONTENT));
+                }
+
+                @Test
+                void thenInvalidateOwnTokens() throws Exception {
+                    SecurityContext context = new SecurityContextImpl();
+                    context.setAuthentication(TokenAuthentication.createAuthenticated("user", "token"));
+                    SecurityContextHolder.setContext(context);
+                    body = new JSONObject()
+                        .put("timestamp", "1234");
+                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_NO_CONTENT));
+                }
+
+                @ParameterizedTest
+                @ValueSource(strings = {"scope", "user"})
+                void thenReturnErrorMessage(String endpoint) throws Exception {
+                    body = new JSONObject();
+                    mockMvc.perform(delete("/gateway/auth//access-token/revoke/tokens/" + endpoint)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_BAD_REQUEST)).andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAT607E")));
+                }
             }
         }
     }

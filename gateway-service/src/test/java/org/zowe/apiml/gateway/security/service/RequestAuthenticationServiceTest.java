@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
@@ -97,7 +98,7 @@ public class RequestAuthenticationServiceTest {
         @Test
         void principalWithValidToken() {
             doReturn(Optional.of("jwtTokenString")).when(authenticationService).getJwtTokenFromRequest(any());
-            doReturn(new QueryResponse("domain", "user", new Date(), new Date(), QueryResponse.Source.ZOSMF)).when(authenticationService).parseJwtToken(any());
+            doReturn(new QueryResponse("domain", "user", new Date(), new Date(), Collections.emptyList(), QueryResponse.Source.ZOSMF)).when(authenticationService).parseJwtToken(any());
             assertThat(underTest.getPrincipalFromRequest(request), is(Optional.of("user")));
         }
     }

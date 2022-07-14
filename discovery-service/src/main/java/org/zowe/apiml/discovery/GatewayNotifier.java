@@ -19,11 +19,15 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
@@ -31,6 +35,7 @@ import org.zowe.apiml.util.EurekaUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -52,19 +57,22 @@ public class GatewayNotifier implements Runnable {
 
     public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.getServiceId().toUpperCase();
 
+    private static final String GW_UNEXPECTED_RESPONSE_LOG = "Unexpected response from the Gateway {} -- {}";
+    private static final String GW_REGISTRATION_NOTIFY_LOG_KEY = "org.zowe.apiml.discovery.registration.gateway.notify";
+    private static final String GW_UNREGISTRATION_NOTIFY_LOG_KEY = "org.zowe.apiml.discovery.unregistration.gateway.notify";
     private static final String DISTRIBUTE_PATH = "/gateway/auth/distribute/";  // NOSONAR: URL is always using / to separate path segments
     private static final String CACHE_PATH = "/gateway/cache/services";  // NOSONAR: URL is always using / to separate path segments
 
     private final ApimlLogger apimlLogger;
 
-    private final RestTemplate restTemplate;
+    private final CloseableHttpClient httpClient;
 
     private boolean stopped;
     private BlockingQueue<Notification> queue = new LinkedBlockingQueue<>();
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
 
-    public GatewayNotifier(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate, MessageService messageService) {
-        this.restTemplate = restTemplate;
+    public GatewayNotifier(@Qualifier("secureHttpClientWithKeystore") CloseableHttpClient httpClient, MessageService messageService) {
+        this.httpClient = httpClient;
         this.apimlLogger = ApimlLogger.of(GatewayNotifier.class, messageService);
     }
 
@@ -165,10 +173,15 @@ public class GatewayNotifier implements Runnable {
         notify(instanceId, instanceInfo -> {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
-                restTemplate.delete(url);
-            } catch (Exception e) {
+                CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
+                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url, instanceId);
+                }
+            } catch (IOException e) {
                 log.debug("Cannot notify the Gateway {} about {}", url, instanceId, e);
-                apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url, instanceId);
+                apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url, instanceId);
             }
         });
     }
@@ -177,10 +190,15 @@ public class GatewayNotifier implements Runnable {
         notify(null, instanceInfo -> {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
-                restTemplate.delete(url);
-            } catch (Exception e) {
+                CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
+                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    apimlLogger.log(GW_UNREGISTRATION_NOTIFY_LOG_KEY, url);
+                }
+            } catch (IOException e) {
                 log.debug("Cannot notify the Gateway {} about service un-registration", url, e);
-                apimlLogger.log("org.zowe.apiml.discovery.unregistration.gateway.notify", url);
+                apimlLogger.log(GW_UNREGISTRATION_NOTIFY_LOG_KEY, url);
             }
         });
     }
@@ -193,10 +211,15 @@ public class GatewayNotifier implements Runnable {
                 .append(instanceId);
 
             try {
-                restTemplate.getForEntity(url.toString(), Void.class);
-            } catch (Exception e) {
-                log.debug("Cannot notify the Gateway {} about {}", url.toString(), instanceId, e);
-                apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
+                CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()));
+                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url.toString(), instanceId);
+                }
+            } catch (IOException e) {
+                log.debug("Cannot notify the Gateway {} about {}", url, instanceId, e);
+                apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url.toString(), instanceId);
             }
         });
     }

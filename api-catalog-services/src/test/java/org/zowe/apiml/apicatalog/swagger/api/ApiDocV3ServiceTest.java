@@ -176,7 +176,7 @@ class ApiDocV3ServiceTest {
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
                     apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 });
-                assertEquals("[No swagger supplied]", exception.getMessage());
+                assertEquals("[Null or empty definition]", exception.getMessage());
             }
 
             @Test

@@ -85,14 +85,15 @@ export const retryMechanism =
             mergeMap((error, i) => {
                 const retryAttempt = i + 1;
                 if (shouldTerminate(error)) {
-                    return throwError(error);
+                    return throwError(() => error);
                 }
                 // used for display Toast retry notification
                 fetchTilesRetry(retryAttempt, maxRetries);
                 if (retryAttempt > maxRetries) {
                     const message = `Could not retrieve tile info after ${maxRetries} attempts. Stopping fetch process.`;
                     log.error(message);
-                    return throwError(new Error(message));
+                    const err = new Error(message);
+                    return throwError(() => err);
                 }
                 const msg = `Attempt ${retryAttempt}: retrying in ${scalingDuration * retryAttempt}s`;
                 log.warn(msg);
@@ -100,7 +101,7 @@ export const retryMechanism =
             })
         );
 
-export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
+export const fetchTilesPollingEpic = (action$, _store, { ajax, scheduler }) =>
     action$.pipe(
         ofType(FETCH_TILES_REQUEST),
         debounceTime(debounce, scheduler),
@@ -132,7 +133,7 @@ export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
                         retryWhen(retryMechanism(scheduler)())
                     )
                 ),
-                takeUntil(action$.ofType(FETCH_TILES_STOP)),
+                takeUntil(action$.pipe(ofType(FETCH_TILES_STOP))),
                 catchError((error) => {
                     if (error.status === 401 || error.status === 403) {
                         return of(userActions.authenticationFailure(error));

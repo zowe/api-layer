@@ -57,6 +57,8 @@ public class AuthenticationService {
 
     private static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
+    private static final String AUTH_PROV_CLAIM = "auth.prov";
+    private static final String SCOPES = "scopes";
     private static final String CACHE_VALIDATION_JWT_TOKEN = "validationJwtToken";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
@@ -89,17 +91,33 @@ public class AuthenticationService {
     public String createJwtToken(@NonNull String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
         long expiration = calculateExpiration(now, username);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(DOMAIN_CLAIM_NAME, domain);
+        claims.put(LTPA_CLAIM_NAME, ltpaToken);
+        String issuer =  authConfigurationProperties.getTokenProperties().getIssuer();
+        return createJWT(username,issuer, claims, now, expiration);
+    }
 
+    public String createLongLivedJwtToken(@NonNull String username, int daysToLive, Set<String> scopes) {
+        long now = System.currentTimeMillis();
+        long expiration = now + (daysToLive * 86_400_000L);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(AUTH_PROV_CLAIM, authConfigurationProperties.getTokenProperties().getIssuer());
+        claims.put(SCOPES, scopes);
+        String issuer = QueryResponse.Source.ZOWE_PAT.value;
+        return createJWT(username,issuer, claims, now, expiration);
+    }
+
+    private String createJWT(String username, String issuer, Map<String, Object> claims, long issuedAt, long expiration) {
         return Jwts.builder()
             .setSubject(username)
-            .claim(DOMAIN_CLAIM_NAME, domain)
-            .claim(LTPA_CLAIM_NAME, ltpaToken)
-            .setIssuedAt(new Date(now))
+            .setIssuedAt(new Date(issuedAt))
             .setExpiration(new Date(expiration))
-            .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
+            .setIssuer(issuer)
             .setId(UUID.randomUUID().toString())
-            .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm())
-            .compact();
+            .addClaims(claims)
+            .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
+
     }
 
     /**
@@ -302,13 +320,18 @@ public class AuthenticationService {
      */
     public QueryResponse parseJwtToken(String jwtToken) {
         Claims claims = getJwtClaims(jwtToken);
-
+        Object scopesObject = claims.get(SCOPES);
+        List<String> scopes = Collections.emptyList();
+        if (scopesObject instanceof List<?>) {
+            scopes = (List<String>) scopesObject;
+        }
         return new QueryResponse(
-                claims.get(DOMAIN_CLAIM_NAME, String.class),
-                claims.getSubject(),
-                claims.getIssuedAt(),
-                claims.getExpiration(),
-                QueryResponse.Source.valueByIssuer(claims.getIssuer())
+            claims.get(DOMAIN_CLAIM_NAME, String.class),
+            claims.getSubject(),
+            claims.getIssuedAt(),
+            claims.getExpiration(),
+            scopes,
+            QueryResponse.Source.valueByIssuer(claims.getIssuer())
         );
     }
 

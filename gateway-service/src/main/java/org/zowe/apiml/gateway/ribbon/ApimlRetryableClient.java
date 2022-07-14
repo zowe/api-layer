@@ -14,7 +14,7 @@ import com.netflix.client.config.IClientConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
-import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancerClient;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.apache.RetryableRibbonLoadBalancingHttpClient;
@@ -38,6 +38,7 @@ public class ApimlRetryableClient extends RetryableRibbonLoadBalancingHttpClient
      * a {@link RibbonLoadBalancerClient.RibbonServer} that is not fit for our use. Namely, it's getUri() method always returns http scheme, causing the
      * retryable client to always call http. We have stored the instance info from the load balancer in the context
      * so we recreate EurekaServiceInstance here, which correctly resolves whether instance is http or https when asked.
+     *
      * @param serviceId
      * @return EurekaServiceInstance
      */
@@ -47,7 +48,7 @@ public class ApimlRetryableClient extends RetryableRibbonLoadBalancingHttpClient
         if (theChosenOne == null) {
             return null;
         }
-        return new EurekaDiscoveryClient.EurekaServiceInstance(
+        return new EurekaServiceInstance(
             RequestContextUtils.getInstanceInfo().orElseThrow(() -> new RequestContextNotPreparedException("request context not prepared")));
     }
 }

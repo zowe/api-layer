@@ -1,7 +1,4 @@
 buildscript {
-    ext {
-        springBootVersion = "2.3.9.RELEASE"
-    }
     repositories {
         mavenCentral()
         maven { url "https://repo.spring.io/libs-milestone" }
@@ -36,15 +33,14 @@ repositories {
 }
 
 dependencies {
-    compileOnly(project(':onboarding-enabler-spring'))
-    compileOnly "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
-    compileOnly "io.springfox:springfox-swagger2:2.9.2"
-    compileOnly "io.springfox:springfox-spring-web:2.9.2"
+    implementation(project(':onboarding-enabler-spring'))
+    implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_doc
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart
 }
 
