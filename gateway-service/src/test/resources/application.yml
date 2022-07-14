@@ -41,8 +41,6 @@ apiml:
             zosmf:
                 serviceId: zosmf  # Replace me with the correct z/OSMF service id
                 jwtAutoconfiguration: jwt
-            passTicket:
-                timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         saf:
             provider: rest
             urls:
