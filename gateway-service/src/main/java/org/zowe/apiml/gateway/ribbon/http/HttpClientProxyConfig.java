@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration class creates proxy bean for ClosableHttpClient that interceps method calls
+ * Configuration class creates proxy bean for ClosableHttpClient that intercepts method calls
  * <p>
  * Actions on intercept are:
  * Decide which client to use for call (with/without) certificate

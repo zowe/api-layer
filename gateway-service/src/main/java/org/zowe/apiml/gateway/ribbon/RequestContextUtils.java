@@ -40,8 +40,11 @@ public class RequestContextUtils {
 
     public static void addDebugInfo(String debug) {
         String existingDebugInfo = getDebugInfo();
-        RequestContext.getCurrentContext().set(DEBUG_INFO_KEY,
-            existingDebugInfo.isEmpty() ? debug : existingDebugInfo + "|" + debug);
+        if (!existingDebugInfo.contains(debug)) {
+            RequestContext.getCurrentContext().set(DEBUG_INFO_KEY,
+                existingDebugInfo.isEmpty() ? debug : existingDebugInfo + "|" + debug);
+        }
+
     }
 
     public static String getDebugInfo() {
