@@ -50,9 +50,28 @@
         "jest-html-reporter": "3.4.0",
         "jest-mock": "26.6.2",
         "nodemon": "2.0.15",
+        "npm-force-resolutions": "0.0.10",
         "prettier": "2.3.0"
     },
+    "resolutions": {
+        "ansi-html": "0.0.9",
+        "ansi-regex": "5.0.1",
+        "browserslist": "4.21.2",
+        "ejs": "3.1.8",
+        "eventsource": "1.1.2",
+        "follow-redirects": "1.15.1",
+        "glob-parent": "6.0.2",
+        "got": "12.1.0",
+        "immer": "9.0.15",
+        "jsdom": "16.5.0",
+        "minimist": "1.2.6",
+        "node-forge": "1.3.1",
+        "nth-check": "2.0.1",
+        "shell-quote": "1.7.3",
+        "url-parse": "1.5.10"
+    },
     "scripts": {
+        "preinstall": "npm-force-resolutions",
         "lint": "eslint \"src/**/*.{js,jsx}\"",
         "build": "react-scripts build",
         "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --silent",
@@ -68,7 +87,8 @@
         "includeFailureMsg": true
     },
     "engines": {
-        "node": "=10.23.3"
+        "npm": "=8.1.0",
+        "node": "=14.19.3"
     },
     "browserslist": [
         ">0.2%",
