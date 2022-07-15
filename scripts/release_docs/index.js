@@ -53,18 +53,21 @@ ${restOfChangelog}`;
     const octokit = new Octokit({auth: githubToken});
     const branch = `apiml/release/${version.replace(/\./g, "_")}`;
 
-    let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
+    // if PR exists, find branch associated with it then checkout that branch and make changes to that
+    // else regular process
+
+    let gitCommitPush = `git fetch origin ${branchToMerge} --quiet && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog second commit" && git push origin ${branch}`;
     execSync(gitCommitPush, {
         cwd: '../../'
     });
 
-    await octokit.rest.pulls.create({
-        owner: 'zowe',
-        repo: 'api-layer',
-        title: 'Automatic update for the Changelog for release',
-        head: branch,
-        base: branchToMerge,
-        body: 'Update changelog for new release'
-    });
+//    await octokit.rest.pulls.create({
+//        owner: 'zowe',
+//        repo: 'api-layer',
+//        title: 'Automatic update for the Changelog for release',
+//        head: branch,
+//        base: branchToMerge,
+//        body: 'Update changelog for new release'
+//    });
 })()
 
