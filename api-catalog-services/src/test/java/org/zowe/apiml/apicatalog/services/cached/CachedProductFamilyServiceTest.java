@@ -383,27 +383,27 @@ class CachedProductFamilyServiceTest {
 
         @Nested
         class GivenMultipleApiIds {
-//            @Test
-//            void groupThem() {
-//                Application application = servicesBuilder.createApp(
-//                        SERVICE_ID,
-//                        servicesBuilder.createInstance(SERVICE_ID, "catalog1",
-//                                Pair.of("apiml.apiInfo.api-v1.apiId", "api1"),
-//                                Pair.of("apiml.apiInfo.api-v1.version", "1.0.0"),
-//                                Pair.of("apiml.apiInfo.api-v2.apiId", "api2"),
-//                                Pair.of("apiml.apiInfo.api-v2.version", "2"),
-//                                Pair.of("apiml.apiInfo.api-v3.apiId", "api3")));
-//                doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
-//                APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
-//                underTest.calculateContainerServiceValues(apiContainer);
-//
-//                APIService apiService = apiContainer.getServices().iterator().next();
-//                assertNotNull(apiService.getApiId());
-//                assertEquals(3, apiService.getApiId().size());
-//                assertEquals("api1", apiService.getApiId().get("api1 v1.0.0"));
-//                assertEquals("api2", apiService.getApiId().get("api2 v2"));
-//                assertEquals("api3", apiService.getApiId().get("default"));
-//            }
+            @Test
+            void groupThem() {
+                Application application = servicesBuilder.createApp(
+                        SERVICE_ID,
+                        servicesBuilder.createInstance(SERVICE_ID, "catalog1",
+                                Pair.of("apiml.apiInfo.api-v1.apiId", "api1"),
+                                Pair.of("apiml.apiInfo.api-v1.version", "1.0.0"),
+                                Pair.of("apiml.apiInfo.api-v2.apiId", "api2"),
+                                Pair.of("apiml.apiInfo.api-v2.version", "2"),
+                                Pair.of("apiml.apiInfo.api-v3.apiId", "api3")));
+                doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
+                APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
+                underTest.calculateContainerServiceValues(apiContainer);
+
+                APIService apiService = apiContainer.getServices().iterator().next();
+                assertNotNull(apiService.getApis());
+                assertEquals(3, apiService.getApis().size());
+                assertNotNull(apiService.getApis().get("api1 v1.0.0"));
+                assertNotNull(apiService.getApis().get("api2 v2"));
+                assertNotNull(apiService.getApis().get("default"));
+            }
         }
 
         @Nested

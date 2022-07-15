@@ -31,7 +31,6 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -341,6 +340,11 @@ public class CachedProductFamilyService {
                 String id = (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion();
                 apiInfoById.put(id, apiInfo);
             });
+
+            if (!apiInfoById.containsKey("default")) {
+                ApiInfo defaultApiInfo = apiInfoList.stream().filter(ApiInfo::isDefaultApi).findFirst().orElse(null);
+                apiInfoById.put("default", defaultApiInfo);
+            }
         } catch (Exception ex) {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
         }

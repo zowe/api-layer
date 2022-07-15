@@ -61,7 +61,7 @@ class ApiCatalogControllerTests {
             @Test
             void thenReturnNoContent() {
                 given(cachedProductFamilyService.getAllContainers()).willReturn(null);
-                
+
                 RestAssuredMockMvc.given().
                     when().
                     get(pathToContainers).
@@ -69,7 +69,7 @@ class ApiCatalogControllerTests {
                     statusCode(HttpStatus.NO_CONTENT.value());
             }
         }
-        
+
         @Nested
         class WhenSpecificContainerRequested {
             @Test
@@ -103,8 +103,8 @@ class ApiCatalogControllerTests {
             apiVersions = Arrays.asList("1.0.0", "2.0.0");
 
             given(cachedServicesService.getService("service1")).willReturn(service1);
-            given(cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");       
-            given(cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);         
+            given(cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
+            given(cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
 
             given(cachedServicesService.getService("service2")).willReturn(service2);
             given(cachedApiDocService.getDefaultApiDocForService("service2")).willReturn("service2");
@@ -193,7 +193,7 @@ class ApiCatalogControllerTests {
         }
     }
 
-    
+
 
 
     // =========================================== Helper Methods ===========================================
@@ -209,7 +209,7 @@ class ApiCatalogControllerTests {
             .homePageUrl("home")
             .basePath("base")
             .sso(false)
-            .apiId(Collections.emptyMap())
+            .apis(Collections.emptyMap())
             .build();
         services.add(service);
 
@@ -221,7 +221,7 @@ class ApiCatalogControllerTests {
             .homePageUrl("home")
             .basePath("base")
             .sso(false)
-            .apiId(Collections.emptyMap())
+            .apis(Collections.emptyMap())
             .build();
         services.add(service);
 

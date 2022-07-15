@@ -115,7 +115,7 @@ public class ContainerServiceMockUtil {
             .homePageUrl("home")
             .basePath("base")
             .sso(false)
-            .apiId(Collections.emptyMap())
+            .apis(Collections.emptyMap())
             .build();
         services.add(service);
         allServices.add(service);
