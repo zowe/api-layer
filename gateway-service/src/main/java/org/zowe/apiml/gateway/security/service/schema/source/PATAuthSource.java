@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +18,12 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class PATAuthSource implements AuthSource{
+public class PATAuthSource implements AuthSource {
     public static AuthSource.AuthSourceType type = AuthSource.AuthSourceType.PAT;
 
     @EqualsAndHashCode.Include
     private final String source;
+
     @Override
     public Object getRawSource() {
         return source;

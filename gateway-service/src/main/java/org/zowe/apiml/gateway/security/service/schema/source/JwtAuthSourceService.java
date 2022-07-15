@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
@@ -21,6 +22,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -57,6 +59,10 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
         return authenticationService;
     }
 
+    @Override
+    public Optional<String> getToken(RequestContext context) {
+        return getAuthenticationService().getJwtTokenFromRequest(context.getRequest());
+    }
     /**
      * Validates authentication source (JWT token) using method of {@link AuthenticationService}
      *

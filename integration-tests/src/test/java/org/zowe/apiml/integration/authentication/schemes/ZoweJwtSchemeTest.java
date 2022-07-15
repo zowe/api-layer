@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
+import org.zowe.apiml.util.categories.InfinispanStorageTest;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
@@ -119,6 +120,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
     @Nested
     class GivenPAT {
         @Test
+        @InfinispanStorageTest
         void translateIntoJWTAndSendToService() {
             Set<String> scopes = new HashSet<>();
             scopes.add("zowejwt");

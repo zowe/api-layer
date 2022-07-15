@@ -12,7 +12,9 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.impl.DefaultJws;
 import io.jsonwebtoken.security.SignatureException;
@@ -21,9 +23,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.*;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -97,8 +103,8 @@ public class AuthenticationService {
         Map<String, Object> claims = new HashMap<>();
         claims.put(DOMAIN_CLAIM_NAME, domain);
         claims.put(LTPA_CLAIM_NAME, ltpaToken);
-        String issuer =  authConfigurationProperties.getTokenProperties().getIssuer();
-        return createJWT(username,issuer, claims, now, expiration);
+        String issuer = authConfigurationProperties.getTokenProperties().getIssuer();
+        return createJWT(username, issuer, claims, now, expiration);
     }
 
     public String createLongLivedJwtToken(@NonNull String username, int daysToLive, Set<String> scopes) {
@@ -108,7 +114,7 @@ public class AuthenticationService {
         claims.put(AUTH_PROV_CLAIM, authConfigurationProperties.getTokenProperties().getIssuer());
         claims.put(SCOPES, scopes);
         String issuer = QueryResponse.Source.ZOWE_PAT.value;
-        return createJWT(username,issuer, claims, now, expiration);
+        return createJWT(username, issuer, claims, now, expiration);
     }
 
     private String createJWT(String username, String issuer, Map<String, Object> claims, long issuedAt, long expiration) {
@@ -124,10 +130,10 @@ public class AuthenticationService {
 
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
         Jwt parsedJwt = Jwts.parserBuilder().setSigningKey(jwtSecurityInitializer.getJwtSecret()).build().parse(jwt);
-        if(parsedJwt instanceof DefaultJws) {
+        if (parsedJwt instanceof DefaultJws) {
             return parseQueryResponse(((DefaultJws<DefaultClaims>) parsedJwt).getBody());
         }
-       return null;
+        return null;
     }
 
     /**
@@ -384,16 +390,25 @@ public class AuthenticationService {
      * @return the JWT token
      */
     public Optional<String> getJwtTokenFromRequest(@NonNull HttpServletRequest request) {
-        Optional<String> fromCookie = getJwtTokenFromCookie(request);
+        Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieName());
         return fromCookie.isPresent() ?
             fromCookie : extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
-    private Optional<String> getJwtTokenFromCookie(HttpServletRequest request) {
+    public Optional<String> getPATFromRequest(@NonNull HttpServletRequest request) {
+        Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNamePAT());
+        return fromCookie.isPresent() ?
+            fromCookie : getPATFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
+    }
+    private Optional<String> getPATFromHeader(String header) {
+        return header != null ? Optional.of(header) : Optional.empty();
+    }
+
+    private Optional<String> getTokenFromCookie(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return Optional.empty();
         return Arrays.stream(cookies)
-            .filter(cookie -> cookie.getName().equals(authConfigurationProperties.getCookieProperties().getCookieName()))
+            .filter(cookie -> cookie.getName().equals(cookieName))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
             .map(Cookie::getValue);
@@ -417,6 +432,7 @@ public class AuthenticationService {
 
         return Optional.empty();
     }
+
 
     /**
      * Calculate the expiration time

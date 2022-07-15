@@ -68,6 +68,7 @@ public class SecurityUtils {
     public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
     public final static String COOKIE_NAME = "apimlAuthenticationToken";
+    public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
 
     protected static String getUsername() {
         return USERNAME;

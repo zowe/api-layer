@@ -15,8 +15,6 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.DefaultClaims;
-import io.jsonwebtoken.impl.DefaultJws;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -129,13 +127,14 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenCreatePersonalAccessToken() {
-            String pat = authService.createLongLivedJwtToken(USER,60, scopes);
+            String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             QueryResponse parsedPAT = authService.parseJwtToken(pat);
-            assertEquals(QueryResponse.Source.ZOWE_PAT,parsedPAT.getSource());
+            assertEquals(QueryResponse.Source.ZOWE_PAT, parsedPAT.getSource());
         }
+
         @Test
         void validatePat() {
-            String pat = authService.createLongLivedJwtToken(USER,60, scopes);
+            String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             QueryResponse jws = authService.parseJwtWithSignature(pat);
 
             System.out.println(jws);

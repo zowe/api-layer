@@ -29,6 +29,8 @@ public abstract class TokenAuthSourceService implements AuthSourceService {
 
     public abstract Function<String, AuthSource> getMapper();
 
+    public abstract Optional<String> getToken(RequestContext context);
+
     /**
      * Core method of the interface. Gets source of authentication (JWT token) from request.
      * <p>
@@ -39,23 +41,9 @@ public abstract class TokenAuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         final RequestContext context = RequestContext.getCurrentContext();
         getLogger().log(MessageType.DEBUG, "Getting JWT token from request.");
-        Optional<String> jwtToken = getAuthenticationService().getJwtTokenFromRequest(context.getRequest());
-        getLogger().log(MessageType.DEBUG, String.format("JWT token %s in request.", jwtToken.isPresent() ? "found" : "not found"));
-        return verifyTokenForAuthSource(jwtToken);
+        Optional<String> authToken = getToken(context);
+        getLogger().log(MessageType.DEBUG, String.format("JWT token %s in request.", authToken.isPresent() ? "found" : "not found"));
+        return authToken.map(getMapper());
 
-    }
-
-    public Optional<AuthSource> verifyTokenForAuthSource(Optional<String> token) {
-        if (token.isPresent()) {
-            try {
-                QueryResponse response = getAuthenticationService().parseJwtToken(token.get());
-                if (getPredicate().test(response.getSource())) {
-                    return Optional.empty();
-                }
-            } catch (Exception e) {
-                return Optional.empty();
-            }
-        }
-        return token.map(getMapper());
     }
 }

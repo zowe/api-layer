@@ -22,6 +22,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -57,6 +58,11 @@ public class PATAuthSourceService extends TokenAuthSourceService {
     @Override
     public Function<String, AuthSource> getMapper() {
         return PATAuthSource::new;
+    }
+
+    @Override
+    public Optional<String> getToken(RequestContext context) {
+        return getAuthenticationService().getPATFromRequest(context.getRequest());
     }
 
     @Override
