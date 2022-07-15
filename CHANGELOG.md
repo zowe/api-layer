@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.5.0 (2022-07-15)`
+
+
+
+
+* Bugfix:  immediately expires passticket command (#2496) ([8adca78](https://github.com/zowe/api-layer/commit/8adca78)), closes [#2496](https://github.com/zowe/api-layer/issues/2496)
+
 ## `2.1.0 (2022-05-31)`
 
 * Feature:  Add trivial schema files for lib components. Update manifests to remove build metadata (#2379) ([6eba58f](https://github.com/zowe/api-layer/commit/6eba58f)), closes [#2379](https://github.com/zowe/api-layer/issues/2379)
