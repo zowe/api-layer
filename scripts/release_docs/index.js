@@ -61,7 +61,7 @@ ${restOfChangelog}`;
     await octokit.rest.pulls.create({
         owner: 'zowe',
         repo: 'api-layer',
-        title: 'Automatic update for the Changelog for release',
+        title: 'Automatic update for the Changelog for release - Do Not Merge',
         head: branch,
         base: branchToMerge,
         body: 'Update changelog for new release'
