@@ -3,8 +3,10 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
-            force = true
+        classpath("org.eclipse.jgit:org.eclipse.jgit") {
+            version {
+                strictly '5.13.0.202109080827-r'
+            }
         }
     }
 }
@@ -36,7 +38,7 @@ springBoot {
     buildInfo {
         properties {
             // Generate extra build info:
-            additionalProperties = [
+            additional = [
                 by             : System.properties['user.name'],
                 operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
                 number         : System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",

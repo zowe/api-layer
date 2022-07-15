@@ -2,8 +2,10 @@ buildscript {
     repositories mavenRepositories
     dependencies {
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
-            force = true
+        classpath("org.eclipse.jgit:org.eclipse.jgit") {
+            version {
+                strictly '5.13.0.202109080827-r'
+            }
         }
     }
 }
@@ -29,8 +31,8 @@ dependencies {
 
 jar {
     enabled true
-    baseName = "apiml-sample-extension"
-    archiveName = "${baseName}.jar"
+    archiveBaseName = "apiml-sample-extension"
+    archiveFileName = "${archiveBaseName}.jar"
 }
 
 publishing {

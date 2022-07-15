@@ -4,7 +4,7 @@ dependencies {
 }
 
 jar {
-    archiveName = "sample.jar"
+    archiveFileName = "sample.jar"
     manifest {
         attributes "Main-Class": "org.zowe.apiml.sample.PlainJavaEnablerApp"
     }

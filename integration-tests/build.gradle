@@ -59,7 +59,7 @@ dependencies {
 }
 
 jar {
-    baseName = "integration-tests"
+    archiveBaseName = "integration-tests"
 }
 
 test.enabled = false

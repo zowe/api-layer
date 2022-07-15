@@ -45,7 +45,7 @@ def getLiteLibJarOutput(file) {
 
 task liteLibJarAll(type: Jar) {
 
-    archiveName = getBaseNameLite() + ".jar"
+    archiveFileName = getBaseNameLite() + ".jar"
     entryCompression = ZipEntryCompression.STORED
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { rootProject.subprojects.collectMany {
