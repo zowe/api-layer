@@ -61,7 +61,7 @@ ${restOfChangelog}`;
 
     console.log("awaiting PR data...\n")
     const data = await getData();
-    const firstPR = getlLatestPRNumber(data);
+    const firstPR = getLatestPRNumber(data);
     const prChanges = execSync(firstPR).toString();
     console.log(prChanges);
 
