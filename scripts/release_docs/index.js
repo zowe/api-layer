@@ -58,7 +58,8 @@ ${restOfChangelog}`;
     console.log("display PR data:\n")
     const getData = () => octokit.request('/api-layer/pulls/zowe-robot');
     const getLatestPRNumber = (data) => data.length === 0 ? 0 : data[0];
-    console.log(getLatestPRNumber);
+    const prChanges = execSync(getLatestPRNumber).toString();
+    console.log(prChanges);
 
 
 
