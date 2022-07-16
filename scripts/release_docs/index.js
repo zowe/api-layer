@@ -56,7 +56,7 @@ ${restOfChangelog}`;
       // if PR exists (indicate with zowe robot or automatic changelog...), find branch associated with it then checkout that branch and make changes to that
       // else regular process
 
-    const getData = () => await octokit.request('/api-layer/pulls/zowe-robot');
+    const getData = () => octokit.request('/api-layer/pulls/zowe-robot');
     console.log(getData);
 
 
