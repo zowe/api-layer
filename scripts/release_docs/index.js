@@ -57,7 +57,7 @@ ${restOfChangelog}`;
       // else regular process
 
     console.log("fetch unshallow:\n")
-    let fetch = `git checkout origin/apiml/GH2503/GHA_update_existing_PR && git fetch --unshallow origin apiml/GH2503/GHA_update_existing_PR`;
+    let fetch = `git checkout origin/apiml/GH2503/GHA_update_existing_PR && git pull`;
     const fetchChanges = execSync(fetch).toString();
     console.log(fetchChanges);
 
