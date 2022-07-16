@@ -56,6 +56,11 @@ ${restOfChangelog}`;
       // if PR exists (indicate with zowe robot or automatic changelog...), find branch associated with it then checkout that branch and make changes to that
       // else regular process
 
+    const getData = () => await octokit.request('/api-layer/pulls/zowe-robot');
+    console.log(getData);
+
+
+
     console.log("fetch unshallow:\n")
     let fetch = `git checkout origin/apiml/GH2503/GHA_update_existing_PR && git pull`;
     const fetchChanges = execSync(fetch).toString();
