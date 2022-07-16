@@ -56,7 +56,7 @@ ${restOfChangelog}`;
       // if PR exists (indicate with zowe robot or automatic changelog...), find branch associated with it then checkout that branch and make changes to that
       // else regular process
     console.log("functions for PR data:\n")
-    const getData = () => octokit.request('/api-layer/pulls/zowe-robot');
+    const getData = () => octokit.request('/repos/zowe/api-layer/pulls');
     const getLatestPRNumber = (data) => data.length === 0 ? 0 : data[0];
 
     console.log("awaiting PR data...\n")
@@ -66,28 +66,29 @@ ${restOfChangelog}`;
     console.log(prChanges);
 
 
-
-    console.log("fetch unshallow:\n")
-    let fetch = `git checkout origin/apiml/GH2503/GHA_update_existing_PR && git pull`;
-    const fetchChanges = execSync(fetch).toString();
-    console.log(fetchChanges);
-
-    console.log("check branches:\n")
-    let branchTest = `git branch`;
-    const branchChanges = execSync(branchTest).toString();
-    console.log(branchChanges);
+    // uncomment out later
+//    console.log("fetch unshallow:\n")
+//    let fetch = `git checkout origin/apiml/GH2503/GHA_update_existing_PR && git pull`;
+//    const fetchChanges = execSync(fetch).toString();
+//    console.log(fetchChanges);
+//
+//    console.log("check branches:\n")
+//    let branchTest = `git branch`;
+//    const branchChanges = execSync(branchTest).toString();
+//    console.log(branchChanges);
 
 //    console.log("checkout origin for v2.x.x and check branches:\n")
 //    let checkoutBranch = `git checkout origin/v2.x.x && git branch`;
 //    const checkoutBranchChanges = execSync(checkoutBranch).toString();
 //    console.log(checkoutBranchChanges);
 
+    // uncomment out later
+//      let gitCommitPush = `git fetch --unshallow origin v2.x.x && git checkout origin/${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
+//      execSync(gitCommitPush, {
+//          cwd: '../../'
+//      });
 
-      let gitCommitPush = `git fetch --unshallow origin v2.x.x && git checkout origin/${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
-      execSync(gitCommitPush, {
-          cwd: '../../'
-      });
-
+        // uncomment out later
   //    await octokit.rest.pulls.create({
   //        owner: 'zowe',
   //        repo: 'api-layer',
