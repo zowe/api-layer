@@ -56,10 +56,10 @@ ${restOfChangelog}`;
       // if PR exists (indicate with zowe robot or automatic changelog...), find branch associated with it then checkout that branch and make changes to that
       // else regular process
 
-    console.log("fetch unshallow:\n")
-    let fetch = `git fetch --unshallow origin v2.x.x`;
-    const fetchChanges = execSync(fetch).toString();
-    console.log(fetchChanges);
+//    console.log("fetch unshallow:\n")
+//    let fetch = `git fetch --unshallow origin v2.x.x`;
+//    const fetchChanges = execSync(fetch).toString();
+//    console.log(fetchChanges);
 
     console.log("check branches:\n")
     let branchTest = `git branch`;
