@@ -99,6 +99,25 @@ ${restOfChangelog}`;
 //            cwd: '../../'
 //        });
 
+
+
+        console.log("git status output...\n");
+        let gitStatus = `git status`;
+
+        console.log(execSync(gitStatus, {
+            cwd: '../../'
+        })).toString();
+
+
+
+        console.log("git status porcelain output...\n");
+        let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
+
+        console.log(execSync(gitStatusPorcelain, {
+            cwd: '../../'
+        })).toString();
+
+
         console.log("git add output...\n");
         let gitAdd = `git add CHANGELOG.md`;
 
