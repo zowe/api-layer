@@ -70,13 +70,13 @@ ${restOfChangelog}`;
         console.log("PRs is 1...");
         let gitCommitPush = `git fetch origin && git checkout origin/${prevReleaseBranch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
 
-        let touchCommand = `touch myfile`
+        let touchCommand = `touch myfile`;
 
         execSync(touchCommand, {
             cwd: '../../'
         });
 
-        let lsCommand = `ls myfile 2>&1`
+        let lsCommand = `ls myfile; echo $?`;
 
         execSync(lsCommand, {
             cwd: '../../'
