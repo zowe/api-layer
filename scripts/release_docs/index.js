@@ -93,7 +93,7 @@ ${restOfChangelog}`;
 
         await writeFile('../../CHANGELOG.md', changelogToStore);
 
-        let gitCommitPush = `git pull && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
+        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin`;
 
         execSync(gitCommitPush, {
             cwd: '../../'
