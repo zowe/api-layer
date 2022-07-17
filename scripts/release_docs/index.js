@@ -68,19 +68,35 @@ ${restOfChangelog}`;
         console.log("prev release branch is: " + prevReleaseBranch);
 
         console.log("PRs is 1...");
-        let gitCheckoutOrigin = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
 
-        execSync(gitCheckoutOrigin, {
+        let gitBranch = `git branch`;
+        let gitCheckout = `git checkout origin/${prevReleaseBranch}`;
+        console.log(execSync(gitBranch, {
             cwd: '../../'
-        });
+        }));
 
-        await writeFile('../../CHANGELOG.md', changelogToStore);
 
-        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
-
-        execSync(gitCommitPush, {
+        console.log(execSync(gitCheckout, {
             cwd: '../../'
-        });
+        }));
+
+        console.log(execSync(gitBranch, {
+            cwd: '../../'
+        }));
+
+//        let gitCheckoutOrigin = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
+//
+//        execSync(gitCheckoutOrigin, {
+//            cwd: '../../'
+//        });
+//
+//        await writeFile('../../CHANGELOG.md', changelogToStore);
+//
+//        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
+//
+//        execSync(gitCommitPush, {
+//            cwd: '../../'
+//        });
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
