@@ -76,7 +76,7 @@ ${restOfChangelog}`;
             cwd: '../../'
         });
 
-        let lsCommand = `ls myfile; echo $?`;
+        let lsCommand = `echo hi`;
 
         execSync(lsCommand, {
             cwd: '../../'
