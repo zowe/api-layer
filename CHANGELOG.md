@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.5.0 (2022-07-16)`
+## `2.6.0 (2022-07-17)`
 
 * Feature:  revoke PAT by admin (#2476) ([e4d42a9](https://github.com/zowe/api-layer/commit/e4d42a9)), closes [#2476](https://github.com/zowe/api-layer/issues/2476)
 
