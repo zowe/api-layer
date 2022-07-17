@@ -76,11 +76,13 @@ ${restOfChangelog}`;
             cwd: '../../'
         });
 
-        let lsCommand = `echo hi`;
+        let lsCommand = `ls myfile`;
 
-        execSync(lsCommand, {
+        const myOut = execSync(lsCommand, {
             cwd: '../../'
         });
+
+        console.log(myOut);
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
