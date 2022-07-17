@@ -93,11 +93,32 @@ ${restOfChangelog}`;
 
         await writeFile('../../CHANGELOG.md', changelogToStore);
 
-        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${prevReleaseBranch}`;
+//        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${prevReleaseBranch}`;
+//
+//        execSync(gitCommitPush, {
+//            cwd: '../../'
+//        });
 
-        execSync(gitCommitPush, {
+        console.log("git add output...\n");
+        let gitAdd = `git add CHANGELOG.md`;
+
+        console.log(execSync(gitAdd, {
             cwd: '../../'
-        });
+        })).toString();
+
+        console.log("git commit output...\n");
+        let gitCommit = `git commit --signoff -m "Update changelog"`;
+
+        console.log(execSync(gitCommit, {
+            cwd: '../../'
+        })).toString();
+
+
+        console.log("git push output...\n");
+        let gitPush = `git push origin HEAD:${prevReleaseBranch}`;
+        console.log(execSync(gitPush, {
+            cwd: '../../'
+        })).toString();
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
