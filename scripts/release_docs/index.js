@@ -58,7 +58,9 @@ ${restOfChangelog}`;
     console.log("functions for PR data:\n")
     const prs = (await octokit.request("GET /repos/zowe/api-layer/pulls")).data;
 
-    const changelogPrs = prs.filter(pr => pr["user"]["login"] == "zowe-robot" && pr["body"] == "Update changelog for new release")
+    const changelogPrs = prs.filter(pr => pr["user"]["login"] == "zowe-robot" &&
+    pr["title"] == "Automatic update for the Changelog for release - Do Not Merge" &&
+    pr["body"] == "Update changelog for new release")
 //    const getLatestPRNumber = (data) => data.length === 0 ? 0 : data[0];
 
 //    console.log("awaiting PR data...\n")
