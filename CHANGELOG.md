@@ -2,11 +2,15 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.5.0 (2022-07-15)`
+## `2.5.0 (2022-07-16)`
+
+* Feature:  revoke PAT by admin (#2476) ([e4d42a9](https://github.com/zowe/api-layer/commit/e4d42a9)), closes [#2476](https://github.com/zowe/api-layer/issues/2476)
 
 
-
-
+* Bugfix:  console.log ([b4f8b66](https://github.com/zowe/api-layer/commit/b4f8b66))
+* Bugfix:  git push origin detached head state ([7d7cd8f](https://github.com/zowe/api-layer/commit/7d7cd8f))
+* Bugfix:  git push origin only ([d193942](https://github.com/zowe/api-layer/commit/d193942))
+* Bugfix:  ref error ([22bfa23](https://github.com/zowe/api-layer/commit/22bfa23))
 * Bugfix:  immediately expires passticket command (#2496) ([8adca78](https://github.com/zowe/api-layer/commit/8adca78)), closes [#2496](https://github.com/zowe/api-layer/issues/2496)
 
 ## `2.1.0 (2022-05-31)`
