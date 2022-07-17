@@ -106,7 +106,7 @@ ${restOfChangelog}`;
 
         console.log(execSync(gitStatus, {
             cwd: '../../'
-        }));
+        }).toString());
 
 
 
@@ -115,7 +115,7 @@ ${restOfChangelog}`;
 
         console.log(execSync(gitStatusPorcelain, {
             cwd: '../../'
-        }));
+        }).toString());
 
 
 //        console.log("git add output...\n");
