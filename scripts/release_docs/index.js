@@ -56,13 +56,15 @@ ${restOfChangelog}`;
       // if PR exists (indicate with zowe robot or automatic changelog...), find branch associated with it then checkout that branch and make changes to that
       // else regular process
     console.log("functions for PR data:\n")
-    const prs = await octokit.request("GET /repos/zowe/api-layer/pulls");
+    const prs = (await octokit.request("GET /repos/zowe/api-layer/pulls")).data;
+
+//    const changelogPrs = prs.filter()
 //    const getLatestPRNumber = (data) => data.length === 0 ? 0 : data[0];
 
 //    console.log("awaiting PR data...\n")
 //    const data = await getData();
 //    const firstPR = getLatestPRNumber(data).toString();
-    console.log(prs.data);
+    console.log(prs);
 
 
     // uncomment out later
