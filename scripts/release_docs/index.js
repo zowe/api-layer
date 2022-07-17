@@ -62,25 +62,27 @@ ${restOfChangelog}`;
     pr["title"] == "Automatic update for the Changelog for release - Do Not Merge" &&
     pr["body"] == "Update changelog for new release");
 
-    console.log(changelogPrs);
+//    console.log(changelogPrs);
 
     var assert = require('assert');
-    assert(changelogPrs <= 1, "More than one pull request exists, cannot add new updates to the changelog");
+    assert(changelogPrs.length <= 1, "More than one pull request exists, cannot add new updates to the changelog");
 
-    if (changelogPrs === 1) {
+    if (changelogPrs.length === 1) {
         // PR exists, use that branch to merge new updates
         const prevReleaseBranch = changelogPrs[0]["head"]["ref"];
+        console.log("prev release branch is: " + prevReleaseBranch);
 
-        console.log("PRs is 1...")
+        console.log("PRs is 1...");
         let gitCommitPush = `git fetch origin && git checkout origin/${prevReleaseBranch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
 
         execSync(gitCommitPush, {
             cwd: '../../'
         });
     }
-    else if (changelogPrs === 0) {
+    else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
+        console.log("new release branch is: " + branch);
 
         console.log("PRs is 0...")
         let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
