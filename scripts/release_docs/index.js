@@ -70,19 +70,19 @@ ${restOfChangelog}`;
         console.log("PRs is 1...");
 
         let gitBranch = `git branch`;
-        let gitCheckout = `git checkout origin/${prevReleaseBranch}`;
+        let gitCheckout = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
         console.log(execSync(gitBranch, {
             cwd: '../../'
-        }));
+        }).toString());
 
 
         console.log(execSync(gitCheckout, {
             cwd: '../../'
-        }));
+        }).toString());
 
         console.log(execSync(gitBranch, {
             cwd: '../../'
-        }));
+        }).toString());
 
 //        let gitCheckoutOrigin = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
 //
