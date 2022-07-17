@@ -71,15 +71,16 @@ ${restOfChangelog}`;
 
         let gitBranch = `git branch`;
         let gitCheckout = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
+        console.log("my old git branch:\n")
         console.log(execSync(gitBranch, {
             cwd: '../../'
         }).toString());
 
-
-        console.log(execSync(gitCheckout, {
+        execSync(gitCheckout, {
             cwd: '../../'
-        }).toString());
+        });
 
+        console.log("my new git branch:\n")
         console.log(execSync(gitBranch, {
             cwd: '../../'
         }).toString());
