@@ -69,35 +69,35 @@ ${restOfChangelog}`;
 
         console.log("PRs is 1...");
 
-        let gitBranch = `git branch`;
-        let gitCheckout = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
-        console.log("my old git branch:\n")
-        console.log(execSync(gitBranch, {
-            cwd: '../../'
-        }).toString());
+//        let gitBranch = `git branch`;
+//        let gitCheckout = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
+//        console.log("my old git branch:\n")
+//        console.log(execSync(gitBranch, {
+//            cwd: '../../'
+//        }).toString());
+//
+//        execSync(gitCheckout, {
+//            cwd: '../../'
+//        });
+//
+//        console.log("my new git branch:\n")
+//        console.log(execSync(gitBranch, {
+//            cwd: '../../'
+//        }).toString());
 
-        execSync(gitCheckout, {
+        let gitCheckoutOrigin = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
+
+        execSync(gitCheckoutOrigin, {
             cwd: '../../'
         });
 
-        console.log("my new git branch:\n")
-        console.log(execSync(gitBranch, {
-            cwd: '../../'
-        }).toString());
+        await writeFile('../../CHANGELOG.md', changelogToStore);
 
-//        let gitCheckoutOrigin = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
-//
-//        execSync(gitCheckoutOrigin, {
-//            cwd: '../../'
-//        });
-//
-//        await writeFile('../../CHANGELOG.md', changelogToStore);
-//
-//        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
-//
-//        execSync(gitCommitPush, {
-//            cwd: '../../'
-//        });
+        let gitCommitPush = `git pull && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
+
+        execSync(gitCommitPush, {
+            cwd: '../../'
+        });
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
