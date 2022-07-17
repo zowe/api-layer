@@ -85,7 +85,7 @@ ${restOfChangelog}`;
 //            cwd: '../../'
 //        }).toString());
 
-        let gitCheckoutOrigin = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
+        let gitCheckoutOrigin = `git fetch origin --quiet && git checkout origin/${prevReleaseBranch}`;
 
         execSync(gitCheckoutOrigin, {
             cwd: '../../'
@@ -106,7 +106,7 @@ ${restOfChangelog}`;
 
         console.log(execSync(gitStatus, {
             cwd: '../../'
-        })).toString();
+        }));
 
 
 
@@ -115,29 +115,29 @@ ${restOfChangelog}`;
 
         console.log(execSync(gitStatusPorcelain, {
             cwd: '../../'
-        })).toString();
+        }));
 
 
-        console.log("git add output...\n");
-        let gitAdd = `git add CHANGELOG.md`;
-
-        execSync(gitAdd, {
-            cwd: '../../'
-        });
-
-        console.log("git commit output...\n");
-        let gitCommit = `git commit --signoff -m "Update changelog"`;
-
-        console.log(execSync(gitCommit, {
-            cwd: '../../'
-        })).toString();
-
-
-        console.log("git push output...\n");
-        let gitPush = `git push origin HEAD:${prevReleaseBranch}`;
-        console.log(execSync(gitPush, {
-            cwd: '../../'
-        })).toString();
+//        console.log("git add output...\n");
+//        let gitAdd = `git add CHANGELOG.md`;
+//
+//        execSync(gitAdd, {
+//            cwd: '../../'
+//        });
+//
+//        console.log("git commit output...\n");
+//        let gitCommit = `git commit --signoff -m "Update changelog"`;
+//
+//        console.log(execSync(gitCommit, {
+//            cwd: '../../'
+//        })).toString();
+//
+//
+//        console.log("git push output...\n");
+//        let gitPush = `git push origin HEAD:${prevReleaseBranch}`;
+//        console.log(execSync(gitPush, {
+//            cwd: '../../'
+//        })).toString();
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
