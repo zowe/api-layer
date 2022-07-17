@@ -64,9 +64,6 @@ ${restOfChangelog}`;
 
 //    console.log(changelogPrs);
 
-    var assert = require('assert');
-    assert(changelogPrs.length <= 1, "More than one pull request exists, cannot add new updates to the changelog");
-
     if (changelogPrs.length === 1) {
         // PR exists, use that branch to merge new updates
         const prevReleaseBranch = changelogPrs[0]["head"]["ref"];
@@ -99,6 +96,9 @@ ${restOfChangelog}`;
             base: branchToMerge,
             body: 'Update changelog for new release'
         });
+    }
+    else {
+        throw AssertionError("More than one pull request exists, cannot add new updates to the changelog");
     }
 
 
