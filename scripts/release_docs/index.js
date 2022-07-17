@@ -68,21 +68,19 @@ ${restOfChangelog}`;
         console.log("prev release branch is: " + prevReleaseBranch);
 
         console.log("PRs is 1...");
-        let gitCommitPush = `git fetch origin && git checkout origin/${prevReleaseBranch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
+        let gitCheckoutOrigin = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
 
-        let touchCommand = `touch myfile`;
-
-        execSync(touchCommand, {
+        execSync(gitCheckoutOrigin, {
             cwd: '../../'
         });
 
-        let lsCommand = `ls myfile`;
+        await writeFile('../../CHANGELOG.md', changelogToStore);
 
-        const myOut = execSync(lsCommand, {
+        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
+
+        execSync(gitCommitPush, {
             cwd: '../../'
-        }).toString();
-
-        console.log(myOut);
+        });
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
