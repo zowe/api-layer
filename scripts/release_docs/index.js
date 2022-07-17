@@ -51,7 +51,7 @@ ${restOfChangelog}`;
     await writeFile('../../CHANGELOG.md', changelogToStore);
 
     const octokit = new Octokit({auth: githubToken});
-    const branch = `apiml/release/${version.replace(/\./g, "_")}`;
+//    const branch = `apiml/release/${version.replace(/\./g, "_")}`;
 
       // if PR exists (indicate with zowe robot or automatic changelog...), find branch associated with it then checkout that branch and make changes to that
       // else regular process
@@ -60,13 +60,51 @@ ${restOfChangelog}`;
 
     const changelogPrs = prs.filter(pr => pr["user"]["login"] == "zowe-robot" &&
     pr["title"] == "Automatic update for the Changelog for release - Do Not Merge" &&
-    pr["body"] == "Update changelog for new release")
+    pr["body"] == "Update changelog for new release");
+
+    console.log(changelogPrs);
+
+    var assert = require('assert');
+    assert(changelogPrs <= 1, "More than one pull request exists, cannot add new updates to the changelog");
+
+    if (changelogPrs === 1) {
+        // PR exists, use that branch to merge new updates
+        const prevReleaseBranch = changelogPrs[0]["head"]["ref"];
+
+        console.log("PRs is 1...")
+        let gitCommitPush = `git fetch origin && git checkout origin/${prevReleaseBranch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
+
+        execSync(gitCommitPush, {
+            cwd: '../../'
+        });
+    }
+    else if (changelogPrs === 0) {
+        // make new PR since none exist for changelog
+        const branch = `apiml/release/${version.replace(/\./g, "_")}`;
+
+        console.log("PRs is 0...")
+        let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
+
+        execSync(gitCommitPush, {
+            cwd: '../../'
+        });
+
+        await octokit.rest.pulls.create({
+            owner: 'zowe',
+            repo: 'api-layer',
+            title: 'Automatic update for the Changelog for release - Do Not Merge',
+            head: branch,
+            base: branchToMerge,
+            body: 'Update changelog for new release'
+        });
+    }
+
+
 //    const getLatestPRNumber = (data) => data.length === 0 ? 0 : data[0];
 
 //    console.log("awaiting PR data...\n")
 //    const data = await getData();
 //    const firstPR = getLatestPRNumber(data).toString();
-    console.log(changelogPrs);
 
 
     // uncomment out later
