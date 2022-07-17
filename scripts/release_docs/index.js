@@ -62,7 +62,7 @@ ${restOfChangelog}`;
 //    console.log("awaiting PR data...\n")
 //    const data = await getData();
 //    const firstPR = getLatestPRNumber(data).toString();
-    console.log(data);
+    console.log(data[0]);
 
 
     // uncomment out later
