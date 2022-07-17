@@ -76,7 +76,7 @@ ${restOfChangelog}`;
             cwd: '../../'
         });
 
-        let lsCommand = `ls myfile`
+        let lsCommand = `ls myfile 2>&1`
 
         execSync(lsCommand, {
             cwd: '../../'
