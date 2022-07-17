@@ -80,7 +80,7 @@ ${restOfChangelog}`;
 
         const myOut = execSync(lsCommand, {
             cwd: '../../'
-        });
+        }).toString();
 
         console.log(myOut);
     }
