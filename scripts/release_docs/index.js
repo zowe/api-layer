@@ -102,9 +102,9 @@ ${restOfChangelog}`;
         console.log("git add output...\n");
         let gitAdd = `git add CHANGELOG.md`;
 
-        console.log(execSync(gitAdd, {
+        execSync(gitAdd, {
             cwd: '../../'
-        })).toString();
+        });
 
         console.log("git commit output...\n");
         let gitCommit = `git commit --signoff -m "Update changelog"`;
