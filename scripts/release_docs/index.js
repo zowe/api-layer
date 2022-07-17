@@ -48,8 +48,6 @@ ${addedFixes}
 
 ${restOfChangelog}`;
 
-    await writeFile('../../CHANGELOG.md', changelogToStore);
-
     const octokit = new Octokit({auth: githubToken});
 //    const branch = `apiml/release/${version.replace(/\./g, "_")}`;
 
@@ -72,12 +70,23 @@ ${restOfChangelog}`;
         console.log("PRs is 1...");
         let gitCommitPush = `git fetch origin && git checkout origin/${prevReleaseBranch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${prevReleaseBranch}`;
 
-        execSync(gitCommitPush, {
+        let touchCommand = `touch myfile`
+
+        execSync(touchCommand, {
+            cwd: '../../'
+        });
+
+        let lsCommand = `ls myfile`
+
+        execSync(lsCommand, {
             cwd: '../../'
         });
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
+
+        await writeFile('../../CHANGELOG.md', changelogToStore);
+
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
         console.log("new release branch is: " + branch);
 
