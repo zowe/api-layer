@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.eurekaservice.client.util;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
@@ -28,29 +29,41 @@ class EurekaMetadataParserTest {
 
     private final EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
 
-    @Test
-    void testParseApiInfo() {
-        Map<String, String> metadata = new HashMap<>();
-        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "gatewayUrl");
-        metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
-        metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, "swagger");
-        metadata.put(API_INFO + ".2." + API_INFO_DOCUMENTATION_URL, "doc");
-        metadata.put(API_INFO + ".1." + API_INFO_API_ID, "zowe.apiml.test");
-        metadata.put(API_INFO + ".1." + API_INFO_VERSION, "1.0.0");
-        metadata.put(API_INFO + ".1." + API_INFO_IS_DEFAULT, "true");
-        metadata.put(API_INFO + ".1.badArgument", "garbage");
+    @Nested
+    class WhenParseApiInfo {
+        @Test
+        void givenTwoEntries_thenReturnTwoInstances() {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "gatewayUrl");
+            metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
+            metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, "swagger");
+            metadata.put(API_INFO + ".2." + API_INFO_DOCUMENTATION_URL, "doc");
+            metadata.put(API_INFO + ".1." + API_INFO_API_ID, "zowe.apiml.test");
+            metadata.put(API_INFO + ".1." + API_INFO_VERSION, "1.0.0");
+            metadata.put(API_INFO + ".1." + API_INFO_IS_DEFAULT, "true");
 
-        List<ApiInfo> info = eurekaMetadataParser.parseApiInfo(metadata);
+            List<ApiInfo> info = eurekaMetadataParser.parseApiInfo(metadata);
 
-        assertEquals(2, info.size());
-        assertEquals("gatewayUrl", info.get(0).getGatewayUrl());
-        assertEquals("zowe.apiml.test", info.get(0).getApiId());
-        assertEquals("1.0.0", info.get(0).getVersion());
-        assertTrue(info.get(0).isDefaultApi());
-        assertEquals("gatewayUrl2", info.get(1).getGatewayUrl());
-        assertEquals("swagger", info.get(1).getSwaggerUrl());
-        assertEquals("doc", info.get(1).getDocumentationUrl());
-        assertFalse(info.get(1).isDefaultApi());
+            assertEquals(2, info.size());
+            assertEquals("gatewayUrl", info.get(0).getGatewayUrl());
+            assertEquals("zowe.apiml.test", info.get(0).getApiId());
+            assertEquals("1.0.0", info.get(0).getVersion());
+            assertTrue(info.get(0).isDefaultApi());
+            assertEquals("gatewayUrl2", info.get(1).getGatewayUrl());
+            assertEquals("swagger", info.get(1).getSwaggerUrl());
+            assertEquals("doc", info.get(1).getDocumentationUrl());
+            assertFalse(info.get(1).isDefaultApi());
+        }
+
+        @Test
+        void givenBadField_thenDontReturnInstance() {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put(API_INFO + ".1." + API_INFO_API_ID, "zowe.apiml.test");
+            metadata.put(API_INFO + ".2." + "badargument", "value");
+
+            List<ApiInfo> info = eurekaMetadataParser.parseApiInfo(metadata);
+            assertEquals(1, info.size());
+        }
     }
 
     @Test
@@ -71,11 +84,11 @@ class EurekaMetadataParserTest {
 
         RoutedServices expectedRoutes = new RoutedServices();
         expectedRoutes.addRoutedService(
-                new RoutedService("api-v1", "api/v1", "/"));
+            new RoutedService("api-v1", "api/v1", "/"));
         expectedRoutes.addRoutedService(
-                new RoutedService("api-v2", "api/v2", "/test"));
+            new RoutedService("api-v2", "api/v2", "/test"));
         expectedRoutes.addRoutedService(
-                new RoutedService("api-v5", "api/v5", "/test"));
+            new RoutedService("api-v5", "api/v5", "/test"));
 
         assertEquals(expectedRoutes.toString(), routes.toString());
     }
@@ -96,9 +109,9 @@ class EurekaMetadataParserTest {
 
         List<RoutedService> actualRoutes = eurekaMetadataParser.parseToListRoute(metadata);
         List<RoutedService> expectedListRoute = Arrays.asList(
-                new RoutedService("api-v1", "api/v1", "/"),
-                new RoutedService("api-v2", "api/v2", "/test"),
-                new RoutedService("api-v5", "api/v5", "/test")
+            new RoutedService("api-v1", "api/v1", "/"),
+            new RoutedService("api-v2", "api/v2", "/test"),
+            new RoutedService("api-v5", "api/v5", "/test")
         );
 
         assertEquals(3, actualRoutes.size(), "List route size is different");

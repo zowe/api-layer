@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,13 +34,13 @@ import java.util.List;
 @SuperBuilder
 public class ApiInfo {
 
-    public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String documentationUrl, List<CodeSnippet> codeSnippet) {
+    public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String documentationUrl) {
         this.apiId = apiId;
         this.gatewayUrl = gatewayUrl;
         this.version = version;
         this.swaggerUrl = swaggerUrl;
         this.documentationUrl = documentationUrl;
-        this.codeSnippet = codeSnippet;
+        this.codeSnippet = new ArrayList<>();
     }
 
     /**
