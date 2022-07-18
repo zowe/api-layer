@@ -57,7 +57,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
         this.isPATEnabled = isPATEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
-        if(isPATEnabled){
+        if (isPATEnabled) {
             map.put(AuthSourceType.PAT, patAuthSourceService);
         }
     }
