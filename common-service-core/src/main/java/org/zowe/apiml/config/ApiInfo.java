@@ -40,7 +40,6 @@ public class ApiInfo {
         this.version = version;
         this.swaggerUrl = swaggerUrl;
         this.documentationUrl = documentationUrl;
-        this.codeSnippet = new ArrayList<>();
     }
 
     /**
@@ -64,7 +63,8 @@ public class ApiInfo {
     private String version;
     private String swaggerUrl;
     private String documentationUrl;
-    private List<CodeSnippet> codeSnippet;
+
+    private CodeSnippet codeSnippet;
 
     @JsonDeserialize(using = StringToBooleanDeserializer.class)
     @Builder.Default

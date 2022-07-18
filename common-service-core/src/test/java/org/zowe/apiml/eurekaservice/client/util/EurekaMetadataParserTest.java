@@ -34,6 +34,9 @@ class EurekaMetadataParserTest {
         @Test
         void givenTwoEntries_thenReturnTwoInstances() {
             Map<String, String> metadata = new HashMap<>();
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + "." + CODE_SNIPPET_ENDPOINT, "endpoint");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + "." + CODE_SNIPPET_LANGUAGE, "java");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + "." + CODE_SNIPPET_CODE_BLOCK, "codeblock");
             metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "gatewayUrl");
             metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
             metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, "swagger");

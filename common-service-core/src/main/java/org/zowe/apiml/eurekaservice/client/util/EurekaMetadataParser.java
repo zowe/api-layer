@@ -43,18 +43,27 @@ public class EurekaMetadataParser {
      * @return ApiInfo list
      */
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
-        Map<String, Map<String, String>> collectedApiInfoEntries = new HashMap<>();
+        Map<String, Map<String, Object>> collectedApiInfoEntries = new HashMap<>();
         eurekaMetadata.entrySet()
             .stream()
             .filter(metadata -> metadata.getKey().startsWith(API_INFO))
             .forEach(metadata -> {
                 String[] keys = metadata.getKey().split("\\.");
-                if (keys.length == 4) {
-                    collectedApiInfoEntries.putIfAbsent(keys[2], new HashMap<>());
-                    Map<String, String> apiInfoEntries = collectedApiInfoEntries.get(keys[2]);
+                if (keys.length >= 4) { // at least 4 keys split by '.' if is an ApiInfo config entry
+                    String entryIndex = keys[2];
+                    collectedApiInfoEntries.putIfAbsent(entryIndex, new HashMap<>());
+                    Map<String, Object> apiInfoEntries = collectedApiInfoEntries.get(entryIndex);
 
-                    apiInfoEntries.put(keys[3], metadata.getValue());
-                    collectedApiInfoEntries.put(keys[2], apiInfoEntries);
+                    if (metadata.getKey().contains(CODE_SNIPPET)) {
+                        apiInfoEntries.putIfAbsent(keys[3], new HashMap<>());
+                        Map<String, String> codeSnippetMap = (Map<String, String>) apiInfoEntries.get(keys[3]);
+
+                        codeSnippetMap.put(keys[4], metadata.getValue());
+                        apiInfoEntries.put(keys[3], codeSnippetMap);
+                    } else {
+                        apiInfoEntries.put(keys[3], metadata.getValue());
+                    }
+                    collectedApiInfoEntries.put(entryIndex, apiInfoEntries);
                 }
             });
 
