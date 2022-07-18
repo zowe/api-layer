@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -41,6 +42,8 @@ import java.util.Optional;
 public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
+    private boolean isPATEnabled;
+
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
      *
@@ -49,10 +52,14 @@ public class DefaultAuthSourceService implements AuthSourceService {
      */
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
-                                    PATAuthSourceService patAuthSourceService) {
+                                    PATAuthSourceService patAuthSourceService,
+                                    @Value("${apiml.security.personalAccessToken.enabled}") boolean isPATEnabled) {
+        this.isPATEnabled = isPATEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
-        map.put(AuthSourceType.PAT, patAuthSourceService);
+        if(isPATEnabled){
+            map.put(AuthSourceType.PAT, patAuthSourceService);
+        }
     }
 
     /**
@@ -70,7 +77,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         AuthSourceService service = getService(AuthSourceType.JWT);
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
-        if (!authSource.isPresent()) {
+        if (!authSource.isPresent() && isPATEnabled) {
             service = getService(AuthSourceType.PAT);
             authSource = service.getAuthSourceFromRequest();
         }
