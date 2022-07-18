@@ -69,22 +69,6 @@ ${restOfChangelog}`;
 
         console.log("PRs is 1...");
 
-//        let gitBranch = `git branch`;
-//        let gitCheckout = `git fetch origin && git checkout origin/${prevReleaseBranch}`;
-//        console.log("my old git branch:\n")
-//        console.log(execSync(gitBranch, {
-//            cwd: '../../'
-//        }).toString());
-//
-//        execSync(gitCheckout, {
-//            cwd: '../../'
-//        });
-//
-//        console.log("my new git branch:\n")
-//        console.log(execSync(gitBranch, {
-//            cwd: '../../'
-//        }).toString());
-
         let gitCheckoutOrigin = `git fetch origin --quiet && git checkout origin/${prevReleaseBranch}`;
 
         execSync(gitCheckoutOrigin, {
@@ -99,51 +83,52 @@ ${restOfChangelog}`;
 //            cwd: '../../'
 //        });
 
-
-
-        console.log("git status output...\n");
-        let gitStatus = `git status`;
-
-        console.log(execSync(gitStatus, {
-            cwd: '../../'
-        }).toString());
-
-
-
         console.log("git status porcelain output...\n");
         let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
 
-        console.log(execSync(gitStatusPorcelain, {
+        let gitStatusPorcelainOutput = execSync(gitStatusPorcelain, {
             cwd: '../../'
-        }).toString());
+        }).toString();
 
-        console.log("what's in the changelog?\n");
-        let myCommand = `cat CHANGELOG.md`
-        console.log(execSync(myCommand, {
-            cwd: '../../'
-        }).toString());
+        if (gitStatusPorcelainOutput.length != 0) {
+            console.log("output exists from git status\n");
+            let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${prevReleaseBranch}`;
 
+            execSync(gitCommitPush, {
+                cwd: '../../'
+            });
+        }
+        else {
+            console.log("no output from git status\n");
+        }
 
-        console.log("git add output...\n");
-        let gitAdd = `git add CHANGELOG.md`;
-
-        execSync(gitAdd, {
-            cwd: '../../'
-        });
-
-        console.log("git commit output...\n");
-        let gitCommit = `git commit --signoff -m "Update changelog"`;
-
-        console.log(execSync(gitCommit, {
-            cwd: '../../'
-        }).toString());
-
-
-        console.log("git push output...\n");
-        let gitPush = `git push origin HEAD:${prevReleaseBranch}`;
-        console.log(execSync(gitPush, {
-            cwd: '../../'
-        }).toString());
+//        console.log("what's in the changelog?\n");
+//        let myCommand = `cat CHANGELOG.md`
+//        console.log(execSync(myCommand, {
+//            cwd: '../../'
+//        }).toString());
+//
+//
+//        console.log("git add output...\n");
+//        let gitAdd = `git add CHANGELOG.md`;
+//
+//        execSync(gitAdd, {
+//            cwd: '../../'
+//        });
+//
+//        console.log("git commit output...\n");
+//        let gitCommit = `git commit --signoff -m "Update changelog"`;
+//
+//        console.log(execSync(gitCommit, {
+//            cwd: '../../'
+//        }).toString());
+//
+//
+//        console.log("git push output...\n");
+//        let gitPush = `git push origin HEAD:${prevReleaseBranch}`;
+//        console.log(execSync(gitPush, {
+//            cwd: '../../'
+//        }).toString());
     }
     else if (changelogPrs.length === 0) {
         // make new PR since none exist for changelog
