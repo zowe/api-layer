@@ -83,7 +83,8 @@ ${restOfChangelog}`;
         }
         else {
             console.log("No new changes in CHANGELOG.md\n");
-            throw AssertionError("More than one pull request exists, cannot add new updates to the changelog");
+            const assert = require('assert');
+            assert(changelogPrs.length <= 1, "More than one pull request exists, cannot add new updates to the changelog");
         }
     }
     else if (changelogPrs.length === 0) {

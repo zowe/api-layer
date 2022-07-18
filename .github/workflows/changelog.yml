@@ -37,4 +37,5 @@ jobs:
                   cd scripts/release_docs
                   npm install
                   npm install -g conventional-changelog-cli
+                  npm install assert
                   node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }} ${{ github.ref_name }}
