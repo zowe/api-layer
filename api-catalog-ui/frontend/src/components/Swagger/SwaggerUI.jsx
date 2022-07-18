@@ -9,7 +9,7 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUi from 'swagger-ui-react/swagger-ui-es-bundle-core';
+import SwaggerUi from 'swagger-ui-react';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
@@ -29,8 +29,6 @@ function transformSwaggerToCurrentHost(swagger) {
                 // not a proper url, assume it is an endpoint
                 server.url = location + server;
             }
-            // eslint-disable-next-line no-console
-            console.log(`Resulting server url: ${server.url}`);
         });
     }
 
@@ -38,8 +36,16 @@ function transformSwaggerToCurrentHost(swagger) {
 }
 
 export default class SwaggerUI extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            swaggerReady: false,
+            swaggerProps: {},
+        };
+    }
+
     componentDidMount() {
-        this.retrieveSwagger();
+        this.setSwaggerState();
     }
 
     componentDidUpdate(prevProps) {
@@ -49,9 +55,10 @@ export default class SwaggerUI extends Component {
             selectedService.tileId !== prevProps.selectedService.tileId ||
             selectedVersion !== prevProps.selectedVersion
         ) {
-            this.retrieveSwagger();
+            this.setSwaggerState();
         }
     }
+
     customPlugins = () => ({
         statePlugins: {
             spec: {
@@ -74,7 +81,7 @@ export default class SwaggerUI extends Component {
         },
         wrapComponents: {
             // prettier-ignore
-            // eslint-disable-next-line no-shadow
+            // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
             operations: (Original, { React }) => props => { // NOSONAR
                 const { selectedService, selectedVersion } = this.props;
                 return (
@@ -87,7 +94,7 @@ export default class SwaggerUI extends Component {
         },
     });
 
-    retrieveSwagger = () => {
+    setSwaggerState = () => {
         const { selectedService, selectedVersion } = this.props;
         try {
             // If no version selected use the default apiDoc
@@ -99,30 +106,36 @@ export default class SwaggerUI extends Component {
             ) {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
-                SwaggerUi({
-                    dom_id: '#swaggerContainer',
-                    spec: swagger,
-                    presets: [SwaggerUi.presets.apis],
-                    requestSnippetsEnabled: true,
-                    plugins: [this.customPlugins, BasicSnippedGenerator, AdvancedFilterPlugin],
-                    filter: true,
+                this.setState({
+                    swaggerReady: true,
+                    swaggerProps: {
+                        dom_id: '#swaggerContainer',
+                        spec: swagger,
+                        presets: [SwaggerUi.presets.apis],
+                        requestSnippetsEnabled: true,
+                        plugins: [this.customPlugins, BasicSnippedGenerator, AdvancedFilterPlugin],
+                        filter: true,
+                    },
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
                 const basePath = `${selectedService.serviceId}/${selectedVersion}`;
                 const url = `${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
-                SwaggerUi({
-                    dom_id: '#swaggerContainer',
-                    url,
-                    presets: [SwaggerUi.presets.apis],
-                    requestSnippetsEnabled: true,
-                    plugins: [this.customPlugins, BasicSnippedGenerator, AdvancedFilterPlugin],
-                    filter: true,
-                    responseInterceptor: (res) => {
-                        // response.text field is used to render the swagger
-                        const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
-                        res.text = JSON.stringify(swagger);
-                        return res;
+                this.setState({
+                    swaggerReady: true,
+                    swaggerProps: {
+                        dom_id: '#swaggerContainer',
+                        url,
+                        presets: [SwaggerUi.presets.apis],
+                        requestSnippetsEnabled: true,
+                        plugins: [this.customPlugins, BasicSnippedGenerator, AdvancedFilterPlugin],
+                        filter: true,
+                        responseInterceptor: (res) => {
+                            // response.text field is used to render the swagger
+                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
+                            res.text = JSON.stringify(swagger);
+                            return res;
+                        },
                     },
                 });
             }
@@ -133,6 +146,7 @@ export default class SwaggerUI extends Component {
 
     render() {
         const { selectedService } = this.props;
+        const { swaggerReady, swaggerProps } = this.state;
         let error = false;
         if (
             selectedService.apiDoc === undefined ||
@@ -151,7 +165,11 @@ export default class SwaggerUI extends Component {
                         </h4>
                     </div>
                 )}
-                {!error && <div id="swaggerContainer" data-testid="swagger" />}
+                {!error && swaggerReady && (
+                    <div id="swaggerContainer" data-testid="swagger">
+                        <SwaggerUi {...swaggerProps} />
+                    </div>
+                )}
             </div>
         );
     }

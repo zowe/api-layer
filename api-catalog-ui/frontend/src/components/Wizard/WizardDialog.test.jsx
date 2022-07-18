@@ -22,10 +22,14 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
-jest.mock('./WizardComponents/WizardNavigationContainer', () => () => {
-    const WizardNavigationContainer = 'WizardNavigationContainerMock';
-    return <WizardNavigationContainer />;
-});
+jest.mock(
+    './WizardComponents/WizardNavigationContainer',
+    () =>
+        function () {
+            const WizardNavigationContainer = 'WizardNavigationContainerMock';
+            return <WizardNavigationContainer />;
+        }
+);
 describe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
         render(
@@ -301,6 +305,7 @@ title: Onboarding Enabler Java Sample App`;
         });
 
         // Must wait slightly for the file to actually be read in by the system (triggers the reader.onload event)
+        // eslint-disable-next-line no-promise-executor-return
         const pauseFor = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
         await pauseFor(300);
 

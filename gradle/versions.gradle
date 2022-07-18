@@ -35,7 +35,7 @@ ext {
     javaxServletApiVersion = '4.0.1'
     jaxbApiVersion = '2.3.1'
     jerseyVersion = '2.26'
-    jettyWebSocketClientVersion = '9.4.43.v20210629'
+    jettyWebSocketClientVersion = '9.4.48.v20220622'
     jjwtVersion = '0.11.2'
     jjwtFullVersion = '0.9.1'
     jsonPathVersion = '2.6.0'
@@ -234,4 +234,8 @@ ext {
         jersey_test_provider_jdk_http      : "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:${jerseyVersion}"
 
     ]
+
+    // for node projects
+    projectNodeVersion = '14.19.3'
+    projectNpmVersion = '8.1.0'
 }

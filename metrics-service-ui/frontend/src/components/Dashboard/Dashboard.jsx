@@ -62,7 +62,7 @@ export default function Dashboard() {
     };
 
     return (
-        <React.Fragment>
+        <>
             <Typography id="name" variant="h2" component="h1" gutterBottom align="center">
                 Metrics Service
             </Typography>
@@ -82,6 +82,6 @@ export default function Dashboard() {
                 </Box>
             )}
             <Container maxWidth="lg" id="content" className="dependencies" />
-        </React.Fragment>
+        </>
     );
 }

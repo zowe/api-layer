@@ -11,11 +11,12 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
-import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
@@ -23,8 +24,6 @@ import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -32,6 +31,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
 /**
  * This bean support PassTicket. Bean is responsible for getting PassTicket from
@@ -44,7 +44,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     private final PassTicketService passTicketService;
     private final AuthSourceService authSourceService;
-    private final AuthConfigurationProperties authConfigurationProperties;
     private final String cookieName;
 
     public HttpBasicPassTicketScheme(
@@ -54,7 +53,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     ) {
         this.passTicketService = passTicketService;
         this.authSourceService = authSourceService;
-        this.authConfigurationProperties = authConfigurationProperties;
         cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
     }
 
@@ -65,7 +63,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, AuthSource authSource) {
-        final long before = System.currentTimeMillis();
 
         if (authSource == null || authSource.getRawSource() == null) {
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.missingAuthentication");
@@ -103,12 +100,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final String encoded = Base64.getEncoder()
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
         final String value = "Basic " + encoded;
-
-        final long defaultExpirationTime = before + authConfigurationProperties.getPassTicket().getTimeout() * 1000L;
-        final long expirationTime = parsedAuthSource.getExpiration() != null ? parsedAuthSource.getExpiration().getTime() : defaultExpirationTime;
-        final Long expireAt = Math.min(defaultExpirationTime, expirationTime);
-
-        return new PassTicketCommand(value, cookieName, expireAt);
+//        passticket is valid only once, therefore this command needs to expire immediately and each call should generate new passticket
+        long expiration = System.currentTimeMillis();
+        return new PassTicketCommand(value, cookieName, expiration);
     }
 
     @Override
