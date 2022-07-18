@@ -100,28 +100,28 @@ ${restOfChangelog}`;
 //        });
 
 
-//
-//        console.log("git status output...\n");
-//        let gitStatus = `git status`;
-//
-//        console.log(execSync(gitStatus, {
-//            cwd: '../../'
-//        }).toString());
-//
-//
-//
-//        console.log("git status porcelain output...\n");
-//        let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
-//
-//        console.log(execSync(gitStatusPorcelain, {
-//            cwd: '../../'
-//        }).toString());
-//
-//        console.log("what's in the changelog?\n");
-//        let myCommand = `cat CHANGELOG.md`
-//        console.log(execSync(myCommand, {
-//            cwd: '../../'
-//        }).toString());
+
+        console.log("git status output...\n");
+        let gitStatus = `git status`;
+
+        console.log(execSync(gitStatus, {
+            cwd: '../../'
+        }).toString());
+
+
+
+        console.log("git status porcelain output...\n");
+        let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
+
+        console.log(execSync(gitStatusPorcelain, {
+            cwd: '../../'
+        }).toString());
+
+        console.log("what's in the changelog?\n");
+        let myCommand = `cat CHANGELOG.md`
+        console.log(execSync(myCommand, {
+            cwd: '../../'
+        }).toString());
 
 
         console.log("git add output...\n");
