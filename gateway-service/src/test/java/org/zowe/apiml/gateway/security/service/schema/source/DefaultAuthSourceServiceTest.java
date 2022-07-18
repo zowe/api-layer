@@ -45,6 +45,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     void init() {
         jwtAuthSourceService = mock(JwtAuthSourceService.class);
         x509MFAuthSourceService = mock(X509AuthSourceService.class);
+        patAuthSourceService = mock(PATAuthSourceService.class);
         serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService);
         x509Certificate = mock(X509Certificate.class);
     }
@@ -171,6 +172,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         void thenX509AuthSourceIsPresent() {
             when(jwtAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
             when(x509MFAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
+            when(patAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
 
             Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
 

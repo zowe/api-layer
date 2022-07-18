@@ -135,14 +135,14 @@ public class GatewayRequests {
         }
     }
 
-    public JsonResponse authenticatedRoute(String path, String jwt) {
+    public JsonResponse authenticatedRoute(String path, String jwt, String cookieName) {
         try {
             log.info("GatewayRequests#authenticatedRoute - {} Instance: {}", path, instance);
 
 
             log.info("GatewayRequests#authenticatedRoute - {} Token: {}", path, jwt);
 
-            return requests.getJsonResponse(getGatewayUriWithPath(path), jwt);
+            return requests.getJsonResponse(getGatewayUriWithPath(path), jwt, cookieName);
         } catch (URISyntaxException e) {
             log.info("GatewayRequests#route - {}", path, e);
 

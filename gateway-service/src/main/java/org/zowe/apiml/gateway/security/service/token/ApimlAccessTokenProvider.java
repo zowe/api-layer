@@ -55,7 +55,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
         String hashedValue = getHash(token);
-        QueryResponse queryResponse = authenticationService.parseJwtToken(token);
+        QueryResponse queryResponse = authenticationService.parseJwtWithSignature(token);
         AccessTokenContainer container = new AccessTokenContainer();
         container.setTokenValue(hashedValue);
         container.setIssuedAt(LocalDateTime.ofInstant(queryResponse.getCreation().toInstant(), ZoneId.systemDefault()));
@@ -82,7 +82,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
-        QueryResponse parsedToken = authenticationService.parseJwtToken(token);
+        QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
         String hashedToken = getHash(token);
         String hashedUserId = getHash(parsedToken.getUserId());
         List<String> hashedServiceIds = parsedToken.getScopes().stream().map(this::getHash).collect(Collectors.toList());
@@ -168,7 +168,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     public boolean isValidForScopes(String jwtToken, String serviceId) {
         if (serviceId != null) {
             QueryResponse parsedToken = authenticationService.parseJwtWithSignature(jwtToken);
-            return parsedToken.getScopes().contains(serviceId.toLowerCase());
+            if (parsedToken != null && parsedToken.getScopes() != null) {
+                return parsedToken.getScopes().contains(serviceId.toLowerCase());
+            }
         }
         return false;
     }

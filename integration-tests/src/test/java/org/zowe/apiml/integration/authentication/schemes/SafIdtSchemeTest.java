@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.InfinispanStorageTest;
@@ -27,8 +28,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
-import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.SAF_IDT_REQUEST;
 
 @DiscoverableClientDependentTest
@@ -47,8 +47,12 @@ public class SafIdtSchemeTest {
         pat = personalAccessToken(scopes);
     }
 
-    private static Stream<String> accessTokens() {
-        return Stream.of(pat);
+    private static Stream<Arguments> accessTokens() {
+
+        return Stream.of(
+            Arguments.of(pat, PAT_COOKIE_AUTH_NAME),
+            Arguments.of(jwt, COOKIE_NAME)
+        );
     }
 
     @BeforeEach
@@ -64,9 +68,9 @@ public class SafIdtSchemeTest {
         class ResultContainsSafIdtInHeader {
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.SafIdtSchemeTest#accessTokens")
-            void givenJwtInCookie(String jwt) {
+            void givenJwtInCookie(String jwt, String cookieName) {
                 System.out.println(System.currentTimeMillis());
-                JsonResponse response = gateway.authenticatedRoute(SAF_IDT_REQUEST, jwt);
+                JsonResponse response = gateway.authenticatedRoute(SAF_IDT_REQUEST, jwt, cookieName);
                 System.out.println(System.currentTimeMillis());
 
                 Map<String, String> headers = response.getJson().read("headers");

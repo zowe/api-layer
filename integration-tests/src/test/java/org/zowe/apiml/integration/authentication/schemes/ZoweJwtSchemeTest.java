@@ -15,6 +15,7 @@ import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.InfinispanStorageTest;
@@ -124,10 +125,10 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
         void translateIntoJWTAndSendToService() {
             Set<String> scopes = new HashSet<>();
             scopes.add("zowejwt");
-            String jwt = personalAccessToken(scopes);
+            String pat = personalAccessToken(scopes);
             given()
                 .config(SslContext.tlsWithoutCert)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .header(ApimlConstants.PAT_HEADER_NAME, pat)
                 .when()
                 .get(URL)
                 .then()
