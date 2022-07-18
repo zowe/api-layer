@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.*;
@@ -133,16 +132,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     class ExpirationTest {
         AuthenticationCommand ac;
 
-        @Test
-        void whenJwtExpired_thenCommandExpired() {
-            // JWT token expired one minute ago (command expired also if JWT token expired)
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.MINUTE, -1);
-            AuthSource.Parsed parsedSource = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
-            ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
-            assertTrue(ac.isExpired());
-        }
 
         @Test
         void whenJwtExpireSoon_thenCommandInNotExpiredYet() {
@@ -153,20 +142,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
             when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
             ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
             assertFalse(ac.isExpired());
-        }
-
-        @Test
-        void testPassticketTimeout() {
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.MINUTE, 100);
-            AuthSource.Parsed parsedSource4 = new JwtAuthSource.Parsed(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
-            when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource4);
-            ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
-
-            calendar = Calendar.getInstance();
-            calendar.add(Calendar.SECOND, authConfigurationProperties.getPassTicket().getTimeout());
-            // checking setup of expired time, JWT expired in future (more than hour), check if set date is similar to passticket timeout (5s)
-            assertEquals(0.0, Math.abs(calendar.getTime().getTime() - (long) ReflectionTestUtils.getField(ac, "expireAt")), 10.0);
         }
     }
 

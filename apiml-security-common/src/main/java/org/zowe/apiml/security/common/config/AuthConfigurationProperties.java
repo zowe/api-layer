@@ -57,7 +57,6 @@ public class AuthConfigurationProperties {
 
     private String provider = "zosmf";
 
-    private AuthConfigurationProperties.PassTicket passTicket;
     private AuthConfigurationProperties.X509Cert x509Cert;
 
     private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
@@ -89,11 +88,6 @@ public class AuthConfigurationProperties {
     }
 
     @Data
-    public static class PassTicket {
-        private Integer timeout = 540;
-    }
-
-    @Data
     public static class X509Cert {
         private Integer timeout = 15 * 60;
     }
@@ -108,7 +102,6 @@ public class AuthConfigurationProperties {
     public AuthConfigurationProperties() {
         this.cookieProperties = new AuthConfigurationProperties.CookieProperties();
         this.tokenProperties = new AuthConfigurationProperties.TokenProperties();
-        this.passTicket = new AuthConfigurationProperties.PassTicket();
         this.x509Cert = new AuthConfigurationProperties.X509Cert();
     }
 
