@@ -7,10 +7,17 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  revoke PAT by admin (#2476) ([e4d42a9](https://github.com/zowe/api-layer/commit/e4d42a9)), closes [#2476](https://github.com/zowe/api-layer/issues/2476)
 
 
+* Bugfix:  add git status porcelain ([8242dfa](https://github.com/zowe/api-layer/commit/8242dfa))
+* Bugfix:  changelog is acting normal, check output of commit and push ([7566537](https://github.com/zowe/api-layer/commit/7566537))
+* Bugfix:  check what's in changelog ([bf3dde8](https://github.com/zowe/api-layer/commit/bf3dde8))
 * Bugfix:  console.log ([b4f8b66](https://github.com/zowe/api-layer/commit/b4f8b66))
 * Bugfix:  git push origin detached head state ([7d7cd8f](https://github.com/zowe/api-layer/commit/7d7cd8f))
 * Bugfix:  git push origin only ([d193942](https://github.com/zowe/api-layer/commit/d193942))
+* Bugfix:  observe git status only ([6246d35](https://github.com/zowe/api-layer/commit/6246d35))
+* Bugfix:  observe git status only with toString fixed typo ([77f2e5d](https://github.com/zowe/api-layer/commit/77f2e5d))
 * Bugfix:  ref error ([22bfa23](https://github.com/zowe/api-layer/commit/22bfa23))
+* Bugfix:  running same workflow on unchanged file ([3bff0e1](https://github.com/zowe/api-layer/commit/3bff0e1))
+* Bugfix:  running same workflow on unchanged file, remove console log for git add ([566c0a5](https://github.com/zowe/api-layer/commit/566c0a5))
 * Bugfix:  immediately expires passticket command (#2496) ([8adca78](https://github.com/zowe/api-layer/commit/8adca78)), closes [#2496](https://github.com/zowe/api-layer/issues/2496)
 
 ## `2.1.0 (2022-05-31)`
