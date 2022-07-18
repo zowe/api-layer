@@ -39,6 +39,11 @@ public final class EurekaMetadataDefinition {
     public static final String API_INFO_DOCUMENTATION_URL = "documentationUrl";
     public static final String API_INFO_IS_DEFAULT = "defaultApi";
 
+    public static final String CODE_SNIPPET = "codeSnippet";
+    public static final String CODE_SNIPPET_ENDPOINT = "endpoint";
+    public static final String CODE_SNIPPET_CODE_BLOCK = "codeBlock";
+    public static final String CODE_SNIPPET_LANGUAGE = "language";
+
     public static final String AUTHENTICATION_SCHEME = "apiml.authentication.scheme";
     public static final String AUTHENTICATION_APPLID = "apiml.authentication.applid";
     public static final String AUTHENTICATION_SSO = "apiml.authentication.sso";

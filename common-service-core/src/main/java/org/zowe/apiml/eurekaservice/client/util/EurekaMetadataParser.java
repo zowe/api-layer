@@ -13,6 +13,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.CodeSnippet;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -23,6 +24,7 @@ import org.zowe.apiml.util.UrlUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -44,13 +46,14 @@ public class EurekaMetadataParser {
 
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
         Map<String, ApiInfo> apiInfo = new HashMap<>();
-
+        AtomicReference<Map<String, CodeSnippet>> codeSnippetMap = new AtomicReference<>();
+        List<CodeSnippet> codeSnippetList = new ArrayList<>();
         eurekaMetadata.entrySet()
             .stream()
             .filter(metadata -> metadata.getKey().startsWith(API_INFO))
             .forEach(metadata -> {
                 String[] keys = metadata.getKey().split("\\.");
-                if (keys.length == 4) {
+                 if (keys.length == 4 || keys.length == 6) {
                     apiInfo.putIfAbsent(keys[2], new ApiInfo());
                     ApiInfo api = apiInfo.get(keys[2]);
                     switch (keys[3]) {
@@ -69,17 +72,48 @@ public class EurekaMetadataParser {
                         case API_INFO_DOCUMENTATION_URL:
                             api.setDocumentationUrl(metadata.getValue());
                             break;
+                        case CODE_SNIPPET:
+                            codeSnippetMap.set(parseCodeSnippet(codeSnippetMap.get(), metadata, keys[4]));
+                            break;
                         case API_INFO_IS_DEFAULT:
                             api.setDefaultApi(Boolean.parseBoolean(metadata.getValue()));
                             break;
+
                         default:
                             apimlLog.log("org.zowe.apiml.common.apiInfoParsingError", metadata);
                             break;
                     }
+
+                    // TODO we need to populate the ApiInfo with the list of codeSnippets which has been read from metadata. Currently this code is not working as the Map is getting refreshed
+                     for (Map.Entry<String, CodeSnippet> entry : codeSnippetMap.get().entrySet()) {
+                         if (!codeSnippetList.contains(entry.getValue())) {
+                             codeSnippetList.add(entry.getValue());
+                         }
+                     }
+                     api.setCodeSnippet(codeSnippetList);
                 }
             });
 
         return new ArrayList<>(apiInfo.values());
+    }
+
+    /**
+     * Parse eureka metadata and construct CodeSnippet with the values found
+     *
+     * @param eurekaMetadata the eureka metadata
+     * @return CodeSnippet list
+     */
+    public Map<String, CodeSnippet> parseCodeSnippet(Map<String, CodeSnippet> codeSnippetMap, Map.Entry<String, String> eurekaMetadata, String key) {
+        CodeSnippet codeSnippet = new CodeSnippet();
+        if (eurekaMetadata.getKey().contains(CODE_SNIPPET_CODE_BLOCK)) {
+            codeSnippet.setCodeBlock(eurekaMetadata.getValue());
+        } else if (eurekaMetadata.getKey().contains(CODE_SNIPPET_ENDPOINT)) {
+            codeSnippet.setEndpoint(eurekaMetadata.getValue());
+        } else if (eurekaMetadata.getKey().contains(CODE_SNIPPET_LANGUAGE)) {
+            codeSnippet.setLanguage(eurekaMetadata.getValue());
+        }
+        codeSnippetMap.put(key, codeSnippet);
+        return codeSnippetMap;
     }
 
     /**

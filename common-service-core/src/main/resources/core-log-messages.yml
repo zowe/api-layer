@@ -176,6 +176,13 @@ messages:
       reason: "An invalid apiInfo parameter was found while parsing the service metadata."
       action: "Remove or fix the referenced metadata parameter."
 
+    - key: org.zowe.apiml.common.codeSnippetParsingError
+      number: ZWEAM601
+      type: WARNING
+      text: "Invalid parameter in metadata: '%s'"
+      reason: "An invalid codeSnippet parameter was found while parsing the service metadata."
+      action: "Remove or fix the referenced metadata parameter."
+
     # Service specific messages
     # 700-999
 

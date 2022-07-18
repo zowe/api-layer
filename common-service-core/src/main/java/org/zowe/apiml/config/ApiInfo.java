@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Represents one API provided by a service
@@ -32,12 +33,13 @@ import java.io.IOException;
 @SuperBuilder
 public class ApiInfo {
 
-    public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String documentationUrl) {
+    public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String documentationUrl, List<CodeSnippet> codeSnippet) {
         this.apiId = apiId;
         this.gatewayUrl = gatewayUrl;
         this.version = version;
         this.swaggerUrl = swaggerUrl;
         this.documentationUrl = documentationUrl;
+        this.codeSnippet = codeSnippet;
     }
 
     /**
@@ -61,6 +63,7 @@ public class ApiInfo {
     private String version;
     private String swaggerUrl;
     private String documentationUrl;
+    private List<CodeSnippet> codeSnippet;
 
     @JsonDeserialize(using = StringToBooleanDeserializer.class)
     @Builder.Default
