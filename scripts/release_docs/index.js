@@ -82,7 +82,7 @@ ${restOfChangelog}`;
             });
         }
         else {
-            console.log("No new changes added in CHANGELOG.md\n");
+            console.log("No new changes added in CHANGELOG.md");
         }
     }
     else if (changelogPrs.length === 0) {
