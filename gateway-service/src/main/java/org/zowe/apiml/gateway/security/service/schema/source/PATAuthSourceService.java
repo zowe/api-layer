@@ -24,7 +24,6 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
@@ -46,23 +45,13 @@ public class PATAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public AuthenticationService getAuthenticationService() {
-        return authenticationService;
-    }
-
-    @Override
-    public Predicate<QueryResponse.Source> getPredicate() {
-        return (source) -> !QueryResponse.Source.ZOWE_PAT.equals(source);
-    }
-
-    @Override
     public Function<String, AuthSource> getMapper() {
         return PATAuthSource::new;
     }
 
     @Override
     public Optional<String> getToken(RequestContext context) {
-        return getAuthenticationService().getPATFromRequest(context.getRequest());
+        return authenticationService.getPATFromRequest(context.getRequest());
     }
 
     @Override

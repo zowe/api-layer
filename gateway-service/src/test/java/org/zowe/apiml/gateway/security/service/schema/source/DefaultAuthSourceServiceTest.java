@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -46,7 +47,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         jwtAuthSourceService = mock(JwtAuthSourceService.class);
         x509MFAuthSourceService = mock(X509AuthSourceService.class);
         patAuthSourceService = mock(PATAuthSourceService.class);
-        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService);
+        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService, true);
         x509Certificate = mock(X509Certificate.class);
     }
 
@@ -187,6 +188,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenUnknownAuthSource {
         private final DummyAuthSource dummyAuthSource = new DummyAuthSource();
+
         @Test
         void thenAuthSourceIsInvalid() {
             Assertions.assertThrows(IllegalArgumentException.class, () -> serviceUnderTest.isValid(dummyAuthSource));

@@ -10,22 +10,15 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public abstract class TokenAuthSourceService implements AuthSourceService {
 
     protected abstract ApimlLogger getLogger();
-
-    public abstract AuthenticationService getAuthenticationService();
-
-    public abstract Predicate<QueryResponse.Source> getPredicate();
 
     public abstract Function<String, AuthSource> getMapper();
 

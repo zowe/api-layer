@@ -19,7 +19,7 @@ import java.util.Date;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PATAuthSource implements AuthSource {
-    public static AuthSource.AuthSourceType type = AuthSource.AuthSourceType.PAT;
+    public static final AuthSource.AuthSourceType type = AuthSource.AuthSourceType.PAT;
 
     @EqualsAndHashCode.Include
     private final String source;

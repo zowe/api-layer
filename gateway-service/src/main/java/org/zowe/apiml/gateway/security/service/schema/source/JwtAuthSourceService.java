@@ -24,7 +24,6 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * Implementation of AuthSourceService which supports JWT token as authentication source.
@@ -45,24 +44,15 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public Predicate<QueryResponse.Source> getPredicate() {
-        return QueryResponse.Source.ZOWE_PAT::equals;
-    }
-
-    @Override
     public Function<String, AuthSource> getMapper() {
         return JwtAuthSource::new;
     }
 
     @Override
-    public AuthenticationService getAuthenticationService() {
-        return authenticationService;
+    public Optional<String> getToken(RequestContext context) {
+        return authenticationService.getJwtTokenFromRequest(context.getRequest());
     }
 
-    @Override
-    public Optional<String> getToken(RequestContext context) {
-        return getAuthenticationService().getJwtTokenFromRequest(context.getRequest());
-    }
     /**
      * Validates authentication source (JWT token) using method of {@link AuthenticationService}
      *

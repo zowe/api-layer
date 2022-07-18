@@ -128,16 +128,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void thenCreatePersonalAccessToken() {
             String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
-            QueryResponse parsedPAT = authService.parseJwtToken(pat);
+            QueryResponse parsedPAT = authService.parseJwtWithSignature(pat);
             assertEquals(QueryResponse.Source.ZOWE_PAT, parsedPAT.getSource());
-        }
-
-        @Test
-        void validatePat() {
-            String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
-            QueryResponse jws = authService.parseJwtWithSignature(pat);
-
-            System.out.println(jws);
         }
 
         @Test
