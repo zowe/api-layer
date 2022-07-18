@@ -9,29 +9,21 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
-import java.security.cert.X509Certificate;
-import java.util.Date;
-import java.util.Optional;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest {
@@ -55,7 +47,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenJwtTokenInRequest {
         private final JwtAuthSource jwtAuthSource = new JwtAuthSource("token");
-        private final Parsed expectedParsedSource = new JwtAuthSource.Parsed("user", new Date(111), new Date(222), Origin.ZOSMF);
+        private final Parsed expectedParsedSource = new ParsedTokenAuthSource("user", new Date(111), new Date(222), Origin.ZOSMF);
 
         @Test
         void thenJwtAuthSourceIsPresent() {

@@ -77,7 +77,7 @@ public class PATAuthSourceService extends TokenAuthSourceService {
             QueryResponse response = authenticationService.parseJwtWithSignature(jwt);
 
             AuthSource.Origin origin = AuthSource.Origin.valueByIssuer(response.getSource().name());
-            return new PATAuthSource.Parsed(response.getUserId(), response.getCreation(), response.getExpiration(), origin);
+            return new ParsedTokenAuthSource(response.getUserId(), response.getCreation(), response.getExpiration(), origin);
         }
         return null;
     }
@@ -94,7 +94,7 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public String getJWT(AuthSource authSource) {
-        PATAuthSource.Parsed parsed = (PATAuthSource.Parsed) parse(authSource);
+        ParsedTokenAuthSource parsed = (ParsedTokenAuthSource) parse(authSource);
         return tokenService.createJwtTokenWithoutCredentials(parsed.getUserId());
     }
 

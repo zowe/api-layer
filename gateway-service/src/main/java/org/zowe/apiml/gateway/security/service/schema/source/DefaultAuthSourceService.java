@@ -42,7 +42,7 @@ import java.util.Optional;
 public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
-    private boolean isPATEnabled;
+    private final boolean isPATEnabled;
 
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications

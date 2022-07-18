@@ -13,8 +13,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Date;
-
 @RequiredArgsConstructor
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -34,13 +32,4 @@ public class PATAuthSource implements AuthSource {
         return type;
     }
 
-    @RequiredArgsConstructor
-    @Getter
-    @EqualsAndHashCode
-    public static class Parsed implements AuthSource.Parsed {
-        private final String userId;
-        private final Date creation;
-        private final Date expiration;
-        private final Origin origin;
-    }
 }

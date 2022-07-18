@@ -28,6 +28,8 @@ apiml:
         # properly.
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
+        personalAccessToken:
+            enabled: true
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5
