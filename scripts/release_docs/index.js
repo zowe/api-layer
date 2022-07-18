@@ -49,26 +49,16 @@ ${addedFixes}
 ${restOfChangelog}`;
 
     const octokit = new Octokit({auth: githubToken});
-//    const branch = `apiml/release/${version.replace(/\./g, "_")}`;
 
-      // if PR exists (indicate with zowe robot or automatic changelog...), find branch associated with it then checkout that branch and make changes to that
-      // else regular process
-    console.log("functions for PR data:\n")
     const prs = (await octokit.request("GET /repos/zowe/api-layer/pulls")).data;
 
     const changelogPrs = prs.filter(pr => pr["user"]["login"] == "zowe-robot" &&
     pr["title"] == "Automatic update for the Changelog for release - Do Not Merge" &&
     pr["body"] == "Update changelog for new release");
 
-//    console.log(changelogPrs);
-
     if (changelogPrs.length === 1) {
         // PR exists, use that branch to merge new updates
         const prevReleaseBranch = changelogPrs[0]["head"]["ref"];
-        console.log("prev release branch is: " + prevReleaseBranch);
-
-        console.log("PRs is 1...");
-
         let gitCheckoutOrigin = `git fetch origin --quiet && git checkout origin/${prevReleaseBranch}`;
 
         execSync(gitCheckoutOrigin, {
@@ -77,13 +67,6 @@ ${restOfChangelog}`;
 
         await writeFile('../../CHANGELOG.md', changelogToStore);
 
-//        let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${prevReleaseBranch}`;
-//
-//        execSync(gitCommitPush, {
-//            cwd: '../../'
-//        });
-
-        console.log("git status porcelain output...\n");
         let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
 
         let gitStatusPorcelainOutput = execSync(gitStatusPorcelain, {
@@ -91,7 +74,7 @@ ${restOfChangelog}`;
         }).toString();
 
         if (gitStatusPorcelainOutput.length != 0) {
-            console.log("output exists from git status\n");
+            console.log("Pushing updates to " + prevReleaseBranch + "\n");
             let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${prevReleaseBranch}`;
 
             execSync(gitCommitPush, {
@@ -99,46 +82,18 @@ ${restOfChangelog}`;
             });
         }
         else {
-            console.log("no output from git status\n");
+            console.log("No new changes in CHANGELOG.md\n");
+            throw AssertionError("More than one pull request exists, cannot add new updates to the changelog");
         }
-
-//        console.log("what's in the changelog?\n");
-//        let myCommand = `cat CHANGELOG.md`
-//        console.log(execSync(myCommand, {
-//            cwd: '../../'
-//        }).toString());
-//
-//
-//        console.log("git add output...\n");
-//        let gitAdd = `git add CHANGELOG.md`;
-//
-//        execSync(gitAdd, {
-//            cwd: '../../'
-//        });
-//
-//        console.log("git commit output...\n");
-//        let gitCommit = `git commit --signoff -m "Update changelog"`;
-//
-//        console.log(execSync(gitCommit, {
-//            cwd: '../../'
-//        }).toString());
-//
-//
-//        console.log("git push output...\n");
-//        let gitPush = `git push origin HEAD:${prevReleaseBranch}`;
-//        console.log(execSync(gitPush, {
-//            cwd: '../../'
-//        }).toString());
     }
     else if (changelogPrs.length === 0) {
-        // make new PR since none exist for changelog
+        // make new PR since none exists for changelog
 
         await writeFile('../../CHANGELOG.md', changelogToStore);
 
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
-        console.log("new release branch is: " + branch);
+        console.log("New release branch created " + branch + "\n");
 
-        console.log("PRs is 0...")
         let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
 
         execSync(gitCommitPush, {
@@ -158,44 +113,5 @@ ${restOfChangelog}`;
         throw AssertionError("More than one pull request exists, cannot add new updates to the changelog");
     }
 
-
-//    const getLatestPRNumber = (data) => data.length === 0 ? 0 : data[0];
-
-//    console.log("awaiting PR data...\n")
-//    const data = await getData();
-//    const firstPR = getLatestPRNumber(data).toString();
-
-
-    // uncomment out later
-//    console.log("fetch unshallow:\n")
-//    let fetch = `git checkout origin/apiml/GH2503/GHA_update_existing_PR && git pull`;
-//    const fetchChanges = execSync(fetch).toString();
-//    console.log(fetchChanges);
-//
-//    console.log("check branches:\n")
-//    let branchTest = `git branch`;
-//    const branchChanges = execSync(branchTest).toString();
-//    console.log(branchChanges);
-
-//    console.log("checkout origin for v2.x.x and check branches:\n")
-//    let checkoutBranch = `git checkout origin/v2.x.x && git branch`;
-//    const checkoutBranchChanges = execSync(checkoutBranch).toString();
-//    console.log(checkoutBranchChanges);
-
-    // uncomment out later
-//      let gitCommitPush = `git fetch --unshallow origin v2.x.x && git checkout origin/${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
-//      execSync(gitCommitPush, {
-//          cwd: '../../'
-//      });
-
-        // uncomment out later
-  //    await octokit.rest.pulls.create({
-  //        owner: 'zowe',
-  //        repo: 'api-layer',
-  //        title: 'Automatic update for the Changelog for release',
-  //        head: branch,
-  //        base: branchToMerge,
-  //        body: 'Update changelog for new release'
-  //    });
 })()
 
