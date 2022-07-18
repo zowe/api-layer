@@ -117,6 +117,12 @@ ${restOfChangelog}`;
             cwd: '../../'
         }).toString());
 
+        console.log("what's in the changelog?\n");
+        let myCommand = `cat CHANGELOG.md`
+        console.log(execSync(myCommand, {
+            cwd: '../../'
+        }).toString());
+
 
 //        console.log("git add output...\n");
 //        let gitAdd = `git add CHANGELOG.md`;
