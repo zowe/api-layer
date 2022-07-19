@@ -60,6 +60,8 @@ public class EurekaMetadataParser {
                         String codeSnippetChildKey = keys[5];
 
                         apiInfoEntries.putIfAbsent(entryKey, new HashMap<>());
+
+                        @SuppressWarnings("unchecked")
                         Map<String, Map<String, String>> codeSnippetMap = (Map<String, Map<String, String>>) apiInfoEntries.get(entryKey);
                         codeSnippetMap.putIfAbsent(codeSnippetEntryIndex, new HashMap<>());
 
@@ -78,8 +80,11 @@ public class EurekaMetadataParser {
         collectedApiInfoEntries.values().forEach(fields -> {
             try {
                 if (fields.containsKey(CODE_SNIPPET)) {
+
+                    @SuppressWarnings("unchecked")
                     Map<String, Map<String, String>> codeSnippetMap = (Map<String, Map<String, String>>) fields.get(CODE_SNIPPET);
                     List<Map<String, String>> codeSnippetList = new ArrayList<>(codeSnippetMap.values());
+
                     fields.put(CODE_SNIPPET, codeSnippetList);
                 }
                 apiInfoList.add(objectMapper.convertValue(fields, ApiInfo.class));
