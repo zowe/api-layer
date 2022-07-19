@@ -64,7 +64,8 @@ public class ApiInfo {
     private String swaggerUrl;
     private String documentationUrl;
 
-    private CodeSnippet codeSnippet;
+    @Builder.Default
+    private List<CodeSnippet> codeSnippet = new ArrayList<>();
 
     @JsonDeserialize(using = StringToBooleanDeserializer.class)
     @Builder.Default

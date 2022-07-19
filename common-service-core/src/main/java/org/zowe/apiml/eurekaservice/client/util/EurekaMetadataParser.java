@@ -43,7 +43,7 @@ public class EurekaMetadataParser {
      * @return ApiInfo list
      */
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
-        Map<String, Map<String, List<Object>>> collectedApiInfoEntries = new HashMap<>();
+        Map<String, Map<String, Object>> collectedApiInfoEntries = new HashMap<>();
         eurekaMetadata.entrySet()
             .stream()
             .filter(metadata -> metadata.getKey().startsWith(API_INFO))
@@ -51,26 +51,37 @@ public class EurekaMetadataParser {
                 String[] keys = metadata.getKey().split("\\.");
                 if (keys.length >= 4) { // at least 4 keys split by '.' if is an ApiInfo config entry
                     String entryIndex = keys[2];
+                    String entryKey = keys[3];
                     collectedApiInfoEntries.putIfAbsent(entryIndex, new HashMap<>());
-                    Map<String, List<Object>> apiInfoEntries = collectedApiInfoEntries.get(entryIndex);
+                    Map<String, Object> apiInfoEntries = collectedApiInfoEntries.get(entryIndex);
 
                     if (metadata.getKey().contains(CODE_SNIPPET)) {
-                        apiInfoEntries.putIfAbsent(keys[3], new ArrayList<>());
-                        List<Object> codeSnippetList = apiInfoEntries.get(keys[3]);
+                        String codeSnippetEntryIndex = keys[4];
+                        String codeSnippetChildKey = keys[5];
 
-                        codeSnippetList.add(metadata.getValue());
-                        apiInfoEntries.put(keys[3], codeSnippetList);
+                        apiInfoEntries.putIfAbsent(entryKey, new HashMap<>());
+                        Map<String, Map<String, String>> codeSnippetMap = (Map<String, Map<String, String>>) apiInfoEntries.get(entryKey);
+                        codeSnippetMap.putIfAbsent(codeSnippetEntryIndex, new HashMap<>());
+
+                        Map<String, String> codeSnippetChildEntry = codeSnippetMap.get(codeSnippetEntryIndex);
+                        codeSnippetChildEntry.put(codeSnippetChildKey, metadata.getValue());
+                        codeSnippetMap.put(codeSnippetEntryIndex, codeSnippetChildEntry);
+                        apiInfoEntries.put(entryKey, codeSnippetMap);
                     } else {
-                        apiInfoEntries.put(keys[3], Collections.singletonList(metadata.getValue()));
+                        apiInfoEntries.put(entryKey, metadata.getValue());
                     }
                     collectedApiInfoEntries.put(entryIndex, apiInfoEntries);
                 }
             });
 
         List<ApiInfo> apiInfoList = new ArrayList<>();
-        // this returns undefined and doesnt populate the list
         collectedApiInfoEntries.values().forEach(fields -> {
             try {
+                if (fields.containsKey(CODE_SNIPPET)) {
+                    Map<String, Map<String, String>> codeSnippetMap = (Map<String, Map<String, String>>) fields.get(CODE_SNIPPET);
+                    List<Map<String, String>> codeSnippetList = new ArrayList<>(codeSnippetMap.values());
+                    fields.put(CODE_SNIPPET, codeSnippetList);
+                }
                 apiInfoList.add(objectMapper.convertValue(fields, ApiInfo.class));
             } catch (Exception e) {
                 apimlLog.log("org.zowe.apiml.common.apiInfoParsingError", fields);

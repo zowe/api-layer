@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.CodeSnippet;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -34,9 +35,9 @@ class EurekaMetadataParserTest {
         @Test
         void givenTwoEntries_thenReturnTwoInstances() {
             Map<String, String> metadata = new HashMap<>();
-            metadata.put(API_INFO + ".1." + CODE_SNIPPET + "." + CODE_SNIPPET_ENDPOINT, "endpoint");
-            metadata.put(API_INFO + ".1." + CODE_SNIPPET + "." + CODE_SNIPPET_LANGUAGE, "java");
-            metadata.put(API_INFO + ".1." + CODE_SNIPPET + "." + CODE_SNIPPET_CODE_BLOCK, "codeblock");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".1." + CODE_SNIPPET_ENDPOINT, "endpoint");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".1." + CODE_SNIPPET_LANGUAGE, "java");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".1." + CODE_SNIPPET_CODE_BLOCK, "codeblock");
             metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "gatewayUrl");
             metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
             metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, "swagger");
@@ -56,6 +57,26 @@ class EurekaMetadataParserTest {
             assertEquals("swagger", info.get(1).getSwaggerUrl());
             assertEquals("doc", info.get(1).getDocumentationUrl());
             assertFalse(info.get(1).isDefaultApi());
+        }
+
+        @Test
+        void givenCodeSnippets_thenReturnApiInfoWithCodeSnippets() {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".1." + CODE_SNIPPET_ENDPOINT, "endpoint1");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".1." + CODE_SNIPPET_CODE_BLOCK, "codeblock1");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".1." + CODE_SNIPPET_LANGUAGE, "language1");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".2." + CODE_SNIPPET_ENDPOINT, "endpoint2");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".2." + CODE_SNIPPET_CODE_BLOCK, "codeblock2");
+            metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".2." + CODE_SNIPPET_LANGUAGE, "language2");
+
+            List<ApiInfo> info = eurekaMetadataParser.parseApiInfo(metadata);
+
+            CodeSnippet expectedCodeSnippet1 = new CodeSnippet("endpoint1", "codeblock1", "language1");
+            CodeSnippet expectedCodeSnippet2 = new CodeSnippet("endpoint2", "codeblock2", "language2");
+
+            assertEquals(1, info.size());
+            assertEquals(expectedCodeSnippet1, info.get(0).getCodeSnippet().get(0));
+            assertEquals(expectedCodeSnippet2, info.get(0).getCodeSnippet().get(1));
         }
 
         @Test
