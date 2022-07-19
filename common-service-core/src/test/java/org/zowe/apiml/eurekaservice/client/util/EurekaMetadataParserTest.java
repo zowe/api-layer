@@ -182,6 +182,38 @@ class EurekaMetadataParserTest {
     }
 
     @Test
+    void generateMetadataWithCodeSnippets() {
+        String endpoint1 = "/endpoint1";
+        String codeBlock1 = "code1";
+        String language1 = "java1";
+        String endpoint2 = "/endpoint2";
+        String codeBlock2 = "code2";
+        String language2 = "java2";
+        String metadataPrefix = API_INFO + ".api-v1.";
+
+        ApiInfo apiInfo = new ApiInfo("zowe.apiml.test", "api/v1", "1.0.0", "https://service/api-doc", "https://www.zowe.org");
+        apiInfo.addCodeSnippet(new CodeSnippet(endpoint1, codeBlock1, language1));
+        apiInfo.addCodeSnippet(new CodeSnippet(endpoint2, codeBlock2, language2));
+        Map<String, String> metadata = EurekaMetadataParser.generateMetadata("test service", apiInfo);
+
+        String codeSnippetEndpoint1 = metadata.get(metadataPrefix + CODE_SNIPPET + ".0." + CODE_SNIPPET_ENDPOINT);
+        String codeSnippetBlock1 = metadata.get(metadataPrefix + CODE_SNIPPET + ".0." + CODE_SNIPPET_CODE_BLOCK);
+        String codeSnippetLanguage1 = metadata.get(metadataPrefix + CODE_SNIPPET + ".0." + CODE_SNIPPET_LANGUAGE);
+
+        assertEquals(codeSnippetEndpoint1, endpoint1);
+        assertEquals(codeSnippetBlock1, codeBlock1);
+        assertEquals(codeSnippetLanguage1, language1);
+
+        String codeSnippetEndpoint2 = metadata.get(metadataPrefix + CODE_SNIPPET + ".1." + CODE_SNIPPET_ENDPOINT);
+        String codeSnippetBlock2 = metadata.get(metadataPrefix + CODE_SNIPPET + ".1." + CODE_SNIPPET_CODE_BLOCK);
+        String codeSnippetLanguage2 = metadata.get(metadataPrefix + CODE_SNIPPET + ".1." + CODE_SNIPPET_LANGUAGE);
+
+        assertEquals(codeSnippetEndpoint2, endpoint2);
+        assertEquals(codeSnippetBlock2, codeBlock2);
+        assertEquals(codeSnippetLanguage2, language2);
+    }
+
+    @Test
     void generateMetadataWithNoGatewayUrl() {
         String serviceId = "test service";
         String version = "1.0.0";

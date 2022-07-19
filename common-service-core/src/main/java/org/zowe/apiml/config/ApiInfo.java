@@ -40,6 +40,7 @@ public class ApiInfo {
         this.version = version;
         this.swaggerUrl = swaggerUrl;
         this.documentationUrl = documentationUrl;
+        this.codeSnippet = new ArrayList<>();
     }
 
     /**
