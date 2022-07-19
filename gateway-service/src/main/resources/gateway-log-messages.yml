@@ -140,7 +140,7 @@ messages:
       type: ERROR
       text: "The service id provided is invalid: '%s'"
       reason: "The provided id is not valid under conformance criteria."
-      action: "Verify that conformance criteria, provide valid service id."
+      action: "Verify the conformance criteria, provide valid service id."
 
     # Legacy messages
 

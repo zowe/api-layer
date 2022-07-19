@@ -14,6 +14,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.message.core.MessageService;
@@ -32,6 +33,9 @@ public class ValidateAPIControllerTest extends AcceptanceTestWithTwoServices {
     private String validatePath;
     private MessageService messageService;
     private ValidateAPIController validateAPIController;
+
+    @Autowired
+    private VerificationOnboardService verificationOnboardService;
     
     @BeforeEach
     void setup() throws IOException {
@@ -44,7 +48,7 @@ public class ValidateAPIControllerTest extends AcceptanceTestWithTwoServices {
         @BeforeEach
         void setup() throws IOException {
             messageService = new YamlMessageService("/gateway-log-messages.yml");
-            validateAPIController = new ValidateAPIController(messageService);
+            validateAPIController = new ValidateAPIController(messageService, verificationOnboardService);
             standaloneSetup(validateAPIController);
         }
 
@@ -56,7 +60,9 @@ public class ValidateAPIControllerTest extends AcceptanceTestWithTwoServices {
                 .post(basePath + validatePath)
             .then()
                 .assertThat()
-                .statusCode(HttpStatus.SC_OK);
+                .body("messageNumber", equalTo("ZWEAG717E"),
+                    "messageContent", containsString("The service is not registered"))
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
         }
 
         @Test
