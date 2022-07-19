@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
-import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -56,16 +55,17 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public boolean isValid(AuthSource authSource) {
-        String token = (String) authSource.getRawSource();
-        RequestContext context = RequestContext.getCurrentContext();
-        String serviceId = (String) context.get(SERVICE_ID_KEY);
-        boolean validForScopes = tokenProvider.isValidForScopes(token, serviceId);
-        logger.log(MessageType.DEBUG, "PAT is %s for scope: %s ", validForScopes ? "valid" : "not valid", serviceId);
-        boolean invalidate = tokenProvider.isInvalidated(token);
-        logger.log(MessageType.DEBUG, "PAT was %s", invalidate ? "invalidated" : "not invalidated");
         try {
+            String token = (String) authSource.getRawSource();
+            RequestContext context = RequestContext.getCurrentContext();
+            String serviceId = (String) context.get(SERVICE_ID_KEY);
+            boolean validForScopes = tokenProvider.isValidForScopes(token, serviceId);
+            logger.log(MessageType.DEBUG, "PAT is %s for scope: %s ", validForScopes ? "valid" : "not valid", serviceId);
+            boolean invalidate = tokenProvider.isInvalidated(token);
+            logger.log(MessageType.DEBUG, "PAT was %s", invalidate ? "invalidated" : "not invalidated");
             return validForScopes && !invalidate;
-        } catch (SignatureException e) {
+        } catch (Exception e) {
+            logger.log(MessageType.ERROR, "PAT is not valid due to the exception: %s", e.getMessage());
             return false;
         }
     }
