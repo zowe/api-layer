@@ -1,13 +1,15 @@
 dependencies {
-    implementation(project(':common-service-core'))
+    implementation project(':common-service-core')
     implementation libraries.spring_boot_starter_web
 
+    implementation libraries.apache_commons_lang3
     implementation libraries.jackson_dataformat_yaml
 
     implementation libraries.lombok
     annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.guava
 
     testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok

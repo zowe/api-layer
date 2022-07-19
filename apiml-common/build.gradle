@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':apiml-utility')
     implementation project(':apiml-tomcat-common')
+    implementation project(':common-service-core')
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_cloud_starter_bootstrap
@@ -15,6 +16,7 @@ dependencies {
     implementation libraries.http_core
     implementation libraries.janino
     implementation libraries.xstream
+    implementation libraries.jetty_util
 
     implementation libraries.spring_security_crypto
 

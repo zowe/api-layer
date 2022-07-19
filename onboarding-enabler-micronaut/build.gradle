@@ -1,6 +1,6 @@
 
 plugins {
-    id "io.micronaut.library" version "3.1.1"
+    id "io.micronaut.library" version "3.5.0"
 }
 
 version "0.1"
@@ -11,7 +11,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.3.3"
+    version = "3.5.1"
     testRuntime "junit5"
     processing {
         incremental true
@@ -26,6 +26,7 @@ dependencies {
     implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut:micronaut-http-client")
     runtimeOnly("ch.qos.logback:logback-classic")
+    compileOnly libraries.javax_inject
 }
 
 

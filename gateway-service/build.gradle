@@ -59,8 +59,12 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':apiml-security-common'))
-    implementation(project(':apiml-extension-loader'))
+    implementation project(':apiml-common')
+    implementation project(':apiml-security-common')
+    implementation project(':apiml-tomcat-common')
+    implementation project(':apiml-extension-loader')
+    implementation project(':apiml-utility')
+    implementation project(':common-service-core')
     implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web

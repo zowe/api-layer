@@ -52,6 +52,9 @@ gitProperties {
 }
 
 dependencies {
+    implementation project(':apiml-security-common')
+    implementation project(':apiml-utility')
+    implementation project(':common-service-core')
     implementation project(':onboarding-enabler-spring')
     implementation(project(':security-service-client-spring'))
 
@@ -134,7 +137,7 @@ bootRun {
     systemProperties = System.properties
 }
 
-bootJar.archiveFileName = "${bootJar.archiveBaseName}.jar"
+bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"
 
 jar {
     enabled true

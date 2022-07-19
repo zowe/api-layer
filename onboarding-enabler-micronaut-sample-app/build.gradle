@@ -28,8 +28,12 @@ micronaut {
 }
 
 dependencies {
+    compileOnly project(':onboarding-enabler-java')
     compileOnly project(':onboarding-enabler-micronaut')
+
+    testImplementation project(':onboarding-enabler-java')
     testImplementation ("io.micronaut:micronaut-http-client")
+    testImplementation libraries.javax_inject
  }
 
 

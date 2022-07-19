@@ -18,13 +18,13 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
 
 bootJar {
-    archiveBaseName = "enabler-springboot-${springBootVersion}-sample"
+    archiveBaseName.set("enabler-springboot-${springBootVersion}-sample")
     launchScript()
 }
 
 jar {
-    archiveBaseName = "enabler-springboot-${springBootVersion}-sample"
-    archiveFileName = "${archiveBaseName}.jar"
+    archiveBaseName.set("enabler-springboot-${springBootVersion}-sample")
+    archiveFileName = archiveBaseName.get() + ".jar"
 }
 
 repositories {

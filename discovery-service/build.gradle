@@ -59,7 +59,11 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':security-service-client-spring'))
+    implementation project(':apiml-utility')
+    implementation project(':apiml-tomcat-common')
+    implementation project(':apiml-security-common')
+    implementation project(':common-service-core')
+    implementation project(':security-service-client-spring')
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
@@ -71,6 +75,7 @@ dependencies {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
     }
+    implementation libraries.apache_commons_lang3
     implementation libraries.gson
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core

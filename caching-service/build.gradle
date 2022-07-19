@@ -50,7 +50,7 @@ gitProperties {
 }
 
 dependencies {
-
+    implementation project(':apiml-utility')
     implementation project(':common-service-core')
     implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')
@@ -147,7 +147,7 @@ dependencies {
 }
 
 
-bootJar.archiveFileName = "${bootJar.archiveBaseName}.jar"
+bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"
 
 publishing {
     publications {

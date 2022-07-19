@@ -80,8 +80,11 @@ dependencies {
     annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.jjwt
+    testImplementation libraries.jjwt_impl
+    testImplementation libraries.jjwt_jackson
     testImplementation libraries.json_smart
 }
 
 
-bootJar.archiveFileName = "${bootJar.archiveBaseName}.jar"
+bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"

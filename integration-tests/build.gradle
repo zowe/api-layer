@@ -30,8 +30,9 @@ dependencies {
     testImplementation libraries.json
     testImplementation libraries.jjwt
     testImplementation libraries.reactorTest
-    testImplementation(project(':apiml-security-common'))
-    testImplementation(project(':zaas-client'))
+    testImplementation project(':apiml-security-common')
+    testImplementation project(':common-service-core')
+    testImplementation project(':zaas-client')
 
     testImplementation libraries.hamcrest
     testImplementation libraries.rest_assured
@@ -42,8 +43,8 @@ dependencies {
     testImplementation libraries.jsoup
     testImplementation libraries.rest_assured
     testImplementation libraries.jackson_annotations
-    testImplementation(libraries.jackson_core)
-    testImplementation(libraries.jackson_databind)
+    testImplementation libraries.jackson_core
+    testImplementation libraries.jackson_databind
     testImplementation libraries.jackson_dataformat_yaml
     testImplementation libraries.javax_servlet_api
     testImplementation libraries.nimbusJoseJwt
@@ -51,6 +52,8 @@ dependencies {
     runtimeOnly libraries.jjwt_jackson
 
     testFixturesImplementation(project(':apiml-security-common'))
+    testFixturesImplementation libraries.spring_core
+    testFixturesImplementation libraries.slf4j_api
     testFixturesImplementation libraries.rest_assured
     testFixturesImplementation libraries.lombok
     testFixturesImplementation libraries.http_client
@@ -59,7 +62,7 @@ dependencies {
 }
 
 jar {
-    archiveBaseName = "integration-tests"
+    archiveBaseName.set("integration-tests")
 }
 
 test.enabled = false

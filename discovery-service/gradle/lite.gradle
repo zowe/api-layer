@@ -25,6 +25,10 @@ buildscript {
 apply from: "$rootDir/gradle/lite-project.gradle"
 
 task liteJar(type: BootJar) {
+    // Do not attempt to prevent duplicates. If the destination does not support duplicates,
+    // the existing destination entry will be overridden with the duplicate.
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }

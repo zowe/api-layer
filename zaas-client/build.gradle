@@ -12,6 +12,7 @@ dependencies {
 
     compileOnly libraries.lombok
 
+    testImplementation libraries.http_client
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart
     testImplementation libraries.junitJupiter

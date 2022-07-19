@@ -201,7 +201,7 @@ class ZaasJwtServiceTest {
     }
 
     private void mockHttpClient(int statusCode) throws IOException {
-        mockHttpClient(statusCode, "");
+        mockHttpClient(statusCode, "null");
     }
 
     private void mockHttpClient(int statusCode, String content) throws IOException {

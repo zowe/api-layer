@@ -50,6 +50,9 @@ gitProperties {
 }
 
 dependencies {
+    implementation project(':apiml-utility')
+    implementation project(':common-service-core')
+    implementation project(':onboarding-enabler-java')
     implementation project(':onboarding-enabler-spring')
     implementation project(':zaas-client')
     implementation libraries.spring_doc
@@ -82,4 +85,4 @@ dependencies {
 }
 
 
-bootJar.archiveFileName = "${bootJar.archiveBaseName}.jar"
+bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"

@@ -58,7 +58,12 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':security-service-client-spring'))
+    implementation project(':apiml-common')
+    implementation project(':apiml-tomcat-common')
+    implementation project(':apiml-security-common')
+    implementation project(':apiml-utility')
+    implementation project(':common-service-core')
+    implementation project(':security-service-client-spring')
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

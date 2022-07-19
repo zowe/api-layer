@@ -1,5 +1,6 @@
 dependencies {
-    compileOnly (project(':onboarding-enabler-java'))
+    compileOnly project(':common-service-core')
+    compileOnly project(':onboarding-enabler-java')
     compileOnly ("javax.servlet:javax.servlet-api:4.0.1")
 }
 

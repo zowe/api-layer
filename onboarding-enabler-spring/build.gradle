@@ -22,6 +22,7 @@ publish {
 dependencies {
     implementation project(':apiml-utility')
     implementation project(':onboarding-enabler-java')
+    implementation project(':common-service-core')
 
     implementation libraries.spring_boot_starter_web
     implementation libraries.tomcat_embed_core
@@ -38,6 +39,7 @@ dependencies {
     annotationProcessor libraries.lombok
 
     implementation libraries.javax_inject
+    implementation libraries.eureka_client
 
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart
@@ -48,6 +50,6 @@ dependencies {
 }
 
 jar {
-    archiveBaseName = "onboarding-enabler-spring"
-    archiveFileName = "${archiveBaseName}.jar"
+    archiveBaseName.set("onboarding-enabler-spring")
+    archiveFileName = archiveBaseName.get() + ".jar"
 }
