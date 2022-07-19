@@ -14,6 +14,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.CodeSnippet;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -31,6 +32,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaMetadataParser {
     private static final String THREE_STRING_MERGE_FORMAT = "%s.%s.%s";
+    private static final String FIVE_STRING_MERGE_FORMAT = "%s.%s.%s.%s.%s";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
@@ -214,6 +216,15 @@ public class EurekaMetadataParser {
             );
 
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
+        }
+
+        List<CodeSnippet> codeSnippets = apiInfo.getCodeSnippet();
+        if (codeSnippets != null && !codeSnippets.isEmpty()) {
+            for (int i = 0; i < codeSnippets.size(); i++) {
+                metadata.put(String.format(FIVE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, CODE_SNIPPET, i, CODE_SNIPPET_ENDPOINT), codeSnippets.get(i).getEndpoint());
+                metadata.put(String.format(FIVE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, CODE_SNIPPET, i, CODE_SNIPPET_CODE_BLOCK), codeSnippets.get(i).getCodeBlock());
+                metadata.put(String.format(FIVE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, CODE_SNIPPET, i, CODE_SNIPPET_LANGUAGE), codeSnippets.get(i).getLanguage());
+            }
         }
 
         metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_IS_DEFAULT), String.valueOf(apiInfo.isDefaultApi()));

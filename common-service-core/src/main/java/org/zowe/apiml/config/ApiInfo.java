@@ -71,6 +71,10 @@ public class ApiInfo {
     @Builder.Default
     private boolean isDefaultApi = false;
 
+    public void addCodeSnippet(CodeSnippet newCodeSnippet) {
+        this.codeSnippet.add(newCodeSnippet);
+    }
+
     @JsonIgnore
     public int getMajorVersion() {
         if (version == null) {
