@@ -11,6 +11,7 @@ package org.zowe.apiml.integration.discovery;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -30,6 +31,7 @@ import java.util.LinkedHashMap;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
@@ -90,10 +92,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
                 String containerJsonResponse = EntityUtils.toString(response.getEntity());
                 DocumentContext containerJsonContext = JsonPath.parse(containerJsonResponse);
 
-                // Validate container
-                assertEquals("cademoapps", containerJsonContext.read("$[0].id"));
-                assertEquals("Sample API Mediation Layer Applications", containerJsonContext.read("$[0].title"));
-                assertEquals("UP", containerJsonContext.read("$[0].status"));
+                validateContainer(containerJsonContext);
 
                 // Get Discoverable Client swagger
                 String dcJsonResponse = containerJsonContext.read("$[0].services[0]").toString();
@@ -102,6 +101,38 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
                 validateDiscoverableClientApiV1(dcJsonResponse, dcJsonContext);
             }
         }
+    }
+
+    @Test
+    void givenApis_whenGetContainer_thenApisReturned() throws IOException {
+        HttpResponse response = getResponse(DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT, HttpStatus.SC_OK);
+        String containerJsonResponse = EntityUtils.toString(response.getEntity());
+        DocumentContext containerJsonContext = JsonPath.parse(containerJsonResponse);
+
+        validateContainer(containerJsonContext);
+
+        LinkedHashMap<String, LinkedHashMap<String, String>> apis = containerJsonContext.read("$[0].services[0].apis");
+
+        assertNotNull(apis.get("default"));
+        assertNotNull(apis.get("zowe.apiml.discoverableclient.rest v2.0.0"));
+        assertNotNull(apis.get("zowe.apiml.discoverableclient.rest v1.0.0"));
+        assertNotNull(apis.get("zowe.apiml.discoverableclient.ws v1.0.0"));
+
+        LinkedHashMap defaultApi = apis.get("default");
+        assertEquals("zowe.apiml.discoverableclient.rest", defaultApi.get("apiId"));
+        assertEquals("api/v1", defaultApi.get("gatewayUrl"));
+        assertEquals("1.0.0", defaultApi.get("version"));
+        assertEquals("https://localhost:10012/discoverableclient/v3/api-docs/apiv1", defaultApi.get("swaggerUrl"));
+        assertEquals("https://www.zowe.org", defaultApi.get("documentationUrl"));
+        assertEquals(true, defaultApi.get("defaultApi"));
+
+        JSONArray codeSnippets = (JSONArray) defaultApi.get("codeSnippet");
+        assertEquals(2, codeSnippets.size());
+        LinkedHashMap<String, String> codeSnippet = (LinkedHashMap<String, String>) codeSnippets.get(0);
+        assertEquals("/greeting", codeSnippet.get("endpoint"));
+        assertNotNull(codeSnippet.get("codeBlock"));
+        assertThat(codeSnippet.get("codeBlock"), not(isEmptyString()));
+        assertEquals("java", codeSnippet.get("language"));
     }
 
     @Nested
@@ -150,6 +181,12 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
 
         return response;
+    }
+
+    private void validateContainer(DocumentContext containerJsonContext) {
+        assertEquals("cademoapps", containerJsonContext.read("$[0].id"));
+        assertEquals("Sample API Mediation Layer Applications", containerJsonContext.read("$[0].title"));
+        assertEquals("UP", containerJsonContext.read("$[0].status"));
     }
 
     private void validateDiscoverableClientApiV1(String jsonResponse, DocumentContext jsonContext) throws IOException {
