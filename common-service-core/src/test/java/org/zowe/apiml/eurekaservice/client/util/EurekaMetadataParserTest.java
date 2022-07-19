@@ -68,6 +68,7 @@ class EurekaMetadataParserTest {
             metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".2." + CODE_SNIPPET_ENDPOINT, "endpoint2");
             metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".2." + CODE_SNIPPET_CODE_BLOCK, "codeblock2");
             metadata.put(API_INFO + ".1." + CODE_SNIPPET + ".2." + CODE_SNIPPET_LANGUAGE, "language2");
+            metadata.put(API_INFO + ".2." + CODE_SNIPPET, "badvalue");
 
             List<ApiInfo> info = eurekaMetadataParser.parseApiInfo(metadata);
 

@@ -55,7 +55,7 @@ public class EurekaMetadataParser {
                     collectedApiInfoEntries.putIfAbsent(entryIndex, new HashMap<>());
                     Map<String, Object> apiInfoEntries = collectedApiInfoEntries.get(entryIndex);
 
-                    if (metadata.getKey().contains(CODE_SNIPPET)) {
+                    if (metadata.getKey().contains(CODE_SNIPPET) && keys.length >= 6) {
                         String codeSnippetEntryIndex = keys[4];
                         String codeSnippetChildKey = keys[5];
 
