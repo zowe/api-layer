@@ -43,7 +43,7 @@ public class EurekaMetadataParser {
      * @return ApiInfo list
      */
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
-        Map<String, Map<String, Object>> collectedApiInfoEntries = new HashMap<>();
+        Map<String, Map<String, List<Object>>> collectedApiInfoEntries = new HashMap<>();
         eurekaMetadata.entrySet()
             .stream()
             .filter(metadata -> metadata.getKey().startsWith(API_INFO))
@@ -52,22 +52,23 @@ public class EurekaMetadataParser {
                 if (keys.length >= 4) { // at least 4 keys split by '.' if is an ApiInfo config entry
                     String entryIndex = keys[2];
                     collectedApiInfoEntries.putIfAbsent(entryIndex, new HashMap<>());
-                    Map<String, Object> apiInfoEntries = collectedApiInfoEntries.get(entryIndex);
+                    Map<String, List<Object>> apiInfoEntries = collectedApiInfoEntries.get(entryIndex);
 
                     if (metadata.getKey().contains(CODE_SNIPPET)) {
-                        apiInfoEntries.putIfAbsent(keys[3], new HashMap<>());
-                        Map<String, String> codeSnippetMap = (Map<String, String>) apiInfoEntries.get(keys[3]);
+                        apiInfoEntries.putIfAbsent(keys[3], new ArrayList<>());
+                        List<Object> codeSnippetList = apiInfoEntries.get(keys[3]);
 
-                        codeSnippetMap.put(keys[4], metadata.getValue());
-                        apiInfoEntries.put(keys[3], codeSnippetMap);
+                        codeSnippetList.add(metadata.getValue());
+                        apiInfoEntries.put(keys[3], codeSnippetList);
                     } else {
-                        apiInfoEntries.put(keys[3], metadata.getValue());
+                        apiInfoEntries.put(keys[3], Collections.singletonList(metadata.getValue()));
                     }
                     collectedApiInfoEntries.put(entryIndex, apiInfoEntries);
                 }
             });
 
         List<ApiInfo> apiInfoList = new ArrayList<>();
+        // this returns undefined and doesnt populate the list
         collectedApiInfoEntries.values().forEach(fields -> {
             try {
                 apiInfoList.add(objectMapper.convertValue(fields, ApiInfo.class));
