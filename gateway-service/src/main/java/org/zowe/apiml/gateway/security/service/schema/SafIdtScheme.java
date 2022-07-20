@@ -156,6 +156,7 @@ public class SafIdtScheme implements IAuthenticationScheme {
                 // add header with SafIdt token to request and remove APIML token from Cookie if exists
                 context.addZuulRequestHeader(SAF_TOKEN_HEADER, safIdentityToken);
                 JwtCommand.removeCookie(context, authConfigurationProperties.getCookieProperties().getCookieName());
+                JwtCommand.removeCookie(context, authConfigurationProperties.getCookieProperties().getCookieNamePAT());
             }
         }
 

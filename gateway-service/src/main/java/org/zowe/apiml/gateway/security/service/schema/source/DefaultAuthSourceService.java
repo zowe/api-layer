@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -41,15 +42,24 @@ import java.util.Optional;
 public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
+    private final boolean isPATEnabled;
+
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
      *
      * @param jwtAuthSourceService  {@link JwtAuthSourceService} service which process authentication source of type JWT
      * @param x509AuthSourceService {@link X509AuthSourceService} service which process authentication source of type client certificate
      */
-    public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService, @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService) {
+    public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
+                                    @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
+                                    PATAuthSourceService patAuthSourceService,
+                                    @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled) {
+        this.isPATEnabled = isPATEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
+        if (isPATEnabled) {
+            map.put(AuthSourceType.PAT, patAuthSourceService);
+        }
     }
 
     /**
@@ -67,6 +77,10 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         AuthSourceService service = getService(AuthSourceType.JWT);
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
+        if (!authSource.isPresent() && isPATEnabled) {
+            service = getService(AuthSourceType.PAT);
+            authSource = service.getAuthSourceFromRequest();
+        }
         if (!authSource.isPresent()) {
             service = getService(AuthSourceType.CLIENT_CERT);
             authSource = service.getAuthSourceFromRequest();

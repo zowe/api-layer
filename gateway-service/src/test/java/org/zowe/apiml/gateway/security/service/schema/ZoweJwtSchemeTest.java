@@ -18,7 +18,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource.Parsed;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -96,7 +95,7 @@ class ZoweJwtSchemeTest {
 
         @Test
         void whenValidJWTAuthSource_thenUpdateZuulHeaderWithJWToken() {
-            when(authSourceService.parse(authSource)).thenReturn(new JwtAuthSource.Parsed("user", new Date(), new Date(), Origin.ZOSMF));
+            when(authSourceService.parse(authSource)).thenReturn(new ParsedTokenAuthSource("user", new Date(), new Date(), Origin.ZOSMF));
             command = scheme.createCommand(null, authSource);
             command.apply(null);
             verify(requestContext, times(1)).addZuulRequestHeader(any(), any());
@@ -111,7 +110,7 @@ class ZoweJwtSchemeTest {
 
         @Test
         void whenExpiredJwt_thenThrows() {
-            ((MockHttpServletRequest)request).addHeader(COOKIE_HEADER, "apimlAuthenticationToken=expiredToken");
+            ((MockHttpServletRequest) request).addHeader(COOKIE_HEADER, "apimlAuthenticationToken=expiredToken");
             AuthSource jwtSource = new JwtAuthSource("expiredToken");
             when(authSourceService.parse(jwtSource)).thenThrow(new TokenExpireException("expired token"));
             assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, jwtSource));
@@ -120,7 +119,7 @@ class ZoweJwtSchemeTest {
         @Test
         void whenValidJWTAuthSource_thenCommandIsNotExpired() {
             long expectedExpiration = System.currentTimeMillis() + (5 * 60 * 1000);
-            when(authSourceService.parse(any(JwtAuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
+            when(authSourceService.parse(any(JwtAuthSource.class))).thenReturn(new ParsedTokenAuthSource("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
 
             command = scheme.createCommand(null, authSource);
             Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
@@ -133,7 +132,7 @@ class ZoweJwtSchemeTest {
         @Test
         void whenExpiredJWTAuthSource_thenCommandIsExpired() {
             long expectedExpiration = System.currentTimeMillis() - (5 * 60 * 1000);
-            when(authSourceService.parse(any(JwtAuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
+            when(authSourceService.parse(any(JwtAuthSource.class))).thenReturn(new ParsedTokenAuthSource("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
 
             command = scheme.createCommand(null, authSource);
             Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
@@ -190,7 +189,7 @@ class ZoweJwtSchemeTest {
             @Test
             void whenValidX509AuthSource_thenCommandIsNotExpired() {
                 long expectedExpiration = System.currentTimeMillis() + (5L * 60 * 1000);
-                when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
+                when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new ParsedTokenAuthSource("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
 
                 command = scheme.createCommand(null, authSource);
                 Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
@@ -214,7 +213,7 @@ class ZoweJwtSchemeTest {
             @Test
             void whenExpiredX509AuthSource_thenCommandIsExpired() {
                 long expectedExpiration = System.currentTimeMillis() - (5 * 60 * 1000);
-                when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new Parsed("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
+                when(authSourceService.parse(any(X509AuthSource.class))).thenReturn(new ParsedTokenAuthSource("userId", new Date(), new Date(expectedExpiration), Origin.ZOWE));
 
                 command = scheme.createCommand(null, authSource);
                 Long expiration = (Long) ReflectionTestUtils.getField(command, "expireAt");
