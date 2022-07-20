@@ -16,7 +16,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.DefaultClaims;
-import io.jsonwebtoken.impl.DefaultJws;
+import io.jsonwebtoken.impl.DefaultJwsHeader;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -129,11 +129,8 @@ public class AuthenticationService {
     }
 
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
-        Jwt parsedJwt = Jwts.parserBuilder().setSigningKey(jwtSecurityInitializer.getJwtSecret()).build().parse(jwt);
-        if (parsedJwt instanceof DefaultJws) {
-            return parseQueryResponse(((DefaultJws<DefaultClaims>) parsedJwt).getBody());
-        }
-        return null;
+        Jwt<DefaultJwsHeader, DefaultClaims> parsedJwt = Jwts.parserBuilder().setSigningKey(jwtSecurityInitializer.getJwtSecret()).build().parse(jwt);
+        return parseQueryResponse(parsedJwt.getBody());
     }
 
     /**
@@ -400,6 +397,7 @@ public class AuthenticationService {
         return fromCookie.isPresent() ?
             fromCookie : getPATFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
     }
+
     private Optional<String> getPATFromHeader(String header) {
         return header != null ? Optional.of(header) : Optional.empty();
     }
