@@ -16,6 +16,7 @@ import org.zowe.apiml.config.ApiInfo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class APIService implements Serializable {
     private boolean ssoAllInstances;
 
     @Schema(description = "The API information for each API ID for this service")
-    private Map<String, ApiInfo> apis;
+    private Map<String, ApiInfo> apis = new HashMap<>();
 
     private List<String> instances = new ArrayList<>();
 

@@ -42,6 +42,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @Service
 public class CachedProductFamilyService {
 
+    private static final String DEFAULT_APIINFO_KEY = "default";
+
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
@@ -337,13 +339,13 @@ public class CachedProductFamilyService {
         try {
             List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
             apiInfoList.stream().filter(apiInfo -> apiInfo.getApiId() != null).forEach(apiInfo -> {
-                String id = (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion();
+                String id = (apiInfo.getMajorVersion() < 0) ? DEFAULT_APIINFO_KEY : apiInfo.getApiId() + " v" + apiInfo.getVersion();
                 apiInfoById.put(id, apiInfo);
             });
 
-            if (!apiInfoById.containsKey("default")) {
+            if (!apiInfoById.containsKey(DEFAULT_APIINFO_KEY)) {
                 ApiInfo defaultApiInfo = apiInfoList.stream().filter(ApiInfo::isDefaultApi).findFirst().orElse(null);
-                apiInfoById.put("default", defaultApiInfo);
+                apiInfoById.put(DEFAULT_APIINFO_KEY, defaultApiInfo);
             }
         } catch (Exception ex) {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
