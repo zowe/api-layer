@@ -94,11 +94,10 @@ public class ValidateAPIController {
         else if (checkValidPatternAPI(serviceId)) {
             return "The serviceid contains symbols or upper case letters";
         }
-
-        if (!verificationOnboardService.checkOnboarding(serviceId)) {
+        else if (!verificationOnboardService.checkOnboarding(serviceId)) {
             return "The service is not registered";
         }
-        if (verificationOnboardService.retrieveMetaData(serviceId).isEmpty()) {
+        else if (verificationOnboardService.retrieveMetaData(serviceId).isEmpty()) {
             return "Cannot Retrieve MetaData";
         }
 

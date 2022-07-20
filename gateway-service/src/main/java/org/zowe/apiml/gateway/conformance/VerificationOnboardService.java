@@ -15,6 +15,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -54,16 +55,16 @@ public class VerificationOnboardService {
      */
     public boolean checkOnboarding(String serviceId) throws IOException {
 
+        Boolean check = false;
         HttpGet httpget = constructHttpGet(serviceId);
         try {
             CloseableHttpResponse response = closeableHttpClient.execute(httpget);
-            return response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+            check = response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
 
         } catch (Exception e) {
             log.debug("Error Ocurred: " + e.getMessage());
-            e.printStackTrace();
         } 
-        return false;
+        return check;
     }
 
     /**
@@ -82,18 +83,18 @@ public class VerificationOnboardService {
             CloseableHttpResponse response = closeableHttpClient.execute(httpget);
             String responseString = EntityUtils.toString(response.getEntity());
 
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setExpandEntityReferences(false);
+            builderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();
             InputSource src = new InputSource();
             src.setCharacterStream(new StringReader(responseString));
             Document doc = builder.parse(src);
 
             swaggerUrl = doc.getElementsByTagName("apiml.apiInfo.api-v2.swaggerUrl").item(0).getTextContent();
-            return swaggerUrl;
-
 
         } catch (Exception e) {
             log.debug("Error Ocurred: " + e.getMessage());
-            e.printStackTrace();
         } 
         return swaggerUrl;
 
@@ -108,7 +109,7 @@ public class VerificationOnboardService {
 
         List<String> discoveryServiceUrls = new ArrayList<>();
         for (String location : discoveryUriLoStrings) {
-            discoveryServiceUrls.add(location);
+            discoveryServiceUrls.add(location + "apps/");
         }
 
         return discoveryServiceUrls;
@@ -122,9 +123,8 @@ public class VerificationOnboardService {
     private HttpGet constructHttpGet(String endPoint) {
         List<String> discoveryUrls = getDiscoveryServiceUrls();
 
-        String url = String.format("%s" + "apps/" + "%s", discoveryUrls.get(0), endPoint);
-        HttpGet httpget = new HttpGet(url);
-        return httpget;
+        String url = String.format("%s" + "%s", discoveryUrls.get(0), endPoint);
+        return new HttpGet(url);
     }
 
 }
