@@ -15,8 +15,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 export default class InstanceInfo extends Component {
     render() {
         const { selectedService, selectedVersion } = this.props;
-        console.log(selectedVersion); // eslint-disable-line no-console
-        console.log(selectedService); // eslint-disable-line no-console
+
         const apiInfo =
             selectedService.apis[selectedVersion || selectedService.defaultApiVersion] || selectedService.apis.default;
         const { apiId } = apiInfo;
