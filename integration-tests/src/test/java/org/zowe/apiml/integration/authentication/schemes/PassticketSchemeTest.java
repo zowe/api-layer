@@ -10,10 +10,10 @@
 package org.zowe.apiml.integration.authentication.schemes;
 
 import io.restassured.RestAssured;
+import io.restassured.http.Header;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
-import java.util.stream.Stream;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,16 +22,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.categories.MainframeDependentTests;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -41,7 +42,8 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.integration.penetration.JwtPenTest.getToken;
 import static org.zowe.apiml.util.SecurityUtils.*;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.PASSTICKET_TEST_ENDPOINT;
+import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 
 @DiscoverableClientDependentTest
 @GeneralAuthenticationTest
@@ -55,9 +57,28 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             Arguments.of("noSignJwt", SC_OK),
             Arguments.of("publicKeySignedJwt", SC_OK),
             Arguments.of("changedRealmJwt", SC_OK),
-            Arguments.of("changedUserJwt", SC_OK)
+            Arguments.of("changedUserJwt", SC_OK),
+            Arguments.of("personalAccessToken", SC_OK)
         );
     }
+
+    static Set<String> scopes = new HashSet<>();
+    static String jwt;
+    static String pat;
+
+    static {
+        scopes.add("dcpassticket");
+        jwt = gatewayToken();
+        pat = personalAccessToken(scopes);
+    }
+
+    private static Stream<Arguments> accessTokens() {
+        return Stream.of(
+            Arguments.of(jwt, COOKIE_NAME, new Header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)),
+            Arguments.of(pat, PAT_COOKIE_AUTH_NAME, new Header(ApimlConstants.PAT_HEADER_NAME, pat))
+        );
+    }
+
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
@@ -68,30 +89,31 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     class WhenUsingPassticketAuthenticationScheme {
         @Nested
         class ResultContainsPassticketAndNoJwt {
-            @Test
-            void givenJwtInBearerHeader() {
-                String jwt = gatewayToken();
-
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            @InfinispanStorageTest
+            void givenJwtInBearerHeader(String token,String cookie, Header header) {
                 verifyPassTicketHeaders(
                     given()
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                    .when()
+                        .header(header)
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
 
-            @Test
-            void givenJwtInCookie() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            @InfinispanStorageTest
+            void givenJwtInCookie(String token, String cookie) {
 
                 verifyPassTicketHeaders(
                     given()
-                        .cookie(COOKIE_NAME, jwt)
-                    .when()
+                        .cookie(cookie, token)
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
@@ -101,44 +123,47 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 verifyPassTicketHeaders(
                     given()
                         .auth().preemptive().basic(USERNAME, PASSWORD)
-                    .when()
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
             }
 
-            @Test
-            void givenJwtInHeaderAndCookie() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            @InfinispanStorageTest
+            void givenJwtInHeaderAndCookie(String token, String cookie, Header header) {
 
                 verifyPassTicketHeaders(
                     given()
-                        .cookie(COOKIE_NAME, jwt)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                    .when()
+                        .cookie(cookie, token)
+                        .header(header)
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
 
-            @Test
-            void givenBasicAndJwtInCookie() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            @InfinispanStorageTest
+            void givenBasicAndJwtInCookie(String token, String cookie) {
 
                 verifyPassTicketHeaders(
                     given()
                         .auth().preemptive().basic(USERNAME, PASSWORD)
-                        .cookie(COOKIE_NAME, jwt)
-                    .when()
+                        .cookie(cookie, token)
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
 
             @ParameterizedTest(name = "call passticket service with {0} to receive response code {2}")
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#getTokens")
+            @InfinispanStorageTest
             @TestsNotMeantForZowe
             void whenCallPassTicketService(String tokenType, int status) {
                 String token = getToken(tokenType);
@@ -157,26 +182,29 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
         @Nested
         class VerifyPassTicketIsOk {
-            @Test
-            void givenCorrectToken() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            @InfinispanStorageTest
+            void givenCorrectToken(String token, String cookie) {
                 given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                .when()
+                    .cookie(cookie, token)
+                    .when()
                     .get(
                         discoverablePassticketUrl
                     )
-                .then()
+                    .then()
                     .statusCode(is(SC_OK));
             }
         }
 
         @Nested
         class VerifyPassTicketIsInvalid {
-            @Test
+
             @MainframeDependentTests // The appl id needs to be verified against actual ESM
-            void givenIssuedForIncorrectApplId() {
-                String jwt = gatewayToken();
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
+            @InfinispanStorageTest
+            void givenIssuedForIncorrectApplId(String token, String cookie) {
                 String expectedMessage = "Error on evaluation of PassTicket";
 
                 URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
@@ -185,10 +213,10 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 );
 
                 given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                .when()
+                    .cookie(cookie, token)
+                    .when()
                     .get(discoverablePassticketUrl)
-                .then()
+                    .then()
                     .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                     .body("message", containsString(expectedMessage));
 
@@ -197,8 +225,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     }
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
-    void verifyPassTicketHeaders(T v)
-    {
+    void verifyPassTicketHeaders(T v) {
         String basic = "Basic " + Base64.getEncoder().encodeToString((USERNAME + ":" + PASSWORD).getBytes());
         v
             .body("headers.authorization", not(startsWith("Bearer ")))

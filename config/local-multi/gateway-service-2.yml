@@ -6,6 +6,8 @@ apiml:
         port: 10020
         discoveryServiceUrls: https://localhost:10011/eureka/,https://localhost2:10021/eureka/
     security:
+        personalAccessToken:
+            enabled: true
         auth:
             provider: zosmf
             zosmf:
