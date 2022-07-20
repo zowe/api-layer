@@ -292,6 +292,36 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     @Nested
+    class GivenPATInTheRequestTest {
+        @Test
+        void givenTokenIsAvailableInCookie_thenGetFromCookie() {
+            String pat = "personalAccessToken";
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.setCookies(new Cookie("personalAccessToken", pat));
+            Optional<String> result = authService.getPATFromRequest(request);
+            assertTrue(result.isPresent());
+            assertEquals(pat, result.get());
+        }
+
+        @Test
+        void givenTokenNotPresentInCookie_thenGetFromHeader() {
+            String pat = "personalAccessToken";
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.addHeader(ApimlConstants.PAT_HEADER_NAME, pat);
+            Optional<String> result = authService.getPATFromRequest(request);
+            assertTrue(result.isPresent());
+            assertEquals(pat, result.get());
+        }
+
+        @Test
+        void givenNoTokenInRequest_thenReturnEmptyResult() {
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            Optional<String> result = authService.getPATFromRequest(request);
+            assertFalse(result.isPresent());
+        }
+    }
+
+    @Nested
     class GivenReadLTPATokenTest {
 
         @Test

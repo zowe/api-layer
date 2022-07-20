@@ -53,7 +53,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
                                     PATAuthSourceService patAuthSourceService,
-                                    @Value("${apiml.security.personalAccessToken.enabled}") boolean isPATEnabled) {
+                                    @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled) {
         this.isPATEnabled = isPATEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
