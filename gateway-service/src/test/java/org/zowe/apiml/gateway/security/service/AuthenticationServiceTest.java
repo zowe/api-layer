@@ -127,9 +127,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenCreatePersonalAccessToken() {
-            String pat = authService.createLongLivedJwtToken(USER,60, scopes);
-            QueryResponse parsedPAT = authService.parseJwtToken(pat);
-            assertEquals(QueryResponse.Source.ZOWE_PAT,parsedPAT.getSource());
+            String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
+            QueryResponse parsedPAT = authService.parseJwtWithSignature(pat);
+            assertEquals(QueryResponse.Source.ZOWE_PAT, parsedPAT.getSource());
         }
 
         @Test
@@ -289,6 +289,36 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         }
 
+    }
+
+    @Nested
+    class GivenPATInTheRequestTest {
+        @Test
+        void givenTokenIsAvailableInCookie_thenGetFromCookie() {
+            String pat = "personalAccessToken";
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.setCookies(new Cookie("personalAccessToken", pat));
+            Optional<String> result = authService.getPATFromRequest(request);
+            assertTrue(result.isPresent());
+            assertEquals(pat, result.get());
+        }
+
+        @Test
+        void givenTokenNotPresentInCookie_thenGetFromHeader() {
+            String pat = "personalAccessToken";
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.addHeader(ApimlConstants.PAT_HEADER_NAME, pat);
+            Optional<String> result = authService.getPATFromRequest(request);
+            assertTrue(result.isPresent());
+            assertEquals(pat, result.get());
+        }
+
+        @Test
+        void givenNoTokenInRequest_thenReturnEmptyResult() {
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            Optional<String> result = authService.getPATFromRequest(request);
+            assertFalse(result.isPresent());
+        }
     }
 
     @Nested

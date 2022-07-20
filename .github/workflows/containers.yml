@@ -1035,6 +1035,7 @@ jobs:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 

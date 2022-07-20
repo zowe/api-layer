@@ -4,6 +4,8 @@ apiml:
         discoveryServiceUrls: https://discovery-service:10011/eureka/
     security:
         allowTokenRefresh: true
+        personalAccessToken:
+            enabled: true
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id

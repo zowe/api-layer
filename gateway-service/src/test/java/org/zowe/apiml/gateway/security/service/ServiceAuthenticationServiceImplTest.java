@@ -38,11 +38,8 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.util.CacheUtils;
 
@@ -149,8 +146,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     private static Stream<List<ImmutablePair<AuthSource, AuthSource.Parsed>>> provideAuthSources2Pairs() {
         JwtAuthSource token1 = new JwtAuthSource("token1");
         JwtAuthSource token2 = new JwtAuthSource("token2");
-        AuthSource.Parsed jwtParsedSource1 = new JwtAuthSource.Parsed("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2100, 1, 1)), Origin.ZOWE);
-        AuthSource.Parsed jwtParsedSource2 = new JwtAuthSource.Parsed("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2000, 1, 1)), Origin.ZOWE);
+        AuthSource.Parsed jwtParsedSource1 = new ParsedTokenAuthSource("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2100, 1, 1)), Origin.ZOWE);
+        AuthSource.Parsed jwtParsedSource2 = new ParsedTokenAuthSource("userId", Date.valueOf(LocalDate.of(1900, 1, 1)), Date.valueOf(LocalDate.of(2000, 1, 1)), Origin.ZOWE);
 
         X509AuthSource x509AuthSource1 = new X509AuthSource(mock(X509Certificate.class));
         X509AuthSource x509AuthSource2 = new X509AuthSource(mock(X509Certificate.class));
