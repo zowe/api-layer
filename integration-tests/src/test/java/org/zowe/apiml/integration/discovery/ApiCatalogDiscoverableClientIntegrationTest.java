@@ -122,7 +122,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
         assertEquals("zowe.apiml.discoverableclient.rest", defaultApi.get("apiId"));
         assertEquals("api/v1", defaultApi.get("gatewayUrl"));
         assertEquals("1.0.0", defaultApi.get("version"));
-        assertEquals("https://localhost:10012/discoverableclient/v3/api-docs/apiv1", defaultApi.get("swaggerUrl"));
+        assertThat((String) defaultApi.get("swaggerUrl"), endsWith("/discoverableclient/v3/api-docs/apiv1"));
         assertEquals("https://www.zowe.org", defaultApi.get("documentationUrl"));
         assertEquals(true, defaultApi.get("defaultApi"));
 
