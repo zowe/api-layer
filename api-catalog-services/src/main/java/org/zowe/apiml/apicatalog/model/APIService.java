@@ -66,7 +66,7 @@ public class APIService implements Serializable {
     private boolean ssoAllInstances;
 
     @Schema(description = "The API information for each API ID for this service")
-    private Map<String, ApiInfo> apis = new HashMap<>();
+    private Map<String, ApiInfo> apis = new HashMap<>(); // NOSONAR
 
     private List<String> instances = new ArrayList<>();
 
