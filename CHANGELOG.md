@@ -5,6 +5,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## `2.5.0 (2022-07-21)`
 
 * Feature:  accept PAT for SSO (#2499) ([ad17c18](https://github.com/zowe/api-layer/commit/ad17c18)), closes [#2499](https://github.com/zowe/api-layer/issues/2499)
+* Feature:  testing with two prs with same title ([dc62cea](https://github.com/zowe/api-layer/commit/dc62cea))
+* Feature:  testing with two prs with same title, ran workflow on v2.x.x to test ([c7c1135](https://github.com/zowe/api-layer/commit/c7c1135))
 
 
 * Bugfix:  add git status porcelain ([bb9f924](https://github.com/zowe/api-layer/commit/bb9f924))
