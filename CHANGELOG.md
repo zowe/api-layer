@@ -22,6 +22,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  retrieve swagger api docs with or without certificate configuration enabled (#2500) ([16ca734](https://github.com/zowe/api-layer/commit/16ca734)), closes [#2500](https://github.com/zowe/api-layer/issues/2500)
 * Bugfix:  running same workflow on unchanged file ([bab4cab](https://github.com/zowe/api-layer/commit/bab4cab))
 * Bugfix:  running same workflow on unchanged file, remove console log for git add ([8b43fe5](https://github.com/zowe/api-layer/commit/8b43fe5))
+* Bugfix:  immediately expires passticket command (#2496) ([8adca78](https://github.com/zowe/api-layer/commit/8adca78)), closes [#2496](https://github.com/zowe/api-layer/issues/2496)
 
 ## `2.2.4 (2022-07-14)`
 
