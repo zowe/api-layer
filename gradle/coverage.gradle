@@ -44,6 +44,7 @@ configure(jacocoProjects) {
 }
 
 task jacocoFullReport(type: JacocoReport) {
+    // based on sample from https://github.com/SurpSG/jacoco-gradle-plugin-merge-coverage
     description = 'Generates an aggregate report from all subprojects'
     dependsOn(jacocoProjects.jacocoTestReport)
 
@@ -80,12 +81,6 @@ task jacocoFullReport(type: JacocoReport) {
     reports {
         html.required = true
         xml.required = true
-    }
-
-    doFirst {
-        getExecutionData().from(
-            files(executionData.findAll { it.exists() })
-        )
     }
 }
 
