@@ -397,6 +397,9 @@ task runZosmfAuthTest(type: Test) {
         includeTags(
             'zOSMFAuthTest'
         )
+        excludeTags(
+            'InfinispanStorageTest'
+        )
     }
 }
 

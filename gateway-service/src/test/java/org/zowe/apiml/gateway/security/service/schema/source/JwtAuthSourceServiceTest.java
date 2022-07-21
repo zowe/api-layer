@@ -49,7 +49,7 @@ class JwtAuthSourceServiceTest {
     public void setup() {
         authSource = new JwtAuthSource("jwtToken");
         tokenAuthentication = TokenAuthentication.createAuthenticated("user", token);
-        expectedParsedSource = new JwtAuthSource.Parsed("user", new Date(111), new Date(222), Origin.ZOSMF);
+        expectedParsedSource = new ParsedTokenAuthSource("user", new Date(111), new Date(222), Origin.ZOSMF);
     }
 
     @Test
@@ -111,6 +111,7 @@ class JwtAuthSourceServiceTest {
         @Nested
         class WhenNullTokenInAuthSource {
             private final AuthSource authSourceNullToken = new JwtAuthSource(null);
+
             @Test
             void givenNullTokenInAuthSource_thenAuthSourceIsInvalid() {
                 Assertions.assertFalse(serviceUnderTest.isValid(authSourceNullToken));
@@ -134,6 +135,7 @@ class JwtAuthSourceServiceTest {
     @Nested
     class GivenUnknownAuthSource {
         private final AuthSource dummyAuthSource = new DummyAuthSource();
+
         @Test
         void whenParse_thenNull() {
             Assertions.assertNull(serviceUnderTest.parse(dummyAuthSource));
@@ -212,7 +214,8 @@ class JwtAuthSourceServiceTest {
             verify(authenticationService, times(1)).getLtpaTokenWithValidation(token);
         }
     }
-        @Nested
+
+    @Nested
     class GivenTokenExpireException {
         private final TokenExpireException exception = new TokenExpireException("token expired");
 

@@ -175,7 +175,7 @@ dependencies {
 
     testImplementation(testFixtures(project(":integration-tests")))
 
-    runtimeOnly libraries.jjwt_impl
+    implementation libraries.jjwt_impl
     runtimeOnly libraries.jjwt_jackson
 }
 

@@ -41,13 +41,13 @@ public class Requests {
     }
 
     public JsonResponse getJsonResponse(URI uri) {
-        return getJsonResponse(uri, "");
+        return getJsonResponse(uri, "", COOKIE_NAME);
     }
 
-    public JsonResponse getJsonResponse(URI uri, String authentication) {
+    public JsonResponse getJsonResponse(URI uri, String authentication, String cookieName) {
         ExtractableResponse<Response> response = given()
             .accept(ContentType.JSON)
-            .cookie(COOKIE_NAME, authentication)
+            .cookie(cookieName, authentication)
         .when()
             .get(uri)
         .then().extract();
