@@ -28,19 +28,29 @@ export const wrapSelectors = {
     },
 };
 
-export function getSnippetContent(req, target, codeBlock) {
+export function getSnippetContent(req, target, codeSnippet) {
     // get extended info about request
     const { spec, oasPathMethod } = req.toJS();
     const { path, method } = oasPathMethod;
     // eslint-disable-next-line no-console
-    console.log(path);
+    console.log(codeSnippet.endpoint);
+    // eslint-disable-next-line no-console
     // run OpenAPISnippet for target node
     const targets = [target];
     let snippet;
     try {
         // set request snippet content
-        if (codeBlock !== undefined && codeBlock !== null) {
-            snippet = codeBlock;
+        if (
+            codeSnippet !== null &&
+            codeSnippet !== undefined &&
+            codeSnippet.codeBlock !== undefined &&
+            codeSnippet.codeBlock !== null
+        ) {
+            if (codeSnippet.endpoint !== undefined && codeSnippet.endpoint !== null && codeSnippet.endpoint === path) {
+                snippet = codeSnippet.codeBlock;
+            } else {
+                snippet = "N/A: The service owner didn't provide a Code Snippet in this language for this API.";
+            }
         } else {
             snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
         }
@@ -61,11 +71,11 @@ export function re(codeBlock) {
  * @param target the language target
  * @returns snippet code snippet content or an error in case of failure
  */
-export function generateSnippet(system, title, syntax, target, codeBlock) {
+export function generateSnippet(system, title, syntax, target, codeSnippet) {
     return system.Im.fromJS({
         title,
         syntax,
-        fn: (req) => getSnippetContent(req, target, codeBlock),
+        fn: (req) => getSnippetContent(req, target, codeSnippet),
     });
 }
 
@@ -104,6 +114,40 @@ export const BasicSnippedGenerator = {
     },
 };
 
+function setTargets(codeSnippets, i) {
+    let target;
+    switch (codeSnippets[i].language.toLowerCase()) {
+        case 'java':
+            target = 'java_unirest';
+            break;
+        case 'python':
+            target = 'python';
+            break;
+        case 'javascript':
+            target = 'javascript_jquery';
+            break;
+        case 'c':
+            target = 'c_libcurl';
+            break;
+        case 'c#':
+            target = 'csharp_restsharp';
+            break;
+        case 'go':
+            target = 'go_native';
+            break;
+        case 'node':
+            target = 'node_fetch';
+            break;
+        case 'nodejs':
+            target = 'node_fetch';
+            break;
+        default:
+            target = '';
+            break;
+    }
+    return target;
+}
+
 /**
  * Custom Plugin which extends the SwaggerUI to generate customized snippets
  */
@@ -115,9 +159,11 @@ export function CustomizedSnippedGenerator(codeSnippets) {
         language: 'java',
         target: 'java_unirest',
     };
-    const cs2 = { codeBlock: 'printf("ciao")', endpoint: '/aa', language: 'python', target: 'python' };
+    const cs2 = { codeBlock: 'printf("ciao")', endpoint: '/containers', language: 'python', target: 'python' };
     newCs.push(cs);
     newCs.push(cs2);
+    // eslint-disable-next-line no-console
+    console.log(codeSnippets);
     return {
         statePlugins: {
             // extend some internals to gain information about current path, method and spec in the generator function
@@ -129,45 +175,17 @@ export function CustomizedSnippedGenerator(codeSnippets) {
                         (ori, system) =>
                         (state, ...args) => {
                             let useSet = ori(state, ...args);
-                            let target;
                             // eslint-disable-next-line no-plusplus
                             for (let i = 0; i < codeSnippets.length; i++) {
-                                switch (codeSnippets[i].language.toLowerCase()) {
-                                    case 'java':
-                                        target = 'java_unirest';
-                                        break;
-                                    case 'python':
-                                        target = 'python';
-                                        break;
-                                    case 'javascript':
-                                        target = 'javascript_jquery';
-                                        break;
-                                    case 'c':
-                                        target = 'c_libcurl';
-                                        break;
-                                    case 'c#':
-                                        target = 'csharp_restsharp';
-                                        break;
-                                    case 'go':
-                                        target = 'go_native';
-                                        break;
-                                    case 'node':
-                                        target = 'node_fetch';
-                                        break;
-                                    case 'nodejs':
-                                        target = 'node_fetch';
-                                        break;
-                                    default:
-                                        target = '';
-                                        break;
-                                }
+                                const target = setTargets(codeSnippets, i);
                                 const newSnippet = generateSnippet(
                                     system,
                                     `Customized Snippet - ${codeSnippets[i].language}`,
                                     codeSnippets[i].language,
                                     target,
-                                    codeSnippets[i].codeBlock
+                                    codeSnippets[i]
                                 );
+                                // const specJson = system.getSystem().specSelectors.specJson();
                                 // eslint-disable-next-line no-console
                                 console.log(newSnippet);
                                 useSet = useSet.set(codeSnippets[i].language, newSnippet);

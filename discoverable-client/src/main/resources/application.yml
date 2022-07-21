@@ -79,15 +79,11 @@ apiml:
                     - endpoint: /greeting
                       language: java
                       codeBlock: |
-                          ```
                           System.out.println("Greeting code snippet");
-                          ```
                     - endpoint: /{yourName}/greeting
                       language: java
                       codeBlock: |
-                          ```
                           System.out.println("Your name greeting code snippet");
-                          ```
             -   apiId: zowe.apiml.discoverableclient.ws
                 version: 1.0.0
                 gatewayUrl: graphql/v1
