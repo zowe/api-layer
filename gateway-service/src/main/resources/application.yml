@@ -63,6 +63,8 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         allowTokenRefresh: false
         jwtInitializerTimeout: 5
+        personalAccessToken:
+            enabled: false
         auth:
             provider: zosmf
         x509:
