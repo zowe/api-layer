@@ -93,7 +93,7 @@ ${restOfChangelog}`;
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
         console.log("New release branch created " + branch + "\n");
 
-        let gitCommitPush = `git fetch origin ${branchToMerge} && git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${branch}`;
+        let gitCommitPush = `git fetch origin ${branchToMerge} && git checkout -b origin/${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${branch}`;
 
         execSync(gitCommitPush, {
             cwd: '../../'
