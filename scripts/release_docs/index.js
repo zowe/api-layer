@@ -53,7 +53,7 @@ ${restOfChangelog}`;
     const prs = (await octokit.request("GET /repos/zowe/api-layer/pulls")).data;
 
     const changelogPrs = prs.filter(pr => pr["user"]["login"] == "zowe-robot" &&
-    pr["title"] == "Automatic update for the Changelog for release" &&
+    pr["title"] == "Automatic update for the Changelog for release - test" &&
     pr["body"] == "Update changelog for new release");
 
     if (changelogPrs.length === 1) {
@@ -102,7 +102,7 @@ ${restOfChangelog}`;
         await octokit.rest.pulls.create({
             owner: 'zowe',
             repo: 'api-layer',
-            title: 'Automatic update for the Changelog for release',
+            title: 'Automatic update for the Changelog for release - test',
             head: branch,
             base: branchToMerge,
             body: 'Update changelog for new release'
