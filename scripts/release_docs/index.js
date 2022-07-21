@@ -59,7 +59,7 @@ ${restOfChangelog}`;
     if (changelogPrs.length === 1) {
         // PR exists, use that branch to merge new updates
         const prevReleaseBranch = changelogPrs[0]["head"]["ref"];
-        let gitCheckoutOrigin = `git fetch origin ${branchToMerge} --quiet && git checkout origin/${prevReleaseBranch}`;
+        let gitCheckoutOrigin = `git fetch origin --quiet && git checkout origin/${prevReleaseBranch}`;
 
         execSync(gitCheckoutOrigin, {
             cwd: '../../'
