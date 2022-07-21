@@ -84,8 +84,23 @@ public class VerificationOnboardService {
             String responseString = EntityUtils.toString(response.getEntity());
 
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+            
+
+            // set attribute to make the parsing more secure
+            builderFactory.setAttribute(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+            builderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            builderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            // Disable external DTDs as well
+            builderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            
+            builderFactory.setXIncludeAware(false);
             builderFactory.setExpandEntityReferences(false);
-            builderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
             InputSource src = new InputSource();
             src.setCharacterStream(new StringReader(responseString));
@@ -123,7 +138,7 @@ public class VerificationOnboardService {
     private HttpGet constructHttpGet(String endPoint) {
         List<String> discoveryUrls = getDiscoveryServiceUrls();
 
-        String url = String.format("%s" + "%s", discoveryUrls.get(0), endPoint);
+        String url = String.format("%s%s", discoveryUrls.get(0), endPoint);
         return new HttpGet(url);
     }
 
