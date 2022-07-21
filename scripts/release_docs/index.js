@@ -94,7 +94,7 @@ ${restOfChangelog}`;
         console.log("New release branch created " + branch + "\n");
 
         let gitLog = `git log`;
-        const mygitlog = execSync(gitCommitPush, {
+        const mygitlog = execSync(gitLog, {
             cwd: '../../'
         }).toString();
 
