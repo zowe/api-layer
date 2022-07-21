@@ -2,6 +2,27 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.5.0 (2022-07-21)`
+
+* Feature:  accept PAT for SSO (#2499) ([ad17c18](https://github.com/zowe/api-layer/commit/ad17c18)), closes [#2499](https://github.com/zowe/api-layer/issues/2499)
+* Feature:  testing with two prs with same title ([dc62cea](https://github.com/zowe/api-layer/commit/dc62cea))
+* Feature:  testing with two prs with same title, ran workflow on v2.x.x to test ([c7c1135](https://github.com/zowe/api-layer/commit/c7c1135))
+
+
+* Bugfix:  add git status porcelain ([bb9f924](https://github.com/zowe/api-layer/commit/bb9f924))
+* Bugfix:  changelog is acting normal, check output of commit and push ([54e2db9](https://github.com/zowe/api-layer/commit/54e2db9))
+* Bugfix:  check what's in changelog ([744421d](https://github.com/zowe/api-layer/commit/744421d))
+* Bugfix:  console.log ([c693de2](https://github.com/zowe/api-layer/commit/c693de2))
+* Bugfix:  git push origin detached head state ([7f9d2e5](https://github.com/zowe/api-layer/commit/7f9d2e5))
+* Bugfix:  git push origin only ([fa2888e](https://github.com/zowe/api-layer/commit/fa2888e))
+* Bugfix:  observe git status only ([f067270](https://github.com/zowe/api-layer/commit/f067270))
+* Bugfix:  observe git status only with toString fixed typo ([1b2f5bb](https://github.com/zowe/api-layer/commit/1b2f5bb))
+* Bugfix:  ref error ([23a1484](https://github.com/zowe/api-layer/commit/23a1484))
+* Bugfix:  remove multiple tokens from cookies (#2514) ([d5bc187](https://github.com/zowe/api-layer/commit/d5bc187)), closes [#2514](https://github.com/zowe/api-layer/issues/2514)
+* Bugfix:  retrieve swagger api docs with or without certificate configuration enabled (#2500) ([16ca734](https://github.com/zowe/api-layer/commit/16ca734)), closes [#2500](https://github.com/zowe/api-layer/issues/2500)
+* Bugfix:  running same workflow on unchanged file ([bab4cab](https://github.com/zowe/api-layer/commit/bab4cab))
+* Bugfix:  running same workflow on unchanged file, remove console log for git add ([8b43fe5](https://github.com/zowe/api-layer/commit/8b43fe5))
+
 ## `2.2.4 (2022-07-14)`
 
 * Feature:  Revoke a Persoanal Access Token by admin (#2476) ([e4d42a9](https://github.com/zowe/api-layer/commit/e4d42a9)), closes [#2476](https://github.com/zowe/api-layer/issues/2476)
