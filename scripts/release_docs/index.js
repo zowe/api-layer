@@ -93,19 +93,20 @@ ${restOfChangelog}`;
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
         console.log("New release branch created " + branch + "\n");
 
-        let gitCommitPush = `git fetch origin && git log`
+        let gitCommitPush = `git fetch origin && git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${branch}`;
+
         execSync(gitCommitPush, {
             cwd: '../../'
         });
 
-//        await octokit.rest.pulls.create({
-//            owner: 'zowe',
-//            repo: 'api-layer',
-//            title: 'Automatic update for the Changelog for release',
-//            head: branch,
-//            base: branchToMerge,
-//            body: 'Update changelog for new release'
-//        });
+        await octokit.rest.pulls.create({
+            owner: 'zowe',
+            repo: 'api-layer',
+            title: 'Automatic update for the Changelog for release',
+            head: branch,
+            base: branchToMerge,
+            body: 'Update changelog for new release'
+        });
     }
     else {
         console.log("More than one pull request exists, cannot add new updates to the changelog");
