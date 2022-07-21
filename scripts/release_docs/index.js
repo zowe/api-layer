@@ -59,7 +59,7 @@ ${restOfChangelog}`;
     if (changelogPrs.length === 1) {
         // PR exists, use that branch to merge new updates
         const prevReleaseBranch = changelogPrs[0]["head"]["ref"];
-        let gitCheckoutOrigin = `git fetch origin --quiet && git checkout origin/${prevReleaseBranch}`;
+        let gitCheckoutOrigin = `git fetch origin ${branchToMerge} --quiet && git checkout origin/${prevReleaseBranch}`;
 
         execSync(gitCheckoutOrigin, {
             cwd: '../../'
@@ -93,7 +93,7 @@ ${restOfChangelog}`;
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
         console.log("New release branch created " + branch + "\n");
 
-        let gitCommitPush = `git fetch origin && git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${branch}`;
+        let gitCommitPush = `git fetch origin ${branchToMerge} && git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${branch}`;
 
         execSync(gitCommitPush, {
             cwd: '../../'
