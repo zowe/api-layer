@@ -387,7 +387,7 @@ jobs:
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+                    CACHING_STORAGE_MODE: 'redis'
                     CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
                     CACHING_STORAGE_REDIS_SSL_ENABLED: true
             discoverable-client:
@@ -451,7 +451,7 @@ jobs:
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+                    CACHING_STORAGE_MODE: 'redis'
                     CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
                     CACHING_STORAGE_REDIS_SSL_ENABLED: false
                     VERIFY_CERTIFICATES: false
