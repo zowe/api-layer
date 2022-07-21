@@ -45,6 +45,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final PassTicketService passTicketService;
     private final AuthSourceService authSourceService;
     private final String cookieName;
+    private final String patCookieName;
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
@@ -54,6 +55,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         this.passTicketService = passTicketService;
         this.authSourceService = authSourceService;
         cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+        patCookieName = authConfigurationProperties.getCookieProperties().getCookieNamePAT();
     }
 
     @Override
@@ -102,7 +104,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final String value = "Basic " + encoded;
 //        passticket is valid only once, therefore this command needs to expire immediately and each call should generate new passticket
         long expiration = System.currentTimeMillis();
-        return new PassTicketCommand(value, cookieName, expiration);
+        return new PassTicketCommand(value, cookieName, patCookieName, expiration);
     }
 
     @Override
@@ -120,6 +122,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
         String authorizationValue;
         String cookieName;
+        String patCookieName;
         Long expireAt;
 
         @Override
@@ -127,7 +130,8 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             if (authorizationValue != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
-                JwtCommand.removeCookie(context, cookieName);
+                String[] cookiesToBeRemoved = new String[]{cookieName,patCookieName};
+                JwtCommand.removeCookie(context, cookiesToBeRemoved);
             }
         }
 
