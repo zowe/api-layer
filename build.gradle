@@ -47,7 +47,7 @@ apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
 allprojects {
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'idea'
 //    apply plugin: 'com.github.hierynomus.license'
     apply plugin: 'org.owasp.dependencycheck'
