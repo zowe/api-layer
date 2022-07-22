@@ -59,10 +59,8 @@ configurations.all {
 }
 
 dependencies {
-    implementation project(':apiml-utility')
     implementation project(':apiml-tomcat-common')
     implementation project(':apiml-security-common')
-    implementation project(':common-service-core')
     implementation project(':security-service-client-spring')
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
@@ -119,7 +117,7 @@ dependencies {
 
     implementation libraries.netflix_servo
 
-    testImplementation libraries.lombok
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test

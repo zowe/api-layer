@@ -31,14 +31,13 @@ dependencies {
     testImplementation libraries.jjwt
     testImplementation libraries.reactorTest
     testImplementation project(':apiml-security-common')
-    testImplementation project(':common-service-core')
     testImplementation project(':zaas-client')
 
     testImplementation libraries.hamcrest
     testImplementation libraries.rest_assured
     testImplementation libraries.awaitility
     testImplementation libraries.logback_classic
-    testImplementation libraries.lombok
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
     testImplementation libraries.jsoup
     testImplementation libraries.rest_assured

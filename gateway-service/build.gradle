@@ -59,12 +59,10 @@ configurations.all {
 }
 
 dependencies {
-    implementation project(':apiml-common')
+
     implementation project(':apiml-security-common')
     implementation project(':apiml-tomcat-common')
     implementation project(':apiml-extension-loader')
-    implementation project(':apiml-utility')
-    implementation project(':common-service-core')
     implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
@@ -170,7 +168,7 @@ dependencies {
     testImplementation libraries.rest_assured_xml_path
     testImplementation libraries.javax_inject
 
-    testImplementation libraries.lombok
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 
     testImplementation(testFixtures(project(":integration-tests")))

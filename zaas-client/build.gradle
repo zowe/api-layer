@@ -1,11 +1,11 @@
 dependencies {
     annotationProcessor libraries.lombok
 
-    compileOnly libraries.http_client
-    compileOnly libraries.jackson_annotations
-    compileOnly libraries.jackson_databind
-    compileOnly libraries.slf4j_api
-    compileOnly libraries.jaxb_api
+    implementation libraries.http_client
+    implementation libraries.jackson_annotations
+    implementation libraries.jackson_databind
+    implementation libraries.slf4j_api
+    implementation libraries.jaxb_api
     implementation libraries.javax_servlet_api
     implementation libraries.spring_context
     implementation libraries.apache_commons_codec

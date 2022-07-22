@@ -1,7 +1,6 @@
 dependencies {
-    implementation project(':apiml-common')
-    implementation project(':apiml-utility')
-    implementation project(':common-service-core')
+    api project(':apiml-common')
+    api project(':apiml-utility')
     implementation libraries.apache_commons_lang3
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_security_web
@@ -17,8 +16,8 @@ dependencies {
     implementation libraries.spring_expression
     implementation libraries.spring_web
 
-    implementation libraries.javax_servlet_api
-    implementation libraries.lombok
+    compileOnly libraries.javax_servlet_api
+    compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     testImplementation libraries.mockito_core
@@ -26,7 +25,7 @@ dependencies {
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart
 
-    testImplementation libraries.lombok
+    testCompileOnly libraries.lombok
     testImplementation libraries.gson
     testAnnotationProcessor libraries.lombok
 }

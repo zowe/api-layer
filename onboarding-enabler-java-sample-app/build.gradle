@@ -17,7 +17,6 @@ repositories {
 }
 
 dependencies {
-    implementation project(':common-service-core')
     implementation project(':onboarding-enabler-java')
 
     implementation 'io.swagger.core.v3:swagger-jaxrs2:2.0.0'

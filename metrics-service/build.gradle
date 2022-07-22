@@ -53,8 +53,6 @@ gitProperties {
 
 dependencies {
     implementation project(':apiml-security-common')
-    implementation project(':apiml-utility')
-    implementation project(':common-service-core')
     implementation project(':onboarding-enabler-spring')
     implementation(project(':security-service-client-spring'))
 
@@ -105,7 +103,7 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testImplementation libraries.lombok
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart

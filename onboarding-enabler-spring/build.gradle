@@ -20,9 +20,7 @@ publish {
 }
 
 dependencies {
-    implementation project(':apiml-utility')
     implementation project(':onboarding-enabler-java')
-    implementation project(':common-service-core')
 
     implementation libraries.spring_boot_starter_web
     implementation libraries.tomcat_embed_core
@@ -35,10 +33,10 @@ dependencies {
     implementation libraries.spring_expression
     implementation libraries.spring_web
 
-    implementation libraries.lombok
+    compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation libraries.javax_inject
+    compileOnly libraries.javax_inject
     implementation libraries.eureka_client
 
     testImplementation libraries.spring_boot_starter_test

@@ -58,11 +58,8 @@ configurations.all {
 }
 
 dependencies {
-    implementation project(':apiml-common')
     implementation project(':apiml-tomcat-common')
     implementation project(':apiml-security-common')
-    implementation project(':apiml-utility')
-    implementation project(':common-service-core')
     implementation project(':security-service-client-spring')
 
     compileOnly libraries.lombok
@@ -127,7 +124,7 @@ dependencies {
     testImplementation libraries.rest_assured
     testImplementation libraries.spring_mock_mvc
 
-    testImplementation libraries.lombok
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test

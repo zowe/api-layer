@@ -25,7 +25,7 @@ dependencies {
 
     implementation(libraries.javax_servlet_api)
 
-    implementation libraries.lombok
+    compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     implementation(libraries.spring_boot_starter_cache)
@@ -45,6 +45,6 @@ dependencies {
     testImplementation(libraries.tomcat_embed_core)
     testImplementation(libraries.mockito_core)
 
-    testImplementation libraries.lombok
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 }

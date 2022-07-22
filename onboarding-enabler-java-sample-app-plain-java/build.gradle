@@ -1,7 +1,6 @@
 dependencies {
-    compileOnly project(':common-service-core')
-    compileOnly project(':onboarding-enabler-java')
-    compileOnly ("javax.servlet:javax.servlet-api:4.0.1")
+    implementation project(':onboarding-enabler-java')
+    implementation ("javax.servlet:javax.servlet-api:4.0.1")
 }
 
 jar {
@@ -9,7 +8,9 @@ jar {
     manifest {
         attributes "Main-Class": "org.zowe.apiml.sample.PlainJavaEnablerApp"
     }
-
+    // Do not attempt to prevent duplicates. If the destination does not support duplicates,
+    // the existing destination entry will be overridden with the duplicate.
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
