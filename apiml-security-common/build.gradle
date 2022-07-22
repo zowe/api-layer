@@ -1,7 +1,6 @@
 dependencies {
     api project(':apiml-common')
     api project(':apiml-utility')
-    implementation libraries.apache_commons_lang3
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
