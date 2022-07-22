@@ -48,23 +48,69 @@ ${addedFixes}
 
 ${restOfChangelog}`;
 
-    await writeFile('../../CHANGELOG.md', changelogToStore);
-
     const octokit = new Octokit({auth: githubToken});
-    const branch = `apiml/release/${version.replace(/\./g, "_")}`;
 
-    let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
-    execSync(gitCommitPush, {
-        cwd: '../../'
-    });
+    const prs = (await octokit.request("GET /repos/zowe/api-layer/pulls")).data;
 
-    await octokit.rest.pulls.create({
-        owner: 'zowe',
-        repo: 'api-layer',
-        title: 'Automatic update for the Changelog for release',
-        head: branch,
-        base: branchToMerge,
-        body: 'Update changelog for new release'
-    });
+    const changelogPrs = prs.filter(pr => pr["user"]["login"] == "zowe-robot" &&
+    pr["title"] == "Automatic update for the Changelog for release" &&
+    pr["body"] == "Update changelog for new release");
+
+    if (changelogPrs.length === 1) {
+        // PR exists, use that branch to merge new updates
+        const prevReleaseBranch = changelogPrs[0]["head"]["ref"];
+        let gitCheckoutOrigin = `git fetch origin --quiet && git checkout origin/${prevReleaseBranch}`;
+
+        execSync(gitCheckoutOrigin, {
+            cwd: '../../'
+        });
+
+        await writeFile('../../CHANGELOG.md', changelogToStore);
+
+        let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
+
+        let gitStatusPorcelainOutput = execSync(gitStatusPorcelain, {
+            cwd: '../../'
+        }).toString();
+
+        if (gitStatusPorcelainOutput.length != 0) {
+            console.log("Pushing updates to " + prevReleaseBranch + "\n");
+            let gitCommitPush = `git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin HEAD:${prevReleaseBranch}`;
+
+            execSync(gitCommitPush, {
+                cwd: '../../'
+            });
+        }
+        else {
+            console.log("No new changes added in CHANGELOG.md");
+        }
+    }
+    else if (changelogPrs.length === 0) {
+        // make new PR since none exists for changelog
+
+        await writeFile('../../CHANGELOG.md', changelogToStore);
+
+        const branch = `apiml/release/${version.replace(/\./g, "_")}`;
+        console.log("New release branch created " + branch + "\n");
+
+        let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
+
+        execSync(gitCommitPush, {
+            cwd: '../../'
+        });
+
+        await octokit.rest.pulls.create({
+            owner: 'zowe',
+            repo: 'api-layer',
+            title: 'Automatic update for the Changelog for release',
+            head: branch,
+            base: branchToMerge,
+            body: 'Update changelog for new release'
+        });
+    }
+    else {
+        console.log("More than one pull request exists, cannot add new updates to the changelog");
+    }
+
 })()
 
