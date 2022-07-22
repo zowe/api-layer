@@ -130,6 +130,7 @@ public class ServicesInfoService {
                             ))
                             .documentationUrl(apiInfo.getDocumentationUrl())
                             .version(apiInfo.getVersion())
+                            .codeSnippet(apiInfo.getCodeSnippet())
                             .isDefaultApi(apiInfo.isDefaultApi())
                             .build())
                     .collect(Collectors.toList()));

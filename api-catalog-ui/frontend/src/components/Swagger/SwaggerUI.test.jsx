@@ -70,8 +70,8 @@ describe('>>> Swagger component tests', () => {
                 openapi: '3.0.0',
                 servers: [{ url: `https://bad.com${endpoint}` }],
             }),
-            apiId: {
-                default: 'enabler',
+            apis: {
+                default: { apiId: 'enabler' },
             },
         };
 
@@ -97,8 +97,8 @@ describe('>>> Swagger component tests', () => {
                 openapi: '3.0.0',
                 servers: [{ url: `https://bad.com${endpoint1}` }],
             }),
-            apiId: {
-                default: 'oldenabler',
+            apis: {
+                default: { apiId: 'oldenabler' },
             },
         };
 
@@ -114,8 +114,8 @@ describe('>>> Swagger component tests', () => {
                 openapi: '3.0.0',
                 servers: [{ url: `https://bad.com${endpoint2}` }],
             }),
-            apiId: {
-                default: 'oldenabler',
+            apis: {
+                default: { apiId: 'oldenabler' },
             },
         };
 
