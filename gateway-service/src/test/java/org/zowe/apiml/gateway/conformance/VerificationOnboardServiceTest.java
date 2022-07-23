@@ -7,110 +7,99 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package org.zowe.apiml.gateway.conformance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.ReasonPhraseCatalog;
-import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import io.jsonwebtoken.io.IOException;
-
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 @ExtendWith(MockitoExtension.class)
 public class VerificationOnboardServiceTest {
-
-    private static final String DISCOVERY_LOCATION = "https://localhost:10011/eureka/";
 
     @InjectMocks
     private VerificationOnboardService verificationOnboardService;
 
     @Mock
-    private DiscoveryConfigUri discoveryConfigUri;
-
-    @Mock
-    private CloseableHttpClient closeableHttpClient;
-
+    private DiscoveryClient discoveryClient;
     @Nested
     class GivenRegisteredService {
 
         @Test
-        void whenServiceId_Registered() throws IOException, java.io.IOException {
-            when(discoveryConfigUri.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
+        void whenServiceId_Registered() {
 
+            List<String> serviceList = new ArrayList<String>();
+            serviceList.add("gateway");
+            when(discoveryClient.getServices()).thenReturn(serviceList);
 
-            StatusLine statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "OK");
-            CloseableHttpResponseTest closeableHttpResponseTest = new CloseableHttpResponseTest(statusLine);
-
-            lenient().when(closeableHttpClient.execute(any())).thenReturn(closeableHttpResponseTest);
             Boolean registeredInfo = verificationOnboardService.checkOnboarding("gateway");
+            Boolean expectedInfo = serviceList.contains("gateway");
 
-            Boolean expectedInfo = closeableHttpResponseTest.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
             assertEquals(expectedInfo, registeredInfo);
         }
 
 
         @Test
         void whenServiceId_Registered_RetrieveData() throws ClientProtocolException, java.io.IOException {
-            final String XML_DATA = "<?xml version=\"1.0\" ?><instance><metadata><apiml.apiInfo.api-v2.swaggerUrl>https://hostname/sampleclient/api-doc</apiml.apiInfo.api-v2.swaggerUrl></metadata></instance>";
+            
+            Map<String, String> metadata = Collections.singletonMap("apiml.apiInfo.api-v2.swaggerUrl", "https://hostname/sampleclient/api-doc");
+            DefaultServiceInstance defaultServiceInstance = new DefaultServiceInstance("sys1.acme.net", "gateway", "localhost", 10010, true, metadata);
+            List<ServiceInstance> serviceInstances = new ArrayList<ServiceInstance>();
+            serviceInstances.add(defaultServiceInstance);
 
-            when(discoveryConfigUri.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
-            CloseableHttpResponseTest closeableHttpClientTest = new CloseableHttpResponseTest(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "OK", XML_DATA);
-            when(closeableHttpClient.execute(any())).thenReturn(closeableHttpClientTest);
-            String expectedUrl = "https://hostname/sampleclient/api-doc";
+            when(discoveryClient.getInstances(any())).thenReturn(serviceInstances);
+            
+            String expectedUrl = serviceInstances.get(0).getMetadata().get("apiml.apiInfo.api-v2.swaggerUrl");
             String actualUrl = verificationOnboardService.retrieveMetaData("gateway");
             assertEquals(expectedUrl, actualUrl);
         }
 
     }
+
+    @Nested
+    class GivenInvalidService {
+        
+        @Test
+        void whenServiceId_Unregistered() {
+            List<String> serviceList = new ArrayList<String>();
+            serviceList.add("zowesample");
+            when(discoveryClient.getServices()).thenReturn(serviceList);
+
+            Boolean registeredInfo = verificationOnboardService.checkOnboarding("gateway");
+            Boolean expectedInfo = serviceList.contains("gateway");
+
+            assertEquals(expectedInfo, registeredInfo);
+        }
+
+        @Test
+        void whenServiceId_Registered_CannotRetrieveData() throws ClientProtocolException, java.io.IOException {
+            
+            Map<String, String> metadata = Collections.singletonMap("randomInvalidName", "InvalidUrl");
+            DefaultServiceInstance defaultServiceInstance = new DefaultServiceInstance("sys1.acme.net", "gateway", "localhost", 10010, true, metadata);
+            List<ServiceInstance> serviceInstances = new ArrayList<ServiceInstance>();
+            serviceInstances.add(defaultServiceInstance);
+
+            when(discoveryClient.getInstances(any())).thenReturn(serviceInstances);
+            
+            String expectedUrl = "";
+            String actualUrl = verificationOnboardService.retrieveMetaData("gateway");
+            assertEquals(expectedUrl, actualUrl);
+        }
+    }
 }
 
-
-
-class CloseableHttpResponseTest extends BasicHttpResponse implements CloseableHttpResponse {
-
-    public CloseableHttpResponseTest(StatusLine statusline, ReasonPhraseCatalog catalog, Locale locale) {
-        super(statusline, catalog, locale);
-    }
-
-    public CloseableHttpResponseTest(StatusLine statusline) {
-        super(statusline);
-    }
-
-    public CloseableHttpResponseTest(ProtocolVersion ver, int code, String reason) {
-        super(ver, code, reason);
-    }
-
-    public CloseableHttpResponseTest(ProtocolVersion ver, int code, String reason, String entityString) {
-        super(ver, code, reason);
-        setEntity(new StringEntity(entityString, Charset.defaultCharset()));
-    }
-
-    @Override
-    public void close() throws java.io.IOException {
-
-    }
-
-} 
