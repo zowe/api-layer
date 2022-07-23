@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.client.ClientProtocolException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +54,7 @@ public class VerificationOnboardServiceTest {
 
 
         @Test
-        void whenServiceId_Registered_RetrieveData() throws ClientProtocolException, java.io.IOException {
+        void whenServiceId_Registered_RetrieveData() {
             
             Map<String, String> metadata = Collections.singletonMap("apiml.apiInfo.api-v2.swaggerUrl", "https://hostname/sampleclient/api-doc");
             DefaultServiceInstance defaultServiceInstance = new DefaultServiceInstance("sys1.acme.net", "gateway", "localhost", 10010, true, metadata);
@@ -87,7 +86,7 @@ public class VerificationOnboardServiceTest {
         }
 
         @Test
-        void whenServiceId_Registered_CannotRetrieveData() throws ClientProtocolException, java.io.IOException {
+        void whenServiceId_Registered_CannotRetrieveData() {
             
             Map<String, String> metadata = Collections.singletonMap("randomInvalidName", "InvalidUrl");
             DefaultServiceInstance defaultServiceInstance = new DefaultServiceInstance("sys1.acme.net", "gateway", "localhost", 10010, true, metadata);

@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.conformance;
 
 import java.util.regex.Pattern;
-import java.io.IOException;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 
@@ -44,14 +43,13 @@ public class ValidateAPIController {
      *
      * @param serviceID accepted serviceID to check validation
      * @return return the JSON file message of whether the serviceID is valid
-     * @throws IOException
      *
      */
     @PostMapping(
         value = "/validate",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Object> checkValidate(@RequestBody String serviceID) throws IOException {
+    public ResponseEntity<Object> checkValidate(@RequestBody String serviceID) {
 
         String message = validator(serviceID);
 
@@ -84,9 +82,8 @@ public class ValidateAPIController {
      *
      * @param serviceId accept serviceID to check
      * @return return invalid message if it is wrong otherwise an empty string
-     * @throws IOException
      */
-    private String validator(String serviceId) throws IOException {
+    private String validator(String serviceId) {
 
         if (!isTooLong.test(serviceId)) {
             return "The serviceid is longer than 64 characters";

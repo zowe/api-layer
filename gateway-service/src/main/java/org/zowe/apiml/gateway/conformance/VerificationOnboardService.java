@@ -17,7 +17,6 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * service class offered methods for checking onboarding information and also retrieve metadata from
@@ -25,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
