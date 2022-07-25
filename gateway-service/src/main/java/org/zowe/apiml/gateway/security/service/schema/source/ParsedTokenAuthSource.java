@@ -13,29 +13,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Implementation of JWT token source of authentication.
- */
+import java.util.Date;
+
 @RequiredArgsConstructor
 @Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class JwtAuthSource implements AuthSource {
-    public static final AuthSourceType type = AuthSourceType.JWT;
-
-    /**
-     * JWT token
-     */
-    @EqualsAndHashCode.Include
-    private final String source;
-
-    @Override
-    public String getRawSource() {
-        return source;
-    }
-
-    @Override
-    public AuthSourceType getType() {
-        return type;
-    }
-
+@EqualsAndHashCode
+public class ParsedTokenAuthSource implements AuthSource.Parsed {
+    private final String userId;
+    private final Date creation;
+    private final Date expiration;
+    private final AuthSource.Origin origin;
 }

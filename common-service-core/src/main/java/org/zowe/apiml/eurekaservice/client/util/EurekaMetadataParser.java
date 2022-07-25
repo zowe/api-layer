@@ -9,10 +9,12 @@
  */
 package org.zowe.apiml.eurekaservice.client.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.BooleanUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.CodeSnippet;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -29,9 +31,10 @@ import java.util.stream.Collectors;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaMetadataParser {
-
     private static final String THREE_STRING_MERGE_FORMAT = "%s.%s.%s";
+    private static final String FIVE_STRING_MERGE_FORMAT = "%s.%s.%s.%s.%s";
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
@@ -41,45 +44,57 @@ public class EurekaMetadataParser {
      * @param eurekaMetadata the eureka metadata
      * @return ApiInfo list
      */
-
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
-        Map<String, ApiInfo> apiInfo = new HashMap<>();
-
+        Map<String, Map<String, Object>> collectedApiInfoEntries = new HashMap<>();
         eurekaMetadata.entrySet()
             .stream()
             .filter(metadata -> metadata.getKey().startsWith(API_INFO))
             .forEach(metadata -> {
                 String[] keys = metadata.getKey().split("\\.");
-                if (keys.length == 4) {
-                    apiInfo.putIfAbsent(keys[2], new ApiInfo());
-                    ApiInfo api = apiInfo.get(keys[2]);
-                    switch (keys[3]) {
-                        case API_INFO_API_ID:
-                            api.setApiId(metadata.getValue());
-                            break;
-                        case API_INFO_GATEWAY_URL:
-                            api.setGatewayUrl(metadata.getValue());
-                            break;
-                        case API_INFO_VERSION:
-                            api.setVersion(metadata.getValue());
-                            break;
-                        case API_INFO_SWAGGER_URL:
-                            api.setSwaggerUrl(metadata.getValue());
-                            break;
-                        case API_INFO_DOCUMENTATION_URL:
-                            api.setDocumentationUrl(metadata.getValue());
-                            break;
-                        case API_INFO_IS_DEFAULT:
-                            api.setDefaultApi(Boolean.parseBoolean(metadata.getValue()));
-                            break;
-                        default:
-                            apimlLog.log("org.zowe.apiml.common.apiInfoParsingError", metadata);
-                            break;
+                if (keys.length >= 4) { // at least 4 keys split by '.' if is an ApiInfo config entry
+                    String entryIndex = keys[2];
+                    String entryKey = keys[3];
+                    collectedApiInfoEntries.putIfAbsent(entryIndex, new HashMap<>());
+                    Map<String, Object> apiInfoEntries = collectedApiInfoEntries.get(entryIndex);
+
+                    if (metadata.getKey().contains(CODE_SNIPPET) && keys.length >= 6) {
+                        String codeSnippetEntryIndex = keys[4];
+                        String codeSnippetChildKey = keys[5];
+
+                        apiInfoEntries.putIfAbsent(entryKey, new HashMap<>());
+
+                        @SuppressWarnings("unchecked")
+                        Map<String, Map<String, String>> codeSnippetMap = (Map<String, Map<String, String>>) apiInfoEntries.get(entryKey);
+                        codeSnippetMap.putIfAbsent(codeSnippetEntryIndex, new HashMap<>());
+
+                        Map<String, String> codeSnippetChildEntry = codeSnippetMap.get(codeSnippetEntryIndex);
+                        codeSnippetChildEntry.put(codeSnippetChildKey, metadata.getValue());
+                        codeSnippetMap.put(codeSnippetEntryIndex, codeSnippetChildEntry);
+                        apiInfoEntries.put(entryKey, codeSnippetMap);
+                    } else {
+                        apiInfoEntries.put(entryKey, metadata.getValue());
                     }
+                    collectedApiInfoEntries.put(entryIndex, apiInfoEntries);
                 }
             });
 
-        return new ArrayList<>(apiInfo.values());
+        List<ApiInfo> apiInfoList = new ArrayList<>();
+        collectedApiInfoEntries.values().forEach(fields -> {
+            try {
+                if (fields.containsKey(CODE_SNIPPET)) {
+
+                    @SuppressWarnings("unchecked")
+                    Map<String, Map<String, String>> codeSnippetMap = (Map<String, Map<String, String>>) fields.get(CODE_SNIPPET);
+                    List<Map<String, String>> codeSnippetList = new ArrayList<>(codeSnippetMap.values());
+
+                    fields.put(CODE_SNIPPET, codeSnippetList);
+                }
+                apiInfoList.add(objectMapper.convertValue(fields, ApiInfo.class));
+            } catch (Exception e) {
+                apimlLog.log("org.zowe.apiml.common.apiInfoParsingError", fields);
+            }
+        });
+        return apiInfoList;
     }
 
     /**
@@ -94,7 +109,6 @@ public class EurekaMetadataParser {
             .forEach(routes::addRoutedService);
         return routes;
     }
-
 
     /**
      * Parse eureka metadata and return list of routes
@@ -204,6 +218,15 @@ public class EurekaMetadataParser {
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
         }
 
+        List<CodeSnippet> codeSnippets = apiInfo.getCodeSnippet();
+        if (codeSnippets != null && !codeSnippets.isEmpty()) {
+            for (int i = 0; i < codeSnippets.size(); i++) {
+                metadata.put(String.format(FIVE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, CODE_SNIPPET, i, CODE_SNIPPET_ENDPOINT), codeSnippets.get(i).getEndpoint());
+                metadata.put(String.format(FIVE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, CODE_SNIPPET, i, CODE_SNIPPET_CODE_BLOCK), codeSnippets.get(i).getCodeBlock());
+                metadata.put(String.format(FIVE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, CODE_SNIPPET, i, CODE_SNIPPET_LANGUAGE), codeSnippets.get(i).getLanguage());
+            }
+        }
+
         metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_IS_DEFAULT), String.valueOf(apiInfo.isDefaultApi()));
 
         return metadata;
@@ -219,11 +242,11 @@ public class EurekaMetadataParser {
 
     public Authentication parseAuthentication(Map<String, String> eurekaMetadata) {
         return Authentication.builder()
-                .applid(eurekaMetadata.get(AUTHENTICATION_APPLID))
-                .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
-                .headers(eurekaMetadata.get(AUTHENTICATION_HEADERS))
-                .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
-                .build();
+            .applid(eurekaMetadata.get(AUTHENTICATION_APPLID))
+            .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
+            .headers(eurekaMetadata.get(AUTHENTICATION_HEADERS))
+            .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
+            .build();
     }
 
 }

@@ -76,7 +76,7 @@ class SafIdtSchemeTest {
         private static final String PASSTICKET = "PASSTICKET";
 
         private final Authentication auth = new Authentication(SAF_IDT, APPLID);
-        private final JwtAuthSource.Parsed parsedAuthSource = new JwtAuthSource.Parsed(
+        private final ParsedTokenAuthSource parsedAuthSource = new ParsedTokenAuthSource(
             USERNAME,
             null,
             null,
@@ -227,7 +227,7 @@ class SafIdtSchemeTest {
 
             @Test
             void givenNoUserIdFromAuthSource() {
-                X509AuthSource.Parsed emptyAuthSource = new X509AuthSource.Parsed(null,null,null,null, null, null);
+                X509AuthSource.Parsed emptyAuthSource = new X509AuthSource.Parsed(null, null, null, null, null, null);
                 when(authSourceService.parse(authSource)).thenReturn(emptyAuthSource);
 
                 Exception exc = assertThrows(AuthSchemeException.class, () -> underTest.createCommand(auth, authSource));

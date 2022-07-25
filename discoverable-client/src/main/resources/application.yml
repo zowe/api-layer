@@ -75,6 +75,19 @@ apiml:
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/apiv1
                 documentationUrl: https://www.zowe.org
                 defaultApi: true
+                codeSnippet:
+                    - endpoint: /greeting
+                      language: java
+                      codeBlock: |
+                          ```
+                          System.out.println("Greeting code snippet");
+                          ```
+                    - endpoint: /{yourName}/greeting
+                      language: java
+                      codeBlock: |
+                          ```
+                          System.out.println("Your name greeting code snippet");
+                          ```
             -   apiId: zowe.apiml.discoverableclient.ws
                 version: 1.0.0
                 gatewayUrl: graphql/v1

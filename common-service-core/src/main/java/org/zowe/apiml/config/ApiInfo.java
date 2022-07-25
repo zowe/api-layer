@@ -22,6 +22,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents one API provided by a service
@@ -38,6 +40,7 @@ public class ApiInfo {
         this.version = version;
         this.swaggerUrl = swaggerUrl;
         this.documentationUrl = documentationUrl;
+        this.codeSnippet = new ArrayList<>();
     }
 
     /**
@@ -62,9 +65,16 @@ public class ApiInfo {
     private String swaggerUrl;
     private String documentationUrl;
 
+    @Builder.Default
+    private List<CodeSnippet> codeSnippet = new ArrayList<>();
+
     @JsonDeserialize(using = StringToBooleanDeserializer.class)
     @Builder.Default
     private boolean isDefaultApi = false;
+
+    public void addCodeSnippet(CodeSnippet newCodeSnippet) {
+        this.codeSnippet.add(newCodeSnippet);
+    }
 
     @JsonIgnore
     public int getMajorVersion() {

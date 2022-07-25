@@ -26,13 +26,18 @@ public abstract class JwtCommand extends AuthenticationCommand {
         );
     }
 
-    public static void removeCookie(RequestContext context, String name) {
-        context.addZuulRequestHeader(COOKIE_HEADER,
-            CookieUtil.removeCookie(
-                context.getRequest().getHeader(COOKIE_HEADER),
+    public static void removeCookie(RequestContext context, String[] names) {
+        String cookie = context.getRequest().getHeader(COOKIE_HEADER);
+        for (String name : names) {
+            cookie = CookieUtil.removeCookie(
+                cookie,
                 name
-            )
+            );
+        }
+        context.addZuulRequestHeader(COOKIE_HEADER,
+            cookie
         );
+
     }
 
     @Override
