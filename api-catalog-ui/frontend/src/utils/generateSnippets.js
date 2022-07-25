@@ -9,7 +9,6 @@
  */
 import * as OpenAPISnippet from 'openapi-snippet';
 // eslint-disable-next-line import/no-mutable-exports
-export let oasPath = '';
 
 export const wrapSelectors = {
     spec: {
@@ -34,9 +33,6 @@ export function getSnippetContent(req, target, codeSnippet) {
     // get extended info about request
     const { spec, oasPathMethod } = req.toJS();
     const { path, method } = oasPathMethod;
-    oasPath = path;
-    // eslint-disable-next-line no-console
-    console.log(oasPath);
     // run OpenAPISnippet for target node
     const targets = [target];
     let snippet;
@@ -48,13 +44,7 @@ export function getSnippetContent(req, target, codeSnippet) {
             codeSnippet.codeBlock !== undefined &&
             codeSnippet.codeBlock !== null
         ) {
-            oasPath = '';
             snippet = codeSnippet.codeBlock;
-            // if (codeSnippet.endpoint !== undefined && codeSnippet.endpoint !== null && codeSnippet.endpoint === path) {
-            //     snippet = codeSnippet.codeBlock;
-            // } else {
-            //     snippet = "N/A: The service owner didn't provide a Code Snippet in this language for this API.";
-            // }
         } else {
             snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
         }
@@ -70,7 +60,7 @@ export function getSnippetContent(req, target, codeSnippet) {
  * @param title the code snippet title
  * @param syntax the syntax used for indentation
  * @param target the language target
- * @returns snippet code snippet content or an error in case of failure
+ * @returns codeSnippet the code snippet
  */
 export function generateSnippet(system, title, syntax, target, codeSnippet) {
     return system.Im.fromJS({
@@ -153,7 +143,6 @@ function setTargets(codeSnippets, i) {
  * Custom Plugin which extends the SwaggerUI to generate customized snippets
  */
 export function CustomizedSnippedGenerator(codeSnippets) {
-    // TODO read the OAS path in order to compare it to the endpoint prop and render only related snippets
     return {
         statePlugins: {
             // extend some internals to gain information about current path, method and spec in the generator function
@@ -168,11 +157,6 @@ export function CustomizedSnippedGenerator(codeSnippets) {
                             // eslint-disable-next-line no-plusplus
                             for (let i = 0; i < codeSnippets.length; i++) {
                                 const target = setTargets(codeSnippets, i);
-                                // not the best workaround
-                                if (oasPath !== codeSnippets[i].endpoint) {
-                                    // eslint-disable-next-line no-continue
-                                    continue;
-                                }
                                 const newSnippet = generateSnippet(
                                     system,
                                     `Customized Snippet - ${codeSnippets[i].language}`,
@@ -180,10 +164,13 @@ export function CustomizedSnippedGenerator(codeSnippets) {
                                     target,
                                     codeSnippets[i]
                                 );
-                                // const specJson = system.getSystem().specSelectors.specJson();
-                                // eslint-disable-next-line no-console
-                                console.log(newSnippet);
-                                useSet = useSet.set(codeSnippets[i].endpoint, newSnippet);
+                                const requests = system.specSelectors.requests();
+                                const oasPath = requests._root.entries.slice(-1)[0][0];
+                                if (oasPath !== codeSnippets[i].endpoint) {
+                                    // eslint-disable-next-line no-continue
+                                    continue;
+                                }
+                                useSet = useSet.set(codeSnippets[i].endpoint + codeSnippets[i].language, newSnippet);
                             }
                             return useSet;
                         },
