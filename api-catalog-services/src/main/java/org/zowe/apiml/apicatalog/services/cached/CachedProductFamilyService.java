@@ -31,7 +31,6 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -42,6 +41,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @Slf4j
 @Service
 public class CachedProductFamilyService {
+
+    private static final String DEFAULT_APIINFO_KEY = "default";
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -130,7 +131,7 @@ public class CachedProductFamilyService {
         } else {
             Set<APIService> apiServices = container.getServices();
             APIService service = createAPIServiceFromInstance(instanceInfo);
-        
+
             // Verify whether already exists
             if (apiServices.contains(service)) {
                 apiServices.stream()
@@ -139,7 +140,7 @@ public class CachedProductFamilyService {
                         if (!existingService.getInstances().contains(instanceInfo.getInstanceId())) {
                             existingService.getInstances().add(instanceInfo.getInstanceId());
                         }
-                    }); // If the instance is in list, do nothing otherwise 
+                    }); // If the instance is in list, do nothing otherwise
             } else {
                 apiServices.add(service);
             }
@@ -166,7 +167,7 @@ public class CachedProductFamilyService {
      * 1) it will remove the whole APIContainer (Tile) if there is no instance of any service remaining
      * 2) Remove the service from the containe if there is no instance of service remaining
      * 3) Remove instance from the service
-     * 
+     *
      * @param removedInstanceFamilyId the product family id of the container
      * @param removedInstance         the service instance
      */
@@ -219,7 +220,7 @@ public class CachedProductFamilyService {
         boolean isSso = servicesCount > 0;
         for (APIService apiService : apiContainer.getServices()) {
             if (update(apiService)) {
-                activeServicesCount ++;
+                activeServicesCount++;
             }
             isSso &= apiService.isSsoAllInstances();
         }
@@ -333,22 +334,19 @@ public class CachedProductFamilyService {
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         String apiBasePath = getApiBasePath(instanceInfo);
-        Map<String, String> apiId = new HashMap<>();
-        Map<String, String> gatewayUrls = new HashMap<>();
-        try {
-            apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
-                Collectors.toMap(
-                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion(),
-                    ApiInfo::getApiId
-                )
-            );
+        Map<String, ApiInfo> apiInfoById = new HashMap<>();
 
-            gatewayUrls = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
-                Collectors.toMap(
-                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion(),
-                    ApiInfo::getGatewayUrl
-                )
-            );
+        try {
+            List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+            apiInfoList.stream().filter(apiInfo -> apiInfo.getApiId() != null).forEach(apiInfo -> {
+                String id = (apiInfo.getMajorVersion() < 0) ? DEFAULT_APIINFO_KEY : apiInfo.getApiId() + " v" + apiInfo.getVersion();
+                apiInfoById.put(id, apiInfo);
+            });
+
+            if (!apiInfoById.containsKey(DEFAULT_APIINFO_KEY)) {
+                ApiInfo defaultApiInfo = apiInfoList.stream().filter(ApiInfo::isDefaultApi).findFirst().orElse(null);
+                apiInfoById.put(DEFAULT_APIINFO_KEY, defaultApiInfo);
+            }
         } catch (Exception ex) {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
         }
@@ -361,8 +359,7 @@ public class CachedProductFamilyService {
             .homePageUrl(instanceHomePage)
             .basePath(apiBasePath)
             .sso(isSso(instanceInfo))
-            .apiId(apiId)
-            .gatewayUrls(gatewayUrls)
+            .apis(apiInfoById)
             .instanceId(instanceInfo.getInstanceId())
             .build();
     }

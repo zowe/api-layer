@@ -351,7 +351,7 @@ public class ServiceDefinitionProcessor {
         metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
     }
 
-    private void setMetadataAppInfo(Map<String, String> metadata, List<ApiInfo> appInfoList, String serviceId) {
+    private void setMetadataApiInfo(Map<String, String> metadata, List<ApiInfo> appInfoList, String serviceId) {
         if (appInfoList == null) return;
 
         for (ApiInfo apiInfo : appInfoList) {
@@ -392,7 +392,7 @@ public class ServiceDefinitionProcessor {
 
         setMetadataRoutes(metadata, service.getRoutes(), url);
         setMetadataTile(metadata, tile);
-        setMetadataAppInfo(metadata, service.getApiInfo(), service.getServiceId());
+        setMetadataApiInfo(metadata, service.getApiInfo(), service.getServiceId());
         setMetadataAuthentication(metadata, service.getAuthentication());
         setCustomMetadata(metadata, service.getCustomMetadata());
 
