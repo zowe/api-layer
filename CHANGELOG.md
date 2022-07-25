@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.4.0 (2022-07-25)`
+
+* Feature:  Code snippet configuration (#2509) ([4d2298e](https://github.com/zowe/api-layer/commit/4d2298e)), closes [#2509](https://github.com/zowe/api-layer/issues/2509)
+
+
+* Bugfix:  enable redis storage mode in tests (#2522) ([11bf491](https://github.com/zowe/api-layer/commit/11bf491)), closes [#2522](https://github.com/zowe/api-layer/issues/2522)
+
 ## `2.2.4 (2022-07-14)`
 
 * Feature:  Revoke a Persoanal Access Token by admin (#2476) ([e4d42a9](https://github.com/zowe/api-layer/commit/e4d42a9)), closes [#2476](https://github.com/zowe/api-layer/issues/2476)
