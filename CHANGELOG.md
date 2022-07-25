@@ -2,12 +2,15 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.4.0 (2022-07-25)`
+## `2.4.1 (2022-07-26)`
 
 * Feature:  Code snippet configuration (#2509) ([4d2298e](https://github.com/zowe/api-layer/commit/4d2298e)), closes [#2509](https://github.com/zowe/api-layer/issues/2509)
+* Feature:  accept PAT for SSO (#2499) ([ad17c18](https://github.com/zowe/api-layer/commit/ad17c18)), closes [#2499](https://github.com/zowe/api-layer/issues/2499)
 
 
 * Bugfix:  enable redis storage mode in tests (#2522) ([11bf491](https://github.com/zowe/api-layer/commit/11bf491)), closes [#2522](https://github.com/zowe/api-layer/issues/2522)
+* Bugfix:  remove multiple tokens from cookies (#2514) ([d5bc187](https://github.com/zowe/api-layer/commit/d5bc187)), closes [#2514](https://github.com/zowe/api-layer/issues/2514)
+* Bugfix:  retrieve swagger api docs with or without certificate configuration enabled (#2500) ([16ca734](https://github.com/zowe/api-layer/commit/16ca734)), closes [#2500](https://github.com/zowe/api-layer/issues/2500)
 
 ## `2.2.4 (2022-07-14)`
 
