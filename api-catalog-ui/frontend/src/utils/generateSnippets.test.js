@@ -181,7 +181,42 @@ describe('>>> Code snippet generator', () => {
                 oasPathMethod,
             }),
         };
-        const snippet = getSnippetContent(req, target);
+        const snippet = getSnippetContent(req, target, []);
         expect(snippet).toEqual(expectedResult);
+    });
+
+    it('should call getSnippetContent and return the customized snippet', () => {
+        const target = 'java_unirest';
+        const spec = {
+            paths: {
+                '/path/to/api': {
+                    get: {
+                        responses: {
+                            200: {
+                                description: 'Response description',
+                                schema: {
+                                    $ref: '#/definitions/SomeSchema',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+
+        const oasPathMethod = {
+            path: '/path/to/api',
+            method: 'get',
+        };
+
+        const req = {
+            toJS: () => ({
+                spec,
+                oasPathMethod,
+            }),
+        };
+        const customizedSnippet = { endpoint: '/test', language: 'java', codeBlock: 'someCode;' };
+        const snippet = getSnippetContent(req, target, customizedSnippet);
+        expect(snippet).toEqual('someCode;');
     });
 });
