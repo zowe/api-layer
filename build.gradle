@@ -32,7 +32,7 @@ buildscript {
     dependencies {
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.4.0.2513'
         classpath 'net.researchgate:gradle-release:2.8.1'
-//        classpath 'com.github.hierynomus.license:com.github.hierynomus.license.gradle.plugin:0.16.1'
+        classpath 'gradle.plugin.org.cadixdev.gradle:licenser:0.6.1'
         classpath 'org.owasp:dependency-check-gradle:7.1.1'
         classpath 'gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:3.2.1'
     }
@@ -49,7 +49,7 @@ apply from: 'gradle/lite.gradle'
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
-//    apply plugin: 'com.github.hierynomus.license'
+    apply plugin: 'org.cadixdev.licenser'
     apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'eclipse'
 
@@ -71,14 +71,10 @@ allprojects {
 }
 
 subprojects {
-//    license {
-//        header rootProject.file('.licence/EPL-2.0-licence-header.txt')
-//        ext.year = Calendar.getInstance().get(Calendar.YEAR)
-//        excludes(["**/*.yml", "**/*.yaml", "**/*.json", "**/static", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks", "**/*.properties"])
-//        mapping {
-//            java = 'SLASHSTAR_STYLE'
-//        }
-//    }
+    license {
+        header = rootProject.file('.licence/EPL-2.0-licence-header.txt')
+        exclude '**/*.yml', '**/*.yaml', '**/*.json', '**/static', '**/*.sh', '**/*.txt', '**/*.p12', '**/*.xml', '**/*.jsp', '**/*.html', '**/*.jks', '**/*.properties'
+    }
 
     tasks.withType(Test) {
         maxParallelForks = 1
