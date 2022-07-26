@@ -13,7 +13,7 @@ dependencies {
 }
 
 task packageDiscovery(type: Zip) {
-    archiveName = artifactName + pullNo + ".zip"
+    archiveFileName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
     def resourceDir = 'src/main/resources/'
 

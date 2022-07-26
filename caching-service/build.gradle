@@ -3,8 +3,10 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
-            force = true
+        classpath("org.eclipse.jgit:org.eclipse.jgit") {
+            version {
+                strictly '5.13.0.202109080827-r'
+            }
         }
     }
 }
@@ -33,7 +35,7 @@ springBoot {
     buildInfo {
         properties {
             // Generate extra build info:
-            additionalProperties = [
+            additional = [
                 by: System.properties['user.name'],
                 operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
                 number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
@@ -48,7 +50,7 @@ gitProperties {
 }
 
 dependencies {
-
+    implementation project(':apiml-utility')
     implementation project(':common-service-core')
     implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')
@@ -139,13 +141,17 @@ dependencies {
 
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart
-    testCompile libraries.hamcrest
+    testImplementation libraries.hamcrest
     testImplementation libraries.rest_assured
     testImplementation(testFixtures(project(":integration-tests")))
 }
 
+jar {
+    enabled true
+    archiveClassifier = ""
+}
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"
 
 publishing {
     publications {

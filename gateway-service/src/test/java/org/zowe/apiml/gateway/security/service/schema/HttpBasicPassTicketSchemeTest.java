@@ -27,7 +27,9 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -134,14 +136,14 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
 
         @Test
-        void whenJwtExpireSoon_thenCommandInNotExpiredYet() {
-            // JWT token will expire in one minute (command expired also if JWT token expired)
+        void commandIsAlwaysExpired() {
             Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.MINUTE, 2);
             AuthSource.Parsed parsedSource = new ParsedTokenAuthSource(USERNAME, calendar.getTime(), calendar.getTime(), AuthSource.Origin.ZOWE);
             when(authSourceService.parse(jwtAuthSource)).thenReturn(parsedSource);
             ac = httpBasicPassTicketScheme.createCommand(authentication, jwtAuthSource);
-            assertFalse(ac.isExpired());
+            // need to wait here a little so that we don't test expiration time in the same millisecond.
+            await().pollDelay(100, TimeUnit.MILLISECONDS).until(() -> true);
+            assertTrue(ac.isExpired());
         }
     }
 

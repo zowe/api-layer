@@ -1,18 +1,22 @@
 dependencies {
-    compile(project(':apiml-security-common'))
-    compile libraries.spring_boot_starter_web
-    compile libraries.spring_security_web
-    compile libraries.spring_security_config
-    compile libraries.apache_commons_lang3
+    implementation project(':apiml-security-common')
+
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.apache_commons_lang3
+    implementation libraries.eureka_client
 
     compileOnly libraries.javax_servlet_api
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-
-    testCompile libraries.mockito_core
-    testCompile libraries.spring_mock_mvc
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
+    testImplementation project(':apiml-security-common')
+    testImplementation libraries.mockito_core
+    testImplementation libraries.spring_mock_mvc
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.spring_security_config
+    testImplementation libraries.jackson_databind
+    testImplementation libraries.json_smart
 }

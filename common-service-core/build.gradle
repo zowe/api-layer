@@ -1,49 +1,49 @@
 dependencies {
-    compile libraries.gson
-    compile(libraries.eureka_client) {
+    implementation libraries.gson
+    implementation(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
     }
 
-    compile libraries.netflix_servo
+    implementation libraries.netflix_servo
 
-    compile(libraries.http_client)
-    compile(libraries.http_core)
-    compile(libraries.jackson_annotations)
-    compile(libraries.jackson_databind)
-    compile(libraries.slf4j_api)
-    compile(libraries.snakeyaml)
+    implementation(libraries.http_client)
+    implementation(libraries.http_core)
+    implementation(libraries.jackson_annotations)
+    implementation(libraries.jackson_databind)
+    implementation(libraries.slf4j_api)
+    implementation(libraries.snakeyaml)
 
-    compile libraries.apache_commons_codec
-    compile libraries.apache_commons_lang3
-    compile libraries.apache_commons_text
-    compile libraries.xstream
-    compile libraries.logback_core
-    compile libraries.logback_classic
+    implementation libraries.apache_commons_codec
+    implementation libraries.apache_commons_lang3
+    implementation libraries.apache_commons_text
+    implementation libraries.xstream
+    implementation libraries.logback_core
+    implementation libraries.logback_classic
 
-    compile libraries.jsr305
+    implementation libraries.jsr305
 
-    compileOnly(libraries.javax_servlet_api)
+    implementation(libraries.javax_servlet_api)
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    compileOnly(libraries.spring_boot_starter_cache)
-    compileOnly(libraries.eh_cache)
+    implementation(libraries.spring_boot_starter_cache)
+    implementation(libraries.eh_cache)
 
-    testCompile(libraries.spring_boot_starter_cache)
-    testCompile(libraries.spring_boot_starter_test)
-    testCompile libraries.json_smart
-    testCompile(libraries.eh_cache)
-    testCompile(libraries.jackson_core)
-    testCompile(libraries.jackson_databind)
-    testCompile(libraries.javax_servlet_api)
-    testCompile(libraries.json_unit_fluent)
-    testCompile(libraries.json_unit)
-    testCompile(libraries.hamcrest)
-    testCompile(libraries.logback_classic)
-    testCompile(libraries.tomcat_embed_core)
-    testCompile(libraries.mockito_core)
+    testImplementation(libraries.spring_boot_starter_cache)
+    testImplementation(libraries.spring_boot_starter_test)
+    testImplementation libraries.json_smart
+    testImplementation(libraries.eh_cache)
+    testImplementation(libraries.jackson_core)
+    testImplementation(libraries.jackson_databind)
+    testImplementation(libraries.javax_servlet_api)
+    testImplementation(libraries.json_unit_fluent)
+    testImplementation(libraries.json_unit)
+    testImplementation(libraries.hamcrest)
+    testImplementation(libraries.logback_classic)
+    testImplementation(libraries.tomcat_embed_core)
+    testImplementation(libraries.mockito_core)
 
     testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok

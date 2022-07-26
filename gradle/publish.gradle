@@ -36,7 +36,6 @@ ext.sdksToPublish = ext.enablers + ext.javaLibraries
 ext.projectsToPublish = ext.servicesToPublish + ext.sdksToPublish
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
-    apply plugin: "maven"
     apply plugin: 'maven-publish'
     apply plugin: 'java'
 
@@ -50,6 +49,19 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
                 setUrl(artifactoryPublishingMavenSnapshotRepo)
             } else {
                 setUrl(artifactoryPublishingMavenRepo)
+            }
+        }
+
+        publications {
+            mavenJava(MavenPublication) {
+                pom {
+                    licenses {
+                        license {
+                            name = 'Eclipse Public License, v2.0'
+                            url = 'https://www.eclipse.org/legal/epl-2.0/'
+                        }
+                    }
+                }  
             }
         }
     }

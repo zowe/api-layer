@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.security.common.config;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,38 +20,40 @@ import java.util.Set;
 @Configuration
 public class AccessTokenProviderConfig {
 
+    public static final String NOT_IMPLEMENTED = "Function is not implemented.";
+
     @Bean
     @ConditionalOnMissingBean
     public AccessTokenProvider accessTokenProvider() {
         return new AccessTokenProvider() {
             @Override
             public void invalidateToken(String token) {
-                throw new NotImplementedException();
+                throw new NotImplementedException(NOT_IMPLEMENTED);
             }
 
             @Override
             public boolean isInvalidated(String token) {
-                throw new NotImplementedException();
+                throw new NotImplementedException(NOT_IMPLEMENTED);
             }
 
             @Override
             public String getToken(String username, int expirationTime, Set<String> scopes) {
-                throw new NotImplementedException();
+                throw new NotImplementedException(NOT_IMPLEMENTED);
             }
 
             @Override
             public boolean isValidForScopes(String token, String serviceId) {
-                throw new NotImplementedException();
+                throw new NotImplementedException(NOT_IMPLEMENTED);
             }
 
             @Override
             public void invalidateAllTokensForUser(String userId, long timestamp) {
-                throw new NotImplementedException();
+                throw new NotImplementedException(NOT_IMPLEMENTED);
             }
 
             @Override
             public void invalidateAllTokensForService(String serviceId, long timestamp) {
-                throw new NotImplementedException();
+                throw new NotImplementedException(NOT_IMPLEMENTED);
             }
         };
     }

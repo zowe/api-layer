@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url "http://repo.spring.io/libs-milestone" }
+        maven { url "https://repo.spring.io/libs-milestone" }
         maven { setUrl(artifactoryMavenRepo) }
         maven {
             url "https://plugins.gradle.org/m2/"
@@ -18,18 +18,18 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
 
 bootJar {
-    baseName = "enabler-springboot-${springBootVersion}-sample"
+    archiveBaseName.set("enabler-springboot-${springBootVersion}-sample")
     launchScript()
 }
 
 jar {
-    baseName = "enabler-springboot-${springBootVersion}-sample"
-    archiveName = "${baseName}.jar"
+    archiveBaseName.set("enabler-springboot-${springBootVersion}-sample")
+    archiveFileName = archiveBaseName.get() + ".jar"
 }
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.spring.io/libs-milestone" }
+    maven { url "https://repo.spring.io/libs-milestone" }
 }
 
 dependencies {
