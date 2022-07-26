@@ -139,6 +139,7 @@ bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"
 
 jar {
     enabled true
+    archiveClassifier = ""
 }
 
 publishing {

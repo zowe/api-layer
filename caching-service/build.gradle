@@ -146,6 +146,10 @@ dependencies {
     testImplementation(testFixtures(project(":integration-tests")))
 }
 
+jar {
+    enabled true
+    archiveClassifier = ""
+}
 
 bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"
 

@@ -187,6 +187,7 @@ bootJar {
 
 jar {
     enabled true
+    archiveClassifier = ""
 }
 
 bootRun {

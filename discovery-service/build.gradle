@@ -31,6 +31,7 @@ def componentName = "discovery-service"
 setJib(componentName, debugPort)
 jib.container.args.add('--spring.profiles.active=https')
 
+
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
@@ -138,6 +139,7 @@ bootJar {
 
 jar {
     enabled true
+    archiveClassifier = ""
 }
 
 bootRun {

@@ -141,6 +141,7 @@ bootJar {
 
 jar {
     enabled true
+    archiveClassifier = ""
 }
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
