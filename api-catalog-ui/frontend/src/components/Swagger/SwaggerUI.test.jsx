@@ -28,6 +28,13 @@ describe('>>> Swagger component tests', () => {
             basePath: '/enabler/api/v1',
             apiDoc: null,
         };
+        service.apis = {
+            codeSnippet: {
+                codeBlock: 'code',
+                endpoint: '/test',
+                language: 'java',
+            },
+        };
         const wrapper = shallow(
             <div>
                 <SwaggerUI selectedService={service} />
@@ -47,8 +54,18 @@ describe('>>> Swagger component tests', () => {
             secured: false,
             homePageUrl: 'http://localhost:10013/enabler/',
             basePath: '/enabler/api/v1',
+            defaultApiVersion: 0,
         };
-
+        service.apis = [
+            {
+                default: { apiId: 'enabler' },
+                codeSnippet: {
+                    codeBlock: 'code',
+                    endpoint: '/test',
+                    language: 'java',
+                },
+            },
+        ];
         const container = document.createElement('div');
         document.body.appendChild(container);
 
@@ -71,10 +88,27 @@ describe('>>> Swagger component tests', () => {
                 servers: [{ url: `https://bad.com${endpoint}` }],
             }),
             apis: {
-                default: { apiId: 'enabler' },
+                default: {
+                    apiId: 'enabler',
+                    codeSnippet: {
+                        codeBlock: 'code',
+                        endpoint: '/test',
+                        language: 'java',
+                    },
+                },
             },
+            defaultApiVersion: 0,
         };
-
+        service.apis = [
+            {
+                default: { apiId: 'enabler' },
+                codeSnippet: {
+                    codeBlock: 'code',
+                    endpoint: '/test',
+                    language: 'java',
+                },
+            },
+        ];
         const container = document.createElement('div');
         document.body.appendChild(container);
 
@@ -100,8 +134,18 @@ describe('>>> Swagger component tests', () => {
             apis: {
                 default: { apiId: 'oldenabler' },
             },
+            defaultApiVersion: 0,
         };
-
+        service1.apis = [
+            {
+                default: { apiId: 'enabler' },
+                codeSnippet: {
+                    codeBlock: 'code',
+                    endpoint: '/test',
+                    language: 'java',
+                },
+            },
+        ];
         const service2 = {
             serviceId: 'newservice',
             title: 'Spring Boot Enabler Service',
@@ -117,8 +161,19 @@ describe('>>> Swagger component tests', () => {
             apis: {
                 default: { apiId: 'oldenabler' },
             },
+            defaultApiVersion: 0,
         };
 
+        service2.apis = [
+            {
+                default: { apiId: 'enabler' },
+                codeSnippet: {
+                    codeBlock: 'code2',
+                    endpoint: '/test2',
+                    language: 'python',
+                },
+            },
+        ];
         const container = document.createElement('div');
         document.body.appendChild(container);
 
