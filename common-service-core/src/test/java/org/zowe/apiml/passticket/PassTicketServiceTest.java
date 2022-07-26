@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.passticket;
 
 import org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl;

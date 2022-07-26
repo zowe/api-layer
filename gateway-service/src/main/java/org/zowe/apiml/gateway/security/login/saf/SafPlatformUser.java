@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.security.login.saf;
 
 import org.springframework.security.authentication.AuthenticationServiceException;

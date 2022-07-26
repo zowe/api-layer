@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gzip;
 
 public class GZipResponseException extends RuntimeException {

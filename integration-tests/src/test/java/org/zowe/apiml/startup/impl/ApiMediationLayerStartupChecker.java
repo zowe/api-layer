@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.startup.impl;
 
 import com.jayway.jsonpath.DocumentContext;

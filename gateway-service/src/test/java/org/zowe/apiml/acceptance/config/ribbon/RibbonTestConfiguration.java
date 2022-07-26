@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.acceptance.config.ribbon;
 
 import com.netflix.appinfo.InstanceInfo;
