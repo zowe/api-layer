@@ -25,8 +25,7 @@ buildscript {
 apply from: "$rootDir/gradle/lite-project.gradle"
 
 task liteJar(type: BootJar) {
-    // Do not attempt to prevent duplicates. If the destination does not support duplicates,
-    // the existing destination entry will be overridden with the duplicate.
+    //Do not allow duplicates by ignoring subsequent items to be created at the same path.
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
