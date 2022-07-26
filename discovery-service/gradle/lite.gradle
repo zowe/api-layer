@@ -27,7 +27,7 @@ apply from: "$rootDir/gradle/lite-project.gradle"
 task liteJar(type: BootJar) {
     // Do not attempt to prevent duplicates. If the destination does not support duplicates,
     // the existing destination entry will be overridden with the duplicate.
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
@@ -35,7 +35,6 @@ task liteJar(type: BootJar) {
     def modulesJar = getModulesJarNames()
     archiveFileName = getBaseNameLite() + ".jar"
     mainClass = getSpringBootApp()
-    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }}
     exclude { details -> details.file && details.file.name.endsWith('.jar') && !modulesJar.contains(details.file.name) }
     with bootJar
 
