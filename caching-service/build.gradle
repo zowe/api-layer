@@ -152,11 +152,3 @@ jar {
 }
 
 bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact bootJar
-        }
-    }
-}
