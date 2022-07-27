@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.metadata.service;
 
 import org.springframework.cloud.client.discovery.event.HeartbeatEvent;

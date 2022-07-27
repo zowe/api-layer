@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.security;
 
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;

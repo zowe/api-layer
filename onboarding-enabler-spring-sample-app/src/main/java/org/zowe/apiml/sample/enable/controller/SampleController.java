@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.sample.enable.controller;
 
 import io.swagger.v3.oas.annotations.Operation;

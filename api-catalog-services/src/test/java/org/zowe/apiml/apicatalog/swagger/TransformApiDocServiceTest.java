@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.swagger;
 
 import org.junit.jupiter.api.Assertions;

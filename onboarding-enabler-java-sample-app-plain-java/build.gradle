@@ -8,9 +8,8 @@ jar {
     manifest {
         attributes "Main-Class": "org.zowe.apiml.sample.PlainJavaEnablerApp"
     }
-    // Do not attempt to prevent duplicates. If the destination does not support duplicates,
-    // the existing destination entry will be overridden with the duplicate.
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    //Do not allow duplicates by ignoring subsequent items to be created at the same path.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }

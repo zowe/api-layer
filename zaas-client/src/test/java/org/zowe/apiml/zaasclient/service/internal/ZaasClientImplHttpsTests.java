@@ -1,4 +1,3 @@
-package org.zowe.apiml.zaasclient.service.internal;
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -8,6 +7,8 @@ package org.zowe.apiml.zaasclient.service.internal;
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;

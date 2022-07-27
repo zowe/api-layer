@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.metrics.functional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

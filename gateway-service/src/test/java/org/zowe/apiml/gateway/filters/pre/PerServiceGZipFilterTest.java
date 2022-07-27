@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.filters.pre;
 
 import org.junit.jupiter.api.BeforeEach;

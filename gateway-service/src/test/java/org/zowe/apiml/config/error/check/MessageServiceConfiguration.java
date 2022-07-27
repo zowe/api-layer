@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.config.error.check;
 
 import org.springframework.boot.test.context.TestConfiguration;
