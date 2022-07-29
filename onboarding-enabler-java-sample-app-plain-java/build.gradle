@@ -1,15 +1,16 @@
 dependencies {
-    compile (project(':onboarding-enabler-java'))
-    compile ("javax.servlet:javax.servlet-api:4.0.1")
+    implementation project(':onboarding-enabler-java')
+    implementation ("javax.servlet:javax.servlet-api:4.0.1")
 }
 
 jar {
-    archiveName = "sample.jar"
+    archiveFileName = "sample.jar"
     manifest {
         attributes "Main-Class": "org.zowe.apiml.sample.PlainJavaEnablerApp"
     }
-
+    //Do not allow duplicates by ignoring subsequent items to be created at the same path.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -201,7 +202,7 @@ class ZaasJwtServiceTest {
     }
 
     private void mockHttpClient(int statusCode) throws IOException {
-        mockHttpClient(statusCode, "");
+        mockHttpClient(statusCode, "null");
     }
 
     private void mockHttpClient(int statusCode, String content) throws IOException {

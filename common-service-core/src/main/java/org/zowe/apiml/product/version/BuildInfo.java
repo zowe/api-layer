@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.product.version;
 
 import org.zowe.apiml.message.log.ApimlLogger;

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.product.security;
 
 import org.apache.coyote.http11.AbstractHttp11Protocol;

@@ -2,7 +2,7 @@
 name: Release support
 about: Issue to capture support for next Zowe release.
 title: 'Support ${version} Release'
-labels: release, new
+labels: release
 ---
 Tasks
 

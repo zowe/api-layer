@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.config;
 
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;

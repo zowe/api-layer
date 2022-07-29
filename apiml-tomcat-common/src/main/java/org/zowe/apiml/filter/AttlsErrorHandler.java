@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

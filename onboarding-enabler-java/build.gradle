@@ -1,7 +1,7 @@
 dependencies {
-    compile(project(':common-service-core'))
-    compile(project(':apiml-utility'))
-    compile libraries.jaxb_api
+    api project(':common-service-core')
+    api project(':apiml-utility')
+    implementation libraries.jaxb_api
     implementation libraries.javax_annotation
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml
@@ -16,15 +16,16 @@ dependencies {
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.javax_inject
 
-    testCompile libraries.mockito_core
-    testCompile libraries.spring4Mvc
-    testCompile libraries.spring4Test
+    testImplementation libraries.mockito_core
+    testImplementation libraries.spring4Mvc
+    testImplementation libraries.spring4Test
 
-    testCompile libraries.lombok
+    testImplementation libraries.logback_classic
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 
-    testCompile libraries.javax_servlet_api
-    testCompile libraries.hamcrest
+    testImplementation libraries.javax_servlet_api
+    testImplementation libraries.hamcrest
 
-    testCompile libraries.javax_inject
+    testImplementation libraries.javax_inject
 }

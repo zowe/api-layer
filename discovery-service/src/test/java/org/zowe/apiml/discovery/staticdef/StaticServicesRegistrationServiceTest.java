@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.discovery.staticdef;
 
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;

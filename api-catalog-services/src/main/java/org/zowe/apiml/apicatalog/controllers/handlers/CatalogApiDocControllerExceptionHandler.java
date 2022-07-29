@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.controllers.handlers;
 
 import org.zowe.apiml.apicatalog.controllers.api.CatalogApiDocController;

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.client.configuration;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;

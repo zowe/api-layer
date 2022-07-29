@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.client.services.apars;
 
 import com.nimbusds.jose.jwk.JWKSet;
