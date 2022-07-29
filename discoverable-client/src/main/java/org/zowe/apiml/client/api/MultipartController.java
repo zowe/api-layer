@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.client.api;
 
 import org.zowe.apiml.client.model.UploadFileResponse;

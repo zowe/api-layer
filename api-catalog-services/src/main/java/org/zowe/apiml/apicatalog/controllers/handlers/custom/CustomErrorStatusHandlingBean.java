@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.controllers.handlers.custom;
 
 import org.springframework.boot.web.server.ErrorPage;

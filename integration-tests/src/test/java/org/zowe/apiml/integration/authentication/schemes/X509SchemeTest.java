@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.integration.authentication.schemes;
 
 import io.restassured.http.Header;

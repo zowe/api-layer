@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.swagger;
 
 import com.fasterxml.jackson.core.JsonFactory;

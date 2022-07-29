@@ -1,23 +1,23 @@
 dependencies {
-    compile libraries.spring_boot_starter_web
-    compile libraries.zowe_attls
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.zowe_attls
 
-    compile libraries.spring_aop
-    compile libraries.spring_beans
-    compile libraries.spring_context
-    compile libraries.spring_core
-    compile libraries.spring_expression
-    compile libraries.tomcat_embed_core
-    compile libraries.tomcat_embed_websocket
-    compile libraries.logback_classic
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
+    implementation libraries.logback_classic
     implementation libraries.jackson_core
     implementation libraries.jackson_databind
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile libraries.mockito_core
-    testCompile libraries.mockito_jupiter
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
+    testImplementation libraries.mockito_core
+    testImplementation libraries.mockito_jupiter
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
 }

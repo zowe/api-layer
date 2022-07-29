@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.config;
 
 import io.micronaut.context.annotation.ConfigurationProperties;

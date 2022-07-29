@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.acceptance.netflix;
 
 import org.springframework.cloud.client.discovery.DiscoveryClient;

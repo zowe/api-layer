@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.caching.service;
 
 public class DefaultEvictionStrategy implements EvictionStrategy {

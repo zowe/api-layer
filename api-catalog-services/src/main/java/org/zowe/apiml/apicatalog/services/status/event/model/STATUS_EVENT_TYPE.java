@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.services.status.event.model;
 
 public enum  STATUS_EVENT_TYPE {
