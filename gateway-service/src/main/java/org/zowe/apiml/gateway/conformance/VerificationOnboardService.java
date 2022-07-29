@@ -47,15 +47,19 @@ public class VerificationOnboardService {
      */
     public String retrieveMetaData(String serviceId) {
 
-        String swaggerUrl = "";
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
-        ServiceInstance serviceInstance = serviceInstances.get(0);
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        if (metadata.containsKey("apiml.apiInfo.api-v2.swaggerUrl")) {
-            swaggerUrl = metadata.get("apiml.apiInfo.api-v2.swaggerUrl");
-        }
-            
-        return swaggerUrl;
 
-    }   
+        if (!serviceInstances.isEmpty()) {
+            ServiceInstance serviceInstance = serviceInstances.get(0);
+            Map<String, String> metadata = serviceInstance.getMetadata();
+            if (metadata != null && !metadata.isEmpty()) {
+                String swaggerUrl = metadata.get("apiml.apiInfo.api-v2.swaggerUrl");
+                if (swaggerUrl != null) {
+                    return swaggerUrl;
+                }
+            }
+        }
+        return "";
+    }
+
 }
