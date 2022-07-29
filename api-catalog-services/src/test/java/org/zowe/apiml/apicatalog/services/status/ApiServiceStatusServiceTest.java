@@ -172,7 +172,7 @@ class ApiServiceStatusServiceTest {
             .homePageUrl("home")
             .basePath("base")
             .sso(false)
-            .apiId(Collections.emptyMap())
+            .apis(Collections.emptyMap())
             .build();
         services.add(service);
 
@@ -184,7 +184,7 @@ class ApiServiceStatusServiceTest {
             .homePageUrl("home")
             .basePath("base")
             .sso(false)
-            .apiId(Collections.emptyMap())
+            .apis(Collections.emptyMap())
             .build();
         services.add(service);
 

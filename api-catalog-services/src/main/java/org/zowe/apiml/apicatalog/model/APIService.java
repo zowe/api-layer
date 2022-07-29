@@ -12,9 +12,11 @@ package org.zowe.apiml.apicatalog.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.zowe.apiml.config.ApiInfo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,11 +65,8 @@ public class APIService implements Serializable {
     @Schema(description = "The SSO support for all instances")
     private boolean ssoAllInstances;
 
-    @Schema(description = "The API ID for this service")
-    private Map<String, String> apiId;
-
-    @Schema(description = "The Gateway URLs used within this service")
-    private Map<String, String> gatewayUrls;
+    @Schema(description = "The API information for each API ID for this service")
+    private Map<String, ApiInfo> apis = new HashMap<>(); // NOSONAR
 
     private List<String> instances = new ArrayList<>();
 
@@ -77,7 +76,7 @@ public class APIService implements Serializable {
     }
 
     public static class Builder {
-        private APIService apiService;
+        private final APIService apiService;
 
         public Builder(String serviceId) {
             apiService = new APIService(serviceId);
@@ -129,18 +128,13 @@ public class APIService implements Serializable {
             return this;
         }
 
-        public Builder apiId(Map<String, String> apiId) {
-            apiService.apiId = apiId;
-            return this;
-        }
-
-        public Builder gatewayUrls(Map<String, String> gatewayUrls) {
-            apiService.gatewayUrls = gatewayUrls;
-            return this;
-        }
-
         public Builder instanceId(String id) {
             apiService.instances.add(id);
+            return this;
+        }
+
+        public Builder apis(Map<String, ApiInfo> apis) {
+            apiService.apis = apis;
             return this;
         }
 

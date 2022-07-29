@@ -10,12 +10,6 @@ caching:
                 keyStorePassword: ${server.ssl.keyStorePassword}
                 trustStore: ${server.ssl.trustStore}
                 trustStorePassword: ${server.ssl.trustStorePassword}
-            sentinel:
-                masterInstance: redismaster
-                nodes:
-                    - sentinelpassword@localhost:26379
-                    - sentinelpassword@localhost:26380
-                    - sentinelpassword@localhost:26381
         infinispan:
             initialHosts: localhost[7098]
             persistence:

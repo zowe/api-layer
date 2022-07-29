@@ -15,19 +15,24 @@ import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
+import org.zowe.apiml.util.categories.InfinispanStorageTest;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 
 @zOSMFAuthTest
 @DiscoverableClientDependentTest
@@ -110,6 +115,25 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                     .header("x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
                     .statusCode(200);
             }
+        }
+    }
+
+    @Nested
+    class GivenPAT {
+        @Test
+        @InfinispanStorageTest
+        void translateIntoJWTAndSendToService() {
+            Set<String> scopes = new HashSet<>();
+            scopes.add("zowejwt");
+            String pat = personalAccessToken(scopes);
+            given()
+                .config(SslContext.tlsWithoutCert)
+                .header(ApimlConstants.PAT_HEADER_NAME, pat)
+                .when()
+                .get(URL)
+                .then()
+                .body("headers.cookie", startsWith("apimlAuthenticationToken="))
+                .statusCode(200);
         }
     }
 

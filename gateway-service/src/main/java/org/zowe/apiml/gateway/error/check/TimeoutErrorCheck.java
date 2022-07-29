@@ -39,7 +39,7 @@ public class TimeoutErrorCheck implements ErrorCheck {
             Throwable rootCause = ExceptionUtils.getRootCause(zuulException);
 
             if ((zuulException.nStatusCode == HttpStatus.GATEWAY_TIMEOUT.value())
-                    || zuulException.errorCause.equals(ERROR_CAUSE_TIMEOUT)) {
+                    || ERROR_CAUSE_TIMEOUT.equals(zuulException.errorCause)) {
                 Throwable cause = zuulException.getCause();
                 String causeMessage;
                 if (cause != null) {

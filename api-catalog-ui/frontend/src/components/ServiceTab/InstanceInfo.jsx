@@ -16,9 +16,9 @@ export default class InstanceInfo extends Component {
     render() {
         const { selectedService, selectedVersion } = this.props;
 
-        const apiId =
-            selectedService.apiId[selectedVersion || selectedService.defaultApiVersion] ||
-            selectedService.apiId.default;
+        const apiInfo =
+            selectedService.apis[selectedVersion || selectedService.defaultApiVersion] || selectedService.apis.default;
+        const { apiId } = apiInfo;
         return (
             <Shield title="Cannot display information about selected instance">
                 <div className="apiInfo-item">
@@ -31,11 +31,7 @@ export default class InstanceInfo extends Component {
                     </Tooltip>
                 </div>
                 <div className="apiInfo-item">
-                    <Tooltip
-                        key={selectedService.apiId}
-                        title="API IDs of the APIs that are provided by this service"
-                        placement="bottom"
-                    >
+                    <Tooltip title="API IDs of the APIs that are provided by this service" placement="bottom">
                         <Typography>
                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                             <label htmlFor="apiid">API ID:</label>

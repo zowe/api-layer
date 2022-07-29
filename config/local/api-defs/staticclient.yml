@@ -54,6 +54,13 @@ services:
         - apiId: zowe.apiml.discoverableclient
           gatewayUrl: api/v1
           version: 1.0.0
+          codeSnippet:
+            - endpoint: /pets
+              language: java
+              codeBlock: |
+                  ```
+                  System.out.println("Pets code snippet");
+                  ```
 
     - serviceId: zowejwt  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
