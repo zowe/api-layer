@@ -44,7 +44,11 @@ export function getSnippetContent(req, target, codeSnippet) {
             codeSnippet.codeBlock !== undefined &&
             codeSnippet.codeBlock !== null
         ) {
-            snippet = codeSnippet.codeBlock;
+            if (codeSnippet.endpoint === path) {
+                snippet = codeSnippet.codeBlock;
+            } else {
+                snippet = null;
+            }
         } else {
             snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
         }
@@ -69,41 +73,6 @@ export function generateSnippet(system, title, syntax, target, codeSnippet) {
         fn: (req) => getSnippetContent(req, target, codeSnippet),
     });
 }
-
-/**
- * Custom Plugin which extends the SwaggerUI to generate simple snippets
- */
-// eslint-disable-next-line import/prefer-default-export
-export const BasicSnippedGenerator = {
-    statePlugins: {
-        // extend some internals to gain information about current path, method and spec in the generator function
-        spec: wrapSelectors.spec,
-        // extend the request snippets core plugin
-        requestSnippets: {
-            wrapSelectors: {
-                // add additional snippet generators here
-                getSnippetGenerators:
-                    (ori, system) =>
-                    (state, ...args) =>
-                        ori(state, ...args)
-                            .set('java_unirest', generateSnippet(system, 'Java Unirest', 'java', 'java_unirest', null))
-                            .set(
-                                'javascript_jquery',
-                                generateSnippet(system, 'jQuery AJAX', 'javascript', 'javascript_jquery', null)
-                            )
-                            .set(
-                                'javascript_xhr',
-                                generateSnippet(system, 'Javascript XHR', 'javascript', 'javascript_xhr', null)
-                            )
-                            .set('python', generateSnippet(system, 'Python', 'python', 'python', null))
-                            .set('c_libcurl', generateSnippet(system, 'C (libcurl)', 'bash', 'c_libcurl', null))
-                            .set('csharp_restsharp', generateSnippet(system, 'C#', 'c#', 'csharp_restsharp', null))
-                            .set('go_native', generateSnippet(system, 'Go', 'bash', 'go_native', null))
-                            .set('node_fetch', generateSnippet(system, 'NodeJS', 'javascript', 'node_fetch', null)),
-            },
-        },
-    },
-};
 
 function setTargets(codeSnippets, i) {
     let target;
@@ -164,14 +133,26 @@ export function CustomizedSnippedGenerator(codeSnippets) {
                                     target,
                                     codeSnippets[i]
                                 );
-                                const requests = system.specSelectors.requests();
-                                const oasPath = requests._root.entries.slice(-1)[0][0];
-                                if (oasPath !== codeSnippets[i].endpoint) {
-                                    // eslint-disable-next-line no-continue
-                                    continue;
-                                }
                                 useSet = useSet.set(codeSnippets[i].endpoint + codeSnippets[i].language, newSnippet);
                             }
+                            useSet = useSet
+                                .set(
+                                    'java_unirest',
+                                    generateSnippet(system, 'Java Unirest', 'java', 'java_unirest', null)
+                                )
+                                .set(
+                                    'javascript_jquery',
+                                    generateSnippet(system, 'jQuery AJAX', 'javascript', 'javascript_jquery', null)
+                                )
+                                .set(
+                                    'javascript_xhr',
+                                    generateSnippet(system, 'Javascript XHR', 'javascript', 'javascript_xhr', null)
+                                )
+                                .set('python', generateSnippet(system, 'Python', 'python', 'python', null))
+                                .set('c_libcurl', generateSnippet(system, 'C (libcurl)', 'bash', 'c_libcurl', null))
+                                .set('csharp_restsharp', generateSnippet(system, 'C#', 'c#', 'csharp_restsharp', null))
+                                .set('go_native', generateSnippet(system, 'Go', 'bash', 'go_native', null))
+                                .set('node_fetch', generateSnippet(system, 'NodeJS', 'javascript', 'node_fetch', null));
                             return useSet;
                         },
                 },

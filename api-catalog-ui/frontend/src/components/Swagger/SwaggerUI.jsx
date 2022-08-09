@@ -13,7 +13,7 @@ import SwaggerUi from 'swagger-ui-react';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
-import { BasicSnippedGenerator, CustomizedSnippedGenerator } from '../../utils/generateSnippets';
+import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 
 function transformSwaggerToCurrentHost(swagger) {
@@ -116,12 +116,7 @@ export default class SwaggerUI extends Component {
                         spec: swagger,
                         presets: [SwaggerUi.presets.apis],
                         requestSnippetsEnabled: true,
-                        plugins: [
-                            this.customPlugins,
-                            BasicSnippedGenerator,
-                            AdvancedFilterPlugin,
-                            CustomizedSnippedGenerator(codeSnippets),
-                        ],
+                        plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         filter: true,
                     },
                 });
@@ -136,12 +131,7 @@ export default class SwaggerUI extends Component {
                         url,
                         presets: [SwaggerUi.presets.apis],
                         requestSnippetsEnabled: true,
-                        plugins: [
-                            this.customPlugins,
-                            BasicSnippedGenerator,
-                            AdvancedFilterPlugin,
-                            CustomizedSnippedGenerator(codeSnippets),
-                        ],
+                        plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         filter: true,
                         responseInterceptor: (res) => {
                             // response.text field is used to render the swagger
