@@ -73,40 +73,6 @@ export function generateSnippet(system, title, syntax, target, codeSnippet) {
     });
 }
 
-function setTargets(codeSnippets, i) {
-    let target;
-    switch (codeSnippets[i].language.toLowerCase()) {
-        case 'java':
-            target = 'java_unirest';
-            break;
-        case 'python':
-            target = 'python';
-            break;
-        case 'javascript':
-            target = 'javascript_jquery';
-            break;
-        case 'c':
-            target = 'c_libcurl';
-            break;
-        case 'c#':
-            target = 'csharp_restsharp';
-            break;
-        case 'go':
-            target = 'go_native';
-            break;
-        case 'node':
-            target = 'node_fetch';
-            break;
-        case 'nodejs':
-            target = 'node_fetch';
-            break;
-        default:
-            target = '';
-            break;
-    }
-    return target;
-}
-
 /**
  * Custom Plugin which extends the SwaggerUI to generate customized snippets
  */
@@ -124,12 +90,11 @@ export function CustomizedSnippedGenerator(codeSnippets) {
                             let useSet = ori(state, ...args);
                             // eslint-disable-next-line no-plusplus
                             for (let i = 0; i < codeSnippets.length; i++) {
-                                const target = setTargets(codeSnippets, i);
                                 const newSnippet = generateSnippet(
                                     system,
                                     `Customized Snippet - ${codeSnippets[i].language}`,
                                     codeSnippets[i].language,
-                                    target,
+                                    'target',
                                     codeSnippets[i]
                                 );
                                 useSet = useSet.set(codeSnippets[i].endpoint + codeSnippets[i].language, newSnippet);
