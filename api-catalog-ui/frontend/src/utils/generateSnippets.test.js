@@ -215,8 +215,43 @@ describe('>>> Code snippet generator', () => {
                 oasPathMethod,
             }),
         };
-        const customizedSnippet = { endpoint: '/test', language: 'java', codeBlock: 'someCode;' };
+        const customizedSnippet = { endpoint: '/path/to/api', language: 'java', codeBlock: 'someCode;' };
         const snippet = getSnippetContent(req, target, customizedSnippet);
         expect(snippet).toEqual('someCode;');
+    });
+
+    it('should call getSnippetContent and return null when endpoint not matching the operation path', () => {
+        const target = 'java_unirest';
+        const spec = {
+            paths: {
+                '/path/to/api': {
+                    get: {
+                        responses: {
+                            200: {
+                                description: 'Response description',
+                                schema: {
+                                    $ref: '#/definitions/SomeSchema',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+
+        const oasPathMethod = {
+            path: '/path/to/api',
+            method: 'get',
+        };
+
+        const req = {
+            toJS: () => ({
+                spec,
+                oasPathMethod,
+            }),
+        };
+        const customizedSnippet = { endpoint: '/different/path', language: 'java', codeBlock: 'someCode;' };
+        const snippet = getSnippetContent(req, target, customizedSnippet);
+        expect(snippet).toEqual(null);
     });
 });
