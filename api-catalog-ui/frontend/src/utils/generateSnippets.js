@@ -88,16 +88,16 @@ export function CustomizedSnippedGenerator(codeSnippets) {
                         (ori, system) =>
                         (state, ...args) => {
                             let useSet = ori(state, ...args);
-                            // eslint-disable-next-line no-plusplus
-                            for (let i = 0; i < codeSnippets.length; i++) {
+                            // eslint-disable-next-line no-restricted-syntax
+                            for (const codeSnippet of codeSnippets) {
                                 const newSnippet = generateSnippet(
                                     system,
-                                    `Customized Snippet - ${codeSnippets[i].language}`,
-                                    codeSnippets[i].language,
+                                    `Customized Snippet - ${codeSnippet.language}`,
+                                    codeSnippet.language,
                                     'target',
-                                    codeSnippets[i]
+                                    codeSnippet
                                 );
-                                useSet = useSet.set(codeSnippets[i].endpoint + codeSnippets[i].language, newSnippet);
+                                useSet = useSet.set(codeSnippet.endpoint + codeSnippet.language, newSnippet);
                             }
                             useSet = useSet
                                 .set(
