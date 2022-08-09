@@ -53,9 +53,6 @@ export default class ServiceTab extends Component {
             selectService,
         } = this.props;
         tiles[0].services.forEach((service) => {
-            /* eslint-disable no-console */
-            console.log(service);
-            /* eslint-enable no-console */
             if (service.serviceId === serviceId) {
                 if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
                     selectService(service, tileID);
