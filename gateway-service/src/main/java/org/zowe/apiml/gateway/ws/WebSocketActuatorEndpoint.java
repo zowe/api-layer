@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.ws;
 
 import org.springframework.beans.factory.annotation.Autowired;

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;

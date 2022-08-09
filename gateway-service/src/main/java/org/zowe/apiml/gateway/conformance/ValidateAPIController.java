@@ -24,7 +24,6 @@ import org.zowe.apiml.message.core.MessageService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
-
 /**
  * Controller offered methods for validating serviceID under conformance criteria, it offer methods to
  * check the validation of the given serviceID
@@ -37,11 +36,15 @@ public class ValidateAPIController {
     private static final Predicate<String> isTooLong = serviceId -> (serviceId).length() <= 64;
     private final MessageService messageService;
 
+    private final VerificationOnboardService verificationOnboardService;
+    private String invalidKey = "org.zowe.apiml.gateway.verifier.wrongServiceId";
+
     /**
      * Accept serviceID and return the JSON file with appropirate message to show if it is valid
      *
      * @param serviceID accepted serviceID to check validation
      * @return return the JSON file message of whether the serviceID is valid
+     *
      */
     @PostMapping(
         value = "/validate",
@@ -49,13 +52,10 @@ public class ValidateAPIController {
     )
     public ResponseEntity<Object> checkValidate(@RequestBody String serviceID) {
 
-        if (!isTooLong.test(serviceID)) {
-            String invalidLength = "The serviceid is longer than 64 characters";
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.verifier.wrongServiceId", invalidLength).mapToApiMessage(), HttpStatus.BAD_REQUEST);
-        }
-        else if (checkValidPatternAPI(serviceID)) {
-            String invalidPattern = "The serviceid contains symbols or upper case letters";
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.verifier.wrongServiceId", invalidPattern).mapToApiMessage(), HttpStatus.BAD_REQUEST);
+        String message = validator(serviceID);
+
+        if (!message.isEmpty()) {
+            return new ResponseEntity<>(messageService.createMessage(invalidKey, message).mapToApiMessage(), HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -77,4 +77,29 @@ public class ValidateAPIController {
     }
 
 
+    /**
+     * Accept serviceId and check conformant criteria and return invalid message if it does not meet
+     * the requirement
+     *
+     * @param serviceId accept serviceID to check
+     * @return return invalid message if it is wrong otherwise an empty string
+     */
+    private String validator(String serviceId) {
+
+        if (!isTooLong.test(serviceId)) {
+            return "The serviceid is longer than 64 characters";
+        }
+        else if (checkValidPatternAPI(serviceId)) {
+            return "The serviceid contains symbols or upper case letters";
+        }
+        else if (!verificationOnboardService.checkOnboarding(serviceId)) {
+            return "The service is not registered";
+        }
+        else if (verificationOnboardService.retrieveMetaData(serviceId).isEmpty()) {
+            return "Cannot Retrieve MetaData";
+        }
+
+        return "";
+    }
+    
 }

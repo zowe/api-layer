@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.caching.service.redis.exceptions;
 
 public class RedisEntryException extends Exception {

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.ribbon;
 
 import com.netflix.client.config.IClientConfig;

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.discovery.config;
 
 import org.apache.commons.lang3.StringUtils;

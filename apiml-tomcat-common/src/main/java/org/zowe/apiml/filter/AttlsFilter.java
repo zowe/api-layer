@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.filter;
 
 import org.apache.tomcat.util.codec.binary.Base64;

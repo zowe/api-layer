@@ -3,8 +3,10 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
-            force = true
+        classpath("org.eclipse.jgit:org.eclipse.jgit") {
+            version {
+                strictly '5.13.0.202109080827-r'
+            }
         }
     }
 }
@@ -29,6 +31,7 @@ def componentName = "discovery-service"
 setJib(componentName, debugPort)
 jib.container.args.add('--spring.profiles.active=https')
 
+
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
@@ -36,7 +39,7 @@ springBoot {
     buildInfo {
         properties {
             // Generate extra build info:
-            additionalProperties = [
+            additional = [
                 by: System.properties['user.name'],
                 operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
                 number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
@@ -57,7 +60,9 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':security-service-client-spring'))
+    implementation project(':apiml-tomcat-common')
+    implementation project(':apiml-security-common')
+    implementation project(':security-service-client-spring')
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
@@ -69,6 +74,7 @@ dependencies {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
     }
+    implementation libraries.apache_commons_lang3
     implementation libraries.gson
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
@@ -112,19 +118,19 @@ dependencies {
 
     implementation libraries.netflix_servo
 
-    testCompile libraries.lombok
+    testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 
-    testCompile libraries.spring_boot_starter_test
-    testCompile libraries.json_smart
-    testCompile libraries.awaitility
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
+    testImplementation libraries.awaitility
     testImplementation libraries.rest_assured
     testImplementation(testFixtures(project(":integration-tests")))
 }
 
 
 bootJar {
-    archiveName "discovery-service.jar"
+    archiveFileName = "discovery-service.jar"
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
@@ -133,6 +139,7 @@ bootJar {
 
 jar {
     enabled true
+    archiveClassifier = ""
 }
 
 bootRun {

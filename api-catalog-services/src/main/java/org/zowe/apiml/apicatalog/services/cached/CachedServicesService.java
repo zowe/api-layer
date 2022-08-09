@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.discovery.shared.Application;
