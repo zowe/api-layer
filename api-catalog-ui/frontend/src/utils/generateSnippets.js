@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as OpenAPISnippet from 'openapi-snippet';
-// eslint-disable-next-line import/no-mutable-exports
 
 export const wrapSelectors = {
     spec: {
