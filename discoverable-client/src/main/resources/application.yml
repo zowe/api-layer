@@ -79,11 +79,17 @@ apiml:
                     - endpoint: /greeting
                       language: java
                       codeBlock: |
-                          System.out.println("Greeting code snippet");
+                          String template = "Hello, %s!";
+                          String defaultValue = "world";
+                          Greeting greeting = new Greeting(new Date(), String.format(template, defaultValue));
+                          System.out.println(greeting.getContent());
                     - endpoint: /{yourName}/greeting
                       language: java
                       codeBlock: |
-                          System.out.println("Your name greeting code snippet");
+                          String template = "Hello, %s!";
+                          String name = "John";
+                          Greeting greeting = new Greeting(new Date(), String.format(template, name));
+                          System.out.println(greeting.getContent());
             -   apiId: zowe.apiml.discoverableclient.ws
                 version: 1.0.0
                 gatewayUrl: graphql/v1
