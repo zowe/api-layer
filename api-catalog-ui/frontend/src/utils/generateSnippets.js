@@ -28,7 +28,7 @@ export const wrapSelectors = {
     },
 };
 
-export function getSnippetContent(req, target) {
+export function getSnippetContent(req, target, codeSnippet) {
     // get extended info about request
     const { spec, oasPathMethod } = req.toJS();
     const { path, method } = oasPathMethod;
@@ -37,7 +37,20 @@ export function getSnippetContent(req, target) {
     let snippet;
     try {
         // set request snippet content
-        snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
+        if (
+            codeSnippet !== null &&
+            codeSnippet !== undefined &&
+            codeSnippet.codeBlock !== undefined &&
+            codeSnippet.codeBlock !== null
+        ) {
+            if (codeSnippet.endpoint === path) {
+                snippet = codeSnippet.codeBlock;
+            } else {
+                snippet = null;
+            }
+        } else {
+            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
+        }
     } catch (err) {
         snippet = JSON.stringify(snippet);
     }
@@ -50,47 +63,64 @@ export function getSnippetContent(req, target) {
  * @param title the code snippet title
  * @param syntax the syntax used for indentation
  * @param target the language target
- * @returns snippet code snippet content or an error in case of failure
+ * @returns codeSnippet the code snippet
  */
-export function generateSnippet(system, title, syntax, target) {
+export function generateSnippet(system, title, syntax, target, codeSnippet) {
     return system.Im.fromJS({
         title,
         syntax,
-        fn: (req) => getSnippetContent(req, target),
+        fn: (req) => getSnippetContent(req, target, codeSnippet),
     });
 }
 
 /**
- * Custom Plugin which extends the SwaggerUI to generate simple snippets
+ * Custom Plugin which extends the SwaggerUI to generate customized snippets
  */
-// eslint-disable-next-line import/prefer-default-export
-export const BasicSnippedGenerator = {
-    statePlugins: {
-        // extend some internals to gain information about current path, method and spec in the generator function
-        spec: wrapSelectors.spec,
-        // extend the request snippets core plugin
-        requestSnippets: {
-            wrapSelectors: {
-                // add additional snippet generators here
-                getSnippetGenerators:
-                    (ori, system) =>
-                    (state, ...args) =>
-                        ori(state, ...args)
-                            .set('java_unirest', generateSnippet(system, 'Java Unirest', 'java', 'java_unirest'))
-                            .set(
-                                'javascript_jquery',
-                                generateSnippet(system, 'jQuery AJAX', 'javascript', 'javascript_jquery')
-                            )
-                            .set(
-                                'javascript_xhr',
-                                generateSnippet(system, 'Javascript XHR', 'javascript', 'javascript_xhr')
-                            )
-                            .set('python', generateSnippet(system, 'Python', 'python', 'python'))
-                            .set('c_libcurl', generateSnippet(system, 'C (libcurl)', 'bash', 'c_libcurl'))
-                            .set('csharp_restsharp', generateSnippet(system, 'C#', 'c#', 'csharp_restsharp'))
-                            .set('go_native', generateSnippet(system, 'Go', 'bash', 'go_native'))
-                            .set('node_fetch', generateSnippet(system, 'NodeJS', 'javascript', 'node_fetch')),
+export function CustomizedSnippedGenerator(codeSnippets) {
+    return {
+        statePlugins: {
+            // extend some internals to gain information about current path, method and spec in the generator function
+            spec: wrapSelectors.spec,
+            // extend the request snippets core plugin
+            requestSnippets: {
+                wrapSelectors: {
+                    getSnippetGenerators:
+                        (ori, system) =>
+                        (state, ...args) => {
+                            let useSet = ori(state, ...args);
+                            // eslint-disable-next-line no-restricted-syntax
+                            for (const codeSnippet of codeSnippets) {
+                                const newSnippet = generateSnippet(
+                                    system,
+                                    `Customized Snippet - ${codeSnippet.language}`,
+                                    codeSnippet.language,
+                                    'target',
+                                    codeSnippet
+                                );
+                                useSet = useSet.set(codeSnippet.endpoint + codeSnippet.language, newSnippet);
+                            }
+                            useSet = useSet
+                                .set(
+                                    'java_unirest',
+                                    generateSnippet(system, 'Java Unirest', 'java', 'java_unirest', null)
+                                )
+                                .set(
+                                    'javascript_jquery',
+                                    generateSnippet(system, 'jQuery AJAX', 'javascript', 'javascript_jquery', null)
+                                )
+                                .set(
+                                    'javascript_xhr',
+                                    generateSnippet(system, 'Javascript XHR', 'javascript', 'javascript_xhr', null)
+                                )
+                                .set('python', generateSnippet(system, 'Python', 'python', 'python', null))
+                                .set('c_libcurl', generateSnippet(system, 'C (libcurl)', 'bash', 'c_libcurl', null))
+                                .set('csharp_restsharp', generateSnippet(system, 'C#', 'c#', 'csharp_restsharp', null))
+                                .set('go_native', generateSnippet(system, 'Go', 'bash', 'go_native', null))
+                                .set('node_fetch', generateSnippet(system, 'NodeJS', 'javascript', 'node_fetch', null));
+                            return useSet;
+                        },
+                },
             },
         },
-    },
-};
+    };
+}

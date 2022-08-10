@@ -1,189 +1,481 @@
 [
     {
-        "version": "1.0.0",
-        "id": "apicatalog",
-        "title": "API Mediation Layer API",
-        "status": "UP",
-        "description": "The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.",
-        "services": [
+        "version":"1.0.0",
+        "id":"static",
+        "title":"Static API Services",
+        "status":"UP",
+        "description":"Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions",
+        "services":[
             {
-                "serviceId": "apicatalog",
-                "title": "API Catalog",
-                "description": "API ML Microservice to locate and display API documentation for API ML discovered microservices",
-                "status": "UP",
-                "secured": false,
-                "homePageUrl": "/ui/v1/apicatalog"
-            }
-        ],
-        "totalServices": 1,
-        "activeServices": 1,
-        "lastUpdatedTimestamp": "2018-08-22T08:32:03.110+0000",
-        "createdTimestamp": "2018-08-22T08:31:22.948+0000"
-    },
-    {
-        "version": "1.0.1",
-        "id": "cademoapps",
-        "title": "Sample API Mediation Layer Applications",
-        "status": "UP",
-        "description": "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem",
-        "services": [
-            {
-                "serviceId": "discoverableclient",
-                "title": "Sample API Mediation Layer Application (Spring Boot 2.x)",
-                "description": "Sample Spring Boot 2.x REST API application using the API Mediation Layer enabler",
-                "status": "UP",
-                "secured": false,
-                "homePageUrl": "http://localhost:10012/discoverableclient/"
-            }
-        ],
-        "totalServices": 1,
-        "activeServices": 1,
-        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
-        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
-    },
-    {
-        "version": "1.0.1",
-        "id": "testinson",
-        "title": "API tile for testing",
-        "status": "DOWN",
-        "description": "One Up, One Down",
-        "services": [
-            {
-                "serviceId": "todo",
-                "title": "TODO managing API",
-                "description": "Sample API for managing todos",
-                "status": "UP",
-                "secured": false,
-                "homePageUrl": ""
+                "serviceId":"zowejwt",
+                "title":"Staticaly Defined Service To Test Zowe JWT scheme",
+                "description":"Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10012/discoverableclient",
+                "homePageUrl":"https://localhost:10010/zowejwt/ui/v1",
+                "basePath":"/zowejwt/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.discoverableclient v1.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":null,
+                        "documentationUrl":null,
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "STATIC-localhost:zowejwt:10012"
+                ]
             },
             {
-                "serviceId": "movies",
-                "title": "StarDB API",
-                "description": "API to star-wars movie DB",
-                "status": "DOWN",
-                "secured": false,
-                "homePageUrl": ""
-            }
-        ],
-        "totalServices": 2,
-        "activeServices": 1,
-        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
-        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
-    },
-    {
-        "version": "1.0.1",
-        "id": "tile_tile1",
-        "title": "Test API",
-        "status": "UP",
-        "description": "Testing tile",
-        "services": [
-            {
-                "serviceId": "todo",
-                "title": "TODO managing API",
-                "description": "Sample API for managing todos",
-                "status": "UP",
-                "secured": false,
-                "homePageUrl": ""
+                "serviceId":"dcbypass",
+                "title":"Discoverable client with by pass authentication scheme",
+                "description":"Define service to test by pass authentication schema for integration tests.",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10012/discoverableclient",
+                "homePageUrl":"https://localhost:10012/discoverableclient",
+                "basePath":"/dcbypass/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":false,
+                "ssoAllInstances":false,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.discoverableclient v1.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":null,
+                        "documentationUrl":null,
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "STATIC-localhost:dcbypass:10012"
+                ]
             },
             {
-                "serviceId": "movies",
-                "title": "StarDB API",
-                "description": "API to star-wars movie DB",
-                "status": "DOWN",
-                "secured": false,
-                "homePageUrl": ""
-            }
-        ],
-        "totalServices": 1,
-        "activeServices": 1,
-        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
-        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
-    },
-    {
-        "version": "1.0.1",
-        "id": "tile_tile2",
-        "title": "Test API",
-        "status": "UP",
-        "description": "Testing tile",
-        "services": [
-            {
-                "serviceId": "todo",
-                "title": "TODO managing API",
-                "description": "Sample API for managing todos",
-                "status": "UP",
-                "secured": false,
-                "homePageUrl": ""
+                "serviceId":"dcpassticket",
+                "title":"Discoverable client with passTicket authentication scheme",
+                "description":"Define service to test passTicket authentication schema for integration tests.",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10012/discoverableclient",
+                "homePageUrl":"https://localhost:10012/discoverableclient",
+                "basePath":"/dcpassticket/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.discoverableclient v1.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":null,
+                        "documentationUrl":null,
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "STATIC-localhost:dcpassticket:10012"
+                ]
             },
             {
-                "serviceId": "movies",
-                "title": "StarDB API",
-                "description": "API to star-wars movie DB",
-                "status": "DOWN",
-                "secured": false,
-                "homePageUrl": ""
-            }
-        ],
-        "totalServices": 1,
-        "activeServices": 1,
-        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
-        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
-    },
-    {
-        "version": "1.0.1",
-        "id": "tile_tile3",
-        "title": "Test API",
-        "status": "UP",
-        "description": "Testing tile",
-        "services": [
-            {
-                "serviceId": "todo",
-                "title": "TODO managing API",
-                "description": "Sample API for managing todos",
-                "status": "UP",
-                "secured": false,
-                "homePageUrl": ""
+                "serviceId":"dcsafidt",
+                "title":"Discoverable client with safIdt authentication scheme",
+                "description":"Define service to test safIdt authentication schema for integration tests.",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10012/discoverableclient",
+                "homePageUrl":"https://localhost:10012/discoverableclient",
+                "basePath":"/dcsafidt/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.discoverableclient v1.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":null,
+                        "documentationUrl":null,
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "STATIC-localhost:dcsafidt:10012"
+                ]
             },
             {
-                "serviceId": "movies",
-                "title": "StarDB API",
-                "description": "API to star-wars movie DB",
-                "status": "DOWN",
-                "secured": false,
-                "homePageUrl": ""
-            }
-        ],
-        "totalServices": 1,
-        "activeServices": 1,
-        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
-        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
-    },
-    {
-        "version": "1.0.1",
-        "id": "tile_tile4",
-        "title": "Test API",
-        "status": "UP",
-        "description": "Testing tile",
-        "services": [
-            {
-                "serviceId": "todo",
-                "title": "TODO managing API",
-                "description": "Sample API for managing todos",
-                "status": "UP",
-                "secured": false,
-                "homePageUrl": ""
+                "serviceId":"staticclient2",
+                "title":"Staticaly Defined Service 2",
+                "description":"Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10012/discoverableclient",
+                "homePageUrl":"https://localhost:10010/staticclient2/ui/v1",
+                "basePath":"/staticclient2/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.discoverableclient v1.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":null,
+                        "documentationUrl":null,
+                        "codeSnippet":[
+                            {
+                                "endpoint":"/pets",
+                                "codeBlock":"```\nSystem.out.println(\"Pets code snippet\");\n```\n",
+                                "language":"java"
+                            }
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "STATIC-localhost:staticclient2:10012"
+                ]
             },
             {
-                "serviceId": "movies",
-                "title": "StarDB API",
-                "description": "API to star-wars movie DB",
-                "status": "DOWN",
-                "secured": false,
-                "homePageUrl": ""
+                "serviceId":"staticclient",
+                "title":"Statically Defined API Service",
+                "description":"Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10012/discoverableclient/",
+                "homePageUrl":"https://localhost:10010/staticclient/ui/v1/",
+                "basePath":"/staticclient/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":false,
+                "ssoAllInstances":false,
+                "apis":{
+                    "default":{
+                        "apiId":"zowe.apiml.discoverableclient",
+                        "gatewayUrl":"api/v1",
+                        "version":null,
+                        "swaggerUrl":"https://localhost:10012/discoverableclient/v2/api-docs",
+                        "documentationUrl":null,
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "STATIC-localhost:staticclient:10012"
+                ]
             }
         ],
-        "totalServices": 2,
-        "activeServices": 1,
-        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
-        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+        "totalServices":6,
+        "activeServices":6,
+        "lastUpdatedTimestamp":"2022-08-09T07:09:48.919+00:00",
+        "createdTimestamp":"2022-08-09T07:06:48.153+00:00",
+        "sso":false
+    },
+    {
+        "version":"1.0.0",
+        "id":"apimediationlayer",
+        "title":"API Mediation Layer API",
+        "status":"UP",
+        "description":"The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.",
+        "services":[
+            {
+                "serviceId":"apicatalog",
+                "title":"API Catalog",
+                "description":"API Catalog service to display service details and API documentation for discovered API services.",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10014/apicatalog",
+                "homePageUrl":"https://localhost:10010/apicatalog/ui/v1",
+                "basePath":"/apicatalog/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.apicatalog v1.0.0":{
+                        "apiId":"zowe.apiml.apicatalog",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":"https://localhost:10014/apicatalog/v3/api-docs",
+                        "documentationUrl":null,
+                        "codeSnippet":[
+                            {
+                                "endpoint":"/greetings",
+                                "codeBlock":"```\nSystem. out. println(\"Hello, World!\");\n```\n",
+                                "language":"java"
+                            }
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "localhost:apicatalog:10014"
+                ]
+            },
+            {
+                "serviceId":"gateway",
+                "title":"API Gateway",
+                "description":"API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10010/",
+                "homePageUrl":"https://localhost:10010/",
+                "basePath":"",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.gateway v1.0.0":{
+                        "apiId":"zowe.apiml.gateway",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":"https://localhost:10010/api-doc",
+                        "documentationUrl":"https://zowe.github.io/docs-site/",
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "localhost:gateway:10017"
+                ]
+            }
+        ],
+        "totalServices":2,
+        "activeServices":2,
+        "lastUpdatedTimestamp":"2022-08-09T07:09:48.921+00:00",
+        "createdTimestamp":"2022-08-09T07:06:48.107+00:00",
+        "sso":true
+    },
+    {
+        "version":"1.0.0",
+        "id":"zowe",
+        "title":"Zowe Applications",
+        "status":"UP",
+        "description":"Applications which are part of Zowe.",
+        "services":[
+            {
+                "serviceId":"cachingservice",
+                "title":"Caching service for internal usage.",
+                "description":"Service that provides caching API.",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10016/cachingservice",
+                "homePageUrl":"https://localhost:10016/cachingservice",
+                "basePath":"/cachingservice/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "zowe.apiml.cachingservice v1.0.0":{
+                        "apiId":"zowe.apiml.cachingservice",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":"https://localhost:10016/cachingservice/v3/api-docs",
+                        "documentationUrl":"https://www.zowe.org",
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "localhost:cachingservice:10016"
+                ]
+            }
+        ],
+        "totalServices":1,
+        "activeServices":1,
+        "lastUpdatedTimestamp":"2022-08-09T07:09:48.921+00:00",
+        "createdTimestamp":"2022-08-09T07:06:48.156+00:00",
+        "sso":true
+    },
+    {
+        "version":"1.0.1",
+        "id":"cademoapps",
+        "title":"Sample API Mediation Layer Applications",
+        "status":"UP",
+        "description":"Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem",
+        "services":[
+            {
+                "serviceId":"discoverableclient",
+                "title":"Service Spring Onboarding Enabler sample application API",
+                "description":"Sample API services to demonstrate Spring Onboarding Enabler",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10012/discoverableclient",
+                "homePageUrl":"https://localhost:10010/discoverableclient/ui/v1",
+                "basePath":"/discoverableclient/api/{api-version}",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":{
+                        "apiId":"zowe.apiml.discoverableclient.rest",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":"https://localhost:10012/discoverableclient/v3/api-docs/apiv1",
+                        "documentationUrl":"https://www.zowe.org",
+                        "codeSnippet":[
+                            {
+                                "endpoint":"/greeting",
+                                "codeBlock":"System.out.println(\"Greeting code snippet\");\n",
+                                "language":"java"
+                            },
+                            {
+                                "endpoint":"/{yourName}/greeting",
+                                "codeBlock":"System.out.println(\"Your name greeting code snippet\");\n",
+                                "language":"java"
+                            }
+                        ],
+                        "defaultApi":true
+                    },
+                    "zowe.apiml.discoverableclient.rest v2.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient.rest",
+                        "gatewayUrl":"api/v2",
+                        "version":"2.0.0",
+                        "swaggerUrl":"https://localhost:10012/discoverableclient/v3/api-docs/apiv2",
+                        "documentationUrl":"https://www.zowe.org",
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    },
+                    "zowe.apiml.discoverableclient.rest v1.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient.rest",
+                        "gatewayUrl":"api/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":"https://localhost:10012/discoverableclient/v3/api-docs/apiv1",
+                        "documentationUrl":"https://www.zowe.org",
+                        "codeSnippet":[
+                            {
+                                "endpoint":"/greeting",
+                                "codeBlock":"System.out.println(\"Greeting code snippet\");\n",
+                                "language":"java"
+                            },
+                            {
+                                "endpoint":"/{yourName}/greeting",
+                                "codeBlock":"System.out.println(\"Your name greeting code snippet\");\n",
+                                "language":"java"
+                            }
+                        ],
+                        "defaultApi":true
+                    },
+                    "zowe.apiml.discoverableclient.ws v1.0.0":{
+                        "apiId":"zowe.apiml.discoverableclient.ws",
+                        "gatewayUrl":"graphql/v1",
+                        "version":"1.0.0",
+                        "swaggerUrl":"https://localhost:10012/discoverableclient/v3/api-docs/graphv1",
+                        "documentationUrl":"https://www.zowe.org",
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "localhost:discoverableclient:10012"
+                ]
+            }
+        ],
+        "totalServices":1,
+        "activeServices":1,
+        "lastUpdatedTimestamp":"2022-08-09T07:09:48.920+00:00",
+        "createdTimestamp":"2022-08-09T07:06:48.157+00:00",
+        "sso":true
+    },
+    {
+        "version":"1.0.0",
+        "id":"zosmf",
+        "title":"zOSMF",
+        "status":"UP",
+        "description":"zOSMF",
+        "services":[
+            {
+                "serviceId":"mockzosmf",
+                "title":"Statically Defined API Service",
+                "description":"Mock ZOSMF service",
+                "status":"UP",
+                "secured":true,
+                "baseUrl":"https://localhost:10013/",
+                "homePageUrl":"https://localhost:10013/",
+                "basePath":"/mockzosmf/api",
+                "apiDoc":null,
+                "defaultApiVersion":"v1",
+                "apiVersions":null,
+                "sso":true,
+                "ssoAllInstances":true,
+                "apis":{
+                    "default":null,
+                    "ibm.zosmf v2.4.0":{
+                        "apiId":"ibm.zosmf",
+                        "gatewayUrl":"api",
+                        "version":"2.4.0",
+                        "swaggerUrl":null,
+                        "documentationUrl":"https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm",
+                        "codeSnippet":[
+
+                        ],
+                        "defaultApi":false
+                    }
+                },
+                "instances":[
+                    "STATIC-localhost:mockzosmf:10013"
+                ]
+            }
+        ],
+        "totalServices":1,
+        "activeServices":1,
+        "lastUpdatedTimestamp":"2022-08-09T07:09:48.917+00:00",
+        "createdTimestamp":"2022-08-09T07:06:48.154+00:00",
+        "sso":true
     }
 ]
