@@ -254,4 +254,35 @@ describe('>>> Code snippet generator', () => {
         const snippet = getSnippetContent(req, target, customizedSnippet);
         expect(snippet).toEqual(null);
     });
+
+    it('should catch error when trying to generate the snippet', () => {
+        const spec = {
+            paths: {
+                '/path/to/api': {
+                    get: {
+                        responses: {
+                            200: {
+                                description: 'Response description',
+                                schema: {
+                                    $ref: '#/definitions/SomeSchema',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+        const oasPathMethod = {
+            path: '/path/to/api',
+            method: 'get',
+        };
+        const req = {
+            toJS: () => ({
+                spec,
+                oasPathMethod,
+            }),
+        };
+        const snippet = getSnippetContent(req, null, null);
+        expect(snippet).toBe(undefined);
+    });
 });

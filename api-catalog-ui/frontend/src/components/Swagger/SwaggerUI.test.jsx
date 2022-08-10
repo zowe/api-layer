@@ -182,4 +182,40 @@ describe('>>> Swagger component tests', () => {
         await act(async () => render(<SwaggerUI selectedService={service2} />, container));
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint2}`);
     });
+
+    it('should get snippet from selectedVersion and render swagger', async () => {
+        const endpoint1 = '/oldenabler/api/v1';
+        const service1 = {
+            serviceId: 'oldservice',
+            title: 'Spring Boot Enabler Service',
+            description: 'Dummy Service for enabling others',
+            status: 'UP',
+            secured: false,
+            homePageUrl: 'http://localhost:10013/oldenabler/',
+            basePath: '/oldenabler/api/v1',
+            apiDoc: JSON.stringify({
+                openapi: '3.0.0',
+                servers: [{ url: `https://bad.com${endpoint1}` }],
+            }),
+            apis: {
+                default: { apiId: 'oldenabler' },
+            },
+            defaultApiVersion: 0,
+        };
+        service1.apis = [
+            {
+                default: { apiId: 'enabler' },
+            },
+        ];
+        service1.apis[0].codeSnippet = {
+            codeBlock: 'code',
+            endpoint: '/test',
+            language: 'java',
+        };
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+
+        await act(async () => render(<SwaggerUI selectedService={service1} selectedVersion="0" />, container));
+        expect(container).not.toBeNull();
+    });
 });
