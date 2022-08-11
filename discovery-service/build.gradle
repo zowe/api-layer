@@ -68,7 +68,12 @@ dependencies {
     implementation(libraries.spring_cloud_starter_eureka_server)  {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
+        exclude group: "com.netflix.eureka", module: "eureka-core"
     }
+    implementation(libraries.eureka_core) {
+        exclude group: "com.amazonaws", module: "aws-java-sdk-core"
+    }
+    implementation libraries.aws_sdk_core
     implementation libraries.gson
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core

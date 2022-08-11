@@ -10,6 +10,7 @@ ext {
 
     attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
+    awsSdkVersion = '1.12.279'
     bouncyCastleVersion = '1.69'
     bootstrapVersion = '4.3.1'
     commonsCodecVersion = '1.15'
@@ -17,7 +18,7 @@ ext {
     commonsTextVersion = '1.9'
     commonsIoVersion = '2.7!!'
     ehCacheVersion = '2.10.9.2'
-    eurekaClientVersion = '1.10.17'
+    eurekaVersion = '1.10.17'
     gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
     gradleNodeVersion = '3.0.1' // Used in classpath dependencies
     gsonVersion = '2.9.0'
@@ -67,7 +68,7 @@ ext {
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
-    tomcatVersion = '9.0.64'
+    tomcatVersion = '9.0.65'
     velocityVersion = '2.3'
     xstreamVersion = '1.4.19!!'
 
@@ -120,12 +121,14 @@ ext {
         apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
         apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
         awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
+        aws_sdk_core                       : "com.amazonaws:aws-java-sdk-core:${awsSdkVersion}",
         bcprov                             : "org.bouncycastle:bcprov-jdk15on:${bouncyCastleVersion}",
         bcpkix                             : "org.bouncycastle:bcpkix-jdk15on:${bouncyCastleVersion}",
         bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
         commons_io                         : "commons-io:commons-io:${commonsIoVersion}",
         eh_cache                           : "net.sf.ehcache:ehcache:${ehCacheVersion}",
-        eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
+        eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaVersion}",
+        eureka_core                        : "com.netflix.eureka:eureka-core:${eurekaVersion}",
         gson                               : "com.google.code.gson:gson:${gsonVersion}",
         guava                              : "com.google.guava:guava:${guavaVersion}",
         hamcrest                           : "org.hamcrest:hamcrest-all:${hamcrestVersion}",
