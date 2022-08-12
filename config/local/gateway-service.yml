@@ -15,8 +15,8 @@ apiml:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         ssl:
             # below values will only work if false
-            verifySslCertificatesOfServices: true
-#            nonStrictverifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: false
+            nonStrictverifySslCertificatesOfServices: false
         x509:
             enabled: true
     banner: console

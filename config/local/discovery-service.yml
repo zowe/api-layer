@@ -10,8 +10,8 @@ apiml:
     security:
         ssl:
             # below values will only work if false
-            verifySslCertificatesOfServices: true
-#            nonStrictverifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: false
+            nonStrictverifySslCertificatesOfServices: false
     banner: console
 
 spring:

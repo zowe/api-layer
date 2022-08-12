@@ -41,11 +41,11 @@ apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
 # edit here:
-#
-#    security:
-#        ssl:
-#            verifySslCertificatesOfServices: false
-#            nonStrictverifySslCertificatesOfServices: false
+
+    security:
+        ssl:
+            verifySslCertificatesOfServices: false
+            nonStrictverifySslCertificatesOfServices: false
 
 spring:
     config:
