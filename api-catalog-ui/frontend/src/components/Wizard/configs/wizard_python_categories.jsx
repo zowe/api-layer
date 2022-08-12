@@ -22,11 +22,6 @@ export const pythonSpecificCategories = [
                 question: 'The IP address to be used:',
                 tooltip: 'Example: 127.0.0.1',
             },
-            port: {
-                value: '',
-                question: 'The port to be used:',
-                tooltip: 'Example: 10011',
-            },
             homePageUrl: {
                 value: '',
                 question: 'The homepage:',
@@ -36,6 +31,11 @@ export const pythonSpecificCategories = [
                 value: '',
                 question: 'The status page:',
                 tooltip: 'Example: /application/info',
+            },
+            port: {
+                value: '',
+                question: 'The port to be used:',
+                tooltip: 'Example: 10011',
             },
         },
     },
@@ -87,6 +87,21 @@ export const pythonSpecificCategories = [
                 question: 'Service description:',
                 tooltip:
                     'Example: The Proxy Server is an HTTP HTTPS, and Websocket server built upon python and ExpressJS.',
+            },
+            'apiml.apiInfo.0.swaggerUrl': {
+                value: '',
+                question: 'The base path at the API Gateway where the API is available:',
+                tooltip: 'Example: https://localhost:10020/ swagger.json',
+            },
+            'apiml.apiInfo.0.apiId': {
+                value: '',
+                question: 'A unique identifier to the API in the API ML:',
+                tooltip: 'Example: zowe.apiml.hwexpress',
+            },
+            'apiml.apiInfo.0.version': {
+                value: '',
+                question: 'The version:',
+                tooltip: 'Example: 1.0.1',
             },
         },
     },

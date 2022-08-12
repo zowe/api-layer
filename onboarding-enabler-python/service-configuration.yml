@@ -1,7 +1,7 @@
 instance:
     host: localhost
     ipAddress: localhost
-    homePageUrl: https://localhost:10018/python_enabler_service
+    homePageUrl: http://localhost:10018/python_enabler_service
     statusPageUrl: /application/info
     port: "10018"
     metadata:
