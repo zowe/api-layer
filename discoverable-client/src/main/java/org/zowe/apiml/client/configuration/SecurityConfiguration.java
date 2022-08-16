@@ -44,8 +44,5 @@ public class SecurityConfiguration {
         return new InMemoryUserDetailsManager(user);
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().antMatchers("/api/**");
-    }
+
 }
