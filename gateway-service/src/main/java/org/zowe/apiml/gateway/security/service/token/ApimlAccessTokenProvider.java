@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -138,6 +139,46 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             }
         }
         return Optional.empty();
+    }
+
+    private void evictRules(Map<String, String> map) {
+        if (map != null && !map.isEmpty()) {
+            long timestamp = System.currentTimeMillis();
+            for (Map.Entry<String,String> rule : map.entrySet()) {
+                if (Long.parseLong(rule.getValue()) < timestamp) {
+                    cachingServiceClient.delete(rule.getKey());
+                }
+            }
+        }
+    }
+
+    private void evictTokens(Map<String, String> map) {
+        if (map != null && !map.isEmpty()) {
+            LocalDate timestamp = LocalDate.now();
+            for (Map.Entry<String,String> rule : map.entrySet()) {
+                try {
+                    AccessTokenContainer c = objectMapper.readValue(rule.getValue(), AccessTokenContainer.class);
+                    if (c.getExpiresAt().toLocalDate().compareTo(timestamp) < 0) {
+                        cachingServiceClient.delete(rule.getKey());
+                    }
+
+                } catch (JsonProcessingException e) {
+                    log.error("Not able to parse invalidToken json value.", e);
+                }
+            }
+        }
+    }
+
+    public void evictNonRelevantTokensAndRules() {
+        Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
+        if (cacheMap != null && !cacheMap.isEmpty()) {
+            Map<String, String> invalidTokens = cacheMap.get(INVALID_TOKENS_KEY);
+            Map<String, String> invalidUsers = cacheMap.get(INVALID_USERS_KEY);
+            Map<String, String> invalidScopes = cacheMap.get(INVALID_SCOPES_KEY);
+            evictTokens(invalidTokens);
+            evictRules(invalidUsers);
+            evictRules(invalidScopes);
+        }
     }
 
     public String getHash(String token) throws CachingServiceClientException {

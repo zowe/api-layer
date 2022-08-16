@@ -21,4 +21,5 @@ public interface AccessTokenProvider {
     boolean isValidForScopes(String token, String serviceId);
     void invalidateAllTokensForUser(String userId, long timeStamp);
     void invalidateAllTokensForService(String serviceId, long timeStamp);
+    void evictNonRelevantTokensAndRules();
 }

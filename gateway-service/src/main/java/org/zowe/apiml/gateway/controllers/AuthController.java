@@ -17,11 +17,13 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -73,6 +75,7 @@ public class AuthController {
     public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
     public static final String ACCESS_TOKEN_REVOKE_MULTIPLE = "/access-token/revoke/tokens"; // NOSONAR
     public static final String ACCESS_TOKEN_VALIDATE = "/access-token/validate"; // NOSONAR
+    public static final String ACCESS_TOKEN_EVICT = "/access-token/evict"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
 
@@ -148,6 +151,17 @@ public class AuthController {
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
 
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping(value = ACCESS_TOKEN_EVICT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Remove invalidated tokens and rules which are not relevant anymore",
+        description = "Will evict all the invalidated tokens which are not relevant anymore")
+    @ResponseBody
+    @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'UPDATE')")
+    @HystrixCommand
+    public ResponseEntity<String> evictNonRelevantTokensAndRules() {
+        tokenProvider.evictNonRelevantTokensAndRules();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
