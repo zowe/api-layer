@@ -46,7 +46,7 @@ public class OktaOauth2Test {
         if (accessToken instanceof String) {
             String dcUrl = String.format("%s://%s:%s", dcConfig.getScheme(), dcConfig.getHost(), dcConfig.getPort());
             String token = (String) accessToken;
-            given().headers("authorization", "Bearer " + token).get(dcUrl + "/discoverableclient/api/v1/whoami").then().statusCode(200);
+            given().headers("authorization", "Bearer " + token).get(dcUrl + "/discoverableclient/whoami").then().statusCode(200);
         } else {
             throw new RuntimeException("Incorrect format of response from authorization server.");
         }
