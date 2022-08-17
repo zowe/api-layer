@@ -45,6 +45,7 @@ public class SecurityConfiguration {
             .authorizeRequests()
             .antMatchers("/ws/**").authenticated()
             .antMatchers("/**").permitAll()
+            .and().httpBasic()
             .and().build();
     }
 
