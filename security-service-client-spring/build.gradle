@@ -1,6 +1,9 @@
 dependencies {
     compile(project(':apiml-security-common'))
-    compile libraries.spring_boot_starter_web
+    implementation(libraries.spring_boot_starter_web){
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+    }
+    implementation libraries.tomcat_embed_el
     compile libraries.spring_security_web
     compile libraries.spring_security_config
     compile libraries.apache_commons_lang3
