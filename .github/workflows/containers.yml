@@ -376,46 +376,7 @@ jobs:
     CITestsWithRedisWithoutSslVerification:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    CACHING_STORAGE_MODE: 'redis'
-                    CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@redis-master:6379'
-                    CACHING_STORAGE_REDIS_SSL_ENABLED: false
-                    VERIFY_CERTIFICATES: false
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    VERIFY_CERTIFICATES: false
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    VERIFY_CERTIFICATES: false
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
-            redis-master:
-                image: redis:latest
-                ports:
-                    - "6379:6379"
-
-            redis-replica:
-                image: redis:latest
-                ports:
-                    - "6380:6380"
 
         steps:
             -   uses: actions/checkout@v2
@@ -424,10 +385,49 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Build with Gradle
+            -   name: Run APIML and Redis Containers
+                run: |
+                    cd docker/redis
+                    chmod +x run-redis.sh
+                    ./run-redis.sh -l -a ${{ github.event.pull_request.number || 'latest' }}
+
+            # Just with host network means gateway-service is unresolved hostname
+            # I think I tried with host network and extra hosts, but the GW couldn't talk to DS? Maybe let it go for longer and see what happens?
+            # Just extra hosts works on mac, would it work on linux? Would it work for sentinel?
+
+            -   name: Validate APIML setup
+                # poll for 3 minutes, if GW not healthy after 2 minutes then exit
+                run: |
+                    set +e # curl -s doesn't swallow the error alone
+                    attemptCounter=1
+                    maxAttempts=18
+                    until [ $attemptCounter -gt $maxAttempts ]; do
+                      sleep 10
+                      gwHealth=$(curl -k -s https://localhost:10010/application/health)
+                      echo "Polling for GW health: $attemptCounter"
+                      echo $gwHealth
+                      gatewayUp=$(echo $gwHealth | jq -r '.status')
+                      authUp=$(echo $gwHealth | jq -r '.components.gateway.details.auth')
+                      if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" ]; then
+                        echo ">>>>>APIML is ready"
+                        break
+                      fi
+                      attemptCounter=$((attemptCounter+1))
+                    done
+                    if [ "$gatewayUp" != "UP" ] || [ "$authUp" != "UP" ]; then
+                      echo ">>>>>APIML is not ready"
+                      exit 1
+                    fi
+
+            -   name: Run Caching Service tests
                 run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Output container logs
+                if: always()
+                run: docker compose -f docker/redis/redis-containers/redis.yml logs
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
