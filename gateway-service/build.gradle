@@ -25,10 +25,11 @@ apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
+def javaAgentPort = 6300
 def debugPort = 5120
 def componentName = "gateway-service"
 
-setJib(componentName, debugPort)
+setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
 
 springBoot {
