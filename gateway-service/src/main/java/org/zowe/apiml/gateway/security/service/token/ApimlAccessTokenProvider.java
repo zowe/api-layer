@@ -139,20 +139,10 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return Optional.empty();
     }
 
-    // change
-    private void evictRules(Map<String, String> map) {
-        if (map != null && !map.isEmpty()) {
-            long timestamp = System.currentTimeMillis();
-            for (Map.Entry<String,String> rule : map.entrySet()) {
-                if (Long.parseLong(rule.getValue()) < timestamp) {
-                    cachingServiceClient.delete(rule.getKey());
-                }
-            }
-        }
-    }
-
     public void evictNonRelevantTokensAndRules() {
         cachingServiceClient.evictItem(INVALID_TOKENS_KEY);
+        cachingServiceClient.evictItem(INVALID_USERS_KEY);
+        cachingServiceClient.evictItem(INVALID_SCOPES_KEY);
     }
 
     public String getHash(String token) throws CachingServiceClientException {

@@ -163,40 +163,67 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public void deleteItemFromMap(String serviceId, String mapKey) {
-        LocalDateTime timestamp = LocalDateTime.now();
+        if (mapKey.equals("invalidUsers") || mapKey.equals("invalidScopes")) {
+            removeNonRelevantRules(serviceId, mapKey);
+        } else {
+            removeNonRelevantTokens(serviceId, mapKey);
+        }
+    }
+
+    private void removeNonRelevantTokens(String serviceId, String mapKey) {
         Map<String, String> map = tokenCache.get(serviceId + mapKey);
         if (map != null && !map.isEmpty()) {
+            LocalDateTime timestamp = LocalDateTime.now();
             ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap(map);
-            for (Map.Entry<String,String> rule : concurrentMap.entrySet()) {
+            for (Map.Entry<String,String> entry : concurrentMap.entrySet()) {
                 try {
-                    AccessTokenContainer c = objectMapper.readValue(rule.getValue(), AccessTokenContainer.class);
+                    AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
                     if (c.getExpiresAt().isBefore(timestamp)) {
-                        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
-                            if (Boolean.TRUE.equals(r)) {
-                                try {
-                                    log.info("Removing record from the cache under key {} ", rule.getKey());
-                                    map.remove(rule.getKey());
-                                    tokenCache.put(serviceId + mapKey, map);
-                                } finally {
-                                    lock.unlock();
-                                }
-                            }
-                        });
-                        try {
-                            complete.join();
-                        } catch (CompletionException e) {
-                            if (e.getCause() instanceof StorageException) {
-                                throw (StorageException) e.getCause();
-                            } else {
-                                log.error("Unexpected error while acquiring the lock ", e);
-                                throw e;
-                            }
-                        }
+                        removeEntry(serviceId, mapKey, map, entry);
                     }
 
                 } catch (JsonProcessingException e) {
                     log.error("Not able to parse invalidToken json value.", e);
                 }
+            }
+        }
+    }
+
+    private void removeNonRelevantRules(String serviceId, String mapKey) {
+        long timestamp = System.currentTimeMillis();
+        Map<String, String> map = tokenCache.get(serviceId + mapKey);
+        if (map != null && !map.isEmpty()) {
+            ConcurrentMap<String, String> concurrentMap = new ConcurrentHashMap(map);
+            for (Map.Entry<String, String> entry : concurrentMap.entrySet()) {
+                long delta = timestamp - Long.parseLong(entry.getValue());
+                long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
+                if (deltaToDays > 90) {
+                    removeEntry(serviceId, mapKey, map, entry);
+                }
+            }
+        }
+    }
+
+    private void removeEntry(String serviceId, String mapKey, Map<String, String> map, Map.Entry<String, String> entry) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+                if (Boolean.TRUE.equals(r)) {
+                    try {
+                        log.info("Removing record from the cache under key {} ", entry.getKey());
+                        map.remove(entry.getKey());
+                        tokenCache.put(serviceId + mapKey, map);
+                    } finally {
+                        lock.unlock();
+                    }
+                }
+        });
+        try {
+            complete.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof StorageException) {
+                throw (StorageException) e.getCause();
+            } else {
+                log.error("Unexpected error while acquiring the lock ", e);
+                throw e;
             }
         }
     }
