@@ -37,12 +37,12 @@ public class OktaOauth2Test {
         headers.put("authorization", "Basic " + new String(base64encoded));
         headers.put("content-type", "application/x-www-form-urlencoded");
         headers.put("accpets", "application/json");
-        Object accessToken = given().headers(headers).when().post("https://dev-95727686.okta.com/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope")
+        RestAssured.useRelaxedHTTPSValidation();
+        Object accessToken = given().log().all().headers(headers).when().post("https://dev-95727686.okta.com/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope")
             .then().statusCode(200).extract().body().path("access_token");
         if (accessToken instanceof String) {
             String dcUrl = String.format("%s://%s:%s", dcConfig.getScheme(), dcConfig.getHost(), dcConfig.getPort());
             String token = (String) accessToken;
-            RestAssured.useRelaxedHTTPSValidation();
             given().headers("authorization", "Bearer " + token).get(dcUrl + "/discoverableclient/api/v1/whoami").then().statusCode(200);
         } else {
             throw new RuntimeException("Incorrect format of response from authorization server.");
