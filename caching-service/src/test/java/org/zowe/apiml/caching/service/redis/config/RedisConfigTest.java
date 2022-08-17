@@ -40,8 +40,17 @@ class RedisConfigTest {
         }
 
         @Test
-        void givenValidSentinel_thenReturnTrue() {
+        void givenSentinelNotEnabled_thenReturnFalse() {
             underTest.setSentinel(new RedisConfig.Sentinel());
+            assertFalse(underTest.usesSentinel());
+        }
+
+        @Test
+        void givenValidSentinel_thenReturnTrue() {
+            RedisConfig.Sentinel sentinel = new RedisConfig.Sentinel();
+            sentinel.setEnabled(true);
+
+            underTest.setSentinel(sentinel);
             assertTrue(underTest.usesSentinel());
         }
     }
