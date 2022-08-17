@@ -1,0 +1,4 @@
+port 6380
+replicaof {REDIS_MASTER_HOST} 6379
+masterauth "heslo"
+requirepass "heslo"

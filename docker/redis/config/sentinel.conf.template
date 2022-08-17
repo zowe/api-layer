@@ -1,0 +1,9 @@
+port {SENTINEL_PORT}
+requirepass "sentinelpassword"
+sentinel deny-scripts-reconfig yes
+sentinel resolve-hostnames yes
+sentinel monitor redismaster {REDIS_MASTER_HOST} 6379 2
+sentinel down-after-milliseconds redismaster 10000
+sentinel auth-pass redismaster heslo
+sentinel auth-user redismaster default
+

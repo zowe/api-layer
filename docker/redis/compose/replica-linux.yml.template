@@ -1,0 +1,56 @@
+services:
+
+    redis-master:
+        container_name: redis-master
+        image: redis:latest
+        command: redis-server /usr/local/etc/redis/master.conf
+        extra_hosts:
+            - "redis-master:127.0.0.1"
+        volumes:
+            - ./keystore:/usr/local/etc/keystore
+            - ./config:/usr/local/etc/redis/
+
+    redis-replica:
+        container_name: redis-replica
+        image: redis:latest
+        command: redis-server /usr/local/etc/redis/replica.conf
+        extra_hosts:
+            - "redis-replica:127.0.0.1"
+        volumes:
+            - ./keystore:/usr/local/etc/keystore
+            - ./config:/usr/local/etc/redis/
+
+    api-catalog-services:
+        image: ghcr.io/balhar-jakub/api-catalog-services:{APIML_VERSION}
+        extra_hosts:
+            - "api-catalog-services:127.0.0.1"
+        volumes:
+            - ./api-defs:/api-defs
+    caching-service:
+        image: ghcr.io/balhar-jakub/caching-service:{APIML_VERSION}
+        extra_hosts:
+            - "caching-service:127.0.0.1"
+        env_file:
+            - apiml.env
+    discoverable-client:
+        image: ghcr.io/balhar-jakub/discoverable-client:{APIML_VERSION}
+        extra_hosts:
+            - "discoverable-client:127.0.0.1"
+    discovery-service:
+        image: ghcr.io/balhar-jakub/discovery-service:{APIML_VERSION}
+        extra_hosts:
+            - "discovery-service:127.0.0.1"
+        volumes:
+            - ./api-defs:/api-defs
+        env_file:
+            - apiml.env
+    gateway-service:
+        image: ghcr.io/balhar-jakub/gateway-service:{APIML_VERSION}
+        extra_hosts:
+            - "gateway-service:127.0.0.1"
+        env_file:
+            - apiml.env
+    mock-services:
+        image: ghcr.io/balhar-jakub/mock-services:{APIML_VERSION}
+        env_file:
+            - apiml.env
