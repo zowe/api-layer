@@ -65,7 +65,7 @@ public class RedisConfig {
 
     @Data
     public static class Sentinel {
-        private boolean enabled;
+        private boolean enabled = false;
         private String masterInstance;
         private List<SentinelNode> nodes;
 
