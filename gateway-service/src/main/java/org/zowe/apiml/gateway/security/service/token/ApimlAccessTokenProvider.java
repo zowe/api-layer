@@ -13,14 +13,13 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
@@ -152,35 +151,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
     }
 
-    private void evictTokens(Map<String, String> map) {
-        if (map != null && !map.isEmpty()) {
-            LocalDateTime timestamp = LocalDateTime.now();
-            for (Map.Entry<String,String> rule : map.entrySet()) {
-                try {
-                    AccessTokenContainer c = objectMapper.readValue(rule.getValue(), AccessTokenContainer.class);
-                    log.error(String.valueOf(c));
-                    log.error(String.valueOf(c.getExpiresAt().isBefore(timestamp)));
-                    if (c.getExpiresAt().isBefore(timestamp)) {
-                        cachingServiceClient.evictItem("invalidTokens/" + rule.getKey());
-                    }
-
-                } catch (JsonProcessingException e) {
-                    log.error("Not able to parse invalidToken json value.", e);
-                }
-            }
-        }
-    }
-
     public void evictNonRelevantTokensAndRules() {
-        Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
-        if (cacheMap != null && !cacheMap.isEmpty()) {
-            Map<String, String> invalidTokens = cacheMap.get(INVALID_TOKENS_KEY);
-            Map<String, String> invalidUsers = cacheMap.get(INVALID_USERS_KEY);
-            Map<String, String> invalidScopes = cacheMap.get(INVALID_SCOPES_KEY);
-            evictTokens(invalidTokens);
-//            evictRules(invalidUsers);
-//            evictRules(invalidScopes);
-        }
+        cachingServiceClient.evictItem(INVALID_TOKENS_KEY);
     }
 
     public String getHash(String token) throws CachingServiceClientException {
@@ -253,23 +225,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             log.error("Could not generate hash", e);
         }
         return generatedPassword;
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class AccessTokenContainer {
-
-        public AccessTokenContainer() {
-            // no args constructor
-        }
-
-        private String userId;
-        private String tokenValue;
-        private LocalDateTime issuedAt;
-        private LocalDateTime expiresAt;
-        private Set<String> scopes;
-        private String tokenProvider;
-
     }
 }
 

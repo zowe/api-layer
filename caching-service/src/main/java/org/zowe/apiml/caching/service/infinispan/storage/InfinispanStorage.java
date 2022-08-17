@@ -10,19 +10,21 @@
 
 package org.zowe.apiml.caching.service.infinispan.storage;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.lock.api.ClusteredLock;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.models.AccessTokenContainer;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,11 +34,16 @@ public class InfinispanStorage implements Storage {
     private final ConcurrentMap<String, KeyValue> cache;
     private final ConcurrentMap<String, Map<String, String>> tokenCache;
     private final ClusteredLock lock;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
         this.cache = cache;
         this.tokenCache = tokenCache;
         this.lock = lock;
+    }
+
+    static {
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Override
@@ -155,27 +162,41 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public void deleteItemFromMap(String serviceId, String mapKey, String itemKey) {
-        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
-            if (Boolean.TRUE.equals(r)) {
+    public void deleteItemFromMap(String serviceId, String mapKey) {
+        LocalDateTime timestamp = LocalDateTime.now();
+        Map<String, String> map = tokenCache.get(serviceId + mapKey);
+        if (map != null && !map.isEmpty()) {
+            ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap(map);
+            for (Map.Entry<String,String> rule : concurrentMap.entrySet()) {
                 try {
-                    log.info("Removing record from the cache under key {} ", itemKey);
-                    Map<String, String> map = tokenCache.get(serviceId + mapKey);
-                    map.remove(itemKey);
-                    tokenCache.put(serviceId + mapKey, map);
-                } finally {
-                    lock.unlock();
+                    AccessTokenContainer c = objectMapper.readValue(rule.getValue(), AccessTokenContainer.class);
+                    if (c.getExpiresAt().isBefore(timestamp)) {
+                        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+                            if (Boolean.TRUE.equals(r)) {
+                                try {
+                                    log.info("Removing record from the cache under key {} ", rule.getKey());
+                                    map.remove(rule.getKey());
+                                    tokenCache.put(serviceId + mapKey, map);
+                                } finally {
+                                    lock.unlock();
+                                }
+                            }
+                        });
+                        try {
+                            complete.join();
+                        } catch (CompletionException e) {
+                            if (e.getCause() instanceof StorageException) {
+                                throw (StorageException) e.getCause();
+                            } else {
+                                log.error("Unexpected error while acquiring the lock ", e);
+                                throw e;
+                            }
+                        }
+                    }
+
+                } catch (JsonProcessingException e) {
+                    log.error("Not able to parse invalidToken json value.", e);
                 }
-            }
-        });
-        try {
-            complete.join();
-        } catch (CompletionException e) {
-            if (e.getCause() instanceof StorageException) {
-                throw (StorageException) e.getCause();
-            } else {
-                log.error("Unexpected error while acquiring the lock ", e);
-                throw e;
             }
         }
     }

@@ -21,6 +21,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.*;
@@ -98,7 +99,7 @@ class ApimlAccessTokenProviderTest {
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
 
-        ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
+        AccessTokenContainer invalidateToken = new AccessTokenContainer(null, tokenHash, null, null, null, null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         String s = mapper.writeValueAsString(invalidateToken);
@@ -126,7 +127,7 @@ class ApimlAccessTokenProviderTest {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
 
-        ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
+        AccessTokenContainer invalidateToken = new AccessTokenContainer(null, tokenHash, null, null, null, null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         String s = mapper.writeValueAsString(invalidateToken);

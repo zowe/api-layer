@@ -151,16 +151,16 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse);
     }
 
-    @DeleteMapping(value = "/cache-list/evict/{mapKey}/{itemKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/cache-list/evict/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete a record from a map in the cache",
         description = "Will delete a key-value pair from a specific map")
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<Object> evictRecord(@PathVariable String mapKey, @PathVariable String itemKey, HttpServletRequest request) {
+    public ResponseEntity<Object> evictRecord(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
                 try {
-                    storage.deleteItemFromMap(s, mapKey, itemKey);
+                    storage.deleteItemFromMap(s, mapKey);
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception exception) {
                     return handleInternalError(exception, request.getRequestURL());

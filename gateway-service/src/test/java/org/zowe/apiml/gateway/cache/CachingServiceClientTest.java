@@ -19,7 +19,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
+import org.zowe.apiml.models.AccessTokenContainer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -136,7 +136,7 @@ class CachingServiceClientTest {
         @Test
         void whenClientReturnsBody_thenParseTheResponse() throws CachingServiceClientException, JsonProcessingException {
             String key = "token";
-            ApimlAccessTokenProvider.AccessTokenContainer container = new ApimlAccessTokenProvider.AccessTokenContainer(null, key, null, null, null, null);
+            AccessTokenContainer container = new AccessTokenContainer(null, key, null, null, null, null);
             ObjectMapper mapper = new ObjectMapper();
             Map<String, String> tokens = new HashMap<>();
             String json = mapper.writeValueAsString(container);

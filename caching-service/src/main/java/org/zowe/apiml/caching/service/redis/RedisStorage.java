@@ -144,7 +144,7 @@ public class RedisStorage implements Storage {
     }
 
     @Override
-    public void deleteItemFromMap(String serviceId, String mapKey, String itemKey) {
+    public void deleteItemFromMap(String serviceId, String mapKey) {
         throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
     }
 }

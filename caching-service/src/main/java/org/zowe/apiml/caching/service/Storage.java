@@ -96,5 +96,5 @@ public interface Storage {
      */
     void deleteForService(String serviceId);
 
-    void deleteItemFromMap(String serviceId, String mapKey, String itemKey);
+    void deleteItemFromMap(String serviceId, String mapKey);
 }
