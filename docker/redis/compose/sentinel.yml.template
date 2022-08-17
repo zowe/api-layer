@@ -50,22 +50,12 @@ services:
             - ./keystore:/usr/local/etc/keystore
             - ./config:/usr/local/etc/redis/
 
-    api-catalog-services:
-        image: ghcr.io/balhar-jakub/api-catalog-services:{APIML_VERSION}
-        ports:
-            - 10014:10014
-        volumes:
-            - ./api-defs:/api-defs
     caching-service:
         image: ghcr.io/balhar-jakub/caching-service:{APIML_VERSION}
         ports:
             - 10016:10016
         env_file:
             - apiml.env
-    discoverable-client:
-        image: ghcr.io/balhar-jakub/discoverable-client:{APIML_VERSION}
-        ports:
-            - 10012:10012
     discovery-service:
         image: ghcr.io/balhar-jakub/discovery-service:{APIML_VERSION}
         ports:

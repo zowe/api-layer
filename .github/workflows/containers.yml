@@ -432,18 +432,6 @@ jobs:
                 if: always()
                 run: docker logs redis-containers-discovery-service-1
 
-            -   name: Output API Catalog container logs
-                if: always()
-                run: docker logs redis-containers-api-catalog-services-1
-
-            -   name: Output DC container logs
-                if: always()
-                run: docker logs redis-containers-discoverable-client-1
-
-            -   name: Output Mcok services container logs
-                if: always()
-                run: docker logs redis-containers-mock-services-1
-
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
