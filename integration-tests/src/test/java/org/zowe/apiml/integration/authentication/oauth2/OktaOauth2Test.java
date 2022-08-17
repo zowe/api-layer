@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.authentication.oauth2;
 
 import io.restassured.RestAssured;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
+@Slf4j
 public class OktaOauth2Test {
 
     @Test
@@ -38,6 +40,7 @@ public class OktaOauth2Test {
         headers.put("content-type", "application/x-www-form-urlencoded");
         headers.put("accpets", "application/json");
         RestAssured.useRelaxedHTTPSValidation();
+        log.error("Calling https://dev-95727686.okta.com/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope");
         Object accessToken = given().log().all().headers(headers).when().post("https://dev-95727686.okta.com/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope")
             .then().statusCode(200).extract().body().path("access_token");
         if (accessToken instanceof String) {
