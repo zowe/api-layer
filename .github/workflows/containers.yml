@@ -48,7 +48,7 @@ jobs:
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    OKTA_OAUTH2_ISSUER: https://dev-15334946.okta.com/oauth2/default
+                    OKTA_OAUTH2_ISSUER: https://dev-95727686.okta.com/oauth2/default
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
