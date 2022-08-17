@@ -95,4 +95,6 @@ public interface Storage {
      * @param serviceId Id of the service to delete all key/value pairs for.
      */
     void deleteForService(String serviceId);
+
+    void deleteItemFromMap(String serviceId, String mapKey, String itemKey);
 }

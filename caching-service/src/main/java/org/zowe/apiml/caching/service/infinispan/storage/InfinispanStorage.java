@@ -153,4 +153,30 @@ public class InfinispanStorage implements Storage {
             }
         });
     }
+
+    @Override
+    public void deleteItemFromMap(String serviceId, String mapKey, String itemKey) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
+                try {
+                    log.info("Removing record from the cache under key {} ", itemKey);
+                    Map<String, String> map = tokenCache.get(serviceId + mapKey);
+                    map.remove(itemKey);
+                    tokenCache.put(serviceId + mapKey, map);
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+        try {
+            complete.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof StorageException) {
+                throw (StorageException) e.getCause();
+            } else {
+                log.error("Unexpected error while acquiring the lock ", e);
+                throw e;
+            }
+        }
+    }
 }

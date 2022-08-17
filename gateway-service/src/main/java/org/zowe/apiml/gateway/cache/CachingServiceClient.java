@@ -105,6 +105,14 @@ public class CachingServiceClient {
         }
     }
 
+    public void evictItem(String key) {
+        try {
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "evict/" + key, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
+        }
+    }
+
 
     /**
      * Reads {@link KeyValue} from Caching Service
