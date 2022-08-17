@@ -391,10 +391,6 @@ jobs:
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -a ${{ github.event.pull_request.number || 'latest' }}
 
-            # Just with host network means gateway-service is unresolved hostname
-            # I think I tried with host network and extra hosts, but the GW couldn't talk to DS? Maybe let it go for longer and see what happens?
-            # Just extra hosts works on mac, would it work on linux? Would it work for sentinel?
-
             -   name: Validate APIML setup
                 # poll for 3 minutes, if GW not healthy after 2 minutes then exit
                 run: |
@@ -424,9 +420,29 @@ jobs:
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Output container logs
+            -   name: Output Caching Service container logs
                 if: always()
-                run: docker compose -f docker/redis/redis-containers/redis.yml logs
+                run: docker logs redis-containers-caching-service-1
+
+            -   name: Output Gateway container logs
+                if: always()
+                run: docker logs redis-containers-gateway-service-1
+
+            -   name: Output Discovery container logs
+                if: always()
+                run: docker logs redis-containers-discovery-service-1
+
+            -   name: Output API Catalog container logs
+                if: always()
+                run: docker logs redis-containers-api-catalog-services-1
+
+            -   name: Output DC container logs
+                if: always()
+                run: docker logs redis-containers-discoverable-client-1
+
+            -   name: Output Mcok services container logs
+                if: always()
+                run: docker logs redis-containers-mock-services-1
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results

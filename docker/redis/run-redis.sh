@@ -81,6 +81,7 @@ cp "${dockerComposeFile}" "${WORKSPACE}/${REDIS_COMPOSE_FILE}"
 cp -R "${SCRIPT_PWD}/../../keystore" "${WORKSPACE}"
 cp "${MASTER_CONFIG}" "${WORKSPACE}/${CONFIG_DIR}"
 cp -R "${SCRIPT_PWD}/../../config/docker/api-defs" "${WORKSPACE}"
+cp "${SCRIPT_PWD}/compose/mock-services.yml" "${WORKSPACE}/api-defs/mock-services-localhost.yml"
 
 sed -e "s|{APIML_VERSION}|${APIML_VERSION}|g" \
     "${dockerComposeFile}" > "${WORKSPACE}/${REDIS_COMPOSE_FILE}"
