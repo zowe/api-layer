@@ -405,7 +405,11 @@ jobs:
                       echo $gwHealth
                       gatewayUp=$(echo $gwHealth | jq -r '.status')
                       authUp=$(echo $gwHealth | jq -r '.components.gateway.details.auth')
-                      if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" ]; then
+                      csUp="DOWN"
+                      if [ $(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")') != "null" ]; then
+                          csUp="UP"
+                      fi
+                      if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" && "$csUp" == "UP" ]; then
                         echo ">>>>>APIML is ready"
                         break
                       fi
