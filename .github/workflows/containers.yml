@@ -67,7 +67,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runContainerTests --info -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Dokta.client.password=${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -101,18 +101,8 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runOauth2Tests --info -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Dokta.client.password=${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    ./gradlew :integration-tests:runOauth2Tests --info -Denvironment.offPlatform=true -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Dokta.client.password=${{ secrets.OKTA_CLIENT_PASSWORD }}
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   uses: ./.github/actions/dump-jacoco
-                if: always()
-            -   name: Store results
-                uses: actions/upload-artifact@v3
-                if: always()
-                with:
-                    name: Oauth2Integration-${{ env.JOB_ID }}
-                    path: |
-                        integration-tests/build/reports/**
-                        results/**
 
             -   uses: ./.github/actions/teardown
 
