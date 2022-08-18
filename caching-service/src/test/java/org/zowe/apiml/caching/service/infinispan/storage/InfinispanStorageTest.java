@@ -286,7 +286,6 @@ class InfinispanStorageTest {
             underTest.deleteItemFromMap(serviceId1, "invalidScopes");
             underTest.deleteItemFromMap(serviceId1, "invalidUsers");
             Map<String, Map<String, String>> result = underTest.getAllMaps(serviceId1);
-            System.out.println(result);
             assertEquals(1, result.get("invalidTokens").size());
         }
 
