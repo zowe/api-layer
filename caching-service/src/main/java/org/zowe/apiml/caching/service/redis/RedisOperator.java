@@ -30,10 +30,7 @@ import org.zowe.apiml.caching.service.redis.exceptions.RetryableRedisException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import javax.annotation.PreDestroy;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -57,6 +54,9 @@ public class RedisOperator {
             redis = redisConnection.async();
             log.info("Connected to Redis {}", redisUri);
         } catch (Exception e) {
+            log.error("Error message {}", e.getMessage());
+            log.error("Error cause: ", e.getCause());
+            log.error("Stack trace: {}", Arrays.toString(e.getStackTrace()));
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
             System.exit(1);
         }
