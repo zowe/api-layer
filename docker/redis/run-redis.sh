@@ -24,7 +24,7 @@ createFile() {
         -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
         -e "s|{TLS}|${TLS}|g" \
         -e "s|{TLS_SETTING}|${TLS_SETTING}|g" \
-        -e "s|{TLS_PORT}|6379|g" \
+        -e "s|{TLS_PORT}|$3|g" \
         -e "s|{LINUX_SETTING}|${LINUX_SETTING}|g" \
         -e "s|{NOT_LINUX_SETTING}|${NOT_LINUX_SETTING}|g" \
         -e "s|{SENTINEL_SETTING}|${SENTINEL_SETTING}|g" \
@@ -184,8 +184,8 @@ SENTINEL_TEMPLATE="${CONFIG_DIR}/sentinel.conf.template"
 createFile "${DOCKER_COMPOSE_TEMPLATE}" "${WORKSPACE}/${REDIS_COMPOSE_FILE}"
 createFile "${MOCK_SERVICES_TEMPLATE}" "${WORKSPACE}/api-defs/mock-services.yml"
 createFile "${APIML_ENV_TEMPLATE}" "${WORKSPACE}/apiml.env"
-createFile "${MASTER_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/master.conf"
-createFile "${REPLICA_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/replica.conf"
+createFile "${MASTER_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/master.conf" "6379"
+createFile "${REPLICA_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/replica.conf" "6380"
 
 createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-1.conf" "26739"
 createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-2.conf" "26380"
