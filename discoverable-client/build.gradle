@@ -71,9 +71,7 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
 
-    // https://mvnrepository.com/artifact/com.okta.spring/okta-spring-boot-starter
-    implementation 'com.okta.spring:okta-spring-boot-starter:2.1.5'
-
+    implementation libraries.okta_spring_boot_starter
 
     implementation libraries.bootstrap
     implementation libraries.jquery

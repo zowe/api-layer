@@ -16,10 +16,6 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   name: Call okta host
-                run: >
-                    curl -v https://dev-95727686.okta.com
-
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
