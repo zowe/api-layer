@@ -47,8 +47,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                env:
-                    OKTA_OAUTH2_ISSUER: https://dev-95727686.okta.com/oauth2/default
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
@@ -78,6 +76,40 @@ jobs:
                 if: always()
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
+    Oauth2Integration:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 5
+        services:
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    OKTA_OAUTH2_ISSUER: https://dev-95727686.okta.com/oauth2/default
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runOauth2Tests --info -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Dokta.client.password=${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+            -   name: Store results
+                uses: actions/upload-artifact@v3
+                if: always()
+                with:
+                    name: Oauth2Integration-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
