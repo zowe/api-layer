@@ -23,10 +23,11 @@ apply plugin: 'com.gorylenko.gradle-git-properties'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
+def javaAgentPort = 6303
 def debugPort = 5123
 def componentName = "mock-services"
 
-setJib(componentName, debugPort)
+setJib(componentName, javaAgentPort, debugPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

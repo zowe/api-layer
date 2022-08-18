@@ -56,7 +56,7 @@ public class RedisConfig {
     }
 
     public boolean usesSentinel() {
-        return sentinel != null;
+        return sentinel != null && sentinel.isEnabled();
     }
 
     public boolean usesSsl() {
@@ -65,6 +65,7 @@ public class RedisConfig {
 
     @Data
     public static class Sentinel {
+        private boolean enabled = false;
         private String masterInstance;
         private List<SentinelNode> nodes;
 
