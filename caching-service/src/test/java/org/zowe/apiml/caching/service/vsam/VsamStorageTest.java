@@ -282,4 +282,14 @@ class VsamStorageTest {
             });
         }
     }
+
+    @Nested
+    class WhenTryingToDeleteItems {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.deleteItemFromMap("serviceId", "key");
+            });
+        }
+    }
 }

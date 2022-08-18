@@ -208,4 +208,14 @@ public class RedisStorageTest {
             });
         }
     }
+
+    @Nested
+    class WhenTryingToDeleteItems {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.deleteItemFromMap(SERVICE_ID, "key");
+            });
+        }
+    }
 }

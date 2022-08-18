@@ -77,16 +77,7 @@ public class InfinispanStorage implements Storage {
                 }
             }
         });
-        try {
-            complete.join();
-        } catch (CompletionException e) {
-            if (e.getCause() instanceof StorageException) {
-                throw (StorageException) e.getCause();
-            } else {
-                log.error("Unexpected error while acquiring the lock ", e);
-                throw e;
-            }
-        }
+        completeJoin(complete);
         return null;
     }
 
@@ -216,6 +207,10 @@ public class InfinispanStorage implements Storage {
                     }
                 }
         });
+        completeJoin(complete);
+    }
+
+    private void completeJoin(CompletableFuture<Boolean> complete) {
         try {
             complete.join();
         } catch (CompletionException e) {
