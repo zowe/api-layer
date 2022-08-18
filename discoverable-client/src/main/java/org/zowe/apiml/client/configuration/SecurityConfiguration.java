@@ -12,9 +12,9 @@ package org.zowe.apiml.client.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -24,37 +24,55 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
-    @Bean
-    public SecurityFilterChain filterChainOath(HttpSecurity http) throws Exception {
-        return http.csrf().disable().requestMatchers().antMatchers("/whoami").and() // NOSONAR
-            .authorizeRequests()
-            .anyRequest().authenticated()
-            .and().oauth2ResourceServer().jwt().and()
-            .and().build();
+    @Configuration
+    @Order(1)
+    class Oauth2Sec {
+
+        @Bean
+        public SecurityFilterChain filterChainOath(HttpSecurity http) throws Exception {
+            return http.csrf().disable().requestMatchers().antMatchers("/whoami").and() // NOSONAR
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and().oauth2ResourceServer().jwt().and()
+                .and().build();
+        }
     }
 
-    @Bean
-    public SecurityFilterChain filterChainWebSocket(HttpSecurity http) throws Exception {
-        return http.csrf().disable().requestMatchers().antMatchers("/ws/**").and() // NOSONAR
-            .authorizeRequests()
-            .anyRequest().authenticated()
-            .and().httpBasic()
-            .and().build();
+    @Configuration
+    @Order(2)
+    class WebSocketSec {
+        @Bean
+        public SecurityFilterChain filterChainWebSocket(HttpSecurity http) throws Exception {
+            return http.csrf().disable().requestMatchers().antMatchers("/ws/**").and() // NOSONAR
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and().httpBasic()
+                .and().build();
+        }
+
+        @Bean
+        public InMemoryUserDetailsManager userDetailsService() {
+            UserDetails user = User.withDefaultPasswordEncoder() // NOSONAR deprecated only to indicate not acceptable for production
+                .username("user")
+                .password("pass")
+                .roles("ADMIN")
+                .build();
+            return new InMemoryUserDetailsManager(user);
+        }
     }
 
-    @Bean
-    public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder() // NOSONAR deprecated only to indicate not acceptable for production
-            .username("user")
-            .password("pass")
-            .roles("ADMIN")
-            .build();
-        return new InMemoryUserDetailsManager(user);
+    @Configuration
+    @Order(3)
+    class DefaultSec {
+
+        @Bean
+        public SecurityFilterChain filterChainAllowAll(HttpSecurity http) throws Exception {
+            return http.csrf().disable().requestMatchers().antMatchers("/api/**").and() // NOSONAR
+                .authorizeRequests()
+                .anyRequest().permitAll()
+                .and().build();
+        }
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web ->
-            web.ignoring().antMatchers("/api/**");
-    }
+
 }
