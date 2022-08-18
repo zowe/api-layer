@@ -15,6 +15,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -206,6 +207,18 @@ class ApimlAccessTokenProviderTest {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
         assertFalse(accessTokenProvider.isValidForScopes(TOKEN_WITHOUT_SCOPES, scope));
+    }
+
+    @Nested
+    class WhenCallingEviction {
+        @Test
+        void thenEvictNonRelevantTokensAndRules() {
+            ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+            accessTokenProvider.evictNonRelevantTokensAndRules();
+            verify(cachingServiceClient, times(1)).evictItem(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
+            verify(cachingServiceClient, times(1)).evictItem(ApimlAccessTokenProvider.INVALID_USERS_KEY);
+            verify(cachingServiceClient, times(1)).evictItem(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
+        }
     }
 
     static String createTestToken(String username, Map<String, Object> claims) {

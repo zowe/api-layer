@@ -318,4 +318,14 @@ class AuthControllerTest {
             }
         }
     }
+    @Nested
+    class WhenCallingEvictionRequest {
+
+        @Test
+        void thenRemoveRulesAndTokens() throws Exception {
+            mockMvc.perform(delete("/gateway/auth//access-token/evict")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(SC_NO_CONTENT));
+        }
+    }
 }
