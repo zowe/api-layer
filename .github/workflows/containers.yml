@@ -15,7 +15,7 @@ jobs:
     Oauth2Integration:
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 5
+        timeout-minutes: 10
         services:
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
