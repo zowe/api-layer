@@ -1,6 +1,3 @@
-port 6380
-replicaof {REDIS_MASTER_HOST} 6379
-masterauth "heslo"
 requirepass "heslo"
 
 {TLS_SETTING}tls-cert-file /config/keystore/localhost/localhost.keystore.cer

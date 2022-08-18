@@ -12,23 +12,50 @@
 
 # Run containerized Redis setup
 
+log() {
+    echo ">>>>> $1"
+}
+
+createFile() {
+    log "Creating $2"
+    sed -e "s|{APIML_VERSION}|${APIML_VERSION}|g" \
+        -e "s|{MOCK_ZOSMF_HOST}|${MOCK_ZOSMF_HOST}|g" \
+        -e "s|{SENTINEL}|${SENTINEL}|g" \
+        -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
+        -e "s|{TLS}|${TLS}|g" \
+        -e "s|{TLS_SETTING}|${TLS_SETTING}|g" \
+        -e "s|{TLS_PORT}|6379|g" \
+        -e "s|{LINUX_SETTING}|${LINUX_SETTING}|g" \
+        -e "s|{NOT_LINUX_SETTING}|${NOT_LINUX_SETTING}|g" \
+        -e "s|{SENTINEL_SETTING}|${SENTINEL_SETTING}|g" \
+        -e "s|{SENTINEL_PORT}|$3|g" \
+        $1 > $2
+}
+
 SCRIPT_PWD=$(cd "$(dirname "$0")" && pwd)
 WORKSPACE="${SCRIPT_PWD}/redis-containers"
 KEYSTORE_DIR="${WORKSPACE}/keystore"
+COMPOSE_DIR="compose"
 CONFIG_DIR="config"
 REDIS_COMPOSE_FILE="redis.yml"
-APIML_ENV_TEMPLATE="apiml.env.template"
+
+LINUX_SETTING="#"
+NOT_LINUX_SETTING=""
+SENTINEL_SETTING="#"
+TLS_SETTING="#"
 
 SENTINEL="false"
 TLS="false"
 LINUX="false"
-while getopts slta: arg
+WHAT_IF="false"
+while getopts slta:W arg
 do
     case "${arg}" in
         s) SENTINEL="true";;
         l) LINUX="true";;
         t) TLS="true";;
-        a) APIML_VERSION="${OPTARG}"
+        a) APIML_VERSION="${OPTARG}";;
+        W) WHAT_IF="true"
     esac
 done
 
@@ -41,44 +68,30 @@ if [ -z "${APIML_VERSION}" ]; then
     APIML_VERSION="latest"
 fi
 
-dockerComposeFile="compose"
-if [ "${SENTINEL}" == "true" ]; then
-    dockerComposeFile="${dockerComposeFile}/sentinel"
-else
-    dockerComposeFile="${dockerComposeFile}/replica"
+if [ "${TLS}" == "true" ]; then
+    TLS_SETTING=""
 fi
 
+if [ "${SENTINEL}" == "true" ]; then
+    SENTINEL_SETTING=""
+fi
+
+REDIS_MASTER_HOST="redis-master"
+MOCK_ZOSMF_HOST="mock-services"
 if [ "${LINUX}" == "true" ]; then
     REDIS_MASTER_HOST="localhost"
-    dockerComposeFile="${dockerComposeFile}-linux"
-else
-    REDIS_MASTER_HOST="redis-master"
+    MOCK_ZOSMF_HOST="localhost"
+    LINUX_SETTING=""
+    NOT_LINUX_SETTING="#"
 fi
-dockerComposeFile="${dockerComposeFile}.yml.template"
 
-MASTER_CONFIG="${CONFIG_DIR}/master.conf"
-REPLICA_TEMPLATE="${CONFIG_DIR}/replica.conf.template"
-SENTINEL_TEMPLATE="${CONFIG_DIR}/sentinel.conf.template"
-SENTINEL_ANNOUNCE_HOSTNAMES="
-sentinel announce-hostnames yes
-"
-TLS_CONFIG="
-# TLS Configuration
-tls-cert-file /usr/local/etc/keystore/localhost/localhost.keystore.cer
-tls-key-file /usr/local/etc/keystore/localhost/localhost.keystore.key
-tls-ca-cert-file /usr/local/etc/keystore/local_ca/zowe-dev-ca.cer
-tls-auth-clients no
-tls-replication yes
-# overwrites any port directive above
-port 0
-tls-port {TLS_PORT}"
-
+log "Wiping and re-creating $WORKSPACE"
 rm -rf "${WORKSPACE}"
-mkdir -p "${WORKSPACE}"
 mkdir -p "${WORKSPACE}/${CONFIG_DIR}"
-mkdir -p "${KEYSTORE_DIR}"
+mkdir -p "${WORKSPACE}/api-defs"
 mkdir -p "${KEYSTORE_DIR}/docker"
 
+log "Creating keystore"
 keytool -genkeypair -v \
   -alias localca \
   -keyalg RSA -keysize 2048 \
@@ -150,46 +163,27 @@ keytool -importcert -v \
   -storetype PKCS12
 openssl pkcs12 -in "${KEYSTORE_DIR}/docker/all-services.keystore.p12" -nocerts -out "${KEYSTORE_DIR}/docker/all-services.keystore.key" -passin pass:password -passout pass:password
 
-cp "${dockerComposeFile}" "${WORKSPACE}/${REDIS_COMPOSE_FILE}"
-cp "${MASTER_CONFIG}" "${WORKSPACE}/${CONFIG_DIR}"
-cp -R "${SCRIPT_PWD}/../../config/docker/api-defs" "${WORKSPACE}"
-cp "${SCRIPT_PWD}/compose/mock-services.yml" "${WORKSPACE}/api-defs/mock-services-localhost.yml"
+DOCKER_COMPOSE_TEMPLATE="${COMPOSE_DIR}/redis.yml.template"
+APIML_ENV_TEMPLATE="${COMPOSE_DIR}/apiml.env.template"
+MOCK_SERVICES_TEMPLATE="${COMPOSE_DIR}/mock-services.yml.template"
+MASTER_TEMPLATE="${CONFIG_DIR}/master.conf.template"
+REPLICA_TEMPLATE="${CONFIG_DIR}/replica.conf.template"
+SENTINEL_TEMPLATE="${CONFIG_DIR}/sentinel.conf.template"
 
-sed -e "s|{APIML_VERSION}|${APIML_VERSION}|g" \
-    "${dockerComposeFile}" > "${WORKSPACE}/${REDIS_COMPOSE_FILE}"
+createFile "${DOCKER_COMPOSE_TEMPLATE}" "${WORKSPACE}/${REDIS_COMPOSE_FILE}"
+createFile "${MOCK_SERVICES_TEMPLATE}" "${WORKSPACE}/api-defs/mock-services.yml"
+createFile "${APIML_ENV_TEMPLATE}" "${WORKSPACE}/apiml.env"
+createFile "${MASTER_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/master.conf"
+createFile "${REPLICA_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/replica.conf"
 
-sed -e "s|{SENTINEL}|${SENTINEL}|g" \
-    -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
-    -e "s|{TLS}|${TLS}|g" \
-    "compose/${APIML_ENV_TEMPLATE}" > "${WORKSPACE}/apiml.env"
+createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-1.conf" "26739"
+createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-2.conf" "26380"
+createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-3.conf" "26381"
 
-sed -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
-    "${REPLICA_TEMPLATE}" > "${WORKSPACE}/${CONFIG_DIR}/replica.conf"
-
-sed -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
-    -e "s|{SENTINEL_PORT}|26379|g" \
-    "${SENTINEL_TEMPLATE}" > "${WORKSPACE}/${CONFIG_DIR}/sentinel-1.conf"
-
-sed -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
-    -e "s|{SENTINEL_PORT}|26380|g" \
-    "${SENTINEL_TEMPLATE}" > "${WORKSPACE}/${CONFIG_DIR}/sentinel-2.conf"
-
-sed -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
-    -e "s|{SENTINEL_PORT}|26381|g" \
-    "${SENTINEL_TEMPLATE}" > "${WORKSPACE}/${CONFIG_DIR}/sentinel-3.conf"
-
-if [ "${LINUX}" == "false" ]; then
-    echo "${SENTINEL_ANNOUNCE_HOSTNAMES}" >> "${WORKSPACE}/${CONFIG_DIR}/sentinel-1.conf"
-    echo "${SENTINEL_ANNOUNCE_HOSTNAMES}" >> "${WORKSPACE}/${CONFIG_DIR}/sentinel-2.conf"
-    echo "${SENTINEL_ANNOUNCE_HOSTNAMES}" >> "${WORKSPACE}/${CONFIG_DIR}/sentinel-3.conf"
+if [ "${WHAT_IF}" != "true" ]; then
+    log "Running containers"
+    docker compose -f "${WORKSPACE}/${REDIS_COMPOSE_FILE}" up -d
+else
+    log "-W argument was used so containers were not started"
 fi
-if [ "${TLS}" == "true" ]; then
-    echo "${TLS_CONFIG}" | sed "s/{TLS_PORT}/6379/" >> "${WORKSPACE}/${CONFIG_DIR}/master.conf"
-    echo "${TLS_CONFIG}" | sed "s/{TLS_PORT}/6380/" >> "${WORKSPACE}/${CONFIG_DIR}/replica.conf"
-    echo "${TLS_CONFIG}" | sed "s/{TLS_PORT}/26379/" >> "${WORKSPACE}/${CONFIG_DIR}/sentinel-1.conf"
-    echo "${TLS_CONFIG}" | sed "s/{TLS_PORT}/26380/" >> "${WORKSPACE}/${CONFIG_DIR}/sentinel-2.conf"
-    echo "${TLS_CONFIG}" | sed "s/{TLS_PORT}/26381/" >> "${WORKSPACE}/${CONFIG_DIR}/sentinel-3.conf"
-fi
-
-docker compose -f "${WORKSPACE}/${REDIS_COMPOSE_FILE}" up -d
 exit 0
