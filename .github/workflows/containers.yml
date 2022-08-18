@@ -389,10 +389,11 @@ jobs:
                 run: |
                     cd docker/redis
                     chmod +x run-redis.sh
-                    ./run-redis.sh -l -a ${{ env.JOB_ID }}
+                    ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
 
+                # TODO move to action
             -   name: Validate APIML setup
-                # poll for 3 minutes, if GW not healthy after 2 minutes then exit
+                # if GW not healthy after 3 minutes then exit
                 run: |
                     set +e # curl -s doesn't swallow the error alone
                     attemptCounter=1
@@ -418,6 +419,10 @@ jobs:
             -   name: Run Caching Service tests
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.offPlatform=true
+                    -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.keyAlias=apimtst
+                    -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Output Caching Service container logs

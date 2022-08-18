@@ -32,6 +32,47 @@ createFile() {
         $1 > $2
 }
 
+genKeyPairCert() {
+    keyAlias=$1
+    keytool -genkeypair -v \
+      -alias "${keyAlias}" \
+      -keyalg RSA -keysize 2048 \
+      -keystore "${KEYSTORE}" \
+      -keypass password \
+      -storepass password \
+      -storetype PKCS12 \
+      -dname "CN=Zowe Service ${keyAlias}, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ" \
+      -validity 3650
+    keytool -certreq -v \
+      -alias "${keyAlias}" \
+      -keystore "${KEYSTORE}" \
+      -storepass password \
+      -file "${KEYSTORE_DIR}/all-services-${keyAlias}.keystore.csr" \
+      -keyalg RSA -storetype PKCS12 \
+      -dname "CN=Zowe Service ${keyAlias}, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ" \
+      -validity 3650
+    keytool -gencert -v \
+      -infile "${KEYSTORE_DIR}/all-services-${keyAlias}.keystore.csr" \
+      -outfile "${KEYSTORE_DIR}/all-services-${keyAlias}.keystore_signed.cer" \
+      -keystore "${CA_KEYSTORE}" \
+      -alias "${CA_ALIAS}" \
+      -keypass local_ca_password \
+      -storepass local_ca_password \
+      -storetype PKCS12 \
+      -ext "SAN=dns:localhost,ip:127.0.0.1,dns:gateway-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
+      -ext "KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment" \
+      -ext "ExtendedKeyUsage=clientAuth,serverAuth" \
+      -rfc \
+      -validity 3650
+    keytool -importcert -v \
+      -trustcacerts -noprompt \
+      -file "${KEYSTORE_DIR}/all-services-${keyAlias}.keystore_signed.cer" \
+      -alias "${keyAlias}" \
+      -keystore "${KEYSTORE}" \
+      -storepass password \
+      -storetype PKCS12
+}
+
 SCRIPT_PWD=$(cd "$(dirname "$0")" && pwd)
 WORKSPACE="${SCRIPT_PWD}/redis-containers"
 KEYSTORE_DIR="${WORKSPACE}/keystore"
@@ -60,7 +101,7 @@ do
 done
 
 if [ -z $(command -v docker compose) ]; then
-  echo "[${SCRIPT_NAME}][error] docker-compose is required."
+  echo "[${SCRIPT_NAME}][error] docker compose is required."
   exit 1
 fi
 
@@ -89,13 +130,17 @@ log "Wiping and re-creating $WORKSPACE"
 rm -rf "${WORKSPACE}"
 mkdir -p "${WORKSPACE}/${CONFIG_DIR}"
 mkdir -p "${WORKSPACE}/api-defs"
-mkdir -p "${KEYSTORE_DIR}/docker"
+mkdir -p "${KEYSTORE_DIR}"
+
+KEYSTORE="${KEYSTORE_DIR}/all-services.keystore.p12"
+CA_KEYSTORE="${KEYSTORE_DIR}/localca.keystore.p12"
+CA_ALIAS="apiml external certificate authority"
 
 log "Creating keystore"
 keytool -genkeypair -v \
-  -alias localca \
+  -alias "${CA_ALIAS}" \
   -keyalg RSA -keysize 2048 \
-  -keystore "${KEYSTORE_DIR}/docker/localca.keystore.p12" \
+  -keystore "${CA_KEYSTORE}" \
   -dname "CN=Zowe Development Instances Certificate Authority, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ" \
   -keypass local_ca_password \
   -storepass local_ca_password \
@@ -103,65 +148,31 @@ keytool -genkeypair -v \
   -validity 3650 \
   -ext KeyUsage=keyCertSign -ext BasicConstraints:critical=ca:true
 keytool -export -v \
-  -alias localca \
-  -file "${KEYSTORE_DIR}/docker/localca.cer" \
-  -keystore "${KEYSTORE_DIR}/docker/localca.keystore.p12" \
+  -alias "${CA_ALIAS}" \
+  -file "${KEYSTORE_DIR}/localca.cer" \
+  -keystore "${CA_KEYSTORE}" \
   -rfc \
   -keypass local_ca_password \
   -storepass local_ca_password \
   -storetype PKCS12
-keytool -genkeypair -v \
-  -alias localhost \
-  -keyalg RSA -keysize 2048 \
-  -keystore "${KEYSTORE_DIR}/docker/all-services.keystore.p12" \
-  -keypass password \
-  -storepass password \
-  -storetype PKCS12 \
-  -dname "CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ" \
-  -validity 3650
-keytool -certreq -v \
-  -alias localhost \
-  -keystore "${KEYSTORE_DIR}/docker/all-services.keystore.p12" \
-  -storepass password \
-  -file "${KEYSTORE_DIR}/docker/all-services.keystore.csr" \
-  -keyalg RSA -storetype PKCS12 \
-  -dname "CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ" \
-  -validity 3650
-keytool -gencert -v \
-  -infile "${KEYSTORE_DIR}/docker/all-services.keystore.csr" \
-  -outfile "${KEYSTORE_DIR}/docker/all-services.keystore_signed.cer" \
-  -keystore "${KEYSTORE_DIR}/docker/localca.keystore.p12" \
-  -alias localca \
-  -keypass local_ca_password \
-  -storepass local_ca_password \
-  -storetype PKCS12 \
-  -ext "SAN=dns:localhost,ip:127.0.0.1,dns:gateway-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
-  -ext "KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment" \
-  -ext "ExtendedKeyUsage=clientAuth,serverAuth" \
-  -rfc \
-  -validity 3650
 keytool -importcert -v \
   -trustcacerts -noprompt \
-  -file "${KEYSTORE_DIR}/docker/localca.cer" \
-  -alias localca \
-  -keystore "${KEYSTORE_DIR}/docker/all-services.keystore.p12" \
+  -file "${KEYSTORE_DIR}/localca.cer" \
+  -alias "${CA_ALIAS}" \
+  -keystore "${KEYSTORE}" \
   -storepass password \
   -storetype PKCS12
 keytool -importcert -v \
   -trustcacerts -noprompt \
-  -file "${KEYSTORE_DIR}/docker/all-services.keystore_signed.cer" \
-  -alias localhost \
-  -keystore "${KEYSTORE_DIR}/docker/all-services.keystore.p12" \
+  -file "${KEYSTORE_DIR}/localca.cer" \
+  -alias "${CA_ALIAS}" \
+  -keystore "${KEYSTORE_DIR}/all-services.truststore.p12" \
   -storepass password \
   -storetype PKCS12
-keytool -importcert -v \
-  -trustcacerts -noprompt \
-  -file "${KEYSTORE_DIR}/docker/localca.cer" \
-  -alias localca \
-  -keystore "${KEYSTORE_DIR}/docker/all-services.truststore.p12" \
-  -storepass password \
-  -storetype PKCS12
-openssl pkcs12 -in "${KEYSTORE_DIR}/docker/all-services.keystore.p12" -nocerts -out "${KEYSTORE_DIR}/docker/all-services.keystore.key" -passin pass:password -passout pass:password
+genKeyPairCert apimtst
+genKeyPairCert user
+genKeyPairCert unknownuser
+openssl pkcs12 -in "${KEYSTORE}" -nocerts -out "${KEYSTORE_DIR}/all-services.keystore.key" -passin pass:password -passout pass:password
 
 DOCKER_COMPOSE_TEMPLATE="${COMPOSE_DIR}/redis.yml.template"
 APIML_ENV_TEMPLATE="${COMPOSE_DIR}/apiml.env.template"
