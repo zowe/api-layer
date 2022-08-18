@@ -27,6 +27,8 @@ services:
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
 {NOT_LINUX_SETTING}            - 10016:10016
+        volumes:
+            - ./keystore:/keystore
         env_file:
             - apiml.env
     discovery-service:
@@ -35,6 +37,7 @@ services:
 {NOT_LINUX_SETTING}        ports:
 {NOT_LINUX_SETTING}            - 10011:10011
         volumes:
+            - ./keystore:/keystore
             - ./api-defs:/api-defs
         env_file:
             - apiml.env
@@ -43,6 +46,9 @@ services:
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
 {NOT_LINUX_SETTING}            - 10010:10010
+{NOT_LINUX_SETTING}            - 10017:10017
+        volumes:
+            - ./keystore:/keystore
         env_file:
             - apiml.env
     mock-services:
@@ -50,6 +56,8 @@ services:
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
 {NOT_LINUX_SETTING}            - 10013:10013
+        volumes:
+            - ./keystore:/keystore
         env_file:
             - apiml.env
 

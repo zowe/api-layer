@@ -9,9 +9,10 @@ sentinel auth-user redismaster default
 
 {NOT_LINUX_SETTING}sentinel announce-hostnames yes
 
-{TLS_SETTING}tls-cert-file /config/keystore/localhost/localhost.keystore.cer
-{TLS_SETTING}tls-key-file /config/keystore/localhost/localhost.keystore.key
-{TLS_SETTING}tls-ca-cert-file /config/keystore/local_ca/zowe-dev-ca.cer
+{TLS_SETTING}tls-cert-file /keystore/docker/all-services.keystore_signed.cer
+{TLS_SETTING}tls-key-file-pass password
+{TLS_SETTING}tls-key-file /keystore/docker/all-services.keystore.key
+{TLS_SETTING}tls-ca-cert-file /keystore/docker/localca.cer
 {TLS_SETTING}tls-auth-clients no
 {TLS_SETTING}tls-replication yes
 # overwrites any port directive above
