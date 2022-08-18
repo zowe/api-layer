@@ -389,7 +389,7 @@ jobs:
                 run: |
                     cd docker/redis
                     chmod +x run-redis.sh
-                    ./run-redis.sh -l -a ${{ github.event.pull_request.number || 'latest' }}
+                    ./run-redis.sh -l -a ${{ env.JOB_ID }}
 
             -   name: Validate APIML setup
                 # poll for 3 minutes, if GW not healthy after 2 minutes then exit
