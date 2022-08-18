@@ -174,7 +174,7 @@ public class InfinispanStorage implements Storage {
         Map<String, String> map = tokenCache.get(serviceId + mapKey);
         if (map != null && !map.isEmpty()) {
             LocalDateTime timestamp = LocalDateTime.now();
-            ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap(map);
+            ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap<>(map);
             for (Map.Entry<String,String> entry : concurrentMap.entrySet()) {
                 try {
                     AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
@@ -193,7 +193,7 @@ public class InfinispanStorage implements Storage {
         long timestamp = System.currentTimeMillis();
         Map<String, String> map = tokenCache.get(serviceId + mapKey);
         if (map != null && !map.isEmpty()) {
-            ConcurrentMap<String, String> concurrentMap = new ConcurrentHashMap(map);
+            ConcurrentMap<String, String> concurrentMap = new ConcurrentHashMap<>(map);
             for (Map.Entry<String, String> entry : concurrentMap.entrySet()) {
                 long delta = timestamp - Long.parseLong(entry.getValue());
                 long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
