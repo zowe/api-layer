@@ -387,11 +387,21 @@ class CachingControllerTest {
         }
 
         @Test
-        void givenErrorReadingStorage_thenResponseInternalError() throws StorageException {
+        void givenErrorReadingStorage_thenResponseBadRequest() throws StorageException {
             when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
 
             ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        }
+    }
+
+    @Nested
+    class WhenEvictRecord {
+        @Test
+        void givenCorrectRequest_thenRemoveTokensAndRules() throws StorageException {
+            ResponseEntity<?> response = underTest.evictRecord(MAP_KEY, mockRequest);
+            verify(mockStorage).deleteItemFromMap(SERVICE_ID, MAP_KEY);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
         }
     }
 }

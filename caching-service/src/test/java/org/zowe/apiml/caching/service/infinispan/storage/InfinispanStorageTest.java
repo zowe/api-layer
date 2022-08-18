@@ -257,4 +257,39 @@ class InfinispanStorageTest {
         }
     }
 
+    @Nested
+    class WhenEvictNonRelevantTokensAndRules {
+        InfinispanStorage underTest;
+
+        @BeforeEach
+        void createStorage() {
+            Map<String, String> tokensService = new HashMap();
+            String value = "{\"userId\":null,\"tokenValue\":\"hashedKey\",\"issuedAt\":[2022,8,17,16,13,18],\"expiresAt\":[2021,11,15,15,13,18],\"scopes\":null,\"tokenProvider\":null}";
+            tokensService.put("key1", value);
+            tokensService.put("key2", "token");
+            Map<String, String> rulesService = new HashMap();
+            rulesService.put("key1", "1595282400000");
+            Map<String, String> rulesUsers = new HashMap();
+            rulesUsers.put("key1", "1595282400000");
+            ConcurrentMap<String, Map<String, String>> tokenCache = new ConcurrentHashMap<>();
+            tokenCache.put(serviceId1 + "invalidTokens", tokensService);
+            tokenCache.put(serviceId1 + "invalidScopes", rulesService);
+            tokenCache.put(serviceId1 + "invalidUsers", rulesUsers);
+            underTest = new InfinispanStorage(cache, tokenCache, lock);
+        }
+        @Test
+        void thenEvictItems() {
+            CompletableFuture<Boolean> cmpl = new CompletableFuture<>();
+            cmpl.complete(true);
+            when(lock.tryLock(4, TimeUnit.SECONDS)).thenReturn(cmpl);
+            underTest.deleteItemFromMap(serviceId1, "invalidTokens");
+            underTest.deleteItemFromMap(serviceId1, "invalidScopes");
+            underTest.deleteItemFromMap(serviceId1, "invalidUsers");
+            Map<String, Map<String, String>> result = underTest.getAllMaps(serviceId1);
+            System.out.println(result);
+            assertEquals(1, result.get("invalidTokens").size());
+        }
+
+    }
+
 }
