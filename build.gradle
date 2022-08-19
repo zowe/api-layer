@@ -142,6 +142,11 @@ task runRegistrationTests(dependsOn: [":integration-tests:runRegistrationTests"]
     group "Integration tests"
 }
 
+task runOauth2Tests(dependsOn: [":integration-tests:runOauth2Tests"]) {
+    description "Run tests verifying integration with oauth2 provider(okta)"
+    group "Integration tests"
+}
+
 task runIdPrefixReplacerTests(dependsOn: [":integration-tests:runIdPrefixReplacerTests"]) {
     description "Run Integration Test verifying the service ID prefix replacer mechanism"
     group "Integration tests"
