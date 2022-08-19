@@ -190,7 +190,8 @@ public class AccessTokenServiceTest {
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
 //            evict the rule
-            given().contentType(ContentType.JSON).when()
+            given().contentType(ContentType.JSON).config(SslContext.clientCertUser)
+                .when()
                 .delete(EVICT_ENDPOINT)
                 .then().statusCode(204);
 //            return all the items from the cache
