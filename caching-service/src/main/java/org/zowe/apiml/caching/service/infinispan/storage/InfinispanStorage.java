@@ -165,28 +165,32 @@ public class InfinispanStorage implements Storage {
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
-                    Map<String, String> map = tokenCache.get(serviceId + mapKey);
-                    if (map != null && !map.isEmpty()) {
-                        LocalDateTime timestamp = LocalDateTime.now();
-                        ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap<>(map);
-                        for (Map.Entry<String,String> entry : concurrentMap.entrySet()) {
-                            try {
-                                AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
-                                if (c.getExpiresAt().isBefore(timestamp)) {
-                                    removeEntry(serviceId, mapKey, map, entry);
-                                }
-
-                            } catch (JsonProcessingException e) {
-                                log.error("Not able to parse invalidToken json value.", e);
-                            }
-                        }
-                    }
+                    removeToken(serviceId, mapKey);
                 } finally {
                     lock.unlock();
                 }
             }
         });
         completeJoin(complete);
+    }
+
+    private void removeToken(String serviceId, String mapKey) {
+        Map<String, String> map = tokenCache.get(serviceId + mapKey);
+        if (map != null && !map.isEmpty()) {
+            LocalDateTime timestamp = LocalDateTime.now();
+            ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap<>(map);
+            for (Map.Entry<String,String> entry : concurrentMap.entrySet()) {
+                try {
+                    AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
+                    if (c.getExpiresAt().isBefore(timestamp)) {
+                        removeEntry(serviceId, mapKey, map, entry);
+                    }
+
+                } catch (JsonProcessingException e) {
+                    log.error("Not able to parse invalidToken json value.", e);
+                }
+            }
+        }
     }
 
     private void removeNonRelevantRules(String serviceId, String mapKey) {
