@@ -391,34 +391,9 @@ jobs:
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
 
-            -   name: Validate APIML setup
-                # if GW not healthy after 3 minutes then exit
-                run: |
-                    set +e # curl -s doesn't swallow the error alone
-                    attemptCounter=1
-                    maxAttempts=18
-                    until [ $attemptCounter -gt $maxAttempts ]; do
-                      sleep 10
-                      gwHealth=$(curl -k -s https://localhost:10010/application/health)
-                      echo "Polling for GW health: $attemptCounter"
-                      echo $gwHealth
-                      gatewayUp=$(echo $gwHealth | jq -r '.status')
-                      authUp=$(echo $gwHealth | jq -r '.components.gateway.details.auth')
-                      csUp="DOWN"
-                      csHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
-                      if [ $csHealth != "null" ]; then
-                          csUp="UP"
-                      fi
-                      if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" ] && [ "$csUp" == "UP" ]; then
-                        echo ">>>>>APIML is ready"
-                        break
-                      fi
-                      attemptCounter=$((attemptCounter+1))
-                    done
-                    if [ "$gatewayUp" != "UP" ] || [ "$authUp" != "UP" ]; then
-                      echo ">>>>>APIML is not ready"
-                      exit 1
-                    fi
+            -   uses: ./.github/actions/validate-apiml-healthy
+                with:
+                    caching-service: "true"
 
             -   name: Run Caching Service tests
                 run: >

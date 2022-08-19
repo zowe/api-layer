@@ -1,0 +1,74 @@
+name: "Validate APIML Healthy"
+description: "Validates APIML health using Gateway's health status"
+
+inputs:
+    caching-service:
+        description: "Check Caching Service health"
+        required: false
+        default: "false"
+    api-catalog:
+        description: "Check API Catalog health"
+        required: false
+        default: "false"
+    discoverable-client:
+        description: "Check Discoverable Client health"
+        required: false
+        default: "false"
+
+runs:
+    using: "composite"
+
+    # if GW not healthy after 3 minutes then exit
+    steps:
+        - name: Validate APIML setup
+          shell: bash
+          run: |
+            set +e # curl -s doesn't swallow the error alone
+            attemptCounter=1
+            maxAttempts=18
+            valid="false"
+            until [ $attemptCounter -gt $maxAttempts ]; do
+              sleep 10
+              gwHealth=$(curl -k -s https://localhost:10010/application/health)
+              echo "Polling for GW health: $attemptCounter"
+              echo $gwHealth
+
+              gatewayUp=$(echo $gwHealth | jq -r '.status')
+              authUp=$(echo $gwHealth | jq -r '.components.gateway.details.auth')
+              acUp="$(echo $gwHealth | jq -r '.components.gateway.details.apicatalog')"
+
+              csUp="DOWN"
+              csHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
+              if [ "$csHealth" != "null" ]; then
+                  csUp="UP"
+              fi
+
+              dcUp="DOWN"
+              dcHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("discoverableclient")')"
+              if [ "$dcHealth" != "null" ]; then
+                  dcUp="UP"
+              fi
+
+              if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" ] && [ "$csUp" == "UP" ]; then
+                echo ">>>>>APIML is ready"
+                valid="true"
+                if [ ${{ inputs.caching-service }} != "false" ] && [ "$csUp" != "UP" ]; then
+                  valid="false"
+                fi
+                if [ ${{ inputs.api-catalog }} != "false" ] && [ "$acUp" != "UP" ]; then
+                  valid="false"
+                fi
+                if [ ${{ inputs.discoverable-client }} != "false" ] && [ "$dcUp" != "UP" ]; then
+                  valid="false"
+                fi
+              fi
+
+              if [ "$valid" == "true" ]; then
+                break
+              fi
+              attemptCounter=$((attemptCounter+1))
+            done
+            if [ "$valid" != "true" ]; then
+              echo ">>>>>APIML is not ready"
+              exit 1
+            fi
