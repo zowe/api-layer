@@ -7,8 +7,10 @@ dependencies {
     compile libraries.http_core
     compile libraries.jetty_websocket_client
 
-    compileOnly libraries.spring_boot_starter_web
-    
+    implementation(libraries.spring_boot_starter_web){
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+    }
+    implementation libraries.tomcat_embed_el
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

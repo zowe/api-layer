@@ -1,5 +1,10 @@
 dependencies {
-    compile libraries.spring_boot_starter_web
+    implementation(libraries.spring_boot_starter_web) {
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+    }
+
+    implementation libraries.tomcat_embed_el
+
     compile libraries.zowe_attls
 
     compile libraries.spring_aop
@@ -11,7 +16,7 @@ dependencies {
     compile libraries.tomcat_embed_websocket
     compile libraries.logback_classic
     implementation libraries.jackson_core
-    implementation libraries.jackson_databind    
+    implementation libraries.jackson_databind
 
     testCompile libraries.mockito_core
     testCompile libraries.mockito_jupiter

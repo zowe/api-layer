@@ -60,7 +60,11 @@ dependencies {
     implementation(project(':apiml-security-common'))
     implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_boot_starter_web
+    implementation(libraries.spring_boot_starter_web) {
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+    }
+
+    implementation libraries.tomcat_embed_el
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.spring_boot_starter_cache

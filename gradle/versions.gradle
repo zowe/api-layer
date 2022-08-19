@@ -225,6 +225,7 @@ ext {
         tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         tomcat_embed_websocket             : "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}",
+        tomcat_embed_el                    :"org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
         xstream                            : "com.thoughtworks.xstream:xstream:${xstreamVersion}",
 
         // Sample apps only
