@@ -373,7 +373,7 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsWithRedisWithoutSslVerification:
+    CITestsWithRedisReplica:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         timeout-minutes: 15
@@ -391,7 +391,6 @@ jobs:
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
 
-                # TODO move to action
             -   name: Validate APIML setup
                 # if GW not healthy after 3 minutes then exit
                 run: |
@@ -406,10 +405,11 @@ jobs:
                       gatewayUp=$(echo $gwHealth | jq -r '.status')
                       authUp=$(echo $gwHealth | jq -r '.components.gateway.details.auth')
                       csUp="DOWN"
-                      if [ $(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")') != "null" ]; then
+                      csHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
+                      if [ $csHealth != "null" ]; then
                           csUp="UP"
                       fi
-                      if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" && "$csUp" == "UP" ]; then
+                      if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" ] && [ "$csUp" == "UP" ]; then
                         echo ">>>>>APIML is ready"
                         break
                       fi
@@ -429,24 +429,32 @@ jobs:
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: Output Redis Master logs
+                if: always()
+                run: docker logs redis-master
+
+            -   name: Output Redis Replica logs
+                if: always()
+                run: docker logs redis-replica
+
             -   name: Output Caching Service container logs
                 if: always()
-                run: docker logs redis-containers-caching-service-1
+                run: docker logs caching-service
 
             -   name: Output Gateway container logs
                 if: always()
-                run: docker logs redis-containers-gateway-service-1
+                run: docker logs gateway-service
 
             -   name: Output Discovery container logs
                 if: always()
-                run: docker logs redis-containers-discovery-service-1
+                run: docker logs discovery-service
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsWithRedisWithoutSslVerification-${{ env.JOB_ID }}
+                    name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -1086,7 +1094,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisWithoutSslVerification,CITestsInternalPort]
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsInternalPort]
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1113,15 +1121,15 @@ jobs:
                     path: containercitestszosmfrsu2012
             -   uses: actions/download-artifact@v3
                 with:
-                    name: ContainerCITestsWithRedisWithoutSslVerification-${{ env.JOB_ID }}
-                    path: containercitestswithrediswithoutsslverification
+                    name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
+                    path: ContainerCITestsWithRedisReplica
             -   uses: actions/download-artifact@v3
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithrediswithoutsslverification/results,containercitestsinternalport/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,containercitestsinternalport/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:

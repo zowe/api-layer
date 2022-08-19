@@ -136,7 +136,7 @@ KEYSTORE="${KEYSTORE_DIR}/all-services.keystore.p12"
 CA_KEYSTORE="${KEYSTORE_DIR}/localca.keystore.p12"
 CA_ALIAS="apiml external certificate authority"
 
-log "Creating keystore"
+log "Creating CA, keystore, and truststore"
 keytool -genkeypair -v \
   -alias "${CA_ALIAS}" \
   -keyalg RSA -keysize 2048 \
@@ -172,7 +172,11 @@ keytool -importcert -v \
 genKeyPairCert apimtst
 genKeyPairCert user
 genKeyPairCert unknownuser
+log "Extracting private key"
 openssl pkcs12 -in "${KEYSTORE}" -nocerts -out "${KEYSTORE_DIR}/all-services.keystore.key" -passin pass:password -passout pass:password
+
+log "Setting permissions for keystore files"
+chmod -R 775 "${KEYSTORE_DIR}"
 
 DOCKER_COMPOSE_TEMPLATE="${COMPOSE_DIR}/redis.yml.template"
 APIML_ENV_TEMPLATE="${COMPOSE_DIR}/apiml.env.template"

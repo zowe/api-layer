@@ -23,6 +23,7 @@ services:
             - ./config:/config/
 
     caching-service:
+        container_name: caching-service
         image: ghcr.io/balhar-jakub/caching-service:{APIML_VERSION}
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
@@ -32,6 +33,7 @@ services:
         env_file:
             - apiml.env
     discovery-service:
+        container_name: discovery-service
         image: ghcr.io/balhar-jakub/discovery-service:{APIML_VERSION}
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
@@ -42,6 +44,7 @@ services:
         env_file:
             - apiml.env
     gateway-service:
+        container_name: gateway-service
         image: ghcr.io/balhar-jakub/gateway-service:{APIML_VERSION}
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
@@ -52,6 +55,7 @@ services:
         env_file:
             - apiml.env
     mock-services:
+        container_name: mock-services
         image: ghcr.io/balhar-jakub/mock-services:{APIML_VERSION}
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
