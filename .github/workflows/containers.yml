@@ -24,7 +24,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ github.event.pull_request.number || 'latest' }}
+                    ./gradlew jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/teardown
 
@@ -36,23 +36,23 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             metrics-service:
-                image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v2
@@ -110,21 +110,21 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v2
@@ -156,21 +156,21 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012
 
@@ -208,21 +208,21 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
 
@@ -256,21 +256,21 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: ''
 
@@ -305,21 +305,21 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
@@ -353,23 +353,23 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             metrics-service:
-                image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v2
@@ -405,30 +405,30 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     CACHING_STORAGE_MODE: 'redis'
                     CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@redis-master:6379'
                     CACHING_STORAGE_REDIS_SSL_ENABLED: false
                     VERIFY_CERTIFICATES: false
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     VERIFY_CERTIFICATES: false
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     VERIFY_CERTIFICATES: false
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
             redis-master:
@@ -472,44 +472,44 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
@@ -551,43 +551,43 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
             discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
@@ -646,34 +646,34 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
@@ -716,34 +716,34 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
@@ -786,38 +786,38 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
@@ -860,38 +860,38 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
@@ -934,11 +934,11 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
                     JGROUPS_BIND_PORT: "7099"
@@ -950,7 +950,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "caching-service"
 
             caching-service-2:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
                     JGROUPS_BIND_PORT: "7098"
@@ -962,15 +962,15 @@ jobs:
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
 
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
@@ -1008,19 +1008,19 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v2
@@ -1058,21 +1058,21 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable*,sample"
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
             -   uses: actions/checkout@v2
                 with:

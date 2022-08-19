@@ -55,6 +55,7 @@ public class RedisOperator {
             this.redisClient = redisClient;
             redisConnection = MasterReplica.connect(this.redisClient, StringCodec.UTF8, redisUri);
             redis = redisConnection.async();
+            log.info("Connected to Redis {}", redisUri);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
             System.exit(1);

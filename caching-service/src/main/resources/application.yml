@@ -4,6 +4,13 @@ caching:
         redis:
             timeout: 60
             masterNodeUri: default:heslo@localhost:6379
+            sentinel:
+                enabled: false
+                masterInstance: redismaster
+                nodes:
+                    - sentinelpassword@localhost:26379
+                    - sentinelpassword@localhost:26380
+                    - sentinelpassword@localhost:26381
             ssl:
                 enabled: true
                 keyStore: ${server.ssl.keyStore}

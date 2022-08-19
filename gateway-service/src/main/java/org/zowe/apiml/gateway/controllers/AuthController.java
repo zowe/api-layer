@@ -19,7 +19,6 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import net.minidev.json.JSONObject;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
@@ -187,7 +186,7 @@ public class AuthController {
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
     @ResponseBody
     @HystrixCommand
-    public JSONObject getAllPublicKeys() {
+    public Map<String, Object> getAllPublicKeys() {
         final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
@@ -203,7 +202,7 @@ public class AuthController {
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
     @HystrixCommand
-    public JSONObject getCurrentPublicKeys() {
+    public Map<String, Object> getCurrentPublicKeys() {
         final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
 
         if (keys.isEmpty()) {
