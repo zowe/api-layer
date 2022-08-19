@@ -181,7 +181,7 @@ public class AccessTokenServiceTest {
         }
 
         @Test
-        void givenAuthorizedRequest_thenEvictTokensAndRules() {
+        void givenAuthorizedRequest_thenEvictRules() {
 //            add rule with timestamp older than 90 days, meaning it is not relevant anymore
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
@@ -190,11 +190,11 @@ public class AccessTokenServiceTest {
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
 //            evict the rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given().contentType(ContentType.JSON).when()
                 .delete(EVICT_ENDPOINT)
                 .then().statusCode(204);
 //            return all the items from the cache
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given().contentType(ContentType.JSON).when()
                 .get(CACHE_LIST_ENDPOINT)
                 .then()
                 .statusCode(200)
