@@ -162,52 +162,61 @@ public class InfinispanStorage implements Storage {
     }
 
     private void removeNonRelevantTokens(String serviceId, String mapKey) {
-        Map<String, String> map = tokenCache.get(serviceId + mapKey);
-        if (map != null && !map.isEmpty()) {
-            LocalDateTime timestamp = LocalDateTime.now();
-            ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap<>(map);
-            for (Map.Entry<String,String> entry : concurrentMap.entrySet()) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
                 try {
-                    AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
-                    if (c.getExpiresAt().isBefore(timestamp)) {
-                        removeEntry(serviceId, mapKey, map, entry);
-                    }
+                    Map<String, String> map = tokenCache.get(serviceId + mapKey);
+                    if (map != null && !map.isEmpty()) {
+                        LocalDateTime timestamp = LocalDateTime.now();
+                        ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap<>(map);
+                        for (Map.Entry<String,String> entry : concurrentMap.entrySet()) {
+                            try {
+                                AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
+                                if (c.getExpiresAt().isBefore(timestamp)) {
+                                    removeEntry(serviceId, mapKey, map, entry);
+                                }
 
-                } catch (JsonProcessingException e) {
-                    log.error("Not able to parse invalidToken json value.", e);
+                            } catch (JsonProcessingException e) {
+                                log.error("Not able to parse invalidToken json value.", e);
+                            }
+                        }
+                    }
+                } finally {
+                    lock.unlock();
                 }
             }
-        }
+        });
+        completeJoin(complete);
     }
 
     private void removeNonRelevantRules(String serviceId, String mapKey) {
-        long timestamp = System.currentTimeMillis();
-        Map<String, String> map = tokenCache.get(serviceId + mapKey);
-        if (map != null && !map.isEmpty()) {
-            ConcurrentMap<String, String> concurrentMap = new ConcurrentHashMap<>(map);
-            for (Map.Entry<String, String> entry : concurrentMap.entrySet()) {
-                long delta = timestamp - Long.parseLong(entry.getValue());
-                long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
-                if (deltaToDays > 90) {
-                    removeEntry(serviceId, mapKey, map, entry);
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
+                try {
+                    long timestamp = System.currentTimeMillis();
+                    Map<String, String> map = tokenCache.get(serviceId + mapKey);
+                    if (map != null && !map.isEmpty()) {
+                        ConcurrentMap<String, String> concurrentMap = new ConcurrentHashMap<>(map);
+                        for (Map.Entry<String, String> entry : concurrentMap.entrySet()) {
+                            long delta = timestamp - Long.parseLong(entry.getValue());
+                            long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
+                            if (deltaToDays > 90) {
+                                removeEntry(serviceId, mapKey, map, entry);
+                            }
+                        }
+                    }
+                } finally {
+                    lock.unlock();
                 }
             }
-        }
+        });
+        completeJoin(complete);
     }
 
     private void removeEntry(String serviceId, String mapKey, Map<String, String> map, Map.Entry<String, String> entry) {
-        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
-                if (Boolean.TRUE.equals(r)) {
-                    try {
-                        log.info("Removing record from the cache under key {} ", entry.getKey());
-                        map.remove(entry.getKey());
-                        tokenCache.put(serviceId + mapKey, map);
-                    } finally {
-                        lock.unlock();
-                    }
-                }
-        });
-        completeJoin(complete);
+        log.info("Removing record from the cache under key {} ", entry.getKey());
+        map.remove(entry.getKey());
+        tokenCache.put(serviceId + mapKey, map);
     }
 
     private void completeJoin(CompletableFuture<Boolean> complete) {
