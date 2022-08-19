@@ -133,7 +133,8 @@ task runIntegrationTests(type: Test) {
             'SlowTests',
             'AdditionalLocalTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'OktaOauth2Test'
         )
     }
 }
@@ -152,7 +153,8 @@ task runLocalIntegrationTests(type: Test) {
             'MainframeDependentTests',
             'AdditionalLocalTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'OktaOauth2Test'
         )
     }
     outputs.upToDateWhen { false }
@@ -171,7 +173,8 @@ task runAllLocalIntegrationTests(type: Test) {
             'SlowTests',
             'MainframeDependentTests',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'OktaOauth2Test'
         )
     }
     outputs.upToDateWhen { false }
@@ -192,7 +195,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'SAFAuthTest',
             'HATest',
             'ChaoticHATest',
-            'NotAttlsTest'
+            'NotAttlsTest',
+            'OktaOauth2Test'
         )
 
     }
@@ -240,7 +244,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'TestsNotMeantForZowe',
             'DiscoverableClientDependentTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'OktaOauth2Test'
         )
     }
     outputs.upToDateWhen { false }
@@ -265,7 +270,8 @@ task runCITests(type: Test) {
             'RegistrationTest',
             'ServiceIdPrefixReplacerTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'OktaOauth2Test'
         )
     }
 }
@@ -293,7 +299,8 @@ task runContainerTests(type: Test) {
             'NodeEnablerTest',
             'HATest',
             'ChaoticHATest',
-            'InfinispanStorageTest'
+            'InfinispanStorageTest',
+            'OktaOauth2Test'
         )
     }
 }
@@ -339,7 +346,8 @@ task runBaseTests(type: Test) {
             'NodeEnablerTest',
             'HATest',
             'ChaoticHATest',
-            'InfinispanStorageTest'
+            'InfinispanStorageTest',
+            'OktaOauth2Test'
         )
     }
 }
@@ -354,6 +362,20 @@ task runRegistrationTests(type: Test) {
     useJUnitPlatform {
         includeTags(
             'RegistrationTest'
+        )
+    }
+}
+
+task runOauth2Tests(type: Test) {
+    group "integration tests"
+    description "Run tests verifying integration with oauth2 provider(okta)"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'OktaOauth2Test'
         )
     }
 }
