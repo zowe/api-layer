@@ -182,10 +182,6 @@ public class AccessTokenServiceTest {
 
         @Test
         void givenAuthorizedRequest_thenEvictTokensAndRules() {
-//            validate before revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
-                .post(VALIDATE_ENDPOINT)
-                .then().statusCode(200);
 //            add rule with timestamp older than 90 days, meaning it is not relevant anymore
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
