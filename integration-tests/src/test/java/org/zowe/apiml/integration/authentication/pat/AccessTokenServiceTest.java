@@ -31,7 +31,7 @@ import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.mockito.AdditionalMatchers.not;
+import static org.hamcrest.CoreMatchers.not;
 
 @InfinispanStorageTest
 public class AccessTokenServiceTest {
@@ -195,11 +195,12 @@ public class AccessTokenServiceTest {
                 .delete(EVICT_ENDPOINT)
                 .then().statusCode(204);
 //            return all the items from the cache
-            given().contentType(ContentType.JSON).when()
+            given().contentType(ContentType.JSON).config(SslContext.clientCertUser)
+                .when()
                 .get(CACHE_LIST_ENDPOINT)
                 .then()
                 .statusCode(200)
-                .body(not(containsString("1582239600000")));
+                .body("content", not(containsString("1582239600000"))).extract().asString();
         }
 
         @Test
