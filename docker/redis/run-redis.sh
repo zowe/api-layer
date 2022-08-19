@@ -59,7 +59,7 @@ genKeyPairCert() {
       -keypass local_ca_password \
       -storepass local_ca_password \
       -storetype PKCS12 \
-      -ext "SAN=dns:localhost,ip:127.0.0.1,dns:gateway-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
+      -ext "SAN=dns:localhost,ip:127.0.0.1,ip:::1,dns:gateway-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
       -ext "KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment" \
       -ext "ExtendedKeyUsage=clientAuth,serverAuth" \
       -rfc \
@@ -76,8 +76,8 @@ genKeyPairCert() {
 SCRIPT_PWD=$(cd "$(dirname "$0")" && pwd)
 WORKSPACE="${SCRIPT_PWD}/redis-containers"
 KEYSTORE_DIR="${WORKSPACE}/keystore"
-COMPOSE_DIR="compose"
-CONFIG_DIR="config"
+COMPOSE_DIR="${SCRIPT_PWD}/compose"
+CONFIG_DIR="${SCRIPT_PWD}/config"
 REDIS_COMPOSE_FILE="redis.yml"
 
 LINUX_SETTING="#"
@@ -128,7 +128,7 @@ fi
 
 log "Wiping and re-creating $WORKSPACE"
 rm -rf "${WORKSPACE}"
-mkdir -p "${WORKSPACE}/${CONFIG_DIR}"
+mkdir -p "${WORKSPACE}/config"
 mkdir -p "${WORKSPACE}/api-defs"
 mkdir -p "${KEYSTORE_DIR}"
 
@@ -188,12 +188,13 @@ SENTINEL_TEMPLATE="${CONFIG_DIR}/sentinel.conf.template"
 createFile "${DOCKER_COMPOSE_TEMPLATE}" "${WORKSPACE}/${REDIS_COMPOSE_FILE}"
 createFile "${MOCK_SERVICES_TEMPLATE}" "${WORKSPACE}/api-defs/mock-services.yml"
 createFile "${APIML_ENV_TEMPLATE}" "${WORKSPACE}/apiml.env"
-createFile "${MASTER_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/master.conf" "6379"
-createFile "${REPLICA_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/replica.conf" "6380"
 
-createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-1.conf" "26739"
-createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-2.conf" "26380"
-createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/${CONFIG_DIR}/sentinel-3.conf" "26381"
+createFile "${MASTER_TEMPLATE}" "${WORKSPACE}/config/master.conf" "6379"
+createFile "${REPLICA_TEMPLATE}" "${WORKSPACE}/config/replica.conf" "6380"
+
+createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/config/sentinel-1.conf" "26739"
+createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/config/sentinel-2.conf" "26380"
+createFile "${SENTINEL_TEMPLATE}" "${WORKSPACE}/config/sentinel-3.conf" "26381"
 
 if [ "${WHAT_IF}" != "true" ]; then
     log "Running containers"
