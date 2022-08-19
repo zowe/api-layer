@@ -1,4 +1,3 @@
-spring.profiles.include: debug
 caching:
     storage:
         mode: inMemory

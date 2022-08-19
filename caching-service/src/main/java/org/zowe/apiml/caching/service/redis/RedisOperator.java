@@ -54,9 +54,6 @@ public class RedisOperator {
             redis = redisConnection.async();
             log.info("Connected to Redis {}", redisUri);
         } catch (Exception e) {
-            log.error("Error message {}", e.getMessage());
-            log.error("Error cause: ", e.getCause());
-            log.error("Stack trace: {}", Arrays.toString(e.getStackTrace()));
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
             System.exit(1);
         }
