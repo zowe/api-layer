@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.mockito.AdditionalMatchers.not;
 
 @InfinispanStorageTest
 public class AccessTokenServiceTest {
@@ -39,6 +41,9 @@ public class AccessTokenServiceTest {
     public static final URI REVOKE_FOR_SCOPE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_ACCESS_TOKENS_FOR_SCOPE);
     public static final URI REVOKE_OWN_TOKENS_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.REVOKE_OWN_ACCESS_TOKENS);
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
+    public static final URI EVICT_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.EVICT_ACCESS_TOKEN);
+    public static final URI CACHE_LIST_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.CACHING_CACHE_LIST);
+
     ValidateRequestModel bodyContent;
 
     @Nested
@@ -173,6 +178,31 @@ public class AccessTokenServiceTest {
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(401);
+        }
+
+        @Test
+        void givenAuthorizedRequest_thenEvictTokensAndRules() {
+//            validate before revocation rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
+//            add rule with timestamp older than 90 days, meaning it is not relevant anymore
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("userId", SecurityUtils.USERNAME);
+            requestBody.put("timestamp", "1582239600000");
+            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+                .when().delete(REVOKE_FOR_USER_ENDPOINT)
+                .then().statusCode(204);
+//            evict the rule
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .delete(EVICT_ENDPOINT)
+                .then().statusCode(204);
+//            return all the items from the cache
+            given().contentType(ContentType.JSON).body(bodyContent).when()
+                .get(CACHE_LIST_ENDPOINT)
+                .then()
+                .statusCode(200)
+                .body(not(containsString("1582239600000")));
         }
 
         @Test
