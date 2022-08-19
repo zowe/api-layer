@@ -18,7 +18,7 @@ inputs:
 runs:
     using: "composite"
 
-    # if GW not healthy after 3 minutes then exit
+    # if GW and input services are not healthy after 3 minutes then exit
     steps:
         - name: Validate APIML setup
           shell: bash

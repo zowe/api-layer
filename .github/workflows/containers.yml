@@ -404,13 +404,79 @@ jobs:
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Output Redis Master logs
+            -   name: Output Redis Replica logs
                 if: always()
-                run: docker logs redis-master
+                run: |
+                    docker logs redis-master
+                    docker logs redis-replica
+
+            -   name: Output Caching Service container logs
+                if: always()
+                run: docker logs caching-service
+
+            -   name: Output Gateway container logs
+                if: always()
+                run: docker logs gateway-service
+
+            -   name: Output Discovery container logs
+                if: always()
+                run: docker logs discovery-service
+
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsWithRedisSentinel:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run APIML and Redis Containers
+                run: |
+                    cd docker/redis
+                    chmod +x run-redis.sh
+                    ./run-redis.sh -l -s -t -a ${{ env.JOB_ID }}
+
+            -   uses: ./.github/actions/validate-apiml-healthy
+                with:
+                    caching-service: "true"
+
+            -   name: Run Caching Service tests
+                run: >
+                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.offPlatform=true
+                    -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.keyAlias=apimtst
+                    -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Output Redis Replica logs
                 if: always()
-                run: docker logs redis-replica
+                run: |
+                    docker logs redis-master
+                    docker logs redis-replica
+
+            -   name: Output Redis Sentinel logs
+                if: always()
+                run: |
+                    docker logs redis-sentinel-1
+                    docker logs redis-sentinel-2
+                    docker logs redis-sentinel-3
 
             -   name: Output Caching Service container logs
                 if: always()

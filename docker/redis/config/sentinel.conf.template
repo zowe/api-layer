@@ -7,7 +7,7 @@ sentinel down-after-milliseconds redismaster 10000
 sentinel auth-pass redismaster heslo
 sentinel auth-user redismaster default
 
-{NOT_LINUX_SETTING}sentinel announce-hostnames yes
+sentinel announce-hostnames yes
 
 {TLS_SETTING}tls-cert-file /keystore/all-services-apimtst.keystore_signed.cer
 {TLS_SETTING}tls-key-file-pass password
