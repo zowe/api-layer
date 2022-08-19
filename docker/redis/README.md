@@ -35,4 +35,11 @@ configured TLS certificates.
 
 ## Known Issues
 
-Due to the master instance reporting the replica's IP address
+* Due to the master instance reporting the replica's IP address, on non-linux host operating systems the Caching Service cannot connect to the replica instance. 
+With Sentinel, there is a configuration option to report the hostname instead of the IP address, but there is no such option for the master instance to report
+the replica's hostname. The Caching Service can still connect to the master instance via hostname, and the replica and master instances communicate via hostname,
+so everything is functional, but there is a warning log in the Caching Service that it can't connect to the replica instance. If everything were run locally outside
+of containers, this issue would not appear.
+* On both linux and non-linux host operating systems, the Caching Service is unable to connect to `redis-sentinel-1` (one of 3 sentinel instances). It can connect
+to the other 2 sentinel instances, and then connects through to the master instance as reported by the sentinels, but `redis-sentinel-1` does not communicate directly
+with the Caching Service. It can communicate with the other sentinel instances, however, and no functionality is lost. The reason for this is unclear.

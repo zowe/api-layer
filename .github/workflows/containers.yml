@@ -404,12 +404,12 @@ jobs:
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Output Redis Replica logs
+            -   name: Output Redis logs
                 if: always()
                 run: |
                     echo "Redis Master"
                     docker logs redis-master
-                    echo "Redis replica"
+                    echo "Redis Replica"
                     docker logs redis-replica
 
             -   name: Output Caching Service container logs
@@ -467,22 +467,18 @@ jobs:
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Output Redis Replica logs
+            -   name: Output Redis logs
                 if: always()
                 run: |
                     echo "Redis Master"
                     docker logs redis-master
-                    echo "Redis replica"
+                    echo "Redis Replica"
                     docker logs redis-replica
-
-            -   name: Output Redis Sentinel logs
-                if: always()
-                run: |
-                    echo "Sentinel 1"
+                    echo "Redis Sentinel 1"
                     docker logs redis-sentinel-1
-                    echo "Sentinel 2"
+                    echo "Redis Sentinel 2"
                     docker logs redis-sentinel-2
-                    echo "Sentinel 3"
+                    echo "Redis Sentinel 3"
                     docker logs redis-sentinel-3
 
             -   name: Output Caching Service container logs
