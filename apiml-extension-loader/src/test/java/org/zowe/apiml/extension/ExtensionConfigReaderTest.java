@@ -14,7 +14,10 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.Mockito.when;
 
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import com.google.common.io.Resources;
@@ -42,14 +45,14 @@ class ExtensionConfigReaderTest {
         this.configReader = new ExtensionConfigReader(environment);
     }
 
-    private String getTestResourcesPath(Charset charset) {
-        String path;
+    private String getTestResourcesPath(Charset charset) throws URISyntaxException {
+        URL url;
         if (charset.equals(Charset.forName("IBM1047"))) {
-            path = Resources.getResource(EXTESION_IBM1047).getPath();
+            url = Resources.getResource(EXTESION_IBM1047);
         } else {
-            path = Resources.getResource(EXTENSION_UTF8).getPath();
+            url = Resources.getResource(EXTENSION_UTF8);
         }
-        return path.substring(0, path.lastIndexOf('/'));
+        return Paths.get(url.toURI()).getParent().toString();
     }
 
     @Nested
@@ -70,7 +73,7 @@ class ExtensionConfigReaderTest {
         @Nested
         class GivenEncodingIsEbcdic {
             @Test
-            void itReturnsPackageNameToScan() {
+            void itReturnsPackageNameToScan() throws URISyntaxException {
                 when(environment.getWorkspaceDirectory()).thenReturn(getTestResourcesPath(Charset.forName("IBM1047")));
                 when(environment.getInstalledComponents()).thenReturn(singletonList(EXTESION_IBM1047));
                 when(environment.getEnabledComponents()).thenReturn(singletonList(EXTESION_IBM1047));
@@ -82,7 +85,7 @@ class ExtensionConfigReaderTest {
         @Nested
         class GivenAnExtensionIsDefined {
             @Test
-            void itReturnsPackageNameToScan() {
+            void itReturnsPackageNameToScan() throws URISyntaxException {
                 when(environment.getWorkspaceDirectory()).thenReturn(getTestResourcesPath(Charset.forName("UTF-8")));
                 when(environment.getInstalledComponents()).thenReturn(singletonList(EXTENSION_UTF8));
                 when(environment.getEnabledComponents()).thenReturn(singletonList(EXTENSION_UTF8));
