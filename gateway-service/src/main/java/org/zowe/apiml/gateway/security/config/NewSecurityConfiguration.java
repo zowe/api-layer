@@ -248,7 +248,8 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                    authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**"
+                    authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
+                    authConfigurationProperties.getEvictAccessTokensAndRules()
                 ).and())
                     .authorizeRequests()
                     .anyRequest().authenticated()

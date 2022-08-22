@@ -177,19 +177,16 @@ public class InfinispanStorage implements Storage {
     private void removeToken(String serviceId, String mapKey) {
         Map<String, String> map = tokenCache.get(serviceId + mapKey);
         if (map != null && !map.isEmpty()) {
-            LocalDateTime timestamp = LocalDateTime.now();
-            ConcurrentMap<String,String> concurrentMap = new ConcurrentHashMap<>(map);
-            for (Map.Entry<String,String> entry : concurrentMap.entrySet()) {
+            Map<String,String> result = map.entrySet().stream().filter(entry -> {
                 try {
                     AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
-                    if (c.getExpiresAt().isBefore(timestamp)) {
-                        removeEntry(serviceId, mapKey, map, entry);
-                    }
-
+                    return !c.getExpiresAt().isBefore(LocalDateTime.now());
                 } catch (JsonProcessingException e) {
                     log.error("Not able to parse invalidToken json value.", e);
+                    return true;
                 }
-            }
+            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            tokenCache.put(serviceId + mapKey, result);
         }
     }
 
@@ -200,14 +197,12 @@ public class InfinispanStorage implements Storage {
                     long timestamp = System.currentTimeMillis();
                     Map<String, String> map = tokenCache.get(serviceId + mapKey);
                     if (map != null && !map.isEmpty()) {
-                        ConcurrentMap<String, String> concurrentMap = new ConcurrentHashMap<>(map);
-                        for (Map.Entry<String, String> entry : concurrentMap.entrySet()) {
+                        Map<String,String> result = map.entrySet().stream().filter(entry -> {
                             long delta = timestamp - Long.parseLong(entry.getValue());
                             long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
-                            if (deltaToDays > 90) {
-                                removeEntry(serviceId, mapKey, map, entry);
-                            }
-                        }
+                            return deltaToDays <= 90;
+                        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                        tokenCache.put(serviceId + mapKey, result);
                     }
                 } finally {
                     lock.unlock();
@@ -215,12 +210,6 @@ public class InfinispanStorage implements Storage {
             }
         });
         completeJoin(complete);
-    }
-
-    private void removeEntry(String serviceId, String mapKey, Map<String, String> map, Map.Entry<String, String> entry) {
-        log.info("Removing record from the cache under key {} ", entry.getKey());
-        map.remove(entry.getKey());
-        tokenCache.put(serviceId + mapKey, map);
     }
 
     private void completeJoin(CompletableFuture<Boolean> complete) {

@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -154,7 +153,7 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping(value = ACCESS_TOKEN_EVICT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = ACCESS_TOKEN_EVICT)
     @Operation(summary = "Remove invalidated tokens and rules which are not relevant anymore",
         description = "Will evict all the invalidated tokens which are not relevant anymore")
     @ResponseBody
