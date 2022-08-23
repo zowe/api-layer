@@ -193,9 +193,9 @@ class CachingServiceClientTest {
                 };
             response = (ResponseEntity<Map<String, Map<String, String>>>) mock(ResponseEntity.class);
 
-            urlBaseTokens = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/invalidTokens";
-            urlBaseUsers = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/invalidUsers";
-            urlBaseScopes = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/invalidScopes";
+            urlBaseTokens = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/tokens/invalidTokens";
+            urlBaseUsers = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/rules/invalidUsers";
+            urlBaseScopes = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/rules/invalidScopes";
 
             when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), eq(responseType))).thenReturn(response);
         }
@@ -203,18 +203,19 @@ class CachingServiceClientTest {
         @Test
         void whenCallArePerformed_thenReturnSuccessResponse() {
             when(response.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT);
-            assertDoesNotThrow(() -> underTest.evictItem("invalidTokens"));
+            assertDoesNotThrow(() -> underTest.evictTokens("invalidTokens"));
             verify(restTemplate).exchange(urlBaseTokens, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
-            assertDoesNotThrow(() -> underTest.evictItem("invalidUsers"));
+            assertDoesNotThrow(() -> underTest.evictRules("invalidUsers"));
             verify(restTemplate).exchange(urlBaseUsers, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
-            assertDoesNotThrow(() -> underTest.evictItem("invalidScopes"));
+            assertDoesNotThrow(() -> underTest.evictRules("invalidScopes"));
             verify(restTemplate).exchange(urlBaseScopes, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
         }
 
         @Test
         void createWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClientException.class, () -> underTest.evictItem("invalidTokens"));
+            assertThrows(CachingServiceClientException.class, () -> underTest.evictTokens("invalidTokens"));
+            assertThrows(CachingServiceClientException.class, () -> underTest.evictRules("invalidScopes"));
         }
 
     }

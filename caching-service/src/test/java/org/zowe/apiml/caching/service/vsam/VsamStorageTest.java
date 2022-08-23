@@ -284,11 +284,21 @@ class VsamStorageTest {
     }
 
     @Nested
-    class WhenTryingToDeleteItems {
+    class WhenTryingToDeleteTokens {
         @Test
         void thenThrowException() {
             assertThrows(StorageException.class, () -> {
-                underTest.deleteItemFromMap("serviceId", "key");
+                underTest.removeNonRelevantTokens("serviceId", "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToDeleteRules {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.removeNonRelevantRules("serviceId", "key");
             });
         }
     }

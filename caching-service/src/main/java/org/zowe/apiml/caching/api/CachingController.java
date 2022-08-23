@@ -151,17 +151,35 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse);
     }
 
-    @DeleteMapping(value = "/cache-list/evict/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Delete a record from a map in the cache",
-        description = "Will delete a key-value pair from a specific map")
+    @DeleteMapping(value = "/cache-list/evict/rules/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete a record from a rules map in the cache",
+        description = "Will delete a key-value pair from a specific rules map")
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<Object> evictRecord(@PathVariable String mapKey, HttpServletRequest request) {
+    public ResponseEntity<Object> evictRules(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
                 try {
-                    storage.deleteItemFromMap(s, mapKey);
-                    return new ResponseEntity<>(HttpStatus.OK);
+                    storage.removeNonRelevantRules(s, mapKey);
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                } catch (Exception exception) {
+                    return handleInternalError(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
+    }
+
+    @DeleteMapping(value = "/cache-list/evict/tokens/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete a record from an invalid tokens map in the cache",
+        description = "Will delete a key-value pair from a specific tokens map")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> evictTokens(@PathVariable String mapKey, HttpServletRequest request) {
+        return getServiceId(request).map(
+            s -> {
+                try {
+                    storage.removeNonRelevantTokens(s, mapKey);
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
                 } catch (Exception exception) {
                     return handleInternalError(exception, request.getRequestURL());
                 }

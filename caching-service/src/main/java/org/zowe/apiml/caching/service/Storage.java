@@ -97,9 +97,16 @@ public interface Storage {
     void deleteForService(String serviceId);
 
     /**
-     * Delete a key/value pair from the map
+     * Delete a key/value pair from the rules map
      * @param serviceId the id of the service to identify the correct map
      * @param mapKey the map key
      */
-    void deleteItemFromMap(String serviceId, String mapKey);
+    void removeNonRelevantRules(String serviceId, String mapKey);
+
+    /**
+     * Delete a key/value pair from the invalid tokens map
+     * @param serviceId the id of the service to identify the correct map
+     * @param mapKey the map key
+     */
+    void removeNonRelevantTokens(String serviceId, String mapKey);
 }

@@ -399,9 +399,12 @@ class CachingControllerTest {
     class WhenEvictRecord {
         @Test
         void givenCorrectRequest_thenRemoveTokensAndRules() throws StorageException {
-            ResponseEntity<?> response = underTest.evictRecord(MAP_KEY, mockRequest);
-            verify(mockStorage).deleteItemFromMap(SERVICE_ID, MAP_KEY);
-            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+            ResponseEntity<?> responseTokenEviction = underTest.evictTokens(MAP_KEY, mockRequest);
+            ResponseEntity<?> responseScopesEviction = underTest.evictRules(MAP_KEY, mockRequest);
+            verify(mockStorage).removeNonRelevantTokens(SERVICE_ID, MAP_KEY);
+            verify(mockStorage).removeNonRelevantRules(SERVICE_ID, MAP_KEY);
+            assertThat(responseTokenEviction.getStatusCode(), is(HttpStatus.NO_CONTENT));
+            assertThat(responseScopesEviction.getStatusCode(), is(HttpStatus.NO_CONTENT));
         }
     }
 }

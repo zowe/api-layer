@@ -282,9 +282,9 @@ class InfinispanStorageTest {
             CompletableFuture<Boolean> cmpl = new CompletableFuture<>();
             cmpl.complete(true);
             when(lock.tryLock(4, TimeUnit.SECONDS)).thenReturn(cmpl);
-            underTest.deleteItemFromMap(serviceId1, "invalidTokens");
-            underTest.deleteItemFromMap(serviceId1, "invalidScopes");
-            underTest.deleteItemFromMap(serviceId1, "invalidUsers");
+            underTest.removeNonRelevantTokens(serviceId1, "invalidTokens");
+            underTest.removeNonRelevantRules(serviceId1, "invalidScopes");
+            underTest.removeNonRelevantRules(serviceId1, "invalidUsers");
             Map<String, Map<String, String>> result = underTest.getAllMaps(serviceId1);
             assertEquals(1, result.get("invalidTokens").size());
             assertEquals(0, result.get("invalidScopes").size());

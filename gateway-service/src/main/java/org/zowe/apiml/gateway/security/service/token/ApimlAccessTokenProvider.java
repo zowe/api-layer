@@ -140,9 +140,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void evictNonRelevantTokensAndRules() {
-        cachingServiceClient.evictItem(INVALID_TOKENS_KEY);
-        cachingServiceClient.evictItem(INVALID_USERS_KEY);
-        cachingServiceClient.evictItem(INVALID_SCOPES_KEY);
+        cachingServiceClient.evictTokens(INVALID_TOKENS_KEY);
+        cachingServiceClient.evictRules(INVALID_USERS_KEY);
+        cachingServiceClient.evictRules(INVALID_SCOPES_KEY);
     }
 
     public String getHash(String token) throws CachingServiceClientException {

@@ -210,11 +210,21 @@ public class RedisStorageTest {
     }
 
     @Nested
-    class WhenTryingToDeleteItems {
+    class WhenTryingToDeleteTokens {
         @Test
         void thenThrowException() {
             assertThrows(StorageException.class, () -> {
-                underTest.deleteItemFromMap(SERVICE_ID, "key");
+                underTest.removeNonRelevantTokens(SERVICE_ID, "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToDeleteRules {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.removeNonRelevantRules(SERVICE_ID, "key");
             });
         }
     }

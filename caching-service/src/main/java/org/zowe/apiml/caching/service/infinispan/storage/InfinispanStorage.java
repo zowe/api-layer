@@ -153,15 +153,7 @@ public class InfinispanStorage implements Storage {
     }
 
     @Override
-    public void deleteItemFromMap(String serviceId, String mapKey) {
-        if (mapKey.equals("invalidUsers") || mapKey.equals("invalidScopes")) {
-            removeNonRelevantRules(serviceId, mapKey);
-        } else {
-            removeNonRelevantTokens(serviceId, mapKey);
-        }
-    }
-
-    private void removeNonRelevantTokens(String serviceId, String mapKey) {
+    public void removeNonRelevantTokens(String serviceId, String mapKey) {
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
@@ -190,7 +182,8 @@ public class InfinispanStorage implements Storage {
         }
     }
 
-    private void removeNonRelevantRules(String serviceId, String mapKey) {
+    @Override
+    public void removeNonRelevantRules(String serviceId, String mapKey) {
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {

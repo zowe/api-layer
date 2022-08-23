@@ -215,9 +215,9 @@ class ApimlAccessTokenProviderTest {
         void thenEvictNonRelevantTokensAndRules() {
             ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
             accessTokenProvider.evictNonRelevantTokensAndRules();
-            verify(cachingServiceClient, times(1)).evictItem(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
-            verify(cachingServiceClient, times(1)).evictItem(ApimlAccessTokenProvider.INVALID_USERS_KEY);
-            verify(cachingServiceClient, times(1)).evictItem(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
+            verify(cachingServiceClient, times(1)).evictTokens(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
+            verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_USERS_KEY);
+            verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
         }
     }
 
