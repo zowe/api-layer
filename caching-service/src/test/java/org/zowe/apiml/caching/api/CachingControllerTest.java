@@ -409,9 +409,9 @@ class CachingControllerTest {
 
         @Test
         void givenInCorrectRequest_thenReturn500() throws StorageException {
-            ResponseEntity<?> responseScopesEviction = underTest.evictRules(MAP_KEY, mockRequest);
             doThrow(new RuntimeException()).when(mockStorage).removeNonRelevantTokens(SERVICE_ID, MAP_KEY);
             doThrow(new RuntimeException()).when(mockStorage).removeNonRelevantRules(SERVICE_ID, MAP_KEY);
+            ResponseEntity<?> responseScopesEviction = underTest.evictRules(MAP_KEY, mockRequest);
             ResponseEntity<?> responseTokenEviction = underTest.evictTokens(MAP_KEY, mockRequest);
             assertThat(responseTokenEviction.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
             assertThat(responseScopesEviction.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
