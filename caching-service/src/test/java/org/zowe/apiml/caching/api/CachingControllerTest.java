@@ -406,5 +406,15 @@ class CachingControllerTest {
             assertThat(responseTokenEviction.getStatusCode(), is(HttpStatus.NO_CONTENT));
             assertThat(responseScopesEviction.getStatusCode(), is(HttpStatus.NO_CONTENT));
         }
+
+        @Test
+        void givenInCorrectRequest_thenReturn500() throws StorageException {
+            ResponseEntity<?> responseScopesEviction = underTest.evictRules(MAP_KEY, mockRequest);
+            doThrow(new RuntimeException()).when(mockStorage).removeNonRelevantTokens(SERVICE_ID, MAP_KEY);
+            doThrow(new RuntimeException()).when(mockStorage).removeNonRelevantRules(SERVICE_ID, MAP_KEY);
+            ResponseEntity<?> responseTokenEviction = underTest.evictTokens(MAP_KEY, mockRequest);
+            assertThat(responseTokenEviction.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            assertThat(responseScopesEviction.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 }
