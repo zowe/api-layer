@@ -22,3 +22,6 @@ safAccess:
             READ:
                 - user
                 - USER
+            UPDATE:
+                - user
+                - USER

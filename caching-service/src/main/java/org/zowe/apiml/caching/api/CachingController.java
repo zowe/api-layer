@@ -151,6 +151,42 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse);
     }
 
+    @DeleteMapping(value = "/cache-list/evict/rules/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete a record from a rules map in the cache",
+        description = "Will delete a key-value pair from a specific rules map")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> evictRules(@PathVariable String mapKey, HttpServletRequest request) {
+        return getServiceId(request).map(
+            s -> {
+                try {
+                    storage.removeNonRelevantRules(s, mapKey);
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                } catch (Exception exception) {
+                    return handleInternalError(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
+    }
+
+    @DeleteMapping(value = "/cache-list/evict/tokens/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete a record from an invalid tokens map in the cache",
+        description = "Will delete a key-value pair from a specific tokens map")
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<Object> evictTokens(@PathVariable String mapKey, HttpServletRequest request) {
+        return getServiceId(request).map(
+            s -> {
+                try {
+                    storage.removeNonRelevantTokens(s, mapKey);
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                } catch (Exception exception) {
+                    return handleInternalError(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
+    }
+
     @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update key in the cache",
         description = "Value at the key in the provided key-value pair will be updated to the provided value")

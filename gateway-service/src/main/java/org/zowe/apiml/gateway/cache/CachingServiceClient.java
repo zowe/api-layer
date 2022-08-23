@@ -105,14 +105,38 @@ public class CachingServiceClient {
         }
     }
 
+    /**
+     * Evict the non-relevant invalidated tokens by deleting the entries in the specified map
+     * @param key the map key
+     */
+    public void evictTokens(String key) {
+        try {
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "evict/tokens/" + key, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
+        }
+    }
 
     /**
-     * Reads {@link KeyValue} from Caching Service
-     *
-     * @param key Key to read
-     * @return {@link KeyValue}
-     * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
+     * Evict the non-relevant rules by deleting the entries in the specified map
+     * @param key the map key
      */
+    public void evictRules(String key) {
+        try {
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "evict/rules/" + key, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
+        }
+    }
+
+
+        /**
+         * Reads {@link KeyValue} from Caching Service
+         *
+         * @param key Key to read
+         * @return {@link KeyValue}
+         * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
+         */
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
             ResponseEntity<KeyValue> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, new HttpHeaders()), KeyValue.class);

@@ -19,7 +19,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
+import org.zowe.apiml.models.AccessTokenContainer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -136,7 +136,7 @@ class CachingServiceClientTest {
         @Test
         void whenClientReturnsBody_thenParseTheResponse() throws CachingServiceClientException, JsonProcessingException {
             String key = "token";
-            ApimlAccessTokenProvider.AccessTokenContainer container = new ApimlAccessTokenProvider.AccessTokenContainer(null, key, null, null, null, null);
+            AccessTokenContainer container = new AccessTokenContainer(null, key, null, null, null, null);
             ObjectMapper mapper = new ObjectMapper();
             Map<String, String> tokens = new HashMap<>();
             String json = mapper.writeValueAsString(container);
@@ -179,5 +179,45 @@ class CachingServiceClientTest {
         assertThrows(CachingServiceClientException.class, () -> underTest.appendList("mapKey", new CachingServiceClient.KeyValue()));
     }
 
+    @Nested
+    class GivenEvictItemTest {
+        ResponseEntity<Map<String, Map<String, String>>> response;
+        String urlBaseTokens;
+        String urlBaseUsers;
+        String urlBaseScopes;
+
+        @BeforeEach
+        void setup() {
+            ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
+                new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
+                };
+            response = (ResponseEntity<Map<String, Map<String, String>>>) mock(ResponseEntity.class);
+
+            urlBaseTokens = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/tokens/invalidTokens";
+            urlBaseUsers = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/rules/invalidUsers";
+            urlBaseScopes = "https://localhost:10010/cachingservice/api/v1/cache-list/evict/rules/invalidScopes";
+
+            when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), eq(responseType))).thenReturn(response);
+        }
+
+        @Test
+        void whenCallArePerformed_thenReturnSuccessResponse() {
+            when(response.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT);
+            assertDoesNotThrow(() -> underTest.evictTokens("invalidTokens"));
+            verify(restTemplate).exchange(urlBaseTokens, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+            assertDoesNotThrow(() -> underTest.evictRules("invalidUsers"));
+            verify(restTemplate).exchange(urlBaseUsers, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+            assertDoesNotThrow(() -> underTest.evictRules("invalidScopes"));
+            verify(restTemplate).exchange(urlBaseScopes, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+        }
+
+        @Test
+        void createWithExceptionFromRestTemplateThrowsDefined() {
+            doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
+            assertThrows(CachingServiceClientException.class, () -> underTest.evictTokens("invalidTokens"));
+            assertThrows(CachingServiceClientException.class, () -> underTest.evictRules("invalidScopes"));
+        }
+
+    }
 
 }

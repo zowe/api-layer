@@ -387,11 +387,34 @@ class CachingControllerTest {
         }
 
         @Test
-        void givenErrorReadingStorage_thenResponseInternalError() throws StorageException {
+        void givenErrorReadingStorage_thenResponseBadRequest() throws StorageException {
             when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
 
             ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        }
+    }
+
+    @Nested
+    class WhenEvictRecord {
+        @Test
+        void givenCorrectRequest_thenRemoveTokensAndRules() throws StorageException {
+            ResponseEntity<?> responseTokenEviction = underTest.evictTokens(MAP_KEY, mockRequest);
+            ResponseEntity<?> responseScopesEviction = underTest.evictRules(MAP_KEY, mockRequest);
+            verify(mockStorage).removeNonRelevantTokens(SERVICE_ID, MAP_KEY);
+            verify(mockStorage).removeNonRelevantRules(SERVICE_ID, MAP_KEY);
+            assertThat(responseTokenEviction.getStatusCode(), is(HttpStatus.NO_CONTENT));
+            assertThat(responseScopesEviction.getStatusCode(), is(HttpStatus.NO_CONTENT));
+        }
+
+        @Test
+        void givenInCorrectRequest_thenReturn500() throws StorageException {
+            doThrow(new RuntimeException()).when(mockStorage).removeNonRelevantTokens(SERVICE_ID, MAP_KEY);
+            doThrow(new RuntimeException()).when(mockStorage).removeNonRelevantRules(SERVICE_ID, MAP_KEY);
+            ResponseEntity<?> responseScopesEviction = underTest.evictRules(MAP_KEY, mockRequest);
+            ResponseEntity<?> responseTokenEviction = underTest.evictTokens(MAP_KEY, mockRequest);
+            assertThat(responseTokenEviction.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            assertThat(responseScopesEviction.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 }

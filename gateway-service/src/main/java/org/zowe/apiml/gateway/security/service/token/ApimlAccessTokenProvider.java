@@ -13,14 +13,13 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
@@ -140,6 +139,12 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return Optional.empty();
     }
 
+    public void evictNonRelevantTokensAndRules() {
+        cachingServiceClient.evictTokens(INVALID_TOKENS_KEY);
+        cachingServiceClient.evictRules(INVALID_USERS_KEY);
+        cachingServiceClient.evictRules(INVALID_SCOPES_KEY);
+    }
+
     public String getHash(String token) throws CachingServiceClientException {
         return getSecurePassword(token, getSalt());
     }
@@ -210,23 +215,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             log.error("Could not generate hash", e);
         }
         return generatedPassword;
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class AccessTokenContainer {
-
-        public AccessTokenContainer() {
-            // no args constructor
-        }
-
-        private String userId;
-        private String tokenValue;
-        private LocalDateTime issuedAt;
-        private LocalDateTime expiresAt;
-        private Set<String> scopes;
-        private String tokenProvider;
-
     }
 }
 

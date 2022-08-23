@@ -208,4 +208,14 @@ public class VsamStorage implements Storage {
             file.deleteForService(serviceId);
         }
     }
+
+    @Override
+    public void removeNonRelevantTokens(String serviceId, String mapKey) {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
+    public void removeNonRelevantRules(String serviceId, String mapKey) {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
 }

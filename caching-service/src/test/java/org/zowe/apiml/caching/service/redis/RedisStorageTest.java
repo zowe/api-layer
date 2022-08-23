@@ -208,4 +208,24 @@ public class RedisStorageTest {
             });
         }
     }
+
+    @Nested
+    class WhenTryingToDeleteTokens {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.removeNonRelevantTokens(SERVICE_ID, "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToDeleteRules {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.removeNonRelevantRules(SERVICE_ID, "key");
+            });
+        }
+    }
 }

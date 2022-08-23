@@ -10,19 +10,21 @@
 
 package org.zowe.apiml.caching.service.infinispan.storage;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.lock.api.ClusteredLock;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.models.AccessTokenContainer;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,11 +34,16 @@ public class InfinispanStorage implements Storage {
     private final ConcurrentMap<String, KeyValue> cache;
     private final ConcurrentMap<String, Map<String, String>> tokenCache;
     private final ClusteredLock lock;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
         this.cache = cache;
         this.tokenCache = tokenCache;
         this.lock = lock;
+    }
+
+    static {
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Override
@@ -70,16 +77,7 @@ public class InfinispanStorage implements Storage {
                 }
             }
         });
-        try {
-            complete.join();
-        } catch (CompletionException e) {
-            if (e.getCause() instanceof StorageException) {
-                throw (StorageException) e.getCause();
-            } else {
-                log.error("Unexpected error while acquiring the lock ", e);
-                throw e;
-            }
-        }
+        completeJoin(complete);
         return null;
     }
 
@@ -152,5 +150,71 @@ public class InfinispanStorage implements Storage {
                 cache.remove(key);
             }
         });
+    }
+
+    @Override
+    public void removeNonRelevantTokens(String serviceId, String mapKey) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
+                try {
+                    removeToken(serviceId, mapKey);
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+        completeJoin(complete);
+    }
+
+    private void removeToken(String serviceId, String mapKey) {
+        Map<String, String> map = tokenCache.get(serviceId + mapKey);
+        if (map != null && !map.isEmpty()) {
+            Map<String,String> result = map.entrySet().stream().filter(entry -> {
+                try {
+                    AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
+                    return !c.getExpiresAt().isBefore(LocalDateTime.now());
+                } catch (JsonProcessingException e) {
+                    log.error("Not able to parse invalidToken json value.", e);
+                    return true;
+                }
+            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            tokenCache.put(serviceId + mapKey, result);
+        }
+    }
+
+    @Override
+    public void removeNonRelevantRules(String serviceId, String mapKey) {
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
+                try {
+                    long timestamp = System.currentTimeMillis();
+                    Map<String, String> map = tokenCache.get(serviceId + mapKey);
+                    if (map != null && !map.isEmpty()) {
+                        Map<String,String> result = map.entrySet().stream().filter(entry -> {
+                            long delta = timestamp - Long.parseLong(entry.getValue());
+                            long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
+                            return deltaToDays <= 90;
+                        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                        tokenCache.put(serviceId + mapKey, result);
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+        completeJoin(complete);
+    }
+
+    private void completeJoin(CompletableFuture<Boolean> complete) {
+        try {
+            complete.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof StorageException) {
+                throw (StorageException) e.getCause();
+            } else {
+                log.error("Unexpected error while acquiring the lock ", e);
+                throw e;
+            }
+        }
     }
 }

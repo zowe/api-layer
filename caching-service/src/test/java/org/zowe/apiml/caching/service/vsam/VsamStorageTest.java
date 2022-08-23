@@ -282,4 +282,24 @@ class VsamStorageTest {
             });
         }
     }
+
+    @Nested
+    class WhenTryingToDeleteTokens {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.removeNonRelevantTokens("serviceId", "key");
+            });
+        }
+    }
+
+    @Nested
+    class WhenTryingToDeleteRules {
+        @Test
+        void thenThrowException() {
+            assertThrows(StorageException.class, () -> {
+                underTest.removeNonRelevantRules("serviceId", "key");
+            });
+        }
+    }
 }

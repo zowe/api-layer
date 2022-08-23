@@ -15,12 +15,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.*;
@@ -98,7 +100,7 @@ class ApimlAccessTokenProviderTest {
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
 
-        ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
+        AccessTokenContainer invalidateToken = new AccessTokenContainer(null, tokenHash, null, null, null, null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         String s = mapper.writeValueAsString(invalidateToken);
@@ -126,7 +128,7 @@ class ApimlAccessTokenProviderTest {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
 
-        ApimlAccessTokenProvider.AccessTokenContainer invalidateToken = new ApimlAccessTokenProvider.AccessTokenContainer(null, tokenHash, null, null, null, null);
+        AccessTokenContainer invalidateToken = new AccessTokenContainer(null, tokenHash, null, null, null, null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         String s = mapper.writeValueAsString(invalidateToken);
@@ -205,6 +207,18 @@ class ApimlAccessTokenProviderTest {
         ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
         assertFalse(accessTokenProvider.isValidForScopes(TOKEN_WITHOUT_SCOPES, scope));
+    }
+
+    @Nested
+    class WhenCallingEviction {
+        @Test
+        void thenEvictNonRelevantTokensAndRules() {
+            ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+            accessTokenProvider.evictNonRelevantTokensAndRules();
+            verify(cachingServiceClient, times(1)).evictTokens(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
+            verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_USERS_KEY);
+            verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
+        }
     }
 
     static String createTestToken(String username, Map<String, Object> claims) {

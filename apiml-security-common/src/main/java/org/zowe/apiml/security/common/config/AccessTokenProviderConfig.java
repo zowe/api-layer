@@ -56,6 +56,11 @@ public class AccessTokenProviderConfig {
             public void invalidateAllTokensForService(String serviceId, long timestamp) {
                 throw new NotImplementedException(NOT_IMPLEMENTED);
             }
+
+            @Override
+            public void evictNonRelevantTokensAndRules() {
+                throw new NotImplementedException(NOT_IMPLEMENTED);
+            }
         };
     }
 }
