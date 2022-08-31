@@ -1,0 +1,34 @@
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
+
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+spring:
+    cloud:
+        gateway:
+            discovery:
+                locator:
+                    enabled: true
+            routes:
+                -   id: after_route
+                    uri: https://google.com
+                    predicates:
+                        - Cookie=mycookie,mycookievalue
+    application:
+        name: cloudGateway
+
+logging:
+    level:
+        org.springframework.cloud.gateway: DEBUG
+        reactor.netty.http.client: DEBUG
