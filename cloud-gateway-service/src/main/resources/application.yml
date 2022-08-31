@@ -19,12 +19,12 @@ spring:
         gateway:
             discovery:
                 locator:
-                    enabled: true
-            routes:
-                -   id: after_route
-                    uri: https://google.com
-                    predicates:
-                        - Cookie=mycookie,mycookievalue
+                    enabled: false
+                    lowerCaseServiceId: true
+#                    filters[0]:
+#                        name: RewritePath
+#                        args[regexp]: "'/' + serviceId + '/(?<remaining>.*)'"
+#                        args[replacement]: "'/' + serviceId + '/${remaining}'"
     application:
         name: cloudGateway
 
