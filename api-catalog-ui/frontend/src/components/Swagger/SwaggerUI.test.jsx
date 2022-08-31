@@ -16,6 +16,14 @@ describe('>>> Swagger component tests', () => {
     afterEach(() => {
         document.body.innerHTML = '';
     });
+    beforeAll(() => {
+        // eslint-disable-next-line no-extend-native
+        Object.defineProperty(Object.prototype, 'hasOwn', {
+            value(prop) {
+                return Object.prototype.hasOwnProperty.call(this, prop);
+            },
+        });
+    });
 
     it('should not render swagger if apiDoc is null', () => {
         const service = {
@@ -34,6 +42,40 @@ describe('>>> Swagger component tests', () => {
                 endpoint: '/test',
                 language: 'java',
             },
+        };
+        const wrapper = shallow(
+            <div>
+                <SwaggerUI selectedService={service} />
+            </div>
+        );
+        const swaggerDiv = wrapper.find('#swaggerContainer');
+
+        expect(swaggerDiv.length).toEqual(0);
+    });
+
+    it('should not render swagger if apis default is provided', () => {
+        const service = {
+            serviceId: 'testservice',
+            title: 'Spring Boot Enabler Service',
+            description: 'Dummy Service for enabling others',
+            status: 'UP',
+            secured: false,
+            homePageUrl: 'http://localhost:10013/enabler/',
+            basePath: '/enabler/api/v1',
+            apiDoc: JSON.stringify({
+                openapi: '3.0.0',
+            }),
+            apis: {
+                default: {
+                    apiId: 'enabler',
+                    codeSnippet: {
+                        codeBlock: 'code',
+                        endpoint: '/test',
+                        language: 'java',
+                    },
+                },
+            },
+            defaultApiVersion: 0,
         };
         const wrapper = shallow(
             <div>
@@ -66,9 +108,9 @@ describe('>>> Swagger component tests', () => {
                 },
             },
         ];
+
         const container = document.createElement('div');
         document.body.appendChild(container);
-
         await act(async () => render(<SwaggerUI selectedService={service} />, container));
         expect(container.textContent).toContain(`API documentation could not be retrieved`);
     });
