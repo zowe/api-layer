@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.cloudgatewayservice.service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public class RouteLocator implements RouteDefinitionLocator {
     private Flux<List<ServiceInstance>> serviceInstances;
 
     public RouteLocator(ReactiveDiscoveryClient discoveryClient,
-                                                 DiscoveryLocatorProperties properties) {
+                        DiscoveryLocatorProperties properties) {
         this(discoveryClient.getClass().getSimpleName(), properties);
         serviceInstances = discoveryClient.getServices()
             .flatMap(service -> discoveryClient.getInstances(service).collectList());
@@ -57,8 +58,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         this.properties = properties;
         if (StringUtils.hasText(properties.getRouteIdPrefix())) {
             routeIdPrefix = properties.getRouteIdPrefix();
-        }
-        else {
+        } else {
             routeIdPrefix = discoveryClientName + "_";
         }
         evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
@@ -74,8 +74,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         Predicate<ServiceInstance> includePredicate;
         if (properties.getIncludeExpression() == null || "true".equalsIgnoreCase(properties.getIncludeExpression())) {
             includePredicate = instance -> true;
-        }
-        else {
+        } else {
             includePredicate = instance -> {
                 Boolean include = includeExpr.getValue(evalCtxt, instance, Boolean.class);
                 if (include == null) {
@@ -92,7 +91,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
                 List<RoutedService> routedServices = metadataParser.parseToListRoute(instance.getMetadata());
                 List<RouteDefinition> definitionsForInstance = new ArrayList<>();
-                for(RoutedService service : routedServices) {
+                for (RoutedService service : routedServices) {
                     RouteDefinition routeDefinition = buildRouteDefinition(urlExpr, instance, service.getSubServiceId());
 
                     final ServiceInstance instanceForEval = new RouteLocator.DelegatingServiceInstance(instance, properties);
@@ -103,7 +102,7 @@ public class RouteLocator implements RouteDefinitionLocator {
                         predicate.setName(original.getName());
                         for (Map.Entry<String, String> entry : original.getArgs().entrySet()) {
                             predicateValue = getValueFromExpr(evalCtxt, parser, instanceForEval, entry);
-                            predicateValue = predicateValue.replace("**",service.getGatewayUrl() + "/**");
+                            predicateValue = predicateValue.replace("**", service.getGatewayUrl() + "/**");
                             predicate.addArg(entry.getKey(), predicateValue);
                         }
                         routeDefinition.getPredicates().add(predicate);
@@ -114,12 +113,12 @@ public class RouteLocator implements RouteDefinitionLocator {
                         filter.setName(original.getName());
                         for (Map.Entry<String, String> entry : original.getArgs().entrySet()) {
 //
-                            if(entry.getKey().equals("regexp")) {
+                            if (entry.getKey().equals("regexp")) {
 //                                String value = getValueFromExpr(evalCtxt, parser, instanceForEval, entry);
-                                String value = predicateValue.replace("/**","/?(?<remaining>.*)");
-                                filter.addArg(entry.getKey(), value );
-                            }else {
-                                filter.addArg(entry.getKey(),service.getServiceUrl() + "/${remaining}");
+                                String value = predicateValue.replace("/**", "/?(?<remaining>.*)");
+                                filter.addArg(entry.getKey(), value);
+                            } else {
+                                filter.addArg(entry.getKey(), service.getServiceUrl() + "/${remaining}");
                             }
 
                         }
@@ -147,8 +146,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         try {
             Expression valueExpr = parser.parseExpression(entry.getValue());
             return valueExpr.getValue(evalCtxt, instance, String.class);
-        }
-        catch (ParseException | EvaluationException e) {
+        } catch (ParseException | EvaluationException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Unable to parse " + entry.getValue(), e);
             }

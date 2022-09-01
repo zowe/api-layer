@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
@@ -102,7 +103,7 @@ public class HttpConfig {
         this.context = context;
     }
 
-    void init(){
+    void init() {
         Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
             HttpsConfig.builder()
                 .protocol(protocol)
@@ -124,7 +125,7 @@ public class HttpConfig {
         log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
         HttpsFactory factory = new HttpsFactory(httpsConfig);
-        eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(eurekaServerUrl,serviceId).build();
+        eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
     }
 
     @Bean(destroyMethod = "shutdown")
@@ -135,11 +136,10 @@ public class HttpConfig {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);
-        }
-        else {
+        } else {
             appManager = manager;
         }
-       AbstractDiscoveryClientOptionalArgs<?> args = new MutableDiscoveryClientOptionalArgs();
+        AbstractDiscoveryClientOptionalArgs<?> args = new MutableDiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClient);
 
         CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, args,
