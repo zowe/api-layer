@@ -473,7 +473,7 @@ public class NewSecurityConfiguration {
         return http
             .cors()
             .and().csrf().disable()    // NOSONAR we are using SAMESITE cookie to mitigate CSRF
-            .headers().httpStrictTransportSecurity().disable()
+            .headers().httpStrictTransportSecurity().and()
             .frameOptions().disable()
             .and().exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
