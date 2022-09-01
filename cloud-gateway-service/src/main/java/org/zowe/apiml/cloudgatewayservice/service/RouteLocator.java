@@ -18,10 +18,7 @@ import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
-import org.springframework.core.style.ToStringCreator;
-import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
-import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.util.StringUtils;
@@ -33,7 +30,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 
 @Slf4j
@@ -93,37 +89,16 @@ public class RouteLocator implements RouteDefinitionLocator {
                 List<RouteDefinition> definitionsForInstance = new ArrayList<>();
                 for (RoutedService service : routedServices) {
                     RouteDefinition routeDefinition = buildRouteDefinition(urlExpr, instance, service.getSubServiceId());
-
-                    final ServiceInstance instanceForEval = new RouteLocator.DelegatingServiceInstance(instance, properties);
-
-                    String predicateValue = "";
-                    for (PredicateDefinition original : this.properties.getPredicates()) {
-                        PredicateDefinition predicate = new PredicateDefinition();
-                        predicate.setName(original.getName());
-                        for (Map.Entry<String, String> entry : original.getArgs().entrySet()) {
-                            predicateValue = getValueFromExpr(evalCtxt, parser, instanceForEval, entry);
-                            predicateValue = predicateValue.replace("**", service.getGatewayUrl() + "/**");
-                            predicate.addArg(entry.getKey(), predicateValue);
-                        }
-                        routeDefinition.getPredicates().add(predicate);
-                    }
-
-                    for (FilterDefinition original : this.properties.getFilters()) {
-                        FilterDefinition filter = new FilterDefinition();
-                        filter.setName(original.getName());
-                        for (Map.Entry<String, String> entry : original.getArgs().entrySet()) {
-//
-                            if (entry.getKey().equals("regexp")) {
-//                                String value = getValueFromExpr(evalCtxt, parser, instanceForEval, entry);
-                                String value = predicateValue.replace("/**", "/?(?<remaining>.*)");
-                                filter.addArg(entry.getKey(), value);
-                            } else {
-                                filter.addArg(entry.getKey(), service.getServiceUrl() + "/${remaining}");
-                            }
-
-                        }
-                        routeDefinition.getFilters().add(filter);
-                    }
+                    PredicateDefinition predicate = new PredicateDefinition();
+                    predicate.setName("Path");
+                    String predicateValue = "/" + instance.getServiceId().toLowerCase() + "/" + service.getGatewayUrl() + "/**";
+                    predicate.addArg("pattern", predicateValue);
+                    routeDefinition.getPredicates().add(predicate);
+                    FilterDefinition filter = new FilterDefinition();
+                    filter.setName("RewritePath");
+                    filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
+                    filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
+                    routeDefinition.getFilters().add(filter);
                     definitionsForInstance.add(routeDefinition);
                 }
                 return definitionsForInstance;
@@ -139,75 +114,6 @@ public class RouteLocator implements RouteDefinitionLocator {
         // add instance metadata
         routeDefinition.setMetadata(new LinkedHashMap<>(serviceInstance.getMetadata()));
         return routeDefinition;
-    }
-
-    String getValueFromExpr(SimpleEvaluationContext evalCtxt, SpelExpressionParser parser, ServiceInstance instance,
-                            Map.Entry<String, String> entry) {
-        try {
-            Expression valueExpr = parser.parseExpression(entry.getValue());
-            return valueExpr.getValue(evalCtxt, instance, String.class);
-        } catch (ParseException | EvaluationException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Unable to parse " + entry.getValue(), e);
-            }
-            throw e;
-        }
-    }
-
-    private static class DelegatingServiceInstance implements ServiceInstance {
-
-        final ServiceInstance delegate;
-
-        private final DiscoveryLocatorProperties properties;
-
-        private DelegatingServiceInstance(ServiceInstance delegate, DiscoveryLocatorProperties properties) {
-            this.delegate = delegate;
-            this.properties = properties;
-        }
-
-        @Override
-        public String getServiceId() {
-            if (properties.isLowerCaseServiceId()) {
-                return delegate.getServiceId().toLowerCase();
-            }
-            return delegate.getServiceId();
-        }
-
-        @Override
-        public String getHost() {
-            return delegate.getHost();
-        }
-
-        @Override
-        public int getPort() {
-            return delegate.getPort();
-        }
-
-        @Override
-        public boolean isSecure() {
-            return delegate.isSecure();
-        }
-
-        @Override
-        public URI getUri() {
-            return delegate.getUri();
-        }
-
-        @Override
-        public Map<String, String> getMetadata() {
-            return delegate.getMetadata();
-        }
-
-        @Override
-        public String getScheme() {
-            return delegate.getScheme();
-        }
-
-        @Override
-        public String toString() {
-            return new ToStringCreator(this).append("delegate", delegate).append("properties", properties).toString();
-        }
-
     }
 
 }

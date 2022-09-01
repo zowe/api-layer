@@ -1,7 +1,7 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.7.3")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
         classpath("org.eclipse.jgit:org.eclipse.jgit") {
             version {
@@ -61,9 +61,9 @@ dependencies {
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
-    annotationProcessor libraries.spring_boot_configuration_processor
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.3'
 
-    testImplementation libraries.spring_boot_starter_test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.3'
 }
 
 bootJar {
