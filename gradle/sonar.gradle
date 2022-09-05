@@ -107,6 +107,13 @@ project(":gateway-package") {
 }
 
 // Packaging project; sonar does not apply
+project(":cloud-gateway-package") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
+// Packaging project; sonar does not apply
 project(":caching-service-package") {
     sonarqube {
         skipProject = true
