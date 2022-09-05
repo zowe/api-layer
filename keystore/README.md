@@ -1,16 +1,16 @@
 # TLS Certificates for localhost
 
-This document describes how the certificates for default local configuration are generated.
+This document describes how certificates for default local configuration are generated.
 
-The certificates are used for integration tests as well.
+These certificates are used for integration tests as well.
 
-They are signed by local certificate authority (CA) that is created as part of these steps and is trusted by HTTPS clients in the integration tests.
+These certificates are signed by a local certificate authority (CA) that is created as part of these steps and is trusted by HTTPS clients in the integration tests.
 
-The root certificate of the local CA can be imported to your browser as well.
+The root certificate of the local CA can also be imported to your browser.
 
 You can use the provided key store and trust store or create your own version of the key stores and local CA.
 
-Last section of this document shows how to import and trust the local CA certificate on your system.
+The last section of this README shows how to import and trust the local CA certificate on your system.
 
 ## Key stores:
 
@@ -74,7 +74,7 @@ Last section of this document shows how to import and trust the local CA certifi
 
 ### Certificates for NGINX proxy (for AT-TLS simulation):
 
-these files get used by NGINX proxy to simulate AT_TLS on CI server.
+These files are used by the NGINX proxy to simulate AT_TLS on the CI server.
 
     * `keystore/localhost/Zowe_Service_Zowe_Development_Instances_Certificate_Authority_.cer`
     * `keystore/localhost/localca.cer`
@@ -82,11 +82,11 @@ these files get used by NGINX proxy to simulate AT_TLS on CI server.
 
 ##### How to generate additional client certs using OPENSSL
 
-Generate CSR
+Generate CSR:
 
     openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr -config openssl.conf -outform PEM
 
-Display CSR to verify the content(it has to contain all extensions, e.g. Extended Key Usage)
+Display CSR to verify the content(it has to contain all extensions, e.g. Extended Key Usage):
 
     openssl req -text -noout -verify -in MYCSR.csr
     
@@ -113,15 +113,15 @@ Example of valid CSR:
     Signature Algorithm: sha1WithRSAEncryption
     ...
 
-Sign CSR with API ML CA
+Sign CSR with API ML CA:
 
     openssl x509 -req -days 500 -in MYCSR.csr -CA APIML_External_Certificate_Authority.cer -CAkey APIML_External_Certificate_Authority.key -out server-cert.pem -CAcreateserial -sha256 -outform PEM -extfile openssl.conf -extensions v3_req
 
-Display certificate content
+Display certificate content:
 
     openssl x509 -in server-cert.pem -text -noout
 
-Example of valid signed certificate
+Example of valid signed certificate:
 
     Certificate:
     Data:
@@ -153,7 +153,7 @@ Example of valid signed certificate
 ## Generating own certificates for localhost
 **!!! Note that apiml_cm.sh script has been moved to [zowe/zowe-install-packaging repo](https://github.com/zowe/zowe-install-packaging) !!!** 
 
-Use following script:
+Use the following script:
 
     scripts/apiml_cm.sh --action setup
 
@@ -172,7 +172,7 @@ Use the following script in the root of the `api-layer` repository:
 
 The `service-alias` is an unique string to identify the key entry. All keystore entries (key and trusted certificate entries) are accessed via unique aliases. Since the keystore will have only one certificate, you can omit this parameter and use the default value `localhost`.
 
-The `service-keystore` is a repository of security certificates plus corresponding private keys. The `<keystore_path>` is the path excluding the extension to the keystore that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format with `.p12` extension. It should be path in an existing directory where your service expects the keystore. For example: `/opt/myservice/keystore/service.keystore`.
+The `service-keystore` is a repository of security certificates plus corresponding private keys. The `<keystore_path>` is the path excluding the extension to the keystore that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format with `.p12` extension. It should be a path in an existing directory where your service expects the keystore. For example: `/opt/myservice/keystore/service.keystore`.
 
 The `service-truststore` contains certificates from other parties that you expect to communicate with, or from Certificate Authorities that you trust to identify other parties. The `<truststore_path>` is the path excluding the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The truststore is generated in PKCS12 format.
 
@@ -180,7 +180,7 @@ The `service-ext` specifies the X.509 extension that should be the Subject Alter
 
     "SAN=dns:localhost.localdomain,dns:localhost,ip:127.0.0.1"
 
-*Note:* For more details about SAN, see section *SAN or SubjectAlternativeName* at [Java Keytool - Common Options](https://www.ibm.com/support/knowledgecenter/en/SSYKE2_8.0.0/com.ibm.java.security.component.80.doc/security-component/keytoolDocs/commonoptions.html).
+**Note:** For more details about SAN, see section *SAN or SubjectAlternativeName* at [Java Keytool - Common Options](https://www.ibm.com/support/knowledgecenter/en/SSYKE2_8.0.0/com.ibm.java.security.component.80.doc/security-component/keytoolDocs/commonoptions.html).
 
 The `service-dname` is the X.509 Distinguished Name and is used to identify entities, such as those which are named by the subject and issuer (signer) fields of X.509 certificates. For example:
 
@@ -209,18 +209,19 @@ The private key of the service certificate: `keystore/localhost/localhost.keysto
 
 ### Trust certificates of other services
 
-The APIML needs to validate the certificate of the services that it accessed by the APIML. The APIML needs to validate the full certificate chain. It usually means that:
+The API ML needs to validate the certificate of the services that it accessed by the APIML. The API ML needs to validate the full certificate chain. It usually means that:
 
-1. You need to import the public certificate of the root CA that has signed the certificate of the service to the APIML truststore.
+1. You need to import the public certificate of the root CA that has signed the certificate of the service to the API ML truststore.
 
 2. Your service needs to have its own certificate and all intermediate CA certificates (if it was signed by intermediate CA) in its keystore.
 
-    - If the service does not provide intermediate CA certificates to the APIML then the validation fails. This can be circumvented by importing the intermediate CA certificates to the APIML truststore.
+    - If the service does not provide intermediate CA certificates to the API ML then the validation fails. This can be circumvented by importing the intermediate CA certificates to the API ML truststore.
 
-You can add a public certificate to the APIML trust store by calling in the directory with APIML:
+You can add a public certificate to the API ML trust store by calling in the directory with API ML:
 
+    
     scripts/apiml_cm.sh --action trust --certificate <path-to-certificate-in-PEM-format> --alias <alias>
-
+    
 
 ### Self-signed certificate
 
@@ -228,15 +229,17 @@ You can also use a self-signed certificate.
 
 1. Generate a self-signed certificate for a service:
 
+        
         mkdir -p keystore/selfsigned
         scripts/apiml_cm.sh --action new-self-signed-service --service-keystore keystore/selfsigned/localhost.keystore --service-truststore keystore/selfsigned/localhost.truststore  --service-dname "CN=Zowe Self-Signed Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
+        
 
-2. Trust it in the APIML:
+2. Trust it in the API ML:
 
         scripts/apiml_cm.sh --action trust --alias selfsigned --certificate keystore/selfsigned/localhost.keystore.cer
 
 
-### Example
+### Example:
 
 If you have the sample service described in the User Guide at [this link](https://github.com/zowe/docs-site/blob/master/docs/extend/extend-apiml/onboard-overview.md#sample-rest-api-service) you need to complete the following steps:
 
@@ -244,7 +247,7 @@ If you have the sample service described in the User Guide at [this link](https:
 
         cd <your_directory>/swagger-samples/java/java-spring-boot
 
-2. Make directory for keystore:
+2. Make a directory for the keystore:
 
         mkdir keystore
 
@@ -252,7 +255,9 @@ If you have the sample service described in the User Guide at [this link](https:
 
         <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-ext SAN=dns:localhost.localdomain,dns:localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.truststore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365 --local-ca-filename <api-layer-repository>/keystore/local_ca/localca
 
-4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service. This can be done by adding the following properties to the `src/main/resources/application.properties`:
+This step generates the certificate and private key to the `keystore` directory.
+
+4.  Configure the HTTPS for the sample service. This can be done by adding the following properties to the `src/main/resources/application.properties`:
         
         server.ssl.keyAlias=petstore
         server.ssl.keyPassword=password
