@@ -238,7 +238,7 @@ You can also use a self-signed certificate.
 
 ### Example
 
-If you have the sample service described in the User Guide at [this link](https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md#sample-rest-api-service) you need to complete the following steps:
+If you have the sample service described in the User Guide at [this link](https://github.com/zowe/docs-site/blob/master/docs/extend/extend-apiml/onboard-overview.md#sample-rest-api-service) you need to complete the following steps:
 
 1. Go to the directory with the sample service:
 
@@ -274,7 +274,7 @@ If you have the sample service described in the User Guide at [this link](https:
 7. Now you have a service that is using a certificate signed by local CA and will be trusted by your API Mediation Layer.
    You can try it by accessing: [https://localhost:8443/v2/swagger.json](https://localhost:8443/v2/swagger.json)
 
-8. You can onboard the service to the API Mediation Layer by following instructions in [https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md](https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md).
+8. You can onboard the service to the API Mediation Layer by following instructions in [https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md](https://github.com/zowe/docs-site/blob/master/docs/extend/extend-apiml/onboard-overview.md).
 
 
 ## Import the root certificate of local CA to your browser
