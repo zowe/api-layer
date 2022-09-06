@@ -63,6 +63,7 @@ export function getSnippetContent(req, target, codeSnippet) {
  * @param title the code snippet title
  * @param syntax the syntax used for indentation
  * @param target the language target
+ * @param codeSnippet the code snippet
  * @returns codeSnippet the code snippet
  */
 export function generateSnippet(system, title, syntax, target, codeSnippet) {
