@@ -39,6 +39,33 @@ task packageApiCatalog(type: Zip) {
     }
 }
 
+// save build information to manifest
+packageApiCatalog.doFirst {
+    String manifest = file('src/main/resources/manifest.yaml').text
+
+    def getCommitHash = 'git rev-parse --verify HEAD'.execute()
+    def commit_hash = new ByteArrayOutputStream()
+    def command_err = new ByteArrayOutputStream()
+    getCommitHash.consumeProcessOutput(commit_hash, command_err)
+    getCommitHash.waitForOrKill(1000)
+
+    manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("BRANCH_NAME") ?: "")
+        .replaceAll("\\{\\{build.number\\}\\}", System.getenv("BUILD_NUMBER") ?: "")
+        .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
+        .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
+
+    def scriptOutputDir = new File("$buildDir/convert/");
+    if (!scriptOutputDir.exists()) {
+        scriptOutputDir.mkdirs();
+    }
+    File convertedManifest = new File("$buildDir/convert/manifest.yaml");
+    if (convertedManifest.exists()) {
+        convertedManifest.delete();
+    }
+    convertedManifest.createNewFile();
+    convertedManifest.write(manifest)
+}
+
 jar.dependsOn(packageApiCatalog)
 build.dependsOn(packageApiCatalog)
 
