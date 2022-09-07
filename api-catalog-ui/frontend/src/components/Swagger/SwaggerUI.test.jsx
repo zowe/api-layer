@@ -16,14 +16,6 @@ describe('>>> Swagger component tests', () => {
     afterEach(() => {
         document.body.innerHTML = '';
     });
-    beforeAll(() => {
-        // eslint-disable-next-line no-extend-native
-        Object.defineProperty(Object.prototype, 'hasOwn', {
-            value(prop) {
-                return Object.prototype.hasOwnProperty.call(this, prop);
-            },
-        });
-    });
 
     it('should not render swagger if apiDoc is null', () => {
         const service = {
