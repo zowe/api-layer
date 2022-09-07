@@ -63,6 +63,7 @@ export function getSnippetContent(req, target, codeSnippet) {
  * @param title the code snippet title
  * @param syntax the syntax used for indentation
  * @param target the language target
+ * @param codeSnippet the code snippet
  * @returns codeSnippet the code snippet
  */
 export function generateSnippet(system, title, syntax, target, codeSnippet) {
@@ -88,16 +89,18 @@ export function CustomizedSnippedGenerator(codeSnippets) {
                         (ori, system) =>
                         (state, ...args) => {
                             let useSet = ori(state, ...args);
-                            // eslint-disable-next-line no-restricted-syntax
-                            for (const codeSnippet of codeSnippets) {
-                                const newSnippet = generateSnippet(
-                                    system,
-                                    `Customized Snippet - ${codeSnippet.language}`,
-                                    codeSnippet.language,
-                                    'target',
-                                    codeSnippet
-                                );
-                                useSet = useSet.set(codeSnippet.endpoint + codeSnippet.language, newSnippet);
+                            if (codeSnippets !== null && codeSnippets !== undefined) {
+                                // eslint-disable-next-line no-restricted-syntax
+                                for (const codeSnippet of codeSnippets) {
+                                    const newSnippet = generateSnippet(
+                                        system,
+                                        `Customized Snippet - ${codeSnippet.language}`,
+                                        codeSnippet.language,
+                                        'target',
+                                        codeSnippet
+                                    );
+                                    useSet = useSet.set(codeSnippet.endpoint + codeSnippet.language, newSnippet);
+                                }
                             }
                             useSet = useSet
                                 .set(
