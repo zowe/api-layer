@@ -23,7 +23,7 @@ task packageCommonLib(type: Zip) {
     def resourceDir = 'src/main/resources/'
 
     into('/') {
-        from "$resourceDir/manifest.yaml"
+        from "$buildDir/convert/manifest.yaml"
         from "../schemas/apiml-common-lib-schema.json"
     }
 
