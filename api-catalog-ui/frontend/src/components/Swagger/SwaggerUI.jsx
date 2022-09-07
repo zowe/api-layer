@@ -101,19 +101,19 @@ export default class SwaggerUI extends Component {
             if (
                 selectedService.apis[selectedVersion] !== null &&
                 selectedService.apis[selectedVersion] !== undefined &&
-                selectedService.apis[selectedVersion].codeSnippet !== undefined
+                'codeSnippet' in selectedService.apis[selectedVersion]
             ) {
                 codeSnippets = selectedService.apis[selectedVersion].codeSnippet;
             } else if (
                 selectedService.apis[selectedService.defaultApiVersion] !== null &&
                 selectedService.apis[selectedService.defaultApiVersion] !== undefined &&
-                selectedService.apis[selectedService.defaultApiVersion].codeSnippet !== undefined
+                'codeSnippet' in selectedService.apis[selectedService.defaultApiVersion]
             ) {
                 codeSnippets = selectedService.apis[selectedService.defaultApiVersion].codeSnippet;
             } else if (
                 selectedService.apis.default !== null &&
                 selectedService.apis.default !== undefined &&
-                selectedService.apis.default.codeSnippet !== undefined
+                'codeSnippet' in selectedService.apis.default
             ) {
                 codeSnippets = selectedService.apis.default.codeSnippet;
             }
