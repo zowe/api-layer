@@ -102,21 +102,18 @@ export default class SwaggerUI extends Component {
                 selectedService.apis[selectedVersion] !== null &&
                 selectedService.apis[selectedVersion] !== undefined &&
                 selectedService.apis[selectedVersion].codeSnippet !== undefined
-                // Object.hasOwn(selectedService.apis[selectedVersion], 'codeSnippet')
             ) {
                 codeSnippets = selectedService.apis[selectedVersion].codeSnippet;
             } else if (
                 selectedService.apis[selectedService.defaultApiVersion] !== null &&
                 selectedService.apis[selectedService.defaultApiVersion] !== undefined &&
                 selectedService.apis[selectedService.defaultApiVersion].codeSnippet !== undefined
-                // Object.hasOwn(selectedService.apis[selectedService.defaultApiVersion], 'codeSnippet')
             ) {
                 codeSnippets = selectedService.apis[selectedService.defaultApiVersion].codeSnippet;
             } else if (
                 selectedService.apis.default !== null &&
                 selectedService.apis.default !== undefined &&
                 selectedService.apis.default.codeSnippet !== undefined
-                // Object.hasOwn(selectedService.apis.default, 'codeSnippet')
             ) {
                 codeSnippets = selectedService.apis.default.codeSnippet;
             }
