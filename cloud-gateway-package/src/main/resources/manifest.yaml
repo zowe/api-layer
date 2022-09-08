@@ -24,5 +24,5 @@ apimlServices:
   dynamic:
     - serviceId: cloud-gateway
 configs:
-  port: 8080
+  port: 7563
   debug: false
