@@ -1,7 +1,7 @@
 ---
 name: metrics-service
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.sdk.metrics-service-package
+id: org.zowe.apiml.metrics-service-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: Metrics service

@@ -1,7 +1,7 @@
 ---
 name: api-catalog
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.sdk.api-catalog-package
+id: org.zowe.apiml.api-catalog-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: API Catalog

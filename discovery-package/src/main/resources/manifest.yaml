@@ -1,7 +1,7 @@
 ---
 name: discovery
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.sdk.discovery-package
+id: org.zowe.apiml.discovery-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: API Discovery
