@@ -67,6 +67,6 @@ jobs:
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   DEFAULT_SCOPE: 'patch'
                   BUILD_NUMBER: ${{ github.run_number }}
-                  BRANCH_NAME: PR-${{ env.PR_NUMBER }}
+                  BRANCH_NAME: ${{ github.ref_name }}
 
             - uses: ./.github/actions/teardown

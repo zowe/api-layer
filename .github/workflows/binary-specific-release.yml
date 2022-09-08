@@ -62,6 +62,6 @@ jobs:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   BUILD_NUMBER: ${{ github.run_number }}
-                  BRANCH_NAME: PR-${{ env.PR_NUMBER }}
+                  BRANCH_NAME: ${{ github.ref_name }}
 
             - uses: ./.github/actions/teardown

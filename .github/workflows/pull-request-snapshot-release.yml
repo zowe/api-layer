@@ -6,7 +6,7 @@ on:
     workflow_dispatch:
         inputs:
             pull_request:
-                description: 'The pull request snapshot that is going to be released (i.e PR-XXXX)'
+                description: 'The pull request snapshot that is going to be released (i.e XXXX)'
                 required: true
 
 env:
@@ -27,13 +27,13 @@ jobs:
 
             - name: Release with Gradle
               run: |
-                  BRANCH_NAME=PR-${{ env.PR_NUMBER }}
-                  sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
-                  ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$BRANCH_NAME
+                  PR_NUMBER=PR-${{ env.PR_NUMBER }}
+                  sed -i '/version=/ s/-SNAPSHOT/-'"$PR_NUMBER"'-SNAPSHOT/' ./gradle.properties
+                  ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$PR_NUMBER
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  BRANCH_NAME: PR-${{ env.PR_NUMBER }}
+                  BRANCH_NAME: ${{ github.ref_name }}
                   BUILD_NUMBER: ${{ github.run_number }}
 
             - uses: ./.github/actions/teardown
