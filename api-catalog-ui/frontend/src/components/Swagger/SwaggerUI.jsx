@@ -96,9 +96,28 @@ export default class SwaggerUI extends Component {
 
     setSwaggerState = () => {
         const { selectedService, selectedVersion } = this.props;
-        const codeSnippets =
-            selectedService.apis[selectedVersion || selectedService.defaultApiVersion].codeSnippet ||
-            selectedService.apis.default.codeSnippet;
+        let codeSnippets = null;
+        if (selectedService.apis.length !== 0) {
+            if (
+                selectedService.apis[selectedVersion] !== null &&
+                selectedService.apis[selectedVersion] !== undefined &&
+                'codeSnippet' in selectedService.apis[selectedVersion]
+            ) {
+                codeSnippets = selectedService.apis[selectedVersion].codeSnippet;
+            } else if (
+                selectedService.apis[selectedService.defaultApiVersion] !== null &&
+                selectedService.apis[selectedService.defaultApiVersion] !== undefined &&
+                'codeSnippet' in selectedService.apis[selectedService.defaultApiVersion]
+            ) {
+                codeSnippets = selectedService.apis[selectedService.defaultApiVersion].codeSnippet;
+            } else if (
+                selectedService.apis.default !== null &&
+                selectedService.apis.default !== undefined &&
+                'codeSnippet' in selectedService.apis.default
+            ) {
+                codeSnippets = selectedService.apis.default.codeSnippet;
+            }
+        }
         try {
             // If no version selected use the default apiDoc
             if (

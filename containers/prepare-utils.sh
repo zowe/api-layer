@@ -73,6 +73,12 @@ function buildPackage {
     package_task=$2
     echo ">>>>> build package ${service_package}"
     cd $REPO_ROOT_DIR
+    if [ -n "${GITHUB_PR_ID}" ]; then
+      export BRANCH_NAME=PR-${GITHUB_PR_ID}
+    else
+      export BRANCH_NAME=${GITHUB_REF#refs/heads/}
+    fi
+    export BUILD_NUMBER=${GITHUB_RUN_NUMBER}
     ./gradlew $package_task
     if [ ! -f "${REPO_ROOT_DIR}/${service_package}/build/distributions/${service_package}.zip" ]; then
       echo "Error: failed to build ${service_package}.zip"
