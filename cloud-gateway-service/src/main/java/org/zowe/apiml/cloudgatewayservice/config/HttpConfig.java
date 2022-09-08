@@ -20,6 +20,7 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -33,8 +34,6 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
-
-import java.util.function.Supplier;
 
 @Configuration
 @Slf4j
@@ -82,57 +81,33 @@ public class HttpConfig {
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
-    @Value("${server.maxConnectionsPerRoute:#{10}}")
-    private Integer maxConnectionsPerRoute;
-
-    @Value("${server.maxTotalConnections:#{100}}")
-    private Integer maxTotalConnections;
-
-    @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
-    private int idleConnTimeoutSeconds;
-    @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
-    private int requestConnectionTimeout;
-    @Value("${apiml.httpclient.conn-pool.readTimeout:#{10000}}")
-    private int readTimeout;
-    @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
-    private int timeToLive;
     private final ApplicationContext context;
-    private EurekaJerseyClient eurekaJerseyClient;
 
     public HttpConfig(ApplicationContext context) {
         this.context = context;
     }
 
-    void init() {
-        Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
-            HttpsConfig.builder()
-                .protocol(protocol)
-                .trustStore(trustStore).trustStoreType(trustStoreType)
-                .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-                .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
-                .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
-                .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections)
-                .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
-                .timeToLive(timeToLive);
-
-        HttpsConfig httpsConfig = httpsConfigSupplier.get()
+    @Bean
+    @Qualifier("apimlEurekaJerseyClient")
+    EurekaJerseyClient getEurekaJerseyClient() {
+        HttpsConfig config = HttpsConfig.builder()
+            .protocol(protocol)
+            .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
+            .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
+            .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+            .trustStore(trustStore).trustStoreType(trustStoreType)
             .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
-            .build();
+            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
+        log.info("Using HTTPS configuration: {}", config.toString());
 
-        HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();
-
-        log.info("Using HTTPS configuration: {}", httpsConfig.toString());
-
-        HttpsFactory factory = new HttpsFactory(httpsConfig);
-        eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
+        HttpsFactory factory = new HttpsFactory(config);
+        return factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
     }
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
-    public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
+    public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,@Qualifier("apimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
                                      EurekaInstanceConfig instance, @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
-        init();
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);

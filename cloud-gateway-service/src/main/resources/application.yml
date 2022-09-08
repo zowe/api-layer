@@ -3,7 +3,13 @@ eureka:
         serviceUrl:
             defaultZone: https://localhost:10011/eureka/
 
+apiml:
+    service:
+        id: cloud-gateway
+        port: 10023
+        hostname: localhost
 server:
+    port: ${apiml.service.port}
     ssl:
         keyAlias: localhost
         keyPassword: password
