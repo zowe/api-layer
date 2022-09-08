@@ -1,7 +1,7 @@
 ---
 name: caching-service
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.sdk.caching-service-package
+id: org.zowe.apiml.caching-service-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: Caching service for internal usage

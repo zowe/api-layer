@@ -1,7 +1,7 @@
 ---
 name: apiml-sample-extension
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.sdk.apiml-sample-extension-package
+id: org.zowe.apiml.apiml-sample-extension-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: A sample extension for API ML
