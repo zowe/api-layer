@@ -43,19 +43,12 @@
 
 if [ -n "${LAUNCH_COMPONENT}" ]
 then
-    JAR_FILE="${LAUNCH_COMPONENT}/cloud-gateway-service-lite.jar"
+    JAR_FILE="${LAUNCH_COMPONENT}/cloud-gateway-service.jar"
 else
-    JAR_FILE="$(pwd)/bin/cloud-gateway-service-lite.jar"
+    JAR_FILE="$(pwd)/bin/cloud-gateway-service.jar"
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
-
-if [ -z "${CMMN_LB}" ]
-then
-    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
-else
-    COMMON_LIB=${CMMN_LB}
-fi
 
 if [ -z "${LIBRARY_PATH}" ]
 then
@@ -107,7 +100,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
     -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \
     -jar ${JAR_FILE} &
 

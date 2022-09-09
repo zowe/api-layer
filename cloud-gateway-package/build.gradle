@@ -9,7 +9,7 @@ configurations {
 }
 
 dependencies {
-    cloudGatewayServiceJar(project(path: ":cloud-gateway-service", configuration: "liteJarConfiguration"))
+    cloudGatewayServiceJar(project(path: ":cloud-gateway-service", configuration: "bootArchives"))
 }
 
 task packageCloudGateway(type: Zip) {

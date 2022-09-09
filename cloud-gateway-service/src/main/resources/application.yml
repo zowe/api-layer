@@ -27,10 +27,6 @@ spring:
                 locator:
                     enabled: false
                     lowerCaseServiceId: true
-#                    filters[0]:
-#                        name: RewritePath
-#                        args[regexp]: "'/' + serviceId + '/(?<remaining>.*)'"
-#                        args[replacement]: "'/' + serviceId + '/${remaining}'"
     application:
         name: cloudGateway
 
@@ -38,3 +34,13 @@ logging:
     level:
         org.springframework.cloud.gateway: DEBUG
         reactor.netty.http.client: DEBUG
+
+management:
+    endpoint:
+      gateway:
+          enabled: true
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,gateway
