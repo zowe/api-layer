@@ -1,7 +1,7 @@
 ---
 name: apiml-common-lib
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.sdk.apiml-common-lib-package
+id: org.zowe.apiml.apiml-common-lib-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: Shared JAR containing the common dependencies
@@ -11,5 +11,10 @@ license: EPL-2.0
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git
+build:
+  branch: "{{build.branch}}"
+  number: "{{build.number}}"
+  commitHash: "{{build.commitHash}}"
+  timestamp: {{build.timestamp}}
 schemas:
   configs: "apiml-common-lib-schema.json"

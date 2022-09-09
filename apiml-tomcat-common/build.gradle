@@ -1,5 +1,8 @@
 dependencies {
-    implementation libraries.spring_boot_starter_web
+    implementation(libraries.spring_boot_starter_web) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
     implementation libraries.zowe_attls
 
     implementation libraries.spring_aop

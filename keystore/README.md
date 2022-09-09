@@ -182,6 +182,7 @@ Use the following script in the root of the `api-layer` repository:
 * **`service-keystore`**  
  is a repository of security certificates plus corresponding private keys. The `<keystore_path>` is the path excluding the extension to the keystore that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format with `.p12` extension. It should be a path in an existing directory where your service expects the keystore. For example: `/opt/myservice/keystore/service.keystore`.
 
+
 * **`service-truststore`**  
  contains certificates from other parties that you expect to communicate with, or from Certificate Authorities that you trust to identify other parties. The `<truststore_path>` is the path excluding the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The truststore is generated in PKCS12 format.
 
@@ -198,6 +199,7 @@ Use the following script in the root of the `api-layer` repository:
  is the X.509 Distinguished Name and is used to identify entities, such as those which are named by the subject and issuer (signer) fields of X.509 certificates. 
 
   **Example:**
+
 
     "CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 
