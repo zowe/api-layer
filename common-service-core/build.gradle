@@ -28,10 +28,12 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation(libraries.spring_boot_starter_cache)
     implementation(libraries.eh_cache)
 
-    testImplementation(libraries.spring_boot_starter_cache)
+    testImplementation(libraries.spring_boot_starter_cache) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    testImplementation libraries.snakeyaml
     testImplementation(libraries.spring_boot_starter_test)
     testImplementation libraries.json_smart
     testImplementation(libraries.eh_cache)

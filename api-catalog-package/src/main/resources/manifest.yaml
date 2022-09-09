@@ -17,7 +17,7 @@ build:
   branch: "{{build.branch}}"
   number: "{{build.number}}"
   commitHash: "{{build.commitHash}}"
-  timestamp: "{{build.timestamp}}"
+  timestamp: {{build.timestamp}}
 commands:
   start: bin/start.sh
   validate: bin/validate.sh
