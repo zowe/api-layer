@@ -4,12 +4,16 @@ dependencies {
     compile libraries.jaxb_api
     implementation libraries.javax_annotation
     implementation libraries.jackson_annotations
-    implementation libraries.jackson_dataformat_yaml
+    implementation(libraries.jackson_dataformat_yaml) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
     implementation(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
     }
 
+    implementation libraries.snakeyaml
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 

@@ -53,6 +53,7 @@ dependencies {
     implementation project(':onboarding-enabler-spring')
     implementation(project(':security-service-client-spring'))
 
+    implementation libraries.snakeyaml
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
     implementation libraries.jackson_databind
