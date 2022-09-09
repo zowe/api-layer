@@ -59,7 +59,7 @@ ext {
     reactorTestVersion = '3.4.9'
     restAssuredVersion = '4.4.0'
     slf4jVersion = '1.7.31'
-    snakeyamlVersion = '1.27'
+    snakeyamlVersion = '1.31'
     springFoxVersion = '2.9.2'
     springDocVersion = '1.6.9'
     spring4Version = '4.3.7.RELEASE' // Used within PJE in tests

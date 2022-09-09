@@ -3,7 +3,10 @@ dependencies {
     compileOnly libraries.spring_boot_starter_web
 
     implementation libraries.apache_commons_lang3
-    implementation libraries.jackson_dataformat_yaml
+    implementation(libraries.jackson_dataformat_yaml) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

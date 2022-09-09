@@ -22,7 +22,10 @@ dependencies {
     implementation 'io.swagger.core.v3:swagger-jaxrs2:2.0.0'
 
     compileOnly libraries.javax_servlet_api
-    implementation libraries.jackson_dataformat_yaml
+    implementation(libraries.jackson_dataformat_yaml) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
