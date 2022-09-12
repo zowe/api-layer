@@ -64,6 +64,7 @@ dependencies {
     implementation project(':apiml-security-common')
     implementation project(':apiml-tomcat-common')
     implementation project(':apiml-extension-loader')
+    implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
