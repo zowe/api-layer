@@ -30,7 +30,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.Predicate;
 
 @Slf4j
 public class RouteLocator implements RouteDefinitionLocator {
@@ -64,24 +63,11 @@ public class RouteLocator implements RouteDefinitionLocator {
     public Flux<RouteDefinition> getRouteDefinitions() {
 
         SpelExpressionParser parser = new SpelExpressionParser();
-        Expression includeExpr = parser.parseExpression(properties.getIncludeExpression());
         Expression urlExpr = parser.parseExpression(properties.getUrlExpression());
 
-        Predicate<ServiceInstance> includePredicate;
-        if (properties.getIncludeExpression() == null || "true".equalsIgnoreCase(properties.getIncludeExpression())) {
-            includePredicate = instance -> true;
-        } else {
-            includePredicate = instance -> {
-                Boolean include = includeExpr.getValue(evalCtxt, instance, Boolean.class);
-                if (include == null) {
-                    return false;
-                }
-                return include;
-            };
-        }
         EurekaMetadataParser metadataParser = new EurekaMetadataParser();
         return serviceInstances.filter(instances -> !instances.isEmpty()).flatMap(Flux::fromIterable)
-            .filter(includePredicate).collectMap(ServiceInstance::getServiceId)
+            .collectMap(ServiceInstance::getServiceId)
             // remove duplicates
             .flatMapMany(map -> Flux.fromIterable(map.values())).map(instance -> {
 

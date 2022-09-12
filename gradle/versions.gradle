@@ -46,7 +46,7 @@ ext {
     jsoupVersion = '1.8.3'
     jsr305Version = '3.0.2'
     junitJupiterVersion = '5.7.2'
-    junitPlatformVersion = '1.7.2'
+    junitPlatformVersion = '1.8.2'
     jqueryVersion = '3.6.0!!'
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
