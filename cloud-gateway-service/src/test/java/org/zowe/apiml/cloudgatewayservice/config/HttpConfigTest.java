@@ -36,7 +36,6 @@ class HttpConfigTest {
     class WhenCreateEurekaJerseyClientBuilder {
         @Test
         void thenIsNotNull() {
-            Assertions.assertNotNull(httpConfig);
             Assertions.assertNotNull(httpConfig.getEurekaJerseyClient());
         }
     }
