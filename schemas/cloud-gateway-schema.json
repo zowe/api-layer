@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schema/cloud-gateway-config",
+    "allOf": [
+        { "$ref": "https://zowe.org/schemas/v2/server-base" },
+        {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "properties": {
+                        "additionalProperties": true,
+                        "discovery-service": {
+                            "allOf": [
+                                {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "apiml": {
+                                            "type": "object",
+                                            "properties": {
+                                                "serviceIdPrefixReplacer": {
+                                                    "type": "string",
+                                                    "description": "A comma separated tuple to replace service ID with new one in API ML registry."
+                                                }
+                                            }
+                                        },
+                                        "port": {
+                                            "$ref": "#/$defs/port",
+                                            "default": 7563
+                                        },
+                                        "debug": {
+                                            "type": "boolean",
+                                            "description": "Enable debug logs in discovery service"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        }
+    }
+}

@@ -29,7 +29,9 @@ ext.servicesToPublish = [
     'discovery-service',
     'discovery-package',
     'gateway-service',
-    'gateway-package'
+    'gateway-package',
+    'cloud-gateway-service',
+    'cloud-gateway-package'
 ]
 
 ext.sdksToPublish = ext.enablers + ext.javaLibraries

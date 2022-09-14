@@ -13,6 +13,8 @@ ext.projectsNeedLicense = [
     'gateway-common',
     'gateway-service',
     'gateway-package',
+    'cloud-gateway-service',
+    'cloud-gateway-package',
     'integration-tests',
     'metrics-service',
     'metrics-service-package',

@@ -1,0 +1,46 @@
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
+
+apiml:
+    service:
+        id: cloud-gateway
+        port: 10023
+        hostname: localhost
+server:
+    port: ${apiml.service.port}
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+spring:
+    cloud:
+        gateway:
+            discovery:
+                locator:
+                    enabled: false
+                    lowerCaseServiceId: true
+    application:
+        name: cloudGateway
+
+logging:
+    level:
+        org.springframework.cloud.gateway: DEBUG
+        reactor.netty.http.client: DEBUG
+
+management:
+    endpoint:
+      gateway:
+          enabled: true
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,gateway
