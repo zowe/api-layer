@@ -64,7 +64,10 @@ dependencies {
     implementation project(':apiml-tomcat-common')
     implementation project(':apiml-security-common')
     implementation project(':security-service-client-spring')
-    implementation libraries.spring_boot_starter_web
+    implementation(libraries.spring_boot_starter_web) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator

@@ -39,10 +39,10 @@ springBoot {
         properties {
             // Generate extra build info:
             additional = [
-                by: System.properties['user.name'],
+                by             : System.properties['user.name'],
                 operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
-                number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
-                machine: InetAddress.localHost.hostName
+                number         : System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine        : InetAddress.localHost.hostName
             ]
         }
     }
@@ -54,7 +54,7 @@ gitProperties {
 
 configurations.all {
     resolutionStrategy {
-        force (libraries.jetty_websocket_client, libraries.spring_security_web, libraries.spring_security_config)
+        force(libraries.jetty_websocket_client, libraries.spring_security_web, libraries.spring_security_config)
     }
 }
 
@@ -67,13 +67,16 @@ dependencies {
     annotationProcessor libraries.lombok
 
     implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
-    implementation libraries.spring_boot_starter_web
+    implementation(libraries.spring_boot_starter_web) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_configuration_processor
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_cloud_starter_bootstrap
-    implementation(libraries.spring_cloud_starter_eureka){
+    implementation(libraries.spring_cloud_starter_eureka) {
         exclude group: "com.google.code.gson", module: "gson"
     }
     implementation libraries.gson
@@ -165,7 +168,7 @@ task copyUi(type: Copy) {
 
 bootRun {
     if (project.hasProperty('args')) {
-             args project.args.split(',')
+        args project.args.split(',')
     }
     systemProperties = System.properties
 }
