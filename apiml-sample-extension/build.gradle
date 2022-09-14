@@ -24,9 +24,9 @@ gitProperties {
 }
 
 dependencies {
-    implementation libraries.spring_doc
-    implementation libraries.spring_webmvc
-    implementation libraries.guava
+    compileOnly libraries.spring_doc
+    compileOnly libraries.spring_webmvc
+    compileOnly libraries.guava
 }
 
 jar {
