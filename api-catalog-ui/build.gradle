@@ -28,6 +28,13 @@ if (project.hasProperty('omitDevDependencies')) {
 //
 // =================================================
 
+task zipNpmBuild(type: Zip) {
+    archiveFileName = "static-files.zip"
+    into('/') {
+        from "./frontend/build"
+    }
+}
+
 task javascriptClean(type: Delete) {
     group = 'npm'
     delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build'

@@ -57,7 +57,10 @@ dependencies {
     implementation libraries.spring_doc
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_boot_starter_web
+    implementation(libraries.spring_boot_starter_web) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_validation
