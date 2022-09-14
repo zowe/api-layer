@@ -24,7 +24,10 @@ gitProperties {
 }
 
 dependencies {
-    implementation libraries.spring_doc
+    implementation(libraries.spring_doc){
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
     implementation libraries.spring_webmvc
     implementation libraries.guava
 }
