@@ -1,0 +1,57 @@
+# This workflow will create images for api-layer services
+# This workflow is used to expose build-conformant-images.yml in a way that doesn't give users the option to release.
+name: Image publish branch
+
+on:
+    workflow_dispatch:
+        inputs:
+            service:
+                description: 'Enter the service for which to create an image.'
+                type: choice
+                options:
+                    - all
+                    - gateway-service
+                    - discovery-service
+                    - api-catalog-services
+                    - caching-service
+                    - metrics-service
+                required: true
+                default: 'all'
+
+jobs:
+    build-test-services:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Build service for image
+                if: ${{ github.event.inputs.service != 'all' }}
+                run: ./gradlew ${{ github.event.inputs.service }}:build
+
+            -   name: Build all services for images
+                if: ${{ github.event.inputs.service == 'all' }}
+                run: ./gradlew build
+
+            -   uses: ./.github/actions/teardown
+
+
+    publish-images:
+        needs:
+            - build-test-services
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
+        with:
+            service: ${{ github.event.inputs.service }}
+            forceNoRelease: true
+        secrets:
+            registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
+            registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
+            redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
+            redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+            zlinux-host: ${{ secrets.ZLINUX_HOST }}
+            zlinux-ssh-user: ${{ secrets.ZLINUX_SSH_USER }}
+            zlinux-ssh-key: ${{ secrets.ZLINUX_SSH_KEY }}
+            zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}

@@ -1,0 +1,29 @@
+# This workflow will release project with Gradle
+
+name: Binary snapshot release
+
+on:
+    push:
+        branches: [ master, v2.x.x ]
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        timeout-minutes: 40
+
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.head_ref }}
+
+            - uses: ./.github/actions/setup
+
+            - name: Release with Gradle
+              run: ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  BUILD_NUMBER: ${{ github.run_number }}
+                  BRANCH_NAME: ${{ github.ref_name }}
+
+            - uses: ./.github/actions/teardown
