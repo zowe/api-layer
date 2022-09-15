@@ -14,7 +14,8 @@ jobs:
             - uses: actions/github-script@v6
               with:
                 script: |
-                    const repository = ${{ github.repository }};
+                    const owner = "zowe";
+                    const repository = "api-layer";
                     const prNumber = ${{ github.event.pull_request.number }};
                     const { data } = await github.rest.issues.pulls.listFiles({
                                                 owner: "zowe",
