@@ -14,11 +14,10 @@ jobs:
             - uses: actions/github-script@v6
               with:
                 script: |
-                    const owner = "zowe";
                     const repository = ${{ github.repository }};
                     const prNumber = ${{ github.event.pull_request.number }};
                     const { data } = await github.rest.issues.pulls.listFiles({
-                                                owner: owner,
+                                                owner: "zowe",
                                                 repo: repository,
                                                 pull_number: prNumber
                                         });
