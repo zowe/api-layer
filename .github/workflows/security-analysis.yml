@@ -11,17 +11,30 @@ jobs:
         timeout-minutes: 20
 
         steps:
-            - name: Set up Node
-              uses: actions/setup-node@v2
+            - uses: actions/github-script@v6
               with:
-                  node-version: '14'
+                script: |
+                    const owner = "zowe";
+                    const repository = "api-layer";
+                    const prNumber = ${{ github.event.pull_request.number }};
+                    const { data } = await github.rest.pulls.listFiles({
+                                                owner: owner,
+                                                repo: repository,
+                                                pull_number: prNumber
+                                        });
+                    let isRisky = false;
 
-            - name: Checkout repository
-              uses: actions/checkout@v2
+                    data.forEach(file => {
+                       if(file.filename.indexOf("security") !== -1) {
+                           isRisky = true;
+                       }
+                    });
 
-            - name: Setup and run the node
-              run: |
-                  cd scripts/security_sensitive
-                  npm install
-                  node index.js zowe api-layer ${{ github.event.pull_request.number }} ${{ secrets.ZOWE_ROBOT_TOKEN }}
-                  cd ..
+                    if(isRisky) {
+                       await github.rest.issues.addLabels({
+                           owner,
+                           repo: repository,
+                           issue_number: prNumber,
+                           labels: ['Sensitive']
+                       });
+                    }
