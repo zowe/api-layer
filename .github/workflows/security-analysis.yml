@@ -17,8 +17,8 @@ jobs:
                     const owner = "zowe";
                     const repository = "api-layer";
                     const prNumber = ${{ github.event.pull_request.number }};
-                    const { data } = await github.rest.issues.pulls.listFiles({
-                                                owner: "zowe",
+                    const { data } = await github.rest.pulls.listFiles({
+                                                owner: owner,
                                                 repo: repository,
                                                 pull_number: prNumber
                                         });
