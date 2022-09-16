@@ -9,7 +9,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  PoC to protect REST endpoint with okta (#2555) ([bac1e9e](https://github.com/zowe/api-layer/commit/bac1e9e)), closes [#2555](https://github.com/zowe/api-layer/issues/2555)
 * Feature: Added a Redis sentinel enabled field that allows Sentinel configuration to be added to a file and kept available even when Sentinel is not in use. (#2546) ([3779072](https://github.com/zowe/api-layer/commit/3779072)), closes [#2546](https://github.com/zowe/api-layer/issues/2546)
 * Feature:  Added customized code snippets to API Catalog.  Customized snippets can now be defined as part of the service metadata to be displayed in the API Catalog UI (#2526) ([602392e](https://github.com/zowe/api-layer/commit/602392e)), closes [#2526](https://github.com/zowe/api-layer/issues/2526)
-* Feature:  Code snippet configuration now enables direct integration of an endpoint into an application without requiring code for interaction over the REST. (#2509) ([4d2298e](https://github.com/zowe/api-layer/commit/4d2298e)), closes [#2509](https://github.com/zowe/api-layer/issues/2509)
+* Feature:  Code snippet configuration now enables direct integration of an endpoint into an application without requiring code to integrate the other application's REST APIs. (#2509) ([4d2298e](https://github.com/zowe/api-layer/commit/4d2298e)), closes [#2509](https://github.com/zowe/api-layer/issues/2509)
 * Feature: A Personal Access Token (PAT) for SSO is now accepted. The PAT can now be validated and invalidated using a REST API on the Gateway (#2499) ([ad17c18](https://github.com/zowe/api-layer/commit/ad17c18)), closes [#2499](https://github.com/zowe/api-layer/issues/2499)
 
 
