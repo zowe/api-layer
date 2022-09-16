@@ -2,6 +2,27 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.4.4 (2022-09-15)`
+
+* Feature: Introduction of a new cloud gateway service to provide routing functionality for multi-sysplex environments. (#2576) ([7c618c0](https://github.com/zowe/api-layer/commit/7c618c0)), closes [#2576](https://github.com/zowe/api-layer/issues/2576)
+* Feature: Introduced a new Personal Access Token (PAT) API to evict non-relevant tokens and rules (#2554) ([f3aeafa](https://github.com/zowe/api-layer/commit/f3aeafa)), closes [#2554](https://github.com/zowe/api-layer/issues/2554)
+* Feature: Added a Redis sentinel enabled field that allows Sentinel configuration to be added to a file and kept available even when Sentinel is not in use. (#2546) ([3779072](https://github.com/zowe/api-layer/commit/3779072)), closes [#2546](https://github.com/zowe/api-layer/issues/2546)
+* Feature:  Added customized code snippets to API Catalog.  Customized snippets can now be defined as part of the service metadata to be displayed in the API Catalog UI (#2526) ([602392e](https://github.com/zowe/api-layer/commit/602392e)), closes [#2526](https://github.com/zowe/api-layer/issues/2526)
+* Feature:  Code snippet configuration now enables direct integration of an endpoint into an application without requiring code to integrate the other application's REST APIs. (#2509) ([4d2298e](https://github.com/zowe/api-layer/commit/4d2298e)), closes [#2509](https://github.com/zowe/api-layer/issues/2509)
+* Feature: A Personal Access Token (PAT) for SSO is now accepted. The PAT can now be validated and invalidated using a REST API on the Gateway (#2499) ([ad17c18](https://github.com/zowe/api-layer/commit/ad17c18)), closes [#2499](https://github.com/zowe/api-layer/issues/2499)
+
+
+* Bugfix:  snakeyml update, scheme validation fix (#2577) ([ae48669](https://github.com/zowe/api-layer/commit/ae48669)), closes [#2577](https://github.com/zowe/api-layer/issues/2577)
+* Bugfix:  Add build info to the manifest.yaml (#2573) ([93298dd](https://github.com/zowe/api-layer/commit/93298dd)), closes [#2573](https://github.com/zowe/api-layer/issues/2573)
+* Bugfix:  Fix bug in the swagger (#2571) ([36997c6](https://github.com/zowe/api-layer/commit/36997c6)), closes [#2571](https://github.com/zowe/api-layer/issues/2571)
+* Bugfix:  AdditionalProperties must be outside of properties attribute (#2567) ([fea515a](https://github.com/zowe/api-layer/commit/fea515a)), closes [#2567](https://github.com/zowe/api-layer/issues/2567)
+* Bugfix:  Enable hsts (#2565) ([4cffe97](https://github.com/zowe/api-layer/commit/4cffe97)), closes [#2565](https://github.com/zowe/api-layer/issues/2565)
+* Bugfix:  Fix code snippets bug  (#2564) ([23bed56](https://github.com/zowe/api-layer/commit/23bed56)), closes [#2564](https://github.com/zowe/api-layer/issues/2564)
+* Bugfix:  Enable redis storage mode in tests (#2522) ([11bf491](https://github.com/zowe/api-layer/commit/11bf491)), closes [#2522](https://github.com/zowe/api-layer/issues/2522)
+* Bugfix:  Gradle publish after update  (#2528) ([1baa6f7](https://github.com/zowe/api-layer/commit/1baa6f7)), closes [#2528](https://github.com/zowe/api-layer/issues/2528)
+* Bugfix:  Remove multiple tokens from cookies (#2514) ([d5bc187](https://github.com/zowe/api-layer/commit/d5bc187)), closes [#2514](https://github.com/zowe/api-layer/issues/2514)
+* Bugfix:  Retrieve swagger api docs with or without certificate configuration enabled (#2500) ([16ca734](https://github.com/zowe/api-layer/commit/16ca734)), closes [#2500](https://github.com/zowe/api-layer/issues/2500)
+
 ## `2.2.4 (2022-07-14)`
 
 * Feature:  Revoke a Persoanal Access Token by admin (#2476) ([e4d42a9](https://github.com/zowe/api-layer/commit/e4d42a9)), closes [#2476](https://github.com/zowe/api-layer/issues/2476)
