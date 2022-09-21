@@ -31,6 +31,7 @@ import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
@@ -124,9 +125,15 @@ public class HttpConfig {
     }
 
 
-    @Bean
-    public RouteLocator discoveryClientRouteDefinitionLocator(
+//    @Bean
+    public RouteLocator apimlDiscoveryRouteDefLocator(
         ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
         return new RouteLocator(discoveryClient, properties);
+    }
+
+    @Bean
+    public RouteLocator proxyRouteDefLocator(
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
+        return new ProxyRouteLocator(discoveryClient, properties);
     }
 }
