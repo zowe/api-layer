@@ -75,20 +75,29 @@ public class RouteLocator implements RouteDefinitionLocator {
                 List<RouteDefinition> definitionsForInstance = new ArrayList<>();
                 for (RoutedService service : routedServices) {
                     RouteDefinition routeDefinition = buildRouteDefinition(urlExpr, instance, service.getSubServiceId());
-                    PredicateDefinition predicate = new PredicateDefinition();
-                    predicate.setName("Path");
-                    String predicateValue = "/" + instance.getServiceId().toLowerCase() + "/" + service.getGatewayUrl() + "/**";
-                    predicate.addArg("pattern", predicateValue);
-                    routeDefinition.getPredicates().add(predicate);
-                    FilterDefinition filter = new FilterDefinition();
-                    filter.setName("RewritePath");
-                    filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
-                    filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
-                    routeDefinition.getFilters().add(filter);
+
+                    setProperties(routeDefinition, instance, service);
+
                     definitionsForInstance.add(routeDefinition);
                 }
                 return definitionsForInstance;
             }).flatMapIterable(list -> list);
+    }
+
+    protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
+        PredicateDefinition predicate = new PredicateDefinition();
+        predicate.setName("Path");
+        String predicateValue = "/" + instance.getServiceId().toLowerCase() + "/" + service.getGatewayUrl() + "/**";
+        predicate.addArg("pattern", predicateValue);
+        routeDefinition.getPredicates().add(predicate);
+
+        FilterDefinition filter = new FilterDefinition();
+        filter.setName("RewritePath");
+
+        filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
+        filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
+        routeDefinition.getFilters().add(filter);
+
     }
 
     protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {
