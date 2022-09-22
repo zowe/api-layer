@@ -18,7 +18,10 @@ export default class InstanceInfo extends Component {
 
         const apiInfo =
             selectedService.apis[selectedVersion || selectedService.defaultApiVersion] || selectedService.apis.default;
-        const { apiId } = apiInfo;
+        let apiId = '';
+        if (apiInfo !== null) {
+            apiId = apiInfo.apiId;
+        }
         return (
             <Shield title="Cannot display information about selected instance">
                 <div className="apiInfo-item">
