@@ -54,7 +54,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         if (StringUtils.hasText(properties.getRouteIdPrefix())) {
             routeIdPrefix = properties.getRouteIdPrefix();
         } else {
-            routeIdPrefix = discoveryClientName + "_";
+            routeIdPrefix = this.getClass().getSimpleName() + "_";
         }
         evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
     }
@@ -67,7 +67,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
         EurekaMetadataParser metadataParser = new EurekaMetadataParser();
         return serviceInstances.filter(instances -> !instances.isEmpty()).flatMap(Flux::fromIterable)
-            .collectMap(ServiceInstance::getServiceId)
+            .collectMap(ServiceInstance::getInstanceId)
             // remove duplicates
             .flatMapMany(map -> Flux.fromIterable(map.values())).map(instance -> {
 
@@ -109,6 +109,10 @@ public class RouteLocator implements RouteDefinitionLocator {
         // add instance metadata
         routeDefinition.setMetadata(new LinkedHashMap<>(serviceInstance.getMetadata()));
         return routeDefinition;
+    }
+
+    public String getRouteIdPrefix() {
+        return routeIdPrefix;
     }
 
 }

@@ -22,8 +22,10 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.gateway.config.HttpClientCustomizer;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
@@ -35,6 +37,7 @@ import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
+import reactor.netty.tcp.SslProvider;
 
 @Configuration
 @Slf4j
@@ -105,6 +108,13 @@ public class HttpConfig {
         return factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
     }
 
+    @Bean
+    @ConditionalOnProperty(name = "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices", havingValue = "true")
+    HttpClientCustomizer apimlCustomizer() {
+        SslProvider provider = SslProvider.defaultClientProvider();
+        return httpClient -> httpClient.secure(provider);
+    }
+
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,@Qualifier("apimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
@@ -125,13 +135,15 @@ public class HttpConfig {
     }
 
 
-//    @Bean
+    @Bean
+    @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
         ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
         return new RouteLocator(discoveryClient, properties);
     }
 
     @Bean
+    @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "true")
     public RouteLocator proxyRouteDefLocator(
         ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
         return new ProxyRouteLocator(discoveryClient, properties);
