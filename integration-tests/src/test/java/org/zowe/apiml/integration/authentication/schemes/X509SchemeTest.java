@@ -11,7 +11,9 @@
 package org.zowe.apiml.integration.authentication.schemes;
 
 import io.restassured.http.Header;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.X509Test;
@@ -24,7 +26,7 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.X509_ENDPOINT;
 
 /**
  * Use Discoverable Client to verify that when the x509 certificate is used for the call to the southbound service
