@@ -13,8 +13,6 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.CounterFactory;
-import java.security.cert.X509Certificate;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +39,9 @@ import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -151,7 +151,9 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
         serviceAuthenticationFilter.run();
 
-        verify(RequestContext.getCurrentContext(), times(1)).setResponseStatusCode(200);
+        verify(RequestContext.getCurrentContext()).addZuulRequestHeader(eq(ServiceAuthenticationFilter.AUTH_FAIL_HEADER), anyString());
+        verify(RequestContext.getCurrentContext()).addZuulResponseHeader(eq(ServiceAuthenticationFilter.AUTH_FAIL_HEADER), anyString());
+        verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(anyInt());
         verify(cmd, never()).apply(any());
     }
 
