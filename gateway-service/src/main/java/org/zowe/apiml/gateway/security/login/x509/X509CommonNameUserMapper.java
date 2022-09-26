@@ -28,7 +28,7 @@ import java.security.cert.X509Certificate;
 @Component
 @ConditionalOnExpression("T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
 )
-public class X509CommonNameUserMapper extends X509AbstractMapper {
+public class X509CommonNameUserMapper implements X509AuthenticationMapper {
 
 
     /**
@@ -38,13 +38,11 @@ public class X509CommonNameUserMapper extends X509AbstractMapper {
      * @return the user
      */
     public String mapCertificateToMainframeUserId(X509Certificate certificate) {
-        if (isClientAuthCertificate(certificate)) {
-            String dn = certificate.getSubjectX500Principal().getName();
-            LdapName ldapDN = getLdapName(dn);
-            for (Rdn rdn : ldapDN.getRdns()) {
-                if ("cn".equalsIgnoreCase(rdn.getType())) {
-                    return String.valueOf(rdn.getValue());
-                }
+        String dn = certificate.getSubjectX500Principal().getName();
+        LdapName ldapDN = getLdapName(dn);
+        for (Rdn rdn : ldapDN.getRdns()) {
+            if ("cn".equalsIgnoreCase(rdn.getType())) {
+                return String.valueOf(rdn.getValue());
             }
         }
         return null;
