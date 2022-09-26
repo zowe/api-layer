@@ -102,6 +102,47 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CloudGatewayProxy:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+            gateway-service-2:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    SERVER_INTERNAL_PORT: 10027
+            cloud-gateway-service:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: CloudGatewayProxy-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
     CITestsRegistration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
