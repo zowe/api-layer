@@ -31,7 +31,6 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Optional;
 
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
@@ -127,7 +126,6 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
         logger.log(MessageType.DEBUG, error);
         context.addZuulRequestHeader(AUTH_FAIL_HEADER, error);
         context.addZuulResponseHeader(AUTH_FAIL_HEADER, error);
-        context.setResponseStatusCode(SC_OK);
     }
 
     private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {
