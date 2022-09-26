@@ -9,7 +9,7 @@ title: Caching service for internal usage
 description: Service that provides caching API.
 license: EPL-2.0
 schemas:
-    configs: gateway-schema.json
+    configs: caching-schema.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git
