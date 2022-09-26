@@ -29,14 +29,11 @@ public class ProxyRouteLocator extends RouteLocator {
     }
 
     protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
-
         PredicateDefinition predicate = new PredicateDefinition();
         predicate.setName("Header");
         predicate.addArg("header", "X-Request-Id");
         predicate.addArg("regexp", (instance.getServiceId() + instance.getHost()).toLowerCase(Locale.ROOT));
-
         routeDefinition.getPredicates().add(predicate);
-
     }
 
     protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {
