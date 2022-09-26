@@ -1,6 +1,6 @@
 caching:
     storage:
-        mode: infinispan
+        mode: inMemory
         redis:
             timeout: 60
             masterNodeUri: default:heslo@localhost:6379
