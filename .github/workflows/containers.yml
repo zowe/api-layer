@@ -135,7 +135,7 @@ jobs:
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-services --port 6310 --destfile ./results/cloud-gateway-services.exec
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v2
