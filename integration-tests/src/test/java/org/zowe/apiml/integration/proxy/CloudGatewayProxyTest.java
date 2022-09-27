@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.integration.proxy;
 
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
@@ -25,6 +26,7 @@ public class CloudGatewayProxyTest {
     @Test
     @Tag("CloudGatewayProxyTest")
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
+        RestAssured.useRelaxedHTTPSValidation();
         CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
         given().header("X-Request-Id", "gatewaygateway-service")
