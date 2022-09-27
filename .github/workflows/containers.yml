@@ -132,7 +132,9 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCloudGatewayProxyTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            # Coverage results are not stored in this job as it would not provide much additional data
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -140,6 +142,7 @@ jobs:
                     name: CloudGatewayProxy-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -179,6 +182,7 @@ jobs:
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
+
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -1240,9 +1244,14 @@ jobs:
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CloudGatewayProxy-${{ env.JOB_ID }}
+                    path: cloudgatewayproxy
+
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
