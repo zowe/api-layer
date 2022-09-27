@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
-import org.zowe.apiml.gateway.security.login.x509.X509AbstractMapper;
+import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
@@ -30,7 +30,7 @@ import java.util.Optional;
 
 /**
  * Basic implementation of AuthSourceService interface which uses client certificate as an authentication source.
- * This implementation relies on concrete implementation of {@link X509AbstractMapper} for validation and parsing of
+ * This implementation relies on concrete implementation of {@link X509AuthenticationMapper} for validation and parsing of
  * the client certificate.
  */
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class X509AuthSourceService implements AuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
-    private final X509AbstractMapper mapper;
+    private final X509AuthenticationMapper mapper;
     private final TokenCreationService tokenService;
     private final AuthenticationService authenticationService;
 
@@ -83,15 +83,7 @@ public class X509AuthSourceService implements AuthSourceService {
      */
     protected boolean isValid(X509Certificate clientCert) {
         logger.log(MessageType.DEBUG, "Validating X509 client certificate.");
-        if (clientCert == null) {
-            return false;
-        }
-
-        if (mapper.isClientAuthCertificate(clientCert)) {
-            return true;
-        } else {
-            throw new AuthSchemeException("org.zowe.apiml.gateway.security.scheme.x509ExtendedKeyUsageError");
-        }
+        return !(clientCert == null);
     }
 
     /**
@@ -131,10 +123,10 @@ public class X509AuthSourceService implements AuthSourceService {
      * Parse client certificate: get common name, distinguished name and encoded certificate value.
      *
      * @param clientCert {@link X509Certificate} client certificate to parse.
-     * @param mapper     instance of {@link X509AbstractMapper} to use for parsing.
+     * @param mapper     instance of {@link X509AuthenticationMapper} to use for parsing.
      * @return parsed authentication source or null in case of CertificateEncodingException.
      */
-    private Parsed parseClientCert(X509Certificate clientCert, X509AbstractMapper mapper) {
+    private Parsed parseClientCert(X509Certificate clientCert, X509AuthenticationMapper mapper) {
         try {
             String commonName = mapper.mapCertificateToMainframeUserId(clientCert);
             String encodedCert = Base64.getEncoder().encodeToString(clientCert.getEncoded());

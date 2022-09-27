@@ -201,7 +201,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
         }
 
         @Nested
-        class WhenClientAuthInExtendedKeyUsage {
+        class WhenClientAuthCertificate {
             @Test
             void thenValidSafIdTokenProvided() throws IOException {
                 given()
@@ -223,12 +223,11 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
          * client authentication then request will continue with X-Zowe-Auth-Failure header only.
          */
         @Nested
-        class WhenNoClientAuthInExtendedKeyUsage {
+        class WhenNoClientAuthCertificate {
             @Test
             void thenNoSafIdTokenProvided() throws IOException {
 
                 given()
-                    .config(SslContext.apimlRootCert)
                     .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                     .then()
@@ -237,7 +236,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
                 verify(mockClient, times(1)).execute(captor.capture());
                 assertThat(captor.getValue().getHeaders("X-SAF-Token").length, is(0));
-                assertHeaderWithValue(captor.getValue(), AUTH_FAIL_HEADER, "ZWEAG165E X509 certificate is missing the client certificate extended usage definition");
+                assertHeaderWithValue(captor.getValue(), AUTH_FAIL_HEADER, "ZWEAG160E No authentication provided in the request");
             }
         }
     }

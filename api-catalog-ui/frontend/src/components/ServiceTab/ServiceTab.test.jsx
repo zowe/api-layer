@@ -31,10 +31,7 @@ const selectedService = {
     apiVersions: ['org.zowe v1', 'org.zowe v2'],
     defaultApiVersion: ['org.zowe v1'],
     ssoAllInstances: true,
-    gatewayUrls: {
-        'org.zowe v1': 'api/v1',
-        'org.zowe v2': 'api/v2',
-    },
+    apis: { 'org.zowe v1': { gatewayUrl: 'api/v1' } },
 };
 
 const tiles = {
