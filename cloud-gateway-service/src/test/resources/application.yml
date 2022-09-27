@@ -1,7 +1,7 @@
 eureka:
     client:
         serviceUrl:
-            defaultZone: https://localhost:10011/eureka/
+            defaultZone: https://localhost:999/eureka/
 
 apiml:
     service:

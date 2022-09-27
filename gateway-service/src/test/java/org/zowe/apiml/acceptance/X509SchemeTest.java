@@ -127,26 +127,6 @@ class X509SchemeTest extends AcceptanceTestWithTwoServices {
     class GivenInvalidCertificate {
 
         @Test
-        void whenServerCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
-            String errorHeaderValue = "ZWEAG165E X509 certificate is missing the client certificate extended usage definition";
-
-            applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-            mockValid200HttpResponse();
-
-            given()
-                .config(SslContext.apimlRootCert)
-                .when()
-                .get(basePath + serviceWithCustomConfiguration.getPath())
-                .then()
-                .statusCode(is(HttpStatus.SC_OK));
-
-            ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
-            verify(mockClient, times(1)).execute(captor.capture());
-
-            assertHeaders(captor.getValue(), errorHeaderValue);
-        }
-
-        @Test
         void whenNoCertificate_thenNoCertDetailsInRequestHeaders() throws IOException {
             String errorHeaderValue = "ZWEAG167E No client certificate provided in the request";
 
