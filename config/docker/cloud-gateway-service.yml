@@ -1,8 +1,10 @@
 apiml:
     service:
-        discoveryServiceUrls: https://discovery-service:10011/eureka/
         hostname: cloud-gateway-service
-
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://discovery-service:10011/eureka/
 server:
     ssl:
         keyAlias: localhost
