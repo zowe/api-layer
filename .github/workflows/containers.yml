@@ -132,8 +132,10 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runCloudGatewayProxyTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   uses: ./.github/actions/dump-jacoco
-                if: always()
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-services --port 6310 --destfile ./results/cloud-gateway-services.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v2
