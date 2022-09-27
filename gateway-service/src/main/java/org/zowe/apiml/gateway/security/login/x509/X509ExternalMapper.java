@@ -43,7 +43,7 @@ import java.security.cert.X509Certificate;
 @RequiredArgsConstructor
 @ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
 )
-public class X509ExternalMapper extends X509AbstractMapper {
+public class X509ExternalMapper implements X509AuthenticationMapper {
 
     private final CloseableHttpClient httpClientProxy;
     private final TokenCreationService tokenCreationService;
@@ -64,36 +64,33 @@ public class X509ExternalMapper extends X509AbstractMapper {
      */
     @Override
     public String mapCertificateToMainframeUserId(X509Certificate certificate) {
-        if (isClientAuthCertificate(certificate)) {
-            try {
-                String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
+        try {
+            String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
 
-                HttpPost httpPost = new HttpPost(new URI(externalMapperUrl));
-                HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
-                httpPost.setEntity(httpEntity);
+            HttpPost httpPost = new HttpPost(new URI(externalMapperUrl));
+            HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
+            httpPost.setEntity(httpEntity);
 
-                httpPost.setHeader(new BasicHeader("Cookie", "apimlAuthenticationToken=" + jwtToken));
-                log.debug("Executing request against external mapper API: {}", httpPost.toString());
+            httpPost.setHeader(new BasicHeader("Cookie", "apimlAuthenticationToken=" + jwtToken));
+            log.debug("Executing request against external mapper API: {}", httpPost.toString());
 
-                HttpResponse httpResponse = httpClientProxy.execute(httpPost);
-                String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
-                log.debug("External mapper API returned: {}", response);
+            HttpResponse httpResponse = httpClientProxy.execute(httpPost);
+            String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+            log.debug("External mapper API returned: {}", response);
 
-                if (response == null || response.isEmpty()) {
-                    return null;
-                }
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
-                return certMapperResponse.getUserId().trim();
-            } catch (URISyntaxException e) {
-                log.error("Wrong service URI provided", e);
-            } catch (CertificateEncodingException e) {
-                log.error("Can`t get encoded data from certificate", e);
-            } catch (IOException e) {
-                log.error("Not able to send certificate to mapper", e);
+            if (response == null || response.isEmpty()) {
+                return null;
             }
-            return null;
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
+            return certMapperResponse.getUserId().trim();
+        } catch (URISyntaxException e) {
+            log.error("Wrong service URI provided", e);
+        } catch (CertificateEncodingException e) {
+            log.error("Can`t get encoded data from certificate", e);
+        } catch (IOException e) {
+            log.error("Not able to send certificate to mapper", e);
         }
         return null;
     }

@@ -10,18 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.netflix.zuul.context.RequestContext;
-import java.security.cert.X509Certificate;
-import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +19,12 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+
+import javax.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
 
 class X509CNAuthSourceServiceTest {
     private RequestContext context;
@@ -54,7 +49,6 @@ class X509CNAuthSourceServiceTest {
         void whenClientCertInRequestInCustomAttribute_thenAuthSourceIsPresent() {
             when(context.getRequest()).thenReturn(request);
             when(request.getAttribute("client.auth.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
-            when(mapper.isClientAuthCertificate(any())).thenReturn(true);
 
             Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
 
@@ -66,23 +60,11 @@ class X509CNAuthSourceServiceTest {
             Assertions.assertEquals(x509Certificate, authSource.get().getRawSource());
         }
 
-        @Test
-        void whenServerCertInRequest_thenThrows() {
-            when(context.getRequest()).thenReturn(request);
-            when(request.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
-            when(mapper.isClientAuthCertificate(any())).thenReturn(false);
-
-            assertThrows(AuthSchemeException.class, () -> serviceUnderTest.getAuthSourceFromRequest());
-
-            verify(request, times(1)).getAttribute("client.auth.X509Certificate");
-            verify(request, times(1)).getAttribute("javax.servlet.request.X509Certificate");
-        }
 
         @Test
         void whenInternalApimlCertInRequestInStandardAttribute_thenAuthSourceIsPresent() {
             when(context.getRequest()).thenReturn(request);
             when(request.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
-            when(mapper.isClientAuthCertificate(any())).thenReturn(true);
 
             Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
 
