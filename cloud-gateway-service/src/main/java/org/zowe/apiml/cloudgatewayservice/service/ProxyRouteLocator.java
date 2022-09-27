@@ -29,6 +29,7 @@ public class ProxyRouteLocator extends RouteLocator {
         super(discoveryClient, properties);
     }
 
+    @Override
     protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
         PredicateDefinition predicate = new PredicateDefinition();
         predicate.setName("Header");
@@ -37,6 +38,7 @@ public class ProxyRouteLocator extends RouteLocator {
         routeDefinition.getPredicates().add(predicate);
     }
 
+    @Override
     protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {
         String serviceId = serviceInstance.getInstanceId();
         RouteDefinition routeDefinition = new RouteDefinition();
