@@ -366,6 +366,20 @@ task runRegistrationTests(type: Test) {
     }
 }
 
+task runCloudGatewayProxyTest(type: Test) {
+    group "integration tests"
+    description "Run tests verifying cloud gateway can route to correct gateway"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CloudGatewayProxyTest'
+        )
+    }
+}
+
 task runOauth2Tests(type: Test) {
     group "integration tests"
     description "Run tests verifying integration with oauth2 provider(okta)"

@@ -31,6 +31,10 @@ apiCatalogServiceConfiguration:
     instances: 1
 cachingServiceConfiguration:
     url:
+cloudGatewayConfiguration:
+    scheme: https
+    host: localhost
+    port: 10023
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password
