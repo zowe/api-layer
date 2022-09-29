@@ -9,11 +9,12 @@ apiml:
         allowTokenRefresh: true
         personalAccessToken:
             enabled: false
-        oidcToken:
+        oAuth:
             enabled: false
-            okta:
-                clientId:
-                clientSecret:
+            clientId:
+            clientSecret:
+            validationUrl:
+
         auth:
             provider: dummy
             zosmf:

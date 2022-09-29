@@ -273,8 +273,8 @@ public class AuthController {
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<String> validateOIDCToken() {
-        if (oidcProvider.isValid()){
+    public ResponseEntity<String> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
+        if (oidcProvider.isValid(validateRequestModel.getToken())){
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

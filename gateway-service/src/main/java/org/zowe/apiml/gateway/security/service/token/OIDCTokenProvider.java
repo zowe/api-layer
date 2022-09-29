@@ -33,39 +33,36 @@ import java.util.Base64;
 @Slf4j
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.service.security.oidcToken.okta.clientId}")
+    @Value("${apiml.security.oAuth.clientId:}")
     private String clientId;
 
-    @Value("${apiml.service.security.oidcToken.okta.clientSecret}")
+    @Value("${apiml.security.oAuth.clientSecret:}")
     private String clientSecret;
 
+    @Value("${apiml.security.oAuth.validationUrl:}")
+    private String validationUrl;
+
     private final RestTemplate restTemplate;
-    static final String TOKEN_ENDPOINT = "https://dev-95727686.okta.com:443/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope";
-    static final String INTROSPECT_ENDPOINT = "https://dev-95727686.okta.com:443/oauth2/default/v1/introspect?token=";
 
     @Override
-    public boolean isValid() {
+    public boolean isValid(String token) {
+        if (token == null || token.isEmpty()) {
+            return false;
+        }
         try {
+            log.error(token);
             HttpHeaders headers = new HttpHeaders();
-            String creds = clientId + ":" + clientSecret;
-            byte[] base64encoded = Base64.getEncoder().encode(creds.getBytes());
+            String credentials = clientId + ":" + clientSecret;
+            byte[] base64encoded = Base64.getEncoder().encode(credentials.getBytes());
             headers.add("authorization", "Basic " + new String(base64encoded));
             headers.add("content-type", "application/x-www-form-urlencoded");
-            ResponseEntity<String> accessTokenResponse = restTemplate.exchange(TOKEN_ENDPOINT, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
-            if (accessTokenResponse.getStatusCode().is2xxSuccessful()) {
-                ObjectMapper mapper = new JsonMapper();
-                String tokenBody = accessTokenResponse.getBody();
-                if (tokenBody != null && !tokenBody.isEmpty()) {
-                    JsonNode json = mapper.readTree(tokenBody);
-                    String tokenValue = json.get("access_token").asText();
-                    ResponseEntity<String> tokenInfoResponse = restTemplate.exchange(INTROSPECT_ENDPOINT + tokenValue, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
-                    if (tokenInfoResponse.getStatusCode().is2xxSuccessful()) {
-                        if (tokenInfoResponse.getBody() != null && !tokenInfoResponse.getBody().isEmpty()) {
-                            json = mapper.readTree(tokenInfoResponse.getBody());
-                            return json.get("active").asBoolean();
-                        }
-                    }
-                }
+            ObjectMapper mapper = new JsonMapper();
+            ResponseEntity<String> tokenInfoResponse = restTemplate.exchange(validationUrl + token, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
+            if (tokenInfoResponse.getStatusCode().is2xxSuccessful() &&
+                tokenInfoResponse.getBody() != null &&
+                !tokenInfoResponse.getBody().isEmpty()) {
+                JsonNode json = mapper.readTree(tokenInfoResponse.getBody());
+                return json.get("active").asBoolean();
             }
         } catch (RestClientException e) {
             return false;

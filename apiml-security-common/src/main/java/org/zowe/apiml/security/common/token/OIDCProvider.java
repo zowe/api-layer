@@ -12,5 +12,5 @@ package org.zowe.apiml.security.common.token;
 
 public interface OIDCProvider {
 
-    boolean isValid();
+    boolean isValid(String token);
 }
