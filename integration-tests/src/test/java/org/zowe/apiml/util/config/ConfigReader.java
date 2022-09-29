@@ -18,7 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 
 @Slf4j
 public class ConfigReader {
@@ -74,6 +75,7 @@ public class ConfigReader {
                             discoverableClientConfiguration,
                             new ApiCatalogServiceConfiguration(),
                             new CachingServiceConfiguration(),
+                            new CloudGatewayConfiguration(),
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
@@ -101,17 +103,21 @@ public class ConfigReader {
 
                     configuration.getApiCatalogServiceConfiguration().setUrl(System.getProperty("apicatalog.url", configuration.getApiCatalogServiceConfiguration().getUrl()));
                     configuration.getApiCatalogServiceConfiguration().setHost(System.getProperty("apicatalog.host", configuration.getApiCatalogServiceConfiguration().getHost()));
-                    configuration.getApiCatalogServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("apicatalog.instances",  String.valueOf(configuration.getApiCatalogServiceConfiguration().getInstances()))));
+                    configuration.getApiCatalogServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("apicatalog.instances", String.valueOf(configuration.getApiCatalogServiceConfiguration().getInstances()))));
                     configuration.getApiCatalogServiceConfiguration().setScheme(System.getProperty("apicatalog.scheme", configuration.getApiCatalogServiceConfiguration().getScheme()));
-                    configuration.getApiCatalogServiceConfiguration().setPort(Integer.parseInt(System.getProperty("apicatalog.port",  String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort()))));
+                    configuration.getApiCatalogServiceConfiguration().setPort(Integer.parseInt(System.getProperty("apicatalog.port", String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort()))));
 
                     configuration.getDiscoverableClientConfiguration().setApplId(System.getProperty("discoverableclient.applId", configuration.getDiscoverableClientConfiguration().getApplId()));
                     configuration.getDiscoverableClientConfiguration().setHost(System.getProperty("discoverableclient.host", configuration.getDiscoverableClientConfiguration().getHost()));
                     configuration.getDiscoverableClientConfiguration().setInstances(Integer.parseInt(System.getProperty("discoverableclient.instances", String.valueOf(configuration.getDiscoverableClientConfiguration().getInstances()))));
                     configuration.getDiscoverableClientConfiguration().setScheme(System.getProperty("discoverableclient.scheme", configuration.getDiscoverableClientConfiguration().getScheme()));
-                    configuration.getDiscoverableClientConfiguration().setPort(Integer.parseInt(System.getProperty("discoverableclient.port",  String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
+                    configuration.getDiscoverableClientConfiguration().setPort(Integer.parseInt(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
 
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
+
+                    configuration.getCloudGatewayConfiguration().setScheme(System.getProperty("cloud-gateway.scheme", configuration.getCloudGatewayConfiguration().getScheme()));
+                    configuration.getCloudGatewayConfiguration().setHost(System.getProperty("cloud-gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
+                    configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);

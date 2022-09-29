@@ -300,7 +300,8 @@ task runContainerTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'CloudGatewayProxyTest'
         )
     }
 }
@@ -362,6 +363,20 @@ task runRegistrationTests(type: Test) {
     useJUnitPlatform {
         includeTags(
             'RegistrationTest'
+        )
+    }
+}
+
+task runCloudGatewayProxyTest(type: Test) {
+    group "integration tests"
+    description "Run tests verifying cloud gateway can route to correct gateway"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CloudGatewayProxyTest'
         )
     }
 }

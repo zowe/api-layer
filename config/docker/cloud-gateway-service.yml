@@ -1,0 +1,18 @@
+apiml:
+    service:
+        hostname: cloud-gateway-service
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://discovery-service:10011/eureka/
+server:
+    ssl:
+        keyAlias: localhost
+        keyStore: /docker/all-services.keystore.p12
+        trustStore: /docker/all-services.truststore.p12
+spring:
+    output:
+        ansi:
+            enabled: always
+    profiles:
+        include: debug
