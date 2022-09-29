@@ -40,7 +40,7 @@ public class OktaOauth2Test {
         byte[] base64encoded = Base64.getEncoder().encode(creds.getBytes());
         headers.put("authorization", "Basic " + new String(base64encoded));
         headers.put("content-type", "application/x-www-form-urlencoded");
-        headers.put("accpets", "application/json");
+        headers.put("accepts", "application/json");
         RestAssured.useRelaxedHTTPSValidation();
         Object accessToken = given().port(443).headers(headers).when().post("https://dev-95727686.okta.com:443/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope")
             .then().statusCode(200).extract().body().path("access_token");

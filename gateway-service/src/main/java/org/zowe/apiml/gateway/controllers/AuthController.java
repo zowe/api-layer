@@ -33,6 +33,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
+import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,6 +64,7 @@ public class AuthController {
     private final MessageService messageService;
 
     private final AccessTokenProvider tokenProvider;
+    private final OIDCProvider oidcProvider;
 
     private static final String TOKEN_KEY = "token";
     private static final ObjectWriter writer = new ObjectMapper().writer();
@@ -77,6 +79,7 @@ public class AuthController {
     public static final String ACCESS_TOKEN_EVICT = "/access-token/evict"; // NOSONAR
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
+    public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
 
     @DeleteMapping(path = INVALIDATE_PATH)
     @HystrixCommand
@@ -265,6 +268,16 @@ public class AuthController {
         } catch (IOException | JOSEException ex) {
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping(path = OIDC_TOKEN_VALIDATE)
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<String> validateOIDCToken() {
+        if (oidcProvider.isValid()){
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {

@@ -30,6 +30,8 @@ apiml:
     security:
         personalAccessToken:
             enabled: true
+        oidcToken:
+            enabled: true
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5

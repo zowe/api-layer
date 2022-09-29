@@ -6,6 +6,8 @@ apiml:
         allowTokenRefresh: true
         personalAccessToken:
             enabled: true
+        oidcToken:
+            enabled: false
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id

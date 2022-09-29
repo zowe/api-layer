@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Interface defines general source of authentication. Keeps original source of authentication (JWT token, client certificate etc.).
@@ -92,6 +92,7 @@ public interface AuthSource extends Serializable {
     enum AuthSourceType {
         JWT,
         CLIENT_CERT,
-        PAT
+        PAT,
+        OIDC
     }
 }

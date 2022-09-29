@@ -65,6 +65,8 @@ apiml:
         jwtInitializerTimeout: 5
         personalAccessToken:
             enabled: false
+        oidcToken:
+            enabled: false
         auth:
             provider: zosmf
         x509:

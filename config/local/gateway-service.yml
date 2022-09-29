@@ -8,7 +8,12 @@ apiml:
     security:
         allowTokenRefresh: true
         personalAccessToken:
-            enabled: true
+            enabled: false
+        oidcToken:
+            enabled: false
+            okta:
+                clientId:
+                clientSecret:
         auth:
             provider: dummy
             zosmf:
