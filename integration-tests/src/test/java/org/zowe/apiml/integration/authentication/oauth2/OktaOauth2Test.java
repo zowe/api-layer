@@ -32,7 +32,7 @@ public class OktaOauth2Test {
 
     @Test
     @Tag("OktaOauth2Test")
-    void givenValidAccessToken_thenValidate() throws Exception {
+    void givenValidAccessToken_thenValidate() {
         String username = System.getProperty("okta.client.id");
         String password = System.getProperty("okta.client.password");
         Assertions.assertNotNull(username);
