@@ -7,7 +7,7 @@ apiml:
         personalAccessToken:
             enabled: true
         oAuth:
-            enabled: true
+            enabled: false
             clientId:
             clientSecret:
             validationUrl:

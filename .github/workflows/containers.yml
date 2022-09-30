@@ -91,6 +91,10 @@ jobs:
                     APIML_SECURITY_OAUTH_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
                     APIML_SECURITY_OAUTH_ENABLED: true
                     APIML_SECURITY_OAUTH_VALIDATIONURL: https://dev-95727686.okta.com:443/oauth2/default/v1/introspect?token=
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
             -   uses: actions/checkout@v3
                 with:
