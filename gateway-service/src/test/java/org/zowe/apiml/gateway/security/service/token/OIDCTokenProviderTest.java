@@ -82,6 +82,22 @@ class OIDCTokenProviderTest {
         }
 
         @Test
+        void whenNotValidJson_thenReturnInvalid() {
+            doReturn(HttpStatus.OK).when(response).getStatusCode();
+            doReturn("{notValid}").when(response).getBody();
+            when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), (Class<?>) any())).thenReturn(response);
+            assertFalse(oidcTokenProvider.isValid("token"));
+        }
+
+        @Test
+        void whenResponseStatusIsNotOk_thenReturnInvalid() {
+            doReturn(HttpStatus.UNAUTHORIZED).when(response).getStatusCode();
+            doReturn(BODY).when(response).getBody();
+            when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), (Class<?>) any())).thenReturn(response);
+            assertFalse(oidcTokenProvider.isValid("token"));
+        }
+
+        @Test
         void whenTokenIsNull_thenReturnInvalid() {
             assertFalse(oidcTokenProvider.isValid(null));
         }
