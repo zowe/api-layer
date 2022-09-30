@@ -21,7 +21,6 @@ import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
-import org.springframework.util.StringUtils;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import reactor.core.publisher.Flux;
@@ -44,18 +43,14 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     public RouteLocator(ReactiveDiscoveryClient discoveryClient,
                         DiscoveryLocatorProperties properties) {
-        this(discoveryClient.getClass().getSimpleName(), properties);
+        this(properties);
         serviceInstances = discoveryClient.getServices()
             .flatMap(service -> discoveryClient.getInstances(service).collectList());
     }
 
-    private RouteLocator(String discoveryClientName, DiscoveryLocatorProperties properties) {
+    private RouteLocator(DiscoveryLocatorProperties properties) {
         this.properties = properties;
-        if (StringUtils.hasText(properties.getRouteIdPrefix())) {
-            routeIdPrefix = properties.getRouteIdPrefix();
-        } else {
-            routeIdPrefix = discoveryClientName + "_";
-        }
+        routeIdPrefix = this.getClass().getSimpleName() + "_";
         evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
     }
 
@@ -67,7 +62,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
         EurekaMetadataParser metadataParser = new EurekaMetadataParser();
         return serviceInstances.filter(instances -> !instances.isEmpty()).flatMap(Flux::fromIterable)
-            .collectMap(ServiceInstance::getServiceId)
+            .collectMap(ServiceInstance::getInstanceId)
             // remove duplicates
             .flatMapMany(map -> Flux.fromIterable(map.values())).map(instance -> {
 
@@ -75,20 +70,29 @@ public class RouteLocator implements RouteDefinitionLocator {
                 List<RouteDefinition> definitionsForInstance = new ArrayList<>();
                 for (RoutedService service : routedServices) {
                     RouteDefinition routeDefinition = buildRouteDefinition(urlExpr, instance, service.getSubServiceId());
-                    PredicateDefinition predicate = new PredicateDefinition();
-                    predicate.setName("Path");
-                    String predicateValue = "/" + instance.getServiceId().toLowerCase() + "/" + service.getGatewayUrl() + "/**";
-                    predicate.addArg("pattern", predicateValue);
-                    routeDefinition.getPredicates().add(predicate);
-                    FilterDefinition filter = new FilterDefinition();
-                    filter.setName("RewritePath");
-                    filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
-                    filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
-                    routeDefinition.getFilters().add(filter);
+
+                    setProperties(routeDefinition, instance, service);
+
                     definitionsForInstance.add(routeDefinition);
                 }
                 return definitionsForInstance;
             }).flatMapIterable(list -> list);
+    }
+
+    protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
+        PredicateDefinition predicate = new PredicateDefinition();
+        predicate.setName("Path");
+        String predicateValue = "/" + instance.getServiceId().toLowerCase() + "/" + service.getGatewayUrl() + "/**";
+        predicate.addArg("pattern", predicateValue);
+        routeDefinition.getPredicates().add(predicate);
+
+        FilterDefinition filter = new FilterDefinition();
+        filter.setName("RewritePath");
+
+        filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
+        filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
+        routeDefinition.getFilters().add(filter);
+
     }
 
     protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {
@@ -100,6 +104,10 @@ public class RouteLocator implements RouteDefinitionLocator {
         // add instance metadata
         routeDefinition.setMetadata(new LinkedHashMap<>(serviceInstance.getMetadata()));
         return routeDefinition;
+    }
+
+    public String getRouteIdPrefix() {
+        return routeIdPrefix;
     }
 
 }
