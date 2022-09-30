@@ -56,9 +56,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             headers.add("authorization", "Basic " + new String(base64encoded));
             headers.add("content-type", "application/x-www-form-urlencoded");
             ObjectMapper mapper = new JsonMapper();
-            log.error("The validation URL is:" + validationUrl);
             ResponseEntity<String> tokenInfoResponse = restTemplate.exchange(validationUrl + token, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
-            log.error("The token is:" + token);
             if (tokenInfoResponse.getStatusCode().is2xxSuccessful() &&
                 tokenInfoResponse.getBody() != null &&
                 !tokenInfoResponse.getBody().isEmpty()) {   //NOSONAR tests return null
