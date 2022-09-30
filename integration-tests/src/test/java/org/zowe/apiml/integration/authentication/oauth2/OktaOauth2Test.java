@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.integration.authentication.pat.ValidateRequestModel;
-import org.zowe.apiml.util.config.ItSslConfigFactory;
-import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.requests.Endpoints;
 
@@ -45,7 +43,6 @@ public class OktaOauth2Test {
         headers.put("authorization", "Basic " + new String(base64encoded));
         headers.put("content-type", "application/x-www-form-urlencoded");
         headers.put("accepts", "application/json");
-        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
         RestAssured.useRelaxedHTTPSValidation();
         Object accessToken = given().port(443).headers(headers).when().post("https://dev-95727686.okta.com:443/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope")
             .then().statusCode(200).extract().body().path("access_token");
@@ -55,7 +52,7 @@ public class OktaOauth2Test {
             requestBody.setToken(token);
             given().contentType(ContentType.JSON).body(requestBody).when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(200).extract().body().path("active").equals(true);
+                .then().statusCode(200);
         } else {
             throw new RuntimeException("Incorrect format of response from authorization server.");
         }
