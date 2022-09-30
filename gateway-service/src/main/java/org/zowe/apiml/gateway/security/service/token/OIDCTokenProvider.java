@@ -50,7 +50,6 @@ public class OIDCTokenProvider implements OIDCProvider {
             return false;
         }
         try {
-            log.error(token);
             HttpHeaders headers = new HttpHeaders();
             String credentials = clientId + ":" + clientSecret;
             byte[] base64encoded = Base64.getEncoder().encode(credentials.getBytes());

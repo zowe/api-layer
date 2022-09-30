@@ -33,7 +33,6 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     private JwtAuthSourceService jwtAuthSourceService;
     private X509AuthSourceService x509MFAuthSourceService;
     private PATAuthSourceService patAuthSourceService;
-    private OIDCAuthSourceService oidcAuthSourceService;
     private DefaultAuthSourceService serviceUnderTest;
 
     @BeforeEach
@@ -41,8 +40,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         jwtAuthSourceService = mock(JwtAuthSourceService.class);
         x509MFAuthSourceService = mock(X509AuthSourceService.class);
         patAuthSourceService = mock(PATAuthSourceService.class);
-        oidcAuthSourceService = mock(OIDCAuthSourceService.class);
-        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService, oidcAuthSourceService, true, false);
+        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService, true, false);
         x509Certificate = mock(X509Certificate.class);
     }
 

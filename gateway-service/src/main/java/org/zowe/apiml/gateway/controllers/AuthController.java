@@ -274,7 +274,7 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<String> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
-        if (oidcProvider.isValid(validateRequestModel.getToken())){
+        if (oidcProvider.isValid(validateRequestModel.getToken())) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

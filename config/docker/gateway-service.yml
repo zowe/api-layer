@@ -6,7 +6,7 @@ apiml:
         allowTokenRefresh: true
         personalAccessToken:
             enabled: true
-        oidcToken:
+        oAuth:
             enabled: false
         auth:
             zosmf:

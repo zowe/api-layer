@@ -55,7 +55,6 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
                                     PATAuthSourceService patAuthSourceService,
-                                    OIDCAuthSourceService oidcAuthSourceService,
                                     @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled,
                                     @Value("${apiml.security.oAuth.enabled:false}") boolean isOIDCEnabled) {
         this.isPATEnabled = isPATEnabled;
@@ -64,9 +63,6 @@ public class DefaultAuthSourceService implements AuthSourceService {
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
         if (isPATEnabled) {
             map.put(AuthSourceType.PAT, patAuthSourceService);
-        }
-        if (isOIDCEnabled) {
-            map.put(AuthSourceType.OIDC, oidcAuthSourceService);
         }
     }
 
