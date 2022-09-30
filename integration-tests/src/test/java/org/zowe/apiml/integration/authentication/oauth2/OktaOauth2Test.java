@@ -11,12 +11,14 @@
 package org.zowe.apiml.integration.authentication.oauth2;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.integration.authentication.pat.ValidateRequestModel;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -30,7 +32,7 @@ public class OktaOauth2Test {
     @Test
     @Tag("OktaOauth2Test")
     void givenValidAccessToken_thenAllowAccessToResource() {
-        DiscoverableClientConfiguration dcConfig = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
+        GatewayServiceConfiguration gwConfig = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String username = System.getProperty("okta.client.id");
         String password = System.getProperty("okta.client.password");
         Assertions.assertNotNull(username);
@@ -45,11 +47,14 @@ public class OktaOauth2Test {
         Object accessToken = given().port(443).headers(headers).when().post("https://dev-95727686.okta.com:443/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope")
             .then().statusCode(200).extract().body().path("access_token");
         if (accessToken instanceof String) {
-            String dcUrl = String.format("%s://%s:%s", dcConfig.getScheme(), dcConfig.getHost(), dcConfig.getPort());
+            String gwUrl = String.format("%s://%s:%s", gwConfig.getScheme(), gwConfig.getHost(), gwConfig.getPort());
             String token = (String) accessToken;
-            given().headers("authorization", "Bearer " + token).get(dcUrl + "/discoverableclient/whoami").then().statusCode(200);
+            ValidateRequestModel requestBody = new ValidateRequestModel();
+            requestBody.setToken(token);
+            given().contentType(ContentType.JSON).body(requestBody).get(gwUrl + "/oidc-token/validate").then().statusCode(200);
         } else {
             throw new RuntimeException("Incorrect format of response from authorization server.");
         }
     }
+
 }
