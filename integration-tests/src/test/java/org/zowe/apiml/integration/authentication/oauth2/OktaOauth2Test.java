@@ -12,7 +12,6 @@ package org.zowe.apiml.integration.authentication.oauth2;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -27,14 +26,13 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
-@Slf4j
 public class OktaOauth2Test {
 
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
 
     @Test
     @Tag("OktaOauth2Test")
-    void givenValidAccessToken_thenAllowAccessToResource() {
+    void givenValidAccessToken_thenValidate() {
         String username = System.getProperty("okta.client.id");
         String password = System.getProperty("okta.client.password");
         Assertions.assertNotNull(username);
@@ -54,7 +52,7 @@ public class OktaOauth2Test {
             requestBody.setToken(token);
             given().contentType(ContentType.JSON).body(requestBody).when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(200);
+                .then().statusCode(200).extract().body().path("active").equals(true);
         } else {
             throw new RuntimeException("Incorrect format of response from authorization server.");
         }
