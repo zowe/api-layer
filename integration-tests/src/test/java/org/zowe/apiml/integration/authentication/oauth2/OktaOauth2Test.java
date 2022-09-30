@@ -17,9 +17,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.integration.authentication.pat.ValidateRequestModel;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.http.HttpRequestUtils;
+import org.zowe.apiml.util.requests.Endpoints;
 
+import java.net.URI;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,10 +30,11 @@ import static io.restassured.RestAssured.given;
 @Slf4j
 public class OktaOauth2Test {
 
+    public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
+
     @Test
     @Tag("OktaOauth2Test")
     void givenValidAccessToken_thenAllowAccessToResource() {
-        GatewayServiceConfiguration gwConfig = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String username = System.getProperty("okta.client.id");
         String password = System.getProperty("okta.client.password");
         Assertions.assertNotNull(username);
@@ -47,11 +49,12 @@ public class OktaOauth2Test {
         Object accessToken = given().port(443).headers(headers).when().post("https://dev-95727686.okta.com:443/oauth2/default/v1/token?grant_type=client_credentials&scope=customScope")
             .then().statusCode(200).extract().body().path("access_token");
         if (accessToken instanceof String) {
-            String gwUrl = String.format("%s://%s:%s", gwConfig.getScheme(), gwConfig.getHost(), gwConfig.getPort());
             String token = (String) accessToken;
             ValidateRequestModel requestBody = new ValidateRequestModel();
             requestBody.setToken(token);
-            given().contentType(ContentType.JSON).body(requestBody).get(gwUrl + "/oidc-token/validate").then().statusCode(200);
+            given().contentType(ContentType.JSON).body(requestBody).when()
+                .post(VALIDATE_ENDPOINT)
+                .then().statusCode(200);
         } else {
             throw new RuntimeException("Incorrect format of response from authorization server.");
         }
