@@ -1,10 +1,10 @@
 ext {
-    springBootVersion = '2.5.13'
+    springBootVersion = '2.5.14'
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE!!'
-    springCloudVersion3 = '3.1.2'
-    springSecurityVersion = '5.7.1!!'
-    springFrameworkVersion = '5.3.20!!'
+    springCloudVersion3 = '3.1.4'
+    springSecurityVersion = '5.7.3!!'
+    springFrameworkVersion = '5.3.23!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
