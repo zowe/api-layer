@@ -59,7 +59,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             ResponseEntity<String> tokenInfoResponse = restTemplate.exchange(validationUrl + token, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
             if (tokenInfoResponse.getStatusCode().is2xxSuccessful() &&
                 tokenInfoResponse.getBody() != null &&
-                !tokenInfoResponse.getBody().isEmpty()) {
+                !tokenInfoResponse.getBody().isEmpty()) {   //NOSONAR tests return null
                 JsonNode json = mapper.readTree(tokenInfoResponse.getBody());
                 return json.get("active").asBoolean();
             }
