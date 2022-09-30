@@ -89,6 +89,7 @@ jobs:
                 env:
                     APIML_SECURITY_OAUTH_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     APIML_SECURITY_OAUTH_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    APIML_SECURITY_OAUTH_ENABLED: true
                     APIML_SECURITY_OAUTH_VALIDATIONURL: https://dev-95727686.okta.com:443/oauth2/default/v1/introspect?token=
         steps:
             -   uses: actions/checkout@v3
