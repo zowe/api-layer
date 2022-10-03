@@ -8,7 +8,13 @@ apiml:
     security:
         allowTokenRefresh: true
         personalAccessToken:
-            enabled: true
+            enabled: false
+        oAuth:
+            enabled: false
+            clientId:
+            clientSecret:
+            validationUrl:
+
         auth:
             provider: dummy
             zosmf:

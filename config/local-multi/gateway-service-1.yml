@@ -8,6 +8,8 @@ apiml:
     security:
         personalAccessToken:
             enabled: true
+        oAuth:
+            enabled: false
         auth:
             provider: zosmf
             zosmf:

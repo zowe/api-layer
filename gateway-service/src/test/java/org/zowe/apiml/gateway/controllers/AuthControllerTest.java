@@ -34,6 +34,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
+import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.text.ParseException;
@@ -65,6 +66,9 @@ class AuthControllerTest {
     @Mock
     private AccessTokenProvider tokenProvider;
 
+    @Mock
+    private OIDCProvider oidcProvider;
+
     private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
@@ -73,7 +77,7 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() throws ParseException, JSONException {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
-        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider);
+        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
         body = new JSONObject()
             .put("token", "token")
@@ -318,6 +322,7 @@ class AuthControllerTest {
             }
         }
     }
+
     @Nested
     class WhenCallingEvictionRequest {
 
@@ -326,6 +331,30 @@ class AuthControllerTest {
             mockMvc.perform(delete("/gateway/auth//access-token/evict")
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(SC_NO_CONTENT));
+        }
+    }
+
+    @Nested
+    class GivenValidateOIDCTokenRequest {
+        @Nested
+        class WhenValidateToken {
+            @Test
+            void validateOIDCToken() throws Exception {
+                when(oidcProvider.isValid("token")).thenReturn(true);
+                mockMvc.perform(post("/gateway/auth/oidc-token/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body.toString()))
+                    .andExpect(status().is(SC_OK));
+            }
+
+            @Test
+            void return401() throws Exception {
+                when(oidcProvider.isValid("token")).thenReturn(false);
+                mockMvc.perform(post("/gateway/auth/oidc-token/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body.toString()))
+                    .andExpect(status().is(SC_UNAUTHORIZED));
+            }
         }
     }
 }
