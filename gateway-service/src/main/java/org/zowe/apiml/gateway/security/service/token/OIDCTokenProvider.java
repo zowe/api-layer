@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.schema.OIDCAuthException;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
 import java.util.Base64;
@@ -42,12 +43,16 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oAuth.validationUrl:}")
     private String validationUrl;
 
+    @Value("${apiml.security.oAuth.enabled:false}")
+    private boolean isEnabled;
+
     private final RestTemplate restTemplate;
 
     @Override
     public boolean isValid(String token) {
-        if (token == null || token.isEmpty()) {
-            return false;
+        if (token == null || token.isEmpty() || !isEnabled) {
+            log.debug("Either you did not enable the OIDC auth or you did not provide a valid token.");
+            throw new OIDCAuthException("A failure occurred when validating.");
         }
         try {
             HttpHeaders headers = new HttpHeaders();

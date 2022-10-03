@@ -44,7 +44,6 @@ public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
     private final boolean isPATEnabled;
-    private final boolean isOIDCEnabled;
 
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
@@ -55,10 +54,8 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
                                     PATAuthSourceService patAuthSourceService,
-                                    @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled,
-                                    @Value("${apiml.security.oAuth.enabled:false}") boolean isOIDCEnabled) {
+                                    @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled) {
         this.isPATEnabled = isPATEnabled;
-        this.isOIDCEnabled = isOIDCEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
         if (isPATEnabled) {
@@ -83,10 +80,6 @@ public class DefaultAuthSourceService implements AuthSourceService {
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
         if (!authSource.isPresent() && isPATEnabled) {
             service = getService(AuthSourceType.PAT);
-            authSource = service.getAuthSourceFromRequest();
-        }
-        if (!authSource.isPresent() && isOIDCEnabled) {
-            service = getService(AuthSourceType.OIDC);
             authSource = service.getAuthSourceFromRequest();
         }
         if (!authSource.isPresent()) {
