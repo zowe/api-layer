@@ -106,7 +106,7 @@ class OIDCTokenProviderTest {
 
         @Test
         void whenTokenIsEmpty_ThenThrowException() {
-            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(null));
+            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(""));
         }
 
         @Test
