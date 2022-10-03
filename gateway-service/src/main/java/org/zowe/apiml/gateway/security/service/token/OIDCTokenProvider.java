@@ -69,9 +69,10 @@ public class OIDCTokenProvider implements OIDCProvider {
                 return json.get("active").asBoolean();
             }
         } catch (RestClientException e) {
+            log.debug("The validation OIDC token request with URL {} failed.", validationUrl, e);
             return false;
         } catch (JsonProcessingException e) {
-            log.debug("Could not convert Swagger to JSON", e);
+            log.debug("Not able to parse the token response json.", e);
             return false;
         }
         return false;

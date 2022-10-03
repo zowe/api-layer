@@ -14,12 +14,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
+import org.zowe.apiml.gateway.security.service.schema.OIDCAuthException;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -51,6 +52,7 @@ class OIDCTokenProviderTest {
         restTemplate = mock(RestTemplate.class);
         response = mock(ResponseEntity.class);
         oidcTokenProvider = new OIDCTokenProvider(restTemplate);
+        ReflectionTestUtils.setField(oidcTokenProvider, "isEnabled", true);
     }
 
     @Nested
@@ -98,13 +100,19 @@ class OIDCTokenProviderTest {
         }
 
         @Test
-        void whenTokenIsNull_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(null));
+        void whenTokenIsNull_ThenThrowException() {
+            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(null));
         }
 
         @Test
-        void whenTokenIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(""));
+        void whenTokenIsEmpty_ThenThrowException() {
+            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(null));
+        }
+
+        @Test
+        void whenProviderDisabled_ThenThrowException() {
+            ReflectionTestUtils.setField(oidcTokenProvider, "isEnabled", false);
+            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(null));
         }
     }
 
