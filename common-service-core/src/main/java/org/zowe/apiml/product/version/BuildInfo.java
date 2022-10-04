@@ -21,6 +21,17 @@ import java.util.Properties;
 @Slf4j
 public class BuildInfo {
 
+    String buildProperties = "META-INF/build-info.properties";
+    String gitProperties = "META-INF/git.properties";
+
+    public BuildInfo(String buildProperties, String gitProperties) {
+        this.buildProperties = buildProperties;
+        this.gitProperties = gitProperties;
+    }
+
+    public BuildInfo() {
+    }
+
     private ApimlLogger apimlLog = ApimlLogger.of(this.getClass(), YamlMessageServiceInstance.getInstance());
 
     public void logBuildInfo() {
@@ -30,8 +41,8 @@ public class BuildInfo {
     }
 
     public BuildInfoDetails getBuildInfoDetails() {
-        Properties build = getProperties("META-INF/build-info.properties");
-        Properties git = getProperties("META-INF/git.properties");
+        Properties build = getProperties(buildProperties);
+        Properties git = getProperties(gitProperties);
         return new BuildInfoDetails(build, git);
     }
 

@@ -27,7 +27,6 @@ import java.util.Set;
 
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 
-@Component
 @RequiredArgsConstructor
 public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandler {
 

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.common.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.handler.BasicAuthUnauthorizedHandler;
@@ -40,7 +41,7 @@ public class HandlerInitializer {
                               BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
                               FailedAuthenticationHandler authenticationFailureHandler,
                               ResourceAccessExceptionHandler resourceAccessExceptionHandler,
-                              SuccessfulAccessTokenHandler successfulAuthAccessTokenHandler) {
+                              @Autowired(required = false) SuccessfulAccessTokenHandler successfulAuthAccessTokenHandler) {
         this.successfulLoginHandler = successfulLoginHandler;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
