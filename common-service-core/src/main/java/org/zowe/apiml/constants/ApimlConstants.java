@@ -15,7 +15,10 @@ package org.zowe.apiml.constants;
  */
 public final class ApimlConstants {
 
-    //Authentication constants
+    private ApimlConstants() {
+        throw new IllegalStateException("APIML constant class");
+    }
+
     public static final String BASIC_AUTHENTICATION_PREFIX = "Basic";
     public static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
     public static final String COOKIE_AUTH_NAME = "apimlAuthenticationToken";

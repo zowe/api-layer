@@ -10,16 +10,14 @@
 
 package org.zowe.apiml.security.common.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.handler.BasicAuthUnauthorizedHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.handler.UnauthorizedHandler;
 import org.zowe.apiml.security.common.login.SuccessfulLoginHandler;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 /**
  * Convenience class that simplifies spring security configuration
@@ -33,20 +31,17 @@ public class HandlerInitializer {
     private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
-    private final SuccessfulAccessTokenHandler successfulAuthAccessTokenHandler;
 
     public HandlerInitializer(SuccessfulLoginHandler successfulLoginHandler,
                               @Qualifier("plainAuth")
-                                  UnauthorizedHandler unAuthorizedHandler,
+                              UnauthorizedHandler unAuthorizedHandler,
                               BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
                               FailedAuthenticationHandler authenticationFailureHandler,
-                              ResourceAccessExceptionHandler resourceAccessExceptionHandler,
-                              @Autowired(required = false) SuccessfulAccessTokenHandler successfulAuthAccessTokenHandler) {
+                              ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
         this.successfulLoginHandler = successfulLoginHandler;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
-        this.successfulAuthAccessTokenHandler = successfulAuthAccessTokenHandler;
     }
 }

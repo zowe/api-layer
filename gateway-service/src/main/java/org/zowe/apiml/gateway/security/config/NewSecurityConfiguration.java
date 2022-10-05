@@ -41,6 +41,7 @@ import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
 import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
+import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
@@ -87,6 +88,8 @@ public class NewSecurityConfiguration {
     private final AuthenticationService authenticationService;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final HandlerInitializer handlerInitializer;
+
+    private final SuccessfulAccessTokenHandler successfulAuthAccessTokenHandler;
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final SuccessfulTicketHandler successfulTicketHandler;
     private final SuccessfulRefreshHandler successfulRefreshHandler;
@@ -224,7 +227,7 @@ public class NewSecurityConfiguration {
             private LoginFilter accessTokenFilter(String endpoint, AuthenticationManager authenticationManager) {
                 return new LoginFilter(
                     endpoint,
-                    handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
+                    successfulAuthAccessTokenHandler,
                     handlerInitializer.getAuthenticationFailureHandler(),
                     securityObjectMapper,
                     authenticationManager,
@@ -233,7 +236,7 @@ public class NewSecurityConfiguration {
 
             private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
                 return new X509AuthenticationFilter(loginEndpoint,
-                    handlerInitializer.getSuccessfulAuthAccessTokenHandler(),
+                    successfulAuthAccessTokenHandler,
                     x509AuthenticationProvider);
             }
         }
