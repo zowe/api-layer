@@ -89,7 +89,7 @@ public class ComponentsConfiguration {
     }
 
     @Bean
-    public SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider){
+    public SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider) {
         return new SuccessfulAccessTokenHandler(apimlAccessTokenProvider);
     }
 }
