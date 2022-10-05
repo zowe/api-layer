@@ -16,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
+import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -25,8 +26,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -180,6 +180,13 @@ class ZaasClientTest {
         ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> new ZaasClientImpl(config));
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS501E"));
+    }
+
+    @Test
+    void createConfigProperties() {
+        DefaultZaasClientConfiguration configuration = new DefaultZaasClientConfiguration();
+        ConfigProperties properties = configuration.getConfigProperties();
+        assertNotNull(properties);
     }
 
 }

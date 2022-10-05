@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.client.configuration;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,17 +25,6 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
     @Bean
-    @ConditionalOnProperty(value = "okta.oauth2.issuer")
-    public SecurityFilterChain filterChainOath(HttpSecurity http) throws Exception {
-        return http.csrf().disable() // NOSONAR
-            .authorizeRequests()
-            .antMatchers("/**").authenticated()
-            .and().oauth2ResourceServer().jwt().and()
-            .and().build();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(value = SecurityFilterChain.class)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable() // NOSONAR
             .authorizeRequests()

@@ -72,7 +72,6 @@ ext {
     tomcatVersion = '9.0.65'
     velocityVersion = '2.3'
     xstreamVersion = '1.4.19!!'
-    oktaSpringBootVersion = '2.1.5'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
@@ -89,7 +88,6 @@ ext {
         spring_boot_starter_cache          : "org.springframework.boot:spring-boot-starter-cache:${springBootVersion}",
         spring_boot_starter_webflux        : "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}",
 
-        okta_spring_boot_starter           : "com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}",
 
         spring_cloud_hystrix_dashboard     : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard:${springCloudVersion}",
         spring_cloud_starter_bootstrap     : "org.springframework.cloud:spring-cloud-starter-bootstrap:${springCloudVersion3}",

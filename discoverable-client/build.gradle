@@ -75,8 +75,6 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
 
-    implementation libraries.okta_spring_boot_starter
-
     implementation libraries.bootstrap
     implementation libraries.jquery
 
