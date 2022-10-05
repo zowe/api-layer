@@ -1034,7 +1034,7 @@ jobs:
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
 
-            -   name: Dump CGW jacoco data
+            -   name: Dump DC jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6302 --destfile ./results/discoverable-client.exec
 
