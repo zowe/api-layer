@@ -76,7 +76,7 @@ public class ExtensionConfigReader {
             return definition.get();
         } else {
             return readComponentManifestWithCharset(Charset.forName("IBM1047"), manifestYamlPath, manifestJsonPath)
-                .orElseThrow(() -> new ExtensionManifestReadException("Could not read manifest in IBM1047 encoding"));
+                .orElseThrow(() -> new ExtensionManifestReadException("Could not read manifest in either " + Charset.defaultCharset() + " nor in IBM1047 encoding"));
         }
     }
 
@@ -89,6 +89,7 @@ public class ExtensionConfigReader {
             } else if (Files.exists(jsonPath)) {
                 return Optional.ofNullable(jsonMapper.readValue(new String(Files.readAllBytes(jsonPath), charset), ExtensionDefinition.class));
             } else {
+                log.debug("None of these files were found: {} nor {} ", yamlPath, jsonPath);
                 return Optional.empty();
             }
         } catch (Exception e) {
