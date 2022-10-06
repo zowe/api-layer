@@ -2,6 +2,18 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.4.8 (2022-10-06)`
+
+* Feature:  Validate OIDC token (#2604) ([cdd4a43](https://github.com/zowe/api-layer/commit/cdd4a43)), closes [#2604](https://github.com/zowe/api-layer/issues/2604)
+* Feature:  route to service based on header (#2600) ([6fafb60](https://github.com/zowe/api-layer/commit/6fafb60)), closes [#2600](https://github.com/zowe/api-layer/issues/2600)
+* Feature:  new cloud gateway service (#2576) ([7c618c0](https://github.com/zowe/api-layer/commit/7c618c0)), closes [#2576](https://github.com/zowe/api-layer/issues/2576)
+
+
+* Bugfix:  do not require clientAuth extension (#2595) ([e9e8092](https://github.com/zowe/api-layer/commit/e9e8092)), closes [#2595](https://github.com/zowe/api-layer/issues/2595)
+* Bugfix:  snakeyml update, scheme validation fix (#2577) ([ae48669](https://github.com/zowe/api-layer/commit/ae48669)), closes [#2577](https://github.com/zowe/api-layer/issues/2577)
+* Bugfix:  Add build info to the manifest.yaml (#2573) ([93298dd](https://github.com/zowe/api-layer/commit/93298dd)), closes [#2573](https://github.com/zowe/api-layer/issues/2573)
+* Bugfix:  Fix bug in the swagger (#2571) ([36997c6](https://github.com/zowe/api-layer/commit/36997c6)), closes [#2571](https://github.com/zowe/api-layer/issues/2571)
+
 ## `2.4.4 (2022-09-15)`
 
 * Feature: Introduction of a new cloud gateway service to provide routing functionality for multi-sysplex environments. (#2576) ([7c618c0](https://github.com/zowe/api-layer/commit/7c618c0)), closes [#2576](https://github.com/zowe/api-layer/issues/2576)
