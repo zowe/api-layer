@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.extension;
 
 public class ExtensionManifestReadException extends RuntimeException {
