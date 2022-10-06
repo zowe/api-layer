@@ -65,7 +65,9 @@ public class SafRestAuthenticationService implements SafIdtProvider {
                 HttpMethod.POST,
                 new HttpEntity<>(authentication, HEADERS),
                 Token.class);
-
+            if (HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode())) {
+                throw new SafIdtException("Cannot connect to ZSS authentication service. Verify your configuration.");
+            }
             Token responseBody = response.getBody();
             if (responseBody == null || StringUtils.isEmpty(responseBody.getJwt())) {
                 throw new SafIdtException("ZSS authentication service has not returned the Identity token");
@@ -90,6 +92,9 @@ public class SafRestAuthenticationService implements SafIdtProvider {
                 new HttpEntity<>(new Token(safToken, applid), HEADERS),
                 Void.class);
 
+            if (HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode())) {
+                throw new SafIdtException("Cannot connect to ZSS authentication service. Verify your configuration.");
+            }
             return response.getStatusCode().is2xxSuccessful();
         } catch (RestClientException e) {
             return false;
