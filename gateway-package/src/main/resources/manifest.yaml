@@ -54,7 +54,7 @@ configs:
         # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
         externalMapperUser:
       saf:
-          provider: rest
+          provider:
           urls:
               authenticate:
               verify:
