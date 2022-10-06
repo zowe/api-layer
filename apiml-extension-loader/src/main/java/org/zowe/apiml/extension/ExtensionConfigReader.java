@@ -59,7 +59,7 @@ public class ExtensionConfigReader {
             if (enabledComponents.contains(installedComponent)) {
                 try {
                     extensions.add(readComponentManifest(installedComponent));
-                } catch (Exception e) {
+                } catch (ExtensionManifestReadException e) {
                     log.error("Failed reading component {} manifest", installedComponent, e);
                 }
             }
@@ -75,7 +75,8 @@ public class ExtensionConfigReader {
         if (definition.isPresent()) {
             return definition.get();
         } else {
-            return readComponentManifestWithCharset(Charset.forName("IBM1047"), manifestYamlPath, manifestJsonPath).orElseThrow(() -> new RuntimeException("Could not read manifest in IBM1047 encoding"));
+            return readComponentManifestWithCharset(Charset.forName("IBM1047"), manifestYamlPath, manifestJsonPath)
+                .orElseThrow(() -> new ExtensionManifestReadException("Could not read manifest in IBM1047 encoding"));
         }
     }
 
@@ -91,6 +92,7 @@ public class ExtensionConfigReader {
                 return Optional.empty();
             }
         } catch (Exception e) {
+            log.debug("Failed to read {}/{} with charset {}", yamlPath, jsonPath, charset, e);
             return Optional.empty();
         }
     }
