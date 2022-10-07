@@ -70,7 +70,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             if (HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode())) {
                 log.debug("The request with URL {} used to generate the SAF IDT token failed with response code {}.", authenticationUrl, response.getStatusCode());
                 if (response.getBody() != null) {    //NOSONAR tests return null
-                    throw new SafIdtException(response.getBody().toString());
+                    throw new SafIdtException(response.getBody().toString());  //NOSONAR tests return null
                 }
                 throw new SafIdtException("Cannot connect to ZSS authentication service and generate the SAF IDT token. Please, verify your configuration.");
             }
