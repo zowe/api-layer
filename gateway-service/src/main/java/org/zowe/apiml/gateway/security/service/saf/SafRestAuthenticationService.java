@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.security.service.saf;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -35,6 +36,7 @@ import static org.springframework.util.StringUtils.hasLength;
  * - apiml.security.saf.urls.verify - URL to verify the validity of the token
  */
 @RequiredArgsConstructor
+@Slf4j
 public class SafRestAuthenticationService implements SafIdtProvider {
 
     private final RestTemplate restTemplate;
@@ -65,8 +67,9 @@ public class SafRestAuthenticationService implements SafIdtProvider {
                 HttpMethod.POST,
                 new HttpEntity<>(authentication, HEADERS),
                 Token.class);
-            if (HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode())) {
-                throw new SafIdtException("Cannot connect to ZSS authentication service. Verify your configuration.");
+            if (response.getBody() != null && HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode())) {  //NOSONAR tests return null
+                log.debug("The request with URL {} used to generate the SAF IDT token failed with response code {}.", authenticationUrl, response.getStatusCode());
+                throw new SafIdtException(response.getBody().toString());
             }
             Token responseBody = response.getBody();
             if (responseBody == null || StringUtils.isEmpty(responseBody.getJwt())) {
@@ -93,7 +96,8 @@ public class SafRestAuthenticationService implements SafIdtProvider {
                 Void.class);
 
             if (HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode())) {
-                throw new SafIdtException("Cannot connect to ZSS authentication service. Verify your configuration.");
+                log.debug("The request with URL {} used to validate the SAF IDT token failed with response code {}.", verifyUrl, response.getStatusCode());
+                throw new SafIdtException("Cannot connect to ZSS authentication service and validate the SAF IDT token. Please, verify your configuration.");
             }
             return response.getStatusCode().is2xxSuccessful();
         } catch (RestClientException e) {
