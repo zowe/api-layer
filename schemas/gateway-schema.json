@@ -111,6 +111,32 @@
                                                                     "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
                                                                 }
                                                             }
+                                                        },
+                                                        "saf": {
+                                                            "type": "object",
+                                                            "description": "SAF IDT provider.",
+                                                            "properties": {
+                                                                "provider": {
+                                                                    "type": "string",
+                                                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
+                                                                    "enum": ["rest"],
+                                                                    "default": "rest"
+                                                                },
+                                                                "urls": {
+                                                                    "type": "string",
+                                                                    "description": "URLs of the SAF IDT provider used for the token generation and verification.",
+                                                                    "properties": {
+                                                                        "authenticate": {
+                                                                            "type": "string",
+                                                                            "description": "URL of the SAF IDT provider used to generate the SAF token on behalf of the specified user."
+                                                                        },
+                                                                        "verify": {
+                                                                            "type": "string",
+                                                                            "description": "URL of the SAF IDT provider used to validate the SAF token."
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 },

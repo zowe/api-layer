@@ -53,6 +53,11 @@ configs:
         externalMapperUrl:
         # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
         externalMapperUser:
+      saf:
+          provider:
+          urls:
+              authenticate:
+              verify:
 
   server:
     internal:
