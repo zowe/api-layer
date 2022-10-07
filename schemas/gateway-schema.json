@@ -118,7 +118,9 @@
                                                             "properties": {
                                                                 "provider": {
                                                                     "type": "string",
-                                                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided."
+                                                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
+                                                                    "enum": ["rest"],
+                                                                    "default": "rest"
                                                                 },
                                                                 "urls": {
                                                                     "type": "string",
