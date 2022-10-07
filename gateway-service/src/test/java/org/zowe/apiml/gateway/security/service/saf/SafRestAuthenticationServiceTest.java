@@ -105,9 +105,23 @@ class SafRestAuthenticationServiceTest {
                 }
 
                 @Test
-                void givenInternalErrorResponse() {
+                void givenInternalErrorResponseWithEmptyBody() {
                     ResponseEntity<SafRestAuthenticationService.Token> response =
                         new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+                    when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                        .thenReturn(response);
+
+                    assertThrows(SafIdtException.class,
+                        () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
+                }
+
+                @Test
+                void givenInternalErrorResponse() {
+                    String validSafToken = "validSafToken";
+                    SafRestAuthenticationService.Token responseBody =
+                        new SafRestAuthenticationService.Token(validSafToken, "applid");
+                    ResponseEntity<SafRestAuthenticationService.Token> response =
+                        new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
                     when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
                         .thenReturn(response);
 
