@@ -103,6 +103,31 @@ class SafRestAuthenticationServiceTest {
                     assertThrows(SafIdtException.class,
                             () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
                 }
+
+                @Test
+                void givenInternalErrorResponseWithEmptyBody() {
+                    ResponseEntity<SafRestAuthenticationService.Token> response =
+                        new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+                    when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                        .thenReturn(response);
+
+                    assertThrows(SafIdtException.class,
+                        () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
+                }
+
+                @Test
+                void givenInternalErrorResponse() {
+                    String validSafToken = "validSafToken";
+                    SafRestAuthenticationService.Token responseBody =
+                        new SafRestAuthenticationService.Token(validSafToken, "applid");
+                    ResponseEntity<SafRestAuthenticationService.Token> response =
+                        new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+                    when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
+                        .thenReturn(response);
+
+                    assertThrows(SafIdtException.class,
+                        () -> underTest.generate(VALID_USERNAME, new char[1], "ANYAPPL"));
+                }
             }
         }
     }
@@ -150,6 +175,21 @@ class SafRestAuthenticationServiceTest {
                 when(response.getStatusCode()).thenReturn(HttpStatus.OK);
 
                 assertThat(underTest.verify("validSafToken", "applid"), is(true));
+            }
+        }
+
+        @Nested
+        @DisplayName("Return Exception")
+        class ReturnExceptionTest {
+            @Test
+            void givenInternalErrorResponse() {
+                ResponseEntity response =
+                    new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+                when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(Void.class)))
+                    .thenReturn(response);
+
+                assertThrows(SafIdtException.class,
+                    () -> underTest.verify("validSafToken", "applid"));
             }
         }
     }
