@@ -8,10 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.security.login.x509;
+package org.zowe.apiml.gateway.security.mapping;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.X509Utils;
 
 import java.security.cert.CertificateParsingException;
@@ -29,16 +30,18 @@ class X509CommonNameUserMapperTest {
     void providedValidCertificate_returnUserId() {
         X509Certificate x509Certificate =
             X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "CN=user,OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
+        X509AuthSource x509AuthSource = new X509AuthSource(x509Certificate);
 
-        assertEquals("user", x509CommonNameUserMapper.mapCertificateToMainframeUserId(x509Certificate));
+        assertEquals("user", x509CommonNameUserMapper.mapToMainframeUserId(x509AuthSource));
     }
 
     @Test
     void providedInvalidCertificate_returnNull() {
         X509Certificate x509Certificate =
             X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
+        X509AuthSource x509AuthSource = new X509AuthSource(x509Certificate);
 
-        assertNull(x509CommonNameUserMapper.mapCertificateToMainframeUserId(x509Certificate));
+        assertNull(x509CommonNameUserMapper.mapToMainframeUserId(x509AuthSource));
     }
 
     @Test
