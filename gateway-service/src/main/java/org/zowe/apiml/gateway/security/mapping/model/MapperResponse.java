@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.security.login.x509.model;
+package org.zowe.apiml.gateway.security.mapping.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CertMapperResponse {
+public class MapperResponse {
     @JsonProperty("userid")
     private String userId;
     @JsonProperty("returnCode")

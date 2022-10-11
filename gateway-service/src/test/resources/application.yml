@@ -41,7 +41,7 @@ apiml:
         ssl:
             verifySslCertificatesOfServices: true
         x509:
-            externalMapperUrl: http://localhost:8542/certificate/x509/map
+            externalMapperUrl: http://localhost:8542/certificate
             externalMapperUser: validUserForMap
         auth:
             provider: dummy

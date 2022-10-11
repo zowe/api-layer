@@ -13,7 +13,9 @@ package org.zowe.apiml.gateway.security.login.x509;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
+import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.utils.X509Utils;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
@@ -29,19 +31,21 @@ import static org.mockito.Mockito.when;
 
 class X509AuthenticationProviderTest {
 
-    private X509AuthenticationMapper x509AuthenticationMapper;
+    private AuthenticationMapper mapper;
     private TokenCreationService tokenCreationService;
     private X509AuthenticationProvider x509AuthenticationProvider;
 
-    private X509Certificate[] x509Certificate = new X509Certificate[]{
+    private final X509Certificate[] x509Certificate = new X509Certificate[]{
         X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "CN=user"),
     };
 
+    private final X509AuthSource x509AuthSource = new X509AuthSource(x509Certificate[0]);
+
     @BeforeEach
     void setUp() {
-        x509AuthenticationMapper = mock(X509AuthenticationMapper.class);
+        mapper = mock(AuthenticationMapper.class);
         tokenCreationService = mock(TokenCreationService.class);
-        x509AuthenticationProvider = new X509AuthenticationProvider(x509AuthenticationMapper, tokenCreationService);
+        x509AuthenticationProvider = new X509AuthenticationProvider(mapper, tokenCreationService);
         x509AuthenticationProvider.isClientCertEnabled = true;
     }
 
@@ -59,7 +63,7 @@ class X509AuthenticationProviderTest {
 
     @Test
     void givenCertificateIsntMappedToUser_whenAuthenticationIsRequired_thenNullIsReturned() {
-        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn(null);
+        when(mapper.mapToMainframeUserId(x509AuthSource)).thenReturn(null);
         Authentication result = x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
         assertThat(result, is(nullValue()));
     }
@@ -69,7 +73,7 @@ class X509AuthenticationProviderTest {
     void givenZosmfIsPresent_whenValidCertificateAndPassTicketGenerate_returnZosmfJwtToken() {
         String validUsername = "validUsername";
 
-        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn(validUsername);
+        when(mapper.mapToMainframeUserId(x509AuthSource)).thenReturn(validUsername);
         when(tokenCreationService.createJwtTokenWithoutCredentials(validUsername)).thenReturn("validJwtToken");
 
         Authentication result = x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));

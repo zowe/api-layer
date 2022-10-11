@@ -16,7 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.client.ResourceAccessException;
-import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
+import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
@@ -52,13 +52,13 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         TokenCreationService tokenCreationService;
         X509AuthSourceService service;
         AuthenticationService authenticationService;
-        X509AuthenticationMapper mapper;
+        AuthenticationMapper mapper;
 
         @BeforeEach
         void setup() {
             authenticationService = mock(AuthenticationService.class);
             tokenCreationService = mock(TokenCreationService.class);
-            mapper = mock(X509AuthenticationMapper.class);
+            mapper = mock(AuthenticationMapper.class);
             service = new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
         }
 
@@ -72,7 +72,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         @Test
         void givenX509Source_thenTranslateException() {
             X509AuthSource source = new X509AuthSource(null);
-            when(mapper.mapCertificateToMainframeUserId(any())).thenReturn("user1");
+            when(mapper.mapToMainframeUserId(any())).thenReturn("user1");
             when(tokenCreationService.createJwtTokenWithoutCredentials(any())).thenThrow(new ResourceAccessException("I/O exception"));
             assertThrows(AuthSchemeException.class, () -> service.getJWT(source));
         }
@@ -81,12 +81,12 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class X509MFAuthSourceServiceTest {
-        private X509AuthenticationMapper mapper;
+        private AuthenticationMapper mapper;
         private X509AuthSourceService serviceUnderTest;
 
         @BeforeEach
         void init() {
-            mapper = mock(X509AuthenticationMapper.class);
+            mapper = mock(AuthenticationMapper.class);
             serviceUnderTest = spy(new X509AuthSourceService(mapper, null, null));
         }
 
@@ -174,17 +174,18 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
                 String cert = "clientCertificate";
                 String encodedCert = Base64.getEncoder().encodeToString(cert.getBytes());
                 String distinguishedName = "distinguishedName";
+                AuthSource authSource = new X509AuthSource(x509Certificate);
 
                 Parsed expectedParsedSource = new X509AuthSource.Parsed("user", null, null, Origin.X509, encodedCert, distinguishedName);
-                when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenReturn("user");
+                when(mapper.mapToMainframeUserId(authSource)).thenReturn("user");
                 when(x509Certificate.getEncoded()).thenReturn(cert.getBytes());
 
                 Principal principal = mock(Principal.class);
                 when(x509Certificate.getSubjectDN()).thenReturn(principal);
                 when(principal.toString()).thenReturn(distinguishedName);
-                Parsed parsedSource = serviceUnderTest.parse(new X509AuthSource(x509Certificate));
+                Parsed parsedSource = serviceUnderTest.parse(authSource);
 
-                verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+                verify(mapper, times(1)).mapToMainframeUserId(authSource);
                 Assertions.assertNotNull(parsedSource);
                 Assertions.assertEquals(expectedParsedSource, parsedSource);
             }
@@ -224,9 +225,9 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             @Test
             void whenAuthenticationServiceException_thenThrowWhenParse() {
                 AuthSource authSource = new X509AuthSource(x509Certificate);
-                when(mapper.mapCertificateToMainframeUserId(x509Certificate)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
+                when(mapper.mapToMainframeUserId(authSource)).thenThrow(new AuthenticationServiceException("Can't get extensions from certificate"));
                 assertThrows(AuthenticationServiceException.class, () -> serviceUnderTest.parse(authSource));
-                verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+                verify(mapper, times(1)).mapToMainframeUserId(authSource);
             }
 
             @Test
@@ -235,7 +236,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
                 when(x509Certificate.getEncoded()).thenThrow(new CertificateEncodingException(""));
 
                 assertThrows(InvalidCertificateException.class, () -> serviceUnderTest.parse(authSource));
-                verify(mapper, times(1)).mapCertificateToMainframeUserId(x509Certificate);
+                verify(mapper, times(1)).mapToMainframeUserId(authSource);
             }
 
         }

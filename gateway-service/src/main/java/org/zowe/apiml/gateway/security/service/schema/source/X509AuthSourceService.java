@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
-import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
+import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
@@ -30,7 +30,7 @@ import java.util.Optional;
 
 /**
  * Basic implementation of AuthSourceService interface which uses client certificate as an authentication source.
- * This implementation relies on concrete implementation of {@link X509AuthenticationMapper} for validation and parsing of
+ * This implementation relies on concrete implementation of {@link AuthenticationMapper} for validation and parsing of
  * the client certificate.
  */
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class X509AuthSourceService implements AuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
-    private final X509AuthenticationMapper mapper;
+    private final AuthenticationMapper mapper;
     private final TokenCreationService tokenService;
     private final AuthenticationService authenticationService;
 
@@ -83,7 +83,7 @@ public class X509AuthSourceService implements AuthSourceService {
      */
     protected boolean isValid(X509Certificate clientCert) {
         logger.log(MessageType.DEBUG, "Validating X509 client certificate.");
-        return !(clientCert == null);
+        return clientCert != null;
     }
 
     /**
@@ -95,8 +95,7 @@ public class X509AuthSourceService implements AuthSourceService {
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             logger.log(MessageType.DEBUG, "Parsing X509 client certificate.");
-            X509Certificate clientCert = (X509Certificate) authSource.getRawSource();
-            return clientCert == null ? null : parseClientCert(clientCert, mapper);
+            return isValid(authSource) ? parseClientCert((X509AuthSource) authSource, mapper) : null;
         }
         return null;
     }
@@ -122,13 +121,14 @@ public class X509AuthSourceService implements AuthSourceService {
     /**
      * Parse client certificate: get common name, distinguished name and encoded certificate value.
      *
-     * @param clientCert {@link X509Certificate} client certificate to parse.
-     * @param mapper     instance of {@link X509AuthenticationMapper} to use for parsing.
+     * @param x509AuthSource {@link X509AuthSource} object which hold original source of authentication - client certificate.
+     * @param mapper     instance of {@link AuthenticationMapper} to use for parsing.
      * @return parsed authentication source or null in case of CertificateEncodingException.
      */
-    private Parsed parseClientCert(X509Certificate clientCert, X509AuthenticationMapper mapper) {
+    private Parsed parseClientCert(X509AuthSource x509AuthSource, AuthenticationMapper mapper) {
+        X509Certificate clientCert = x509AuthSource.getRawSource();
         try {
-            String commonName = mapper.mapCertificateToMainframeUserId(clientCert);
+            String commonName = mapper.mapToMainframeUserId(x509AuthSource);
             String encodedCert = Base64.getEncoder().encodeToString(clientCert.getEncoded());
             String distinguishedName = clientCert.getSubjectDN().toString();
             return new Parsed(commonName, clientCert.getNotBefore(), clientCert.getNotAfter(),
@@ -143,7 +143,7 @@ public class X509AuthSourceService implements AuthSourceService {
     public String getJWT(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             logger.log(MessageType.DEBUG, "Get JWT token from X509 client certificate.");
-            String userId = mapper.mapCertificateToMainframeUserId((X509Certificate) authSource.getRawSource());
+            String userId = mapper.mapToMainframeUserId(authSource);
             if (userId == null) {
                 logger.log(MessageType.DEBUG, "It was not possible to map provided certificate to the mainframe identity.");
                 throw new AuthSchemeException("org.zowe.apiml.gateway.security.schema.x509.mappingFailed");
