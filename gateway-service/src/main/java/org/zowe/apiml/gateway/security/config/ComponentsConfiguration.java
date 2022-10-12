@@ -18,8 +18,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
-import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
-import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
+import org.zowe.apiml.gateway.security.mapping.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSourceService;
@@ -73,7 +73,7 @@ public class ComponentsConfiguration {
      */
     @Bean
     @Qualifier("x509MFAuthSourceService")
-    public X509AuthSourceService getX509MFAuthSourceService(X509AuthenticationMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
+    public X509AuthSourceService getX509MFAuthSourceService(AuthenticationMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
         return new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
     }
 

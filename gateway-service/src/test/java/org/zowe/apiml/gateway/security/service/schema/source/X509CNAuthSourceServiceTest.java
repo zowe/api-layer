@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+import org.zowe.apiml.gateway.security.mapping.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 
