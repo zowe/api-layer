@@ -38,6 +38,7 @@ ext {
     jaxbApiVersion = '2.3.1'
     jerseyVersion = '2.26'
     jettyWebSocketClientVersion = '9.4.48.v20220622'
+    jettisonVersion = '1.5.1'
     jjwtVersion = '0.11.2'
     jjwtFullVersion = '0.9.1'
     jsonPathVersion = '2.6.0'
@@ -156,6 +157,7 @@ ext {
         jetty_websocket_api                : "org.eclipse.jetty.websocket:websocket-api:${jettyWebSocketClientVersion}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         jetty_websocket_common             : "org.eclipse.jetty.websocket:websocket-common:${jettyWebSocketClientVersion}",
+        jettison                           : "org.codehaus.jettison:jettison:${jettisonVersion}",
         json_smart                         : "net.minidev:json-smart:${jsonSmartVersion}",
         jjwt                               : "io.jsonwebtoken:jjwt-api:${jjwtVersion}",
         jjwt_full                          : "io.jsonwebtoken:jjwt:${jjwtFullVersion}",
