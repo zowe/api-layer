@@ -57,7 +57,6 @@ import org.zowe.apiml.security.common.config.SimpleUserDetailService;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.content.HttpHeaderContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
@@ -515,8 +514,7 @@ public class NewSecurityConfiguration {
                     http
                         .addFilterBefore(basicFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(cookieFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterBefore(bearerContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterBefore(httpHeaderContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                        .addFilterBefore(bearerContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 }
 
                 /**
@@ -551,16 +549,6 @@ public class NewSecurityConfiguration {
                         handlerInitializer.getAuthenticationFailureHandler(),
                         handlerInitializer.getResourceAccessExceptionHandler(),
                         protectedEndpoints);
-                }
-                /**
-                 * Secures content with a token in HTTP header
-                 */
-                private HttpHeaderContentFilter httpHeaderContentFilter(AuthenticationManager authenticationManager) {
-                    return new HttpHeaderContentFilter(
-                        authenticationManager,
-                        handlerInitializer.getAuthenticationFailureHandler(),
-                        handlerInitializer.getResourceAccessExceptionHandler()
-                    );
                 }
             }
 

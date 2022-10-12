@@ -59,6 +59,7 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.CookieProperties cookieProperties;
 
     private String provider = "zosmf";
+    private String customAuthHeader;
 
     private AuthConfigurationProperties.X509Cert x509Cert;
 
