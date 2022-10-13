@@ -70,17 +70,6 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .statusCode(200);
     }
 
-    @Test
-    void givenCustomHttpAuthHeader() {
-        given()
-            .config(SslContext.clientCertValid)
-            .when()
-            .get(URL)
-            .then()
-            .body("headers.customHeader", notNullValue())
-            .statusCode(200);
-    }
-
     @Nested
     class GivenJWTTest {
 
@@ -94,6 +83,18 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .get(URL)
                 .then()
                 .body("headers.cookie", is("apimlAuthenticationToken=" + jwt))
+                .statusCode(200);
+        }
+
+        @Test
+        void givenCustomHttpAuthHeader() {
+            String jwt = gatewayToken();
+            given()
+                .config(SslContext.tlsWithoutCert)
+                .when()
+                .get(URL)
+                .then()
+                .body("headers.customHeader", is(jwt))
                 .statusCode(200);
         }
 
