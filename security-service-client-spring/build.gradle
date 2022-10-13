@@ -8,7 +8,10 @@ dependencies {
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
     implementation libraries.apache_commons_lang3
-    implementation libraries.eureka_client
+    implementation (libraries.eureka_client) {
+        exclude group: "org.codehaus.jettison", module: "jettison"
+    }
+    implementation libraries.jettison
 
     compileOnly libraries.javax_servlet_api
 

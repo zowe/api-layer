@@ -11,7 +11,9 @@ dependencies {
     implementation(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
+        exclude group: "org.codehaus.jettison", module: "jettison"
     }
+    implementation libraries.jettison
 
     implementation libraries.snakeyaml
     compileOnly libraries.lombok
