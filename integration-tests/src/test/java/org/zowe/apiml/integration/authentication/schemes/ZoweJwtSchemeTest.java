@@ -90,7 +90,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
         void givenCustomHttpAuthHeader() {
             String jwt = gatewayToken();
             given()
-                .config(SslContext.tlsWithoutCert)
+                .config(SslContext.clientCertValid)
                 .when()
                 .get(URL)
                 .then()
