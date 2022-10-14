@@ -11,7 +11,7 @@ function unsecureCall() {
 
 
 function openWebsocket() {
-    var loc = window.location, wsUri;
+    let loc = window.location, wsUri;
     if (loc.protocol === "https:") {
         wsUri = "wss:";
     } else {
