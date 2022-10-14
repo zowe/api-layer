@@ -11,13 +11,14 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
-import java.security.cert.X509Certificate;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+import org.zowe.apiml.gateway.security.mapping.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.message.core.MessageType;
+
+import java.security.cert.X509Certificate;
+import java.util.Optional;
 
 /**
  * Custom implementation of AuthSourceService interface which uses client certificate as an authentication source.

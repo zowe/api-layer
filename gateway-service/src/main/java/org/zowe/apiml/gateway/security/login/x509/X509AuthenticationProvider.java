@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
@@ -31,7 +33,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
 
-    private final X509AuthenticationMapper x509AuthenticationMapper;
+    private final AuthenticationMapper x509AuthenticationMapper;
     private final TokenCreationService tokenCreationService;
 
     /**
@@ -42,7 +44,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
      * If z/OSMF is active, authenticate against it with passticket.
      * Otherwise, the fact that mapping happened is proof of authentication
      * If SAF or DUMMY auth providers are selected, they defer the decision to the mapping component.
-     * For list of mapping components, see implementations of {@link X509AuthenticationMapper}
+     * For list of mapping components, see implementations of {@link AuthenticationMapper}
      *
      * @param authentication {@link Authentication}
      * @return {@link Authentication}
@@ -80,7 +82,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     private String getUserid(Authentication authentication) {
         X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
         log.debug("Getting user id for certificate: {}", certs[0]);
-        return x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
+        return x509AuthenticationMapper.mapToMainframeUserId(new X509AuthSource(certs[0]));
     }
 }
 

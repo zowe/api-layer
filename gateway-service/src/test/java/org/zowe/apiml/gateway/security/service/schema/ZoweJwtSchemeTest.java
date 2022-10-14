@@ -224,4 +224,16 @@ class ZoweJwtSchemeTest {
             }
         }
     }
+
+    @Nested
+    class GivenCustomAuthHeader {
+        @Test
+        void thenAddRequestHeaderContainingToken() {
+            ReflectionTestUtils.setField(scheme, "customHeader", "header");
+            when(authSourceService.parse(authSource)).thenReturn(new ParsedTokenAuthSource("user", new Date(), new Date(), Origin.ZOSMF));
+            command = scheme.createCommand(null, authSource);
+            command.apply(null);
+            verify(requestContext, times(1)).addZuulRequestHeader(eq("header"), any());
+        }
+    }
 }

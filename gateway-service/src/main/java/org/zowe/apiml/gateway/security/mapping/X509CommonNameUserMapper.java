@@ -8,12 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.security.login.x509;
+package org.zowe.apiml.gateway.security.mapping;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -28,21 +30,24 @@ import java.security.cert.X509Certificate;
 @Component
 @ConditionalOnExpression("T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
 )
-public class X509CommonNameUserMapper implements X509AuthenticationMapper {
+public class X509CommonNameUserMapper implements AuthenticationMapper {
 
 
     /**
      * Maps certificate to user id
      *
-     * @param certificate
+     * @param authSource X509 certificate as a source of authentication
      * @return the user
      */
-    public String mapCertificateToMainframeUserId(X509Certificate certificate) {
-        String dn = certificate.getSubjectX500Principal().getName();
-        LdapName ldapDN = getLdapName(dn);
-        for (Rdn rdn : ldapDN.getRdns()) {
-            if ("cn".equalsIgnoreCase(rdn.getType())) {
-                return String.valueOf(rdn.getValue());
+    public String mapToMainframeUserId(AuthSource authSource) {
+        if (authSource instanceof X509AuthSource) {
+            X509Certificate certificate = (X509Certificate) authSource.getRawSource();
+            String dn = certificate.getSubjectX500Principal().getName();
+            LdapName ldapDN = getLdapName(dn);
+            for (Rdn rdn : ldapDN.getRdns()) {
+                if ("cn".equalsIgnoreCase(rdn.getType())) {
+                    return String.valueOf(rdn.getValue());
+                }
             }
         }
         return null;
