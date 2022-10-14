@@ -1,5 +1,5 @@
 function unsecureCall() {
-    var name = $('#name').val();
+    let name = $('#name').val();
     $.ajax({
         url: "api/v1/" + ((name) ? (name + "/greeting") : "greeting")
     }).then(function (data) {
@@ -17,7 +17,7 @@ function openWebsocket() {
     } else {
         wsUri = "ws:";
     }
-    wsUri += "//" + loc.host;
+    wsUri += "//" + "user:pass@" + loc.host;
     console.log(loc.pathname);
     if (loc.pathname.startsWith("/ui/")) {
         // UI applications accessed via the gateway will use a URL with "/ui/" at the beginning,
@@ -31,7 +31,7 @@ function openWebsocket() {
     return new WebSocket(wsUri);
 }
 
-var connection = openWebsocket();
+let connection = openWebsocket();
 
 connection.onopen = function () {
     $('#ws-content').text('Websocket connection established');
@@ -47,6 +47,6 @@ connection.onmessage = function (message) {
 }
 
 function websocketCall() {
-    var text = $('#ws-text').val();
+    let text = $('#ws-text').val();
     connection.send(text);
 }
