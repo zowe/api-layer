@@ -12,8 +12,10 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -30,13 +32,21 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import java.util.Optional;
 
 @Component
-@AllArgsConstructor
 public class ZoweJwtScheme implements IAuthenticationScheme {
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
 
-    private AuthSourceService authSourceService;
-    private AuthConfigurationProperties configurationProperties;
+    private final AuthSourceService authSourceService;
+    private final AuthConfigurationProperties configurationProperties;
+
+    @Value("${apiml.security.auth.customAuthHeader:}")
+    private String customHeader;
+
+    @Autowired
+    public ZoweJwtScheme(AuthSourceService authSourceService, AuthConfigurationProperties configurationProperties) {
+        this.authSourceService = authSourceService;
+        this.configurationProperties = configurationProperties;
+    }
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -90,6 +100,9 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             if (jwt != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
+                if (StringUtils.isNotEmpty(customHeader)) {
+                    JwtCommand.setCustomHeader(context, customHeader, jwt);
+                }
             }
         }
 

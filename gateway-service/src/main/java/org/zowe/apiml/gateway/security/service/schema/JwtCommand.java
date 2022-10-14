@@ -11,8 +11,10 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.util.CookieUtil;
 
+@Slf4j
 public abstract class JwtCommand extends AuthenticationCommand {
 
     public static final String COOKIE_HEADER = "cookie";
@@ -39,6 +41,16 @@ public abstract class JwtCommand extends AuthenticationCommand {
             cookie
         );
 
+    }
+
+    /**
+     * Add HTTP header containing the JWT token to the request. The header name is defined in the configuration.
+     * @param context
+     * @param value
+     */
+    public static void setCustomHeader(RequestContext context, String header, String value) {
+        log.debug("Adding HTTP header {} to the request", header);
+        context.addZuulRequestHeader(header, value);
     }
 
     @Override
