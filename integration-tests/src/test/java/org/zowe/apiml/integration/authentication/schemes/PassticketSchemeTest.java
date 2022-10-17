@@ -224,6 +224,20 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
             }
         }
+
+        @Nested
+        class StorePassTicketInHeader {
+            @Test
+            void givenCustomHeader() {
+                given()
+                    .cookie(COOKIE_NAME, jwt)
+                    .when()
+                    .get(requestUrl)
+                    .then()
+                    .body("headers.customheader", Matchers.notNullValue())
+                    .statusCode(200);
+            }
+        }
     }
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
@@ -233,7 +247,6 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             .body("headers.authorization", not(startsWith("Bearer ")))
             .body("headers.authorization", startsWith("Basic "))
             .body("headers.authorization", not(equals(basic)))
-            .body("headers.customheader", Matchers.notNullValue())
             .body("cookies", not(hasKey(COOKIE_NAME)))
             .statusCode(200);
     }
