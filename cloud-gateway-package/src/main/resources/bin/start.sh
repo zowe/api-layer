@@ -73,6 +73,21 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
+keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
+truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
+truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
+
+# There was an issue where java could throw an exception on keyring read if the password was blank
+# But, keyrings dont use passwords, so we just put a dummy value here.
+if [ "${keystore_type}" = "JCERACFKS" ]; then
+  keystore_pass="dummy"
+fi
+if [ "${truststore_type}" = "JCERACFKS" ]; then
+  truststore_pass="dummy"
+fi
+
+
 CLOUD_GATEWAY_CODE=CG
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Xms32m -Xmx256m \
@@ -93,12 +108,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
     -Dserver.ssl.keyStore="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}" \
     -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
-    -Dserver.ssl.keyStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
     -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
-    -Dserver.ssl.keyPassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.keyPassword="${keystore_pass}" \
     -Dserver.ssl.trustStore="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}" \
     -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
-    -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}" \
+    -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djava.library.path=${LIBPATH} \
     -jar ${JAR_FILE} &
