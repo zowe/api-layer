@@ -117,10 +117,10 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
-keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}";
-keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}";
-truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}";
-truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}";
+keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
+keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
+truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
+truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
 
 # There was an issue where java could throw an exception on keyring read if the password was blank
 # But, keyrings dont use passwords, so we just put a dummy value here.
