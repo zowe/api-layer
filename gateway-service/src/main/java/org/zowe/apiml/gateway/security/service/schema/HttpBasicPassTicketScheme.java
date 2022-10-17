@@ -14,6 +14,8 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
@@ -47,6 +49,9 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
     private final String cookieName;
     private final String patCookieName;
+
+    @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.customAuthHeader:}")
+    private String customHeader;
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
@@ -105,7 +110,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final String value = "Basic " + encoded;
 //        passticket is valid only once, therefore this command needs to expire immediately and each call should generate new passticket
         long expiration = System.currentTimeMillis();
-        return new PassTicketCommand(value, cookieName, patCookieName, expiration);
+        return new PassTicketCommand(value, cookieName, patCookieName, expiration, customHeader);
     }
 
     @Override
@@ -115,6 +120,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
+    @Slf4j
     public static class PassTicketCommand extends AuthenticationCommand {
 
         private static final long serialVersionUID = 3941300386857998443L;
@@ -125,12 +131,18 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         String cookieName;
         String patCookieName;
         Long expireAt;
+        String customHeader;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             if (authorizationValue != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+                if (StringUtils.isNotEmpty(customHeader)) {
+                    String passTicket = authorizationValue.replace("Basic ", "");
+                    log.debug("Adding HTTP request header {} to store the passticket", customHeader);
+                    context.addZuulRequestHeader(customHeader, passTicket);
+                }
                 String[] cookiesToBeRemoved = new String[]{cookieName,patCookieName};
                 JwtCommand.removeCookie(context, cookiesToBeRemoved);
             }
