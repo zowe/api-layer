@@ -17,6 +17,7 @@ import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -232,6 +233,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             .body("headers.authorization", not(startsWith("Bearer ")))
             .body("headers.authorization", startsWith("Basic "))
             .body("headers.authorization", not(equals(basic)))
+            .body("headers.customheader", Matchers.notNullValue())
             .body("cookies", not(hasKey(COOKIE_NAME)))
             .statusCode(200);
     }
