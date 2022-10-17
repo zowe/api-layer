@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
@@ -68,6 +68,22 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .body("headers.x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
             .header("x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
             .statusCode(200);
+    }
+
+    @Nested
+    class GivenCustomAuthHeader {
+        @Test
+        void thenAddAuthHeader() {
+            String jwt = gatewayToken();
+            given()
+                .config(SslContext.tlsWithoutCert)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .when()
+                .get(URL)
+                .then()
+                .body("headers.customheader", is(jwt))
+                .statusCode(200);
+        }
     }
 
     @Nested
