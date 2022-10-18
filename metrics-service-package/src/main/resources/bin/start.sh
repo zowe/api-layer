@@ -103,7 +103,6 @@ fi
 # We can handle both cases of user input by just adding extra "//" if we detect its missing.
 ensure_keyring_slashes() {
   keyring_string="${1}"
-  var_name="${2}"
   only_two_slashes=$(echo "${keyring_string}" | grep "^safkeyring://[^//]")
   if [ -n "${only_two_slashes}" ]; then
     keyring_string=$(echo "${keyring_string}" | sed "s#safkeyring://#safkeyring:////#")
