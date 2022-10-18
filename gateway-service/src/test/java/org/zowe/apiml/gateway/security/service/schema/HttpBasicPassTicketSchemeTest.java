@@ -181,12 +181,15 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
             String cookies = requestContext.getZuulRequestHeaders().get("cookie");
             assertEquals("abc=def", cookies);
             String customHeader = requestContext.getZuulRequestHeaders().get("header");
+            String customUserHeader = requestContext.getZuulRequestHeaders().get("userid");
             assertNull(customHeader);
+            assertNull(customUserHeader);
         }
 
         @Test
         void givenCustomAuthHeader_whenApply_thenHeaderIsAdded() {
-            ReflectionTestUtils.setField(httpBasicPassTicketScheme, "customHeader", "header");
+            ReflectionTestUtils.setField(httpBasicPassTicketScheme, "customPassTicketHeader", "header");
+            ReflectionTestUtils.setField(httpBasicPassTicketScheme, "customUserHeader", "userid");
             AuthenticationCommand command = getPassTicketCommand();
             RequestContext requestContext = new RequestContext();
             HttpServletRequest request = new MockHttpServletRequest();
@@ -197,8 +200,10 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
             command.apply(null);
 
-            String customHeader = requestContext.getZuulRequestHeaders().get("header");
-            assertNotNull(customHeader);
+            String customAuthHeader = requestContext.getZuulRequestHeaders().get("header");
+            String customUserHeader = requestContext.getZuulRequestHeaders().get("userid");
+            assertNotNull(customAuthHeader);
+            assertNotNull(customUserHeader);
         }
 
         private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {

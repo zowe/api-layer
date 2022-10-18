@@ -19,6 +19,7 @@ apiml:
             jwt:
                 customAuthHeader:
             passticket:
+                customUserHeader:
                 customAuthHeader:
             provider: dummy
             zosmf:

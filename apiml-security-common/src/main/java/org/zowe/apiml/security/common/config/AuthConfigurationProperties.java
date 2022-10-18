@@ -78,9 +78,10 @@ public class AuthConfigurationProperties {
         private String customAuthHeader;
     }
 
-    //PassTicket Custom Header property
+    //PassTicket Custom Headers properties
     @Data
     public static class PassTicketAuthProperties {
+        private String customUserHeader;
         private String customAuthHeader;
     }
 

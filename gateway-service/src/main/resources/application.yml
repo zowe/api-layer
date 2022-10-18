@@ -74,6 +74,7 @@ apiml:
             jwt:
                 customAuthHeader:
             passticket:
+                customUserHeader:
                 customAuthHeader:
             provider: zosmf
         x509:

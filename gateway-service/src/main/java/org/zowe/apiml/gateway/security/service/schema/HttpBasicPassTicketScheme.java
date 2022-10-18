@@ -50,8 +50,11 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final String cookieName;
     private final String patCookieName;
 
+    @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.passticket.customUserHeader:}")
+    private String customUserHeader;
+
     @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.passticket.customAuthHeader:}")
-    private String customHeader;
+    private String customPassTicketHeader;
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
@@ -110,7 +113,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final String value = "Basic " + encoded;
 //        passticket is valid only once, therefore this command needs to expire immediately and each call should generate new passticket
         long expiration = System.currentTimeMillis();
-        return new PassTicketCommand(value, cookieName, patCookieName, expiration, customHeader);
+        return new PassTicketCommand(value, cookieName, patCookieName, expiration, customUserHeader, customPassTicketHeader, userId, passTicket);
     }
 
     @Override
@@ -131,17 +134,21 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         String cookieName;
         String patCookieName;
         Long expireAt;
-        String customHeader;
+        String customUserHeader;
+        String customPassTicketHeader;
+        String userId;
+        String passTicket;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             if (authorizationValue != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
-                if (StringUtils.isNotEmpty(customHeader)) {
-                    String passTicket = authorizationValue.replace("Basic ", "");
-                    log.debug("Adding HTTP request header {} to store the passticket", customHeader);
-                    context.addZuulRequestHeader(customHeader, passTicket);
+                if (StringUtils.isNotEmpty(customUserHeader) && StringUtils.isNotEmpty(customPassTicketHeader)) {
+                    log.debug("Adding HTTP request header {} to store the user ID", customUserHeader);
+                    log.debug("Adding HTTP request header {} to store the passticket", customPassTicketHeader);
+                    context.addZuulRequestHeader(customUserHeader, userId);
+                    context.addZuulRequestHeader(customPassTicketHeader, passTicket);
                 }
                 String[] cookiesToBeRemoved = new String[]{cookieName,patCookieName};
                 JwtCommand.removeCookie(context, cookiesToBeRemoved);
