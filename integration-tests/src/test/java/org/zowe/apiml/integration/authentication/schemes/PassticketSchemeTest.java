@@ -234,7 +234,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                     .when()
                     .get(requestUrl)
                     .then()
-                    .body("headers.customheader", Matchers.notNullValue())
+                    .body("headers.custompassticketheader", Matchers.notNullValue())
                     .statusCode(200);
             }
         }

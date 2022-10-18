@@ -81,7 +81,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .when()
                 .get(URL)
                 .then()
-                .body("headers.customheader", is(jwt))
+                .body("headers.customjwtheader", is(jwt))
                 .statusCode(200);
         }
     }

@@ -71,7 +71,10 @@ apiml:
             clientSecret:
             validationUrl:
         auth:
-            customAuthHeader:
+            jwt:
+                customAuthHeader:
+            passticket:
+                customAuthHeader:
             provider: zosmf
         x509:
             enabled: false

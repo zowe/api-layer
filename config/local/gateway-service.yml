@@ -16,7 +16,10 @@ apiml:
             validationUrl:
 
         auth:
-            customAuthHeader:
+            jwt:
+                customAuthHeader:
+            passticket:
+                customAuthHeader:
             provider: dummy
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id

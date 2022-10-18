@@ -50,7 +50,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final String cookieName;
     private final String patCookieName;
 
-    @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.customAuthHeader:}")
+    @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.passticket.customAuthHeader:}")
     private String customHeader;
 
     public HttpBasicPassTicketScheme(
