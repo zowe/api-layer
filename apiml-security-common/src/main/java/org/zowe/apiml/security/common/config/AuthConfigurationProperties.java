@@ -59,16 +59,29 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.CookieProperties cookieProperties;
 
     private String provider = "zosmf";
-    private String customAuthHeader;
-
     private AuthConfigurationProperties.X509Cert x509Cert;
 
     private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
+
+    private AuthConfigurationProperties.JwtAuthProperties jwt = new AuthConfigurationProperties.JwtAuthProperties();
+    private AuthConfigurationProperties.PassTicketAuthProperties passTicket = new AuthConfigurationProperties.PassTicketAuthProperties();
 
     public enum JWT_AUTOCONFIGURATION_MODE {
         AUTO,
         LTPA,
         JWT
+    }
+
+    //JWT Custom Header property
+    @Data
+    public static class JwtAuthProperties {
+        private String customAuthHeader;
+    }
+
+    //PassTicket Custom Header property
+    @Data
+    public static class PassTicketAuthProperties {
+        private String customAuthHeader;
     }
 
     //Token properties
