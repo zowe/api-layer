@@ -99,6 +99,17 @@ if [ "${truststore_type}" = "JCERACFKS" ]; then
   truststore_pass="dummy"
 fi
 
+# Workaround for Java desiring safkeyring://// instead of just ://
+# We can handle both cases of user input by just adding extra "//" if we detect its missing.
+ensure_keyring_slashes() {
+  keyring_string="${1}"
+  only_two_slashes=$(echo "${keyring_string}" | grep "^safkeyring://[^//]")
+  if [ -n "${only_two_slashes}" ]; then
+    keyring_string=$(echo "${keyring_string}" | sed "s#safkeyring://#safkeyring:////#")
+  fi
+  # else, unmodified, perhaps its even p12
+  echo $keyring_string
+}
 
 # NOTE: these are moved from below
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
@@ -119,12 +130,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java -Xms16m -Xmx512m \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true} \
-  -Dserver.ssl.keyStore="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}" \
+  -Dserver.ssl.keyStore="${keystore_location}" \
   -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
   -Dserver.ssl.keyStorePassword="${keystore_pass}" \
   -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
   -Dserver.ssl.keyPassword="${keystore_pass}" \
-  -Dserver.ssl.trustStore="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}" \
+  -Dserver.ssl.trustStore="${truststore_location}" \
   -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
   -Dserver.ssl.trustStorePassword="${truststore_pass}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
