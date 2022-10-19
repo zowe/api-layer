@@ -14,6 +14,8 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
@@ -47,6 +49,12 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
     private final String cookieName;
     private final String patCookieName;
+
+    @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.passticket.customUserHeader:}")
+    private String customUserHeader;
+
+    @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.passticket.customAuthHeader:}")
+    private String customPassTicketHeader;
 
     public HttpBasicPassTicketScheme(
         PassTicketService passTicketService,
@@ -105,7 +113,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final String value = "Basic " + encoded;
 //        passticket is valid only once, therefore this command needs to expire immediately and each call should generate new passticket
         long expiration = System.currentTimeMillis();
-        return new PassTicketCommand(value, cookieName, patCookieName, expiration);
+        return new PassTicketCommand(value, cookieName, patCookieName, expiration, customUserHeader, customPassTicketHeader, userId, passTicket);
     }
 
     @Override
@@ -115,6 +123,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
+    @Slf4j
     public static class PassTicketCommand extends AuthenticationCommand {
 
         private static final long serialVersionUID = 3941300386857998443L;
@@ -125,12 +134,22 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         String cookieName;
         String patCookieName;
         Long expireAt;
+        String customUserHeader;
+        String customPassTicketHeader;
+        String userId;
+        String passTicket;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             if (authorizationValue != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+                if (StringUtils.isNotEmpty(customUserHeader) && StringUtils.isNotEmpty(customPassTicketHeader)) {
+                    log.debug("Adding HTTP request header {} to store the user ID", customUserHeader);
+                    log.debug("Adding HTTP request header {} to store the passticket", customPassTicketHeader);
+                    context.addZuulRequestHeader(customUserHeader, userId);
+                    context.addZuulRequestHeader(customPassTicketHeader, passTicket);
+                }
                 String[] cookiesToBeRemoved = new String[]{cookieName,patCookieName};
                 JwtCommand.removeCookie(context, cookiesToBeRemoved);
             }

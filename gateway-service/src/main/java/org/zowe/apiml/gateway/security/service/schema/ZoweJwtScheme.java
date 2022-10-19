@@ -39,7 +39,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
     private final AuthConfigurationProperties configurationProperties;
 
-    @Value("${apiml.security.auth.customAuthHeader:}")
+    @Value("${apiml.security.auth.jwt.customAuthHeader:}")
     private String customHeader;
 
     @Autowired

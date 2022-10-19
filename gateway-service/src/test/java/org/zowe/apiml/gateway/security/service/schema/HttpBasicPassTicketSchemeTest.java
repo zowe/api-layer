@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.*;
@@ -179,6 +180,30 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
             String cookies = requestContext.getZuulRequestHeaders().get("cookie");
             assertEquals("abc=def", cookies);
+            String customHeader = requestContext.getZuulRequestHeaders().get("header");
+            String customUserHeader = requestContext.getZuulRequestHeaders().get("userid");
+            assertNull(customHeader);
+            assertNull(customUserHeader);
+        }
+
+        @Test
+        void givenCustomAuthHeader_whenApply_thenHeaderIsAdded() {
+            ReflectionTestUtils.setField(httpBasicPassTicketScheme, "customPassTicketHeader", "header");
+            ReflectionTestUtils.setField(httpBasicPassTicketScheme, "customUserHeader", "userid");
+            AuthenticationCommand command = getPassTicketCommand();
+            RequestContext requestContext = new RequestContext();
+            HttpServletRequest request = new MockHttpServletRequest();
+
+            requestContext.setRequest(request);
+
+            RequestContext.testSetCurrentContext(requestContext);
+
+            command.apply(null);
+
+            String customAuthHeader = requestContext.getZuulRequestHeaders().get("header");
+            String customUserHeader = requestContext.getZuulRequestHeaders().get("userid");
+            assertNotNull(customAuthHeader);
+            assertNotNull(customUserHeader);
         }
 
         private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {

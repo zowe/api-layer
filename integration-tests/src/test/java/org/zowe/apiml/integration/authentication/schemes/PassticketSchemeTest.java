@@ -17,6 +17,7 @@ import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -221,6 +222,21 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                     .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                     .body("message", containsString(expectedMessage));
 
+            }
+        }
+
+        @Nested
+        class StorePassTicketInHeader {
+            @Test
+            void givenCustomHeader() {
+                given()
+                    .cookie(COOKIE_NAME, jwt)
+                    .when()
+                    .get(requestUrl)
+                    .then()
+                    .body("headers.custompassticketheader", Matchers.notNullValue())
+                    .body("headers.customuserheader", Matchers.notNullValue())
+                    .statusCode(200);
             }
         }
     }
