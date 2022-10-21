@@ -15,7 +15,7 @@ ext {
     bootstrapVersion = '4.3.1'
     commonsCodecVersion = '1.15'
     commonsLang3Version = '3.7'
-    commonsTextVersion = '1.9'
+    commonsTextVersion = '1.10.0'
     commonsIoVersion = '2.7!!'
     ehCacheVersion = '2.10.9.2'
     eurekaClientVersion = '1.10.17'
