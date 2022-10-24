@@ -71,7 +71,7 @@ Alternatively, to use Docker to run the API ML, consult the [Docker README](dock
 
 ## Security
 
-The API Mediation Layer can use dummy credentials for development purposes. For development purposes, log in using the default setting `USER` for the username, and `validPassword` as the password.   
+The API Mediation Layer can use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and `user` as the password.   
 
 For more information, see [API Mediation Layer Security](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-security.html).
 
