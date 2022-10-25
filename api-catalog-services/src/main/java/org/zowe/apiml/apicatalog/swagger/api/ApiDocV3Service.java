@@ -47,8 +47,11 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     @Value("${gateway.scheme.external:https}")
     private String scheme;
 
+    private final ObjectMapper mapper;
+
     public ApiDocV3Service(GatewayClient gatewayClient) {
         super(gatewayClient);
+        mapper = initializeObjectMapper();
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -72,7 +75,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
-            return initializeObjectMapper().writeValueAsString(openAPI);
+            return mapper.writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
             log.debug("Could not convert OpenAPI to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
