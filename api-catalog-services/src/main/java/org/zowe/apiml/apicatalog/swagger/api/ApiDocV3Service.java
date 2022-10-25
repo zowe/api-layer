@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -195,6 +196,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         objectMapper.registerModule(simpleModule);
         objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
 
+        objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
 }
