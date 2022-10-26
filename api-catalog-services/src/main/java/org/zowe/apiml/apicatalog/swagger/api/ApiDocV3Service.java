@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -46,8 +47,11 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     @Value("${gateway.scheme.external:https}")
     private String scheme;
 
+    private final ObjectMapper mapper;
+
     public ApiDocV3Service(GatewayClient gatewayClient) {
         super(gatewayClient);
+        mapper = initializeObjectMapper();
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -71,7 +75,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
-            return initializeObjectMapper().writeValueAsString(openAPI);
+            return mapper.writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
             log.debug("Could not convert OpenAPI to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
@@ -195,6 +199,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         objectMapper.registerModule(simpleModule);
         objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
 
+        objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
 }
