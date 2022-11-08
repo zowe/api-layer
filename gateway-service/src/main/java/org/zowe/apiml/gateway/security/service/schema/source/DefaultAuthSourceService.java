@@ -43,7 +43,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
     @Value("${apiml.security.x509.enabled:false}")
-    boolean isClientCertEnabled;
+    private boolean isClientCertEnabled;
 
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
