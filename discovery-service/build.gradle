@@ -57,7 +57,9 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':security-service-client-spring'))
+    implementation(project(':security-service-client-spring')) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
     implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
     }
@@ -76,6 +78,7 @@ dependencies {
     }
     implementation(libraries.eureka_core) {
         exclude group: "com.amazonaws", module: "aws-java-sdk-core"
+        exclude group: "javax.servlet", module: "servlet-api"
     }
     implementation libraries.aws_sdk_core
     implementation libraries.gson
