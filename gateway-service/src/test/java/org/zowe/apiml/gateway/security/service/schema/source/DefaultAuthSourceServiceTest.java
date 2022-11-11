@@ -9,28 +9,22 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
+import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Optional;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
-import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest {
@@ -46,6 +40,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         x509MFAuthSourceService = mock(X509AuthSourceService.class);
         serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService);
         x509Certificate = mock(X509Certificate.class);
+        ReflectionTestUtils.setField(serviceUnderTest, "isClientCertEnabled", true);
     }
 
     @Nested
@@ -114,7 +109,6 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             when(x509MFAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(x509AuthSource));
 
             Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
-
             verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
             verify(x509MFAuthSourceService, times(1)).getAuthSourceFromRequest();
 
@@ -184,6 +178,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenUnknownAuthSource {
         private final DummyAuthSource dummyAuthSource = new DummyAuthSource();
+
         @Test
         void thenAuthSourceIsInvalid() {
             Assertions.assertThrows(IllegalArgumentException.class, () -> serviceUnderTest.isValid(dummyAuthSource));
