@@ -6,8 +6,9 @@ dependencies {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.codehaus.jettison", module: "jettison"
     }
-
+    implementation libraries.jettison
     compile libraries.netflix_servo
 
     compile(libraries.http_client)

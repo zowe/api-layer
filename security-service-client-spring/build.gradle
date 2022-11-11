@@ -2,12 +2,17 @@ dependencies {
     compile(project(':apiml-security-common'))
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
+    implementation libraries.snakeyaml
     implementation libraries.tomcat_embed_el
     compile libraries.spring_security_web
     compile libraries.spring_security_config
     compile libraries.apache_commons_lang3
-
+    implementation (libraries.eureka_client) {
+        exclude group: "org.codehaus.jettison", module: "jettison"
+    }
+    implementation libraries.jettison
     compileOnly libraries.javax_servlet_api
 
     compileOnly libraries.lombok

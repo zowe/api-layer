@@ -2,8 +2,10 @@ dependencies {
     compile(project(':apiml-common'))
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
     implementation libraries.tomcat_embed_el
+    implementation libraries.snakeyaml
     compile libraries.spring_security_web
     compile libraries.spring_security_config
     compile libraries.apache_commons_lang3

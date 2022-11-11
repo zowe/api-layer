@@ -15,7 +15,7 @@ ext {
     bootstrapVersion = '4.3.1'
     commonsCodecVersion = '1.15'
     commonsLang3Version = '3.7'
-    commonsTextVersion = '1.9'
+    commonsTextVersion = '1.10.0'
     commonsIoVersion = '2.7!!'
     ehCacheVersion = '2.10.9.2'
     eurekaVersion = '1.10.17'
@@ -36,6 +36,7 @@ ext {
     jaxbApiVersion = '2.3.1'
     jerseyVersion = '2.26'
     jettyWebSocketClientVersion = '9.4.48.v20220622'
+    jettisonVersion = '1.5.1'
     jjwtVersion = '0.11.2'
     jjwtFullVersion = '0.9.1'
     jsonPathVersion = '2.6.0'
@@ -58,7 +59,7 @@ ext {
     reactorTestVersion = '3.4.9'
     restAssuredVersion = '4.4.0'
     slf4jVersion = '1.7.31'
-    snakeyamlVersion = '1.27'
+    snakeyamlVersion = '1.33'
     springFoxVersion = '2.9.2'
     springDocVersion = '1.6.9'
     spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
@@ -151,6 +152,7 @@ ext {
         jetty_websocket_api                : "org.eclipse.jetty.websocket:websocket-api:${jettyWebSocketClientVersion}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         jetty_websocket_common             : "org.eclipse.jetty.websocket:websocket-common:${jettyWebSocketClientVersion}",
+        jettison                           : "org.codehaus.jettison:jettison:${jettisonVersion}",
         json_smart                         : "net.minidev:json-smart:${jsonSmartVersion}",
         jjwt                               : "io.jsonwebtoken:jjwt-api:${jjwtVersion}",
         jjwt_full                          : "io.jsonwebtoken:jjwt:${jjwtFullVersion}",
