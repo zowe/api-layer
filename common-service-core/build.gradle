@@ -17,7 +17,6 @@ dependencies {
     compile(libraries.jackson_core)
     compile(libraries.jackson_databind)
     compile(libraries.slf4j_api)
-    implementation(libraries.snakeyaml)
 
     compile libraries.apache_commons_codec
     compile libraries.apache_commons_lang3
