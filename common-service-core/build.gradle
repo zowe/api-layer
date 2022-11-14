@@ -3,6 +3,9 @@ dependencies {
     compile(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
     }
 
     compile libraries.netflix_servo
@@ -10,6 +13,7 @@ dependencies {
     compile(libraries.http_client)
     compile(libraries.http_core)
     compile(libraries.jackson_annotations)
+    compile(libraries.jackson_core)
     compile(libraries.jackson_databind)
     compile(libraries.slf4j_api)
     compile(libraries.snakeyaml)
