@@ -36,6 +36,10 @@ dependencies {
     implementation(project(':onboarding-enabler-spring'))
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_doc
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_el
+    implementation libraries.tomcat_embed_websocket
+    implementation libraries.tomcat_annotations_api
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
