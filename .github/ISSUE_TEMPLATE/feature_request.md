@@ -14,5 +14,9 @@ A clear and concise description of what you want to happen.
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.
 
+**Willingness to help**
+If you are willing to help with feedback on the implementation or with the actual implementation, 
+please state it in the created issue. We will take it into account when figuring what to work on. 
+
 **Additional context**
 Add any other context or screenshots about the feature request here.
