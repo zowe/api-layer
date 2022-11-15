@@ -51,7 +51,9 @@ gitProperties {
 
 dependencies {
     implementation project(':onboarding-enabler-spring')
-    implementation(project(':security-service-client-spring'))
+    implementation(project(':security-service-client-spring')) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
 
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
