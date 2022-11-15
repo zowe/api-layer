@@ -14,7 +14,9 @@ dependencies {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
     }
-    implementation libraries.tomcat_embed_core
+    implementation(libraries.tomcat_embed_core) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
     implementation libraries.tomcat_embed_el
     implementation libraries.tomcat_embed_websocket
     implementation libraries.jackson_annotations
