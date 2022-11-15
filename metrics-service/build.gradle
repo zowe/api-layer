@@ -62,7 +62,9 @@ dependencies {
     implementation libraries.jetty_http
     implementation libraries.jetty_io
     implementation libraries.jetty_util
-    implementation libraries.spring_doc
+    implementation (libraries.spring_doc) {
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+    }
     implementation libraries.spring_boot_starter_actuator
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
