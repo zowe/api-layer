@@ -50,7 +50,9 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-spring')
+    implementation(project(':onboarding-enabler-spring')) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
     implementation(project(':security-service-client-spring')) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
