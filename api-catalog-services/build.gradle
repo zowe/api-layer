@@ -113,7 +113,9 @@ dependencies {
     implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
-    implementation libraries.spring_doc
+    implementation (libraries.spring_doc) {
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+    }
     implementation libraries.thymeleaf
     implementation libraries.thymeleafSpring
     implementation libraries.logback_core
