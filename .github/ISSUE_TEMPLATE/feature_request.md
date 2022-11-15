@@ -16,7 +16,7 @@ A clear and concise description of any alternative solutions or features you've 
 
 **Willingness to help**
 If you are willing to help with feedback on the implementation or with the actual implementation, 
-please state it in the created issue. We will take it into account when figuring what to work on. 
+please state your willingness to assist in the created issue. We will take it into account when figuring what to work on. 
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
