@@ -56,7 +56,9 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':security-service-client-spring'))
+    implementation(project(':security-service-client-spring')) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
