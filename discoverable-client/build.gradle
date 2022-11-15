@@ -82,6 +82,7 @@ dependencies {
     implementation libraries.spring_websocket
     implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_boot_starter_websocket
+    implementation libraries.spring_boot_starter_aop
     implementation libraries.spring_boot_starter_validation
     implementation libraries.spring_boot_starter_security
     implementation libraries.zowe_attls
