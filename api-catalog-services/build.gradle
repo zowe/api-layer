@@ -56,7 +56,9 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':security-service-client-spring'))
+    implementation(project(':security-service-client-spring')) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
@@ -64,7 +66,9 @@ dependencies {
     implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
+    implementation libraries.snakeyaml
     implementation libraries.tomcat_embed_el
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_actuator
@@ -115,6 +119,7 @@ dependencies {
     implementation libraries.spring_websocket
     implementation (libraries.spring_doc) {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
     implementation libraries.thymeleaf
     implementation libraries.thymeleafSpring

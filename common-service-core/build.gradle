@@ -6,8 +6,9 @@ dependencies {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.codehaus.jettison", module: "jettison"
     }
-
+    implementation libraries.jettison
     compile libraries.netflix_servo
 
     compile(libraries.http_client)
@@ -16,7 +17,6 @@ dependencies {
     compile(libraries.jackson_core)
     compile(libraries.jackson_databind)
     compile(libraries.slf4j_api)
-    compile(libraries.snakeyaml)
 
     compile libraries.apache_commons_codec
     compile libraries.apache_commons_lang3
@@ -32,9 +32,15 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    compileOnly(libraries.spring_boot_starter_cache)
-    compileOnly(libraries.eh_cache)
-
+    implementation(libraries.eh_cache)
+    implementation(libraries.spring_boot_starter_cache){
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    testImplementation(libraries.spring_boot_starter_cache) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    implementation libraries.snakeyaml
+    testImplementation libraries.snakeyaml
     testCompile(libraries.spring_boot_starter_cache)
     testCompile(libraries.spring_boot_starter_test)
     testCompile libraries.json_smart

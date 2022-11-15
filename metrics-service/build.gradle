@@ -50,8 +50,12 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-spring')
-    implementation(project(':security-service-client-spring'))
+    implementation(project(':onboarding-enabler-spring')) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
+    implementation(project(':security-service-client-spring')) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
 
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
@@ -62,6 +66,7 @@ dependencies {
     implementation libraries.jetty_util
     implementation (libraries.spring_doc) {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
     implementation libraries.spring_boot_starter_actuator
     implementation(libraries.spring_cloud_starter_eureka){
@@ -69,6 +74,7 @@ dependencies {
     }
     implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
     implementation libraries.tomcat_embed_el
     implementation libraries.gson
