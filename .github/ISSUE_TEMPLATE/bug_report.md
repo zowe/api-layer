@@ -38,4 +38,8 @@ If applicable, add server logs collected at the time of your problem.
 **Additional context**
 Add any other context about the problem here.
 
+**Willingness to help**
+If you are willing to help with debugging and reproducing the problem or
+with fixing the problem, please state your willingness to assist in the created issue. 
+
 https://github.com/zowe/api-layer/wiki/Issue-management
