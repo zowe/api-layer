@@ -64,6 +64,7 @@ dependencies {
     implementation libraries.jetty_util
     implementation (libraries.spring_doc) {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
     implementation libraries.spring_boot_starter_actuator
     implementation(libraries.spring_cloud_starter_eureka){

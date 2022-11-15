@@ -24,6 +24,7 @@ gitProperties {
 dependencies {
     implementation (libraries.spring_doc) {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.yaml", module: "snakeyaml"
     }
     implementation libraries.jackson_databind
     implementation libraries.spring_webmvc
