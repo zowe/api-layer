@@ -1,5 +1,6 @@
 dependencies {
     compile(project(':apiml-security-common'))
+    implementation libraries.spring_boot_starter_aop
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.springframework", module: "spring-web"
         exclude group: "org.springframework", module: "spring-webmvc"
