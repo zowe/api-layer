@@ -52,9 +52,7 @@ dependencies {
     testCompile(libraries.json_unit)
     testCompile(libraries.hamcrest)
     testCompile(libraries.logback_classic)
-    testCompile(libraries.tomcat_embed_core) {
-        exclude group: "javax.servlet", module: "servlet-api"
-    }
+    testCompile(libraries.tomcat_embed_core)
     testCompile(libraries.mockito_core)
 
     testCompileOnly libraries.lombok
