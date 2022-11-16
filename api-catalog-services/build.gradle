@@ -65,13 +65,24 @@ dependencies {
 
     implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
     implementation(libraries.spring_boot_starter_web){
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
     }
     implementation libraries.snakeyaml
     implementation libraries.tomcat_embed_el
     implementation libraries.spring_boot_starter_websocket
-    implementation libraries.spring_boot_starter_actuator
+    implementation(libraries.spring_boot_starter_actuator) {
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-core"
+    }
     implementation libraries.spring_boot_configuration_processor
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_cloud_starter_bootstrap
@@ -112,6 +123,7 @@ dependencies {
     implementation libraries.spring_context_support
     implementation libraries.spring_core
     implementation libraries.spring_expression
+    implementation libraries.spring_jcl
     implementation libraries.spring_messaging
     implementation libraries.spring_web
     implementation libraries.spring_webflux
@@ -132,7 +144,10 @@ dependencies {
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok
 
-    testCompile libraries.spring_boot_starter_test
+    testCompile(libraries.spring_boot_starter_test) {
+        exclude group: "org.springframework", module: "spring-test"
+    }
+    testCompile libraries.spring_test
     testCompile libraries.json_smart
 }
 
