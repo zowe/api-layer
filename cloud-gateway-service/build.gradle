@@ -70,6 +70,10 @@ dependencies {
     implementation libraries.guava
     implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.3'
 
+    // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-circuitbreaker-reactor-resilience4j
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j:2.1.5'
+
+
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.3'

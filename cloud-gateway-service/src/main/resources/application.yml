@@ -4,6 +4,8 @@ eureka:
             defaultZone: https://localhost:10011/eureka/
 
 apiml:
+    gateway:
+        timeout: 60
     service:
         id: cloud-gateway
         port: 10023

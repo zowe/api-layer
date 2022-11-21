@@ -64,7 +64,7 @@ class RouteLocatorTest {
             Flux<ServiceInstance> serviceInstances = Flux.fromIterable(instances);
             when(dc.getServices()).thenReturn(services);
             when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-            ProxyRouteLocator locator = new ProxyRouteLocator(dc, properties);
+            ProxyRouteLocator locator = new ProxyRouteLocator(dc, properties, Collections.emptyList());
             Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
             List<RouteDefinition> definitions = definitionFlux.collectList().block();
             assertNotNull(definitions);
