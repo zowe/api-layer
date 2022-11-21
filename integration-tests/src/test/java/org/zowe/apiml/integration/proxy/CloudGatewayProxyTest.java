@@ -49,7 +49,7 @@ class CloudGatewayProxyTest {
         String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
         assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 6), () -> {
             given()
-                .header("X-Request-Id", "discoverableclientlocalhost")
+                .header("X-Request-Id", "discoverableclientdiscoverable-client")
                 .when()
                 .get(scgUrl
                 )
