@@ -35,6 +35,14 @@ spring:
                 locator:
                     enabled: false
                     lowerCaseServiceId: true
+        loadbalancer:
+            retry:
+                enabled: true
+                max-retries-on-next-service-instance: 5
+                max-retries-on-same-service-instance: 0
+                avoid-previous-instance: false
+                retryable-status-codes: 503
+                retry-on-all-operations: false
     application:
         name: cloudGateway
 

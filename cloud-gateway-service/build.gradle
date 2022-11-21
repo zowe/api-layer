@@ -65,6 +65,7 @@ dependencies {
         exclude group: "com.google.guava", module: "guava"
         exclude group: "org.codehaus.jettison", module: "jettison"
     }
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer:3.1.4'
     implementation libraries.jettison
     implementation libraries.jackson_databind
     implementation libraries.guava
