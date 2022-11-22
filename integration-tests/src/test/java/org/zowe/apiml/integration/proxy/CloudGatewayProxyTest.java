@@ -28,7 +28,7 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 @Tag("CloudGatewayProxyTest")
 class CloudGatewayProxyTest {
     private static final int SECOND = 1000;
-    private static final int DEFAULT_TIMEOUT = 30 * SECOND;
+    private static final int DEFAULT_TIMEOUT = 2 * SECOND;
 
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
@@ -47,7 +47,7 @@ class CloudGatewayProxyTest {
     void givenRequestTimeoutIsReached_thenDropConnection() {
         RestAssured.useRelaxedHTTPSValidation();
         String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
-        assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 6), () -> {
+        assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT), () -> {
             given()
                 .header("X-Request-Id", "discoverableclientdiscoverable-client")
                 .when()
