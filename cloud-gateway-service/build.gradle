@@ -70,6 +70,9 @@ dependencies {
     implementation libraries.guava
     implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.3'
 
+    implementation libraries.spring_cloud_circuit_breaker
+
+
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.3'

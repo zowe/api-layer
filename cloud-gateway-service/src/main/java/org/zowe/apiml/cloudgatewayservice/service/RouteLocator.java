@@ -40,10 +40,12 @@ public class RouteLocator implements RouteDefinitionLocator {
     private final SimpleEvaluationContext evalCtxt;
 
     private Flux<List<ServiceInstance>> serviceInstances;
+    private List<FilterDefinition> filters;
 
     public RouteLocator(ReactiveDiscoveryClient discoveryClient,
-                        DiscoveryLocatorProperties properties) {
+                        DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
         this(properties);
+        this.filters = filters;
         serviceInstances = discoveryClient.getServices()
             .flatMap(service -> discoveryClient.getInstances(service).collectList());
     }
@@ -52,6 +54,10 @@ public class RouteLocator implements RouteDefinitionLocator {
         this.properties = properties;
         routeIdPrefix = this.getClass().getSimpleName() + "_";
         evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
+    }
+
+    public List<FilterDefinition> getFilters() {
+        return filters;
     }
 
     @Override
@@ -92,6 +98,9 @@ public class RouteLocator implements RouteDefinitionLocator {
         filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
         filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
         routeDefinition.getFilters().add(filter);
+        for (FilterDefinition defaultFilter : getFilters()) {
+            routeDefinition.getFilters().add(defaultFilter);
+        }
 
     }
 

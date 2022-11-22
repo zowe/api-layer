@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
@@ -18,20 +19,42 @@ import org.zowe.apiml.util.config.ConfigReader;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 
+@Tag("CloudGatewayProxyTest")
 class CloudGatewayProxyTest {
+    private static final int SECOND = 1000;
+    private static final int DEFAULT_TIMEOUT = 2 * SECOND;
+
+    static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
     @Test
-    @Tag("CloudGatewayProxyTest")
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
         RestAssured.useRelaxedHTTPSValidation();
-        CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
         given().header("X-Request-Id", "gatewaygateway-service")
             .get(new URI(scgUrl)).then().statusCode(200);
         given().header("X-Request-Id", "gatewaygateway-service-2")
             .get(new URI(scgUrl)).then().statusCode(200);
+    }
+
+    @Test
+    void givenRequestTimeoutIsReached_thenDropConnection() {
+        RestAssured.useRelaxedHTTPSValidation();
+        String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
+        assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
+            given()
+                .header("X-Request-Id", "discoverableclientdiscoverable-client")
+                .when()
+                .get(scgUrl
+                )
+                .then()
+                .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
+        });
     }
 }

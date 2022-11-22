@@ -13,6 +13,7 @@ package org.zowe.apiml.cloudgatewayservice.service;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
+import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.expression.Expression;
@@ -20,13 +21,14 @@ import org.zowe.apiml.product.routing.RoutedService;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 
 public class ProxyRouteLocator extends RouteLocator {
 
+    public ProxyRouteLocator(ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
+        super(discoveryClient, properties, filters);
 
-    public ProxyRouteLocator(ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
-        super(discoveryClient, properties);
     }
 
     @Override
@@ -36,6 +38,9 @@ public class ProxyRouteLocator extends RouteLocator {
         predicate.addArg("header", "X-Request-Id");
         predicate.addArg("regexp", (instance.getServiceId() + instance.getHost()).toLowerCase(Locale.ROOT));
         routeDefinition.getPredicates().add(predicate);
+        for (FilterDefinition filter : getFilters()) {
+            routeDefinition.getFilters().add(filter);
+        }
     }
 
     @Override
