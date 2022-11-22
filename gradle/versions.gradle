@@ -3,6 +3,7 @@ ext {
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE!!'
     springCloudVersion3 = '3.1.4'
+    springCloudCBVersion = '2.1.5'
     springSecurityVersion = '5.7.3!!'
     springFrameworkVersion = '5.3.23!!'
     springRetryVersion = '1.2.4.RELEASE'
@@ -99,6 +100,7 @@ ext {
         spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
         spring_cloud_starter_turbine       : "org.springframework.cloud:spring-cloud-starter-netflix-turbine:${springCloudVersion}",
         spring_cloud_commons               : "org.springframework.cloud:spring-cloud-commons:${springCloudCommonsVersion}",
+        spring_cloud_circuit_breaker       : "org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j:${springCloudCBVersion}",
 
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
         spring_security_core               : "org.springframework.security:spring-security-core:${springSecurityVersion}",
