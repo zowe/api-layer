@@ -151,8 +151,8 @@ public class HttpConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
-        return new RouteLocator(discoveryClient, properties);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters) {
+        return new RouteLocator(discoveryClient, properties, resilience4jFilters);
     }
 
     @Bean

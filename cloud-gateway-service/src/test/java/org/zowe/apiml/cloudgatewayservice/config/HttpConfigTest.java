@@ -23,6 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
+import org.springframework.cloud.gateway.filter.FilterDefinition;
+
+import java.util.Collections;
 
 import static org.mockito.Mockito.mock;
 
@@ -47,7 +50,7 @@ class HttpConfigTest {
         void thenIsNotNull() {
             ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
             DiscoveryLocatorProperties properties = mock(DiscoveryLocatorProperties.class);
-            Assertions.assertNotNull(httpConfig.apimlDiscoveryRouteDefLocator(discoveryClient, properties));
+            Assertions.assertNotNull(httpConfig.apimlDiscoveryRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value"))));
         }
     }
 

@@ -26,11 +26,9 @@ import java.util.Locale;
 
 public class ProxyRouteLocator extends RouteLocator {
 
-    private List<FilterDefinition> filters;
-
     public ProxyRouteLocator(ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
-        super(discoveryClient, properties);
-        this.filters = filters;
+        super(discoveryClient, properties, filters);
+
     }
 
     @Override
@@ -40,7 +38,7 @@ public class ProxyRouteLocator extends RouteLocator {
         predicate.addArg("header", "X-Request-Id");
         predicate.addArg("regexp", (instance.getServiceId() + instance.getHost()).toLowerCase(Locale.ROOT));
         routeDefinition.getPredicates().add(predicate);
-        for (FilterDefinition filter : filters) {
+        for (FilterDefinition filter : getFilters()) {
             routeDefinition.getFilters().add(filter);
         }
     }
