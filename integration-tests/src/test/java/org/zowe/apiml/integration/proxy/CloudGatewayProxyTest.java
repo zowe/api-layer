@@ -47,7 +47,7 @@ class CloudGatewayProxyTest {
     void givenRequestTimeoutIsReached_thenDropConnection() {
         RestAssured.useRelaxedHTTPSValidation();
         String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
-        assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT), () -> {
+        assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
             given()
                 .header("X-Request-Id", "discoverableclientdiscoverable-client")
                 .when()
