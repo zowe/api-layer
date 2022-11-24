@@ -77,7 +77,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.5'
 
     implementation libraries.spring_cloud_circuit_breaker
-
+    implementation libraries.spring_security_crypto
+    implementation libraries.spring_beans
+    implementation libraries.spring_core
+    implementation libraries.spring_web
+    implementation libraries.bcpkix
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

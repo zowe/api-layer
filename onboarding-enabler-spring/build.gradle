@@ -41,6 +41,7 @@ dependencies {
     implementation libraries.spring_core
     implementation libraries.spring_expression
     implementation libraries.spring_web
+    implementation libraries.spring_webmvc
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

@@ -119,8 +119,8 @@ dependencies {
     implementation libraries.spring_expression
     implementation libraries.spring_messaging
     implementation libraries.spring_web
-    implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
+    implementation libraries.spring_webflux
     implementation libraries.spring_websocket
     implementation libraries.spring_doc
     implementation libraries.thymeleaf
