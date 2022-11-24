@@ -12,8 +12,6 @@ package org.zowe.apiml.gateway.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,10 +43,10 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.list.apiPath}")
     private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list/"; //NOSONAR parametrization provided by @Value annotation
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
-        objectMapper.registerModule(new JavaTimeModule());
+        defaultHeaders.add("accept", "application/json");
     }
 
     public CachingServiceClient(RestTemplate restTemplate, String gatewayProtocolHostPort) {
@@ -72,7 +70,7 @@ public class CachingServiceClient {
 
     public void create(KeyValue kv) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<>(kv, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
         }
@@ -80,7 +78,7 @@ public class CachingServiceClient {
 
     public void appendList(String mapKey, KeyValue kv) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + mapKey, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + mapKey, HttpMethod.POST, new HttpEntity<>(kv, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + " in a map under " + mapKey + " key, caused by: " + e.getMessage(), e);
         }
@@ -107,11 +105,12 @@ public class CachingServiceClient {
 
     /**
      * Evict the non-relevant invalidated tokens by deleting the entries in the specified map
+     *
      * @param key the map key
      */
     public void evictTokens(String key) {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "evict/tokens/" + key, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "evict/tokens/" + key, HttpMethod.DELETE, new HttpEntity<>(null, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
         }
@@ -119,27 +118,28 @@ public class CachingServiceClient {
 
     /**
      * Evict the non-relevant rules by deleting the entries in the specified map
+     *
      * @param key the map key
      */
     public void evictRules(String key) {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "evict/rules/" + key, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_LIST_API_PATH + "evict/rules/" + key, HttpMethod.DELETE, new HttpEntity<>(null, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
         }
     }
 
 
-        /**
-         * Reads {@link KeyValue} from Caching Service
-         *
-         * @param key Key to read
-         * @return {@link KeyValue}
-         * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
-         */
+    /**
+     * Reads {@link KeyValue} from Caching Service
+     *
+     * @param key Key to read
+     * @return {@link KeyValue}
+     * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
+     */
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
-            ResponseEntity<KeyValue> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, new HttpHeaders()), KeyValue.class);
+            ResponseEntity<KeyValue> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
             if (response != null && response.hasBody()) { //NOSONAR tests return null
                 return response.getBody();
             } else {
@@ -158,7 +158,7 @@ public class CachingServiceClient {
      */
     public void update(KeyValue kv) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.PUT, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.PUT, new HttpEntity<>(kv, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to update keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
         }
@@ -172,7 +172,7 @@ public class CachingServiceClient {
      */
     public void delete(String key) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.DELETE, new HttpEntity<KeyValue>(null, new HttpHeaders()), String.class);
+            restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.DELETE, new HttpEntity<KeyValue>(null, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
         }
