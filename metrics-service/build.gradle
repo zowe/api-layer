@@ -70,6 +70,7 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
+        exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
     }
     implementation libraries.gson
     implementation libraries.spring_cloud_commons
@@ -100,7 +101,7 @@ dependencies {
     implementation libraries.spring_websocket
     implementation libraries.logback_core
     implementation libraries.logback_classic
-
+    implementation libraries.bcpkix
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

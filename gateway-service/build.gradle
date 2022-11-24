@@ -97,7 +97,9 @@ dependencies {
     implementation libraries.tomcat_embed_websocket
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
+        exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
     }
+    implementation libraries.bcpkix
     implementation libraries.gson
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_cloud_starter_bootstrap
