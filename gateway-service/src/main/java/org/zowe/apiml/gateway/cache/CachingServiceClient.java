@@ -43,10 +43,14 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.list.apiPath}")
     private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list/"; //NOSONAR parametrization provided by @Value annotation
 
-    private static HttpHeaders defaultHeaders = new HttpHeaders();
+    private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
         defaultHeaders.add("accept", "application/json");
+    }
+
+    public static HttpHeaders getDefaultHeaders() {
+        return defaultHeaders;
     }
 
     public CachingServiceClient(RestTemplate restTemplate, String gatewayProtocolHostPort) {
