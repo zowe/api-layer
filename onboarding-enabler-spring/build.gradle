@@ -28,6 +28,8 @@ dependencies {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
     }
+    implementation libraries.jackson_core
+    implementation libraries.jackson_databind
     implementation libraries.snakeyaml
     implementation libraries.tomcat_embed_el
     implementation libraries.tomcat_embed_core

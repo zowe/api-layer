@@ -12,6 +12,7 @@ dependencies {
         exclude group: "org.codehaus.jettison", module: "jettison"
     }
     implementation libraries.jettison
+    implementation libraries.jackson_core
 
     compileOnly libraries.javax_servlet_api
 

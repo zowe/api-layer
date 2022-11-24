@@ -84,11 +84,11 @@ dependencies {
     implementation libraries.gson
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
+    implementation libraries.jackson_databind
     implementation(libraries.jackson_dataformat_yaml) {
         exclude group: "org.yaml", module: "snakeyaml"
     }
     implementation libraries.snakeyaml
-    implementation libraries.jackson_databind
     implementation libraries.jetty_client
     implementation libraries.jetty_http
     implementation libraries.jetty_io

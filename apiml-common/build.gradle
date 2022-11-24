@@ -16,6 +16,7 @@ dependencies {
     implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_validation
     implementation libraries.jackson_databind
+    implementation libraries.jackson_core
     implementation libraries.apache_commons_lang3
     implementation libraries.http_client
     implementation libraries.http_core
