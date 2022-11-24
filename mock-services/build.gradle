@@ -62,12 +62,14 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
     }
     implementation libraries.jackson_core
     implementation libraries.jackson_databind
     implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_el
     implementation libraries.tomcat_embed_core
     implementation libraries.tomcat_embed_websocket
     implementation libraries.logback_classic
@@ -78,6 +80,9 @@ dependencies {
     implementation libraries.spring_core
     implementation libraries.spring_expression
     implementation libraries.spring_web
+    implementation libraries.spring_websocket
+    implementation libraries.spring_messaging
+    implementation libraries.spring_webmvc
 
     implementation libraries.bootstrap
     implementation libraries.jquery
