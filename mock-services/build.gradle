@@ -56,6 +56,7 @@ dependencies {
     implementation libraries.jjwt_jackson
     implementation libraries.apache_commons_lang3
     implementation libraries.nimbusJoseJwt
+    implementation libraries.jackson_databind
 
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator

@@ -32,6 +32,9 @@ dependencies {
     implementation(libraries.eh_cache)
     implementation(libraries.spring_boot_starter_cache){
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "org.springframework", module: "spring-core"
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-context-support"
     }
     testImplementation(libraries.spring_boot_starter_cache) {
         exclude group: "org.yaml", module: "snakeyaml"
@@ -50,7 +53,9 @@ dependencies {
     testImplementation(libraries.logback_classic)
     testImplementation(libraries.tomcat_embed_core)
     testImplementation(libraries.mockito_core)
-
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
     testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 }
