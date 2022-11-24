@@ -75,6 +75,7 @@ ext {
     thymeleafVersion = '3.0.15.RELEASE'
     tomcatVersion = '9.0.69'
     velocityVersion = '2.3'
+    woodstoxVersion = '6.4.0'
     xstreamVersion = '1.4.19!!'
 
     libraries = [
@@ -237,6 +238,7 @@ ext {
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         tomcat_embed_el                    : "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
         tomcat_embed_websocket             : "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}",
+        woodstox                           : "com.fasterxml.woodstox:woodstox-core:${woodstoxVersion}",
         xstream                            : "com.thoughtworks.xstream:xstream:${xstreamVersion}",
 
         // Sample apps only
