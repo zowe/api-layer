@@ -46,7 +46,7 @@ public class CachingServiceClient {
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
-        defaultHeaders.add("accept", "application/json");
+        defaultHeaders.add("Content-Type", "application/json");
     }
 
     public static HttpHeaders getDefaultHeaders() {
