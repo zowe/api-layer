@@ -68,6 +68,9 @@ dependencies {
         exclude group: "com.google.guava", module: "guava"
         exclude group: "org.codehaus.jettison", module: "jettison"
         exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
+        exclude group: "org.springframework", module: "spring-beans"
+        exclude group: "org.springframework", module: "spring-core"
+        exclude group: "org.springframework", module: "spring-web"
     }
     implementation libraries.woodstox
     implementation libraries.jettison
@@ -76,7 +79,9 @@ dependencies {
     implementation libraries.tomcat_embed_el
     implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.5'
 
-    implementation libraries.spring_cloud_circuit_breaker
+    implementation (libraries.spring_cloud_circuit_breaker){
+        exclude group: "org.springframework.security", module: "spring-security-crypto"
+    }
     implementation libraries.spring_security_crypto
     implementation libraries.spring_beans
     implementation libraries.spring_core
