@@ -69,13 +69,17 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
     }
     implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.spring_boot_starter_cache
     implementation libraries.spring_boot_starter_aop
-    implementation libraries.spring_cloud_starter_hystrix
+    implementation (libraries.spring_cloud_starter_hystrix){
+        exclude group: "org.bouncycastle", module: "bcprov-jdk15on"
+    }
+    implementation libraries.bcprov
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
     implementation libraries.spring_security_core
@@ -94,7 +98,10 @@ dependencies {
     implementation libraries.tomcat_embed_websocket
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
+        exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
     }
+    implementation libraries.bcpkix
     implementation libraries.gson
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_cloud_starter_bootstrap
@@ -151,9 +158,9 @@ dependencies {
     implementation libraries.spring_expression
     implementation libraries.spring_messaging
     implementation libraries.spring_web
-    implementation libraries.spring_webflux
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
+    implementation libraries.spring_webflux
 
     implementation libraries.eh_cache
     implementation libraries.spring_retry
