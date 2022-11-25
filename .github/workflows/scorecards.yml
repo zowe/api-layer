@@ -9,6 +9,8 @@ on:
     - cron: '38 7 * * 2'
   push:
     branches: [ "v2.x.x" ]
+  pull_request:
+    branches: [ "v2.x.x" ]
 
 # Declare default permissions as read only.
 permissions: read-all
