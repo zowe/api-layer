@@ -25,6 +25,8 @@ server:
         trustStoreType: PKCS12
 
 spring:
+    main:
+        allow-bean-definition-overriding: true
     cloud:
         gateway:
             discovery:
