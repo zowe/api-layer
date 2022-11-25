@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.audit;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
@@ -17,6 +18,7 @@ import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+@Slf4j
 @Service
 public class RauditxService {
 
@@ -157,8 +159,12 @@ public class RauditxService {
             return this;
         }
 
-        public void issue() throws RauditxException {
-            rauditx.issue();
+        public void issue() {
+            try {
+                rauditx.issue();
+            } catch (RauditxException re) {
+                log.debug("Cannot issue RAuditX record", re);
+            }
         }
 
     }
