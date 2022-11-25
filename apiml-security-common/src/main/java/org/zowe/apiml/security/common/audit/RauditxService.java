@@ -9,16 +9,158 @@
  */
 package org.zowe.apiml.security.common.audit;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+@Service
 public class RauditxService {
 
-    public Optional<Rauditx> createInstance() {
-        return ClassOrDefaultProxyUtils.createProxy(
+    // documented types at https://www.ibm.com/docs/en/zos/2.2.0?topic=records-smf-record-type-83-subtype-2
+    private static final int RELOCATED_RECORD_TYPE_BIND_USER = 103;
+
+    @Value("${rauditx.fmid:AZWE001}")
+    private String fmid;
+
+    @Value("${rauditx.component:ZOWE}")
+    private String component;
+
+    // Description of subtypes at https://www.ibm.com/docs/en/zos/2.5.0?topic=records-record-type-83-security-events
+    @Value("${rauditx.subtype:2}")
+    private int subtype;
+
+    // Events and qualifiers documentation at https://www.ibm.com/docs/en/zos/2.5.0?topic=descriptions-event-codes-event-code-qualifiers
+    @Value("${raudit.event:2}")
+    private int event;
+
+    @Value("${rauditx.qualifier.success:0}")
+    private int qualifierSuccess;
+
+    @Value("${rauditx.qualifier.failed:1}")
+    private int qualifierFailed;
+
+    private void setDefault(RauditBuilder builder) {
+        builder.subtype(subtype).event(event);
+
+        builder.rauditx.setComponent(component);
+        builder.rauditx.setFmid(fmid);
+    }
+
+    public RauditBuilder builder() {
+        Rauditx rauditx = ClassOrDefaultProxyUtils.createProxy(
             Rauditx.class,
             "com.ibm.jzos.Rauditx",
-            () -> throw new IllegalStateException("Cannot create instance of Rauditx. The JZos library is not on the path")
+            () -> (Rauditx) Proxy.newProxyInstance(
+                RauditxService.class.getClassLoader(),
+                new Class[] { Rauditx.class },
+                (Object proxy, Method method, Object[] args) -> null
+            ),
+            new ClassOrDefaultProxyUtils.ByMethodName<>(
+                "com.ibm.jzos.RauditxException", RauditxException.class,
+                "getSafReturnCode", "getRacfReturnCode", "getRacfReasonCode"
+            )
         );
+
+        RauditBuilder builder = new RauditBuilder(rauditx);
+        setDefault(builder);
+        return builder;
+    }
+
+    @RequiredArgsConstructor
+    public class RauditBuilder {
+
+        private final Rauditx rauditx;
+
+        public RauditBuilder success() {
+            rauditx.setEventSuccess();
+            qualifier(qualifierSuccess);
+            return this;
+        }
+
+        public RauditBuilder failure() {
+            rauditx.setEventFailure();
+            qualifier(qualifierFailed);
+            return this;
+        }
+
+        public RauditBuilder authentication() {
+            rauditx.setAuthenticationEvent();
+            return this;
+        }
+
+        public RauditBuilder authorization() {
+            rauditx.setAuthorizationEvent();
+            return this;
+        }
+
+        public RauditBuilder alwaysLogSuccesses() {
+            rauditx.setAlwaysLogSuccesses();
+            return this;
+        }
+
+        public RauditBuilder neverLogSuccesses() {
+            rauditx.setNeverLogSuccesses();
+            return this;
+        }
+
+        public RauditBuilder alwaysLogFailures() {
+            rauditx.setAlwaysLogFailures();
+            return this;
+        }
+
+        public RauditBuilder neverLogFailures() {
+            rauditx.setNeverLogFailures();
+            return this;
+        }
+
+        public RauditBuilder checkWarningMode() {
+            rauditx.setCheckWarningMode();
+            return this;
+        }
+
+        public RauditBuilder ignoreSuccessWithNoAuditLogRecord(boolean ignoreSuccessWithNoAuditLogRecord) {
+            rauditx.setIgnoreSuccessWithNoAuditLogRecord(ignoreSuccessWithNoAuditLogRecord);
+            return this;
+        }
+
+        public RauditBuilder logString(String logString) {
+            rauditx.setLogString(logString);
+            return this;
+        }
+
+        public RauditBuilder messageSegment(String messageSegment) {
+            rauditx.addMessageSegment(messageSegment);
+            return this;
+        }
+
+        public RauditBuilder userId(String userId) {
+            rauditx.addRelocateSection(RELOCATED_RECORD_TYPE_BIND_USER, userId);
+            return this;
+        }
+
+        public RauditBuilder event(int event) {
+            rauditx.setEvent(event);
+            return this;
+        }
+
+        public RauditBuilder qualifier(int qualifier) {
+            rauditx.setQualifier(qualifier);
+            return this;
+        }
+
+        public RauditBuilder subtype(int subtype) {
+            rauditx.setSubtype(subtype);
+            return this;
+        }
+
+        public void issue() throws RauditxException {
+            rauditx.issue();
+        }
+
     }
 
 }
