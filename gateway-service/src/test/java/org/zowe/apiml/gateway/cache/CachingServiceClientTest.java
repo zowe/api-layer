@@ -16,7 +16,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.models.AccessTokenContainer;
@@ -46,7 +49,7 @@ class CachingServiceClientTest {
         void createWithoutProblem() {
             CachingServiceClient.KeyValue kv = new CachingServiceClient.KeyValue("Britney", "Spears");
             assertDoesNotThrow(() -> underTest.create(kv));
-            verify(restTemplate).exchange(urlBase, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
+            verify(restTemplate).exchange(urlBase, HttpMethod.POST, new HttpEntity<>(kv, CachingServiceClient.getDefaultHeaders()), String.class);
         }
 
         @Test
@@ -62,7 +65,7 @@ class CachingServiceClientTest {
         void updateWithoutProblem() {
             CachingServiceClient.KeyValue kv = new CachingServiceClient.KeyValue("Britney", "Speeeeers");
             assertDoesNotThrow(() -> underTest.update(kv));
-            verify(restTemplate).exchange(urlBase, HttpMethod.PUT, new HttpEntity<>(kv, new HttpHeaders()), String.class);
+            verify(restTemplate).exchange(urlBase, HttpMethod.PUT, new HttpEntity<>(kv, CachingServiceClient.getDefaultHeaders()), String.class);
         }
 
         @Test
@@ -204,11 +207,11 @@ class CachingServiceClientTest {
         void whenCallArePerformed_thenReturnSuccessResponse() {
             when(response.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT);
             assertDoesNotThrow(() -> underTest.evictTokens("invalidTokens"));
-            verify(restTemplate).exchange(urlBaseTokens, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+            verify(restTemplate).exchange(urlBaseTokens, HttpMethod.DELETE, new HttpEntity<>(null, CachingServiceClient.getDefaultHeaders()), String.class);
             assertDoesNotThrow(() -> underTest.evictRules("invalidUsers"));
-            verify(restTemplate).exchange(urlBaseUsers, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+            verify(restTemplate).exchange(urlBaseUsers, HttpMethod.DELETE, new HttpEntity<>(null, CachingServiceClient.getDefaultHeaders()), String.class);
             assertDoesNotThrow(() -> underTest.evictRules("invalidScopes"));
-            verify(restTemplate).exchange(urlBaseScopes, HttpMethod.DELETE, new HttpEntity<>(null, new HttpHeaders()), String.class);
+            verify(restTemplate).exchange(urlBaseScopes, HttpMethod.DELETE, new HttpEntity<>(null, CachingServiceClient.getDefaultHeaders()), String.class);
         }
 
         @Test
