@@ -161,17 +161,9 @@ fi
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
+key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_password:-${keystore_pass}}}"
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
-
-# There was an issue where java could throw an exception on keyring read if the password was blank
-# But, keyrings dont use passwords, so we just put a dummy value here.
-if [ "${keystore_type}" = "JCERACFKS" ]; then
-  keystore_pass="dummy"
-fi
-if [ "${truststore_type}" = "JCERACFKS" ]; then
-  truststore_pass="dummy"
-fi
 
 # Workaround for Java desiring safkeyring://// instead of just ://
 # We can handle both cases of user input by just adding extra "//" if we detect its missing.
@@ -228,7 +220,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
     -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
-    -Dserver.ssl.keyPassword="${keystore_pass}" \
+    -Dserver.ssl.keyPassword="${key_pass}" \
     -Dserver.ssl.trustStore="${truststore_location}" \
     -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
