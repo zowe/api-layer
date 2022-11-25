@@ -26,6 +26,8 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @UtilityClass
@@ -33,10 +35,25 @@ public class SecurityUtils {
 
     private ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
 
-    public static final String SAFKEYRING = "safkeyring";
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*)[:][/]{2,4}([^/]+)[/]([^/]+)$");
+
+    public boolean isKeyring(String input) {
+        if (input == null) return false;
+        Matcher matcher = KEYRING_PATTERN.matcher(input);
+        return matcher.matches();
+    }
+
+    public String formatKeyringUrl(String input) {
+        if (input == null) return null;
+        Matcher matcher = KEYRING_PATTERN.matcher(input);
+        if (matcher.matches()) {
+            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+        }
+        return input;
+    }
 
     /**
-     * Loads secret key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
+     * Loads secret key from keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}
      *
      * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
      *               and optional filled: keyAlias and trustStore
@@ -105,7 +122,7 @@ public class SecurityUtils {
     }
 
     /**
-     * Loads public key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
+     * Loads public key from keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}
      *
      * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
      *               and optional filled: keyAlias and trustStore
@@ -140,7 +157,7 @@ public class SecurityUtils {
     }
 
     /**
-     * Finds a private key by public key in keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
+     * Finds a private key by public key in keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}
      *
      * @param config    {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
      *                  and optional filled: keyAlias and trustStore
@@ -174,7 +191,7 @@ public class SecurityUtils {
     }
 
     /**
-     * Loads keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}, from specified location
+     * Loads keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}, from specified location
      *
      * @param config {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword,
      *               and optional filled: trustStore
@@ -187,7 +204,7 @@ public class SecurityUtils {
     public static KeyStore loadKeyStore(HttpsConfig config) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
         InputStream inputStream;
-        if (config.getKeyStore().startsWith(SAFKEYRING)) {
+        if (isKeyring(config.getKeyStore())) {
             URL url = keyRingUrl(config.getKeyStore(), config.getTrustStore());
             inputStream = url.openStream();
         } else {
@@ -207,11 +224,11 @@ public class SecurityUtils {
      * @throws MalformedURLException throws in case of incorrect key ring format
      */
     public static URL keyRingUrl(String uri, String trustStore) throws MalformedURLException {
-        if (!uri.startsWith(SAFKEYRING + "://")) {
+        if (!isKeyring(uri)) {
             throw new MalformedURLException("Incorrect key ring format: " + trustStore
-                + ". Make sure you use format safkeyring:////userId/keyRing");
+                + ". Make sure you use format safkeyring://userId/keyRing");
         }
-        return new URL(replaceFourSlashes(uri));
+        return new URL(formatKeyringUrl(uri));
     }
 
     /**
@@ -219,7 +236,9 @@ public class SecurityUtils {
      *
      * @param storeUri - URI as {@link String}
      * @return same URI, but with 2 slashes, or null, if {@code storeUri} is null
+     * @deprecated replaced by {@link #formatKeyringUrl}
      */
+    @Deprecated
     public static String replaceFourSlashes(String storeUri) {
         return storeUri == null ? null : storeUri.replaceFirst("////", "//");
     }

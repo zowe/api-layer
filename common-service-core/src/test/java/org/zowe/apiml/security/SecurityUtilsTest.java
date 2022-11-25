@@ -13,6 +13,8 @@ package org.zowe.apiml.security;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -107,7 +109,7 @@ class SecurityUtilsTest {
 
     @Test
     void testReplaceFourSlashes() {
-        String newUrl = SecurityUtils.replaceFourSlashes("safkeyring:////userId/keyRing");
+        String newUrl = SecurityUtils.formatKeyringUrl("safkeyring:////userId/keyRing");
         assertEquals("safkeyring://userId/keyRing", newUrl);
     }
 
@@ -160,6 +162,35 @@ class SecurityUtilsTest {
         void givenWrongFormat_thenThrowException() {
             assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:/userId/keyRing", "safkeyring/userId/keyRing"));
         }
+    }
+
+    @CsvSource({
+        ",false",
+        "safkeyring://userid/ringid,true",
+        "safkeyring:////userid/ring/id,false",
+        "safkeyring:////userid//ringid,false",
+        "safkeyring://///userid//ringid,false",
+        "safkeyring:////id,false",
+        "safkeyringjce:////userid/ringid,true",
+        "keystore.p12,false"
+    })
+    @ParameterizedTest(name = "givenKeyringUrl_whenIsKeyring_thenReturnTrueIfItIsValid({0}) should return {1}")
+    void givenKeyringUrl_whenIsKeyring_thenReturnTrueIfItIsValid(String url, boolean validity) {
+        assertEquals(validity, SecurityUtils.isKeyring(url));
+    }
+
+    @CsvSource({
+        ",",
+        "safkeyring://userid/ringid,safkeyring://userid/ringid",
+        "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
+        "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
+        "safkeyring:////id,safkeyring:////id",
+        "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
+        "keystore.p12,keystore.p12"
+    })
+    @ParameterizedTest(name = "givenKeyringUrl_whenFormatKeyringUrl_thenFormatIfPossible: from {0} to {1}")
+    void givenKeyringUrl_whenFormatKeyringUrl_thenFormatIfPossible(String input, String expectedOutput) {
+        assertEquals(expectedOutput, SecurityUtils.formatKeyringUrl(input));
     }
 
 }

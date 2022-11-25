@@ -197,7 +197,7 @@ public class HttpConfig {
 
     private void setTruststore(SslContextFactory sslContextFactory) {
         if (StringUtils.isNotEmpty(trustStore)) {
-            sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
+            sslContextFactory.setTrustStorePath(SecurityUtils.formatKeyringUrl(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
         }

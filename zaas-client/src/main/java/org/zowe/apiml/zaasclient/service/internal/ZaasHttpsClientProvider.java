@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @AllArgsConstructor
 class ZaasHttpsClientProvider implements CloseableClientProvider {
@@ -37,7 +39,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private final RequestConfig requestConfig;
 
-    public static final String SAFKEYRING = "safkeyring";
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*)[:][/]{2,4}([^/]+)[/]([^/]+)$");
 
     private TrustManagerFactory tmf;
     private KeyManagerFactory kmf;
@@ -63,6 +65,21 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         this.keyStorePath = configProperties.getKeyStorePath();
         this.keyStorePassword = configProperties.getKeyStorePassword();
         this.keyStoreType = configProperties.getKeyStoreType();
+    }
+
+    public boolean isKeyring(String input) {
+        if (input == null) return false;
+        Matcher matcher = KEYRING_PATTERN.matcher(input);
+        return matcher.matches();
+    }
+
+    public String formatKeyringUrl(String input) {
+        if (input == null) return null;
+        Matcher matcher = KEYRING_PATTERN.matcher(input);
+        if (matcher.matches()) {
+            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+        }
+        return input;
     }
 
     public void clearCookieStore() {
@@ -129,13 +146,21 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     }
 
     private InputStream getCorrectInputStream(String uri) throws IOException {
-        if (uri.startsWith(SAFKEYRING + "://")) {
-            URL url = new URL(replaceFourSlashes(uri));
+        if (isKeyring(uri)) {
+            URL url = new URL(formatKeyringUrl(uri));
             return url.openStream();
         }
         return new FileInputStream(uri);
     }
 
+    /**
+     * Replaces 4 slashes on 2 in URI
+     *
+     * @param storeUri - URI as {@link String}
+     * @return same URI, but with 2 slashes, or null, if {@code storeUri} is null
+     * @deprecated replaced by {@link #formatKeyringUrl}
+     */
+    @Deprecated
     public static String replaceFourSlashes(String storeUri) {
         return storeUri == null ? null : storeUri.replaceFirst("////", "//");
     }

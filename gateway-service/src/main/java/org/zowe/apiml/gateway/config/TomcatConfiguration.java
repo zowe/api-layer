@@ -17,6 +17,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.security.SecurityUtils;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -70,6 +71,14 @@ public class TomcatConfiguration {
         return tomcat;
     }
 
+    private String getStorePath(String path) {
+        if (SecurityUtils.isKeyring(path)) {
+            return path;
+        } else {
+            return new File(path).getAbsolutePath();
+        }
+    }
+
     private Connector createSslConnector() throws UnknownHostException {
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
         Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
@@ -84,13 +93,11 @@ public class TomcatConfiguration {
             protocol.setCiphers(ciphers);
             protocol.setClientAuth(clientAuth);
             protocol.setAddress(InetAddress.getByName(address));
-            File keyStore = new File(keyStorePath);
-            File trustStore = new File(trustStorePath);
 
-            protocol.setKeystoreFile(keyStore.getAbsolutePath());
+            protocol.setKeystoreFile(getStorePath(keyStorePath));
             protocol.setKeystorePass(keyStorePassword);
             protocol.setKeystoreType(keyStoreType);
-            protocol.setTruststoreFile(trustStore.getAbsolutePath());
+            protocol.setTruststoreFile(getStorePath(trustStorePath));
             protocol.setTruststorePass(trustStorePassword);
             protocol.setTruststoreType(trustStoreType);
             protocol.setKeyAlias(keyAlias);
