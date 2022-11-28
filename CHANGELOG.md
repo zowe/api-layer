@@ -4,10 +4,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `1.28.17 (2022-11-28)`
 
-
-
-
-
+* Bugfix: X_509_APIML_CERTIFICATE set to false properly ignores client certificates in all routes. 
 
 ## `1.28.0 (2022-05-11)`
 
