@@ -20,10 +20,6 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry
 @TestConfiguration
 public class CloudGatewayOverrideConfig {
 
-    @MockBean
-    @Qualifier("mockProxy")
-    public CloseableHttpClient mockProxy;
-
     @Bean
     public ApplicationRegistry registry() {
         ApplicationRegistry applicationRegistry = new ApplicationRegistry();

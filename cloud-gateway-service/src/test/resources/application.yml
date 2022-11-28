@@ -11,7 +11,7 @@ apiml:
         hostname: localhost
         gateway:
             proxy:
-                enabled: false
+                enabled: true
 server:
     port: ${apiml.service.port}
     ssl:
@@ -39,7 +39,8 @@ spring:
 logging:
     level:
         org.springframework.cloud.gateway: DEBUG
-        reactor.netty.http.client: DEBUG
+        reactor.netty: DEBUG
+
 
 management:
     endpoint:

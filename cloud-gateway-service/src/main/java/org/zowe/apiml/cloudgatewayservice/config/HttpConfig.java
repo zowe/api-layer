@@ -24,6 +24,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
@@ -46,6 +47,7 @@ import org.zowe.apiml.security.HttpsFactory;
 import reactor.netty.tcp.SslProvider;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -130,6 +132,7 @@ public class HttpConfig {
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
+    @ConditionalOnMissingBean(EurekaClient.class)
     public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config, @Qualifier("apimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
                                      EurekaInstanceConfig instance, @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
@@ -172,7 +175,7 @@ public class HttpConfig {
     public List<FilterDefinition> resilience4jFilters() {
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
-        return Collections.singletonList(circuitBreakerFilter);
+        return Arrays.asList(circuitBreakerFilter);
     }
 
 }

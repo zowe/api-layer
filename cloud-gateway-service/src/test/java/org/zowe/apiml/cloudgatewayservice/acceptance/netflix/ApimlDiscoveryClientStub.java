@@ -36,7 +36,7 @@ public class ApimlDiscoveryClientStub extends CloudEurekaClient {
     @Override
     public Applications getApplications() {
         if (applicationRegistry != null) {
-            return applicationRegistry.getApplications();
+           return applicationRegistry.getApplications();
         } else {
             return new Applications();
         }

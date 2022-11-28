@@ -35,8 +35,6 @@ import static org.mockito.Mockito.mock;
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
 
     @Autowired
-    protected CloseableHttpClient mockClient;
-    @Autowired
     @Qualifier("test")
     protected ApimlDiscoveryClientStub discoveryClient;
     @Autowired
@@ -61,6 +59,6 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         Mockito.when(response.getEntity()).thenReturn(httpEntity);
         Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream("{foo}".getBytes()));
         Mockito.when(response.getLocale()).thenReturn(Locale.US);
-        Mockito.when(mockClient.execute(any())).thenReturn(response);
+//        Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
 }

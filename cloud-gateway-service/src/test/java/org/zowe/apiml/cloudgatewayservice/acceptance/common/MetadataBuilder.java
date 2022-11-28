@@ -18,7 +18,8 @@ public class MetadataBuilder {
 
     public MetadataBuilder() {
         metadata = new HashMap<>();
-        metadata.put("apiml.routes.gateway-url", "/");
+        metadata.put("apiml.routes.api-v1.gatewayUrl", "api/v1");
+        metadata.put("apiml.routes.api-v1.serviceUrl","/");
     }
 
 

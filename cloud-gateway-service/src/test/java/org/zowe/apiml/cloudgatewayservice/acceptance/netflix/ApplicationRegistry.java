@@ -89,7 +89,7 @@ public class ApplicationRegistry {
 
     public List<InstanceInfo> getInstances() {
         if (applicationsToReturn.get(currentApplication) == null) {
-            currentApplication = "serviceid1";
+            currentApplication = "serviceid2";
         }
         return applicationsToReturn.get(currentApplication).getRegisteredApplications(currentApplication).getInstances();
     }
@@ -107,8 +107,8 @@ public class ApplicationRegistry {
             .setMetadata(metadata)
             .setDataCenterInfo(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn))
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setSecurePort((int) (Math.random() * 10000))
-            .setPort((int) (Math.random() * 10000))
+            .setSecurePort(4000)
+            .setPort(4000)
             .build();
     }
 
