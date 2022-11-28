@@ -2,9 +2,10 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `1.28.17 (2022-11-28)`
+## `1.28.16 (2022-11-28)`
 
-* Bugfix: X_509_APIML_CERTIFICATE set to false properly ignores client certificates in all routes. 
+* Bugfix: Use APIML_SECURITY_X509_ENABLED flag to properly disable client certificate authentication for SSO (#2645) ([5f32c09](https://github.com/zowe/api-layer/commit/5f32c09)), closes [#2645](https://github.com/zowe/api-layer/issues/2645)
+* Bugfix: Enable Strict Transport Security HTTP on gateway service as default (#2552) ([decf6fe](https://github.com/zowe/api-layer/commit/decf6fe)), closes [#2575](https://github.com/zowe/api-layer/issues/2552)
 
 ## `1.28.0 (2022-05-11)`
 
