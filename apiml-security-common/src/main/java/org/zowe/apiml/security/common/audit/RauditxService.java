@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 @Slf4j
@@ -57,7 +56,7 @@ public class RauditxService {
         return (Rauditx) Proxy.newProxyInstance(
             RauditxService.class.getClassLoader(),
             new Class[] { Rauditx.class },
-            (Object proxy, Method method, Object[] args) -> null
+            (proxy, method, args) -> null
         );
     }
 
