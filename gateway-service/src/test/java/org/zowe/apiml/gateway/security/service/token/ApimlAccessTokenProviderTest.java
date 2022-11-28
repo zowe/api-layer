@@ -23,6 +23,8 @@ import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
+import org.zowe.apiml.security.common.audit.Rauditx;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.*;
@@ -35,6 +37,9 @@ class ApimlAccessTokenProviderTest {
 
     CachingServiceClient cachingServiceClient;
     AuthenticationService as;
+    RauditxService rauditxService;
+    RauditxService.RauditBuilder rauditBuilder;
+    ApimlAccessTokenProvider accessTokenProvider;
 
     private static String SCOPED_TOKEN;
     private static String TOKEN_WITHOUT_SCOPES;
@@ -46,7 +51,11 @@ class ApimlAccessTokenProviderTest {
     void setup() throws CachingServiceClientException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
+        rauditxService = spy(RauditxService.class);
+        rauditBuilder = spy(new RauditxService().new RauditBuilder(mock(Rauditx.class)));
+        doReturn(rauditBuilder).when(rauditxService).builder();
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
+        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, rauditxService);
     }
 
     @BeforeAll
@@ -66,29 +75,26 @@ class ApimlAccessTokenProviderTest {
 
         Date issued = new Date(System.currentTimeMillis());
         when(as.parseJwtWithSignature(token)).thenReturn(new QueryResponse(null, "user", issued, issued, Collections.emptyList(), null));
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         accessTokenProvider.invalidateToken(token);
         verify(cachingServiceClient, times(1)).appendList(anyString(), any());
 
     }
 
     @Test
-    void invalidateAllUserTokens() throws Exception {
+    void invalidateAllUserTokens() {
         String userId = "user";
         int timestamp = 1234;
 
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         accessTokenProvider.invalidateAllTokensForUser(userId, timestamp);
         verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
 
     }
 
     @Test
-    void invalidateAllServiceTokens() throws Exception {
+    void invalidateAllServiceTokens() {
         String serviceId = "service";
         int timestamp = 1234;
 
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         accessTokenProvider.invalidateAllTokensForService(serviceId, timestamp);
         verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_SCOPES_KEY), any());
 
@@ -96,7 +102,6 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenSameToken_returnInvalidated() throws Exception {
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
 
@@ -116,7 +121,6 @@ class ApimlAccessTokenProviderTest {
     void givenSaltNotAlreadyInCache_thenGenerateAndStoreNew() throws CachingServiceClientException {
         when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException(""));
         doNothing().when(cachingServiceClient).create(any());
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         byte[] salt = accessTokenProvider.getSalt();
         assertNotNull(salt);
     }
@@ -125,7 +129,6 @@ class ApimlAccessTokenProviderTest {
     void givenDifferentToken_returnNotInvalidated() throws Exception {
         String differentToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkdA";
         when(as.parseJwtWithSignature(differentToken)).thenReturn(queryResponseWithoutScopes);
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
 
         AccessTokenContainer invalidateToken = new AccessTokenContainer(null, tokenHash, null, null, null, null);
@@ -142,8 +145,7 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
-    void givenTokenWithUserIdMatchingRule_returnInvalidated() throws Exception {
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+    void givenTokenWithUserIdMatchingRule_returnInvalidated() {
         String userId = accessTokenProvider.getHash("user");
 
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
@@ -156,8 +158,7 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
-    void givenTokenWithScopeMatchingRule_returnInvalidated() throws Exception {
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+    void givenTokenWithScopeMatchingRule_returnInvalidated() {
         String serviceId = accessTokenProvider.getHash("service");
         Date issued = new Date(System.currentTimeMillis() - 100000L);
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(new QueryResponse(null, "user", issued, issued, Collections.singletonList("service"), null));
@@ -175,7 +176,6 @@ class ApimlAccessTokenProviderTest {
         Set<String> scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         when(as.createLongLivedJwtToken("user", 55, scopes)).thenReturn("token");
         String token = accessTokenProvider.getToken("user", 55, scopes);
         assertNotNull(token);
@@ -184,7 +184,6 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenScopedToken_whenScopeIsListed_thenReturnValid() {
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(queryResponseTokenWithScopes);
         assertTrue(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, "gateway"));
     }
@@ -196,7 +195,6 @@ class ApimlAccessTokenProviderTest {
     @ParameterizedTest
     @MethodSource("invalidScopes")
     void givenScopedToken_whenScopeIsNotListed_thenReturnInvalid(String scope) {
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(queryResponseTokenWithScopes);
         assertFalse(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, scope));
     }
@@ -204,7 +202,6 @@ class ApimlAccessTokenProviderTest {
     @ParameterizedTest
     @MethodSource("invalidScopes")
     void givenTokenWithoutScopes_thenReturnInvalid(String scope) {
-        ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
         assertFalse(accessTokenProvider.isValidForScopes(TOKEN_WITHOUT_SCOPES, scope));
     }
@@ -213,12 +210,48 @@ class ApimlAccessTokenProviderTest {
     class WhenCallingEviction {
         @Test
         void thenEvictNonRelevantTokensAndRules() {
-            ApimlAccessTokenProvider accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
             accessTokenProvider.evictNonRelevantTokensAndRules();
             verify(cachingServiceClient, times(1)).evictTokens(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
             verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_USERS_KEY);
             verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
         }
+    }
+
+    @Nested
+    class RauditxIntegration {
+
+        private static final String USERNAME = "uiRauditx";
+        private static final String MESSAGE = "An attempt to generate PAT";
+
+        void verifyCommons() {
+            verify(rauditBuilder).userId(USERNAME);
+            verify(rauditBuilder).messageSegment(MESSAGE);
+            verify(rauditBuilder).alwaysLogSuccesses();
+            verify(rauditBuilder).alwaysLogFailures();
+        }
+
+        @Test
+        void givenProperInputs_whenGetToken_thenRauditxIsGenerated() {
+            doReturn("token").when(as).createLongLivedJwtToken(anyString(), anyInt(), any());
+            String token = accessTokenProvider.getToken(USERNAME, 0, Collections.emptySet());
+
+            assertFalse(token.isEmpty());
+            verifyCommons();
+            verify(rauditBuilder).success();
+            verify(rauditBuilder).issue();
+        }
+
+        @Test
+        void givenImproperInputs_whenGetToken_thenRauditxIsGenerated() {
+            doThrow(new IllegalStateException("Cannot generate")).when(as).createLongLivedJwtToken(anyString(), anyInt(), any());
+            Set<String> scopes = Collections.emptySet();
+            assertThrows(IllegalStateException.class, () -> accessTokenProvider.getToken(USERNAME, 0, scopes));
+
+            verifyCommons();
+            verify(rauditBuilder).failure();
+            verify(rauditBuilder).issue();
+        }
+
     }
 
     static String createTestToken(String username, Map<String, Object> claims) {
