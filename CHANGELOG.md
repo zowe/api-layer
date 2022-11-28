@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `1.28.16 (2022-11-28)`
+
+
+
+
+
+
 ## `1.28.0 (2022-05-11)`
 
 * Feature:  Enhance SAF IDT authentication scheme to support client certificates and APPL keyword (#2223) ([e3f54d2](https://github.com/zowe/api-layer/commit/e3f54d2)), closes [#2223](https://github.com/zowe/api-layer/issues/2223)
