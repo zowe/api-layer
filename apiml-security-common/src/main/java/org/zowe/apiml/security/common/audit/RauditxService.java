@@ -45,22 +45,26 @@ public class RauditxService {
     @Value("${rauditx.qualifier.failed:1}")
     private int qualifierFailed;
 
-    private void setDefault(RauditBuilder builder) {
+    void setDefault(RauditBuilder builder) {
         builder.subtype(subtype).event(event);
 
         builder.rauditx.setComponent(component);
         builder.rauditx.setFmid(fmid);
     }
 
+    Rauditx createMock() {
+        return (Rauditx) Proxy.newProxyInstance(
+            RauditxService.class.getClassLoader(),
+            new Class[] { Rauditx.class },
+            (Object proxy, Method method, Object[] args) -> null
+        );
+    }
+
     public RauditBuilder builder() {
         Rauditx rauditx = ClassOrDefaultProxyUtils.createProxy(
             Rauditx.class,
             "com.ibm.jzos.Rauditx",
-            () -> (Rauditx) Proxy.newProxyInstance(
-                RauditxService.class.getClassLoader(),
-                new Class[] { Rauditx.class },
-                (Object proxy, Method method, Object[] args) -> null
-            ),
+            this::createMock,
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.jzos.RauditxException", RauditxException.class,
                 "getSafReturnCode", "getRacfReturnCode", "getRacfReasonCode"
@@ -75,7 +79,7 @@ public class RauditxService {
     @RequiredArgsConstructor
     public class RauditBuilder {
 
-        private final Rauditx rauditx;
+        final Rauditx rauditx;
 
         public RauditBuilder success() {
             rauditx.setEventSuccess();
