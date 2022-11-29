@@ -67,7 +67,7 @@ public class RauditxService {
     }
 
     void logNoPrivileges(String userId) {
-        if (!StringUtils.isBlank(userId)) {
+        if (StringUtils.isBlank(userId)) {
             log.debug("Cannot issue any Rauditx record off z/OS.");
         } else {
             log.warn("The calling userid ({}) must have READ authority to the IRR.RAUDITX profile in the FACILITY class", userId);
