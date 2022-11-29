@@ -12,9 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.config;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(value = "org.zowe.apiml.cloudgatewayservice")
 @EnableEurekaClient
 @SpringBootApplication
 public class CloudGatewayServiceTestApplication {
