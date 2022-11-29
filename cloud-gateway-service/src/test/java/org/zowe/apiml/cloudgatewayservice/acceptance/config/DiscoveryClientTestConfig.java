@@ -40,9 +40,7 @@ import javax.ws.rs.core.Response;
 
 import static org.mockito.Mockito.*;
 /**
- * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
- * fetchRegistry. User can call this method to asynchronously fetch new data from discovery service. There is no time
- * to fetching.
+ * This configuration override bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
  * <p>
  * Configuration also add listeners to call other beans waiting for fetch new registry. It speeds up distribution of
  * changes in whole cloud gateway.
@@ -82,7 +80,7 @@ public class DiscoveryClientTestConfig {
         return discoveryClient;
     }
 
-    EurekaJerseyClient eurekaJerseyClient(ApplicationRegistry registry){
+    EurekaJerseyClient eurekaJerseyClient(ApplicationRegistry registry) {
         EurekaJerseyClient jerseyClient = mock(EurekaJerseyClient.class);
         ApacheHttpClient4 httpClient4 = mock(ApacheHttpClient4.class);
         when(jerseyClient.getClient()).thenReturn(httpClient4);

@@ -10,10 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance.config;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
 

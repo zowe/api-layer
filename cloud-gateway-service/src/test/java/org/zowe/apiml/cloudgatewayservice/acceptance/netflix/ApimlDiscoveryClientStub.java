@@ -29,10 +29,6 @@ public class ApimlDiscoveryClientStub extends CloudEurekaClient {
         this.applicationRegistry = applicationRegistry;
     }
 
-    public void createRefreshCacheEvent() {
-        super.onCacheRefreshed();
-    }
-
     @Override
     public Applications getApplications() {
         if (applicationRegistry != null) {

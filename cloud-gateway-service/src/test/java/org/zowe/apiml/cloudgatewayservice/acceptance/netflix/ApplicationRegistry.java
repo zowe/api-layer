@@ -15,13 +15,9 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.MyDataCenterInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.MetadataBuilder;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +29,6 @@ import java.util.Map;
 public class ApplicationRegistry {
     private String currentApplication;
     private Map<String, Applications> applicationsToReturn = new HashMap<>();
-    private List<Services> servicesToAdd = new ArrayList<>();
     public ApplicationRegistry() {
     }
 
@@ -46,7 +41,6 @@ public class ApplicationRegistry {
      */
     public void addApplication(Service service, MetadataBuilder builder, boolean multipleInstances) {
         String id = service.getId();
-        String serviceRoute = service.getServiceRoute();
         Applications applications = new Applications();
         Application withMetadata = new Application(id);
 
@@ -59,10 +53,6 @@ public class ApplicationRegistry {
         applications.addApplication(withMetadata);
 
         applicationsToReturn.put(id, applications);
-
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(new RoutedService("test", serviceRoute, ""));
-        servicesToAdd.add(new Services(id, routedServices));
     }
 
     /**
@@ -110,12 +100,5 @@ public class ApplicationRegistry {
             .setSecurePort(4000)
             .setPort(4000)
             .build();
-    }
-
-
-    @RequiredArgsConstructor
-    private class Services {
-        private final String id;
-        private final RoutedServices routedServices;
     }
 }

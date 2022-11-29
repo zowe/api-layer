@@ -48,7 +48,6 @@ import reactor.netty.tcp.SslProvider;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -154,15 +153,15 @@ public class HttpConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters) {
-        return new RouteLocator(discoveryClient, properties, resilience4jFilters);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
+        return new RouteLocator(discoveryClient, properties, filters);
     }
 
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "true")
     public RouteLocator proxyRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters) {
-        return new ProxyRouteLocator(discoveryClient, properties, resilience4jFilters);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
+        return new ProxyRouteLocator(discoveryClient, properties, filters);
     }
 
     @Bean
@@ -172,10 +171,17 @@ public class HttpConfig {
     }
 
     @Bean
-    public List<FilterDefinition> resilience4jFilters() {
+    public List<FilterDefinition> filters() {
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
+        FilterDefinition retryFilter = new FilterDefinition();
+
         circuitBreakerFilter.setName("CircuitBreaker");
-        return Arrays.asList(circuitBreakerFilter);
+        retryFilter.setName("Retry");
+
+        retryFilter.addArg("retries", "5");
+        retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
+
+        return Arrays.asList(circuitBreakerFilter, retryFilter);
     }
 
 }

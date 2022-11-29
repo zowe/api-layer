@@ -98,19 +98,11 @@ public class RouteLocator implements RouteDefinitionLocator {
         filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
         filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
 
-        FilterDefinition retryFilter = new FilterDefinition();
-        retryFilter.setName("Retry");
-
-        retryFilter.addArg("retries", "5");
-        retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
-
         routeDefinition.getFilters().add(filter);
-        routeDefinition.getFilters().add(retryFilter);
 
         for (FilterDefinition defaultFilter : getFilters()) {
             routeDefinition.getFilters().add(defaultFilter);
         }
-
     }
 
     protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {
