@@ -57,7 +57,7 @@ public class RauditxService {
 
     String getCurrentUser() {
         try {
-            Class zutilClass = Class.forName("com.ibm.jzos.ZUtil");
+            Class<?> zutilClass = Class.forName("com.ibm.jzos.ZUtil");
             MethodHandle getCurrentUser = MethodHandles.publicLookup().findStatic(zutilClass, "getCurrentUser", MethodType.methodType(String.class));
             return (String) getCurrentUser.invoke();
         } catch (Throwable t) {
@@ -70,7 +70,7 @@ public class RauditxService {
         if (StringUtils.isBlank(userId)) {
             log.debug("Cannot issue any Rauditx record off z/OS.");
         } else {
-            log.warn("The calling userid ({}) must have READ authority to the IRR.RAUDITX profile in the FACILITY class", userId);
+            log.warn("The calling userid ({}) must have READ authority to the IRR.RAUDITX profile in the FACILITY class to issue a Rauditx record.", userId);
         }
     }
 
