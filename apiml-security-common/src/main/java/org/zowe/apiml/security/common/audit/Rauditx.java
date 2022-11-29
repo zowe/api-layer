@@ -10,6 +10,12 @@
 
 package org.zowe.apiml.security.common.audit;
 
+/**
+ * This interface defines the same methods as the original JZos class to define the interface independent of JZos.
+ *
+ * Documentation of JZos implementation is available at
+ * https://www.ibm.com/docs/api/v1/content/SSYKE2_8.0.0/com.ibm.java.zsecurity.api.80.doc/com.ibm.jzos/com/ibm/jzos/Rauditx.html
+ */
 public interface Rauditx {
 
     void setAttributes(long attributeBits);
