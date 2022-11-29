@@ -12,14 +12,22 @@ package org.zowe.apiml.security.common.audit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
+import javax.annotation.PostConstruct;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Proxy;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class RauditxService {
 
     // documented types at https://www.ibm.com/docs/en/zos/2.2.0?topic=records-smf-record-type-83-subtype-2
@@ -44,6 +52,42 @@ public class RauditxService {
 
     @Value("${rauditx.qualifier.failed:1}")
     private int qualifierFailed;
+
+    private final SafResourceAccessVerifying safResourceAccessVerifying;
+
+    String getCurrentUser() {
+        try {
+            Class zutilClass = Class.forName("com.ibm.jzos.ZUtil");
+            MethodHandle getCurrentUser = MethodHandles.publicLookup().findStatic(zutilClass, "getCurrentUser", MethodType.methodType(String.class));
+            return (String) getCurrentUser.invoke();
+        } catch (Throwable t) {
+            log.debug("Cannot obtain current userId", t);
+            return null;
+        }
+    }
+
+    void logNoPrivileges(String userId) {
+        if (!StringUtils.isBlank(userId)) {
+            log.debug("Cannot issue any Rauditx record off z/OS.");
+        } else {
+            log.warn("The calling userid ({}) must have READ authority to the IRR.RAUDITX profile in the FACILITY class", userId);
+        }
+    }
+
+    @PostConstruct
+    public void verifyPrivileges() {
+        String userId = getCurrentUser();
+        boolean hasAccess = false;
+        if (!StringUtils.isBlank(userId)) {
+            hasAccess = safResourceAccessVerifying.hasSafResourceAccess(
+                new UsernamePasswordAuthenticationToken(userId, null),
+                "FACILITY", "IRR.RAUDITX", "READ"
+            );
+        }
+        if (!hasAccess) {
+            logNoPrivileges(userId);
+        }
+    }
 
     void setDefault(RauditBuilder builder) {
         builder.subtype(subtype).event(event);

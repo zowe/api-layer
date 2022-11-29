@@ -13,9 +13,9 @@ package org.zowe.apiml.security.common.audit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class RauditxServiceTest {
@@ -27,19 +27,23 @@ class RauditxServiceTest {
     private static final int QUALIFIER_SUCCESS = 0;
     private static final int QUALIFIER_FAILED = 1;
 
+    private static final String USER_ID = "USERTST";
+
+    private SafResourceAccessVerifying safResourceAccessVerifying;
     private RauditxService rauditxService;
     private Rauditx mockRauditx;
 
     @BeforeEach
     void setUp() {
         mockRauditx = null;
-        rauditxService = new RauditxService() {
+        safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
+        rauditxService = spy(new RauditxService(safResourceAccessVerifying) {
             @Override
             Rauditx createMock() {
                 if (mockRauditx != null) return mockRauditx;
                 return super.createMock();
             }
-        };
+        });
         ReflectionTestUtils.setField(rauditxService, "fmid", FMID);
         ReflectionTestUtils.setField(rauditxService, "component", COMPONENT);
         ReflectionTestUtils.setField(rauditxService, "subtype", SUBTYPE);
@@ -210,6 +214,35 @@ class RauditxServiceTest {
     void givenRauditx_whenIssue_thenIsProperlyIssued() {
         RauditxService.RauditBuilder builder = rauditxService.builder();
         assertDoesNotThrow(builder::issue);
+    }
+
+    @Test
+    void givenNonZos_whenGetCurrentUser_thenReturnNull() {
+        assertNull(rauditxService.getCurrentUser());
+    }
+
+    @Test
+    void givenNonZos_whenVerifyPrivileges_thenLogError() {
+        rauditxService.verifyPrivileges();
+        verify(rauditxService).logNoPrivileges(null);
+    }
+
+    @Test
+    void givenZosWithoutPrivileges_whenVerifyPrivileges_thenLogError() {
+        doReturn(USER_ID).when(rauditxService).getCurrentUser();
+        rauditxService.verifyPrivileges();
+        verify(rauditxService).logNoPrivileges(USER_ID);
+    }
+
+    @Test
+    void givenZosWithPrivileges_whenVerifyPrivileges_thenDontLogAnyError() {
+        doReturn(USER_ID).when(rauditxService).getCurrentUser();
+        doReturn(true).when(safResourceAccessVerifying).hasSafResourceAccess(
+            argThat(x -> USER_ID.equals(x.getName())),
+            eq("FACILITY"), eq("IRR.RAUDITX"), eq("READ")
+        );
+        rauditxService.verifyPrivileges();
+        verify(rauditxService, never()).logNoPrivileges(anyString());
     }
 
 }

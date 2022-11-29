@@ -25,6 +25,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.audit.Rauditx;
 import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.*;
@@ -51,8 +52,9 @@ class ApimlAccessTokenProviderTest {
     void setup() throws CachingServiceClientException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
-        rauditxService = spy(RauditxService.class);
-        rauditBuilder = spy(new RauditxService().new RauditBuilder(mock(Rauditx.class)));
+        rauditxService = new RauditxService(mock(SafResourceAccessVerifying.class));
+        rauditBuilder = spy(rauditxService.new RauditBuilder(mock(Rauditx.class)));
+        rauditxService = spy(rauditxService);
         doReturn(rauditBuilder).when(rauditxService).builder();
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
         accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, rauditxService);
