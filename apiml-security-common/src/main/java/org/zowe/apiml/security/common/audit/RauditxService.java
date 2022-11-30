@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.security.common.auth.saf.SafResourceAccessSaf;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
@@ -88,8 +89,6 @@ public class RauditxService {
     @Value("${rauditx.qualifier.failed:1}")
     private int qualifierFailed;
 
-    private final SafResourceAccessVerifying safResourceAccessVerifying;
-
     String getCurrentUser() {
         try {
             Class<?> zutilClass = Class.forName("com.ibm.jzos.ZUtil");
@@ -109,15 +108,27 @@ public class RauditxService {
         }
     }
 
+    SafResourceAccessVerifying getNativeSafResourceAccessVerifying() {
+        try {
+            return new SafResourceAccessSaf();
+        } catch (Exception e) {
+            log.debug("Cannot create instance of SafResourceAccessSaf");
+            return null;
+        }
+    }
+
     @PostConstruct
     public void verifyPrivileges() {
         String userId = getCurrentUser();
         boolean hasAccess = false;
         if (!StringUtils.isBlank(userId)) {
-            hasAccess = safResourceAccessVerifying.hasSafResourceAccess(
-                new UsernamePasswordAuthenticationToken(userId, null),
-                "FACILITY", "IRR.RAUDITX", "READ"
-            );
+            SafResourceAccessVerifying safResourceAccessVerifying = getNativeSafResourceAccessVerifying();
+            if (safResourceAccessVerifying != null) {
+                hasAccess = safResourceAccessVerifying.hasSafResourceAccess(
+                    new UsernamePasswordAuthenticationToken(userId, null),
+                    "FACILITY", "IRR.RAUDITX", "READ"
+                );
+            }
         }
         if (!hasAccess) {
             logNoPrivileges(userId);

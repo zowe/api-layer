@@ -37,11 +37,15 @@ class RauditxServiceTest {
     void setUp() {
         mockRauditx = null;
         safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
-        rauditxService = spy(new RauditxService(safResourceAccessVerifying) {
+        rauditxService = spy(new RauditxService() {
             @Override
             Rauditx createMock() {
                 if (mockRauditx != null) return mockRauditx;
                 return super.createMock();
+            }
+            @Override
+            SafResourceAccessVerifying getNativeSafResourceAccessVerifying() {
+                return safResourceAccessVerifying;
             }
         });
         ReflectionTestUtils.setField(rauditxService, "fmid", FMID);
@@ -243,6 +247,11 @@ class RauditxServiceTest {
         );
         rauditxService.verifyPrivileges();
         verify(rauditxService, never()).logNoPrivileges(anyString());
+    }
+
+    @Test
+    void givenNonZos_whenGetNativeSafResourceAccessVerifying_thenReturnsNull() {
+        assertNull(new RauditxService().getNativeSafResourceAccessVerifying());
     }
 
 }
