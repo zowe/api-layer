@@ -20,7 +20,6 @@ import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
-import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
@@ -43,8 +42,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     private final CachingServiceClient cachingServiceClient;
     private final AuthenticationService authenticationService;
-    private final RauditxService rauditxService;
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private byte[] salt;
     static final String INVALID_TOKENS_KEY = "invalidTokens";
@@ -170,21 +167,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (expiration <= 0) {
             expiration = 90;
         }
-        RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
-            .userId(username)
-            .messageSegment("An attempt to generate PAT")
-            .alwaysLogSuccesses()
-            .alwaysLogFailures();
-        try {
-            String token = authenticationService.createLongLivedJwtToken(username, expiration, scopes);
-            rauditBuilder.success();
-            return token;
-        } catch (RuntimeException re) {
-            rauditBuilder.failure();
-            throw re;
-        } finally {
-            rauditBuilder.issue();
-        }
+
+        return authenticationService.createLongLivedJwtToken(username, expiration, scopes);
     }
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {

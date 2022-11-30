@@ -16,9 +16,9 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -30,16 +30,31 @@ import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.T
 public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandler {
 
     private final AccessTokenProvider accessTokenProvider;
+    private final RauditxService rauditxService;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        AccessTokenRequest accessTokenRequest = (AccessTokenRequest) request.getAttribute(TOKEN_REQUEST);
-        String token = accessTokenProvider.getToken(authentication.getPrincipal().toString(), accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
-        response.getWriter().print(token);
-        response.getWriter().flush();
-        response.getWriter().close();
-        if (!response.isCommitted()) {
-            throw new IOException("Authentication response has not been committed.");
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+        String username = authentication.getName();
+        RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
+            .userId(username)
+            .messageSegment("An attempt to generate PAT")
+            .alwaysLogSuccesses()
+            .alwaysLogFailures();
+        try {
+            AccessTokenRequest accessTokenRequest = (AccessTokenRequest) request.getAttribute(TOKEN_REQUEST);
+            String token = accessTokenProvider.getToken(username, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
+            response.getWriter().print(token);
+            response.getWriter().flush();
+            response.getWriter().close();
+            if (!response.isCommitted()) {
+                throw new IOException("Authentication response has not been committed.");
+            }
+            rauditBuilder.success();
+        } catch (RuntimeException | IOException e) {
+            rauditBuilder.failure();
+            throw e;
+        } finally {
+            rauditBuilder.issue();
         }
     }
 

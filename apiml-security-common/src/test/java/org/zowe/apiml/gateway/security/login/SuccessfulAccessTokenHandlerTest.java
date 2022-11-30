@@ -16,30 +16,34 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.apiml.security.common.audit.Rauditx;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 
 class SuccessfulAccessTokenHandlerTest {
-    private final TokenAuthentication dummyAuth = new TokenAuthentication("user", "TEST_TOKEN_STRING");
+
+    private static final String USERNAME = "user";
+    private final TokenAuthentication dummyAuth = new TokenAuthentication(USERNAME, "TEST_TOKEN_STRING");
     private SuccessfulAccessTokenHandler underTest;
     private AccessTokenProvider accessTokenProvider;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
+
+    RauditxService rauditxService;
+    RauditxService.RauditxBuilder rauditBuilder;
+
     static Set<String> scopes = new HashSet<>();
     static SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(80, scopes);
 
@@ -53,14 +57,19 @@ class SuccessfulAccessTokenHandlerTest {
         httpServletResponse = new MockHttpServletResponse();
         accessTokenProvider = mock(AccessTokenProvider.class);
 
-        underTest = new SuccessfulAccessTokenHandler(accessTokenProvider);
+        rauditxService = new RauditxService();
+        rauditBuilder = spy(rauditxService.new RauditxBuilder(mock(Rauditx.class)));
+        rauditxService = spy(rauditxService);
+        doReturn(rauditBuilder).when(rauditxService).builder();
+
+        underTest = new SuccessfulAccessTokenHandler(accessTokenProvider, rauditxService);
         httpServletRequest.setAttribute(TOKEN_REQUEST, accessTokenRequest);
     }
 
     @Nested
     class WhenCallingOnAuthentication {
         @Test
-        void thenReturn200() throws ServletException, IOException {
+        void thenReturn200() throws IOException {
             when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
             executeLoginHandler();
 
@@ -68,7 +77,7 @@ class SuccessfulAccessTokenHandlerTest {
         }
 
         @Test
-        void givenNullExpiration_thenReturn200() throws ServletException, IOException {
+        void givenNullExpiration_thenReturn200() throws IOException {
             when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
             executeLoginHandler();
 
@@ -88,7 +97,44 @@ class SuccessfulAccessTokenHandlerTest {
         }
     }
 
-    private void executeLoginHandler() throws ServletException, IOException {
+    @Nested
+    class RauditxIntegration {
+
+        private static final String MESSAGE = "An attempt to generate PAT";
+
+        void verifyCommons() {
+            verify(rauditBuilder).userId(USERNAME);
+            verify(rauditBuilder).messageSegment(MESSAGE);
+            verify(rauditBuilder).alwaysLogSuccesses();
+            verify(rauditBuilder).alwaysLogFailures();
+        }
+
+        @Test
+        void whenProperInputs_thenRauditxIsGenerated() throws IOException {
+            doReturn("token").when(accessTokenProvider).getToken(anyString(), anyInt(), any());
+
+            underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth);
+
+            verifyCommons();
+            verify(rauditBuilder).success();
+            verify(rauditBuilder).issue();
+        }
+
+        @Test
+        void whenImproperInputs_thenRauditxIsGenerated() {
+            Exception e = new IllegalStateException("Cannot generate");
+            doThrow(e).when(accessTokenProvider).getToken(anyString(), anyInt(), any());
+
+            assertSame(e, assertThrows(IllegalStateException.class, () -> underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth)));
+
+            verifyCommons();
+            verify(rauditBuilder).failure();
+            verify(rauditBuilder).issue();
+        }
+
+    }
+
+    private void executeLoginHandler() throws IOException {
         underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth);
     }
 }

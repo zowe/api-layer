@@ -63,7 +63,6 @@ import java.lang.reflect.Proxy;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RauditxService {
 
     // documented types at https://www.ibm.com/docs/en/zos/2.2.0?topic=records-smf-record-type-83-subtype-2

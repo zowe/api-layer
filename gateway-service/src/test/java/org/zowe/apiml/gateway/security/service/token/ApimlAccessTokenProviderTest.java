@@ -23,8 +23,6 @@ import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
-import org.zowe.apiml.security.common.audit.Rauditx;
-import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.*;
@@ -37,8 +35,6 @@ class ApimlAccessTokenProviderTest {
 
     CachingServiceClient cachingServiceClient;
     AuthenticationService as;
-    RauditxService rauditxService;
-    RauditxService.RauditxBuilder rauditBuilder;
     ApimlAccessTokenProvider accessTokenProvider;
 
     private static String SCOPED_TOKEN;
@@ -51,12 +47,8 @@ class ApimlAccessTokenProviderTest {
     void setup() throws CachingServiceClientException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
-        rauditxService = new RauditxService();
-        rauditBuilder = spy(rauditxService.new RauditxBuilder(mock(Rauditx.class)));
-        rauditxService = spy(rauditxService);
-        doReturn(rauditBuilder).when(rauditxService).builder();
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
-        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, rauditxService);
+        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
     }
 
     @BeforeAll
@@ -216,43 +208,6 @@ class ApimlAccessTokenProviderTest {
             verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_USERS_KEY);
             verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
         }
-    }
-
-    @Nested
-    class RauditxIntegration {
-
-        private static final String USERNAME = "uiRauditx";
-        private static final String MESSAGE = "An attempt to generate PAT";
-
-        void verifyCommons() {
-            verify(rauditBuilder).userId(USERNAME);
-            verify(rauditBuilder).messageSegment(MESSAGE);
-            verify(rauditBuilder).alwaysLogSuccesses();
-            verify(rauditBuilder).alwaysLogFailures();
-        }
-
-        @Test
-        void givenProperInputs_whenGetToken_thenRauditxIsGenerated() {
-            doReturn("token").when(as).createLongLivedJwtToken(anyString(), anyInt(), any());
-            String token = accessTokenProvider.getToken(USERNAME, 0, Collections.emptySet());
-
-            assertFalse(token.isEmpty());
-            verifyCommons();
-            verify(rauditBuilder).success();
-            verify(rauditBuilder).issue();
-        }
-
-        @Test
-        void givenImproperInputs_whenGetToken_thenRauditxIsGenerated() {
-            doThrow(new IllegalStateException("Cannot generate")).when(as).createLongLivedJwtToken(anyString(), anyInt(), any());
-            Set<String> scopes = Collections.emptySet();
-            assertThrows(IllegalStateException.class, () -> accessTokenProvider.getToken(USERNAME, 0, scopes));
-
-            verifyCommons();
-            verify(rauditBuilder).failure();
-            verify(rauditBuilder).issue();
-        }
-
     }
 
     static String createTestToken(String username, Map<String, Object> claims) {
