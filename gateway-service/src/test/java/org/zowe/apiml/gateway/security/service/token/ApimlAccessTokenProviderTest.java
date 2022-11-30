@@ -38,7 +38,7 @@ class ApimlAccessTokenProviderTest {
     CachingServiceClient cachingServiceClient;
     AuthenticationService as;
     RauditxService rauditxService;
-    RauditxService.RauditBuilder rauditBuilder;
+    RauditxService.RauditxBuilder rauditBuilder;
     ApimlAccessTokenProvider accessTokenProvider;
 
     private static String SCOPED_TOKEN;
@@ -52,7 +52,7 @@ class ApimlAccessTokenProviderTest {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
         rauditxService = new RauditxService();
-        rauditBuilder = spy(rauditxService.new RauditBuilder(mock(Rauditx.class)));
+        rauditBuilder = spy(rauditxService.new RauditxBuilder(mock(Rauditx.class)));
         rauditxService = spy(rauditxService);
         doReturn(rauditBuilder).when(rauditxService).builder();
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));

@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.audit;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
@@ -56,202 +57,236 @@ class RauditxServiceTest {
         ReflectionTestUtils.setField(rauditxService, "qualifierFailed", QUALIFIER_FAILED);
     }
 
-    @Test
-    void givenService_whenCreateMock_thenReturnInstanceWithCallableMethods() {
-        Rauditx rauditx = rauditxService.createMock();
-        assertDoesNotThrow(() -> rauditx.addRelocateSection(5, new byte[7]));
-        assertDoesNotThrow(rauditx::issue);
+    @Nested
+    class RauditxWrap {
+
+        @Nested
+        class GivenBuilder {
+
+            @Test
+            void whenCallSuccess_thenSetEventAndDistribute() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().success());
+
+                verify(mockRauditx).setEventSuccess();
+                verify(mockRauditx).setQualifier(QUALIFIER_SUCCESS);
+            }
+
+            @Test
+            void whenCallFailure_thenSetEventAndDistribute() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().failure());
+
+                verify(mockRauditx).setEventFailure();
+                verify(mockRauditx).setQualifier(QUALIFIER_FAILED);
+            }
+
+            @Test
+            void whenCallAuthentication_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().authentication());
+                verify(mockRauditx).setAuthenticationEvent();
+            }
+
+            @Test
+            void whenCallAuthorization_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().authorization());
+                verify(mockRauditx).setAuthorizationEvent();
+            }
+
+            @Test
+            void whenCallAlwaysLogSuccesses_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().alwaysLogSuccesses());
+                verify(mockRauditx).setAlwaysLogSuccesses();
+            }
+
+            @Test
+            void whenCallNeverLogSuccesses_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().neverLogSuccesses());
+                verify(mockRauditx).setNeverLogSuccesses();
+            }
+
+            @Test
+            void whenCallAlwaysLogFailures_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().alwaysLogFailures());
+                verify(mockRauditx).setAlwaysLogFailures();
+            }
+
+            @Test
+            void whenCallNeverLogFailures_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().neverLogFailures());
+                verify(mockRauditx).setNeverLogFailures();
+            }
+
+            @Test
+            void whenCallCheckWarningMode_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().checkWarningMode());
+                verify(mockRauditx).setCheckWarningMode();
+            }
+
+            @Test
+            void whenCallIgnoreSuccessWithNoAuditLogRecord_thenRecalledToRauditx() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().ignoreSuccessWithNoAuditLogRecord(true));
+                verify(mockRauditx).setIgnoreSuccessWithNoAuditLogRecord(true);
+                assertNotNull(rauditxService.builder().ignoreSuccessWithNoAuditLogRecord(false));
+                verify(mockRauditx).setIgnoreSuccessWithNoAuditLogRecord(false);
+            }
+
+            @Test
+            void whenCallLogString_thenRecalledToRauditx() {
+                String logString = "the test logString value";
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().logString(logString));
+                verify(mockRauditx).setLogString(logString);
+            }
+
+            @Test
+            void whenCallMessageSegment_thenRecalledToRauditx() {
+                String messageSegment = "the test messageSegment value";
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().messageSegment(messageSegment));
+                verify(mockRauditx).addMessageSegment(messageSegment);
+            }
+
+            @Test
+            void whenCallUserId_thenRecalledToRauditx() {
+                String userId = "the test userId value";
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().userId(userId));
+                verify(mockRauditx).addRelocateSection(103, userId);
+            }
+
+            @Test
+            void whenCallEvent_thenRecalledToRauditx() {
+                int eventId = 12345;
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().event(eventId));
+                verify(mockRauditx).setEvent(eventId);
+            }
+
+            @Test
+            void whenCallQualifier_thenRecalledToRauditx() {
+                int qualifier = 456;
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().qualifier(qualifier));
+                verify(mockRauditx).setQualifier(qualifier);
+            }
+
+            @Test
+            void whenCallSetType_thenRecalledToRauditx() {
+                int type = 159;
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder().subtype(type));
+                verify(mockRauditx).setSubtype(type);
+            }
+
+        }
+
+        @Nested
+        class CreatingBuilder {
+
+            @Test
+            void whenBuilder_thenReturnInstance() {
+                assertNotNull(rauditxService.builder());
+                assertNotNull(rauditxService.builder().rauditx);
+            }
+
+            @Test
+            void whenBuilder_thenReturnBuilderWithDefaultValues() {
+                mockRauditx = mock(Rauditx.class);
+                assertNotNull(rauditxService.builder());
+
+                verify(mockRauditx).setSubtype(SUBTYPE);
+                verify(mockRauditx).setEvent(EVENT);
+                verify(mockRauditx).setComponent(COMPONENT);
+                verify(mockRauditx).setFmid(FMID);
+            }
+
+        }
     }
 
-    @Test
-    void givenService_whenBuilder_thenReturnInstance() {
-        assertNotNull(rauditxService.builder());
-        assertNotNull(rauditxService.builder().rauditx);
+    @Nested
+    class SecurityTestsOnZos {
+
+        @Nested
+        class NotEnoughPermissions {
+
+            @Test
+            void whenIssue_thenHandleException() {
+                mockRauditx = mock(Rauditx.class);
+                doThrow(new RauditxException(1, 2, 3)).when(mockRauditx).issue();
+                RauditxService.RauditxBuilder builder = rauditxService.builder();
+
+                assertDoesNotThrow(builder::issue);
+                verify(mockRauditx).issue();
+            }
+
+            @Test
+            void whenVerifyPrivileges_thenLogError() {
+                doReturn(USER_ID).when(rauditxService).getCurrentUser();
+                rauditxService.verifyPrivileges();
+                verify(rauditxService).logNoPrivileges(USER_ID);
+            }
+
+        }
+
+        @Nested
+        class WithPermissions {
+
+            @Test
+            void whenIssue_thenIsProperlyIssued() {
+                RauditxService.RauditxBuilder builder = rauditxService.builder();
+                assertDoesNotThrow(builder::issue);
+            }
+
+            @Test
+            void whenVerifyPrivileges_thenDontLogAnyError() {
+                doReturn(USER_ID).when(rauditxService).getCurrentUser();
+                doReturn(true).when(safResourceAccessVerifying).hasSafResourceAccess(
+                    argThat(x -> USER_ID.equals(x.getName())),
+                    eq("FACILITY"), eq("IRR.RAUDITX"), eq("READ")
+                );
+                rauditxService.verifyPrivileges();
+                verify(rauditxService, never()).logNoPrivileges(anyString());
+            }
+
+        }
+
     }
 
-    @Test
-    void givenService_whenBuilder_thenReturnBuilderWithDefaultValues() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder());
+    @Nested
+    class GivenNonZos {
 
-        verify(mockRauditx).setSubtype(SUBTYPE);
-        verify(mockRauditx).setEvent(EVENT);
-        verify(mockRauditx).setComponent(COMPONENT);
-        verify(mockRauditx).setFmid(FMID);
-    }
+        @Test
+        void whenGetCurrentUser_thenReturnNull() {
+            assertNull(rauditxService.getCurrentUser());
+        }
 
-    @Test
-    void givenBuilder_whenCallSuccess_thenSetEventAndDistribute() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().success());
+        @Test
+        void whenVerifyPrivileges_thenLogError() {
+            rauditxService.verifyPrivileges();
+            verify(rauditxService).logNoPrivileges(null);
+        }
 
-        verify(mockRauditx).setEventSuccess();
-        verify(mockRauditx).setQualifier(QUALIFIER_SUCCESS);
-    }
+        @Test
+        void whenGetNativeSafResourceAccessVerifying_thenReturnsNull() {
+            assertNull(new RauditxService().getNativeSafResourceAccessVerifying());
+        }
 
-    @Test
-    void givenBuilder_whenCallFailure_thenSetEventAndDistribute() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().failure());
+        @Test
+        void whenCreateMock_thenReturnInstanceWithCallableMethods() {
+            Rauditx rauditx = rauditxService.createMock();
+            assertDoesNotThrow(() -> rauditx.addRelocateSection(5, new byte[7]));
+            assertDoesNotThrow(rauditx::issue);
+        }
 
-        verify(mockRauditx).setEventFailure();
-        verify(mockRauditx).setQualifier(QUALIFIER_FAILED);
-    }
-
-    @Test
-    void givenBuilder_whenCallAuthentication_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().authentication());
-        verify(mockRauditx).setAuthenticationEvent();
-    }
-
-    @Test
-    void givenBuilder_whenCallAuthorization_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().authorization());
-        verify(mockRauditx).setAuthorizationEvent();
-    }
-
-    @Test
-    void givenBuilder_whenCallAlwaysLogSuccesses_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().alwaysLogSuccesses());
-        verify(mockRauditx).setAlwaysLogSuccesses();
-    }
-
-    @Test
-    void givenBuilder_whenCallNeverLogSuccesses_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().neverLogSuccesses());
-        verify(mockRauditx).setNeverLogSuccesses();
-    }
-
-    @Test
-    void givenBuilder_whenCallAlwaysLogFailures_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().alwaysLogFailures());
-        verify(mockRauditx).setAlwaysLogFailures();
-    }
-
-    @Test
-    void givenBuilder_whenCallNeverLogFailures_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().neverLogFailures());
-        verify(mockRauditx).setNeverLogFailures();
-    }
-
-    @Test
-    void givenBuilder_whenCallCheckWarningMode_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().checkWarningMode());
-        verify(mockRauditx).setCheckWarningMode();
-    }
-
-    @Test
-    void givenBuilder_whenCallIgnoreSuccessWithNoAuditLogRecord_thenRecalledToRauditx() {
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().ignoreSuccessWithNoAuditLogRecord(true));
-        verify(mockRauditx).setIgnoreSuccessWithNoAuditLogRecord(true);
-        assertNotNull(rauditxService.builder().ignoreSuccessWithNoAuditLogRecord(false));
-        verify(mockRauditx).setIgnoreSuccessWithNoAuditLogRecord(false);
-    }
-
-    @Test
-    void givenBuilder_whenCallLogString_thenRecalledToRauditx() {
-        String logString = "the test logString value";
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().logString(logString));
-        verify(mockRauditx).setLogString(logString);
-    }
-
-    @Test
-    void givenBuilder_whenCallMessageSegment_thenRecalledToRauditx() {
-        String messageSegment = "the test messageSegment value";
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().messageSegment(messageSegment));
-        verify(mockRauditx).addMessageSegment(messageSegment);
-    }
-
-    @Test
-    void givenBuilder_whenCallUserId_thenRecalledToRauditx() {
-        String userId = "the test userId value";
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().userId(userId));
-        verify(mockRauditx).addRelocateSection(103, userId);
-    }
-
-    @Test
-    void givenBuilder_whenCallEvent_thenRecalledToRauditx() {
-        int eventId = 12345;
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().event(eventId));
-        verify(mockRauditx).setEvent(eventId);
-    }
-
-    @Test
-    void givenBuilder_whenCallQualifier_thenRecalledToRauditx() {
-        int qualifier = 456;
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().qualifier(qualifier));
-        verify(mockRauditx).setQualifier(qualifier);
-    }
-
-    @Test
-    void givenBuilder_whenCallSetType_thenRecalledToRauditx() {
-        int type = 159;
-        mockRauditx = mock(Rauditx.class);
-        assertNotNull(rauditxService.builder().subtype(type));
-        verify(mockRauditx).setSubtype(type);
-    }
-
-    @Test
-    void givenNoPermission_whenIssue_thenHandleException() {
-        mockRauditx = mock(Rauditx.class);
-        doThrow(new RauditxException(1, 2, 3)).when(mockRauditx).issue();
-        RauditxService.RauditBuilder builder = rauditxService.builder();
-
-        assertDoesNotThrow(builder::issue);
-        verify(mockRauditx).issue();
-    }
-
-    @Test
-    void givenRauditx_whenIssue_thenIsProperlyIssued() {
-        RauditxService.RauditBuilder builder = rauditxService.builder();
-        assertDoesNotThrow(builder::issue);
-    }
-
-    @Test
-    void givenNonZos_whenGetCurrentUser_thenReturnNull() {
-        assertNull(rauditxService.getCurrentUser());
-    }
-
-    @Test
-    void givenNonZos_whenVerifyPrivileges_thenLogError() {
-        rauditxService.verifyPrivileges();
-        verify(rauditxService).logNoPrivileges(null);
-    }
-
-    @Test
-    void givenZosWithoutPrivileges_whenVerifyPrivileges_thenLogError() {
-        doReturn(USER_ID).when(rauditxService).getCurrentUser();
-        rauditxService.verifyPrivileges();
-        verify(rauditxService).logNoPrivileges(USER_ID);
-    }
-
-    @Test
-    void givenZosWithPrivileges_whenVerifyPrivileges_thenDontLogAnyError() {
-        doReturn(USER_ID).when(rauditxService).getCurrentUser();
-        doReturn(true).when(safResourceAccessVerifying).hasSafResourceAccess(
-            argThat(x -> USER_ID.equals(x.getName())),
-            eq("FACILITY"), eq("IRR.RAUDITX"), eq("READ")
-        );
-        rauditxService.verifyPrivileges();
-        verify(rauditxService, never()).logNoPrivileges(anyString());
-    }
-
-    @Test
-    void givenNonZos_whenGetNativeSafResourceAccessVerifying_thenReturnsNull() {
-        assertNull(new RauditxService().getNativeSafResourceAccessVerifying());
     }
 
 }

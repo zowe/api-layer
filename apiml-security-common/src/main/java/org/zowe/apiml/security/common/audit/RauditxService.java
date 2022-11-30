@@ -135,7 +135,7 @@ public class RauditxService {
         }
     }
 
-    void setDefault(RauditBuilder builder) {
+    void setDefault(RauditxBuilder builder) {
         builder.subtype(subtype).event(event);
 
         builder.rauditx.setComponent(component);
@@ -169,7 +169,7 @@ public class RauditxService {
      *
      * @return The builder of Rauditx record
      */
-    public RauditBuilder builder() {
+    public RauditxBuilder builder() {
         Rauditx rauditx = ClassOrDefaultProxyUtils.createProxy(
             Rauditx.class,
             "com.ibm.jzos.Rauditx",
@@ -180,13 +180,13 @@ public class RauditxService {
             )
         );
 
-        RauditBuilder builder = new RauditBuilder(rauditx);
+        RauditxBuilder builder = new RauditxBuilder(rauditx);
         setDefault(builder);
         return builder;
     }
 
     @RequiredArgsConstructor
-    public class RauditBuilder {
+    public class RauditxBuilder {
 
         final Rauditx rauditx;
 
@@ -195,7 +195,7 @@ public class RauditxService {
          * `rauditx.qualifier.success`, as default `0`.
          * @return builder to next action
          */
-        public RauditBuilder success() {
+        public RauditxBuilder success() {
             rauditx.setEventSuccess();
             qualifier(qualifierSuccess);
             return this;
@@ -206,7 +206,7 @@ public class RauditxService {
          * `rauditx.qualifier.failed`, as default `1`.
          * @return builder to next action
          */
-        public RauditBuilder failure() {
+        public RauditxBuilder failure() {
             rauditx.setEventFailure();
             qualifier(qualifierFailed);
             return this;
@@ -216,7 +216,7 @@ public class RauditxService {
          * Set the reason of audit record.
          * @return builder to next action
          */
-        public RauditBuilder authentication() {
+        public RauditxBuilder authentication() {
             rauditx.setAuthenticationEvent();
             return this;
         }
@@ -225,7 +225,7 @@ public class RauditxService {
          * Set the reason of audit record.
          * @return builder to next action
          */
-        public RauditBuilder authorization() {
+        public RauditxBuilder authorization() {
             rauditx.setAuthorizationEvent();
             return this;
         }
@@ -234,7 +234,7 @@ public class RauditxService {
          * Set the callable service to always log successes.
          * @return builder to next action
          */
-        public RauditBuilder alwaysLogSuccesses() {
+        public RauditxBuilder alwaysLogSuccesses() {
             rauditx.setAlwaysLogSuccesses();
             return this;
         }
@@ -243,7 +243,7 @@ public class RauditxService {
          * Set the callable service to never log successes.
          * @return builder to next action
          */
-        public RauditBuilder neverLogSuccesses() {
+        public RauditxBuilder neverLogSuccesses() {
             rauditx.setNeverLogSuccesses();
             return this;
         }
@@ -252,7 +252,7 @@ public class RauditxService {
          * Set the callable service to always log failures.
          * @return builder to next action
          */
-        public RauditBuilder alwaysLogFailures() {
+        public RauditxBuilder alwaysLogFailures() {
             rauditx.setAlwaysLogFailures();
             return this;
         }
@@ -261,7 +261,7 @@ public class RauditxService {
          * Set the callable service to never log failures.
          * @return builder to next action
          */
-        public RauditBuilder neverLogFailures() {
+        public RauditxBuilder neverLogFailures() {
             rauditx.setNeverLogFailures();
             return this;
         }
@@ -270,7 +270,7 @@ public class RauditxService {
          * Set the callable service check warning mode.
          * @return builder to next action
          */
-        public RauditBuilder checkWarningMode() {
+        public RauditxBuilder checkWarningMode() {
             rauditx.setCheckWarningMode();
             return this;
         }
@@ -281,7 +281,7 @@ public class RauditxService {
          * @param ignoreSuccessWithNoAuditLogRecord set `true` to ignore
          * @return builder to next action
          */
-        public RauditBuilder ignoreSuccessWithNoAuditLogRecord(boolean ignoreSuccessWithNoAuditLogRecord) {
+        public RauditxBuilder ignoreSuccessWithNoAuditLogRecord(boolean ignoreSuccessWithNoAuditLogRecord) {
             rauditx.setIgnoreSuccessWithNoAuditLogRecord(ignoreSuccessWithNoAuditLogRecord);
             return this;
         }
@@ -291,7 +291,7 @@ public class RauditxService {
          * @param logString a String between 1 and 255 characters.
          * @return builder to next action
          */
-        public RauditBuilder logString(String logString) {
+        public RauditxBuilder logString(String logString) {
             rauditx.setLogString(logString);
             return this;
         }
@@ -302,7 +302,7 @@ public class RauditxService {
          * @param messageSegment a String between 1 and 70 characters
          * @return builder to next action
          */
-        public RauditBuilder messageSegment(String messageSegment) {
+        public RauditxBuilder messageSegment(String messageSegment) {
             rauditx.addMessageSegment(messageSegment);
             return this;
         }
@@ -312,7 +312,7 @@ public class RauditxService {
          * @param userId binded userId to be audited
          * @return builder to next action
          */
-        public RauditBuilder userId(String userId) {
+        public RauditxBuilder userId(String userId) {
             rauditx.addRelocateSection(RELOCATED_RECORD_TYPE_BIND_USER, userId);
             return this;
         }
@@ -323,7 +323,7 @@ public class RauditxService {
          * @param event the event code int between 1 and 255
          * @return builder to next action
          */
-        public RauditBuilder event(int event) {
+        public RauditxBuilder event(int event) {
             rauditx.setEvent(event);
             return this;
         }
@@ -335,7 +335,7 @@ public class RauditxService {
          * @param qualifier the event code qualifier int between 0 and 255
          * @return builder to next action
          */
-        public RauditBuilder qualifier(int qualifier) {
+        public RauditxBuilder qualifier(int qualifier) {
             rauditx.setQualifier(qualifier);
             return this;
         }
@@ -346,7 +346,7 @@ public class RauditxService {
          * @param subtype an int between 2 and 32767
          * @return builder to next action
          */
-        public RauditBuilder subtype(int subtype) {
+        public RauditxBuilder subtype(int subtype) {
             rauditx.setSubtype(subtype);
             return this;
         }

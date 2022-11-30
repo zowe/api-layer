@@ -170,7 +170,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (expiration <= 0) {
             expiration = 90;
         }
-        RauditxService.RauditBuilder rauditBuilder = rauditxService.builder()
+        RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
             .userId(username)
             .messageSegment("An attempt to generate PAT")
             .alwaysLogSuccesses()
