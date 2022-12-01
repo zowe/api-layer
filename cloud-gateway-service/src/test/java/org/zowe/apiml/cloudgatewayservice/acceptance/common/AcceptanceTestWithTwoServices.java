@@ -45,10 +45,10 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         server.stop(0);
     }
 
-    protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode) throws IOException {
-        server = HttpServer.create(new InetSocketAddress(4000),0);
+    protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode, String serviceId, int port) throws IOException {
+        server = HttpServer.create(new InetSocketAddress(port),0);
         AtomicInteger counter = new AtomicInteger();
-        server.createContext("/serviceid2/test", (t) -> {
+        server.createContext("/" + serviceId + "/test", (t) -> {
             t.sendResponseHeaders(statusCode,0);
             t.getResponseBody().close();
             counter.getAndIncrement();
