@@ -52,6 +52,10 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
+configurations.all {
+    exclude group: "javax.servlet", module: "servlet-api"
+}
+
 dependencies {
     implementation project(':apiml-security-common')
     implementation project(':onboarding-enabler-spring')
