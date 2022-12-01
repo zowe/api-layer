@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
@@ -28,9 +29,13 @@ public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
     @Nested
     class WhenValidInstanceId {
 
-        @Test
-        void routeToCorrectService() throws IOException {
+        @BeforeEach
+        void setUp() throws IOException {
             mockServerWithSpecificHttpResponse(200, "serviceid1", 4000);
+        }
+
+        @Test
+        void routeToCorrectService() {
             given()
                 .header("X-Request-Id", "serviceid2localhost")
                 .when()
@@ -42,8 +47,7 @@ public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
     @Nested
     class WhenNonExistingInstanceId {
         @Test
-        void cantRouteToServer() throws IOException {
-            mockServerWithSpecificHttpResponse(200, "serviceid1", 4000);
+        void cantRouteToServer() {
             given()
                 .header("X-Request-Id", "non-existing").
                 when()
