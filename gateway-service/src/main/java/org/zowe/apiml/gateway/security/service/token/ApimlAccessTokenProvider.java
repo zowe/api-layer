@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
+
     private final CachingServiceClient cachingServiceClient;
     private final AuthenticationService authenticationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -167,7 +168,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (expiration <= 0) {
             expiration = 90;
         }
-
         return authenticationService.createLongLivedJwtToken(username, expiration, scopes);
     }
 
