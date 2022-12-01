@@ -49,7 +49,7 @@ class RouteLocatorTest {
         Flux<ServiceInstance> serviceInstances = Flux.fromIterable(Collections.singleton(instance));
         when(dc.getServices()).thenReturn(services);
         when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-        RouteLocator locator = new RouteLocator(dc, properties, Collections.singletonList(new FilterDefinition("name=value")));
+        RouteLocator locator = new RouteLocator(dc, properties, Collections.singletonList(new FilterDefinition("name=value")),null);
         Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
         List<RouteDefinition> definitions = definitionFlux.collectList().block();
         assertNotNull(definitions);

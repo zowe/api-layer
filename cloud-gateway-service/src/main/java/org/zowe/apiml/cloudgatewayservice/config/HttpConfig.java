@@ -24,25 +24,40 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.cloud.gateway.config.HttpClientCustomizer;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.cloud.gateway.handler.FilteringWebHandler;
+import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
+import org.springframework.cloud.gateway.support.HasRouteId;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.util.pattern.PathPatternParser;
+import org.zowe.apiml.cloudgatewayservice.service.CorsFilterFactory;
 import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
+import reactor.core.publisher.Mono;
 import reactor.netty.tcp.SslProvider;
 
 import java.time.Duration;
@@ -151,8 +166,8 @@ public class HttpConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters) {
-        return new RouteLocator(discoveryClient, properties, resilience4jFilters);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext ac) {
+        return new RouteLocator(discoveryClient, properties, resilience4jFilters, ac);
     }
 
     @Bean
@@ -173,6 +188,14 @@ public class HttpConfig {
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
         return Collections.singletonList(circuitBreakerFilter);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping,GlobalCorsProperties globalCorsProperties){
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
+        source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
+        handlerMapping.setCorsConfigurationSource(source);
+        return source;
     }
 
 }

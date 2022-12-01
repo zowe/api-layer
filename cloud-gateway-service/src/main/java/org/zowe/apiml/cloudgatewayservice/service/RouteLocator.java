@@ -18,17 +18,18 @@ import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
+import org.springframework.context.ApplicationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import reactor.core.publisher.Flux;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 public class RouteLocator implements RouteDefinitionLocator {
@@ -40,14 +41,17 @@ public class RouteLocator implements RouteDefinitionLocator {
     private final SimpleEvaluationContext evalCtxt;
 
     private Flux<List<ServiceInstance>> serviceInstances;
+    private final List<String> allowedCorsHttpMethods = Arrays.asList("GET","POST");
     private List<FilterDefinition> filters;
+    private ApplicationContext context;
 
     public RouteLocator(ReactiveDiscoveryClient discoveryClient,
-                        DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
+                        DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context) {
         this(properties);
         this.filters = filters;
         serviceInstances = discoveryClient.getServices()
             .flatMap(service -> discoveryClient.getInstances(service).collectList());
+        this.context = context;
     }
 
     private RouteLocator(DiscoveryLocatorProperties properties) {
@@ -81,8 +85,33 @@ public class RouteLocator implements RouteDefinitionLocator {
 
                     definitionsForInstance.add(routeDefinition);
                 }
+
+                String isCorsEnabledForService = instance.getMetadata().get("apiml.corsEnabled");
+                if (Boolean.parseBoolean(isCorsEnabledForService)) {
+                    setAllowedOriginsForService(instance);
+                }
                 return definitionsForInstance;
             }).flatMapIterable(list -> list);
+    }
+
+    private void setAllowedOriginsForService(ServiceInstance instance) {
+        // Check if the configuration specifies allowed origins for this service
+        Map<String, String> metadata = instance.getMetadata();
+        UrlBasedCorsConfigurationSource corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
+        String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+        CorsConfiguration config = new CorsConfiguration();
+        if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
+            // Origins not specified: allow everything
+            config.addAllowedOriginPattern(CorsConfiguration.ALL);
+        } else {
+            // Origins specified: split by comma, add to whitelist
+            Arrays.stream(corsAllowedOriginsForService.split(","))
+                .forEach(config::addAllowedOrigin);
+        }
+        config.setAllowCredentials(true);
+        config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+        config.setAllowedMethods(allowedCorsHttpMethods);
+        corsConfigurationSource.registerCorsConfiguration("/" + instance.getServiceId().toLowerCase() + "/**", config);
     }
 
     protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
@@ -98,6 +127,11 @@ public class RouteLocator implements RouteDefinitionLocator {
         filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
         filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
         routeDefinition.getFilters().add(filter);
+
+//        FilterDefinition filter2 = new FilterDefinition();
+//        filter2.setName("CorsFilter");
+//
+//        routeDefinition.getFilters().add(filter2);
         for (FilterDefinition defaultFilter : getFilters()) {
             routeDefinition.getFilters().add(defaultFilter);
         }

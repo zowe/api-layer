@@ -27,7 +27,7 @@ import java.util.Locale;
 public class ProxyRouteLocator extends RouteLocator {
 
     public ProxyRouteLocator(ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
-        super(discoveryClient, properties, filters);
+        super(discoveryClient, properties, filters,null);
 
     }
 

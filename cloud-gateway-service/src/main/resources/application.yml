@@ -12,7 +12,7 @@ apiml:
         hostname: localhost
         gateway:
             proxy:
-                enabled: true
+                enabled: false
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
@@ -31,6 +31,14 @@ server:
 spring:
     cloud:
         gateway:
+            globalcors:
+                corsConfigurations:
+                    '[/dcpassticket/**]':
+                        allowedOrigins:
+                            - http://localhost:3000
+                        allowedMethods:
+                            - GET
+                            - POST
             discovery:
                 locator:
                     enabled: false
