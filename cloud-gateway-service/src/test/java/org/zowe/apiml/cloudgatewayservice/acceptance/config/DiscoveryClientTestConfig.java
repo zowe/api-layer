@@ -23,6 +23,7 @@ import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
@@ -52,6 +53,7 @@ public class DiscoveryClientTestConfig {
 
     protected Service serviceWithDefaultConfiguration = new Service("serviceid2", "/serviceid2/**", "serviceid2");
     protected Service serviceWithCustomConfiguration = new Service("serviceid1", "/serviceid1/**", "serviceid1");
+
     @Bean(destroyMethod = "shutdown", name = "test")
     @Primary
     @RefreshScope
@@ -59,7 +61,8 @@ public class DiscoveryClientTestConfig {
                                                  EurekaClientConfig config,
                                                  EurekaInstanceConfig instance,
                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                                 ApplicationRegistry applicationRegistry
+                                                 ApplicationRegistry applicationRegistry,
+                                                 @Value("${currentApplication:}") String currentApplication
     ) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
@@ -69,7 +72,7 @@ public class DiscoveryClientTestConfig {
         }
 
         AbstractDiscoveryClientOptionalArgs<?> args = new MutableDiscoveryClientOptionalArgs();
-        args.setEurekaJerseyClient(eurekaJerseyClient(applicationRegistry));
+        args.setEurekaJerseyClient(eurekaJerseyClient(applicationRegistry, currentApplication));
 
 
         final ApimlDiscoveryClientStub discoveryClient = new ApimlDiscoveryClientStub(appManager, config, args, this.context, applicationRegistry);
@@ -80,7 +83,7 @@ public class DiscoveryClientTestConfig {
         return discoveryClient;
     }
 
-    EurekaJerseyClient eurekaJerseyClient(ApplicationRegistry registry) {
+    EurekaJerseyClient eurekaJerseyClient(ApplicationRegistry registry, String currentApplication) {
         EurekaJerseyClient jerseyClient = mock(EurekaJerseyClient.class);
         ApacheHttpClient4 httpClient4 = mock(ApacheHttpClient4.class);
         when(jerseyClient.getClient()).thenReturn(httpClient4);
@@ -97,7 +100,7 @@ public class DiscoveryClientTestConfig {
 
         registry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
         registry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(), false);
-        registry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+        registry.setCurrentApplication(currentApplication);
         when(response.getEntity(Applications.class)).thenReturn(registry.getApplications());
 
         return jerseyClient;

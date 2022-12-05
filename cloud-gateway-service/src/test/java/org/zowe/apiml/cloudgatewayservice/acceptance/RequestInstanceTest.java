@@ -14,6 +14,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -25,19 +26,21 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
-public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
+@ActiveProfiles("test")
+class RequestInstanceTest extends AcceptanceTestWithTwoServices {
+
+    @BeforeEach
+    void setUp() throws IOException {
+        mockServerWithSpecificHttpResponse(200, "serviceid1", 4000);
+    }
+    
     @Nested
     class WhenValidInstanceId {
-
-        @BeforeEach
-        void setUp() throws IOException {
-            mockServerWithSpecificHttpResponse(200, "serviceid1", 4000);
-        }
 
         @Test
         void routeToCorrectService() {
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header("X-Request-Id", "serviceid1localhost")
                 .when()
                 .get(basePath + serviceWithCustomConfiguration.getPath())
                 .then().statusCode(Matchers.is(SC_OK));
