@@ -3,7 +3,11 @@ dependencies {
     api project(':apiml-utility')
     implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
     }
+    implementation libraries.tomcat_embed_el
+    implementation libraries.jackson_core
+    implementation libraries.jackson_databind
     implementation libraries.snakeyaml
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
@@ -17,6 +21,7 @@ dependencies {
     implementation libraries.spring_core
     implementation libraries.spring_expression
     implementation libraries.spring_web
+    implementation libraries.spring_webmvc
 
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok

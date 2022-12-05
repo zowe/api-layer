@@ -105,6 +105,7 @@
         "jest-mock": "26.6.2",
         "jest-watch-typeahead": "0.6.5",
         "json-schema": "0.4.0",
+        "mini-css-extract-plugin": "2.4.7",
         "nodemon": "2.0.18",
         "npm-force-resolutions": "0.0.10",
         "nth-check": "2.0.1",
