@@ -173,7 +173,7 @@ genKeyPairCert apimtst
 genKeyPairCert user
 genKeyPairCert unknownuser
 log "Extracting private key"
-openssl pkcs12 -in "${KEYSTORE}" -nocerts -out "${KEYSTORE_DIR}/all-services.keystore.key" -passin pass:password -passout pass:password
+openssl pkcs12 -in "${KEYSTORE}" -legacy -nocerts -out "${KEYSTORE_DIR}/all-services.keystore.key" -passin pass:password -passout pass:password
 
 log "Setting permissions for keystore files"
 chmod -R 775 "${KEYSTORE_DIR}"
