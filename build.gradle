@@ -68,6 +68,10 @@ allprojects {
             downloadSources = true
         }
     }
+
+    configurations.all {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
 }
 
 subprojects {
