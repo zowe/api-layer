@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.*;
+import org.zowe.apiml.util.CorsUtils;
 
 import java.util.*;
 
@@ -39,22 +40,12 @@ public class CorsBeans {
     private final ZuulProperties zuulProperties;
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource(CorsUtils corsUtils) {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        final CorsConfiguration config = new CorsConfiguration();
-        List<String> pathsToEnable;
         if (corsEnabled) {
             addCorsRelatedIgnoredHeaders();
-
-            config.setAllowCredentials(true);
-            config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-            config.setAllowedMethods(allowedCorsHttpMethods());
-            pathsToEnable = CORS_ENABLED_ENDPOINTS;
-        } else {
-            pathsToEnable = Collections.singletonList("/**");
         }
-        pathsToEnable.forEach(path -> source.registerCorsConfiguration(path, config));
+        corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
         return source;
     }
 
@@ -65,10 +56,7 @@ public class CorsBeans {
     }
 
     @Bean
-    List<String> allowedCorsHttpMethods() {
-        return Collections.unmodifiableList(Arrays.asList(
-            HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
-            HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
-        ));
+    CorsUtils corsUtils(){
+        return new CorsUtils(corsEnabled);
     }
 }

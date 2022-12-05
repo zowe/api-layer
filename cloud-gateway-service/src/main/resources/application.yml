@@ -10,6 +10,8 @@ apiml:
         id: cloud-gateway
         port: 10023
         hostname: localhost
+        corsEnabled: true
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         gateway:
             proxy:
                 enabled: false
@@ -31,14 +33,6 @@ server:
 spring:
     cloud:
         gateway:
-            globalcors:
-                corsConfigurations:
-                    '[/dcpassticket/**]':
-                        allowedOrigins:
-                            - http://localhost:3000
-                        allowedMethods:
-                            - GET
-                            - POST
             discovery:
                 locator:
                     enabled: false

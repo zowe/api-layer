@@ -24,7 +24,6 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
@@ -35,34 +34,26 @@ import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.cloud.gateway.config.HttpClientCustomizer;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.cloud.gateway.handler.FilteringWebHandler;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
-import org.springframework.cloud.gateway.support.HasRouteId;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.pattern.PathPatternParser;
-import org.zowe.apiml.cloudgatewayservice.service.CorsFilterFactory;
 import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
-import reactor.core.publisher.Mono;
+import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.tcp.SslProvider;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 @Configuration
@@ -113,6 +104,10 @@ public class HttpConfig {
 
     @Value("${apiml.gateway.timeout:60}")
     private int requestTimeout;
+    @Value("${apiml.service.corsEnabled:false}")
+    private boolean corsEnabled;
+    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
+    private String ignoredHeadersWhenCorsEnabled;
     private final ApplicationContext context;
 
     public HttpConfig(ApplicationContext context) {
@@ -166,8 +161,8 @@ public class HttpConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext ac) {
-        return new RouteLocator(discoveryClient, properties, resilience4jFilters, ac);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext ac, CorsUtils corsUtils) {
+        return new RouteLocator(discoveryClient, properties, resilience4jFilters, ac, corsUtils);
     }
 
     @Bean
@@ -187,15 +182,31 @@ public class HttpConfig {
     public List<FilterDefinition> resilience4jFilters() {
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
-        return Collections.singletonList(circuitBreakerFilter);
+        List<FilterDefinition> filters = new ArrayList<>();
+        filters.add(circuitBreakerFilter);
+        for(String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
+            FilterDefinition removeHeaders = new FilterDefinition();
+            removeHeaders.setName("RemoveRequestHeader");
+            Map<String, String> args = new HashMap<>();
+            args.put("name", headerName);
+            removeHeaders.setArgs(args);
+            filters.add(removeHeaders);
+        }
+        return filters;
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping,GlobalCorsProperties globalCorsProperties){
+    public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping,GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils){
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
+        corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
         handlerMapping.setCorsConfigurationSource(source);
         return source;
+    }
+
+    @Bean
+    public CorsUtils corsUtils() {
+        return new CorsUtils(corsEnabled);
     }
 
 }

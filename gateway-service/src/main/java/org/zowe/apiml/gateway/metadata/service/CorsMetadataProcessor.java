@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.zowe.apiml.util.CorsUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +38,7 @@ public class CorsMetadataProcessor extends MetadataProcessor {
     private final EurekaApplications applications;
     private final CorsConfigurationSource corsConfigurationSource;
     private final List<String> allowedCorsHttpMethods;
+    private final CorsUtils corsUtils;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
 
 
@@ -49,8 +51,8 @@ public class CorsMetadataProcessor extends MetadataProcessor {
         Map<String, String> metadata = instanceInfo.getMetadata();
 
         if (metadata != null && corsEnabled) {
-            String serviceId = instanceInfo.getVIPAddress();
-            setCorsConfiguration(serviceId, metadata);
+            UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
+            corsUtils.setCorsConfiguration(instanceInfo.getVIPAddress(),metadata, (entry,serviceId,config)->cors.registerCorsConfiguration("/" + entry + "/" + serviceId + "/**", config));
         }
     }
 

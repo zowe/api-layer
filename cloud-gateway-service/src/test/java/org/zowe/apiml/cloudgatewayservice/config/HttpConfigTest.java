@@ -50,7 +50,7 @@ class HttpConfigTest {
         void thenIsNotNull() {
             ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
             DiscoveryLocatorProperties properties = mock(DiscoveryLocatorProperties.class);
-            Assertions.assertNotNull(httpConfig.apimlDiscoveryRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value")),null));
+            Assertions.assertNotNull(httpConfig.apimlDiscoveryRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value")),null,null));
         }
     }
 

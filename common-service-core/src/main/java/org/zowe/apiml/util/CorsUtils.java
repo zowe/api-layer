@@ -9,53 +9,49 @@
  */
 package org.zowe.apiml.util;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.TriConsumer;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
+@RequiredArgsConstructor
 public class CorsUtils {
-    @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
-
-    private final CorsConfigurationSource corsConfigurationSource;
-    private final List<String> allowedCorsHttpMethods;
+    private static List<String> allowedCorsHttpMethods;
+    private final boolean corsEnabled;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
 
-    protected void checkInstanceInfo(InstanceInfo instanceInfo) {
-        Map<String, String> metadata = instanceInfo.getMetadata();
-
-        if (metadata != null && corsEnabled) {
-            String serviceId = instanceInfo.getVIPAddress();
-            setCorsConfiguration(serviceId, metadata);
-        }
+    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
+    {
+        allowedCorsHttpMethods = Collections.unmodifiableList(Arrays.asList(
+            HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
+            HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
+        ));
     }
-
-    public void setCorsConfiguration(String serviceId, Map<String, String> metadata) {
+    public boolean isCorsEnabledForService(Map<String, String> metadata) {
         String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
-        if (Boolean.parseBoolean(isCorsEnabledForService)) {
-            if (this.corsConfigurationSource instanceof UrlBasedCorsConfigurationSource) {
-                UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
-                final CorsConfiguration config = new CorsConfiguration();
-                setAllowedOriginsForService(metadata, config);
-                metadata.entrySet().stream()
-                    .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
-                    .forEach(entry ->
-                        cors.registerCorsConfiguration("/" + entry.getValue() + "/" + serviceId.toLowerCase() + "/**", config));
-            }
+        return Boolean.parseBoolean(isCorsEnabledForService);
+    }
+
+    public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> fun) {
+        if(corsEnabled) {
+            CorsConfiguration corsConfiguration = setAllowedOriginsForService(metadata);
+            metadata.entrySet().stream()
+                .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
+                .forEach(entry ->
+                    fun.accept(entry.getValue(), serviceId, corsConfiguration));
         }
     }
 
-    private void setAllowedOriginsForService(Map<String, String> metadata, CorsConfiguration config) {
+    private CorsConfiguration setAllowedOriginsForService(Map<String, String> metadata) {
         // Check if the configuration specifies allowed origins for this service
+        final CorsConfiguration config = new CorsConfiguration();
         String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
         if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
             // Origins not specified: allow everything
@@ -68,5 +64,21 @@ public class CorsUtils {
         config.setAllowCredentials(true);
         config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
         config.setAllowedMethods(allowedCorsHttpMethods);
+        return config;
+    }
+
+    public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> fun){
+        final CorsConfiguration config = new CorsConfiguration();
+        List<String> pathsToEnable;
+        if (corsEnabled) {
+            config.setAllowCredentials(true);
+            config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
+            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+            config.setAllowedMethods(allowedCorsHttpMethods);
+            pathsToEnable = CORS_ENABLED_ENDPOINTS;
+        } else {
+            pathsToEnable = Collections.singletonList("/**");
+        }
+        pathsToEnable.forEach(path -> fun.accept(path,config));
     }
 }
