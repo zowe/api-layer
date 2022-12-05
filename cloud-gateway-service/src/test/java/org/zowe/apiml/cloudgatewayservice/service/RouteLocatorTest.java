@@ -56,26 +56,6 @@ class RouteLocatorTest {
             assertNotNull(definitions);
             assertEquals(1, definitions.size());
         }
-
-        @Test
-        void whenServiceIsMatched_thenCreateRetryFilter() {
-            Flux<String> services = Flux.fromIterable(Collections.singleton("gateway"));
-            List<ServiceInstance> instances = Arrays.asList(instance, instance2);
-            Flux<ServiceInstance> serviceInstances = Flux.fromIterable(instances);
-            when(dc.getServices()).thenReturn(services);
-            when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-            RouteLocator locator = new RouteLocator(dc, properties, Collections.emptyList());
-            Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
-            List<RouteDefinition> definitions = definitionFlux.collectList().block();
-            assertNotNull(definitions);
-            assertEquals(2, definitions.size());
-            for (RouteDefinition def : definitions) {
-                String retriesArg = def.getFilters().get(1).getArgs().get("retries");
-                String statusesArg = def.getFilters().get(1).getArgs().get("statuses");
-                assertEquals("5", retriesArg);
-                assertEquals("SERVICE_UNAVAILABLE", statusesArg);
-            }
-        }
     }
 
     @Nested
