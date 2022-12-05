@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.gateway.security.webfinger.WebFingerProvider;
+import org.zowe.apiml.gateway.security.webfinger.WebFingerResponse;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -65,6 +67,7 @@ public class AuthController {
 
     private final AccessTokenProvider tokenProvider;
     private final OIDCProvider oidcProvider;
+    private final WebFingerProvider webFingerProvider;
 
     private static final String TOKEN_KEY = "token";
     private static final ObjectWriter writer = new ObjectMapper().writer();
@@ -80,6 +83,7 @@ public class AuthController {
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
     public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
+    public static final String OIDC_WEBFINGER_PATH = "/webfinger";
 
     @DeleteMapping(path = INVALIDATE_PATH)
     @HystrixCommand
@@ -277,6 +281,19 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Proof of concept of WebFinger provider for OIDC clients.
+     *
+     * @return Link to configured IDP and its link to the "/.well-known" configuration
+     */
+    @GetMapping(path = OIDC_WEBFINGER_PATH)
+    @ResponseBody
+    @HystrixCommand
+    public ResponseEntity<WebFingerResponse> getWebFinger(@RequestParam(name = "resource") String clientId) {
+        WebFingerResponse response = webFingerProvider.getWebFingerConfig(clientId);
+        return ResponseEntity.ok(response);
     }
 
     private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {

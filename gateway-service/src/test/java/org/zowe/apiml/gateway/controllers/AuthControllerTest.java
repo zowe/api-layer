@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.gateway.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -69,6 +70,9 @@ class AuthControllerTest {
     @Mock
     private OIDCProvider oidcProvider;
 
+    @Mock
+    private WebFingerProvider webFingerProvider;
+
     private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
@@ -77,7 +81,7 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() throws ParseException, JSONException {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
-        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider);
+        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider, webFingerProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
         body = new JSONObject()
             .put("token", "token")
