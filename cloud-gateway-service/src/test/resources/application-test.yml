@@ -44,12 +44,11 @@ logging:
 
 management:
     endpoint:
-      gateway:
-          enabled: true
+        gateway:
+            enabled: true
     endpoints:
         web:
             base-path: /application
             exposure:
                 include: health,gateway
-
-currentApplication: serviceid2
+currentApplication: serviceid1

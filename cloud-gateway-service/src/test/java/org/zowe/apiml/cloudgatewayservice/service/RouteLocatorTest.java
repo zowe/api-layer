@@ -42,18 +42,20 @@ class RouteLocatorTest {
     ReactiveDiscoveryClient dc = mock(ReactiveDiscoveryClient.class);
     DiscoveryLocatorProperties properties = new DiscoveryLocatorProperties();
 
-
-    @Test
-    void givenServiceWithDefinedMetadata_thenLocateRoutes() {
-        Flux<String> services = Flux.fromIterable(Collections.singleton("gateway"));
-        Flux<ServiceInstance> serviceInstances = Flux.fromIterable(Collections.singleton(instance));
-        when(dc.getServices()).thenReturn(services);
-        when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-        RouteLocator locator = new RouteLocator(dc, properties, Collections.singletonList(new FilterDefinition("name=value")));
-        Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
-        List<RouteDefinition> definitions = definitionFlux.collectList().block();
-        assertNotNull(definitions);
-        assertEquals(1, definitions.size());
+    @Nested
+    class GivenRouteLocator {
+        @Test
+        void givenServiceWithDefinedMetadata_thenLocateRoutes() {
+            Flux<String> services = Flux.fromIterable(Collections.singleton("gateway"));
+            Flux<ServiceInstance> serviceInstances = Flux.fromIterable(Collections.singleton(instance));
+            when(dc.getServices()).thenReturn(services);
+            when(dc.getInstances("gateway")).thenReturn(serviceInstances);
+            RouteLocator locator = new RouteLocator(dc, properties, Collections.singletonList(new FilterDefinition("name=value")));
+            Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
+            List<RouteDefinition> definitions = definitionFlux.collectList().block();
+            assertNotNull(definitions);
+            assertEquals(1, definitions.size());
+        }
     }
 
     @Nested
