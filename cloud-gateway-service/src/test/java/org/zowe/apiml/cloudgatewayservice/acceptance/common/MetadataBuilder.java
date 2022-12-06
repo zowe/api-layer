@@ -19,7 +19,8 @@ public class MetadataBuilder {
     public MetadataBuilder() {
         metadata = new HashMap<>();
         metadata.put("apiml.routes.api-v1.gatewayUrl", "api/v1");
-        metadata.put("apiml.routes.api-v1.serviceUrl","/");
+        metadata.put("apiml.routes.api-v1.serviceUrl", "/");
+
     }
 
 
@@ -29,6 +30,7 @@ public class MetadataBuilder {
 
     public static MetadataBuilder defaultInstance() {
         MetadataBuilder builder = new MetadataBuilder();
+        builder.metadata.put("apiml.corsEnabled", "true");
         return builder;
     }
 

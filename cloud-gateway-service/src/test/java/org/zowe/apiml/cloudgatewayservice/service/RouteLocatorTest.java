@@ -19,7 +19,6 @@ import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.zowe.apiml.util.CorsUtils;
-import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.*;

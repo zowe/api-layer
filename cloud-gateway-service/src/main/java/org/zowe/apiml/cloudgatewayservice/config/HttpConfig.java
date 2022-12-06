@@ -11,7 +11,6 @@
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClient;
@@ -89,7 +88,6 @@ public class HttpConfig {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
@@ -144,8 +142,9 @@ public class HttpConfig {
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
-    public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config, @Qualifier("apimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
-                                     EurekaInstanceConfig instance, @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
+    public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
+                                     @Qualifier("apimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
+                                     @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);

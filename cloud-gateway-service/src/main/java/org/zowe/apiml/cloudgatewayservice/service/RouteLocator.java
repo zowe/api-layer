@@ -99,9 +99,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
                     definitionsForInstance.add(routeDefinition);
                 }
-                if (corsUtils.isCorsEnabledForService(instance.getMetadata())) {
-                    corsUtils.setCorsConfiguration(instance.getServiceId().toLowerCase(), instance.getMetadata(), (prefix, serviceId, config) -> getConfigSource().registerCorsConfiguration("/" + serviceId + "/**", config));
-                }
+                corsUtils.setCorsConfiguration(instance.getServiceId().toLowerCase(), instance.getMetadata(), (prefix, serviceId, config) -> getConfigSource().registerCorsConfiguration("/" + serviceId + "/**", config));
                 return definitionsForInstance;
             }).flatMapIterable(list -> list);
     }

@@ -21,8 +21,7 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTw
 import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
@@ -31,9 +30,10 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
     void setUp() throws IOException {
-        mockServerWithSpecificHttpResponse(200, "serviceid1", 4000);
+        mockServerWithSpecificHttpResponse(200, "serviceid1", 4000, (headers) -> {
+        });
     }
-    
+
     @Nested
     class WhenValidInstanceId {
 
@@ -58,5 +58,16 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
                 .then()
                 .statusCode(is(SC_NOT_FOUND));
         }
+    }
+
+    @Test
+    void routeToServiceWithCorsDisabled() {
+
+        given()
+            .header("Origin", "https://localhost:3000")
+            .header("X-Request-Id", "serviceid1localhost")
+            .when()
+            .get(basePath + serviceWithCustomConfiguration.getPath())
+            .then().statusCode(Matchers.is(SC_FORBIDDEN));
     }
 }
