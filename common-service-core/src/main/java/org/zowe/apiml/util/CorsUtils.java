@@ -42,13 +42,13 @@ public class CorsUtils {
         return Boolean.parseBoolean(isCorsEnabledForService);
     }
 
-    public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> fun) {
+    public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> entryMapper) {
         if (corsEnabled) {
             CorsConfiguration corsConfiguration = setAllowedOriginsForService(metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
-                    fun.accept(entry.getValue(), serviceId, corsConfiguration));
+                    entryMapper.accept(entry.getValue(), serviceId, corsConfiguration));
         }
     }
 
@@ -72,7 +72,7 @@ public class CorsUtils {
         return config;
     }
 
-    public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> fun) {
+    public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> pathMapper) {
         final CorsConfiguration config = new CorsConfiguration();
         List<String> pathsToEnable;
         if (corsEnabled) {
@@ -84,6 +84,6 @@ public class CorsUtils {
         } else {
             pathsToEnable = Collections.singletonList("/**");
         }
-        pathsToEnable.forEach(path -> fun.accept(path, config));
+        pathsToEnable.forEach(path -> pathMapper.accept(path, config));
     }
 }
