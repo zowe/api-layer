@@ -109,7 +109,7 @@ class ApiDocV3ServiceTest {
                     ")";
 
                 assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
-                assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
+                assertThat(actualSwagger.getPaths(), samePropertyValuesAs(dummyOpenApiObject.getPaths()));
 
                 assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
                 assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
@@ -157,7 +157,7 @@ class ApiDocV3ServiceTest {
                     ")";
 
                 assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
-                assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
+                assertThat(actualSwagger.getPaths(), samePropertyValuesAs(dummyOpenApiObject.getPaths()));
 
                 assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
                 assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
@@ -173,22 +173,20 @@ class ApiDocV3ServiceTest {
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
-                Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
-                    apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-                });
+                Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
                 assertEquals("[Null or empty definition]", exception.getMessage());
             }
 
             @Test
             void givenInvalidJson() {
                 String invalidJson = "nonsense";
+                String error = "[Cannot construct instance of `java.util.LinkedHashMap` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('nonsense')\n" +
+                    " at [Source: UNKNOWN; byte offset: #UNKNOWN]]";
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
-                Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
-                    apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-                });
-                assertEquals("[attribute openapi is not of type `object`]", exception.getMessage());
+                Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
+                assertEquals(error, exception.getMessage());
             }
         }
 
@@ -268,10 +266,15 @@ class ApiDocV3ServiceTest {
         info.setDescription("REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.");
         info.setVersion("1.0.0");
         openAPI.setInfo(info);
-
+        openAPI.addExtension("x-custom", "value1");
+        openAPI.getInfo().addExtension("x-custom", openAPI.getExtensions());
+        openAPI.getServers().get(0).addExtension("x-custom", openAPI.getExtensions());
+        openAPI.getServers().get(1).addExtension("x-custom", openAPI.getExtensions());
+        openAPI.getServers().get(2).addExtension("x-custom", openAPI.getExtensions());
         Tag tag = new Tag();
         tag.setName("API Catalog");
         tag.setDescription("Current state information");
+        tag.setExtensions(openAPI.getExtensions());
         openAPI.getTags().add(tag);
         if (apimlHidden) {
             tag = new Tag();
