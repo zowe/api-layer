@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 @Component
 public class TomcatKeyringFix implements TomcatConnectorCustomizer {
 
-    private static final Pattern KEYRING_PATTERN = Pattern.compile("^safkeyring[^:]*[:][/]{2,4}[^/].*$");
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^safkeyring[^:]*:/{2,4}[^/].*$");
 
     @Value("${server.ssl.keyStore:#{null}}")
     private String keyStore;

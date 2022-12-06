@@ -39,7 +39,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private final RequestConfig requestConfig;
 
-    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*)[:][/]{2,4}([^/]+)[/]([^/]+)$");
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
     private TrustManagerFactory tmf;
     private KeyManagerFactory kmf;

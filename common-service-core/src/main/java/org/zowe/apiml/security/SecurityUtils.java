@@ -35,7 +35,7 @@ public class SecurityUtils {
 
     private ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
 
-    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*)[:][/]{2,4}([^/]+)[/]([^/]+)$");
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
     public boolean isKeyring(String input) {
         if (input == null) return false;

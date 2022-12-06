@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 public class Stores {
 
-    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*)[:][/]{2,4}([^/]+)[/]([^/]+)$");
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
     private KeyStore keyStore;
     private KeyStore trustStore;
