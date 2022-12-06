@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,8 @@ class CorsUtilsTest {
 
     Map<String, String> metadata = new HashMap<>();
 
-    {
+    @BeforeEach
+    void setup() {
         metadata.put("apiml.routes.v1.gateway", "api/v1");
         metadata.put("apiml.corsEnabled", "true");
     }
@@ -48,6 +50,32 @@ class CorsUtilsTest {
             corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
                     assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
                     assertNotNull(configuration.getAllowedHeaders());
+                    assertEquals(1, configuration.getAllowedHeaders().size());
+                    assertEquals(6, configuration.getAllowedMethods().size());
+                }
+            );
+
+        }
+
+        @Test
+        void registerDefaultConfigForService() {
+            metadata.remove("apiml.corsEnabled");
+            corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
+                    assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                    assertNull(configuration.getAllowedMethods());
+                }
+            );
+        }
+
+        @Test
+        void registerConfigForServiceWithCustomOrigins() {
+            Map<String, String> customMetadata = new HashMap<>(metadata);
+            customMetadata.put("apiml.corsAllowedOrigins", "https://localhost:3000,http://hostname.com,https://anothehostname:3040");
+            corsUtils.setCorsConfiguration("dclient", customMetadata, (path, serviceId, configuration) -> {
+                    assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                    assertNotNull(configuration.getAllowedHeaders());
+                    assertTrue(configuration.getAllowedOrigins().contains("https://localhost:3000"));
+                    assertEquals(3, configuration.getAllowedOrigins().size());
                     assertEquals(1, configuration.getAllowedHeaders().size());
                     assertEquals(6, configuration.getAllowedMethods().size());
                 }

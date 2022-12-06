@@ -22,7 +22,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @AcceptanceTest
-public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
+class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test
     void routeToServiceWithCorsEnabled() throws IOException {

@@ -24,13 +24,13 @@ import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 public class CorsUtils {
-    private static List<String> allowedCorsHttpMethods;
+    private static final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
 
     private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
 
-    {
+    static {
         allowedCorsHttpMethods = Collections.unmodifiableList(Arrays.asList(
             HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
             HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
