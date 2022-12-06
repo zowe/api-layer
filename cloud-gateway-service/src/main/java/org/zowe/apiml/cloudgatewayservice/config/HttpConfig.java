@@ -24,6 +24,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
@@ -142,6 +143,7 @@ public class HttpConfig {
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
+    @ConditionalOnMissingBean(EurekaClient.class)
     public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config, @Qualifier("apimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
                                      EurekaInstanceConfig instance, @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
@@ -163,15 +165,15 @@ public class HttpConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext context, CorsUtils corsUtils) {
-        return new RouteLocator(discoveryClient, properties, resilience4jFilters, context, corsUtils);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
+        return new RouteLocator(discoveryClient, properties, filters, context, corsUtils);
     }
 
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "true")
     public RouteLocator proxyRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext context, CorsUtils corsUtils) {
-        return new ProxyRouteLocator(discoveryClient, properties, resilience4jFilters, context, corsUtils);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
+        return new ProxyRouteLocator(discoveryClient, properties, filters, context, corsUtils);
     }
 
     @Bean
@@ -181,11 +183,17 @@ public class HttpConfig {
     }
 
     @Bean
-    public List<FilterDefinition> resilience4jFilters() {
+    public List<FilterDefinition> filters() {
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
+        FilterDefinition retryFilter = new FilterDefinition();
+        retryFilter.setName("Retry");
+
+        retryFilter.addArg("retries", "5");
+        retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
         List<FilterDefinition> filters = new ArrayList<>();
         filters.add(circuitBreakerFilter);
+        filters.add(retryFilter);
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
             removeHeaders.setName("RemoveRequestHeader");

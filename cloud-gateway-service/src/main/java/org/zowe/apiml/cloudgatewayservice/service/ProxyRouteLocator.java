@@ -36,10 +36,13 @@ public class ProxyRouteLocator extends RouteLocator {
     @Override
     protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
         PredicateDefinition predicate = new PredicateDefinition();
+
         predicate.setName("Header");
         predicate.addArg("header", "X-Request-Id");
         predicate.addArg("regexp", (instance.getServiceId() + instance.getHost()).toLowerCase(Locale.ROOT));
+
         routeDefinition.getPredicates().add(predicate);
+
         for (FilterDefinition filter : getFilters()) {
             routeDefinition.getFilters().add(filter);
         }

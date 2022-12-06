@@ -118,12 +118,12 @@ public class RouteLocator implements RouteDefinitionLocator {
 
         filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
         filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
+
         routeDefinition.getFilters().add(filter);
 
         for (FilterDefinition defaultFilter : getFilters()) {
             routeDefinition.getFilters().add(defaultFilter);
         }
-
     }
 
     protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {
