@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.util;
 
 import lombok.RequiredArgsConstructor;
@@ -28,19 +29,21 @@ public class CorsUtils {
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
 
     private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
+
     {
         allowedCorsHttpMethods = Collections.unmodifiableList(Arrays.asList(
             HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
             HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
         ));
     }
+
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
         String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
         return Boolean.parseBoolean(isCorsEnabledForService);
     }
 
     public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> fun) {
-        if(corsEnabled) {
+        if (corsEnabled) {
             CorsConfiguration corsConfiguration = setAllowedOriginsForService(metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
@@ -52,22 +55,24 @@ public class CorsUtils {
     private CorsConfiguration setAllowedOriginsForService(Map<String, String> metadata) {
         // Check if the configuration specifies allowed origins for this service
         final CorsConfiguration config = new CorsConfiguration();
-        String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-        if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
-            // Origins not specified: allow everything
-            config.addAllowedOriginPattern(CorsConfiguration.ALL);
-        } else {
-            // Origins specified: split by comma, add to whitelist
-            Arrays.stream(corsAllowedOriginsForService.split(","))
-                .forEach(config::addAllowedOrigin);
+        if (isCorsEnabledForService(metadata)) {
+            String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+            if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
+                // Origins not specified: allow everything
+                config.addAllowedOriginPattern(CorsConfiguration.ALL);
+            } else {
+                // Origins specified: split by comma, add to whitelist
+                Arrays.stream(corsAllowedOriginsForService.split(","))
+                    .forEach(config::addAllowedOrigin);
+            }
+            config.setAllowCredentials(true);
+            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+            config.setAllowedMethods(allowedCorsHttpMethods);
         }
-        config.setAllowCredentials(true);
-        config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-        config.setAllowedMethods(allowedCorsHttpMethods);
         return config;
     }
 
-    public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> fun){
+    public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> fun) {
         final CorsConfiguration config = new CorsConfiguration();
         List<String> pathsToEnable;
         if (corsEnabled) {
@@ -79,6 +84,6 @@ public class CorsUtils {
         } else {
             pathsToEnable = Collections.singletonList("/**");
         }
-        pathsToEnable.forEach(path -> fun.accept(path,config));
+        pathsToEnable.forEach(path -> fun.accept(path, config));
     }
 }

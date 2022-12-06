@@ -16,11 +16,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.cors.*;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Externalized configuration of CORS behavior
@@ -29,8 +30,6 @@ import java.util.*;
 @Configuration
 @RequiredArgsConstructor
 public class CorsBeans {
-
-    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
@@ -56,7 +55,7 @@ public class CorsBeans {
     }
 
     @Bean
-    CorsUtils corsUtils(){
+    CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled);
     }
 }

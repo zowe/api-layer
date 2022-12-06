@@ -41,7 +41,6 @@ import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -53,7 +52,10 @@ import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.tcp.SslProvider;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Configuration
@@ -106,7 +108,7 @@ public class HttpConfig {
     private int requestTimeout;
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
-    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
+    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled:-}")
     private String ignoredHeadersWhenCorsEnabled;
     private final ApplicationContext context;
 
@@ -161,15 +163,15 @@ public class HttpConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext ac, CorsUtils corsUtils) {
-        return new RouteLocator(discoveryClient, properties, resilience4jFilters, ac, corsUtils);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext context, CorsUtils corsUtils) {
+        return new RouteLocator(discoveryClient, properties, resilience4jFilters, context, corsUtils);
     }
 
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "true")
     public RouteLocator proxyRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters) {
-        return new ProxyRouteLocator(discoveryClient, properties, resilience4jFilters);
+        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> resilience4jFilters, ApplicationContext context, CorsUtils corsUtils) {
+        return new ProxyRouteLocator(discoveryClient, properties, resilience4jFilters, context, corsUtils);
     }
 
     @Bean
@@ -184,7 +186,7 @@ public class HttpConfig {
         circuitBreakerFilter.setName("CircuitBreaker");
         List<FilterDefinition> filters = new ArrayList<>();
         filters.add(circuitBreakerFilter);
-        for(String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
+        for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
             removeHeaders.setName("RemoveRequestHeader");
             Map<String, String> args = new HashMap<>();
@@ -196,7 +198,7 @@ public class HttpConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping,GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils){
+    public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
         corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);

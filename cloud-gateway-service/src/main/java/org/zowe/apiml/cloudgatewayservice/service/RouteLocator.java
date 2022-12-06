@@ -29,7 +29,9 @@ import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 @Slf4j
 public class RouteLocator implements RouteDefinitionLocator {
@@ -46,6 +48,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private UrlBasedCorsConfigurationSource corsConfigurationSource;
     private CorsUtils corsUtils;
+
     public RouteLocator(ReactiveDiscoveryClient discoveryClient,
                         DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
         this(properties);
@@ -57,13 +60,14 @@ public class RouteLocator implements RouteDefinitionLocator {
     }
 
 
-    public UrlBasedCorsConfigurationSource getConfigSource(){
-        if(corsConfigurationSource != null){
+    public UrlBasedCorsConfigurationSource getConfigSource() {
+        if (corsConfigurationSource != null) {
             return corsConfigurationSource;
         }
         corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
         return corsConfigurationSource;
     }
+
     private RouteLocator(DiscoveryLocatorProperties properties) {
         this.properties = properties;
         routeIdPrefix = this.getClass().getSimpleName() + "_";
@@ -96,7 +100,7 @@ public class RouteLocator implements RouteDefinitionLocator {
                     definitionsForInstance.add(routeDefinition);
                 }
                 if (corsUtils.isCorsEnabledForService(instance.getMetadata())) {
-                    corsUtils.setCorsConfiguration(instance.getServiceId().toLowerCase(),instance.getMetadata(),(prefix,serviceId,config) -> getConfigSource().registerCorsConfiguration("/" + serviceId + "/**", config));
+                    corsUtils.setCorsConfiguration(instance.getServiceId().toLowerCase(), instance.getMetadata(), (prefix, serviceId, config) -> getConfigSource().registerCorsConfiguration("/" + serviceId + "/**", config));
                 }
                 return definitionsForInstance;
             }).flatMapIterable(list -> list);
