@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.cloudgatewayservice.acceptance.config.CloudGatewayServiceTestApplication;
 import org.zowe.apiml.cloudgatewayservice.acceptance.config.DiscoveryClientTestConfig;
-import org.zowe.apiml.cloudgatewayservice.acceptance.config.CloudGatewayOverrideConfig;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,7 +27,7 @@ import java.lang.annotation.Target;
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
 @SpringBootTest(classes = CloudGatewayServiceTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"management.server.port=10091","server.internal.enabled=false"})
-@Import({CloudGatewayOverrideConfig.class, DiscoveryClientTestConfig.class})
+@Import(DiscoveryClientTestConfig.class)
 @DirtiesContext
 public @interface AcceptanceTest {
 }

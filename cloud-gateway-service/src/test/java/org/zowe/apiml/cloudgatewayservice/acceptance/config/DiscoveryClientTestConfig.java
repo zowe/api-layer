@@ -41,7 +41,7 @@ import javax.ws.rs.core.Response;
 
 import static org.mockito.Mockito.*;
 /**
- * This configuration override bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
+ * This configuration provides the bean for the ApplicationRegistry and overrides bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
  * <p>
  * Configuration also add listeners to call other beans waiting for fetch new registry. It speeds up distribution of
  * changes in whole cloud gateway.
@@ -53,6 +53,12 @@ public class DiscoveryClientTestConfig {
 
     protected Service serviceWithDefaultConfiguration = new Service("serviceid2", "/serviceid2/**", "serviceid2");
     protected Service serviceWithCustomConfiguration = new Service("serviceid1", "/serviceid1/**", "serviceid1");
+
+    @Bean
+    public ApplicationRegistry registry() {
+        ApplicationRegistry applicationRegistry = new ApplicationRegistry();
+        return applicationRegistry;
+    }
 
     @Bean(destroyMethod = "shutdown", name = "test")
     @Primary
@@ -83,7 +89,7 @@ public class DiscoveryClientTestConfig {
         return discoveryClient;
     }
 
-    EurekaJerseyClient eurekaJerseyClient(ApplicationRegistry registry, String currentApplication) {
+    private EurekaJerseyClient eurekaJerseyClient(ApplicationRegistry registry, String currentApplication) {
         EurekaJerseyClient jerseyClient = mock(EurekaJerseyClient.class);
         ApacheHttpClient4 httpClient4 = mock(ApacheHttpClient4.class);
         when(jerseyClient.getClient()).thenReturn(httpClient4);
