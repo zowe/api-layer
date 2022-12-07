@@ -71,7 +71,6 @@ dependencies {
         exclude group: "org.yaml", module: "snakeyaml"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
     }
-    implementation libraries.snakeyaml
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.spring_boot_starter_cache
@@ -87,7 +86,9 @@ dependencies {
     implementation libraries.xstream
     implementation libraries.json_smart
 
-    implementation libraries.swagger3_parser
+    implementation(libraries.swagger3_parser) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
     implementation libraries.jackson_databind
