@@ -69,7 +69,7 @@ ext {
     springDocVersion = '1.6.9'
     spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
     swagger3CoreVersion = '2.0.0'
-    swagger3ParserVersion = '2.0.17'
+    swagger3ParserVersion = '2.1.9'
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
