@@ -53,7 +53,6 @@ gitProperties {
 }
 
 dependencies {
-
     implementation project(':common-service-core')
     implementation (libraries.spring_cloud_starter_gateway){
         exclude group: "org.yaml", module: "snakeyaml"
@@ -93,8 +92,10 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.5'
 
 
-
+    testCompileOnly libraries.lombok
+    testAnnotationProcessor libraries.lombok
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.3'
+    testImplementation libraries.rest_assured
 }
 
 bootJar {

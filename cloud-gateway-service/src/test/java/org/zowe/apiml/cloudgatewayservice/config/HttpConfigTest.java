@@ -24,12 +24,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
+import org.springframework.context.annotation.ComponentScan;
 
 import java.util.Collections;
 
 import static org.mockito.Mockito.mock;
 
 @SpringBootTest
+@ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
 class HttpConfigTest {
 
     @Autowired
@@ -50,7 +52,7 @@ class HttpConfigTest {
         void thenIsNotNull() {
             ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
             DiscoveryLocatorProperties properties = mock(DiscoveryLocatorProperties.class);
-            Assertions.assertNotNull(httpConfig.apimlDiscoveryRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value"))));
+            Assertions.assertNotNull(httpConfig.proxyRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value"))));
         }
     }
 
