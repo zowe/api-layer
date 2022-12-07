@@ -53,7 +53,6 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         server.createContext("/" + serviceId + "/test", (t) -> {
             t.sendResponseHeaders(statusCode, 0);
             assertion.accept(t.getRequestHeaders());
-            System.out.println("X-Request-Id: " + t.getRequestHeaders().get("X-Request-Id"));
             t.getResponseBody().close();
             counter.getAndIncrement();
         });
