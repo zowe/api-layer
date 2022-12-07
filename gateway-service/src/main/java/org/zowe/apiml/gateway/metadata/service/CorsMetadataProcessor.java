@@ -16,15 +16,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.zowe.apiml.util.CorsUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -33,11 +30,9 @@ public class CorsMetadataProcessor extends MetadataProcessor {
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
-
     private final EurekaApplications applications;
     private final CorsConfigurationSource corsConfigurationSource;
-    private final List<String> allowedCorsHttpMethods;
-    private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
+    private final CorsUtils corsUtils;
 
 
     @Override
@@ -49,39 +44,8 @@ public class CorsMetadataProcessor extends MetadataProcessor {
         Map<String, String> metadata = instanceInfo.getMetadata();
 
         if (metadata != null && corsEnabled) {
-            String serviceId = instanceInfo.getVIPAddress();
-            setCorsConfiguration(serviceId, metadata);
-        }
-    }
-
-    public void setCorsConfiguration(String serviceId, Map<String, String> metadata) {
-        String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
-        if (this.corsConfigurationSource instanceof UrlBasedCorsConfigurationSource) {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
-            final CorsConfiguration config = new CorsConfiguration();
-            if (Boolean.parseBoolean(isCorsEnabledForService)) {
-                setAllowedOriginsForService(metadata, config);
-            }
-            metadata.entrySet().stream()
-                .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
-                .forEach(entry ->
-                    cors.registerCorsConfiguration("/" + entry.getValue() + "/" + serviceId.toLowerCase() + "/**", config));
+            corsUtils.setCorsConfiguration(instanceInfo.getVIPAddress().toLowerCase(), metadata, (entry, serviceId, config) -> cors.registerCorsConfiguration("/" + entry + "/" + serviceId + "/**", config));
         }
-    }
-
-    private void setAllowedOriginsForService(Map<String, String> metadata, CorsConfiguration config) {
-        // Check if the configuration specifies allowed origins for this service
-        String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-        if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
-            // Origins not specified: allow everything
-            config.addAllowedOriginPattern(CorsConfiguration.ALL);
-        } else {
-            // Origins specified: split by comma, add to whitelist
-            Arrays.stream(corsAllowedOriginsForService.split(","))
-                .forEach(config::addAllowedOrigin);
-        }
-        config.setAllowCredentials(true);
-        config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-        config.setAllowedMethods(allowedCorsHttpMethods);
     }
 }

@@ -9,9 +9,11 @@ apiml:
         id: cloud-gateway
         port: 10023
         hostname: localhost
+        corsEnabled: true
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         gateway:
             proxy:
-                enabled: false
+                enabled: true
 server:
     port: ${apiml.service.port}
     ssl:
@@ -25,6 +27,8 @@ server:
         trustStoreType: PKCS12
 
 spring:
+    main:
+        allow-bean-definition-overriding: true
     cloud:
         gateway:
             discovery:
@@ -37,7 +41,8 @@ spring:
 logging:
     level:
         org.springframework.cloud.gateway: DEBUG
-        reactor.netty.http.client: DEBUG
+        reactor.netty: DEBUG
+
 
 management:
     endpoint:
@@ -48,3 +53,5 @@ management:
             base-path: /application
             exposure:
                 include: health,gateway
+
+currentApplication: serviceid2

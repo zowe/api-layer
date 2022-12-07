@@ -18,11 +18,14 @@ import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
+import org.springframework.context.ApplicationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
 import java.net.URI;
@@ -41,13 +44,28 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private Flux<List<ServiceInstance>> serviceInstances;
     private List<FilterDefinition> filters;
+    private ApplicationContext context;
+
+    private UrlBasedCorsConfigurationSource corsConfigurationSource;
+    private CorsUtils corsUtils;
 
     public RouteLocator(ReactiveDiscoveryClient discoveryClient,
-                        DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
+                        DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
         this(properties);
         this.filters = filters;
         serviceInstances = discoveryClient.getServices()
             .flatMap(service -> discoveryClient.getInstances(service).collectList());
+        this.context = context;
+        this.corsUtils = corsUtils;
+    }
+
+
+    public UrlBasedCorsConfigurationSource getConfigSource() {
+        if (corsConfigurationSource != null) {
+            return corsConfigurationSource;
+        }
+        corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
+        return corsConfigurationSource;
     }
 
     private RouteLocator(DiscoveryLocatorProperties properties) {
@@ -81,6 +99,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
                     definitionsForInstance.add(routeDefinition);
                 }
+                corsUtils.setCorsConfiguration(instance.getServiceId().toLowerCase(), instance.getMetadata(), (prefix, serviceId, config) -> getConfigSource().registerCorsConfiguration("/" + serviceId + "/**", config));
                 return definitionsForInstance;
             }).flatMapIterable(list -> list);
     }
@@ -97,11 +116,12 @@ public class RouteLocator implements RouteDefinitionLocator {
 
         filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
         filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
+
         routeDefinition.getFilters().add(filter);
+
         for (FilterDefinition defaultFilter : getFilters()) {
             routeDefinition.getFilters().add(defaultFilter);
         }
-
     }
 
     protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {

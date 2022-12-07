@@ -16,10 +16,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.cors.*;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.zowe.apiml.util.CorsUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Externalized configuration of CORS behavior
@@ -29,8 +31,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CorsBeans {
 
-    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
-
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
@@ -39,22 +39,12 @@ public class CorsBeans {
     private final ZuulProperties zuulProperties;
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource(CorsUtils corsUtils) {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        final CorsConfiguration config = new CorsConfiguration();
-        List<String> pathsToEnable;
         if (corsEnabled) {
             addCorsRelatedIgnoredHeaders();
-
-            config.setAllowCredentials(true);
-            config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-            config.setAllowedMethods(allowedCorsHttpMethods());
-            pathsToEnable = CORS_ENABLED_ENDPOINTS;
-        } else {
-            pathsToEnable = Collections.singletonList("/**");
         }
-        pathsToEnable.forEach(path -> source.registerCorsConfiguration(path, config));
+        corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
         return source;
     }
 
@@ -65,10 +55,7 @@ public class CorsBeans {
     }
 
     @Bean
-    List<String> allowedCorsHttpMethods() {
-        return Collections.unmodifiableList(Arrays.asList(
-            HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
-            HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
-        ));
+    CorsUtils corsUtils() {
+        return new CorsUtils(corsEnabled);
     }
 }

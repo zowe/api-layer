@@ -93,7 +93,9 @@ dependencies {
     implementation libraries.apache_commons_lang3
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.apache_velocity
-    implementation libraries.openapidiff
+    implementation(libraries.openapidiff) {
+        exclude group: "io.swagger.parser.v3", module: "swagger-parser-v3"
+    }
     implementation libraries.http_client
     implementation libraries.jetty_client
     implementation libraries.jetty_http
@@ -129,6 +131,9 @@ dependencies {
     implementation libraries.thymeleafSpring
     implementation libraries.logback_core
     implementation libraries.logback_classic
+    implementation(libraries.swagger3_parser) {
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
 
     testImplementation libraries.rest_assured
     testImplementation libraries.spring_mock_mvc

@@ -39,6 +39,7 @@ dependencies {
     testImplementation(libraries.spring_boot_starter_cache) {
         exclude group: "org.yaml", module: "snakeyaml"
     }
+    implementation libraries.spring_web
     implementation libraries.snakeyaml
     testImplementation libraries.snakeyaml
     testImplementation(libraries.spring_boot_starter_test)

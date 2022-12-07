@@ -18,6 +18,7 @@ import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
+import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.*;
@@ -42,18 +43,21 @@ class RouteLocatorTest {
     ReactiveDiscoveryClient dc = mock(ReactiveDiscoveryClient.class);
     DiscoveryLocatorProperties properties = new DiscoveryLocatorProperties();
 
-
-    @Test
-    void givenServiceWithDefinedMetadata_thenLocateRoutes() {
-        Flux<String> services = Flux.fromIterable(Collections.singleton("gateway"));
-        Flux<ServiceInstance> serviceInstances = Flux.fromIterable(Collections.singleton(instance));
-        when(dc.getServices()).thenReturn(services);
-        when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-        RouteLocator locator = new RouteLocator(dc, properties, Collections.singletonList(new FilterDefinition("name=value")));
-        Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
-        List<RouteDefinition> definitions = definitionFlux.collectList().block();
-        assertNotNull(definitions);
-        assertEquals(1, definitions.size());
+    @Nested
+    class GivenRouteLocator {
+        @Test
+        void givenServiceWithDefinedMetadata_thenLocateRoutes() {
+            Flux<String> services = Flux.fromIterable(Collections.singleton("gateway"));
+            Flux<ServiceInstance> serviceInstances = Flux.fromIterable(Collections.singleton(instance));
+            when(dc.getServices()).thenReturn(services);
+            when(dc.getInstances("gateway")).thenReturn(serviceInstances);
+            CorsUtils corsUtils = new CorsUtils(false);
+            RouteLocator locator = new RouteLocator(dc, properties, Collections.singletonList(new FilterDefinition("name=value")), null, corsUtils);
+            Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
+            List<RouteDefinition> definitions = definitionFlux.collectList().block();
+            assertNotNull(definitions);
+            assertEquals(1, definitions.size());
+        }
     }
 
     @Nested
@@ -65,7 +69,8 @@ class RouteLocatorTest {
             Flux<ServiceInstance> serviceInstances = Flux.fromIterable(instances);
             when(dc.getServices()).thenReturn(services);
             when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-            ProxyRouteLocator locator = new ProxyRouteLocator(dc, properties, Collections.emptyList());
+            CorsUtils corsUtils = new CorsUtils(false);
+            ProxyRouteLocator locator = new ProxyRouteLocator(dc, properties, Collections.emptyList(), null, corsUtils);
             Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
             List<RouteDefinition> definitions = definitionFlux.collectList().block();
             assertNotNull(definitions);

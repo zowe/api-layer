@@ -16,8 +16,10 @@ import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.expression.Expression;
 import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.util.CorsUtils;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -26,18 +28,21 @@ import java.util.Locale;
 
 public class ProxyRouteLocator extends RouteLocator {
 
-    public ProxyRouteLocator(ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters) {
-        super(discoveryClient, properties, filters);
+    public ProxyRouteLocator(ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
+        super(discoveryClient, properties, filters, context, corsUtils);
 
     }
 
     @Override
     protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
         PredicateDefinition predicate = new PredicateDefinition();
+
         predicate.setName("Header");
         predicate.addArg("header", "X-Request-Id");
         predicate.addArg("regexp", (instance.getServiceId() + instance.getHost()).toLowerCase(Locale.ROOT));
+
         routeDefinition.getPredicates().add(predicate);
+
         for (FilterDefinition filter : getFilters()) {
             routeDefinition.getFilters().add(filter);
         }
