@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance.common;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 @AcceptanceTest
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
@@ -45,11 +47,12 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         server.stop(0);
     }
 
-    protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode, String serviceId, int port) throws IOException {
-        server = HttpServer.create(new InetSocketAddress(port),0);
+    protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode, String serviceId, int port, Consumer<Headers> assertion) throws IOException {
+        server = HttpServer.create(new InetSocketAddress(port), 0);
         AtomicInteger counter = new AtomicInteger();
         server.createContext("/" + serviceId + "/test", (t) -> {
-            t.sendResponseHeaders(statusCode,0);
+            t.sendResponseHeaders(statusCode, 0);
+            assertion.accept(t.getRequestHeaders());
             t.getResponseBody().close();
             counter.getAndIncrement();
         });
