@@ -79,7 +79,7 @@ public class RauditxService {
     private int subtype;
 
     // Events and qualifiers documentation at https://www.ibm.com/docs/en/zos/2.5.0?topic=descriptions-event-codes-event-code-qualifiers
-    @Value("${raudit.event:2}")
+    @Value("${rauditx.event:2}")
     private int event;
 
     @Value("${rauditx.qualifier.success:0}")
@@ -155,7 +155,7 @@ public class RauditxService {
      *    - configurable by configuration property `rauditx.subtype`
      *    - the default value is `2`
      *  - event
-     *    - configurable by configuration property `raudit.event`
+     *    - configurable by configuration property `rauditx.event`
      *    - the default value is `2`
      *  - component
      *    - configurable by configuration property `rauditx.component`
@@ -318,7 +318,7 @@ public class RauditxService {
 
         /**
          * Set the event code (https://www.ibm.com/docs/en/zos/2.5.0?topic=descriptions-event-codes-event-code-qualifiers).
-         * As default set to `2` or value configured by property `raudit.event`.
+         * As default set to `2` or value configured by property `rauditx.event`.
          * @param event the event code int between 1 and 255
          * @return builder to next action
          */
@@ -341,7 +341,7 @@ public class RauditxService {
 
         /**
          * Sets the SMF type 83 record subtype assigned to the component (https://www.ibm.com/docs/en/zos/2.5.0?topic=records-record-type-83-security-events).
-         * As default set to `2` or value configured by property `raudit.subtype`.
+         * As default set to `2` or value configured by property `rauditx.subtype`.
          * @param subtype an int between 2 and 32767
          * @return builder to next action
          */
