@@ -1,0 +1,284 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DetailPage Container should render the container with  1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="detail-page"
+      >
+        <div
+          class="lds-ring"
+          data-testid="spinner"
+          id="spinner"
+          style="display: none;"
+        >
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
+        <div
+          class="api-description-container"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary"
+            data-testid="go-back-button"
+            id="go-back-button"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                />
+              </svg>
+              Back
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <div
+            class="detailed-description-container"
+          >
+            <div
+              class="title-api-container"
+            >
+              <div
+                class="text-block-11"
+                id="title"
+              >
+                test
+              </div>
+            </div>
+            <div
+              class="paragraph-description-container"
+            >
+              <div
+                class="text-block-12"
+                id="description"
+              >
+                test
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="content-description-container"
+        >
+          <div>
+            <br />
+            <h5
+              class="MuiTypography-root MuiTypography-h5"
+              id="label"
+            >
+              Page Not Found
+            </h5>
+            <div>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root"
+                data-testid="go-home-button"
+                id="go-back-button"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                    />
+                  </svg>
+                  Go to Dashboard
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="detail-page"
+    >
+      <div
+        class="lds-ring"
+        data-testid="spinner"
+        id="spinner"
+        style="display: none;"
+      >
+        <div />
+        <div />
+        <div />
+        <div />
+      </div>
+      <div
+        class="api-description-container"
+      >
+        <button
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary"
+          data-testid="go-back-button"
+          id="go-back-button"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+              />
+            </svg>
+            Back
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <div
+          class="detailed-description-container"
+        >
+          <div
+            class="title-api-container"
+          >
+            <div
+              class="text-block-11"
+              id="title"
+            >
+              test
+            </div>
+          </div>
+          <div
+            class="paragraph-description-container"
+          >
+            <div
+              class="text-block-12"
+              id="description"
+            >
+              test
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="content-description-container"
+      >
+        <div>
+          <br />
+          <h5
+            class="MuiTypography-root MuiTypography-h5"
+            id="label"
+          >
+            Page Not Found
+          </h5>
+          <div>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root"
+              data-testid="go-home-button"
+              id="go-back-button"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                  />
+                </svg>
+                Go to Dashboard
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

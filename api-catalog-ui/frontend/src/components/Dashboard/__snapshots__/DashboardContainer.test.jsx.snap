@@ -1,0 +1,1089 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dashboard Container should render the container 1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body
+    style="padding-right: 0px; overflow: hidden;"
+  >
+    <div
+      aria-hidden="true"
+    >
+      <div>
+        <div
+          id="dash-buttons"
+        >
+          <span>
+            <button
+              aria-controls="wizard-menu"
+              aria-haspopup="true"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined"
+              id="onboard-wizard-button"
+              style="border-radius: 0.1875em;"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-label"
+              >
+                Onboard New API
+                <span
+                  class="MuiButton-endIcon MuiButton-iconSizeMedium"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
+                    />
+                  </svg>
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+          </span>
+          <button
+            class="MuiButtonBase-root MuiIconButton-root"
+            id="refresh-api-button"
+            style="border-radius: 0.1875em;"
+            tabindex="0"
+            type="button"
+            variant="outlined"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              Refresh Static APIs
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+        <wizardcontainermock />
+        <confirmdialogcontainermock />
+        <div
+          class="lds-ring"
+          data-testid="spinner"
+          id="spinner"
+          style="display: none;"
+        >
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
+        <div />
+        <div
+          class="apis"
+        >
+          <div
+            id="grid-container"
+          >
+            <div
+              class="filtering-container"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root search-bar"
+                data-testid="search-bar"
+              >
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
+                >
+                  <input
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
+                    placeholder="Search for APIs"
+                    type="text"
+                    value=""
+                  />
+                  <div
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <h2
+                class="api-heading"
+              >
+                Available API services
+              </h2>
+            </div>
+            <div
+              class="MuiPaper-root MuiCard-root grid-tile pop grid-item MuiPaper-elevation1 MuiPaper-rounded"
+              data-testid="tile"
+            >
+              <div
+                class="MuiCardContent-root tile"
+                style="font-size: 0.875em; color: rgb(88, 96, 110);"
+              >
+                <h6
+                  class="MuiTypography-root MuiTypography-subtitle1"
+                  style="color: rgb(88, 96, 110); font-weight: bold; font-size: 1.125em;"
+                >
+                  test
+                </h6>
+                <br />
+                test
+                <p
+                  class="MuiTypography-root grid-tile-status MuiTypography-body1"
+                  id="tileLabel"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    id="unknown"
+                    style="color: rgb(51, 56, 64); font-size: 12px;"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"
+                    />
+                  </svg>
+                  Status unknown
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="MuiPopover-root"
+      id="wizard-menu"
+      role="presentation"
+      style="position: fixed; z-index: 1300; right: 0px; bottom: 0px; top: 0px; left: 0px; visibility: hidden;"
+    >
+      <div
+        data-test="sentinelStart"
+        tabindex="0"
+      />
+      <div
+        class="MuiPaper-root MuiMenu-paper MuiPopover-paper MuiPaper-elevation8 MuiPaper-rounded"
+        style="opacity: 0; transform: scale(0.75, 0.5625); visibility: hidden;"
+        tabindex="-1"
+      >
+        <ul
+          class="MuiList-root MuiMenu-list MuiList-padding"
+          role="menu"
+          tabindex="-1"
+        >
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="0"
+          >
+            Plain Java Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Spring Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Micronaut Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Node JS Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Static Onboarding
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Direct Call to Eureka
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+        </ul>
+      </div>
+      <div
+        data-test="sentinelEnd"
+        tabindex="0"
+      />
+    </div>
+    <div
+      class="MuiDialog-root"
+      role="presentation"
+      style="position: fixed; z-index: 1300; right: 0px; bottom: 0px; top: 0px; left: 0px;"
+      variant="danger"
+    >
+      <div
+        aria-hidden="true"
+        class="MuiBackdrop-root"
+        style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+      />
+      <div
+        data-test="sentinelStart"
+        tabindex="0"
+      />
+      <div
+        class="MuiDialog-container MuiDialog-scrollPaper"
+        role="none presentation"
+        style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+        tabindex="-1"
+      >
+        <div
+          class="MuiPaper-root MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm MuiPaper-elevation24 MuiPaper-rounded"
+          role="dialog"
+        >
+          <div
+            class="MuiDialogTitle-root"
+            style="color: rgb(222, 27, 27);"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h6"
+            >
+              Error
+            </h2>
+          </div>
+          <div
+            class="MuiDialogContent-root"
+            data-testid="dialog-content"
+          >
+            <p
+              class="MuiTypography-root MuiDialogContentText-root MuiTypography-body1 MuiTypography-colorTextSecondary"
+              style="color: black;"
+            >
+              (ZWEAD702E) A problem occurred while parsing a static API definition file [object Object]
+            </p>
+          </div>
+          <div
+            class="MuiDialogActions-root MuiDialogActions-spacing"
+          >
+            <button
+              class="MuiButtonBase-root MuiIconButton-root"
+              style="border: 1px solid #de1b1b; background-color: rgb(222, 27, 27); border-radius: 0.1875em; font-size: 15px; color: white;"
+              tabindex="0"
+              type="button"
+              variant="outlined"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                Close
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        data-test="sentinelEnd"
+        tabindex="0"
+      />
+    </div>
+  </body>,
+  "container": <div
+    aria-hidden="true"
+  >
+    <div>
+      <div
+        id="dash-buttons"
+      >
+        <span>
+          <button
+            aria-controls="wizard-menu"
+            aria-haspopup="true"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined"
+            id="onboard-wizard-button"
+            style="border-radius: 0.1875em;"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              Onboard New API
+              <span
+                class="MuiButton-endIcon MuiButton-iconSizeMedium"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
+                  />
+                </svg>
+              </span>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root"
+          id="refresh-api-button"
+          style="border-radius: 0.1875em;"
+          tabindex="0"
+          type="button"
+          variant="outlined"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            Refresh Static APIs
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <wizardcontainermock />
+      <confirmdialogcontainermock />
+      <div
+        class="lds-ring"
+        data-testid="spinner"
+        id="spinner"
+        style="display: none;"
+      >
+        <div />
+        <div />
+        <div />
+        <div />
+      </div>
+      <div />
+      <div
+        class="apis"
+      >
+        <div
+          id="grid-container"
+        >
+          <div
+            class="filtering-container"
+          >
+            <div
+              class="MuiFormControl-root MuiTextField-root search-bar"
+              data-testid="search-bar"
+            >
+              <div
+                class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
+              >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
+                  placeholder="Search for APIs"
+                  type="text"
+                  value=""
+                />
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <h2
+              class="api-heading"
+            >
+              Available API services
+            </h2>
+          </div>
+          <div
+            class="MuiPaper-root MuiCard-root grid-tile pop grid-item MuiPaper-elevation1 MuiPaper-rounded"
+            data-testid="tile"
+          >
+            <div
+              class="MuiCardContent-root tile"
+              style="font-size: 0.875em; color: rgb(88, 96, 110);"
+            >
+              <h6
+                class="MuiTypography-root MuiTypography-subtitle1"
+                style="color: rgb(88, 96, 110); font-weight: bold; font-size: 1.125em;"
+              >
+                test
+              </h6>
+              <br />
+              test
+              <p
+                class="MuiTypography-root grid-tile-status MuiTypography-body1"
+                id="tileLabel"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  id="unknown"
+                  style="color: rgb(51, 56, 64); font-size: 12px;"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"
+                  />
+                </svg>
+                Status unknown
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Dashboard Container should render the container with  1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body
+    style="padding-right: 0px; overflow: hidden;"
+  >
+    <div
+      aria-hidden="true"
+    >
+      <div>
+        <div
+          id="dash-buttons"
+        >
+          <span>
+            <button
+              aria-controls="wizard-menu"
+              aria-haspopup="true"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined"
+              id="onboard-wizard-button"
+              style="border-radius: 0.1875em;"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-label"
+              >
+                Onboard New API
+                <span
+                  class="MuiButton-endIcon MuiButton-iconSizeMedium"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
+                    />
+                  </svg>
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+          </span>
+          <button
+            class="MuiButtonBase-root MuiIconButton-root"
+            id="refresh-api-button"
+            style="border-radius: 0.1875em;"
+            tabindex="0"
+            type="button"
+            variant="outlined"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              Refresh Static APIs
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+        <wizardcontainermock />
+        <confirmdialogcontainermock />
+        <div
+          class="lds-ring"
+          data-testid="spinner"
+          id="spinner"
+          style="display: none;"
+        >
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
+        <div />
+        <div
+          class="apis"
+        >
+          <div
+            id="grid-container"
+          >
+            <div
+              class="filtering-container"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root search-bar"
+                data-testid="search-bar"
+              >
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
+                >
+                  <input
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
+                    placeholder="Search for APIs"
+                    type="text"
+                    value=""
+                  />
+                  <div
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <h2
+                class="api-heading"
+              >
+                Available API services
+              </h2>
+            </div>
+            <div
+              class="MuiPaper-root MuiCard-root grid-tile pop grid-item MuiPaper-elevation1 MuiPaper-rounded"
+              data-testid="tile"
+            >
+              <div
+                class="MuiCardContent-root tile"
+                style="font-size: 0.875em; color: rgb(88, 96, 110);"
+              >
+                <h6
+                  class="MuiTypography-root MuiTypography-subtitle1"
+                  style="color: rgb(88, 96, 110); font-weight: bold; font-size: 1.125em;"
+                >
+                  test
+                </h6>
+                <br />
+                test
+                <p
+                  class="MuiTypography-root grid-tile-status MuiTypography-body1"
+                  id="tileLabel"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    id="unknown"
+                    style="color: rgb(51, 56, 64); font-size: 12px;"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"
+                    />
+                  </svg>
+                  Status unknown
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="MuiPopover-root"
+      id="wizard-menu"
+      role="presentation"
+      style="position: fixed; z-index: 1300; right: 0px; bottom: 0px; top: 0px; left: 0px; visibility: hidden;"
+    >
+      <div
+        data-test="sentinelStart"
+        tabindex="0"
+      />
+      <div
+        class="MuiPaper-root MuiMenu-paper MuiPopover-paper MuiPaper-elevation8 MuiPaper-rounded"
+        style="opacity: 0; transform: scale(0.75, 0.5625); visibility: hidden;"
+        tabindex="-1"
+      >
+        <ul
+          class="MuiList-root MuiMenu-list MuiList-padding"
+          role="menu"
+          tabindex="-1"
+        >
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="0"
+          >
+            Plain Java Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Spring Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Micronaut Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Node JS Enabler
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Static Onboarding
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+          <li
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
+            role="menuitem"
+            tabindex="-1"
+          >
+            Direct Call to Eureka
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </li>
+        </ul>
+      </div>
+      <div
+        data-test="sentinelEnd"
+        tabindex="0"
+      />
+    </div>
+    <div
+      class="MuiDialog-root"
+      role="presentation"
+      style="position: fixed; z-index: 1300; right: 0px; bottom: 0px; top: 0px; left: 0px;"
+      variant="danger"
+    >
+      <div
+        aria-hidden="true"
+        class="MuiBackdrop-root"
+        style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+      />
+      <div
+        data-test="sentinelStart"
+        tabindex="0"
+      />
+      <div
+        class="MuiDialog-container MuiDialog-scrollPaper"
+        role="none presentation"
+        style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+        tabindex="-1"
+      >
+        <div
+          class="MuiPaper-root MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm MuiPaper-elevation24 MuiPaper-rounded"
+          role="dialog"
+        >
+          <div
+            class="MuiDialogTitle-root"
+            style="color: rgb(222, 27, 27);"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h6"
+            >
+              Error
+            </h2>
+          </div>
+          <div
+            class="MuiDialogContent-root"
+            data-testid="dialog-content"
+          >
+            <p
+              class="MuiTypography-root MuiDialogContentText-root MuiTypography-body1 MuiTypography-colorTextSecondary"
+              style="color: black;"
+            >
+              (ZWEAD702E) A problem occurred while parsing a static API definition file [object Object]
+            </p>
+          </div>
+          <div
+            class="MuiDialogActions-root MuiDialogActions-spacing"
+          >
+            <button
+              class="MuiButtonBase-root MuiIconButton-root"
+              style="border: 1px solid #de1b1b; background-color: rgb(222, 27, 27); border-radius: 0.1875em; font-size: 15px; color: white;"
+              tabindex="0"
+              type="button"
+              variant="outlined"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                Close
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        data-test="sentinelEnd"
+        tabindex="0"
+      />
+    </div>
+  </body>,
+  "container": <div
+    aria-hidden="true"
+  >
+    <div>
+      <div
+        id="dash-buttons"
+      >
+        <span>
+          <button
+            aria-controls="wizard-menu"
+            aria-haspopup="true"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined"
+            id="onboard-wizard-button"
+            style="border-radius: 0.1875em;"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              Onboard New API
+              <span
+                class="MuiButton-endIcon MuiButton-iconSizeMedium"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
+                  />
+                </svg>
+              </span>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root"
+          id="refresh-api-button"
+          style="border-radius: 0.1875em;"
+          tabindex="0"
+          type="button"
+          variant="outlined"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            Refresh Static APIs
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <wizardcontainermock />
+      <confirmdialogcontainermock />
+      <div
+        class="lds-ring"
+        data-testid="spinner"
+        id="spinner"
+        style="display: none;"
+      >
+        <div />
+        <div />
+        <div />
+        <div />
+      </div>
+      <div />
+      <div
+        class="apis"
+      >
+        <div
+          id="grid-container"
+        >
+          <div
+            class="filtering-container"
+          >
+            <div
+              class="MuiFormControl-root MuiTextField-root search-bar"
+              data-testid="search-bar"
+            >
+              <div
+                class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
+              >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
+                  placeholder="Search for APIs"
+                  type="text"
+                  value=""
+                />
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <h2
+              class="api-heading"
+            >
+              Available API services
+            </h2>
+          </div>
+          <div
+            class="MuiPaper-root MuiCard-root grid-tile pop grid-item MuiPaper-elevation1 MuiPaper-rounded"
+            data-testid="tile"
+          >
+            <div
+              class="MuiCardContent-root tile"
+              style="font-size: 0.875em; color: rgb(88, 96, 110);"
+            >
+              <h6
+                class="MuiTypography-root MuiTypography-subtitle1"
+                style="color: rgb(88, 96, 110); font-weight: bold; font-size: 1.125em;"
+              >
+                test
+              </h6>
+              <br />
+              test
+              <p
+                class="MuiTypography-root grid-tile-status MuiTypography-body1"
+                id="tileLabel"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  id="unknown"
+                  style="color: rgb(51, 56, 64); font-size: 12px;"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"
+                  />
+                </svg>
+                Status unknown
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
