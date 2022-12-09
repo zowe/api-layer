@@ -164,33 +164,38 @@ class SecurityUtilsTest {
         }
     }
 
-    @CsvSource({
-        ",false",
-        "safkeyring://userid/ringid,true",
-        "safkeyring:////userid/ring/id,false",
-        "safkeyring:////userid//ringid,false",
-        "safkeyring://///userid//ringid,false",
-        "safkeyring:////id,false",
-        "safkeyringjce:////userid/ringid,true",
-        "keystore.p12,false"
-    })
-    @ParameterizedTest(name = "givenKeyringUrl_whenIsKeyring_thenReturnTrueIfItIsValid({0}) should return {1}")
-    void givenKeyringUrl_whenIsKeyring_thenReturnTrueIfItIsValid(String url, boolean validity) {
-        assertEquals(validity, SecurityUtils.isKeyring(url));
-    }
+    @Nested
+    class WhenKeyringUrl {
 
-    @CsvSource({
-        ",",
-        "safkeyring://userid/ringid,safkeyring://userid/ringid",
-        "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
-        "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
-        "safkeyring:////id,safkeyring:////id",
-        "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
-        "keystore.p12,keystore.p12"
-    })
-    @ParameterizedTest(name = "givenKeyringUrl_whenFormatKeyringUrl_thenFormatIfPossible: from {0} to {1}")
-    void givenKeyringUrl_whenFormatKeyringUrl_thenFormatIfPossible(String input, String expectedOutput) {
-        assertEquals(expectedOutput, SecurityUtils.formatKeyringUrl(input));
+        @CsvSource({
+            ",false",
+            "safkeyring://userid/ringid,true",
+            "safkeyring:////userid/ring/id,false",
+            "safkeyring:////userid//ringid,false",
+            "safkeyring://///userid//ringid,false",
+            "safkeyring:////id,false",
+            "safkeyringjce:////userid/ringid,true",
+            "keystore.p12,false"
+        })
+        @ParameterizedTest(name = "isKeyring({0}) should return {1}")
+        void isKeyringReturnsTrueIfItIsValid(String url, boolean validity) {
+            assertEquals(validity, SecurityUtils.isKeyring(url));
+        }
+
+        @CsvSource({
+            ",",
+            "safkeyring://userid/ringid,safkeyring://userid/ringid",
+            "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
+            "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
+            "safkeyring:////id,safkeyring:////id",
+            "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
+            "keystore.p12,keystore.p12"
+        })
+        @ParameterizedTest(name = "formatKeyringUrl({0}) should return {1}")
+        void formatKeyringUrlFixTheFormatIfPossible(String input, String expectedOutput) {
+            assertEquals(expectedOutput, SecurityUtils.formatKeyringUrl(input));
+        }
+
     }
 
 }
