@@ -64,8 +64,16 @@ dependencies {
         exclude group: "org.springframework", module: "spring-core"
     }
     implementation(libraries.spring_boot_starter_web) {
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
     }
 
     implementation libraries.snakeyaml
