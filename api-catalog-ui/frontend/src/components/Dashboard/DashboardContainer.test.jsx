@@ -63,7 +63,7 @@ describe('Dashboard Container', () => {
         );
     });
 
-    it('should render the container with ', () => {
+    it('should render the container', () => {
         expect(container).toMatchSnapshot();
     });
 });
