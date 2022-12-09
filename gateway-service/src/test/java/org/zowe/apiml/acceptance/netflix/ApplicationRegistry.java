@@ -100,6 +100,8 @@ public class ApplicationRegistry {
     }
 
     public Applications getApplications() {
+        String appName = applicationsToReturn.get(currentApplication).getRegisteredApplications() != null ? applicationsToReturn.get(currentApplication).getRegisteredApplications().get(0).getName() : "emptyAppRegistry";
+        System.out.println("AppRegistry: " + currentApplication + " :: " + appName);
         return applicationsToReturn.get(currentApplication);
     }
 

@@ -90,7 +90,7 @@ public class RibbonTestConfiguration {
         randomInstanceInfo.getMetadata().forEach(
             (key, value) -> metadataMap.put(LoadBalancerConstants.getMetadataPrefix() + key, value)
         );
-
+        System.out.println("loadbalancer serviceid:" + randomInstanceInfo.getInstanceId());
         predicateFactory.addInitializer(randomInstanceInfo.getAppName(), context ->
             context.getEnvironment().getPropertySources()
                 .addFirst(new MapPropertySource("InstanceInfoMetadata", metadataMap))

@@ -19,6 +19,7 @@ import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
 import java.io.IOException;
 
+import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,7 +50,8 @@ class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
         applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
         System.out.println("current application: " + applicationRegistry.currentApplication);
         discoveryClient.createRefreshCacheEvent();
-        when()
+        System.out.println("request: " + serviceWithCustomConfiguration.getPath());
+        given().log().all().when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
             .then()
             .statusCode(is(SC_OK));

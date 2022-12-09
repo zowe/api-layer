@@ -233,7 +233,7 @@ logging:
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
-        com.netflix: INFO
+        com.netflix: DEBUG
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         net.sf.ehcache: INFO

@@ -4,6 +4,10 @@ environment.older: false
 logging:
     level:
         ROOT: TRACE
+        org.springframework: DEBUG
+        org.zowe.apiml: DEBUG
+        org.apache.http: DEBUG
+
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
