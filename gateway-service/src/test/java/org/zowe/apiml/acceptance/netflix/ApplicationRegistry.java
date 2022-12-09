@@ -91,7 +91,7 @@ public class ApplicationRegistry {
      *
      * @param currentApplication Id of the application.
      */
-    public void setCurrentApplication(String currentApplication) {
+    public synchronized void setCurrentApplication(String currentApplication) {
         this.currentApplication = currentApplication;
     }
 
@@ -99,7 +99,7 @@ public class ApplicationRegistry {
         return zuulRouteLinkedHashMap;
     }
 
-    public Applications getApplications() {
+    public synchronized Applications getApplications() {
         return applicationsToReturn.get(currentApplication);
     }
 
