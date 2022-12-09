@@ -18,23 +18,23 @@ runs:
         -   name: Set up Node
             uses: actions/setup-node@v2
             with:
-                node-version: '14'
+                node-version: '16'
         -   run: npm install -g npm@8.1.0
             shell: bash
         -   name: Grant execute permission for gradlew
             run: chmod +x gradlew
             shell: bash
-            
+
         -   name: Cache Gradle packages
-            uses: actions/cache@v2
+            uses: actions/cache@v3
             with:
                 path: |
                     ~/.gradle/caches
                     ~/.gradle/wrapper
-                key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradl*', '**/gradle-wrapper.properties') }}
 
         -   name: Cache Node.js modules
-            uses: actions/cache@v2
+            uses: actions/cache@v3
             with:
                 path: |
                     ~/.npm
