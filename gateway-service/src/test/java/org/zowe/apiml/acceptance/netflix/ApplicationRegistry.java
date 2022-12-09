@@ -30,7 +30,7 @@ import java.util.*;
 public class ApplicationRegistry {
     private List<RoutedServicesUser> routedServicesUsers;
 
-    private String currentApplication;
+    public String currentApplication;
     private Map<String, Applications> applicationsToReturn = new HashMap<>();
     private LinkedHashMap<String, ZuulProperties.ZuulRoute> zuulRouteLinkedHashMap = new LinkedHashMap<>();
 

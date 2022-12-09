@@ -47,7 +47,7 @@ class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     void givenOverwriteOfConfiguration_whenRequestIsCreated_thenTheTimeoutIsOverriden() throws IOException { // No overwrite happened here
         mockValid200HttpResponse();
         applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-
+        System.out.println("current application: " + applicationRegistry.currentApplication);
         discoveryClient.createRefreshCacheEvent();
         when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
