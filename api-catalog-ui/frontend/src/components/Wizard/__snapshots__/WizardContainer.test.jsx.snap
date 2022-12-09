@@ -1,0 +1,283 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Wizard Container should render the container 1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body
+    style="padding-right: 0px; overflow: hidden;"
+  >
+    <div
+      aria-hidden="true"
+    >
+      <div
+        class="dialog"
+      />
+    </div>
+    <div
+      class="MuiDialog-root"
+      id="wizard-dialog"
+      role="presentation"
+      style="position: fixed; z-index: 1300; right: 0px; bottom: 0px; top: 0px; left: 0px;"
+    >
+      <div
+        aria-hidden="true"
+        class="MuiBackdrop-root"
+        style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+      />
+      <div
+        data-test="sentinelStart"
+        tabindex="0"
+      />
+      <div
+        class="MuiDialog-container MuiDialog-scrollPaper"
+        role="none presentation"
+        style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+        tabindex="-1"
+      >
+        <div
+          class="MuiPaper-root MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm MuiPaper-elevation24 MuiPaper-rounded"
+          role="dialog"
+        >
+          <div
+            class="MuiDialogTitle-root"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h6"
+            >
+              Onboard a New API Using 
+              spring enabler
+            </h2>
+          </div>
+          <div
+            class="MuiDialogContent-root"
+          >
+            <p
+              class="MuiTypography-root MuiDialogContentText-root MuiTypography-body1 MuiTypography-colorTextSecondary"
+            >
+              This wizard will guide you through creating a correct YAML for your application.
+            </p>
+            <p
+              class="MuiTypography-root MuiDialogContentText-root MuiTypography-body1 MuiTypography-colorTextSecondary"
+            >
+              Select your YAML configuration file to prefill the fields:
+            </p>
+            <div
+              id="yaml-upload-container"
+            >
+              <label
+                for="yaml-browser"
+                id="yaml-upload"
+                nesting="true"
+              >
+                <input
+                  data-testid="yaml-upload-test"
+                  id="yaml-browser"
+                  type="file"
+                />
+                Choose File
+              </label>
+            </div>
+            <p
+              class="MuiTypography-root MuiDialogContentText-root MuiTypography-body1 MuiTypography-colorTextSecondary"
+            >
+              Or fill the fields:
+            </p>
+            <div
+              class="MuiBox-root MuiBox-root-1"
+            >
+              <div
+                class="MuiTabs-root MuiTabs-vertical"
+                id="wizard-navigation"
+                label="Categories"
+                position="start"
+                sx="[object Object]"
+              >
+                <div
+                  class="MuiTabs-scrollable"
+                  style="width: 99px; height: 99px; position: absolute; top: -9999px; overflow: scroll;"
+                />
+                <div
+                  class="MuiTabs-scroller MuiTabs-scrollable"
+                  style="margin-bottom: 0px;"
+                >
+                  <div
+                    class="MuiTabs-flexContainer MuiTabs-flexContainerVertical"
+                    role="tablist"
+                  >
+                    <button
+                      aria-selected="true"
+                      class="MuiButtonBase-root MuiTab-root MuiTab-textColorInherit Mui-selected"
+                      role="tab"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <span
+                        class="MuiTab-wrapper"
+                      >
+                        YAML result
+                      </span>
+                      <span
+                        class="MuiTouchRipple-root"
+                      />
+                    </button>
+                  </div>
+                  <span
+                    class="PrivateTabIndicator-root-2 PrivateTabIndicator-colorSecondary-4 MuiTabs-indicator PrivateTabIndicator-vertical-5"
+                    style="top: 0px; height: 0px;"
+                  />
+                </div>
+              </div>
+              <div
+                aria-labelledby="vertical-tab-0"
+                id="vertical-tabpanel-0"
+                role="tabpanel"
+              >
+                <div
+                  class="MuiBox-root MuiBox-root-6"
+                >
+                  <div
+                    class="yamlContainer"
+                  >
+                    <div
+                      id="copyButtonContainer"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSizeSmall MuiButton-sizeSmall"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiButton-label"
+                        >
+                          <span
+                            class="MuiButton-startIcon MuiButton-iconSizeSmall"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root"
+                              focusable="false"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm-1 4l6 6v10c0 1.1-.9 2-2 2H7.99C6.89 23 6 22.1 6 21l.01-14c0-1.1.89-2 1.99-2h7zm-1 7h5.5L14 6.5V12z"
+                              />
+                            </svg>
+                          </span>
+                          Copy
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </button>
+                    </div>
+                    <code>
+                      {}
+
+                    </code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiDialogActions-root MuiDialogActions-spacing"
+          >
+            <button
+              class="MuiButtonBase-root MuiIconButton-root"
+              id="wizard-cancel-button"
+              style="border-radius: 0.1875em;"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                Cancel
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root Mui-disabled Mui-disabled"
+              disabled=""
+              id="wizard-done-button"
+              style="border-radius: 0.1875em;"
+              tabindex="-1"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                Done
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        data-test="sentinelEnd"
+        tabindex="0"
+      />
+    </div>
+  </body>,
+  "container": <div
+    aria-hidden="true"
+  >
+    <div
+      class="dialog"
+    />
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
