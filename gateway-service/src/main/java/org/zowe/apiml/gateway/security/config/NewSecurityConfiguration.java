@@ -42,6 +42,7 @@ import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
 import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
+import org.zowe.apiml.gateway.security.login.FailedAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
@@ -93,6 +94,7 @@ public class NewSecurityConfiguration {
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final SuccessfulTicketHandler successfulTicketHandler;
     private final SuccessfulRefreshHandler successfulRefreshHandler;
+    private final FailedAccessTokenHandler failedAccessTokenHandler;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final X509AuthenticationProvider x509AuthenticationProvider;
@@ -228,7 +230,7 @@ public class NewSecurityConfiguration {
                 return new LoginFilter(
                     endpoint,
                     successfulAuthAccessTokenHandler,
-                    handlerInitializer.getAuthenticationFailureHandler(),
+                    failedAccessTokenHandler,
                     securityObjectMapper,
                     authenticationManager,
                     handlerInitializer.getResourceAccessExceptionHandler());
