@@ -9,12 +9,21 @@
  */
 package org.zowe.apiml.acceptance.config;
 
+import com.netflix.zuul.context.RequestContext;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
+import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
+import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.cloud.netflix.zuul.filters.discovery.SimpleServiceRouteMapper;
+import org.springframework.cloud.netflix.zuul.filters.pre.PreDecorationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +31,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UrlPathHelper;
 import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
@@ -29,6 +39,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
 import static org.mockito.Mockito.*;
 
+@Slf4j
 @TestConfiguration
 public class GatewayOverrideConfig {
     protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
@@ -39,6 +50,10 @@ public class GatewayOverrideConfig {
         return new SimpleServiceRouteMapper();
     }
 
+    @Autowired
+    protected ServerProperties server;
+    @Autowired
+    protected ZuulProperties zuulProperties;
 
     @MockBean
     @Qualifier("mockProxy")
@@ -71,5 +86,30 @@ public class GatewayOverrideConfig {
         return applicationRegistry;
     }
 
+    @Bean
+    @ConditionalOnMissingBean(PreDecorationFilter.class)
+    public PreDecorationFilter preDecorationFilter(RouteLocator routeLocator,
+                                                   ProxyRequestHelper proxyRequestHelper) {
+        return new ApimlPredecorationFilter(routeLocator,
+            this.server.getServlet().getContextPath(), this.zuulProperties,
+            proxyRequestHelper);
+    }
 
+
+    class ApimlPredecorationFilter extends PreDecorationFilter {
+        private UrlPathHelper urlPathHelper = new UrlPathHelper();
+
+        public ApimlPredecorationFilter(RouteLocator routeLocator, String dispatcherServletPath, ZuulProperties properties, ProxyRequestHelper proxyRequestHelper) {
+            super(routeLocator, dispatcherServletPath, properties, proxyRequestHelper);
+        }
+
+        @Override
+        public Object run() {
+            RequestContext ctx = RequestContext.getCurrentContext();
+            final String requestURI = this.urlPathHelper
+                .getPathWithinApplication(ctx.getRequest());
+            log.error("running filter on uri" + requestURI);
+            return super.run();
+        }
+    }
 }

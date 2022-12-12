@@ -114,6 +114,8 @@ server:
     max-http-header-size: 40000
 
 zuul:
+    debug:
+        request: true
     sslHostnameValidationEnabled: false
     addProxyHeaders: true
     traceRequestBody: true
