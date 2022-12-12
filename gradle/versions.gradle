@@ -2,9 +2,9 @@ ext {
     springBootVersion = '2.5.14'
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE!!'
-    springCloudVersion3 = '3.1.2'
+    springCloudVersion3 = '3.1.4'
     springSecurityVersion = '5.7.5!!'
-    springFrameworkVersion = '5.3.23!!'
+    springFrameworkVersion = '5.3.24!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
@@ -68,7 +68,7 @@ ext {
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
-    tomcatVersion = '9.0.68'
+    tomcatVersion = '9.0.69'
     velocityVersion = '2.3'
     xstreamVersion = '1.4.19!!'
 
