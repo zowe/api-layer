@@ -24,7 +24,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 public class SlashFilter extends PreZuulFilter {
 
     private static final Pattern REGEX_CONTAINS_UI_PATH = Pattern.compile("(ui/)|(/ui)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern REGEX_END_WITH_UI_ROUTE = Pattern.compile(".*/ui(/v\\d)?$", // Optional version after ui
+    private static final Pattern REGEX_END_WITH_UI_ROUTE = Pattern.compile("^.*/ui(/v\\d)?$", // Optional version after ui
         Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     @Override
