@@ -12,6 +12,8 @@ package org.zowe.apiml.acceptance.config.ribbon;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
+import com.netflix.zuul.FilterLoader;
+import com.netflix.zuul.ZuulFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -36,6 +38,7 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerRuleAdapter;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingPredicatesRibbonConfig;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -83,7 +86,10 @@ public class RibbonTestConfiguration {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
-
+        List<ZuulFilter> list = FilterLoader.getInstance().getFiltersByType("pre");
+        for (ZuulFilter f : list) {
+            log.error(f.toString());
+        }
         InstanceInfoExtractor infoExtractor = new InstanceInfoExtractor(serverList.getInitialListOfServers());
 
         InstanceInfo randomInstanceInfo = infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available"));
