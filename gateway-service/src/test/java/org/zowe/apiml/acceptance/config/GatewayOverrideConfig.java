@@ -38,6 +38,8 @@ import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.FORWARD_TO_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 @Slf4j
 @TestConfiguration
@@ -101,6 +103,17 @@ public class GatewayOverrideConfig {
 
         public ApimlPredecorationFilter(RouteLocator routeLocator, String dispatcherServletPath, ZuulProperties properties, ProxyRequestHelper proxyRequestHelper) {
             super(routeLocator, dispatcherServletPath, properties, proxyRequestHelper);
+        }
+
+        @Override
+        public boolean shouldFilter() {
+            RequestContext ctx = RequestContext.getCurrentContext();
+            boolean sr = !ctx.containsKey(FORWARD_TO_KEY) // a filter has already forwarded
+                && !ctx.containsKey(SERVICE_ID_KEY);
+            log.error(FORWARD_TO_KEY + ctx.get(FORWARD_TO_KEY) + SERVICE_ID_KEY + ctx.get(SERVICE_ID_KEY));
+            log.error("should run" + sr);
+            return true;// a filter has already determined
+            // serviceId
         }
 
         @Override
