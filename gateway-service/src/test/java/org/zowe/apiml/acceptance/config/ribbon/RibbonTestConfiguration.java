@@ -13,6 +13,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,6 +41,7 @@ import java.util.Map;
 /**
  * Configuration of client side load balancing with Ribbon
  */
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class RibbonTestConfiguration {
@@ -90,7 +92,8 @@ public class RibbonTestConfiguration {
         randomInstanceInfo.getMetadata().forEach(
             (key, value) -> metadataMap.put(LoadBalancerConstants.getMetadataPrefix() + key, value)
         );
-        System.out.println("loadbalancer serviceid:" + randomInstanceInfo.getInstanceId());
+        log.error("loadbalancer serviceid:" + randomInstanceInfo.getInstanceId());
+        log.error("client id" + config.getClientName());
         predicateFactory.addInitializer(randomInstanceInfo.getAppName(), context ->
             context.getEnvironment().getPropertySources()
                 .addFirst(new MapPropertySource("InstanceInfoMetadata", metadataMap))

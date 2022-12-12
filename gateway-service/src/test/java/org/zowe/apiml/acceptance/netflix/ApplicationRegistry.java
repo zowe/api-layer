@@ -15,6 +15,7 @@ import com.netflix.appinfo.MyDataCenterInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -27,6 +28,7 @@ import java.util.*;
  * Register the route to all components that need the information for the request to pass properly through the
  * Gateway. This class is heavily depended upon from the Stubs in this package.
  */
+@Slf4j
 public class ApplicationRegistry {
     private List<RoutedServicesUser> routedServicesUsers;
 
@@ -101,7 +103,7 @@ public class ApplicationRegistry {
 
     public Applications getApplications() {
         String appName = applicationsToReturn.get(currentApplication).getRegisteredApplications() != null ? applicationsToReturn.get(currentApplication).getRegisteredApplications().get(0).getName() : "emptyAppRegistry";
-        System.out.println("AppRegistry: " + currentApplication + " :: " + appName);
+        log.error("AppRegistry: " + currentApplication + " :: " + appName);
         return applicationsToReturn.get(currentApplication);
     }
 
