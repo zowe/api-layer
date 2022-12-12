@@ -3,6 +3,7 @@ logging:
         ROOT: TRACE
         org.springframework: DEBUG
         org.zowe.apiml: DEBUG
+        org.springframework.cloud.netflix.zuul: DEBUG
 
 
 apiml:
