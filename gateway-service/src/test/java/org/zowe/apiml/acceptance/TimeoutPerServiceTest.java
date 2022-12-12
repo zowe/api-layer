@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     private int SECOND = 1000;
 
-
+    @Test
     void givenDefaultConfiguration_whenRequestIsCreated_thenTheTimeoutsAreTakenFromDefaultConfig() throws IOException {
         mockValid200HttpResponse();
         applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
@@ -48,18 +48,18 @@ class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     void givenOverwriteOfConfiguration_whenRequestIsCreated_thenTheTimeoutIsOverriden() throws IOException { // No overwrite happened here
         mockValid200HttpResponse();
         applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        System.out.println("current application: " + applicationRegistry.currentApplication);
+//        System.out.println("current application: " + applicationRegistry.currentApplication);
         discoveryClient.createRefreshCacheEvent();
-        System.out.println("request: " + serviceWithCustomConfiguration.getPath());
+//        System.out.println("request: " + serviceWithCustomConfiguration.getPath());
         given().log().all().when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
             .then()
             .statusCode(is(SC_OK));
-
+//
         assertConfigurationTimeouts(5 * SECOND);
     }
 
-
+    @Test
     void givenServiceWithOverwritenTimeoutAndAnotherWithout_whenOverwritingConfigurationForOneService_thenTheOtherServicesKeepDefault() throws IOException {
         mockValid200HttpResponse();
 
