@@ -2,6 +2,49 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.5.0 (22-12-12)`
+
+* Feature:  CGW Service Retry  + Acceptance Tests (#2697) ([b2e86b3](https://github.com/zowe/api-layer/commit/b2e86b3)), closes [#2697](https://github.com/zowe/api-layer/issues/2697)
+* Feature:  handle CORS in cloud gateway (#2701) ([f5ab7b8](https://github.com/zowe/api-layer/commit/f5ab7b8)), closes [#2701](https://github.com/zowe/api-layer/issues/2701)
+* Feature:  Issuing SMF records #83 about PAT generation via Rauditx (#2691) ([97df0bc](https://github.com/zowe/api-layer/commit/97df0bc)), closes [#83](https://github.com/zowe/api-layer/issues/83) [#2691](https://github.com/zowe/api-layer/issues/2691)
+* Feature:  CGW circuit breaker (#2679) ([b704413](https://github.com/zowe/api-layer/commit/b704413)), closes [#2679](https://github.com/zowe/api-layer/issues/2679)
+* Feature:  Add custom auth header to support Grafana in SSO (#2618) ([9272aa0](https://github.com/zowe/api-layer/commit/9272aa0)), closes [#2618](https://github.com/zowe/api-layer/issues/2618)
+* Feature:  Support passticket generation in the custom header (#2625) ([e52448c](https://github.com/zowe/api-layer/commit/e52448c)), closes [#2625](https://github.com/zowe/api-layer/issues/2625)
+* Feature:  Validate OIDC token (#2604) ([cdd4a43](https://github.com/zowe/api-layer/commit/cdd4a43)), closes [#2604](https://github.com/zowe/api-layer/issues/2604)
+* Feature:  route to service based on header (#2600) ([6fafb60](https://github.com/zowe/api-layer/commit/6fafb60)), closes [#2600](https://github.com/zowe/api-layer/issues/2600)
+* Feature:  new cloud gateway service (#2576) ([7c618c0](https://github.com/zowe/api-layer/commit/7c618c0)), closes [#2576](https://github.com/zowe/api-layer/issues/2576)
+* Feature:  Evict non relevant tokens and rules (#2554) ([f3aeafa](https://github.com/zowe/api-layer/commit/f3aeafa)), closes [#2554](https://github.com/zowe/api-layer/issues/2554)
+* Feature:  PoC protect rest endpoint with okta (#2555) ([bac1e9e](https://github.com/zowe/api-layer/commit/bac1e9e)), closes [#2555](https://github.com/zowe/api-layer/issues/2555)
+* Feature:  Redis sentinel enabled field (#2546) ([3779072](https://github.com/zowe/api-layer/commit/3779072)), closes [#2546](https://github.com/zowe/api-layer/issues/2546)
+* Feature:  Add customized code snippets to API Catalog (#2526) ([602392e](https://github.com/zowe/api-layer/commit/602392e)), closes [#2526](https://github.com/zowe/api-layer/issues/2526)
+* Feature: Validate service is onboarded to the API Mediation Layer (#2507) ([ac03cde](https://github.com/zowe/api-layer/commit/ac03cde)), closes [#2507](https://github.com/zowe/api-layer/issues/2507)
+* Feature:  Code snippet configuration (#2509) ([4d2298e](https://github.com/zowe/api-layer/commit/4d2298e)), closes [#2509](https://github.com/zowe/api-layer/issues/2509)
+
+
+* Bugfix:  rauditx prefix in configuration values (#2705) ([97dc1ef](https://github.com/zowe/api-layer/commit/97dc1ef)), closes [#2705](https://github.com/zowe/api-layer/issues/2705)
+* Bugfix:  remove old version of Java Servlet API (#2699) ([190f4b8](https://github.com/zowe/api-layer/commit/190f4b8)), closes [#2699](https://github.com/zowe/api-layer/issues/2699)
+* Bugfix:  Upgrade swagger parser and exclude bugged version (#2702) ([6b966b2](https://github.com/zowe/api-layer/commit/6b966b2)), closes [#2702](https://github.com/zowe/api-layer/issues/2702)
+* Bugfix:  allow to set key password separately (#2684) ([4e3d3c7](https://github.com/zowe/api-layer/commit/4e3d3c7)), closes [#2684](https://github.com/zowe/api-layer/issues/2684)
+* Bugfix:  set content type header when calling caching service (#2682) ([97cb29c](https://github.com/zowe/api-layer/commit/97cb29c)), closes [#2682](https://github.com/zowe/api-layer/issues/2682)
+* Bugfix:  update libraries (#2680) ([b0b131d](https://github.com/zowe/api-layer/commit/b0b131d)), closes [#2680](https://github.com/zowe/api-layer/issues/2680)
+* Bugfix:  register java time module to parse date in swagger (#2634) ([b3d53b2](https://github.com/zowe/api-layer/commit/b3d53b2)), closes [#2634](https://github.com/zowe/api-layer/issues/2634)
+* Bugfix:  update commons-text dependency (#2631) ([04e5e4f](https://github.com/zowe/api-layer/commit/04e5e4f)), closes [#2631](https://github.com/zowe/api-layer/issues/2631)
+* Bugfix:  Fix DC UI (#2621) ([f1a3e4b](https://github.com/zowe/api-layer/commit/f1a3e4b)), closes [#2621](https://github.com/zowe/api-layer/issues/2621)
+* Bugfix:  for allowing user to type keyring with either 4 or 2 slashes (#2626) ([db33c4c](https://github.com/zowe/api-layer/commit/db33c4c)), closes [#2626](https://github.com/zowe/api-layer/issues/2626)
+* Bugfix:  Workaround for the need for a keyring password when missing (#2623) ([5eb8ae6](https://github.com/zowe/api-layer/commit/5eb8ae6)), closes [#2623](https://github.com/zowe/api-layer/issues/2623)
+* Bugfix:  exception handling in extensions config reader (#2609) ([336d3b4](https://github.com/zowe/api-layer/commit/336d3b4)), closes [#2609](https://github.com/zowe/api-layer/issues/2609)
+* Bugfix:  jettison 1.5.1 (#2617) ([7bcd8fe](https://github.com/zowe/api-layer/commit/7bcd8fe)), closes [#2617](https://github.com/zowe/api-layer/issues/2617)
+* Bugfix:  Make the SAF IDT properties configurable in Zowe (#2610) ([b28a9dd](https://github.com/zowe/api-layer/commit/b28a9dd)), closes [#2610](https://github.com/zowe/api-layer/issues/2610)
+* Bugfix:  do not require clientAuth extension (#2595) ([e9e8092](https://github.com/zowe/api-layer/commit/e9e8092)), closes [#2595](https://github.com/zowe/api-layer/issues/2595)
+* Bugfix:  snakeyml update, scheme validation fix (#2577) ([ae48669](https://github.com/zowe/api-layer/commit/ae48669)), closes [#2577](https://github.com/zowe/api-layer/issues/2577)
+* Bugfix:  Add build info to the manifest.yaml (#2573) ([93298dd](https://github.com/zowe/api-layer/commit/93298dd)), closes [#2573](https://github.com/zowe/api-layer/issues/2573)
+* Bugfix:  Fix bug in the swagger (#2571) ([36997c6](https://github.com/zowe/api-layer/commit/36997c6)), closes [#2571](https://github.com/zowe/api-layer/issues/2571)
+* Bugfix:  additionalProperties must be outside of properties attribute (#2567) ([fea515a](https://github.com/zowe/api-layer/commit/fea515a)), closes [#2567](https://github.com/zowe/api-layer/issues/2567)
+* Bugfix:  enable hsts (#2565) ([4cffe97](https://github.com/zowe/api-layer/commit/4cffe97)), closes [#2565](https://github.com/zowe/api-layer/issues/2565)
+* Bugfix:  Fix code snippets bug  (#2564) ([23bed56](https://github.com/zowe/api-layer/commit/23bed56)), closes [#2564](https://github.com/zowe/api-layer/issues/2564)
+* Bugfix:  enable redis storage mode in tests (#2522) ([11bf491](https://github.com/zowe/api-layer/commit/11bf491)), closes [#2522](https://github.com/zowe/api-layer/issues/2522)
+* Bugfix:  gradle publish after update  (#2528) ([1baa6f7](https://github.com/zowe/api-layer/commit/1baa6f7)), closes [#2528](https://github.com/zowe/api-layer/issues/2528)
+
 ## `2.4.8 (2022-10-06)`
 
 * Feature:  Validate OIDC token (#2604) ([cdd4a43](https://github.com/zowe/api-layer/commit/cdd4a43)), closes [#2604](https://github.com/zowe/api-layer/issues/2604)
