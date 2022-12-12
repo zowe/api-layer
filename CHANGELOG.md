@@ -4,12 +4,12 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `2.5.0 (22-12-12)`
 
-* Feature:  Retry failed request routed through Cloud Gateway service (#2697) ([b2e86b3](https://github.com/zowe/api-layer/commit/b2e86b3)), closes [#2697](https://github.com/zowe/api-layer/issues/2697)
-* Feature:  Handle ross origin requests in Cloud Gateway service (#2701) ([f5ab7b8](https://github.com/zowe/api-layer/commit/f5ab7b8)), closes [#2701](https://github.com/zowe/api-layer/issues/2701)
-* Feature:  Issuing SMF records #83 about PAT generation via Rauditx (#2691) ([97df0bc](https://github.com/zowe/api-layer/commit/97df0bc)), closes [#83](https://github.com/zowe/api-layer/issues/83) [#2691](https://github.com/zowe/api-layer/issues/2691)
-* Feature:  Include circuit breaker in Cloud Gateway service request router (#2679) ([b704413](https://github.com/zowe/api-layer/commit/b704413)), closes [#2679](https://github.com/zowe/api-layer/issues/2679)
-* Feature:  Add custom authentication header for southbound services (#2618) ([9272aa0](https://github.com/zowe/api-layer/commit/9272aa0)), closes [#2618](https://github.com/zowe/api-layer/issues/2618)
-* Feature:  Add possibility to include generated passticket in custom request header (#2625) ([e52448c](https://github.com/zowe/api-layer/commit/e52448c)), closes [#2625](https://github.com/zowe/api-layer/issues/2625)
+* Feature:  Retry failed request routed through the Cloud Gateway service (#2697) ([b2e86b3](https://github.com/zowe/api-layer/commit/b2e86b3)), closes [#2697](https://github.com/zowe/api-layer/issues/2697)
+* Feature:  The Cloud Gateway service can now handle cross-origin requests similar to the functionality in the Gateway(#2701) ([f5ab7b8](https://github.com/zowe/api-layer/commit/f5ab7b8)), closes [#2701](https://github.com/zowe/api-layer/issues/2701)
+* Feature:  It is now possible to issue SMF records #83 about PAT generation via Rauditx (#2691) ([97df0bc](https://github.com/zowe/api-layer/commit/97df0bc)), closes [#83](https://github.com/zowe/api-layer/issues/83) [#2691](https://github.com/zowe/api-layer/issues/2691)
+* Feature: A circuit breaker is now included in the Cloud Gateway service request router (#2679) ([b704413](https://github.com/zowe/api-layer/commit/b704413)), closes [#2679](https://github.com/zowe/api-layer/issues/2679)
+* Feature:  A custom authentication header has been added for southbound services (#2618) ([9272aa0](https://github.com/zowe/api-layer/commit/9272aa0)), closes [#2618](https://github.com/zowe/api-layer/issues/2618)
+* Feature:  It is now possible to include a generated passticket in the custom request header (#2625) ([e52448c](https://github.com/zowe/api-layer/commit/e52448c)), closes [#2625](https://github.com/zowe/api-layer/issues/2625)
 * 
 * Bugfix:  Upgrade swagger parser and exclude bugged version (#2702) ([6b966b2](https://github.com/zowe/api-layer/commit/6b966b2)), closes [#2702](https://github.com/zowe/api-layer/issues/2702)
 * Bugfix:  Allow to set private key password separately (#2684) ([4e3d3c7](https://github.com/zowe/api-layer/commit/4e3d3c7)), closes [#2684](https://github.com/zowe/api-layer/issues/2684)
