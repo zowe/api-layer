@@ -18,7 +18,6 @@
         "react-loadable": "5.5.0",
         "react-redux": "7.2.4",
         "react-router-dom": "5.2.0",
-        "react-scripts": "4.0.3",
         "redux": "4.1.0",
         "redux-catch": "1.3.1",
         "redux-logger": "3.0.6",
@@ -51,7 +50,8 @@
         "jest-mock": "26.6.2",
         "nodemon": "2.0.15",
         "npm-force-resolutions": "0.0.10",
-        "prettier": "2.3.0"
+        "prettier": "2.3.0",
+        "react-scripts": "4.0.3"
     },
     "resolutions": {
         "ansi-html": "0.0.9",
