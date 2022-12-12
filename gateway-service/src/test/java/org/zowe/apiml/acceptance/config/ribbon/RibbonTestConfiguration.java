@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -80,7 +79,7 @@ public class RibbonTestConfiguration {
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
                                             IPing ping, ServerListUpdater serverListUpdater,
-                                            LoadBalancerRegistry loadBalancerRegistry, ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory, ApplicationContext appcontext) {
+                                            LoadBalancerRegistry loadBalancerRegistry, ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }

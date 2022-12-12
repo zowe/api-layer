@@ -13,8 +13,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.netflix.zuul.filters.SimpleRouteLocator;
-import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.cloud.netflix.zuul.filters.discovery.SimpleServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
@@ -28,8 +26,6 @@ import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
-
-import java.util.HashMap;
 
 import static org.mockito.Mockito.*;
 
@@ -61,15 +57,6 @@ public class GatewayOverrideConfig {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(new org.springframework.http.HttpEntity<>(headers)), eq(ZosmfService.ZosmfInfo.class))).thenReturn(info);
         when(info.getStatusCode()).thenReturn(HttpStatus.OK);
         return restTemplate;
-    }
-
-
-    @Bean
-    public SimpleRouteLocator simpleRouteLocator() {
-        ZuulProperties properties = new ZuulProperties();
-        properties.setRoutes(new HashMap<>());
-
-        return new SimpleRouteLocator("", properties);
     }
 
     @Bean
