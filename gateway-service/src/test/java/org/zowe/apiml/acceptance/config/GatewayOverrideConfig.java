@@ -108,11 +108,14 @@ public class GatewayOverrideConfig {
         @Override
         public boolean shouldFilter() {
             RequestContext ctx = RequestContext.getCurrentContext();
+            for(String s : ctx.keySet()) {
+                log.error("context key: " + s);
+            }
             boolean sr = !ctx.containsKey(FORWARD_TO_KEY) // a filter has already forwarded
                 && !ctx.containsKey(SERVICE_ID_KEY);
             log.error(FORWARD_TO_KEY + ctx.get(FORWARD_TO_KEY) + SERVICE_ID_KEY + ctx.get(SERVICE_ID_KEY));
             log.error("should run" + sr);
-            return true;// a filter has already determined
+            return sr;// a filter has already determined
             // serviceId
         }
 
