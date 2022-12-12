@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     private int SECOND = 1000;
 
-    @Test
+
     void givenDefaultConfiguration_whenRequestIsCreated_thenTheTimeoutsAreTakenFromDefaultConfig() throws IOException {
         mockValid200HttpResponse();
         applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
@@ -59,7 +59,7 @@ class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
         assertConfigurationTimeouts(5 * SECOND);
     }
 
-    @Test
+
     void givenServiceWithOverwritenTimeoutAndAnotherWithout_whenOverwritingConfigurationForOneService_thenTheOtherServicesKeepDefault() throws IOException {
         mockValid200HttpResponse();
 

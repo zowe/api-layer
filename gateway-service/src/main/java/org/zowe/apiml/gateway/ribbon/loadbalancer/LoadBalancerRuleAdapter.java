@@ -51,7 +51,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         this.configurableNamedContextFactory = configurableNamedContextFactory;
 
         //mirror original zuul setup
-        log.error("config: " + config.getClientName());
+        log.error("config: " + (config != null ? config.getClientName() : "no config"));
         availabilityPredicate = new AvailabilityPredicate(this, config);
         zuulPredicate = CompositePredicate.withPredicates(availabilityPredicate)
             .addFallbackPredicate(AbstractServerPredicate.alwaysTrue())
