@@ -108,7 +108,7 @@ public class GatewayOverrideConfig {
         @Override
         public boolean shouldFilter() {
             RequestContext ctx = RequestContext.getCurrentContext();
-            for(String s : ctx.keySet()) {
+            for (String s : ctx.keySet()) {
                 log.error("context key: " + s);
             }
             boolean sr = !ctx.containsKey(FORWARD_TO_KEY) // a filter has already forwarded
