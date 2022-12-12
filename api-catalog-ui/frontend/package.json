@@ -112,6 +112,7 @@
         "react-error-overlay": "6.0.9",
         "react-scripts": "5.0.1",
         "react-testing-library": "5.3.0",
+        "redux-mock-store": "1.5.4",
         "rimraf": "3.0.2",
         "source-map-explorer": "2.3.1",
         "start-server-and-test": "1.14.0",
@@ -133,7 +134,6 @@
             "src/**/*.{jsx,js}",
             "src/**/reducers/*.{jsx,js}",
             "!src/index.js",
-            "!src/**/*Container.jsx",
             "!src/responsive-tests/**",
             "!cypress/*"
         ]
