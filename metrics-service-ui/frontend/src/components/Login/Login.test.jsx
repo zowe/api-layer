@@ -13,7 +13,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import jest from 'jest-mock';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 import Login from './Login';
 
