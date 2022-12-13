@@ -2,9 +2,9 @@ name: Containers - Build, Test
 
 on:
     push:
-        branches: [ master, v1.x.x, v2.x.x ]
+        branches: [ v1.x.x ]
     pull_request:
-        branches: [ master, v1.x.x, v2.x.x ]
+        branches: [ v1.x.x ]
     workflow_dispatch:
 
 env:
@@ -16,7 +16,7 @@ jobs:
         timeout-minutes: 10
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -55,7 +55,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -103,7 +103,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -151,7 +151,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -203,7 +203,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -251,7 +251,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: ''
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -300,7 +300,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -348,7 +348,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -413,7 +413,7 @@ jobs:
                     - "6380:6380"
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -482,7 +482,7 @@ jobs:
                     - "6380:6380"
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -554,7 +554,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -634,7 +634,7 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -719,7 +719,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -790,7 +790,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -865,7 +865,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -940,7 +940,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1019,7 +1019,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1050,7 +1050,7 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 
