@@ -35,7 +35,6 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerRuleAdapter;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingPredicatesRibbonConfig;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
