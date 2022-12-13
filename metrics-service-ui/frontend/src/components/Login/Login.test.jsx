@@ -13,6 +13,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import jest from 'jest-mock';
+import { render } from '@testing-library/react';
 
 import Login from './Login';
 
@@ -136,6 +137,34 @@ describe('>>> Login page component tests', () => {
             expect(wrapper.find('[id="errormessage"]').prop('text')).toEqual(
                 '(ZWEAS120E) Invalid username or password'
             );
+        });
+
+        it('should display a 401 failure message', () => {
+            render(
+                <Login
+                    authentication={{
+                        onCompleteHandling: jest.fn(),
+                        sessionOn: true,
+                        error: {
+                            status: 401,
+                        },
+                    }}
+                />
+            );
+            expect(screen.getByText('(ZWEAS102E) Session has expired, please login again')).toBeInTheDocument();
+        });
+
+        it('should display a 500 failure message', () => {
+            render(
+                <Login
+                    authentication={{
+                        error: {
+                            status: 500,
+                        },
+                    }}
+                />
+            );
+            expect(screen.getByText('(ZWEAS100E) A generic failure occurred while authenticating')).toBeInTheDocument();
         });
 
         it('authentication service not available message', () => {
