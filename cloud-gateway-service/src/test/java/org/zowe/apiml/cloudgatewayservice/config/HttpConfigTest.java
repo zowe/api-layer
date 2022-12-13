@@ -11,7 +11,6 @@
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
@@ -52,7 +51,7 @@ class HttpConfigTest {
         void thenIsNotNull() {
             ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
             DiscoveryLocatorProperties properties = mock(DiscoveryLocatorProperties.class);
-            Assertions.assertNotNull(httpConfig.proxyRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value"))));
+            Assertions.assertNotNull(httpConfig.proxyRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value")), null, null));
         }
     }
 
@@ -68,14 +67,11 @@ class HttpConfigTest {
         private EurekaJerseyClient eurekaJerseyClient;
 
         @Mock
-        private EurekaInstanceConfig instance;
-
-        @Mock
         private HealthCheckHandler healthCheckHandler;
 
         @Test
         void thenCreateIt() {
-            Assertions.assertNotNull(httpConfig.eurekaClient(manager, config, eurekaJerseyClient, instance, healthCheckHandler));
+            Assertions.assertNotNull(httpConfig.eurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler));
         }
     }
 

@@ -8,29 +8,27 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.security.common.handler;
+package org.zowe.apiml.gateway.security.login;
 
-import org.springframework.context.annotation.Primary;
-import org.zowe.apiml.security.common.error.AuthExceptionHandler;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
+import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * Authentication error handler
- */
-@Slf4j
 @Component
-@Primary
-@RequiredArgsConstructor
-public class FailedAuthenticationHandler implements AuthenticationFailureHandler {
-    private final AuthExceptionHandler handler;
+public class FailedAccessTokenHandler extends FailedAuthenticationHandler {
+
+    private final RauditxService rauditxService;
+
+    public FailedAccessTokenHandler(AuthExceptionHandler handler, RauditxService rauditxService) {
+        super(handler);
+        this.rauditxService = rauditxService;
+    }
 
     /**
      * Handles authentication failure by printing a debug message and passes control to {@link AuthExceptionHandler}
@@ -42,7 +40,14 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws ServletException {
-        log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
-        handler.handleException(request, response, exception);
+        rauditxService.builder()
+            .messageSegment("Authentication failed. Cannot generate PAT")
+            .alwaysLogSuccesses()
+            .alwaysLogFailures()
+            .failure()
+            .issue();
+
+        super.onAuthenticationFailure(request, response, exception);
     }
+
 }

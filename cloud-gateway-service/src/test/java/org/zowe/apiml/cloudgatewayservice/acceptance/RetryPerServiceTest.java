@@ -10,12 +10,14 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance;
 
+import com.sun.net.httpserver.Headers;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
@@ -25,23 +27,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AcceptanceTest
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
+    Consumer<Headers> dummyConsumer = (headers -> {
+    });
 
     @Nested
     class GivenRetryOnAllOperationsIsDisabled {
         @Test
         void whenGetReturnsUnavailable_thenRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "serviceid2", 4000);
+            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "serviceid2", 4000, dummyConsumer);
             given()
                 .header("X-Request-Id", "serviceid2localhost")
-            .when()
+                .when()
                 .get(basePath + serviceWithDefaultConfiguration.getPath())
-            .then().statusCode(is(SC_SERVICE_UNAVAILABLE));
+                .then().statusCode(is(SC_SERVICE_UNAVAILABLE));
             assertEquals(6, counter.get());
         }
 
         @Test
         void whenRequestReturnsUnauthorized_thenDontRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(401, "serviceid2", 4000);
+            AtomicInteger counter = mockServerWithSpecificHttpResponse(401, "serviceid2", 4000, dummyConsumer);
             given()
                 .header("X-Request-Id", "serviceid2localhost")
                 .when()
@@ -76,7 +80,7 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
         @Test
         void whenPostReturnsUnavailable_thenDontRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "serviceid2", 4000);
+            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "serviceid2", 4000, dummyConsumer);
             given()
                 .header("X-Request-Id", "serviceid2localhost")
                 .when()

@@ -27,6 +27,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.X509CNAuthSourceSer
 import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 
@@ -89,7 +90,7 @@ public class ComponentsConfiguration {
     }
 
     @Bean
-    public SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider) {
-        return new SuccessfulAccessTokenHandler(apimlAccessTokenProvider);
+    public SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider, RauditxService rauditxService) {
+        return new SuccessfulAccessTokenHandler(apimlAccessTokenProvider, rauditxService);
     }
 }
