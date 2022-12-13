@@ -12,9 +12,19 @@
 
 import React from 'react';
 import { shallow } from 'enzyme';
-import jest from 'jest-mock';
+import '@testing-library/jest-dom/extend-expect';
+import { render, screen } from '@testing-library/react';
 
 import Login from './Login';
+
+jest.mock(
+    '../Icons/MetricsIconButton.jsx',
+    () =>
+        function () {
+            const MetricsIconButton = 'MetricsIconButtonMock';
+            return <MetricsIconButton />;
+        }
+);
 
 describe('>>> Login page component tests', () => {
     const TextField = 'WithStyles(WithStyles(ForwardRef(TextField)))';
@@ -136,6 +146,21 @@ describe('>>> Login page component tests', () => {
             expect(wrapper.find('[id="errormessage"]').prop('text')).toEqual(
                 '(ZWEAS120E) Invalid username or password'
             );
+        });
+
+        it('should display a 401 failure message', () => {
+            render(
+                <Login
+                    authentication={{
+                        onCompleteHandling: jest.fn(),
+                        sessionOn: true,
+                        error: {
+                            status: 401,
+                        },
+                    }}
+                />
+            );
+            expect(screen.getByText('(ZWEAS102E) Session has expired, please login again')).toBeInTheDocument();
         });
 
         it('authentication service not available message', () => {

@@ -150,6 +150,34 @@ describe('>>> Login page component tests', () => {
         expect(screen.getByText('Invalid Credentials')).toBeInTheDocument();
     });
 
+    it('should display a 401 failure message', () => {
+        render(
+            <Login
+                authentication={{
+                    onCompleteHandling: jest.fn(),
+                    sessionOn: true,
+                    error: {
+                        status: 401,
+                    },
+                }}
+            />
+        );
+        expect(screen.getByText('(ZWEAS102E) Session has expired, please login again')).toBeInTheDocument();
+    });
+
+    it('should display a 500 failure message', () => {
+        render(
+            <Login
+                authentication={{
+                    error: {
+                        status: 500,
+                    },
+                }}
+            />
+        );
+        expect(screen.getByText('(ZWEAS100E) A generic failure occurred while authenticating')).toBeInTheDocument();
+    });
+
     it('should disable button and show spinner when request is being resolved', () => {
         render(<Login isFetching />);
 
