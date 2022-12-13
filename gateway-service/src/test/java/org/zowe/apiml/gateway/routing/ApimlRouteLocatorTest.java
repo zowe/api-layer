@@ -137,8 +137,9 @@ class ApimlRouteLocatorTest {
         void whenNoSlashInPath_thenAppendIt() {
             ZuulProperties zuulProperties = new ZuulProperties();
             ZuulProperties.ZuulRoute zuulRoute = new ZuulProperties.ZuulRoute();
-            zuulRoute.setPath("service/**");
+
             zuulRoute.setId("/service/**");
+            zuulRoute.setPath("service/**");
             zuulRoute.setServiceId("service");
             Map<String, ZuulProperties.ZuulRoute> expectedMap = new HashMap<>();
             expectedMap.put("/service/**", zuulRoute);
@@ -151,39 +152,6 @@ class ApimlRouteLocatorTest {
             ZuulProperties.ZuulRoute expectedRoute = new ZuulProperties.ZuulRoute();
             expectedRoute.setId("service/ws/v1");
             expectedRoute.setPath("/service/ws/v1/**");
-            expectedRoute.setServiceId("service");
-
-            LinkedHashMap<String, ZuulProperties.ZuulRoute> expectedRoutesMap = new LinkedHashMap<>();
-
-            expectedRoutesMap.put("/service/ws/v1/**", expectedRoute);
-            when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
-            when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
-                Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
-            when(serviceRouteMapper.apply("service")).thenReturn("service");
-
-            Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
-            assertEquals(expectedRoutesMap, zuulRouteMap);
-        }
-
-        @Test
-        void whenSlashNotPresentInPath_thenAppendIt() {
-            ZuulProperties zuulProperties = new ZuulProperties();
-            ZuulProperties.ZuulRoute zuulRoute = new ZuulProperties.ZuulRoute();
-
-            zuulRoute.setPath("service/ws/v1/**");
-            zuulRoute.setId("service/ws/v1");
-            zuulRoute.setServiceId("service");
-            Map<String, ZuulProperties.ZuulRoute> expectedMap = new HashMap<>();
-            expectedMap.put("service", zuulRoute);
-            zuulProperties.setRoutes(expectedMap);
-            underTest = new ApimlRouteLocator("", eurekaDiscoveryClient, zuulProperties, serviceRouteMapper, routedServicesUserList);
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put(ROUTES + ".ws-v1." + ROUTES_GATEWAY_URL, "ws/v1");
-            metadata.put(ROUTES + ".ws-v1." + ROUTES_SERVICE_URL, "/");
-
-            ZuulProperties.ZuulRoute expectedRoute = new ZuulProperties.ZuulRoute();
-            expectedRoute.setId("service/ws/v1");
-            expectedRoute.setPath("service/ws/v1/**");
             expectedRoute.setServiceId("service");
 
             LinkedHashMap<String, ZuulProperties.ZuulRoute> expectedRoutesMap = new LinkedHashMap<>();
@@ -225,7 +193,7 @@ class ApimlRouteLocatorTest {
         }
 
         @Test
-        void whenSlashNotPresentInPath_thenAppsendIt() {
+        void whenServiceIdIsNull_thenUseIdAndLocate() {
             ZuulProperties zuulProperties = new ZuulProperties();
             ZuulProperties.ZuulRoute zuulRoute = new ZuulProperties.ZuulRoute();
 

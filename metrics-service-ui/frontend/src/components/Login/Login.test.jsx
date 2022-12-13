@@ -12,10 +12,19 @@
 
 import React from 'react';
 import { shallow } from 'enzyme';
-import jest from 'jest-mock';
+import '@testing-library/jest-dom/extend-expect';
 import { render, screen } from '@testing-library/react';
 
 import Login from './Login';
+
+jest.mock(
+    '../Icons/MetricsIconButton.jsx',
+    () =>
+        function () {
+            const MetricsIconButton = 'MetricsIconButtonMock';
+            return <MetricsIconButton />;
+        }
+);
 
 describe('>>> Login page component tests', () => {
     const TextField = 'WithStyles(WithStyles(ForwardRef(TextField)))';
