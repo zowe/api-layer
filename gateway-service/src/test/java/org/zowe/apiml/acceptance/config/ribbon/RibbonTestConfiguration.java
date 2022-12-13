@@ -12,10 +12,7 @@ package org.zowe.apiml.acceptance.config.ribbon;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
-import com.netflix.zuul.FilterLoader;
-import com.netflix.zuul.ZuulFilter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,7 +41,6 @@ import java.util.Map;
 /**
  * Configuration of client side load balancing with Ribbon
  */
-@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class RibbonTestConfiguration {
@@ -86,10 +82,7 @@ public class RibbonTestConfiguration {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
-        List<ZuulFilter> list = FilterLoader.getInstance().getFiltersByType("pre");
-        for (ZuulFilter f : list) {
-            log.error(f.toString());
-        }
+
         InstanceInfoExtractor infoExtractor = new InstanceInfoExtractor(serverList.getInitialListOfServers());
 
         InstanceInfo randomInstanceInfo = infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available"));
@@ -98,8 +91,7 @@ public class RibbonTestConfiguration {
         randomInstanceInfo.getMetadata().forEach(
             (key, value) -> metadataMap.put(LoadBalancerConstants.getMetadataPrefix() + key, value)
         );
-        log.error("loadbalancer serviceid:" + randomInstanceInfo.getInstanceId());
-        log.error("client id" + config.getClientName());
+
         predicateFactory.addInitializer(randomInstanceInfo.getAppName(), context ->
             context.getEnvironment().getPropertySources()
                 .addFirst(new MapPropertySource("InstanceInfoMetadata", metadataMap))

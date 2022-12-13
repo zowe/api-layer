@@ -1,10 +1,6 @@
 logging:
     level:
         ROOT: TRACE
-        org.springframework: DEBUG
-        org.zowe.apiml: DEBUG
-        org.springframework.cloud.netflix.zuul: DEBUG
-
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -236,7 +232,7 @@ logging:
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
-        com.netflix: DEBUG
+        com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         net.sf.ehcache: INFO

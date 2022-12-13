@@ -35,7 +35,6 @@ public class RibbonMetadataProcessor extends MetadataProcessor {
     protected void checkInstanceInfo(InstanceInfo instanceInfo) {
         String serviceId = instanceInfo.getVIPAddress();
         Map<String, String> metadata = instanceInfo.getMetadata();
-        System.out.println("Service id:" + serviceId);
         if (metadata != null) {
             setIfExistsAndIsNumeric(serviceId + ".ribbon.ConnectTimeout",
                 metadata.get("apiml.connectTimeout"));
@@ -50,7 +49,6 @@ public class RibbonMetadataProcessor extends MetadataProcessor {
 
     void setIfExistsAndIsNumeric(String key, String value) {
         if (!Strings.isEmpty(value) && StringUtils.isNumeric(value)) {
-            System.out.println(key + ":" + value);
             System.setProperty(key, value);
         }
     }

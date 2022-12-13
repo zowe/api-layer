@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 /**
  * This adapter holds the load balancing logic by facilitating server selection.
  * There is plenty of debug log to increase supportability
+ *
  */
 @Slf4j
 public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
@@ -51,7 +52,6 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         this.configurableNamedContextFactory = configurableNamedContextFactory;
 
         //mirror original zuul setup
-        log.error("config: " + (config != null ? config.getClientName() : "no config"));
         availabilityPredicate = new AvailabilityPredicate(this, config);
         zuulPredicate = CompositePredicate.withPredicates(availabilityPredicate)
             .addFallbackPredicate(AbstractServerPredicate.alwaysTrue())
@@ -64,7 +64,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         ILoadBalancer lb = getLoadBalancer();
         LoadBalancingContext ctx = new LoadBalancingContext(instanceInfo.getAppName(), instanceInfo);
         List<Server> allServers = lb.getAllServers();
-        log.debug("Path: {}, List of servers from LoadBalancer: {}", ctx.getPath(), allServers);
+        log.debug("Path: {}, List of servers from LoadBalancer: {}", ctx.getPath() ,allServers);
         for (RequestAwarePredicate predicate : predicateMap.values()) {
             log.debug("Running predicate: {}, list of servers: {}", allServers, predicate);
             allServers = allServers.stream()

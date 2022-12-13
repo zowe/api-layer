@@ -58,7 +58,6 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
 
     @BeforeEach
     public void prepareApplications() {
-        log.error("removing test context");
         RequestContext.testSetCurrentContext(null);
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
