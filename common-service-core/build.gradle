@@ -34,15 +34,24 @@ dependencies {
 
     implementation(libraries.eh_cache)
     implementation(libraries.spring_boot_starter_cache){
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-context-support"
         exclude group: "org.yaml", module: "snakeyaml"
     }
-    testImplementation(libraries.spring_boot_starter_cache) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
+    implementation libraries.spring_context
     implementation libraries.snakeyaml
+
+    testImplementation(libraries.spring_boot_starter_cache){
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-context-support"
+        exclude group: "org.yaml", module: "snakeyaml"
+    }
+    testImplementation libraries.spring_context
     testImplementation libraries.snakeyaml
-    testCompile(libraries.spring_boot_starter_cache)
-    testCompile(libraries.spring_boot_starter_test)
+    testCompile(libraries.spring_boot_starter_test){
+        exclude group: "org.springframework", module: "spring-test"
+    }
+    testCompile libraries.spring_test
     testCompile libraries.json_smart
     testCompile(libraries.eh_cache)
     testCompile(libraries.jackson_core)

@@ -12,7 +12,10 @@ dependencies {
 
     compileOnly libraries.lombok
 
-    testCompile libraries.spring_boot_starter_test
+    testCompile(libraries.spring_boot_starter_test) {
+        exclude group: "org.springframework", module: "spring-test"
+    }
+    testCompile libraries.spring_test
     testCompile libraries.json_smart
     testCompile libraries.junitJupiter
     testCompile libraries.jjwt_full

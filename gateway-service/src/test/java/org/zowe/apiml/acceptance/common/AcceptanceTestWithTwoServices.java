@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.acceptance.common;
 
+import com.netflix.zuul.context.RequestContext;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.ProtocolVersion;
@@ -35,6 +37,7 @@ import java.util.Locale;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
+@Slf4j
 @AcceptanceTest
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
 
@@ -55,6 +58,7 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
 
     @BeforeEach
     public void prepareApplications() {
+        RequestContext.testSetCurrentContext(null);
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
         applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(), false);

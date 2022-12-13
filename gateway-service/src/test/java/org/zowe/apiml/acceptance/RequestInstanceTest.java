@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.acceptance;
 
+import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
     public void prepareApplications() {
+        RequestContext.testSetCurrentContext(null);
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(),false);
         applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(),true);

@@ -2,9 +2,9 @@ name: CI Testing
 
 on:
     push:
-        branches: [ master, v1.x.x, v2.x.x ]
+        branches: [ v1.x.x ]
     pull_request:
-        branches: [ master, v1.x.x, v2.x.x ]
+        branches: [ v1.x.x ]
     workflow_dispatch:
 
 env:
@@ -16,7 +16,7 @@ jobs:
         timeout-minutes: 30
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
 

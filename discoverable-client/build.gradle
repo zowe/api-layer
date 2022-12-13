@@ -56,19 +56,33 @@ dependencies {
     }
     implementation libraries.jackson_databind
     implementation libraries.spring_boot_starter
-    implementation libraries.spring_boot_starter_actuator
+    implementation(libraries.spring_boot_starter_actuator) {
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-core"
+    }
     implementation(libraries.spring_boot_starter_web){
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
+        exclude group: "org.springframework", module: "spring-context"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
     }
     implementation libraries.snakeyaml
     implementation libraries.tomcat_embed_core
     implementation libraries.tomcat_embed_el
     implementation libraries.tomcat_embed_websocket
+    implementation libraries.spring_context_support
+    implementation libraries.spring_messaging
+    implementation libraries.spring_webflux
+    implementation libraries.spring_websocket
     implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_boot_starter_websocket
+    implementation libraries.spring_boot_starter_aop
     implementation libraries.spring_boot_starter_validation
     implementation libraries.spring_boot_starter_security
     implementation libraries.zowe_attls
@@ -88,7 +102,10 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testImplementation libraries.spring_boot_starter_test
+    testImplementation(libraries.spring_boot_starter_test) {
+        exclude group: "org.springframework", module: "spring-test"
+    }
+    testImplementation libraries.spring_test
     testImplementation libraries.json_smart
 }
 

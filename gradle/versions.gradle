@@ -2,9 +2,9 @@ ext {
     springBootVersion = '2.5.14'
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE!!'
-    springCloudVersion3 = '3.1.2'
+    springCloudVersion3 = '3.1.4'
     springSecurityVersion = '5.7.5!!'
-    springFrameworkVersion = '5.3.23!!'
+    springFrameworkVersion = '5.3.24!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
@@ -68,7 +68,7 @@ ext {
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
-    tomcatVersion = '9.0.68'
+    tomcatVersion = '9.0.69'
     velocityVersion = '2.3'
     xstreamVersion = '1.4.19!!'
 
@@ -110,7 +110,9 @@ ext {
         spring_context_support             : "org.springframework:spring-context-support:${springFrameworkVersion}",
         spring_core                        : "org.springframework:spring-core:${springFrameworkVersion}",
         spring_expression                  : "org.springframework:spring-expression:${springFrameworkVersion}",
+        spring_jcl                         : "org.springframework:spring-jcl:${springFrameworkVersion}",
         spring_messaging                   : "org.springframework:spring-messaging:${springFrameworkVersion}",
+        spring_test                        : "org.springframework:spring-test:${springFrameworkVersion}",
         spring_web                         : "org.springframework:spring-web:${springFrameworkVersion}",
         spring_webmvc                      : "org.springframework:spring-webmvc:${springFrameworkVersion}",
         spring_webflux                     : "org.springframework:spring-webflux:${springFrameworkVersion}",

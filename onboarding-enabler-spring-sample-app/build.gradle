@@ -34,13 +34,26 @@ repositories {
 
 dependencies {
     implementation(project(':onboarding-enabler-spring'))
-    implementation libraries.spring_boot_starter_actuator
+    implementation(libraries.spring_boot_starter_actuator) {
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-core"
+    }
     implementation(libraries.spring_doc) {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
     }
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_core
+    implementation libraries.spring_context
+    implementation libraries.spring_expression
+    implementation libraries.spring_jcl
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
     implementation libraries.jackson_databind
@@ -52,7 +65,11 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testImplementation libraries.spring_boot_starter_test
+    testImplementation(libraries.spring_boot_starter_test) {
+        exclude group: "org.springframework", module: "spring-test"
+    }
+    testImplementation libraries.spring_test
+    testImplementation libraries.javax_servlet_api
     testImplementation libraries.json_smart
 }
 

@@ -1,16 +1,29 @@
 dependencies {
     compile project(':apiml-utility')
     compile project(':apiml-tomcat-common')
-    implementation libraries.spring_boot_starter_actuator
+    implementation(libraries.spring_boot_starter_actuator) {
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-core"
+    }
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_cloud_starter_bootstrap
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
     }
+    implementation libraries.spring_boot_starter_aop
     implementation(libraries.spring_boot_starter_web){
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
         exclude group: "org.yaml", module: "snakeyaml"
+        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
     }
+    implementation libraries.spring_web
     implementation libraries.snakeyaml
     implementation libraries.tomcat_embed_el
     compile libraries.spring_boot_starter_validation
@@ -28,7 +41,10 @@ dependencies {
     annotationProcessor libraries.lombok
 
     testCompile libraries.javax_servlet_api
-    testCompile libraries.spring_boot_starter_test
+    testCompile(libraries.spring_boot_starter_test) {
+        exclude group: "org.springframework", module: "spring-test"
+    }
+    testCompile libraries.spring_test
     testCompile libraries.json_smart
 
     testCompile libraries.lombok
