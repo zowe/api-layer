@@ -108,6 +108,9 @@ public class GatewayOverrideConfig {
         @Override
         public boolean shouldFilter() {
             RequestContext ctx = RequestContext.getCurrentContext();
+            log.error("RequestContext.toString():" + ctx.toString());
+            log.error("RX hashcode: " + ctx.hashCode());
+            log.error("RequestContext class: " + ctx.getClass().getName());
             for (String s : ctx.keySet()) {
                 log.error("context key: " + s);
             }
