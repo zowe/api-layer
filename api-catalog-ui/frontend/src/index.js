@@ -33,7 +33,7 @@ import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 
 function errorHandler(error, getState, lastAction, dispatch) {
-    log.error(error);
+    log.error(error);sss
     log.debug('current state', getState());
     log.debug('last action was', lastAction);
     dispatch(sendError(`Action: ${lastAction.type} => ${error.message}`));

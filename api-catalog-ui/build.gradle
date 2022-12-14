@@ -82,29 +82,12 @@ task npmLint(type: NpmTask) {
 }
 npmLint.dependsOn npmInstall
 
-class MyTask extends DefaultTask {
-    @Internal String result;
-        void exec(){
-            this.result = "res";
-        }
-
-    String getResult(){
-        return result;
-    }
-    Task doLast(Action<? super Task> action) {
-
-        return super.doLast(action);
-    }
-
-}
-
-task diffScript(type: MyTask) {
+task diffScript(type: NodeTask) {
     script = file('file-updates.js')
-
 }
 
 task npmBuildT(type: NpmTask) {
-    dependsOn diffScript
+//    dependsOn diffScript
     doFirst {
         println "result"
 //        println diffScript.variable
@@ -126,15 +109,20 @@ task npmBuildT(type: NpmTask) {
 
 npmBuildT.configure {
     onlyIf {
-        file("file-updates.js").exists()
+        file("${project.rootDir}/api-catalog-ui/frontend/updateflag").exists()
     }
+}
+
+task moveVersionFile(){
+    delete "${project.rootDir}/api-catalog-ui/frontend/updateflag"
 }
 
 
 //npmBuild.dependsOn npmInstall
 //npmBuild.dependsOn npmLint
 //build.dependsOn npmBuild
-
+npmBuildT.dependsOn diffScript
+moveVersionFile.dependsOn npmBuildT
 
 jar {
     enabled false
