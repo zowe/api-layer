@@ -1,7 +1,8 @@
 import java.util.stream.Collectors
 
 plugins {
-    id "com.github.node-gradle.node" version "3.1.1"
+    id "com.github.node-gradle.node" version "3.5.0"
+    id "com.dorongold.task-tree" version "2.1.0"
 }
 
 node {
@@ -81,24 +82,58 @@ task npmLint(type: NpmTask) {
 }
 npmLint.dependsOn npmInstall
 
-task npmBuild(type: NpmTask) {
-    group = 'npm'
-    description = "Executes npm build"
-    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+class MyTask extends DefaultTask {
+    @Internal String result;
+        void exec(){
+            this.result = "res";
+        }
 
-    outputs.dir('frontend/build')
-    outputs.cacheIf { true }
+    String getResult(){
+        return result;
+    }
+    Task doLast(Action<? super Task> action) {
 
-    args = ['run', 'build']
+        return super.doLast(action);
+    }
 
 }
-npmBuild.dependsOn npmInstall
-npmBuild.dependsOn npmLint
-build.dependsOn npmBuild
+
+task diffScript(type: MyTask) {
+    script = file('file-updates.js')
+
+}
+
+task npmBuildT(type: NpmTask) {
+    dependsOn diffScript
+    doFirst {
+        println "result"
+//        println diffScript.variable
+    }
+//    group = 'npm'
+//    description = "Executes npm build"
+//    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
+//    inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
+//    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
+//    inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
+//    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+//
+//    outputs.dir('frontend/build')
+//    outputs.cacheIf { true }
+//
+//    args = ['run', 'build']
+
+}
+
+npmBuildT.configure {
+    onlyIf {
+        file("file-updates.js").exists()
+    }
+}
+
+
+//npmBuild.dependsOn npmInstall
+//npmBuild.dependsOn npmLint
+//build.dependsOn npmBuild
 
 
 jar {

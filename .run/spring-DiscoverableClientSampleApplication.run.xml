@@ -1,8 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration name="spring-DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <module name="api-layer.discoverable-client.main" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.client.DiscoverableClientSampleApplication" />
-    <option name="ALTERNATIVE_JRE_PATH" />
+  <configuration default="false" name="spring-DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ACTIVE_PROFILES" />
     <additionalParameters>
       <param>
         <option name="enabled" value="true" />
@@ -10,6 +8,8 @@
         <option name="value" value="file:./config/local/discoverable-client.yml" />
       </param>
     </additionalParameters>
+    <module name="api-layer.discoverable-client.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.client.DiscoverableClientSampleApplication" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
