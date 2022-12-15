@@ -1,6 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="spring-GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <option name="ACTIVE_PROFILES" />
+  <configuration name="spring-GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="api-layer.gateway-service.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="CLASSPATH_FILE" />
     <additionalParameters>
       <param>
         <option name="enabled" value="true" />
@@ -16,9 +19,6 @@
         <option name="value" value="true" />
       </param>
     </additionalParameters>
-    <module name="api-layer.gateway-service.main" />
-    <option name="SHORTEN_COMMAND_LINE" value="CLASSPATH_FILE" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

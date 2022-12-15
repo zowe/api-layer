@@ -25,11 +25,11 @@ apiml:
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10014
-        discoveryServiceUrls: https://usilca32.lvn.broadcom.net:7553/eureka/
+        discoveryServiceUrls: https://localhost:10011/eureka/
         dsIpAddress: 0.0.0.0
         eurekaPassword: password
         eurekaUserName: eureka
-        gatewayHostname: https://usilca32.lvn.broadcom.net:7554
+        gatewayHostname: https://localhost:10010
         preferIpAddress: false
 
     service-registry:
