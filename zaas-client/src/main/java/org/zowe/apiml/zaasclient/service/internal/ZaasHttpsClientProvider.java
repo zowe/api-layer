@@ -153,18 +153,6 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         return new FileInputStream(uri);
     }
 
-    /**
-     * Replaces 4 slashes on 2 in URI
-     *
-     * @param storeUri - URI as {@link String}
-     * @return same URI, but with 2 slashes, or null, if {@code storeUri} is null
-     * @deprecated replaced by {@link #formatKeyringUrl}
-     */
-    @Deprecated
-    public static String replaceFourSlashes(String storeUri) {
-        return storeUri == null ? null : storeUri.replaceFirst("////", "//");
-    }
-
     private SSLContext getSSLContext() throws ZaasConfigurationException {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLSv1.2");

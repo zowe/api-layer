@@ -108,12 +108,6 @@ class SecurityUtilsTest {
     }
 
     @Test
-    void testReplaceFourSlashes() {
-        String newUrl = SecurityUtils.formatKeyringUrl("safkeyring:////userId/keyRing");
-        assertEquals("safkeyring://userId/keyRing", newUrl);
-    }
-
-    @Test
     void testGenerateKeyPair() {
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         assertNotNull(keyPair);
