@@ -23,12 +23,22 @@ import java.util.regex.Pattern;
 public class TomcatKeyringFix implements TomcatConnectorCustomizer {
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^safkeyring[^:]*:/{2,4}[^/].*$");
+    private static final String KEYRING_PASSWORD = "password";
 
     @Value("${server.ssl.keyStore:#{null}}")
     private String keyStore;
 
+    @Value("${server.ssl.keyStorePassword:#{null}}")
+    protected char[] keyStorePassword;
+
+    @Value("${server.ssl.keyPassword:#{null}}")
+    protected char[] keyPassword;
+
     @Value("${server.ssl.trustStore:#{null}}")
     private String trustStore;
+
+    @Value("${server.ssl.trustStorePassword:#{null}}")
+    protected char[] trustStorePassword;
 
     boolean isKeyring(String input) {
         if (input == null) return false;
@@ -41,10 +51,13 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
         Arrays.stream(connector.findSslHostConfigs()).forEach(sslConfig -> {
             if (isKeyring(keyStore)) {
                 sslConfig.setCertificateKeystoreFile(keyStore);
+                if (keyStorePassword == null) sslConfig.setCertificateKeystorePassword(KEYRING_PASSWORD);
+                if (keyPassword == null) sslConfig.setCertificateKeyPassword(KEYRING_PASSWORD);
             }
 
             if (isKeyring(trustStore)) {
                 sslConfig.setTruststoreFile(trustStore);
+                if (trustStorePassword == null) sslConfig.setTruststorePassword(KEYRING_PASSWORD);
             }
         });
     }
