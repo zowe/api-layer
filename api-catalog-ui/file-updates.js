@@ -1,10 +1,10 @@
-const { exec } = require("child_process");
+const { exec, execSync } = require("child_process");
 const { createHash } = require("crypto");
 const { readFileSync, writeFile, openSync, existsSync, closeSync } = require("fs");
 let hashFileName = "changed-files-hashes";
 let fileChangedFlag = "updateflag";
 const args = process.argv.slice(2)
-// exec("git fetch; git diff --name-only origin/v2.x.x", (error,stdout,stderr) => {
+execSync("git fetch");
 exec("git diff --name-only origin/v2.x.x", (error,stdout,stderr) => {
     const rootDir = args[0];
     if(error) {
