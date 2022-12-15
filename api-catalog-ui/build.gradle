@@ -43,6 +43,10 @@ task javascriptClean(type: Delete) {
     if (rootProject.cleanNodeModules == 'true') {
         delete 'frontend/node_modules'
     }
+
+    doLast {
+        ant.touch(file: "${project.rootDir}/updateflag")
+    }
 }
 clean.dependsOn javascriptClean
 
@@ -68,9 +72,9 @@ task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
     group = 'npm'
     description = "Javascript End to End Tests"
     environment = ['cypress_catalogHomePage': String.format("%s://%s:%s/apicatalog/ui/v1", System.getProperty("gateway.scheme"),
-                        System.getProperty("gateway.host"), System.getProperty("gateway.port")),
-                   'cypress_username': System.getProperty("credentials.user"),
-                   'cypress_password': System.getProperty("credentials.password")]
+        System.getProperty("gateway.host"), System.getProperty("gateway.port")),
+                   'cypress_username'       : System.getProperty("credentials.user"),
+                   'cypress_password'       : System.getProperty("credentials.password")]
     args = ['run', 'cy:e2e:ci']
 }
 npmE2ECI.dependsOn npmInstall
@@ -84,45 +88,51 @@ npmLint.dependsOn npmInstall
 
 task diffScript(type: NodeTask) {
     script = file('file-updates.js')
+    args = ["${project.rootDir}"]
 }
 
-task npmBuildT(type: NpmTask) {
-//    dependsOn diffScript
-    doFirst {
-        println "result"
-//        println diffScript.variable
+task npmBuild(type: NpmTask) {
+
+    group = 'npm'
+    description = "Executes npm build"
+    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+
+    outputs.dir('frontend/build')
+    outputs.cacheIf { true }
+
+    args = ['run', 'build']
+
+    doLast {
+        ant.delete(file: "${project.rootDir}/updateflag")
     }
-//    group = 'npm'
-//    description = "Executes npm build"
-//    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
-//    inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
-//    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
-//    inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
-//    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
-//
-//    outputs.dir('frontend/build')
-//    outputs.cacheIf { true }
-//
-//    args = ['run', 'build']
 
 }
 
-npmBuildT.configure {
+npmBuild.configure {
     onlyIf {
-        file("${project.rootDir}/api-catalog-ui/frontend/updateflag").exists()
+        file("${project.rootDir}/updateflag").exists()
+    }
+}
+npmInstall.configure {
+    onlyIf {
+        file("${project.rootDir}/updateflag").exists()
+    }
+}
+npmLint.configure {
+    onlyIf {
+        file("${project.rootDir}/updateflag").exists()
     }
 }
 
-task moveVersionFile(){
-    delete "${project.rootDir}/api-catalog-ui/frontend/updateflag"
-}
-
-
-//npmBuild.dependsOn npmInstall
-//npmBuild.dependsOn npmLint
-//build.dependsOn npmBuild
-npmBuildT.dependsOn diffScript
-moveVersionFile.dependsOn npmBuildT
+npmBuild.dependsOn npmInstall
+npmBuild.dependsOn npmLint
+build.dependsOn npmBuild
+npmInstall.dependsOn diffScript
+npmLint.dependsOn diffScript
 
 jar {
     enabled false
