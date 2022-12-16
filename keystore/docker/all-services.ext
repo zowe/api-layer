@@ -1,0 +1,25 @@
+[ v3_req ]
+extendedKeyUsage        = clientAuth, serverAuth
+subjectAltName          = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+DNS.2 = 127.0.0.1
+DNS.3 = gateway-service
+DNS.4 = gateway-service-2
+DNS.5 = api-catalog-services
+DNS.6 = api-catalog-services-2
+DNS.7 = caching-service
+DNS.8 = caching-service-2
+DNS.9 = discovery-service
+DNS.10 = discovery-service-2
+DNS.11 = discoverable-client
+DNS.12 = discoverable-client-1
+DNS.13 = discoverable-client-2
+DNS.14 = discoverable-client-3
+DNS.15 = discoverable-client-4
+DNS.16 = mock-services
+DNS.17 = mock-services-2
+DNS.18 = metrics-service
+DNS.19 = metrics-service-2
+DNS.20 = reverse-proxy

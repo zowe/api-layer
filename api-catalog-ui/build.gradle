@@ -1,7 +1,8 @@
 import java.util.stream.Collectors
 
 plugins {
-    id "com.github.node-gradle.node" version "3.1.1"
+    id "com.github.node-gradle.node" version "3.5.0"
+    id "com.dorongold.task-tree" version "2.1.0"
 }
 
 node {
@@ -42,6 +43,10 @@ task javascriptClean(type: Delete) {
     if (rootProject.cleanNodeModules == 'true') {
         delete 'frontend/node_modules'
     }
+
+    doLast {
+        ant.touch(file: "${project.rootDir}/updateflag")
+    }
 }
 clean.dependsOn javascriptClean
 
@@ -67,9 +72,9 @@ task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
     group = 'npm'
     description = "Javascript End to End Tests"
     environment = ['cypress_catalogHomePage': String.format("%s://%s:%s/apicatalog/ui/v1", System.getProperty("gateway.scheme"),
-                        System.getProperty("gateway.host"), System.getProperty("gateway.port")),
-                   'cypress_username': System.getProperty("credentials.user"),
-                   'cypress_password': System.getProperty("credentials.password")]
+        System.getProperty("gateway.host"), System.getProperty("gateway.port")),
+                   'cypress_username'       : System.getProperty("credentials.user"),
+                   'cypress_password'       : System.getProperty("credentials.password")]
     args = ['run', 'cy:e2e:ci']
 }
 npmE2ECI.dependsOn npmInstall
@@ -81,7 +86,13 @@ task npmLint(type: NpmTask) {
 }
 npmLint.dependsOn npmInstall
 
+task diffScript(type: NodeTask) {
+    script = file('file-updates.js')
+    args = ["${project.rootDir}"]
+}
+
 task npmBuild(type: NpmTask) {
+
     group = 'npm'
     description = "Executes npm build"
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
@@ -95,11 +106,33 @@ task npmBuild(type: NpmTask) {
 
     args = ['run', 'build']
 
+    doLast {
+        ant.delete(file: "${project.rootDir}/updateflag")
+    }
+
 }
+
+npmBuild.configure {
+    onlyIf {
+        file("${project.rootDir}/updateflag").exists()
+    }
+}
+npmInstall.configure {
+    onlyIf {
+        file("${project.rootDir}/updateflag").exists()
+    }
+}
+npmLint.configure {
+    onlyIf {
+        file("${project.rootDir}/updateflag").exists()
+    }
+}
+
 npmBuild.dependsOn npmInstall
 npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
-
+npmInstall.dependsOn diffScript
+npmLint.dependsOn diffScript
 
 jar {
     enabled false
