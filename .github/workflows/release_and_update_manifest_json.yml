@@ -68,7 +68,10 @@ jobs:
               run: |
                   git config --global user.email "zowe-robot@users.noreply.github.com"
                   git config --global user.name "Zowe Robot"
-                  cd scripts/release_components
+                  git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/zowe-install-packaging.git
+                  cd zowe-install-packaging
+                  git checkout v2.x/rc
+                  cd ../scripts/release_components
                   npm install
                   node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.release_version }}
             - uses: ./.github/actions/teardown

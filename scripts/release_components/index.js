@@ -53,15 +53,15 @@ const version = process.argv[3];
         let gitCheckoutOrigin = `git fetch origin --quiet && git checkout origin/${prevReleaseBranch}`;
 
         execSync(gitCheckoutOrigin, {
-            cwd: '../../'
+            cwd: '../../zowe-install-packaging'
         });
 
-        await writeFile('../../manifest.json.template', JSON.stringify(manifestJsonContent, null, 2));
+        await writeFile('../../zowe-install-packaging/manifest.json.template', JSON.stringify(manifestJsonContent, null, 2));
 
         let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
 
         let gitStatusPorcelainOutput = execSync(gitStatusPorcelain, {
-            cwd: '../../'
+            cwd: '../../zowe-install-packaging'
         }).toString();
 
         if (gitStatusPorcelainOutput.length !== 0) {
@@ -69,7 +69,7 @@ const version = process.argv[3];
             let gitCommitPush = `git add manifest.json.template && git commit --signoff -m "Update manifest.json" && git push origin HEAD:${prevReleaseBranch}`;
 
             execSync(gitCommitPush, {
-                cwd: '../../'
+                cwd: '../../zowe-install-packaging'
             });
         }
         else {
@@ -79,7 +79,7 @@ const version = process.argv[3];
     else if (apimlReleasePrs.length === 0) {
         // make new PR since none exists for components upgrade
 
-        await writeFile('../../manifest.json.template', JSON.stringify(manifestJsonContent, null, 2));
+        await writeFile('../../zowe-install-packaging/manifest.json.template', JSON.stringify(manifestJsonContent, null, 2));
 
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
         console.log("New release branch created " + branch + "\n");
@@ -87,7 +87,7 @@ const version = process.argv[3];
         let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add manifest.json.template && git commit --signoff -m "Update manifest.json" && git push origin ${branch}`;
 
         execSync(gitCommitPush, {
-            cwd: '../../'
+            cwd: '../../zowe-install-packaging'
         });
 
         await octokit.rest.pulls.create({
