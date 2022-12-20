@@ -28,6 +28,18 @@ const version = process.argv[3];
             value.version = value.version.replace(value.version, `${version}`);
         }
     });
+
+    Object.entries(manifestJsonContent.sourceDependencies[0]).forEach(([key, value]) => {
+        if (key === "Zowe API Mediation Layer") {
+            value.entries[0].tag = value.entries[0].tag.replace(value.entries[0].tag, `v${version}`);
+        }
+    });
+
+    Object.entries(manifestJsonContent.imageDependencies).forEach(([key, value]) => {
+        if (key === "api-catalog" || key === "caching" || key === "discovery" || key === "gateway") {
+            value.tag = value.tag.replace(value.tag, `${version}-ubuntu`);
+        }
+    });
     const prs = (await octokit.request("GET /repos/zowe/zowe-install-packaging/pulls")).data;
 
     const apimlReleasePrs = prs.filter(pr => pr["user"]["login"] === "zowe-robot" &&
@@ -44,7 +56,7 @@ const version = process.argv[3];
             cwd: '../../'
         });
 
-        await writeFile('../../manifest.json.template', manifestJsonContent);
+        await writeFile('../../manifest.json.template', JSON.stringify(manifestJsonContent, null, 2));
 
         let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
 
@@ -67,7 +79,7 @@ const version = process.argv[3];
     else if (apimlReleasePrs.length === 0) {
         // make new PR since none exists for components upgrade
 
-        await writeFile('../../manifest.json.template', manifestJsonContent);
+        await writeFile('../../manifest.json.template', JSON.stringify(manifestJsonContent, null, 2));
 
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
         console.log("New release branch created " + branch + "\n");
