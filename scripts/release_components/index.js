@@ -12,23 +12,26 @@ const version = process.argv[3];
 (async function () {
     const branchToMerge = 'v2.x/rc'
     const octokit = new Octokit({auth: githubToken});
-    const manifestJsonContent = await octokit.rest.repos.getContent({
+    // Get manifest.json.template from the release branch
+
+    let {data}  = await octokit.rest.repos.getContent({
         owner: 'zowe',
         repo: 'zowe-install-packaging',
         path: 'manifest.json.template',
         ref: branchToMerge,
-    }).split(/\r?\n/);
+    });
+    let manifestJsonContent = Buffer.from(data.content, 'base64').toString();
+    manifestJsonContent = JSON.parse(manifestJsonContent)
 
-    const updatedManifestJson = manifestJsonContent.filter(line => {
-        line.includes("org.zowe.apiml") && line.notEqual("org.zowe.apiml.cloud-gateway-package") && line.notEqual("common-java-lib-package")
-    }).map(line => {
-        return line.replace("\"version\": \"(\d+\.\d+\.\d+)\"", `\"version\": \"${version}\"`)
-    }).join("\n");
-
+    Object.entries(manifestJsonContent.binaryDependencies).forEach(([key, value]) => {
+        if (key.includes("org.zowe.apiml") && !key.includes("org.zowe.apiml.cloud-gateway-package") && !key.includes("common-java-lib-package")) {
+            value.version = value.version.replace(value.version, `${version}`);
+        }
+    });
     const prs = (await octokit.request("GET /repos/zowe/zowe-install-packaging/pulls")).data;
 
     const apimlReleasePrs = prs.filter(pr => pr["user"]["login"] === "zowe-robot" &&
-        pr["title"] === `Upgrade API ML components for Zowe ${version}` &&
+        pr["title"] === "Upgrade API ML components for Zowe RC" &&
         pr["body"] === "Update manifest.json with bumped API ML components.");
 
     if (apimlReleasePrs.length === 1) {
@@ -41,7 +44,7 @@ const version = process.argv[3];
             cwd: '../../'
         });
 
-        await writeFile('../../manifest.json.template', updatedManifestJson);
+        await writeFile('../../manifest.json.template', manifestJsonContent);
 
         let gitStatusPorcelain = `git status --porcelain --untracked-files=no`;
 
@@ -64,7 +67,7 @@ const version = process.argv[3];
     else if (apimlReleasePrs.length === 0) {
         // make new PR since none exists for changelog
 
-        await writeFile('../../manifest.json.template', updatedManifestJson);
+        await writeFile('../../manifest.json.template', manifestJsonContent);
 
         const branch = `apiml/release/${version.replace(/\./g, "_")}`;
         console.log("New release branch created " + branch + "\n");
@@ -78,7 +81,7 @@ const version = process.argv[3];
         await octokit.rest.pulls.create({
             owner: 'zowe',
             repo: 'zowe-install-packaging',
-            title: `Upgrade API ML components for Zowe ${version}`,
+            title: `Upgrade API ML components for Zowe RC`,
             head: branch,
             base: branchToMerge,
             body: 'Update manifest.json with bumped API ML components.'
