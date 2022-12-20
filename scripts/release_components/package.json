@@ -1,0 +1,15 @@
+{
+  "name": "bump_components_in_manifest",
+  "version": "1.0.0",
+  "description": "Script to upgrade API ML components version in the manifest.json of zowe install packaging",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "EPL-2.0",
+  "dependencies": {
+      "octokit": "1.7.1"
+   }
+}
