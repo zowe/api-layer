@@ -30,8 +30,8 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
     void setUp() throws IOException {
-        mockServerWithSpecificHttpResponse(200, "serviceid1", 4000, (headers) -> {
-        });
+        mockServerWithSpecificHttpResponse(200, "/serviceid1/test", 4000, (headers) -> {
+        }, "".getBytes());
     }
 
     @Nested

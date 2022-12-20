@@ -11,8 +11,8 @@
 package org.zowe.apiml.gateway.security.ticket;
 
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.security.common.ticket.TicketRequest;
-import org.zowe.apiml.security.common.ticket.TicketResponse;
+import org.zowe.apiml.ticket.TicketRequest;
+import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
