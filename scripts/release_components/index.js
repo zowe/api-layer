@@ -65,7 +65,7 @@ const version = process.argv[3];
         }
     }
     else if (apimlReleasePrs.length === 0) {
-        // make new PR since none exists for changelog
+        // make new PR since none exists for components upgrade
 
         await writeFile('../../manifest.json.template', manifestJsonContent);
 
