@@ -54,7 +54,6 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -146,17 +145,17 @@ public class HttpConfig {
         return new HttpsFactory(config);
     }
 
-//    @Bean
+    //    @Bean
 //    @ConditionalOnProperty(name = "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices", havingValue = "true")
 //    HttpClientCustomizer apimlCustomizer() {
 //        SslProvider provider = SslProvider.defaultClientProvider();
 //        return httpClient -> httpClient.secure(provider);
 //    }
     @Bean
-    HttpClientCustomizer secureCustomizer()  {
+    HttpClientCustomizer secureCustomizer() {
 
 
-        return httpClient -> httpClient.secure(b ->{
+        return httpClient -> httpClient.secure(b -> {
             b.sslContext(sslContext());
         });
     }
@@ -179,11 +178,12 @@ public class HttpConfig {
             trustManagerFactory.init(trustStore);
             return SslContextBuilder.forClient().keyManager(keyManagerFactory).trustManager(trustManagerFactory).build();
         } catch (Exception e) {
-            log.error("Exception while creating SSL context",e);
+            log.error("Exception while creating SSL context", e);
             System.exit(1);
             return null;
         }
     }
+
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
