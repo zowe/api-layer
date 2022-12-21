@@ -31,8 +31,9 @@ import java.util.Base64;
 
 @Service
 public class PassticketFilterFactory extends AbstractGatewayFilterFactory<PassticketFilterFactory.Config> {
-    private WebClient webClient;
-    private InstanceInfoService instanceInfoService;
+    private final WebClient webClient;
+    private final InstanceInfoService instanceInfoService;
+    private final String ticketUrl = "%s://%s:%s/%s/api/v1/auth/ticket";
     ObjectWriter writer = new ObjectMapper().writer();
 
     public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService) {
@@ -49,15 +50,14 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
                 instanceInfoService.getServiceInstance("gateway").flatMap(instances -> {
                     for (ServiceInstance instance : instances) {
                         return webClient.post()
-                            .uri(String.format("%s://%s:%s/%s/api/v1/auth/ticket", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
+                            .uri(String.format(ticketUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
                             .headers((headers) -> headers.addAll(exchange.getRequest().getHeaders()))
                             .bodyValue(requestBody)
                             .retrieve()
                             .bodyToMono(TicketResponse.class)
                             .flatMap(response -> {
-
-                                byte[] headerValue = Base64.getEncoder().encode((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
-                                ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> headers.add(HttpHeaders.AUTHORIZATION, new String(headerValue))).build();
+                                String headerValue = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
+                                ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> headers.add(HttpHeaders.AUTHORIZATION, headerValue)).build();
                                 return chain.filter(exchange.mutate().request(request).build());
                             });
                     }

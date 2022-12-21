@@ -380,6 +380,19 @@ task runCloudGatewayProxyTest(type: Test) {
         )
     }
 }
+task runCloudGatewayServiceRoutingTest(type: Test) {
+    group "integration tests"
+    description "Run tests verifying cloud gateway can locate service and translate auth scheme"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CloudGatewayServiceRouting'
+        )
+    }
+}
 
 task runOauth2Tests(type: Test) {
     group "integration tests"
