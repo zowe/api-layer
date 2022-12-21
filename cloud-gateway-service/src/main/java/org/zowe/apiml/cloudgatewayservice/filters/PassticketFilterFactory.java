@@ -56,8 +56,12 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
                             .retrieve()
                             .bodyToMono(TicketResponse.class)
                             .flatMap(response -> {
-                                String headerValue = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
-                                ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> headers.add(HttpHeaders.AUTHORIZATION, headerValue)).build();
+                                String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
+                                final String headerValue = "Basic " + encodedCredentials;
+                                ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
+                                    headers.add(HttpHeaders.AUTHORIZATION, headerValue);
+                                    headers.remove(org.springframework.http.HttpHeaders.COOKIE);
+                                }).build();
                                 return chain.filter(exchange.mutate().request(request).build());
                             });
                     }

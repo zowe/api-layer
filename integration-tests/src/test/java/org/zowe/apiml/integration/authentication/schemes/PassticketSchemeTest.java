@@ -95,7 +95,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     @Tag("CloudGatewayServiceRouting")
     void givenValidJWT_thenTranslateToPassticket() {
         RestAssured.useRelaxedHTTPSValidation();
-        String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
         verifyPassTicketHeaders(
             given().cookie(COOKIE_NAME, jwt)
                 .when()
@@ -257,6 +257,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             }
         }
     }
+
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
     void verifyPassTicketHeaders(T v) {
