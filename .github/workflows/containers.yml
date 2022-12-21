@@ -49,7 +49,8 @@ jobs:
                     APIML_SERVICE_GATEWAY_PROXY_ENABLED: false
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
             -   uses: actions/checkout@v2
                 with:
