@@ -1302,7 +1302,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy]
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting]
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1347,10 +1347,14 @@ jobs:
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
                     path: citestswebsocketchaoticha
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
+                    path: cloudgatewayservicerouting
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
