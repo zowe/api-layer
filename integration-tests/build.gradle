@@ -301,7 +301,8 @@ task runContainerTests(type: Test) {
             'ChaoticHATest',
             'InfinispanStorageTest',
             'OktaOauth2Test',
-            'CloudGatewayProxyTest'
+            'CloudGatewayProxyTest',
+            'CloudGatewayServiceRouting'
         )
     }
 }
