@@ -114,6 +114,7 @@ public class DiscoveryClientTestConfig {
         return jerseyClient;
     }
 
+
     @Bean
     InstanceInfoService instanceInfoService() {
         return mock(InstanceInfoService.class);

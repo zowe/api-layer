@@ -18,6 +18,8 @@ import com.netflix.discovery.shared.Applications;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.MetadataBuilder;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +30,21 @@ import java.util.Map;
  */
 public class ApplicationRegistry {
     private String currentApplication;
+
+    protected int servicePort;
     private Map<String, Applications> applicationsToReturn = new HashMap<>();
+
     public ApplicationRegistry() {
+    }
+
+    public synchronized int findFreePort() {
+        if (servicePort != 0) return servicePort;
+        try (ServerSocket server = new ServerSocket(0);) {
+            this.servicePort = server.getLocalPort();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to find free local port to bind the agent to", e);
+        }
+        return servicePort;
     }
 
     /**
@@ -84,10 +99,6 @@ public class ApplicationRegistry {
         return applicationsToReturn.get(currentApplication).getRegisteredApplications(currentApplication).getInstances();
     }
 
-    public InstanceInfo getInstanceInfo() {
-        return applicationsToReturn.get(currentApplication).getRegisteredApplications(currentApplication).getInstances().get(0);
-    }
-
     private InstanceInfo getStandardInstance(Map<String, String> metadata, String serviceId, String instanceId) {
         return InstanceInfo.Builder.newBuilder()
             .setAppName(serviceId)
@@ -97,8 +108,8 @@ public class ApplicationRegistry {
             .setMetadata(metadata)
             .setDataCenterInfo(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn))
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setSecurePort(4000)
-            .setPort(4000)
+            .setSecurePort(findFreePort())
+            .setPort(findFreePort())
             .build();
     }
 }

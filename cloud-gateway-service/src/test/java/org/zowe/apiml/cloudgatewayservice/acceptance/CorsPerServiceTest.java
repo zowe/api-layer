@@ -26,7 +26,7 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test
     void routeToServiceWithCorsEnabled() throws IOException {
-        mockServerWithSpecificHttpResponse(200, "/serviceid2/test", 4000, (headers) ->
+        mockServerWithSpecificHttpResponse(200, "/serviceid2/test", 0, (headers) ->
             assertTrue(headers != null && headers.get("Origin") == null),
             "".getBytes()
         );

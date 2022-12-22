@@ -51,7 +51,7 @@ public class PassticketTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
     void setup() {
-        InstanceInfo info = InstanceInfo.Builder.newBuilder().setInstanceId("gateway").setHostName("localhost").setPort(4001).setAppName("gateway").setStatus(InstanceInfo.InstanceStatus.UP).build();
+        InstanceInfo info = InstanceInfo.Builder.newBuilder().setInstanceId("gateway").setHostName("localhost").setPort(getApplicationRegistry().findFreePort() + 1).setAppName("gateway").setStatus(InstanceInfo.InstanceStatus.UP).build();
         ServiceInstance instance = new EurekaServiceInstance(info);
         Mockito.when(instanceInfoService.getServiceInstance("gateway")).thenReturn(Mono.just(Collections.singletonList(instance)));
     }
@@ -61,7 +61,7 @@ public class PassticketTest extends AcceptanceTestWithTwoServices {
         @Test
         void whenRequestingPassticketForAllowedAPPLID_thenTranslate() throws IOException {
             AtomicBoolean result = new AtomicBoolean(false);
-            mockServerWithSpecificHttpResponse(200, "/serviceid2/test", 4000, (headers) -> {
+            mockServerWithSpecificHttpResponse(200, "/serviceid2/test", 0, (headers) -> {
                     result.set(headers != null && headers.get(HttpHeaders.AUTHORIZATION) != null);
                 }, "".getBytes()
             );
@@ -71,7 +71,7 @@ public class PassticketTest extends AcceptanceTestWithTwoServices {
             response.setApplicationName("IZUDFLT");
             response.setTicket("ZOWE_DUMMY_PASS_TICKET");
             ObjectWriter writer = new ObjectMapper().writer();
-            mockServerWithSpecificHttpResponse(200, "/gateway/api/v1/auth/ticket", 4001, (headers) -> {
+            mockServerWithSpecificHttpResponse(200, "/gateway/api/v1/auth/ticket", getApplicationRegistry().findFreePort() + 1, (headers) -> {
                 }, writer.writeValueAsString(response).getBytes()
             );
             given()

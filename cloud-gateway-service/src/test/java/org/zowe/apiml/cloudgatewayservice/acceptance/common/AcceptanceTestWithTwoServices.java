@@ -34,6 +34,10 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @Autowired
     protected ApplicationRegistry applicationRegistry;
 
+    public ApplicationRegistry getApplicationRegistry() {
+        return applicationRegistry;
+    }
+
     protected HttpServer server;
     protected Service serviceWithDefaultConfiguration = new Service("serviceid2", "/serviceid2/**", "serviceid2");
     protected Service serviceWithCustomConfiguration = new Service("serviceid1", "/serviceid1/**", "serviceid1");
@@ -51,6 +55,9 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     }
 
     protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode, String uri, int port, Consumer<Headers> assertion, byte[] body) throws IOException {
+        if (port == 0) {
+            port = applicationRegistry.findFreePort();
+        }
         server = HttpServer.create(new InetSocketAddress(port), 0);
         AtomicInteger counter = new AtomicInteger();
         server.createContext(uri, (t) -> {
