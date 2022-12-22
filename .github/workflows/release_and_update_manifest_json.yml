@@ -1,0 +1,35 @@
+# This workflow will release project with Gradle
+name: Update manifest.json in zowe-install-packaging and create PR
+
+on:
+    workflow_dispatch:
+        inputs:
+            release_version:
+                description: 'The version that is used to upgrade the API ML components and images in the manifest.json'
+                required: true
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Set up Node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Upgrade API ML components in zowe-install-packaging
+              run: |
+                  git config --global user.email "zowe-robot@users.noreply.github.com"
+                  git config --global user.name "Zowe Robot"
+                  git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/zowe-install-packaging.git
+                  cd zowe-install-packaging
+                  git checkout v2.x/rc
+                  cd ../scripts/release_components
+                  npm install
+                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.release_version }}
+            - uses: ./.github/actions/teardown
