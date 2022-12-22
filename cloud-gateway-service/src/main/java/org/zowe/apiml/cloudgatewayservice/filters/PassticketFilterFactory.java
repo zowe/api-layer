@@ -80,5 +80,8 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
             return applicationName;
         }
 
+        public void setApplicationName(String applicationName) {
+            this.applicationName = applicationName;
+        }
     }
 }
