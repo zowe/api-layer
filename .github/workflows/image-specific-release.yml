@@ -8,7 +8,7 @@ on:
                 required: true
 
 jobs:
-    build-test-services:
+    build-services:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
@@ -17,14 +17,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Build and test services
-                run: ./gradlew build
+            -   name: Build services
+                run: ./gradlew build -x test
 
             -   uses: ./.github/actions/teardown
 
     publish-images:
         needs:
-            - build-test-services
+            - build-services
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
         with:
             version: ${{ github.event.inputs.release_version }}

@@ -19,7 +19,7 @@ on:
                 default: 'all'
 
 jobs:
-    build-test-services:
+    build-services:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
@@ -34,14 +34,14 @@ jobs:
 
             -   name: Build all services for images
                 if: ${{ github.event.inputs.service == 'all' }}
-                run: ./gradlew build
+                run: ./gradlew build -x test
 
             -   uses: ./.github/actions/teardown
 
 
     publish-images:
         needs:
-            - build-test-services
+            - build-services
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
         with:
             service: ${{ github.event.inputs.service }}
