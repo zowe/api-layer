@@ -34,7 +34,7 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
     private final WebClient webClient;
     private final InstanceInfoService instanceInfoService;
     private final String ticketUrl = "%s://%s:%s/%s/api/v1/auth/ticket";
-    ObjectWriter writer = new ObjectMapper().writer();
+    private final ObjectWriter writer = new ObjectMapper().writer();
 
     public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService) {
         super(Config.class);
@@ -51,7 +51,7 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
                     for (ServiceInstance instance : instances) {
                         return webClient.post()
                             .uri(String.format(ticketUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
-                            .headers((headers) -> headers.addAll(exchange.getRequest().getHeaders()))
+                            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()))
                             .bodyValue(requestBody)
                             .retrieve()
                             .bodyToMono(TicketResponse.class)
@@ -80,8 +80,5 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
             return applicationName;
         }
 
-        public void setApplicationName(String applicationName) {
-            this.applicationName = applicationName;
-        }
     }
 }

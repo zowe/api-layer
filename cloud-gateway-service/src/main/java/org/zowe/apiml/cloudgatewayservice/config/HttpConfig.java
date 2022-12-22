@@ -57,8 +57,9 @@ import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public class HttpConfig {
     private String protocol;
 
     @Value("${server.ssl.trustStore:#{null}}")
-    private String trustStore;
+    private String trustStorePath;
 
     @Value("${server.ssl.trustStorePassword:#{null}}")
     private char[] trustStorePassword;
@@ -86,7 +87,7 @@ public class HttpConfig {
     private String keyAlias;
 
     @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStore;
+    private String keyStorePath;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
     private char[] keyStorePassword;
@@ -137,42 +138,32 @@ public class HttpConfig {
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-            .trustStore(trustStore).trustStoreType(trustStoreType)
-            .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
+            .trustStore(trustStorePath).trustStoreType(trustStoreType)
+            .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
         log.info("Using HTTPS configuration: {}", config.toString());
 
         return new HttpsFactory(config);
     }
 
-    //    @Bean
-//    @ConditionalOnProperty(name = "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices", havingValue = "true")
-//    HttpClientCustomizer apimlCustomizer() {
-//        SslProvider provider = SslProvider.defaultClientProvider();
-//        return httpClient -> httpClient.secure(provider);
-//    }
     @Bean
     HttpClientCustomizer secureCustomizer() {
-
-
-        return httpClient -> httpClient.secure(b -> {
-            b.sslContext(sslContext());
-        });
+        return httpClient -> httpClient.secure(b -> b.sslContext(sslContext()));
     }
 
     SslContext sslContext() {
         try {
-            KeyStore keyStore1 = KeyStore.getInstance(this.keyStoreType);
-            try (InputStream inStream = new FileInputStream(keyStore)) {
-                keyStore1.load(inStream, keyStorePassword);
+            KeyStore keyStore = KeyStore.getInstance(this.keyStoreType);
+            try (InputStream inStream = Files.newInputStream(Paths.get(keyStorePath))) {
+                keyStore.load(inStream, keyStorePassword);
             }
             KeyStore trustStore = KeyStore.getInstance(this.trustStoreType);
-            try (InputStream inStream = new FileInputStream(this.trustStore)) {
+            try (InputStream inStream = Files.newInputStream(Paths.get(this.trustStorePath))) {
                 trustStore.load(inStream, this.trustStorePassword);
             }
 
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            keyManagerFactory.init(keyStore1, keyStorePassword);
+            keyManagerFactory.init(keyStore, keyStorePassword);
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
             trustManagerFactory.init(trustStore);
