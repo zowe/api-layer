@@ -35,6 +35,7 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
     private final InstanceInfoService instanceInfoService;
     private final String ticketUrl = "%s://%s:%s/%s/api/v1/auth/ticket";
     private final ObjectWriter writer = new ObjectMapper().writer();
+    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 
     public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService) {
         super(Config.class);
@@ -65,10 +66,16 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
                                 return chain.filter(exchange.mutate().request(request).build());
                             });
                     }
-                    return chain.filter(exchange);
+                    ServerHttpRequest request = exchange.getRequest().mutate()
+                        .headers(headers -> headers.add(AUTH_FAIL_HEADER, "Not able to generate passticket on any gateway instance.")).build();
+                    return chain.filter(exchange.mutate().request(request).build());
                 });
         } catch (JsonProcessingException e) {
-            return ((exchange, chain) -> chain.filter(exchange));
+            return ((exchange, chain) -> {
+                ServerHttpRequest request = exchange.getRequest().mutate()
+                    .headers(headers -> headers.add(AUTH_FAIL_HEADER, e.getMessage())).build();
+                return chain.filter(exchange.mutate().request(request).build());
+            });
         }
     }
 
