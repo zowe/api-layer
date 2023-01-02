@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 
@@ -33,14 +34,17 @@ import java.util.Base64;
 public class PassticketFilterFactory extends AbstractGatewayFilterFactory<PassticketFilterFactory.Config> {
     private final WebClient webClient;
     private final InstanceInfoService instanceInfoService;
+    private final MessageService messageService;
     private final String ticketUrl = "%s://%s:%s/%s/api/v1/auth/ticket";
     private final ObjectWriter writer = new ObjectMapper().writer();
     public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 
-    public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService) {
+
+    public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(Config.class);
         this.webClient = webClient;
         this.instanceInfoService = instanceInfoService;
+        this.messageService = messageService;
     }
 
     @Override
@@ -67,7 +71,7 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
                             });
                     }
                     ServerHttpRequest request = exchange.getRequest().mutate()
-                        .headers(headers -> headers.add(AUTH_FAIL_HEADER, "Not able to generate passticket on any gateway instance.")).build();
+                        .headers(headers -> headers.add(AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "All gateway service instances failed to respond.").mapToLogMessage())).build();
                     return chain.filter(exchange.mutate().request(request).build());
                 });
         } catch (JsonProcessingException e) {

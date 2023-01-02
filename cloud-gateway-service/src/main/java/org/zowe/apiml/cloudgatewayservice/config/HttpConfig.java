@@ -50,6 +50,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.util.CorsUtils;
@@ -259,6 +261,11 @@ public class HttpConfig {
     @Bean
     public CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled);
+    }
+
+    @Bean
+    public MessageService messageService() {
+        return YamlMessageServiceInstance.getInstance();
     }
 
 }
