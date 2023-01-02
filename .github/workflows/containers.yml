@@ -167,6 +167,52 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CloudGatewayServiceRouting:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+            cloud-gateway-service:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_GATEWAY_PROXY_ENABLED: false
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runCloudGatewayServiceRoutingTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
     CITestsRegistration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -1256,7 +1302,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy]
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting]
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1301,10 +1347,14 @@ jobs:
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
                     path: citestswebsocketchaoticha
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
+                    path: cloudgatewayservicerouting
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results"
+                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:

@@ -13,7 +13,7 @@ package org.zowe.apiml.gateway.security.service.ticket;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
-import org.zowe.apiml.security.common.ticket.TicketRequest;
+import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;

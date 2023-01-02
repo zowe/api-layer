@@ -35,11 +35,13 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.common.MetadataBuilder;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
+import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static org.mockito.Mockito.*;
+
 /**
  * This configuration provides the bean for the ApplicationRegistry and overrides bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
  * <p>
@@ -110,5 +112,11 @@ public class DiscoveryClientTestConfig {
         when(response.getEntity(Applications.class)).thenReturn(registry.getApplications());
 
         return jerseyClient;
+    }
+
+
+    @Bean
+    InstanceInfoService instanceInfoService() {
+        return mock(InstanceInfoService.class);
     }
 }

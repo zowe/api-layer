@@ -301,7 +301,8 @@ task runContainerTests(type: Test) {
             'ChaoticHATest',
             'InfinispanStorageTest',
             'OktaOauth2Test',
-            'CloudGatewayProxyTest'
+            'CloudGatewayProxyTest',
+            'CloudGatewayServiceRouting'
         )
     }
 }
@@ -348,7 +349,9 @@ task runBaseTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'CloudGatewayProxyTest',
+            'CloudGatewayServiceRouting'
         )
     }
 }
@@ -377,6 +380,19 @@ task runCloudGatewayProxyTest(type: Test) {
     useJUnitPlatform {
         includeTags(
             'CloudGatewayProxyTest'
+        )
+    }
+}
+task runCloudGatewayServiceRoutingTest(type: Test) {
+    group "integration tests"
+    description "Run tests verifying cloud gateway can locate service and translate auth scheme"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CloudGatewayServiceRouting'
         )
     }
 }

@@ -118,19 +118,19 @@ messages:
   ```
   apiml:
     security:
-        auth: 
+        auth:
             zosmf:
-                jwtAutoconfiguration: 
+                jwtAutoconfiguration:
   ```
   Apply one of the following values:
 
-  * **auto**  
+  * **auto**
   Signifies that API ML is enabled to resolve the JWT producer
 
-  * **jwt**  
+  * **jwt**
   Signifies that z/OSMF supports JWT (APAR PH12143 is applied)
 
-  * **ltpa**  
+  * **ltpa**
   Signifies that z/OSMF does not support JWT"
 
     - key: org.zowe.apiml.gateway.keys.unknown
@@ -276,21 +276,6 @@ messages:
       text: "No authorization token provided for URL '%s'"
       reason: "No authorization token is provided."
       action: "Provide a valid authorization token."
-
-    # Ticket messages (140 - 149)
-    - key: org.zowe.apiml.security.ticket.invalidApplicationName
-      number: ZWEAG140
-      type: ERROR
-      text: "The 'applicationName' parameter name is missing."
-      reason: "The application name is not provided."
-      action: "Provide the 'applicationName' parameter."
-
-    - key: org.zowe.apiml.security.ticket.generateFailed
-      number: ZWEAG141
-      type: ERROR
-      text: "The generation of the PassTicket failed. Reason: %s"
-      reason: "An error occurred in the SAF Auth Service. Review the reason in the error message."
-      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
 
     # IDT messages (150 - 159)
     - key: org.zowe.apiml.security.idt.failed

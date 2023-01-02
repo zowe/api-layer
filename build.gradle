@@ -151,6 +151,11 @@ task runCloudGatewayProxyTest(dependsOn: [":integration-tests:runCloudGatewayPro
     group "Integration tests"
 }
 
+task runCloudGatewayServiceRoutingTest(dependsOn: [":integration-tests:runCloudGatewayServiceRoutingTest"]) {
+    description "Run tests verifying cloud gateway can locate service and translate auth scheme"
+    group "Integration tests"
+}
+
 task runOauth2Tests(dependsOn: [":integration-tests:runOauth2Tests"]) {
     description "Run tests verifying integration with oauth2 provider(okta)"
     group "Integration tests"

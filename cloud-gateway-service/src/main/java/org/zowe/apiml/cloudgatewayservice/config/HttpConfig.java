@@ -18,6 +18,8 @@ import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +43,26 @@ import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.util.CorsUtils;
-import reactor.netty.tcp.SslProvider;
+import reactor.netty.http.client.HttpClient;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +77,7 @@ public class HttpConfig {
     private String protocol;
 
     @Value("${server.ssl.trustStore:#{null}}")
-    private String trustStore;
+    private String trustStorePath;
 
     @Value("${server.ssl.trustStorePassword:#{null}}")
     private char[] trustStorePassword;
@@ -77,7 +89,7 @@ public class HttpConfig {
     private String keyAlias;
 
     @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStore;
+    private String keyStorePath;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
     private char[] keyStorePassword;
@@ -118,25 +130,51 @@ public class HttpConfig {
     @Bean
     @Qualifier("apimlEurekaJerseyClient")
     EurekaJerseyClient getEurekaJerseyClient() {
+        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
+    }
+
+
+    HttpsFactory factory() {
         HttpsConfig config = HttpsConfig.builder()
             .protocol(protocol)
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-            .trustStore(trustStore).trustStoreType(trustStoreType)
-            .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
+            .trustStore(trustStorePath).trustStoreType(trustStoreType)
+            .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
         log.info("Using HTTPS configuration: {}", config.toString());
 
-        HttpsFactory factory = new HttpsFactory(config);
-        return factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
+        return new HttpsFactory(config);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices", havingValue = "true")
-    HttpClientCustomizer apimlCustomizer() {
-        SslProvider provider = SslProvider.defaultClientProvider();
-        return httpClient -> httpClient.secure(provider);
+    HttpClientCustomizer secureCustomizer() {
+        return httpClient -> httpClient.secure(b -> b.sslContext(sslContext()));
+    }
+
+    SslContext sslContext() {
+        try {
+            KeyStore keyStore = KeyStore.getInstance(this.keyStoreType);
+            try (InputStream inStream = Files.newInputStream(Paths.get(keyStorePath))) {
+                keyStore.load(inStream, keyStorePassword);
+            }
+            KeyStore trustStore = KeyStore.getInstance(this.trustStoreType);
+            try (InputStream inStream = Files.newInputStream(Paths.get(this.trustStorePath))) {
+                trustStore.load(inStream, this.trustStorePassword);
+            }
+
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyManagerFactory.init(keyStore, keyStorePassword);
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+
+            trustManagerFactory.init(trustStore);
+            return SslContextBuilder.forClient().keyManager(keyManagerFactory).trustManager(trustManagerFactory).build();
+        } catch (Exception e) {
+            log.error("Exception while creating SSL context", e);
+            System.exit(1);
+            return null;
+        }
     }
 
     @Bean(destroyMethod = "shutdown")
@@ -182,6 +220,13 @@ public class HttpConfig {
     }
 
     @Bean
+    public WebClient webClient() {
+        HttpClient client = HttpClient.create().secure(ssl -> ssl.sslContext(sslContext()));
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(client)).build();
+
+    }
+
+    @Bean
     public List<FilterDefinition> filters() {
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
@@ -216,6 +261,11 @@ public class HttpConfig {
     @Bean
     public CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled);
+    }
+
+    @Bean
+    public MessageService messageService() {
+        return YamlMessageServiceInstance.getInstance();
     }
 
 }

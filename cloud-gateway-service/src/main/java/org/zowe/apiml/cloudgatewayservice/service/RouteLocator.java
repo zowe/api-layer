@@ -23,6 +23,8 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
@@ -48,6 +50,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private UrlBasedCorsConfigurationSource corsConfigurationSource;
     private CorsUtils corsUtils;
+    private EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
     public RouteLocator(ReactiveDiscoveryClient discoveryClient,
                         DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
@@ -84,13 +87,14 @@ public class RouteLocator implements RouteDefinitionLocator {
         SpelExpressionParser parser = new SpelExpressionParser();
         Expression urlExpr = parser.parseExpression(properties.getUrlExpression());
 
-        EurekaMetadataParser metadataParser = new EurekaMetadataParser();
         return serviceInstances.filter(instances -> !instances.isEmpty()).flatMap(Flux::fromIterable)
             .collectMap(ServiceInstance::getInstanceId)
             // remove duplicates
             .flatMapMany(map -> Flux.fromIterable(map.values())).map(instance -> {
 
                 List<RoutedService> routedServices = metadataParser.parseToListRoute(instance.getMetadata());
+
+
                 List<RouteDefinition> definitionsForInstance = new ArrayList<>();
                 for (RoutedService service : routedServices) {
                     RouteDefinition routeDefinition = buildRouteDefinition(urlExpr, instance, service.getSubServiceId());
@@ -118,6 +122,17 @@ public class RouteLocator implements RouteDefinitionLocator {
         filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
 
         routeDefinition.getFilters().add(filter);
+        Authentication auth = metadataParser.parseAuthentication(instance.getMetadata());
+
+        if (auth != null && auth.getScheme() != null) {
+            String schemeName = auth.getScheme().getScheme();
+            if (AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme().equals(schemeName)) {
+                FilterDefinition filerDef = new FilterDefinition();
+                filerDef.setName("PassticketFilterFactory");
+                filerDef.addArg("applicationName", auth.getApplid());
+                routeDefinition.getFilters().add(filerDef);
+            }
+        }
 
         for (FilterDefinition defaultFilter : getFilters()) {
             routeDefinition.getFilters().add(defaultFilter);
