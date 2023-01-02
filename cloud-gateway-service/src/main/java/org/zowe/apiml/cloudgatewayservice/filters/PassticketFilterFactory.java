@@ -18,6 +18,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,6 +27,7 @@ import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
+import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -54,27 +56,32 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
             return (ServerWebExchange exchange, GatewayFilterChain chain) ->
                 instanceInfoService.getServiceInstance("gateway").flatMap(instances -> {
                     for (ServiceInstance instance : instances) {
-                        return webClient.post()
-                            .uri(String.format(ticketUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
-                            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()))
-                            .bodyValue(requestBody)
-                            .retrieve()
-                            .bodyToMono(TicketResponse.class)
-                            .flatMap(response -> {
-                                String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
-                                final String headerValue = "Basic " + encodedCredentials;
-                                ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
-                                    headers.add(HttpHeaders.AUTHORIZATION, headerValue);
-                                    headers.remove(org.springframework.http.HttpHeaders.COOKIE);
-                                }).build();
-                                return chain.filter(exchange.mutate().request(request).build());
-                            });
+                            return webClient.post()
+                                .uri(String.format(ticketUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
+                                .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()))
+                                .bodyValue(requestBody)
+                                .retrieve().onStatus(HttpStatus::is4xxClientError,(response)-> Mono.empty())
+                                .bodyToMono(TicketResponse.class)
+                                .flatMap(response -> {
+                                    if (response.getTicket() == null) {
+                                        ServerHttpRequest request = exchange.getRequest().mutate()
+                                            .headers(headers -> headers.add(AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "Invalid or missing authentication.").mapToLogMessage())).build();
+                                        return chain.filter(exchange.mutate().request(request).build());
+                                    }
+                                    String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
+                                    final String headerValue = "Basic " + encodedCredentials;
+                                    ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
+                                        headers.add(HttpHeaders.AUTHORIZATION, headerValue);
+                                        headers.remove(org.springframework.http.HttpHeaders.COOKIE);
+                                    }).build();
+                                    return chain.filter(exchange.mutate().request(request).build());
+                                });
                     }
                     ServerHttpRequest request = exchange.getRequest().mutate()
                         .headers(headers -> headers.add(AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "All gateway service instances failed to respond.").mapToLogMessage())).build();
                     return chain.filter(exchange.mutate().request(request).build());
                 });
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             return ((exchange, chain) -> {
                 ServerHttpRequest request = exchange.getRequest().mutate()
                     .headers(headers -> headers.add(AUTH_FAIL_HEADER, e.getMessage())).build();
