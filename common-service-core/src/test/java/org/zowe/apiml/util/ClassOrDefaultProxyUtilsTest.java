@@ -250,28 +250,34 @@ class ClassOrDefaultProxyUtilsTest {
             StaticMethods staticMethods = ClassOrDefaultProxyUtils.createProxy(
                 StaticMethods.class,
                 "org.zowe.apiml.util.ClassOrDefaultProxyUtilsTest$StaticMethodsTestClass",
-                MockClass::new
+                    StaticMethodsMockClass::new
             );
             assertEquals(VALUE, staticMethods.getValue());
         }
+
+    }
+
+    @Nested
+    class GivenInvalidMapping {
 
         @Test
         void whenClassIsMissing_thenCallMock() {
             StaticMethods staticMethods = ClassOrDefaultProxyUtils.createProxy(
                     StaticMethods.class,
                     "unknown.Class",
-                    MockClass::new
+                    StaticMethodsMockClass::new
             );
             assertEquals(MOCKED_VALUE, staticMethods.getValue());
         }
 
-        class MockClass implements StaticMethods {
-
-            @Override
-            public String getValue() {
-                return MOCKED_VALUE;
-            }
-
+        @Test
+        void whenMethodDefinitionsAreNotMatching_thenUseMock() {
+            StaticMethods staticMethods = ClassOrDefaultProxyUtils.createProxy(
+                    StaticMethods.class,
+                    "org.zowe.apiml.util.ClassOrDefaultProxyUtilsTest$InvalidStaticMethodsTestClass",
+                    StaticMethodsMockClass::new
+            );
+            assertEquals(MOCKED_VALUE, staticMethods.getValue());
         }
 
     }
@@ -282,6 +288,15 @@ class ClassOrDefaultProxyUtilsTest {
 
     }
 
+    class StaticMethodsMockClass implements StaticMethods {
+
+        @Override
+        public String getValue() {
+            return MOCKED_VALUE;
+        }
+
+    }
+
     public static class StaticMethodsTestClass {
 
         private StaticMethodsTestClass() {
@@ -289,6 +304,13 @@ class ClassOrDefaultProxyUtilsTest {
 
         public static String getValue() {
             return VALUE;
+        }
+
+    }
+
+    public static class InvalidStaticMethodsTestClass {
+
+        private InvalidStaticMethodsTestClass() {
         }
 
     }

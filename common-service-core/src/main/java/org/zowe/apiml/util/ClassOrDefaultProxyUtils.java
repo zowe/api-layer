@@ -15,7 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -65,25 +68,30 @@ public final class ClassOrDefaultProxyUtils {
      * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
      */
     public static <T> T createProxy(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, ExceptionMapping<? extends Exception>... exceptionMappings) {
-        final Class<?> implementationClazz;
+        Class<?> implementationClazz = null;
         try {
             implementationClazz = Class.forName(implementationClassName);
         } catch (ClassNotFoundException e) {
-            return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);
+            log.warn("Implementation {} is not available, it will continue with default one {} : " + e.getLocalizedMessage(),
+                    implementationClassName, defaultImplementation);
         }
 
-        try {
-            return createProxyByConstructor(interfaceClass, implementationClazz, defaultImplementation, new Class[]{}, new Object[]{}, exceptionMappings);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            log.warn("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
-                    implementationClassName, new Class[]{}, defaultImplementation);
-        }
+        if (implementationClazz != null) {
+            // First attempt to proxy instantiable class
+            try {
+                return createProxyByConstructor(interfaceClass, implementationClazz, defaultImplementation, new Class[]{}, new Object[]{}, exceptionMappings);
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                log.debug("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
+                        implementationClassName, new Class[]{}, defaultImplementation);
+            }
 
-        try {
-            return makeProxy(interfaceClass, implementationClazz, true, exceptionMappings);
-        } catch (Exception e) {
-            log.warn("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
-                    implementationClassName, new Class[]{}, defaultImplementation);
+            // second try to proxy static library class
+            try {
+                return makeProxy(interfaceClass, implementationClazz, true, exceptionMappings);
+            } catch (Exception e) {
+                log.warn("Implementation {} cannot be proxied by {}, it will continue with default one {} : " + e.getLocalizedMessage(),
+                        implementationClassName, interfaceClass, defaultImplementation);
+            }
         }
 
         return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);
@@ -218,18 +226,19 @@ public final class ClassOrDefaultProxyUtils {
             return output;
         }
 
-        private void initMapping() {
-            // To using static methods is provided Class instead of implementation
-            final Class<?> implementationClass = (implementation instanceof Class) ? (Class<?>) implementation : implementation.getClass();
+        private Map<String, EndPoint> getDeclaredMethodMapping() {
             final Map<String, EndPoint> byName = new HashMap<>();
-
-            // first check the state interface. It has higher priority, could rewrite previous mapping
             for (final Method method : ClassOrDefaultProxyState.class.getDeclaredMethods()) {
                 final EndPoint endPoint = addMapping(this, method, method);
                 byName.put(ObjectUtil.getMethodIdentifier(method), endPoint);
             }
+            return byName;
+        }
 
-            // second map methods of target
+        private void mapTargetMethods(Map<String, EndPoint> byName) {
+            // To using static methods is provided Class instead of implementation
+            final Class<?> implementationClass = (implementation instanceof Class) ? (Class<?>) implementation : implementation.getClass();
+
             for (Class<?> partInterfaceClass : fetchAllInterfaces(interfaceClass)) {
                 for (final Method caller : partInterfaceClass.getDeclaredMethods()) {
                     // ignore methods of frameworks created during execution
@@ -252,6 +261,16 @@ public final class ClassOrDefaultProxyUtils {
                     }
                 }
             }
+        }
+
+        private void initMapping() {
+            final Map<String, EndPoint> byName;
+
+            // first check the state interface. It has higher priority, could rewrite previous mapping
+            byName = getDeclaredMethodMapping();
+
+            // second map methods of target
+            mapTargetMethods(byName);
         }
 
         @Override
