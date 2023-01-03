@@ -56,6 +56,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 
     public static Stream<Arguments> getTokens() {
         return Stream.of(
@@ -91,17 +92,34 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
-    @Test
-    @Tag("CloudGatewayServiceRouting")
-    void givenValidJWT_thenTranslateToPassticket() {
-        RestAssured.useRelaxedHTTPSValidation();
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
-        verifyPassTicketHeaders(
-            given().cookie(COOKIE_NAME, jwt)
+    @Nested
+    class GivenCloudGatewayUrlTests {
+        @Test
+        @Tag("CloudGatewayServiceRouting")
+        void givenValidJWT_thenTranslateToPassticket() {
+            RestAssured.useRelaxedHTTPSValidation();
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
+            verifyPassTicketHeaders(
+                given().cookie(COOKIE_NAME, jwt)
+                    .when()
+                    .get(scgUrl)
+                    .then()
+            );
+        }
+
+        @Test
+        @Tag("CloudGatewayServiceRouting")
+        void givenNoJWT_thenErrorHeaderIsCreated() {
+            RestAssured.useRelaxedHTTPSValidation();
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
+            given()
                 .when()
                 .get(scgUrl)
                 .then()
-        );
+                .body("headers.x-zowe-auth-failure", startsWith("ZWEAG141E"))
+                .header(AUTH_FAIL_HEADER, startsWith("ZWEAG141E"))
+                .statusCode(200);
+        }
     }
 
     @Nested
