@@ -65,6 +65,7 @@ dependencies {
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
+    annotationProcessor libraries.spring_boot_configuration_processor
 
     implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
     implementation(libraries.spring_boot_starter_web) {
