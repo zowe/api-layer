@@ -99,9 +99,9 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             throw new ServiceDefinitionException("EurekaClient was previously registered for this instance of ApiMediationClient. Call your ApiMediationClient unregister() method before attempting other registration.");
         }
 
+        defaultCustomMetadataHelper.update(config);
         EurekaClientConfig clientConfiguration = eurekaClientConfigProvider.config(config);
         ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
-        defaultCustomMetadataHelper.update(config);
         eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
     }
 
