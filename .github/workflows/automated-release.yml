@@ -31,7 +31,7 @@ jobs:
             - uses: ./.github/actions/setup
 
             - name: Build with Gradle
-              run: ./gradlew build
+              run: ./gradlew clean build
 
             - name: Clean git
               run: git reset --hard HEAD

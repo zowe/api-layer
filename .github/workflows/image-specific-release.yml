@@ -18,7 +18,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Build services
-                run: ./gradlew build -x test
+                run: ./gradlew clean build -x test
 
             -   uses: ./.github/actions/teardown
 
