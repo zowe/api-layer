@@ -29,7 +29,7 @@ jobs:
               run: |
                   PR_NUMBER=PR-${{ env.PR_NUMBER }}
                   sed -i '/version=/ s/-SNAPSHOT/-'"$PR_NUMBER"'-SNAPSHOT/' ./gradle.properties
-                  ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$PR_NUMBER
+                  ./gradlew clean build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$PR_NUMBER
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
