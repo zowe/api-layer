@@ -64,12 +64,26 @@ public final class ClassOrDefaultProxyUtils {
      * @param exceptionMappings handlers to map exception to custom class
      * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
      */
-    public static <T> T createProxy(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, ExceptionMapping<? extends Exception> ... exceptionMappings) {
+    public static <T> T createProxy(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, ExceptionMapping<? extends Exception>... exceptionMappings) {
+        final Class<?> implementationClazz;
         try {
-            return createProxyByConstructor(interfaceClass, implementationClassName, defaultImplementation, new Class[]{}, new Object[]{}, exceptionMappings);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            implementationClazz = Class.forName(implementationClassName);
+        } catch (ClassNotFoundException e) {
+            return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);
+        }
+
+        try {
+            return createProxyByConstructor(interfaceClass, implementationClazz, defaultImplementation, new Class[]{}, new Object[]{}, exceptionMappings);
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             log.warn("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
-                implementationClassName, new Class[]{},  defaultImplementation);
+                    implementationClassName, new Class[]{}, defaultImplementation);
+        }
+
+        try {
+            return makeProxy(interfaceClass, implementationClazz, true, exceptionMappings);
+        } catch (Exception e) {
+            log.warn("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
+                    implementationClassName, new Class[]{}, defaultImplementation);
         }
 
         return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);
@@ -87,15 +101,33 @@ public final class ClassOrDefaultProxyUtils {
      * @param exceptionMappings handlers to map exception to custom class
      * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
      */
-    public static <T> T createProxyByConstructor(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, Class[] constructorSignature, Object[] constructorParams, ExceptionMapping<? extends Exception> ... exceptionMappings)
+    public static <T> T createProxyByConstructor(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, Class[] constructorSignature, Object[] constructorParams, ExceptionMapping<? extends Exception>... exceptionMappings)
         throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        ObjectUtil.requireNotNull(interfaceClass, "interfaceClass can't be null");
         ObjectUtil.requireNotEmpty(implementationClassName, "implementationClassName can't be empty");
+        final Class<?> implementationClazz = Class.forName(implementationClassName);
+        return createProxyByConstructor(interfaceClass, implementationClazz, defaultImplementation, constructorSignature, constructorParams, exceptionMappings);
+    }
+
+    /**
+     * Same as createProxy but with option to specify constructor signature and supply parameters
+     *
+     * @param interfaceClass Interface of created proxy
+     * @param implementationClazz Class of implementation
+     * @param defaultImplementation Supplier to fetch implementation to use, if the prefer one is missing
+     * @param <T> Common interface for prefer and default implementation
+     * @param constructorSignature Signature of requested constructor
+     * @param constructorParams Parameters for requested constructor
+     * @param exceptionMappings handlers to map exception to custom class
+     * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
+     */
+    public static <T> T createProxyByConstructor(Class<T> interfaceClass, Class<?> implementationClazz, Supplier<? extends T> defaultImplementation, Class[] constructorSignature, Object[] constructorParams, ExceptionMapping<? extends Exception> ... exceptionMappings)
+        throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        ObjectUtil.requireNotNull(interfaceClass, "interfaceClass can't be null");
+        ObjectUtil.requireNotNull(implementationClazz, "implementationClassName can't be null");
         ObjectUtil.requireNotNull(defaultImplementation, "defaultImplementation can't be null");
         ObjectUtil.requireNotNull(constructorSignature, "constructorSignature can't be null");
         ObjectUtil.requireNotNull(constructorParams, "constructorParams can't be null");
 
-        final Class<?> implementationClazz = Class.forName(implementationClassName);
         final Object implementation = implementationClazz.getDeclaredConstructor(constructorSignature).newInstance(constructorParams);
         return makeProxy(interfaceClass, implementation, true, exceptionMappings);
     }
@@ -187,7 +219,8 @@ public final class ClassOrDefaultProxyUtils {
         }
 
         private void initMapping() {
-            final Class<?> implementationClass = implementation.getClass();
+            // To using static methods is provided Class instead of implementation
+            final Class<?> implementationClass = (implementation instanceof Class) ? (Class<?>) implementation : implementation.getClass();
             final Map<String, EndPoint> byName = new HashMap<>();
 
             // first check the state interface. It has higher priority, could rewrite previous mapping
