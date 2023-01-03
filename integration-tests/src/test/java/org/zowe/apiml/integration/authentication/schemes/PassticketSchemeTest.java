@@ -20,6 +20,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -27,6 +28,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
+import org.zowe.apiml.util.config.CloudGatewayConfiguration;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -52,6 +55,7 @@ import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
+    static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
     public static Stream<Arguments> getTokens() {
         return Stream.of(
@@ -87,6 +91,19 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
+    @Test
+    @Tag("CloudGatewayServiceRouting")
+    void givenValidJWT_thenTranslateToPassticket() {
+        RestAssured.useRelaxedHTTPSValidation();
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
+        verifyPassTicketHeaders(
+            given().cookie(COOKIE_NAME, jwt)
+                .when()
+                .get(scgUrl)
+                .then()
+        );
+    }
+
     @Nested
     class WhenUsingPassticketAuthenticationScheme {
         @Nested
@@ -94,7 +111,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
             @InfinispanStorageTest
-            void givenJwtInBearerHeader(String token,String cookie, Header header) {
+            void givenJwtInBearerHeader(String token, String cookie, Header header) {
                 verifyPassTicketHeaders(
                     given()
                         .header(header)
@@ -240,6 +257,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             }
         }
     }
+
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
     void verifyPassTicketHeaders(T v) {

@@ -34,7 +34,7 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
     class GivenRetryOnAllOperationsIsDisabled {
         @Test
         void whenGetReturnsUnavailable_thenRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "serviceid2", 4000, dummyConsumer);
+            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "/serviceid2/test", 0, dummyConsumer, "".getBytes());
             given()
                 .header("X-Request-Id", "serviceid2localhost")
                 .when()
@@ -45,7 +45,7 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
         @Test
         void whenRequestReturnsUnauthorized_thenDontRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(401, "serviceid2", 4000, dummyConsumer);
+            AtomicInteger counter = mockServerWithSpecificHttpResponse(401, "/serviceid2/test", 0, dummyConsumer, "".getBytes());
             given()
                 .header("X-Request-Id", "serviceid2localhost")
                 .when()
@@ -80,7 +80,7 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
         @Test
         void whenPostReturnsUnavailable_thenDontRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "serviceid2", 4000, dummyConsumer);
+            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "/serviceid2/test", 0, dummyConsumer, "".getBytes());
             given()
                 .header("X-Request-Id", "serviceid2localhost")
                 .when()

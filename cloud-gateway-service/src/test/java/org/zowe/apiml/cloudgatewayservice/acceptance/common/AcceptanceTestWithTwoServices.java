@@ -12,6 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.common;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpServer;
+import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,10 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @Autowired
     protected ApplicationRegistry applicationRegistry;
 
+    public ApplicationRegistry getApplicationRegistry() {
+        return applicationRegistry;
+    }
+
     protected HttpServer server;
     protected Service serviceWithDefaultConfiguration = new Service("serviceid2", "/serviceid2/**", "serviceid2");
     protected Service serviceWithCustomConfiguration = new Service("serviceid1", "/serviceid1/**", "serviceid1");
@@ -40,6 +45,8 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(), false);
     }
 
     @AfterEach
@@ -47,13 +54,21 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         server.stop(0);
     }
 
-    protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode, String serviceId, int port, Consumer<Headers> assertion) throws IOException {
+    protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode, String uri, int port, Consumer<Headers> assertion, byte[] body) throws IOException {
+        if (port == 0) {
+            port = applicationRegistry.findFreePort();
+        }
         server = HttpServer.create(new InetSocketAddress(port), 0);
         AtomicInteger counter = new AtomicInteger();
-        server.createContext("/" + serviceId + "/test", (t) -> {
+        server.createContext(uri, (t) -> {
+            t.getResponseHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
             t.sendResponseHeaders(statusCode, 0);
+
+            t.getResponseBody().write(body);
+
             assertion.accept(t.getRequestHeaders());
             t.getResponseBody().close();
+
             counter.getAndIncrement();
         });
         server.setExecutor(null);

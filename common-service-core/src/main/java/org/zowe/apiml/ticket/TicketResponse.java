@@ -8,18 +8,21 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.security.common.ticket;
+package org.zowe.apiml.ticket;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Represents /ticket JSON request with application id
+ * Represents /ticket JSON response with the ticket information
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TicketRequest {
+public class TicketResponse {
+    private String token;
+    private String userId;
     private String applicationName;
+    private String ticket;
 }
