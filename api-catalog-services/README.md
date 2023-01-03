@@ -2,9 +2,8 @@
 
 ## Standalone mode
 
-Standalone mode allows publicly display, without need for authentication, 
-services that are stored on the disk. API Catalog does not connect to any other
-service. 
+Standalone mode allows displaying, without the need for authentication, services
+that are stored on the disk. API Catalog does not connect to any other service.
 
 ### Configuration
 
