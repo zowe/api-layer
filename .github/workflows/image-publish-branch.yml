@@ -34,7 +34,7 @@ jobs:
 
             -   name: Build all services for images
                 if: ${{ github.event.inputs.service == 'all' }}
-                run: ./gradlew build -x test
+                run: ./gradlew clean build -x test
 
             -   uses: ./.github/actions/teardown
 
