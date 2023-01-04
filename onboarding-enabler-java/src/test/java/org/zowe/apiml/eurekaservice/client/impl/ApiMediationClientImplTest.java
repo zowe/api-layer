@@ -39,6 +39,8 @@ class ApiMediationClientImplTest {
 
     private static final char[] PASSWORD = "password".toCharArray();
 
+    private EurekaClientConfigProvider eurekaClientConfigProvider;
+
     ApiMediationServiceConfig getValidConfiguration() {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
@@ -171,9 +173,10 @@ class ApiMediationClientImplTest {
     }
 
     private ApiMediationClient createApiMediationClient(DefaultCustomMetadataHelper defaultCustomMetadataHelper) {
+        eurekaClientConfigProvider = spy(ApiMlEurekaClientConfigProvider.class);
         return new ApiMediationClientImpl(
             new DiscoveryClientProvider(),
-            new ApiMlEurekaClientConfigProvider(),
+            eurekaClientConfigProvider,
             new EurekaInstanceConfigCreator(),
             defaultCustomMetadataHelper
         );
@@ -235,7 +238,14 @@ class ApiMediationClientImplTest {
         ApiMediationServiceConfig config = getValidConfiguration();
         ApiMediationClient client = createApiMediationClient(getDefaultCustomMetadataHelper(false));
 
+        doAnswer(invocation -> {
+            ApiMediationServiceConfig configArg = invocation.getArgument(0);
+            assertEquals(System.getProperty("os.name"), configArg.getCustomMetadata().get("os.name"));
+            return invocation.callRealMethod();
+        }).when(eurekaClientConfigProvider).config(any());
+
         client.register(config);
+
         assertEquals(System.getProperty("os.name"), config.getCustomMetadata().get("os.name"));
         assertNull(config.getCustomMetadata().get("zos.jobid"));
     }

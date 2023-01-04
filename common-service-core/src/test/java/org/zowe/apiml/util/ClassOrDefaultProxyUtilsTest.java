@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -31,6 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class ClassOrDefaultProxyUtilsTest {
+
+    private static final String VALUE = "theValue";
+    private static final String MOCKED_VALUE = "mock";
 
     private static String voidResponse;
 
@@ -236,6 +240,79 @@ class ClassOrDefaultProxyUtilsTest {
             new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionException.class, "getMessage");
         e = assertThrows(ExceptionMappingError.class, () -> proxyUtilsNull.apply(nullPtrException));
         assertTrue(e.getMessage().startsWith("Cannot construct exception"));
+    }
+
+    @Nested
+    class GivenStaticMethods {
+
+        @Test
+        void whenProxied_thenCallOriginalMethod() {
+            StaticMethods staticMethods = ClassOrDefaultProxyUtils.createProxy(
+                StaticMethods.class,
+                "org.zowe.apiml.util.ClassOrDefaultProxyUtilsTest$StaticMethodsTestClass",
+                    StaticMethodsMockClass::new
+            );
+            assertEquals(VALUE, staticMethods.getValue());
+        }
+
+    }
+
+    @Nested
+    class GivenInvalidMapping {
+
+        @Test
+        void whenClassIsMissing_thenCallMock() {
+            StaticMethods staticMethods = ClassOrDefaultProxyUtils.createProxy(
+                    StaticMethods.class,
+                    "unknown.Class",
+                    StaticMethodsMockClass::new
+            );
+            assertEquals(MOCKED_VALUE, staticMethods.getValue());
+        }
+
+        @Test
+        void whenMethodDefinitionsAreNotMatching_thenUseMock() {
+            StaticMethods staticMethods = ClassOrDefaultProxyUtils.createProxy(
+                    StaticMethods.class,
+                    "org.zowe.apiml.util.ClassOrDefaultProxyUtilsTest$InvalidStaticMethodsTestClass",
+                    StaticMethodsMockClass::new
+            );
+            assertEquals(MOCKED_VALUE, staticMethods.getValue());
+        }
+
+    }
+
+    interface StaticMethods {
+
+        String getValue();
+
+    }
+
+    class StaticMethodsMockClass implements StaticMethods {
+
+        @Override
+        public String getValue() {
+            return MOCKED_VALUE;
+        }
+
+    }
+
+    public static class StaticMethodsTestClass {
+
+        private StaticMethodsTestClass() {
+        }
+
+        public static String getValue() {
+            return VALUE;
+        }
+
+    }
+
+    public static class InvalidStaticMethodsTestClass {
+
+        private InvalidStaticMethodsTestClass() {
+        }
+
     }
 
     private static class NullPointerExceptionPrivate extends Exception {
