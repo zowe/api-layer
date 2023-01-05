@@ -71,6 +71,7 @@ public class ExtensionConfigReader {
         String parentPath = environment.getWorkspaceDirectory() + File.separator + installedComponent;
         Path manifestYamlPath = Paths.get(parentPath + File.separator + "manifest.yaml");
         Path manifestJsonPath = Paths.get(parentPath + File.separator + "manifest.json");
+
         Optional<ExtensionDefinition> definition = readComponentManifestWithCharset(Charset.defaultCharset(), manifestYamlPath, manifestJsonPath);
         if (definition.isPresent()) {
             return definition.get();
@@ -93,7 +94,7 @@ public class ExtensionConfigReader {
                 return Optional.empty();
             }
         } catch (Exception e) {
-            log.debug("Failed to read {}/{} with charset {}", yamlPath, jsonPath, charset, e);
+            log.debug("File {}/{} does not have charset {}: {}", yamlPath, jsonPath, charset, e.getMessage());
             return Optional.empty();
         }
     }
