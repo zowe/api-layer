@@ -16,6 +16,9 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.message.core.MessageService;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -32,9 +35,12 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
     public static final String DISTINGUISHED_NAME = "X-Certificate-DistinguishedName";
     public static final String COMMON_NAME = "X-Certificate-CommonName";
 
+    private final MessageService messageService;
 
-    public X509FilterFactory() {
+
+    public X509FilterFactory(MessageService messageService) {
         super(Config.class);
+        this.messageService = messageService;
     }
 
     @Override
@@ -46,23 +52,30 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
                     ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
                         try {
                             setHeader(headers, config.getHeaders().split(","), certificates[0]);
-                        } catch (CertificateEncodingException e) {
-                            throw new RuntimeException(e);
+                        } catch (CertificateEncodingException | InvalidNameException e) {
+                            headers.add(ApimlConstants.AUTH_FAIL_HEADER, "Invalid client certificate in request. Error message: " + e.getMessage());
                         }
                     }).build();
                     return chain.filter(exchange.mutate().request(request).build());
                 }
             }
-            return chain.filter(exchange);
+            return chain.filter(exchange.mutate().request(updateHeadersForError(exchange)).build());
         });
     }
 
+    private ServerHttpRequest updateHeadersForError(ServerWebExchange exchange) {
+        String headerValue = messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingX509Authentication").mapToLogMessage();
+        ServerHttpRequest request = exchange.getRequest().mutate().header(ApimlConstants.AUTH_FAIL_HEADER, headerValue).build();
+        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, headerValue);
+        return request;
+    }
 
-    private void setHeader(HttpHeaders headers, String[] headerNames, X509Certificate certificate) throws CertificateEncodingException {
+
+    private void setHeader(HttpHeaders headers, String[] headerNames, X509Certificate certificate) throws CertificateEncodingException, InvalidNameException {
         for (String headerName : headerNames) {
             switch (headerName.trim()) {
                 case COMMON_NAME:
-                    headers.add(COMMON_NAME, getCommonName(certificate.getSubjectX500Principal().getName()));
+                    headers.add(COMMON_NAME, getCommonName(new LdapName(certificate.getSubjectDN().getName())));
                     break;
                 case PUBLIC_KEY:
                     headers.add(PUBLIC_KEY, Base64.getEncoder().encodeToString(certificate.getEncoded()));
@@ -79,16 +92,11 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
         }
     }
 
-    private String getCommonName(String dn){
-        try {
-            LdapName  ldapDN = new LdapName(dn);
-            for (Rdn rdn : ldapDN.getRdns()) {
-                if ("cn".equalsIgnoreCase(rdn.getType())) {
-                    return String.valueOf(rdn.getValue());
-                }
+    public static String getCommonName(LdapName ldapDN) {
+        for (Rdn rdn : ldapDN.getRdns()) {
+            if ("cn".equalsIgnoreCase(rdn.getType())) {
+                return String.valueOf(rdn.getValue());
             }
-        } catch (InvalidNameException e) {
-            throw new RuntimeException(e);
         }
         return null;
     }
