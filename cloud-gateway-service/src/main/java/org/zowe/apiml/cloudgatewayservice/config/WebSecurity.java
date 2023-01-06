@@ -33,7 +33,7 @@ public class WebSecurity {
     @Bean
     @Primary
     ReactiveUserDetailsService userDetailsService() {
-        return (username) -> Mono.just(User.withUsername(username).password("password").authorities("user").build());
+        return username -> Mono.just(User.withUsername(username).password("password").authorities("user").build());
     }
 
 
