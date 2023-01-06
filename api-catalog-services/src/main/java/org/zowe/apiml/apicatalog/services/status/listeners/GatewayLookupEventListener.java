@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog.services.status.listeners;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -26,6 +27,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Initializes Catalog instances from Eureka
  */
 @Component
+@ConditionalOnProperty(
+    value = "apiml.catalog.standalone.enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GatewayLookupEventListener {
