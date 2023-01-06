@@ -25,7 +25,7 @@ public class WebSecurity {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        http.x509(Customizer.withDefaults())
+        http.x509(Customizer.withDefaults()).csrf().disable()
             .authorizeExchange(exchange -> exchange.anyExchange().permitAll());
         return http.build();
     }
