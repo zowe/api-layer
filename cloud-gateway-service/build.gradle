@@ -90,9 +90,14 @@ dependencies {
         exclude group: "org.springframework.security", module: "spring-security-crypto"
     }
     implementation libraries.spring_security_crypto
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_web
     implementation libraries.spring_beans
     implementation libraries.spring_core
     implementation libraries.spring_web
+    implementation libraries.spring_aop
+    implementation libraries.spring_expression
     implementation libraries.bcpkix
 
     compileOnly libraries.lombok
