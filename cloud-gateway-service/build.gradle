@@ -31,6 +31,8 @@ def componentName = "cloud-gateway-service"
 setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.cloudgatewayservice.CloudGatewayServiceApplication'
 
+ext['netty.version'] = '4.1.86.Final'
+ext['reactor-bom.version'] = '2020.0.26'
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
@@ -54,16 +56,24 @@ gitProperties {
 
 dependencies {
     implementation project(':common-service-core')
-    implementation (libraries.spring_cloud_starter_gateway){
+    implementation(libraries.spring_cloud_starter_gateway) {
         exclude group: "org.yaml", module: "snakeyaml"
         exclude group: "org.bouncycastle", module: "bcprov-jdk15on"
         exclude group: "org.springframework", module: "spring-context"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-reactor-netty"
     }
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-reactor-netty
+    implementation 'org.springframework.boot:spring-boot-starter-reactor-netty:2.7.7'
+    // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-http
+//    implementation 'io.projectreactor.netty:reactor-netty-http:1.0.26'
+
+
     implementation libraries.spring_context
     implementation libraries.bcprov
     implementation libraries.snakeyaml
-    implementation (libraries.spring_eureka_client_v3){
+    implementation(libraries.spring_eureka_client_v3) {
         exclude group: "com.google.guava", module: "guava"
         exclude group: "org.codehaus.jettison", module: "jettison"
         exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
@@ -81,7 +91,7 @@ dependencies {
     implementation libraries.tomcat_embed_el
     implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.7'
 
-    implementation (libraries.spring_cloud_circuit_breaker){
+    implementation(libraries.spring_cloud_circuit_breaker) {
         exclude group: "org.springframework.security", module: "spring-security-crypto"
     }
     implementation libraries.spring_security_crypto
@@ -132,6 +142,6 @@ publishing {
     }
 }
 
-task wrapper(type: Wrapper){
+task wrapper(type: Wrapper) {
     gradleVersion = '7.2'
 }
