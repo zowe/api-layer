@@ -76,7 +76,7 @@ ext {
     tomcatVersion = '9.0.69'
     velocityVersion = '2.3'
     woodstoxVersion = '6.4.0'
-    xstreamVersion = '1.4.19!!'
+    xstreamVersion = '1.4.20!!'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
