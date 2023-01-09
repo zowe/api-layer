@@ -265,7 +265,9 @@ public class HttpConfig {
 
     @Bean
     public MessageService messageService() {
-        return YamlMessageServiceInstance.getInstance();
+        MessageService messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/cloud-gateway-log-messages.yml");
+        return messageService;
     }
 
 }

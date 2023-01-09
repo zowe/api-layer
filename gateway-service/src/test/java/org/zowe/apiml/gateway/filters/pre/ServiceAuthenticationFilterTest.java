@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -100,7 +101,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
         when(serviceAuthenticationService.getAuthSourceByAuthentication(authentication)).thenReturn(Optional.empty());
         serviceAuthenticationFilter.run();
-        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", authentication,null);
+        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", authentication, null);
         verify(serviceAuthenticationService, times(2)).getAuthenticationCommand(anyString(), any(Authentication.class), any());
 
         reset(requestContext);
@@ -151,8 +152,8 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
         serviceAuthenticationFilter.run();
 
-        verify(RequestContext.getCurrentContext()).addZuulRequestHeader(eq(ServiceAuthenticationFilter.AUTH_FAIL_HEADER), anyString());
-        verify(RequestContext.getCurrentContext()).addZuulResponseHeader(eq(ServiceAuthenticationFilter.AUTH_FAIL_HEADER), anyString());
+        verify(RequestContext.getCurrentContext()).addZuulRequestHeader(eq(ApimlConstants.AUTH_FAIL_HEADER), anyString());
+        verify(RequestContext.getCurrentContext()).addZuulResponseHeader(eq(ApimlConstants.AUTH_FAIL_HEADER), anyString());
         verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(anyInt());
         verify(cmd, never()).apply(any());
     }

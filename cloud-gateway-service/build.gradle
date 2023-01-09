@@ -63,11 +63,7 @@ dependencies {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
         exclude group: "org.springframework.boot", module: "spring-boot-starter-reactor-netty"
     }
-
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-reactor-netty
     implementation 'org.springframework.boot:spring-boot-starter-reactor-netty:2.7.7'
-    // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-http
-//    implementation 'io.projectreactor.netty:reactor-netty-http:1.0.26'
 
 
     implementation libraries.spring_context
@@ -81,12 +77,14 @@ dependencies {
         exclude group: "org.springframework", module: "spring-core"
         exclude group: "org.springframework", module: "spring-web"
     }
+    implementation 'org.springframework.boot:spring-boot-starter-security:2.7.7'
+
     implementation libraries.woodstox
     implementation libraries.jettison
     implementation libraries.jackson_databind
     implementation libraries.guava
     implementation libraries.tomcat_embed_el
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.5'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.7'
 
     implementation(libraries.spring_cloud_circuit_breaker) {
         exclude group: "org.springframework.security", module: "spring-security-crypto"
@@ -99,12 +97,12 @@ dependencies {
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.5'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.7'
 
 
     testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.3'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.7'
     testImplementation libraries.rest_assured
 }
 
