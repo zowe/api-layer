@@ -100,10 +100,12 @@ dependencies {
     implementation libraries.tomcat_embed_el
     implementation libraries.tomcat_embed_websocket
     implementation(libraries.spring_cloud_starter_eureka){
+        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
         exclude group: "com.google.code.gson", module: "gson"
         exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
         exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
     }
+    implementation libraries.woodstox
     implementation libraries.bcpkix
     implementation libraries.gson
     implementation libraries.spring_cloud_commons
