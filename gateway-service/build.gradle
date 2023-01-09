@@ -32,6 +32,8 @@ def componentName = "gateway-service"
 setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
 
+ext['netty.version'] = '4.1.86.Final'
+
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
@@ -98,10 +100,12 @@ dependencies {
     implementation libraries.tomcat_embed_el
     implementation libraries.tomcat_embed_websocket
     implementation(libraries.spring_cloud_starter_eureka){
+        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
         exclude group: "com.google.code.gson", module: "gson"
         exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
         exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
     }
+    implementation libraries.woodstox
     implementation libraries.bcpkix
     implementation libraries.gson
     implementation libraries.spring_cloud_commons
