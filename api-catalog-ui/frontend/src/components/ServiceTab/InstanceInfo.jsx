@@ -22,6 +22,7 @@ export default class InstanceInfo extends Component {
         if (apiInfo !== null) {
             apiId = apiInfo.apiId;
         }
+        const { hideServiceInfo } = selectedService;
         return (
             <Shield title="Cannot display information about selected instance">
                 <div className="apiInfo-item">
@@ -29,7 +30,7 @@ export default class InstanceInfo extends Component {
                         <Typography>
                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                             <label htmlFor="instanceUrl">Instance URL:</label>
-                            <span id="instanceUrl">{selectedService.baseUrl}</span>
+                            {!hideServiceInfo && <span id="instanceUrl">{selectedService.baseUrl}</span>}
                         </Typography>
                     </Tooltip>
                 </div>

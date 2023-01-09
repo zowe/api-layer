@@ -58,6 +58,9 @@ public class CachedProductFamilyService {
 
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
+    @Value("${apiml.catalog.hideServiceInfo:false}")
+    private boolean hideServiceInfo;
+
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
                                       @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}")
@@ -385,6 +388,8 @@ public class CachedProductFamilyService {
 
         apiService.setStatus(isUp ? "UP" : "DOWN");
         apiService.setSsoAllInstances(isSso);
+
+        apiService.setHideServiceInfo(hideServiceInfo);
 
         return isUp;
     }
