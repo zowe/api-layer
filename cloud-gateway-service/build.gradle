@@ -63,11 +63,7 @@ dependencies {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
         exclude group: "org.springframework.boot", module: "spring-boot-starter-reactor-netty"
     }
-
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-reactor-netty
     implementation 'org.springframework.boot:spring-boot-starter-reactor-netty:2.7.7'
-    // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-http
-//    implementation 'io.projectreactor.netty:reactor-netty-http:1.0.26'
 
 
     implementation libraries.spring_context
@@ -81,7 +77,6 @@ dependencies {
         exclude group: "org.springframework", module: "spring-core"
         exclude group: "org.springframework", module: "spring-web"
     }
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
     implementation 'org.springframework.boot:spring-boot-starter-security:2.7.7'
 
     implementation libraries.woodstox
