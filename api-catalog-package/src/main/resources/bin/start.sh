@@ -163,6 +163,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_components_gateway_apiml_security_authorization_endpoint_enabled:-false} \
     -Dapiml.security.authorization.endpoint.url=${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port}/zss/api/v1/saf-auth"} \
     -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE} \
+    -Dapiml.catalog.hideServiceInfo=${ZWE_configs_apiml_catalog_hideServiceInfo:-false} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
