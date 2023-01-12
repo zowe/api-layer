@@ -18,7 +18,9 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
 
 import java.util.HashMap;
 import java.util.List;
