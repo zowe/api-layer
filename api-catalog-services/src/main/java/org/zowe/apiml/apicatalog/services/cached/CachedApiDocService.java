@@ -18,9 +18,7 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,31 +57,24 @@ public class CachedApiDocService {
      * @return api doc info for the requested service id
      */
     public String getApiDocForService(final String serviceId, final String apiVersion) {
-        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
         try {
             ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
             if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
-                apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
+                String apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
-            }
-            if (apiDoc == null) {
-                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
-            }
-        } catch (InstanceInitializationException e) {
-            //If unable to get service info
-            if (apiDoc == null) {
-                throw new ServiceNotFoundException(exceptionMessage.apply(serviceId));
+                return apiDoc;
             }
         } catch (Exception e) {
-            //if there's not apiDoc in cache
-            String logMessage = String.format("Exception updating API doc in cache for '%s %s'", serviceId, apiVersion);
-            if (apiDoc == null) {
-                log.error("No API doc available for '{} {}': {}", serviceId, apiVersion, logMessage, e);
-                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
-            }
-            log.debug(logMessage, e);
+            log.debug("Exception updating API doc in cache for '{} {}'", serviceId, apiVersion, e);
         }
-        return apiDoc;
+
+        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
+        if (apiDoc != null) {
+            return apiDoc;
+        }
+
+        log.error("No API doc available for '{} {}'", serviceId, apiVersion);
+        throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
     }
 
     /**
@@ -105,31 +96,24 @@ public class CachedApiDocService {
      * @return api doc info for the latest API of the request service id
      */
     public String getDefaultApiDocForService(final String serviceId) {
-        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY));
         try {
             ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
             if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
-                apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
+                String apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY), apiDoc);
-            }
-            if (apiDoc == null) {
-                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
-            }
-        } catch (InstanceInitializationException e) {
-            //If unable to get service info
-            if (apiDoc == null) {
-                throw new ServiceNotFoundException(exceptionMessage.apply(serviceId));
+                return apiDoc;
             }
         } catch (Exception e) {
-            //if there's not apiDoc in cache
-            String logMessage = String.format("Exception updating default API doc in cache for '%s'.", serviceId);
-            if (apiDoc == null) {
-                log.error("No default API doc available for service '{}': {}", serviceId, logMessage, e);
-                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
-            }
-            log.debug(logMessage,e);
+            log.debug("Exception updating default API doc in cache for '{}'.", serviceId, e);
         }
-        return apiDoc;
+
+        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY));
+        if (apiDoc != null) {
+            return apiDoc;
+        }
+
+        log.error("No default API doc available for service '{}'", serviceId);
+        throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
     }
 
     /**
@@ -150,25 +134,26 @@ public class CachedApiDocService {
      * @return List of API version strings for the requested service ID
      */
     public List<String> getApiVersionsForService(final String serviceId) {
-        List<String> apiVersions = CachedApiDocService.serviceApiVersions.get(serviceId);
+        // First try to fetch apiDoc from the service
         try {
             List<String> versions = apiDocRetrievalService.retrieveApiVersions(serviceId);
             if (!versions.isEmpty()) {
-                apiVersions = versions;
-                CachedApiDocService.serviceApiVersions.put(serviceId, apiVersions);
+                CachedApiDocService.serviceApiVersions.put(serviceId, versions);
+                return versions;
             }
-            if (apiVersions == null)
-                throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
         } catch (Exception e) {
-            // if no versions in cache
-            String logMessage = String.format("Exception updating API versions in cache for '%s'", serviceId);
-            if (apiVersions == null) {
-                log.error("No API versions available for service '{}': {}", serviceId, logMessage, e);
-                throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
-            }
-            log.debug(logMessage, e);
+            log.debug("Exception updating API versions in cache for {}", serviceId, e);
         }
-        return apiVersions;
+
+        // if no service is available try to use cached data
+        List<String> versions = CachedApiDocService.serviceApiVersions.get(serviceId);
+        if (versions != null) {
+            return versions;
+        }
+
+        // cannot obtain apiDoc ends with exception
+        log.error("No API versions available for service '{}'", serviceId);
+        throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
     }
 
     /**
@@ -189,19 +174,22 @@ public class CachedApiDocService {
      * @return default API version for given service id
      */
     public String getDefaultApiVersionForService(final String serviceId) {
-        String defaultVersion = CachedApiDocService.serviceApiDefaultVersions.get(serviceId);
         try {
             String version = apiDocRetrievalService.retrieveDefaultApiVersion(serviceId);
             if (version != null) {
-                defaultVersion = version;
+                CachedApiDocService.serviceApiDefaultVersions.put(serviceId, version);
+                return version;
             }
-            if (defaultVersion == null)
-                throw new ApiVersionNotFoundException("No default API version was retrieved for the service " + serviceId + ".");
         } catch (Exception e) {
             log.error("No default API version available for service '{}'", serviceId, e);
-            throw new ApiVersionNotFoundException("Error trying to find default API version");
         }
-        return defaultVersion;
+
+        String version = CachedApiDocService.serviceApiDefaultVersions.get(serviceId);
+        if (version != null) {
+            return version;
+        }
+
+        throw new ApiVersionNotFoundException("Error trying to find default API version");
     }
 
     /**
