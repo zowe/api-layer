@@ -13,10 +13,13 @@ package org.zowe.apiml.integration.authentication.schemes;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.X509Test;
+import org.zowe.apiml.util.config.CloudGatewayConfiguration;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -36,11 +39,35 @@ import static org.zowe.apiml.util.requests.Endpoints.X509_ENDPOINT;
 @DiscoverableClientDependentTest
 class X509SchemeTest implements TestWithStartedInstances {
     private static URI URL;
+    static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
     @BeforeAll
     static void init() throws Exception {
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
         URL = HttpRequestUtils.getUriFromGateway(X509_ENDPOINT);
+    }
+
+    @Test
+    @Tag("CloudGatewayServiceRouting")
+    void givenValidCLientCert_thenForwardDetailsInHeader() {
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+        given().config(SslContext.clientCertValid)
+            .when()
+            .get(scgUrl)
+            .then()
+            .body("dn", startsWith("CN=APIMTST"))
+            .body("cn", is("APIMTST")).statusCode(200);
+    }
+
+    @Test
+    @Tag("CloudGatewayServiceRouting")
+    void givenNoCert_thenForwardErrorMessageInHeader() {
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+        given().config(SslContext.tlsWithoutCert)
+            .when()
+            .get(scgUrl)
+            .then()
+            .header("X-Zowe-Auth-Failure", is("ZWEAG167E No client certificate provided in the request")).statusCode(200);
     }
 
     @Nested
@@ -51,9 +78,9 @@ class X509SchemeTest implements TestWithStartedInstances {
             void givenCorrectClientCertificateInRequest() {
                 given()
                     .config(SslContext.clientCertValid)
-                .when()
+                    .when()
                     .get(X509SchemeTest.URL)
-                .then()
+                    .then()
                     .body("dn", startsWith("CN=APIMTST"))
                     .body("cn", is("APIMTST")).statusCode(200);
             }
@@ -62,9 +89,9 @@ class X509SchemeTest implements TestWithStartedInstances {
             void givenApimlCertificateInRequest() {
                 given()
                     .config(SslContext.clientCertApiml)
-                .when()
+                    .when()
                     .get(X509SchemeTest.URL)
-                .then()
+                    .then()
                     .body("dn", startsWith("CN="))
                     .statusCode(200);
             }
@@ -77,9 +104,9 @@ class X509SchemeTest implements TestWithStartedInstances {
                 .header(new Header("X-Certificate-CommonName", "evil common name"))
                 .header(new Header("X-Certificate-Public", "evil public key"))
                 .header(new Header("X-Certificate-DistinguishedName", "evil distinguished name"))
-            .when()
+                .when()
                 .get(X509SchemeTest.URL)
-            .then()
+                .then()
                 .body("publicKey", is(""))
                 .body("dn", is(""))
                 .body("cn", is("")).statusCode(200);

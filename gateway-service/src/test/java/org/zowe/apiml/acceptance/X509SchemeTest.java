@@ -31,10 +31,8 @@ import java.io.IOException;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
+import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 
 /**
  * This test verifies that only the client certificate is passed through the X509scheme to the southbound service.

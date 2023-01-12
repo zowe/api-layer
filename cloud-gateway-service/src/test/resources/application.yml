@@ -17,6 +17,7 @@ apiml:
 server:
     port: ${apiml.service.port}
     ssl:
+        clientAuth: want
         keyAlias: localhost
         keyPassword: password
         keyStore: ../keystore/localhost/localhost.keystore.p12
@@ -42,6 +43,7 @@ logging:
     level:
         org.springframework.cloud.gateway: DEBUG
         reactor.netty: DEBUG
+        org.springframework.security: DEBUG
 
 
 management:

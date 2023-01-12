@@ -48,8 +48,10 @@ dependencies {
 
     compileOnly libraries.javax_inject
     implementation (libraries.eureka_client){
+        exclude group: "com.thoughtworks.xstream", module: "xstream"
         exclude group: "org.codehaus.jettison", module: "jettison"
     }
+    implementation libraries.xstream
     implementation libraries.jettison
 
     testImplementation libraries.spring_boot_starter_test

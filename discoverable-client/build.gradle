@@ -58,7 +58,19 @@ dependencies {
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.snakeyaml
-    implementation libraries.spring_boot_starter_webflux
+    implementation (libraries.spring_boot_starter_webflux) {
+        exclude group: "io.netty", module: "netty-codec-http"
+        exclude group: "io.netty", module: "netty-codec-http2"
+        exclude group: "io.netty", module: "netty-handler-proxy"
+        exclude group: "io.netty", module: "netty-resolver-dns-native-macos"
+        exclude group: "io.netty", module: "netty-transport-native-epoll"
+    }
+    implementation libraries.netty_codec_http
+    implementation libraries.netty_codec_http2
+    implementation libraries.netty_handler_proxy
+    implementation libraries.netty_resolver_dns_native_macos
+    implementation libraries.netty_transport_native_epoll
+
     implementation (libraries.spring_boot_starter_websocket){
         exclude group: "org.springframework.boot", module: "spring-boot-starter-web"
     }

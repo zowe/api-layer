@@ -45,7 +45,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter.AUTH_FAIL_HEADER;
+import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 
 /**
  * This test verifies that the token/client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
@@ -149,9 +149,9 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 //@formatter:off
                 given()
                     .cookie(withInvalidToken)
-                .when()
+                    .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
+                    .then()
                     .statusCode(is(HttpStatus.SC_OK));
                 //@formatter:on
 
@@ -159,7 +159,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 verify(mockClient, times(1)).execute(captor.capture());
 
                 verify(mockTemplate, times(0))
-                        .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
+                    .exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class));
 
                 Header zoweAuthFailureHeader = captor.getValue().getFirstHeader(AUTH_FAIL_HEADER);
                 assertNotNull(zoweAuthFailureHeader);
