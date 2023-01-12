@@ -9,10 +9,12 @@ dependencies {
     }
     implementation libraries.snakeyaml
     implementation(libraries.eureka_client) {
+        exclude group: "com.thoughtworks.xstream", module: "xstream"
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: "com.google.code.gson", module: "gson"
         exclude group: "org.codehaus.jettison", module: "jettison"
     }
+    implementation libraries.xstream
     implementation libraries.jettison
 
     implementation libraries.snakeyaml

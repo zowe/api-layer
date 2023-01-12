@@ -52,7 +52,7 @@ ext {
     jsr305Version = '3.0.2'
     junitJupiterVersion = '5.7.2'
     junitPlatformVersion = '1.8.2'
-    jqueryVersion = '3.6.0!!'
+    jqueryVersion = '3.6.3!!'
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
     lombokVersion = '1.18.20'
@@ -76,7 +76,7 @@ ext {
     tomcatVersion = '9.0.69'
     velocityVersion = '2.3'
     woodstoxVersion = '6.4.0'
-    xstreamVersion = '1.4.19!!'
+    xstreamVersion = '1.4.20!!'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",

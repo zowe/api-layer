@@ -70,6 +70,7 @@ dependencies {
     implementation libraries.bcprov
     implementation libraries.snakeyaml
     implementation(libraries.spring_eureka_client_v3) {
+        exclude group: "com.thoughtworks.xstream", module: "xstream"
         exclude group: "com.google.guava", module: "guava"
         exclude group: "org.codehaus.jettison", module: "jettison"
         exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
@@ -79,6 +80,7 @@ dependencies {
     }
     implementation 'org.springframework.boot:spring-boot-starter-security:2.7.7'
 
+    implementation libraries.xstream
     implementation libraries.woodstox
     implementation libraries.jettison
     implementation libraries.jackson_databind
@@ -90,9 +92,14 @@ dependencies {
         exclude group: "org.springframework.security", module: "spring-security-crypto"
     }
     implementation libraries.spring_security_crypto
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_web
     implementation libraries.spring_beans
     implementation libraries.spring_core
     implementation libraries.spring_web
+    implementation libraries.spring_aop
+    implementation libraries.spring_expression
     implementation libraries.bcpkix
 
     compileOnly libraries.lombok
