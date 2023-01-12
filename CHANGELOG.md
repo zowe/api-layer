@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.6.0 (2023-01-23)`
+
+
+
+
+
+
 ## `2.5.0 (22-12-12)`
 
 * Feature:  Retry failed request routed through the Cloud Gateway service (#2697) ([b2e86b3](https://github.com/zowe/api-layer/commit/b2e86b3)), closes [#2697](https://github.com/zowe/api-layer/issues/2697)
