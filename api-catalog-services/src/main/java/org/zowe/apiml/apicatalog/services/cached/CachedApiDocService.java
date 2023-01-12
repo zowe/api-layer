@@ -34,7 +34,7 @@ import java.util.function.UnaryOperator;
 @Service
 @Slf4j
 public class CachedApiDocService {
-    private static final String DEFAULT_API_KEY = "default";
+    public static final String DEFAULT_API_KEY = "default";
 
     private static final Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
     private static final Map<String, List<String>> serviceApiVersions = new HashMap<>();
@@ -153,12 +153,12 @@ public class CachedApiDocService {
         List<String> apiVersions = CachedApiDocService.serviceApiVersions.get(serviceId);
         try {
             List<String> versions = apiDocRetrievalService.retrieveApiVersions(serviceId);
-            if (versions.isEmpty()) {
-                throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
-            } else {
+            if (!versions.isEmpty()) {
                 apiVersions = versions;
                 CachedApiDocService.serviceApiVersions.put(serviceId, apiVersions);
             }
+            if (apiVersions == null)
+                throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
         } catch (Exception e) {
             // if no versions in cache
             String logMessage = String.format("Exception updating API versions in cache for '%s'", serviceId);
@@ -195,6 +195,8 @@ public class CachedApiDocService {
             if (version != null) {
                 defaultVersion = version;
             }
+            if (defaultVersion == null)
+                throw new ApiVersionNotFoundException("No default API version was retrieved for the service " + serviceId + ".");
         } catch (Exception e) {
             log.error("No default API version available for service '{}'", serviceId, e);
             throw new ApiVersionNotFoundException("Error trying to find default API version");

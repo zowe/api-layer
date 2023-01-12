@@ -48,3 +48,9 @@ spring:
         ansi:
             enabled: always
 
+---
+spring.profiles: standalone
+
+apiml.catalog.standalone:
+    enabled: true
+    servicesDirectory: config/local/catalog-standalone-defs
