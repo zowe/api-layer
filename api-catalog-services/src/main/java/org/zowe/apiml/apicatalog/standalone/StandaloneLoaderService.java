@@ -94,8 +94,8 @@ public class StandaloneLoaderService {
             String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
             String[] name = FilenameUtils.removeExtension(file.getName()).split("_");
 
-            if (name.length < 2) {
-                log.warn("ApiDoc file has incorrect format '{}'. The correct format is 'serviceId_version'.", apiDoc);
+            if (name.length < 2 || name.length > 3) {
+                log.warn("ApiDoc file has incorrect format '{}'. The correct format is '{serviceId}_{version}(_default)'.", apiDoc);
                 return;
             }
 
@@ -124,7 +124,7 @@ public class StandaloneLoaderService {
             return new File[0];
         }
 
-        return dir.listFiles((d, name) -> name.endsWith(".json"));
+        return dir.listFiles((f, name) -> f.isFile() && name.endsWith(".json"));
     }
 
 }
