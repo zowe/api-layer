@@ -91,14 +91,13 @@ public class StandaloneLoaderService {
 
     private void loadApiDocCache(File file) {
         try {
-            String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
             String[] name = FilenameUtils.removeExtension(file.getName()).split("_");
-
-            if (name.length < 2 || name.length > 3) {
-                log.warn("ApiDoc file has incorrect format '{}'. The correct format is '{serviceId}_{version}(_default)'.", apiDoc);
+            if (name.length < 2 || name.length > 3 || name.length == 3 && !"default".equals(name[2])) {
+                log.warn("ApiDoc file has incorrect name format '{}'. The correct format is '{serviceId}_{version}(_default)'.", file.getName());
                 return;
             }
 
+            String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
             if (name.length > 2 && name[2].equals("default")) {
                 cachedApiDocService.updateApiDocForService(name[0], CachedApiDocService.DEFAULT_API_KEY, apiDoc);
             }
@@ -124,7 +123,7 @@ public class StandaloneLoaderService {
             return new File[0];
         }
 
-        return dir.listFiles((d, name) -> name.endsWith(".json"));
+        return dir.listFiles(f -> f.isFile() && f.getName().endsWith(".json"));
     }
 
 }
