@@ -124,7 +124,7 @@ public class StandaloneLoaderService {
             return new File[0];
         }
 
-        return dir.listFiles((f, name) -> f.isFile() && name.endsWith(".json"));
+        return dir.listFiles((d, name) -> name.endsWith(".json"));
     }
 
 }
