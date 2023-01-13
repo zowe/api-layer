@@ -59,6 +59,9 @@ public class APIContainer implements Serializable {
     @Schema(description = "The SSO support of all services and instances in the container")
     private boolean sso;
 
+    @Schema(description = "Control whether the service's information should be shown")
+    private boolean hideServiceInfo;
+
     public APIContainer() {
         this.lastUpdatedTimestamp = Calendar.getInstance();
         this.createdTimestamp = this.lastUpdatedTimestamp;

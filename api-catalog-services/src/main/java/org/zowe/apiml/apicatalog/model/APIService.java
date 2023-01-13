@@ -66,9 +66,6 @@ public class APIService implements Serializable {
     @Schema(description = "The SSO support for all instances")
     private boolean ssoAllInstances;
 
-    @Schema(description = "Control whether the service's information should be shown")
-    private boolean hideServiceInfo;
-
     @Schema(description = "The API information for each API ID for this service")
     private Map<String, ApiInfo> apis = new HashMap<>(); // NOSONAR
 

@@ -231,6 +231,7 @@ public class CachedProductFamilyService {
 
         setStatus(apiContainer, servicesCount, activeServicesCount);
         apiContainer.setSso(isSso);
+        apiContainer.setHideServiceInfo(hideServiceInfo);
     }
 
     /**
@@ -388,8 +389,6 @@ public class CachedProductFamilyService {
 
         apiService.setStatus(isUp ? "UP" : "DOWN");
         apiService.setSsoAllInstances(isSso);
-
-        apiService.setHideServiceInfo(hideServiceInfo);
 
         return isUp;
     }

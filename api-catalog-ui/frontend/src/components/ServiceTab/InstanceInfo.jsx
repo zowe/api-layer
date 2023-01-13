@@ -14,7 +14,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 
 export default class InstanceInfo extends Component {
     render() {
-        const { selectedService, selectedVersion } = this.props;
+        const { selectedService, selectedVersion, tiles } = this.props;
 
         const apiInfo =
             selectedService.apis[selectedVersion || selectedService.defaultApiVersion] || selectedService.apis.default;
@@ -22,7 +22,10 @@ export default class InstanceInfo extends Component {
         if (apiInfo !== null) {
             apiId = apiInfo.apiId;
         }
-        const { hideServiceInfo } = selectedService;
+        let hideServiceInfo = false;
+        if (tiles !== undefined && tiles.length === 1) {
+            hideServiceInfo = tiles[0].hideServiceInfo;
+        }
         return (
             <Shield title="Cannot display information about selected instance">
                 <div className="apiInfo-item">

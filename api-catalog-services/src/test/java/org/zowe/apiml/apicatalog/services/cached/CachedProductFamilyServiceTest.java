@@ -464,10 +464,7 @@ class CachedProductFamilyServiceTest {
                 APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
                 ReflectionTestUtils.setField(underTest, "hideServiceInfo", true);
                 underTest.calculateContainerServiceValues(apiContainer);
-
-                for (APIService apiService : apiContainer.getServices()) {
-                    assertTrue(apiService.isHideServiceInfo());
-                }
+                assertTrue(apiContainer.isHideServiceInfo());
             }
         }
 
