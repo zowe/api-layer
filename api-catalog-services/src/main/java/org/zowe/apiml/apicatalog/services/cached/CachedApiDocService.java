@@ -57,6 +57,7 @@ public class CachedApiDocService {
      * @return api doc info for the requested service id
      */
     public String getApiDocForService(final String serviceId, final String apiVersion) {
+        // First try to fetch apiDoc from the DS
         try {
             ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
             if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
@@ -68,11 +69,13 @@ public class CachedApiDocService {
             log.debug("Exception updating API doc in cache for '{} {}'", serviceId, apiVersion, e);
         }
 
+        // if no DS is available try to use cached data
         String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
         if (apiDoc != null) {
             return apiDoc;
         }
 
+        // cannot obtain apiDoc ends with exception
         log.error("No API doc available for '{} {}'", serviceId, apiVersion);
         throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
     }
@@ -96,6 +99,7 @@ public class CachedApiDocService {
      * @return api doc info for the latest API of the request service id
      */
     public String getDefaultApiDocForService(final String serviceId) {
+        // First try to fetch apiDoc from the DS
         try {
             ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
             if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
@@ -107,11 +111,13 @@ public class CachedApiDocService {
             log.debug("Exception updating default API doc in cache for '{}'.", serviceId, e);
         }
 
+        // if no DS is available try to use cached data
         String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY));
         if (apiDoc != null) {
             return apiDoc;
         }
 
+        // cannot obtain apiDoc ends with exception
         log.error("No default API doc available for service '{}'", serviceId);
         throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
     }
@@ -134,7 +140,7 @@ public class CachedApiDocService {
      * @return List of API version strings for the requested service ID
      */
     public List<String> getApiVersionsForService(final String serviceId) {
-        // First try to fetch apiDoc from the service
+        // First try to fetch apiDoc from the DS
         try {
             List<String> versions = apiDocRetrievalService.retrieveApiVersions(serviceId);
             if (!versions.isEmpty()) {
@@ -145,7 +151,7 @@ public class CachedApiDocService {
             log.debug("Exception updating API versions in cache for {}", serviceId, e);
         }
 
-        // if no service is available try to use cached data
+        // if no DS is available try to use cached data
         List<String> versions = CachedApiDocService.serviceApiVersions.get(serviceId);
         if (versions != null) {
             return versions;
@@ -174,6 +180,7 @@ public class CachedApiDocService {
      * @return default API version for given service id
      */
     public String getDefaultApiVersionForService(final String serviceId) {
+        // First try to fetch apiDoc from the DS
         try {
             String version = apiDocRetrievalService.retrieveDefaultApiVersion(serviceId);
             if (version != null) {
@@ -184,11 +191,13 @@ public class CachedApiDocService {
             log.error("No default API version available for service '{}'", serviceId, e);
         }
 
+        // if no DS is available try to use cached data
         String version = CachedApiDocService.serviceApiDefaultVersions.get(serviceId);
         if (version != null) {
             return version;
         }
 
+        // cannot obtain apiDoc ends with exception
         throw new ApiVersionNotFoundException("Error trying to find default API version");
     }
 
