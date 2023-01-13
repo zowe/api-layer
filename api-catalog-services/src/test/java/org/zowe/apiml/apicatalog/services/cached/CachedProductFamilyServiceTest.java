@@ -16,6 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.util.ServicesBuilder;
@@ -449,6 +450,21 @@ class CachedProductFamilyServiceTest {
                         assertTrue(apiService.isSsoAllInstances());
                     }
                 }
+            }
+        }
+
+        @Nested
+        class GivenHideServiceInfo {
+            @Test
+            void thenSetToApiService() {
+                InstanceInfo instanceInfo = servicesBuilder.createInstance(SERVICE_ID, "catalog1",
+                    Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
+                doReturn(servicesBuilder.createApp(SERVICE_ID, instanceInfo)).when(cachedServicesService)
+                    .getService(SERVICE_ID);
+                APIContainer apiContainer = underTest.getContainerById(SERVICE_ID);
+                ReflectionTestUtils.setField(underTest, "hideServiceInfo", true);
+                underTest.calculateContainerServiceValues(apiContainer);
+                assertTrue(apiContainer.isHideServiceInfo());
             }
         }
 

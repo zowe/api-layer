@@ -31,5 +31,10 @@ apimlServices:
 appfwPlugins:
   - path: "plugin"
 configs:
+    # hideServiceInfo is used to hide internal service info contained in the Instance URL in the Catalog.
+    # Define ZWE_configs_apiml_catalog_hideServiceInfo in the Zowe config if you want to hide it
+#  apiml:
+#    catalog:
+#        hideServiceInfo: ""
   port: 7552
   debug: false

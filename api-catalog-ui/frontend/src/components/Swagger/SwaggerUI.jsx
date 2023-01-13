@@ -83,10 +83,10 @@ export default class SwaggerUI extends Component {
             // prettier-ignore
             // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
             operations: (Original, { React }) => props => { // NOSONAR
-                const { selectedService, selectedVersion } = this.props;
+                const { selectedService, selectedVersion, tiles } = this.props;
                 return (
                     <div>
-                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} />
+                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
                         <Original {...props} />
                     </div>
                 );

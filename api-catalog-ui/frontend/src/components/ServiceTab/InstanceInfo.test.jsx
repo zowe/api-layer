@@ -24,8 +24,19 @@ describe('>>> InstanceInfo component tests', () => {
             v1: { apiId: 'zowe.apiml.gateway' },
         };
         const selectService = jest.fn();
+        const tiles = [
+            {
+                activeServices: 1,
+                hideServiceInfo: false,
+            },
+        ];
         const instanceInfo = shallow(
-            <InstanceInfo selectedService={selectedService} selectedVersion="v1" selectService={selectService} />
+            <InstanceInfo
+                selectedService={selectedService}
+                selectedVersion="v1"
+                tiles={tiles}
+                selectService={selectService}
+            />
         );
 
         expect(instanceInfo.find('label').at(0).prop('children')).toEqual('Instance URL:');
@@ -40,7 +51,10 @@ describe('>>> InstanceInfo component tests', () => {
         };
         selectedService.defaultApiVersion = ['v1'];
         const selectService = jest.fn();
-        const instanceInfo = shallow(<InstanceInfo selectedService={selectedService} selectService={selectService} />);
+        const tiles = [{}];
+        const instanceInfo = shallow(
+            <InstanceInfo selectedService={selectedService} selectService={selectService} tiles={tiles} />
+        );
 
         expect(instanceInfo.find('span').at(1).prop('children')).toEqual('zowe.apiml.gateway');
     });
@@ -51,7 +65,10 @@ describe('>>> InstanceInfo component tests', () => {
         };
         selectedService.defaultApiVersion = null;
         const selectService = jest.fn();
-        const instanceInfo = shallow(<InstanceInfo selectedService={selectedService} selectService={selectService} />);
+        const tiles = [{}];
+        const instanceInfo = shallow(
+            <InstanceInfo selectedService={selectedService} selectService={selectService} tiles={tiles} />
+        );
 
         expect(instanceInfo.find('span').at(1).prop('children')).toEqual('zowe.apiml.gateway');
     });
