@@ -36,7 +36,7 @@ JSON `application` object contains a list of one or multiple services.
 
 You can use endpoints in the following link to obtain the file content:
 
-https://github.com/Netflix/eureka/wiki/Eureka-REST-operations
+<https://github.com/Netflix/eureka/wiki/Eureka-REST-operations>
 
 Example:
 [service1.json](config/local/catalog-standalone-defs/apps/service1.json)
@@ -64,8 +64,9 @@ subdirectory. Each service MUST have exactly one API documentation file with
 a default suffix.
 
 Note:
+The service ID and version cannot contain an underscore character. Otherwise, the definition will be not loaded.
 You can find more information about apiInfo at
-https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler#api-info
+<https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler#api-info>
 
 Example:
 [service2_org.zowe v1.0.0_default.json](config/local/catalog-standalone-defs/apiDocs/service2_org.zowe v1.0.0_default.json)

@@ -92,7 +92,7 @@ public class StandaloneLoaderService {
     private void loadApiDocCache(File file) {
         try {
             String[] name = FilenameUtils.removeExtension(file.getName()).split("_");
-            if (name.length < 2 || name.length > 3 || name.length == 3 && !"default".equals(name[2])) {
+            if (name.length < 2 || name.length > 3 || (name.length == 3 && !"default".equals(name[2]))) {
                 log.warn("ApiDoc file has incorrect name format '{}'. The correct format is '{serviceId}_{version}(_default)'.", file.getName());
                 return;
             }

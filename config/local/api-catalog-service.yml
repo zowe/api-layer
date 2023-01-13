@@ -49,7 +49,7 @@ spring:
             enabled: always
 
 ---
-spring.profiles: standalone
+spring.config.activate.on-profile: standalone
 
 apiml.catalog.standalone:
     enabled: true
