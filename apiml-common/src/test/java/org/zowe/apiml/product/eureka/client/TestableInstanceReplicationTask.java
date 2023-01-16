@@ -30,23 +30,26 @@ class TestableInstanceReplicationTask extends InstanceReplicationTask {
     private final AtomicReference<ProcessingState> processingState = new AtomicReference<>(ProcessingState.Pending);
 
     private volatile int triggeredNetworkFailures;
+    private Exception exception;
 
     TestableInstanceReplicationTask(String peerNodeName,
                                     String appName,
                                     String id,
                                     Action action,
                                     int replyStatusCode,
-                                    int networkFailuresRepeatCount) {
+                                    int networkFailuresRepeatCount,
+                                    Exception exception) {
         super(peerNodeName, action, appName, id);
         this.replyStatusCode = replyStatusCode;
         this.networkFailuresRepeatCount = networkFailuresRepeatCount;
+        this.exception = exception;
     }
 
     @Override
     public EurekaHttpResponse<Void> execute() throws Throwable {
         if (triggeredNetworkFailures < networkFailuresRepeatCount) {
             triggeredNetworkFailures++;
-            throw new IOException("simulated network failure");
+            throw exception;
         }
         return EurekaHttpResponse.status(replyStatusCode);
     }
@@ -57,7 +60,7 @@ class TestableInstanceReplicationTask extends InstanceReplicationTask {
     }
 
     @Override
-    public void handleFailure(int statusCode, Object responseEntity) throws Throwable {
+    public void handleFailure(int statusCode, Object responseEntity) {
         processingState.compareAndSet(ProcessingState.Pending, ProcessingState.Failed);
     }
 
@@ -76,9 +79,15 @@ class TestableInstanceReplicationTask extends InstanceReplicationTask {
         private int replyStatusCode = 200;
         private Action action = Action.Heartbeat;
         private int networkFailuresRepeatCount;
+        private Exception exception = new IOException("simulated network failure");
 
         public TestableReplicationTaskBuilder withReplyStatusCode(int replyStatusCode) {
             this.replyStatusCode = replyStatusCode;
+            return this;
+        }
+
+        public TestableReplicationTaskBuilder withException(Exception exception) {
+            this.exception = exception;
             return this;
         }
 
@@ -99,7 +108,8 @@ class TestableInstanceReplicationTask extends InstanceReplicationTask {
                 "id#" + autoId++,
                 action,
                 replyStatusCode,
-                networkFailuresRepeatCount
+                networkFailuresRepeatCount,
+                exception
             );
         }
     }

@@ -42,8 +42,7 @@ import com.netflix.eureka.resources.ASGResource;
 import com.netflix.eureka.util.batcher.TaskDispatcher;
 import com.netflix.eureka.util.batcher.TaskDispatchers;
 import com.netflix.eureka.util.batcher.TaskProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -55,6 +54,7 @@ import java.util.regex.Pattern;
 
 import static com.netflix.eureka.cluster.protocol.ReplicationInstance.ReplicationInstanceBuilder.aReplicationInstance;
 
+@Slf4j
 public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
     /**
@@ -76,8 +76,6 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      * Maximum batch size for batched requests.
      */
     private static final int BATCH_SIZE = 250;
-
-    private static final Logger logger = LoggerFactory.getLogger(ApimlPeerEurekaNode.class);
 
     private final String serviceUrl;
     private final EurekaServerConfig config;
@@ -174,7 +172,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 public void handleFailure(int statusCode, Object responseEntity) throws Throwable {
                     super.handleFailure(statusCode, responseEntity);
                     if (statusCode == 404) {
-                        logger.warn("{}: missing entry.", getTaskName());
+                        log.warn("{}: missing entry.", getTaskName());
                     }
                 }
             },
@@ -212,9 +210,9 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             public void handleFailure(int statusCode, Object responseEntity) throws Throwable {
                 super.handleFailure(statusCode, responseEntity);
                 if (statusCode == 404) {
-                    logger.warn("{}: missing entry.", getTaskName());
+                    log.warn("{}: missing entry.", getTaskName());
                     if (info != null) {
-                        logger.warn("{}: cannot find instance id {} and hence replicating the instance with status {}",
+                        log.warn("{}: cannot find instance id {} and hence replicating the instance with status {}",
                             getTaskName(), info.getId(), info.getStatus());
                         register(info);
                     }
@@ -227,7 +225,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             }
         };
         long expiryTime = System.currentTimeMillis() + getLeaseRenewalOf(info);
-        logger.error("Heartbeat update");
+        log.debug("Heartbeat update");
         batchingDispatcher.process(taskId("heartbeat", info), replicationTask, expiryTime);
     }
 
@@ -327,18 +325,16 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      */
     private void syncInstancesWhenTimestampDiffers(String appName, String id, InstanceInfo info, InstanceInfo infoFromPeer) {
         try {
-            if (infoFromPeer != null) {
-                logger.warn("Peer wants us to take the instance information from it, since the timestamp differs,"
-                    + "Id : {} My Timestamp : {}, Peer's timestamp: {}", id, info.getLastDirtyTimestamp(), infoFromPeer.getLastDirtyTimestamp());
+            log.warn("Peer wants us to take the instance information from it, since the timestamp differs,"
+                + "Id : {} My Timestamp : {}, Peer's timestamp: {}", id, info.getLastDirtyTimestamp(), infoFromPeer.getLastDirtyTimestamp());
 
-                if (infoFromPeer.getOverriddenStatus() != null && !InstanceInfo.InstanceStatus.UNKNOWN.equals(infoFromPeer.getOverriddenStatus())) {
-                    logger.warn("Overridden Status info -id {}, mine {}, peer's {}", id, info.getOverriddenStatus(), infoFromPeer.getOverriddenStatus());
-                    registry.storeOverriddenStatusIfRequired(appName, id, infoFromPeer.getOverriddenStatus());
-                }
-                registry.register(infoFromPeer, true);
+            if (infoFromPeer.getOverriddenStatus() != null && !InstanceInfo.InstanceStatus.UNKNOWN.equals(infoFromPeer.getOverriddenStatus())) {
+                log.warn("Overridden Status info -id {}, mine {}, peer's {}", id, info.getOverriddenStatus(), infoFromPeer.getOverriddenStatus());
+                registry.storeOverriddenStatusIfRequired(appName, id, infoFromPeer.getOverriddenStatus());
             }
+            registry.register(infoFromPeer, true);
         } catch (Exception e) {
-            logger.warn("Exception when trying to set information from peer :", e);
+            log.warn("Exception when trying to set information from peer :", e);
         }
     }
 
@@ -365,9 +361,8 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         return (info.getLeaseInfo() == null ? Lease.DEFAULT_DURATION_IN_SECS : info.getLeaseInfo().getRenewalIntervalInSecs()) * 1000;
     }
 
+    @Slf4j
     public static class ReplicationTaskProcessor implements TaskProcessor<ReplicationTask> {
-
-        private static final Logger logger = LoggerFactory.getLogger(ReplicationTaskProcessor.class);
 
         private final HttpReplicationClient replicationClient;
 
@@ -388,13 +383,13 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 EurekaHttpResponse<?> httpResponse = task.execute();
                 int statusCode = httpResponse.getStatusCode();
                 Object entity = httpResponse.getEntity();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Replication task {} completed with status {}, (includes entity {})", task.getTaskName(), statusCode, entity != null);
-                }
+
+                log.debug("Replication task {} completed with status {}, (includes entity {})", task.getTaskName(), statusCode, entity != null);
+
                 if (isSuccess(statusCode)) {
                     task.handleSuccess();
                 } else if (statusCode == 503) {
-                    logger.debug("Server busy (503) reply for task {}", task.getTaskName());
+                    log.debug("Server busy (503) reply for task {}", task.getTaskName());
                     return ProcessingResult.Congestion;
                 } else {
                     task.handleFailure(statusCode, entity);
@@ -402,14 +397,14 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 }
             } catch (Throwable e) {
                 if (maybeReadTimeOut(e)) {
-                    logger.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
-                    //read timeout exception is more Congestion then TransientError, return Congestion for longer delay
+                    log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
+                    //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
                 } else if (isNetworkConnectException(e)) {
                     logNetworkErrorSample(task, e);
                     return ProcessingResult.TransientError;
                 } else {
-                    logger.error("{}: {} Not re-trying this exception because it does not seem to be a network exception",
+                    log.error("{}: {} Not re-trying this exception because it does not seem to be a network exception",
                         peerId, task.getTaskName(), e);
                     return ProcessingResult.PermanentError;
                 }
@@ -425,11 +420,11 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 int statusCode = response.getStatusCode();
                 if (!isSuccess(statusCode)) {
                     if (statusCode == 503) {
-                        logger.warn("Server busy (503) HTTP status code received from the peer {}; rescheduling tasks after delay", peerId);
+                        log.warn("Server busy (503) HTTP status code received from the peer {}; rescheduling tasks after delay", peerId);
                         return ProcessingResult.Congestion;
                     } else {
                         // Unexpected error returned from the server. This should ideally never happen.
-                        logger.error("Batch update failure with HTTP status code {}; discarding {} replication tasks", statusCode, tasks.size());
+                        log.error("Batch update failure with HTTP status code {}; discarding {} replication tasks", statusCode, tasks.size());
                         return ProcessingResult.PermanentError;
                     }
                 } else {
@@ -437,14 +432,14 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 }
             } catch (Throwable e) {
                 if (maybeReadTimeOut(e)) {
-                    logger.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
-                    //read timeout exception is more Congestion then TransientError, return Congestion for longer delay
+                    log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
+                    //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
                 } else if (isNetworkConnectException(e)) {
                     logNetworkErrorSample(null, e);
                     return ProcessingResult.TransientError;
                 } else {
-                    logger.error("Not re-trying this exception because it does not seem to be a network exception", e);
+                    log.error("Not re-trying this exception because it does not seem to be a network exception", e);
                     return ProcessingResult.PermanentError;
                 }
             }
@@ -467,14 +462,14 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                     sb.append(" for task ").append(task.getTaskName());
                 }
                 sb.append("; retrying after delay");
-                logger.error(sb.toString(), e);
+                log.error(sb.toString(), e);
             }
         }
 
         private void handleBatchResponse(List<ReplicationTask> tasks, List<ReplicationInstanceResponse> responseList) {
             if (tasks.size() != responseList.size()) {
                 // This should ideally never happen unless there is a bug in the software.
-                logger.error("Batch response size different from submitted task list ({} != {}); skipping response analysis", responseList.size(), tasks.size());
+                log.error("Batch response size different from submitted task list ({} != {}); skipping response analysis", responseList.size(), tasks.size());
                 return;
             }
             for (int i = 0; i < tasks.size(); i++) {
@@ -492,7 +487,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             try {
                 task.handleFailure(response.getStatusCode(), response.getResponseEntity());
             } catch (Throwable e) {
-                logger.error("Replication task {} error handler failure", task.getTaskName(), e);
+                log.error("Replication task {} error handler failure", task.getTaskName(), e);
             }
         }
 

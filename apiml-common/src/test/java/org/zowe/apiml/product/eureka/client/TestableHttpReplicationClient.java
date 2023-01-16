@@ -49,6 +49,8 @@ public class TestableHttpReplicationClient implements HttpReplicationClient {
 
     private long processingDelayMs;
 
+    private Exception exception = new IOException("simulated network failure");
+
 
     private final BlockingQueue<HandledRequest> handledRequests = new LinkedBlockingQueue<>();
 
@@ -74,6 +76,10 @@ public class TestableHttpReplicationClient implements HttpReplicationClient {
 
     public void withProcessingDelay(long processingDelay, TimeUnit timeUnit) {
         this.processingDelayMs = timeUnit.toMillis(processingDelay);
+    }
+
+    public void withException(Exception exception) {
+        this.exception = exception;
     }
 
     public HandledRequest nextHandledRequest(long timeout, TimeUnit timeUnit) throws InterruptedException {
@@ -163,7 +169,7 @@ public class TestableHttpReplicationClient implements HttpReplicationClient {
 
         if (networkFailureCounter.get() < networkFailuresRepeatCount) {
             networkFailureCounter.incrementAndGet();
-            throw new RuntimeException(new IOException("simulated network failure"));
+            throw new RuntimeException(exception);
         }
 
         if (processingDelayMs > 0) {

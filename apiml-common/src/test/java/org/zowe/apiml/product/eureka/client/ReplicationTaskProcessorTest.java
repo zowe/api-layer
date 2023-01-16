@@ -16,6 +16,7 @@ import com.netflix.eureka.util.batcher.TaskProcessor.ProcessingResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.net.ssl.SSLException;
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -56,6 +57,13 @@ public class ReplicationTaskProcessorTest {
         ProcessingResult status = replicationTaskProcessor.process(task);
         assertThat(status, is(ProcessingResult.TransientError));
         assertThat(task.getProcessingState(), is(ProcessingState.Pending));
+    }
+
+    @Test
+    public void testNonBatchableTaskSSLFailureHandling() throws Exception {
+        TestableInstanceReplicationTask task = aReplicationTask().withAction(Action.Heartbeat).withException(new SSLException("handshake error")).withNetworkFailures(1).build();
+        ProcessingResult status = replicationTaskProcessor.process(task);
+        assertThat(status, is(ProcessingResult.PermanentError));
     }
 
     @Test
@@ -110,6 +118,17 @@ public class ReplicationTaskProcessorTest {
 
         assertThat(status, is(ProcessingResult.TransientError));
         assertThat(task.getProcessingState(), is(ProcessingState.Pending));
+    }
+
+    @Test
+    public void testBatchableTaskSSLFailureHandling() throws Exception {
+        TestableInstanceReplicationTask task = aReplicationTask().build();
+
+        replicationClient.withNetworkError(1);
+        replicationClient.withException(new SSLException("handshake error"));
+        ProcessingResult status = replicationTaskProcessor.process(Collections.<ReplicationTask>singletonList(task));
+
+        assertThat(status, is(ProcessingResult.PermanentError));
     }
 
     @Test
