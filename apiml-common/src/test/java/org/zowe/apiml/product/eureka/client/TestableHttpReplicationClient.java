@@ -188,7 +188,9 @@ public class TestableHttpReplicationClient implements HttpReplicationClient {
     public void shutdown() {
     }
 
-    public enum RequestType {Heartbeat, Register, Cancel, StatusUpdate, DeleteStatusOverride, AsgStatusUpdate, Batch}
+    public enum RequestType {
+        Heartbeat, Register, Cancel, StatusUpdate, DeleteStatusOverride, AsgStatusUpdate, Batch
+    }
 
     public static class HandledRequest {
         private final RequestType requestType;

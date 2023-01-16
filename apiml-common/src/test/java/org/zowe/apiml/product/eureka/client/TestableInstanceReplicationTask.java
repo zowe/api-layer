@@ -20,7 +20,9 @@ class TestableInstanceReplicationTask extends InstanceReplicationTask {
 
     public static final String APP_NAME = "testableReplicationTaskApp";
 
-    public enum ProcessingState {Pending, Finished, Failed}
+    public enum ProcessingState {
+        Pending, Finished, Failed
+    }
 
     private final int replyStatusCode;
     private final int networkFailuresRepeatCount;
