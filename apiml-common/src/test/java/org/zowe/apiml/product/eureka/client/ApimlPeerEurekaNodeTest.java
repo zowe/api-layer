@@ -1,14 +1,4 @@
-/*
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License v2.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v20.html
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Copyright Contributors to the Zowe Project.
- */
-
-package org.zowe.apiml.discovery;
+package org.zowe.apiml.product.eureka.client;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.DefaultEurekaServerConfig;
@@ -29,7 +19,7 @@ import static com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl.Action;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.discovery.TestableHttpReplicationClient.RequestType;
+import static org.zowe.apiml.product.eureka.client.TestableHttpReplicationClient.RequestType;
 
 class ApimlPeerEurekaNodeTest {
     private static final int BATCH_SIZE = 10;
@@ -39,25 +29,25 @@ class ApimlPeerEurekaNodeTest {
 
     private final TestableHttpReplicationClient httpReplicationClient = new TestableHttpReplicationClient();
 
-    private final InstanceInfo instanceInfo = new InstanceInfo("service1","service1-localhost","group1","127.0.0.1","sid",null,new InstanceInfo.PortWrapper(true,1999),"localhost:1999/home","stat","/health",null,null,null,1,null,"localhost", InstanceInfo.InstanceStatus.UP,null,null, null,true,null,null,null,null,null);
-    private final InstanceInfo instanceInfo2 = new InstanceInfo("service2","service2-localhost","group1","127.0.0.1","sid",null,new InstanceInfo.PortWrapper(true,1998),"localhost:1999/home","stat","/health",null,null,null,1,null,"localhost", InstanceInfo.InstanceStatus.UP,null,null, null,true,null,null,null,null,null);
+    public static final InstanceInfo instanceInfo = new InstanceInfo("service1", "service1-localhost", "group1", "127.0.0.1", "sid", null, new InstanceInfo.PortWrapper(true, 1999), "localhost:1999/home", "stat", "/health", null, null, null, 1, null, "localhost", InstanceInfo.InstanceStatus.UP, null, null, null, true, null, null, null, null, null);
+    private final InstanceInfo instanceInfo2 = new InstanceInfo("service2", "service2-localhost", "group1", "127.0.0.1", "sid", null, new InstanceInfo.PortWrapper(true, 1998), "localhost:1999/home", "stat", "/health", null, null, null, 1, null, "localhost", InstanceInfo.InstanceStatus.UP, null, null, null, true, null, null, null, null, null);
     private ApimlPeerEurekaNode peerEurekaNode;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() {
         httpReplicationClient.withNetworkStatusCode(200);
         httpReplicationClient.withBatchReply(200);
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() {
         if (peerEurekaNode != null) {
             peerEurekaNode.shutDown();
         }
     }
 
     @Test
-    public void testRegistrationBatchReplication() throws Exception {
+    void testRegistrationBatchReplication() throws Exception {
         createPeerEurekaNode().register(instanceInfo);
 
         ReplicationInstance replicationInstance = expectSingleBatchRequest();
@@ -65,7 +55,7 @@ class ApimlPeerEurekaNodeTest {
     }
 
     @Test
-    public void testCancelBatchReplication() throws Exception {
+    void testCancelBatchReplication() throws Exception {
         createPeerEurekaNode().cancel(instanceInfo.getAppName(), instanceInfo.getId());
 
         ReplicationInstance replicationInstance = expectSingleBatchRequest();
@@ -73,7 +63,7 @@ class ApimlPeerEurekaNodeTest {
     }
 
     @Test
-    public void testHeartbeatBatchReplication() throws Throwable {
+    void testHeartbeatBatchReplication() throws Throwable {
         createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
 
         ReplicationInstance replicationInstance = expectSingleBatchRequest();
@@ -81,7 +71,7 @@ class ApimlPeerEurekaNodeTest {
     }
 
     @Test
-    public void testHeartbeatReplicationFailure() throws Throwable {
+    void testHeartbeatReplicationFailure() throws Throwable {
         httpReplicationClient.withNetworkStatusCode(200, 200);
         httpReplicationClient.withBatchReply(404); // Not found, to trigger registration
         createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
@@ -96,13 +86,12 @@ class ApimlPeerEurekaNodeTest {
     }
 
     @Test
-    public void testHeartbeatWithInstanceInfoFromPeer() throws Throwable {
+    void testHeartbeatWithInstanceInfoFromPeer() throws Throwable {
         InstanceInfo instanceInfoFromPeer = instanceInfo2;
 
         httpReplicationClient.withNetworkStatusCode(200);
         httpReplicationClient.withBatchReply(400);
         httpReplicationClient.withInstanceInfo(instanceInfoFromPeer);
-
         // InstanceInfo in response from peer will trigger local registry call
         createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
         expectRequestType(RequestType.Batch);
@@ -112,7 +101,7 @@ class ApimlPeerEurekaNodeTest {
     }
 
     @Test
-    public void testAsgStatusUpdate() throws Throwable {
+    void testAsgStatusUpdate() throws Throwable {
         createPeerEurekaNode().statusUpdate(instanceInfo.getASGName(), ASGStatus.DISABLED);
 
         Object newAsgStatus = expectRequestType(RequestType.AsgStatusUpdate);
@@ -120,7 +109,7 @@ class ApimlPeerEurekaNodeTest {
     }
 
     @Test
-    public void testStatusUpdateBatchReplication() throws Throwable {
+    void testStatusUpdateBatchReplication() throws Throwable {
         createPeerEurekaNode().statusUpdate(instanceInfo.getAppName(), instanceInfo.getId(), InstanceStatus.DOWN, instanceInfo);
 
         ReplicationInstance replicationInstance = expectSingleBatchRequest();
@@ -128,7 +117,7 @@ class ApimlPeerEurekaNodeTest {
     }
 
     @Test
-    public void testDeleteStatusOverrideBatchReplication() throws Throwable {
+    void testDeleteStatusOverrideBatchReplication() throws Throwable {
         createPeerEurekaNode().deleteStatusOverride(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo);
 
         ReplicationInstance replicationInstance = expectSingleBatchRequest();

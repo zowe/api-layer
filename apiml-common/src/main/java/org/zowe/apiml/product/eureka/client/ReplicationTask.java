@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery;
+package org.zowe.apiml.product.eureka.client;
 
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
@@ -22,7 +22,7 @@ public abstract class ReplicationTask {
     protected final String peerNodeName;
     protected final PeerAwareInstanceRegistryImpl.Action action;
 
-    ReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action) {
+    public ReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action) {
         this.peerNodeName = peerNodeName;
         this.action = action;
     }

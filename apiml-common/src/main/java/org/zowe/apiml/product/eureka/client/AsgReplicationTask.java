@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery;
+package org.zowe.apiml.product.eureka.client;
 
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ASGResource;
@@ -18,7 +18,7 @@ public abstract class AsgReplicationTask extends ReplicationTask {
     private final String asgName;
     private final ASGResource.ASGStatus newStatus;
 
-    protected AsgReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action, String asgName, ASGResource.ASGStatus newStatus) {
+    public AsgReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action, String asgName, ASGResource.ASGStatus newStatus) {
         super(peerNodeName, action);
         this.asgName = asgName;
         this.newStatus = newStatus;

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery;
+package org.zowe.apiml.product.eureka.client;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
@@ -33,12 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.netflix.discovery.shared.transport.EurekaHttpResponse.anEurekaHttpResponse;
 
-/**
- * This stub implementation is primarily useful for batch updates, and complex failure scenarios.
- * Using mock would results in too convoluted code.
- *
- * @author Tomasz Bak
- */
 public class TestableHttpReplicationClient implements HttpReplicationClient {
 
     private int[] networkStatusCodes;
@@ -194,7 +188,7 @@ public class TestableHttpReplicationClient implements HttpReplicationClient {
     public void shutdown() {
     }
 
-    public enum RequestType { Heartbeat, Register, Cancel, StatusUpdate, DeleteStatusOverride, AsgStatusUpdate, Batch }
+    public enum RequestType {Heartbeat, Register, Cancel, StatusUpdate, DeleteStatusOverride, AsgStatusUpdate, Batch}
 
     public static class HandledRequest {
         private final RequestType requestType;

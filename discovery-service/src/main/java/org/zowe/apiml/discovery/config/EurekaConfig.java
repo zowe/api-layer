@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
-import org.zowe.apiml.discovery.ApimlPeerEurekaNode;
+import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import java.util.Set;
 
@@ -66,19 +66,7 @@ public class EurekaConfig {
             replicationClientAdditionalFilters);
     }
 
-    /**
-     * {@link PeerEurekaNodes} which updates peers when /refresh is invoked. Peers are
-     * updated only if <code>eureka.client.use-dns-for-fetching-service-urls</code> is
-     * <code>false</code> and one of following properties have changed.
-     * <p>
-     * </p>
-     * <ul>
-     * <li><code>eureka.client.availability-zones</code></li>
-     * <li><code>eureka.client.region</code></li>
-     * <li><code>eureka.client.service-url.&lt;zone&gt;</code></li>
-     * </ul>
-     */
-    static class RefreshablePeerEurekaNodes extends PeerEurekaNodes
+    public static class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         implements ApplicationListener<EnvironmentChangeEvent> {
 
         private ReplicationClientAdditionalFilters replicationClientAdditionalFilters;

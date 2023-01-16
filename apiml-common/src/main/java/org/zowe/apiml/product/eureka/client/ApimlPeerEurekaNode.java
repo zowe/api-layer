@@ -24,7 +24,7 @@
  *    limitations under the License.
  */
 
-package org.zowe.apiml.discovery;
+package org.zowe.apiml.product.eureka.client;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
@@ -137,6 +137,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      *             that is send to this instance.
      * @throws Exception
      */
+    @Override
     public void register(final InstanceInfo info) throws Exception {
         long expiryTime = System.currentTimeMillis() + getLeaseRenewalOf(info);
         batchingDispatcher.process(
@@ -158,6 +159,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      * @param id      the unique identifier of the instance.
      * @throws Exception
      */
+    @Override
     public void cancel(final String appName, final String id) throws Exception {
         long expiryTime = System.currentTimeMillis() + maxProcessingDelayMs;
         batchingDispatcher.process(
@@ -191,6 +193,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      * @param overriddenStatus the overridden status information if any of the instance.
      * @throws Throwable
      */
+    @Override
     public void heartbeat(final String appName, final String id,
                           final InstanceInfo info, final InstanceInfo.InstanceStatus overriddenStatus,
                           boolean primeConnection) throws Throwable {
@@ -218,7 +221,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 } else if (config.shouldSyncWhenTimestampDiffers()) {
                     InstanceInfo peerInstanceInfo = (InstanceInfo) responseEntity;
                     if (peerInstanceInfo != null) {
-                        syncInstancesIfTimestampDiffers(appName, id, info, peerInstanceInfo);
+                        syncInstancesWhenTimestampDiffers(appName, id, info, peerInstanceInfo);
                     }
                 }
             }
@@ -239,6 +242,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      * @param asgName   the asg name if any of this instance.
      * @param newStatus the new status of the ASG.
      */
+    @Override
     public void statusUpdate(final String asgName, final ASGResource.ASGStatus newStatus) {
         long expiryTime = System.currentTimeMillis() + maxProcessingDelayMs;
         nonBatchingDispatcher.process(
@@ -260,6 +264,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      * @param newStatus the new status of the instance.
      * @param info      the instance information of the instance.
      */
+    @Override
     public void statusUpdate(final String appName, final String id,
                              final InstanceInfo.InstanceStatus newStatus, final InstanceInfo info) {
         long expiryTime = System.currentTimeMillis() + maxProcessingDelayMs;
@@ -282,6 +287,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      * @param id      the unique identifier of the instance.
      * @param info    the instance information of the instance.
      */
+    @Override
     public void deleteStatusOverride(final String appName, final String id, final InstanceInfo info) {
         long expiryTime = System.currentTimeMillis() + maxProcessingDelayMs;
         batchingDispatcher.process(
@@ -300,43 +306,15 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      *
      * @return the service Url of the peer eureka node.
      */
+    @Override
     public String getServiceUrl() {
         return serviceUrl;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((serviceUrl == null) ? 0 : serviceUrl.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ApimlPeerEurekaNode other = (ApimlPeerEurekaNode) obj;
-        if (serviceUrl == null) {
-            if (other.serviceUrl != null) {
-                return false;
-            }
-        } else if (!serviceUrl.equals(other.serviceUrl)) {
-            return false;
-        }
-        return true;
     }
 
     /**
      * Shuts down all resources used for peer replication.
      */
+    @Override
     public void shutDown() {
         batchingDispatcher.shutdown();
         nonBatchingDispatcher.shutdown();
@@ -347,7 +325,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
      * Synchronize {@link InstanceInfo} information if the timestamp between
      * this node and the peer eureka nodes vary.
      */
-    private void syncInstancesIfTimestampDiffers(String appName, String id, InstanceInfo info, InstanceInfo infoFromPeer) {
+    private void syncInstancesWhenTimestampDiffers(String appName, String id, InstanceInfo info, InstanceInfo infoFromPeer) {
         try {
             if (infoFromPeer != null) {
                 logger.warn("Peer wants us to take the instance information from it, since the timestamp differs,"
@@ -359,11 +337,12 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 }
                 registry.register(infoFromPeer, true);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.warn("Exception when trying to set information from peer :", e);
         }
     }
 
+    @Override
     public String getBatcherName() {
         String batcherName;
         try {
@@ -555,7 +534,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
          */
         private static boolean maybeReadTimeOut(Throwable e) {
             do {
-                if (IOException.class.isInstance(e)) {
+                if (e instanceof IOException) {
                     String message = e.getMessage().toLowerCase();
                     Matcher matcher = READ_TIME_OUT_PATTERN.matcher(message);
                     if (matcher.find()) {
