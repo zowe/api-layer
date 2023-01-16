@@ -23,8 +23,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 class StandaloneInitializerTest {
@@ -43,7 +45,11 @@ class StandaloneInitializerTest {
 
     @Test
     void testEventIsCalledOnlyOnce() {
-        ApplicationReadyEvent event = new ApplicationReadyEvent(application, new String[]{}, registry);
+        ApplicationReadyEvent event = mock(ApplicationReadyEvent.class);
+        ConfigurableApplicationContext ctx = mock(ConfigurableApplicationContext.class);
+        when(event.getApplicationContext()).thenReturn(ctx);
+        when(ctx.containsBean("standaloneInitializer")).thenReturn(true);
+
         publisher.publishEvent(event);
         publisher.publishEvent(event);
 

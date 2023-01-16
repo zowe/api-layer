@@ -13,6 +13,7 @@ package org.zowe.apiml.apicatalog.standalone;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -35,10 +36,14 @@ public class StandaloneInitializer {
     private final AtomicBoolean hasRun = new AtomicBoolean(false);
 
     @EventListener(ApplicationReadyEvent.class)
-    public void onApplicationEvent() {
-        if (hasRun.compareAndSet(false, true)) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        if (isStandalone(event.getApplicationContext()) && hasRun.compareAndSet(false, true)) {
             standaloneLoaderService.initializeCache();
         }
+    }
+
+    private boolean isStandalone(ConfigurableApplicationContext context) {
+        return context.containsBean("standaloneInitializer");
     }
 
 }
