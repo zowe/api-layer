@@ -10,18 +10,23 @@
 
 package org.zowe.apiml.discovery.config;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.cluster.PeerEurekaNodes;
+import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
+import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
 
 /**
  * Configuration to rewrite default Eureka's implementation with custom one
@@ -40,11 +45,21 @@ public class EurekaConfig {
         ServerCodecs serverCodecs,
         EurekaClient eurekaClient,
         InstanceRegistryProperties instanceRegistryProperties,
-        ApplicationContext appCntx)
-    {
+        ApplicationContext appCntx) {
         eurekaClient.getApplications(); // force initialization
-        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties,appCntx, new Tuple(tuple));
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties, appCntx, new Tuple(tuple));
     }
+
+    @Bean
+    @Primary
+    public PeerEurekaNodes peerEurekaNodes(PeerAwareInstanceRegistry registry,
+                                           ServerCodecs serverCodecs,
+                                           ReplicationClientAdditionalFilters replicationClientAdditionalFilters, ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig, EurekaClientConfig eurekaClientConfig) {
+        return new RefreshablePeerEurekaNodes(registry, eurekaServerConfig,
+            eurekaClientConfig, serverCodecs, applicationInfoManager,
+            replicationClientAdditionalFilters);
+    }
+
 
     public static class Tuple {
 

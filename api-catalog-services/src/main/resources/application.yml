@@ -194,6 +194,7 @@ logging:
         org.apache.http: DEBUG
         com.netflix: INFO
         net.sf.ehcache: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
 
 ---
 spring:
