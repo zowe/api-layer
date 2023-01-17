@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StandaloneAPIDocRetrievalServiceTest {
@@ -45,6 +46,29 @@ class StandaloneAPIDocRetrievalServiceTest {
         void whenRetrieveDefaultApiVersion() {
             assertNull(standaloneAPIDocRetrievalService.retrieveDefaultApiVersion("service"));
         }
+    }
 
+    @Nested
+    class ThenItDoesntAcceptNullValues {
+
+        @Test
+        void whenRetrieveApiDoc() {
+            assertThrows(NullPointerException.class, () -> standaloneAPIDocRetrievalService.retrieveApiDoc(null, null));
+        }
+
+        @Test
+        void whenRetrieveDefaultApiDoc() {
+            assertThrows(NullPointerException.class, () -> standaloneAPIDocRetrievalService.retrieveDefaultApiDoc(null));
+        }
+
+        @Test
+        void whenRetrieveApiVersions() {
+            assertThrows(NullPointerException.class, () -> standaloneAPIDocRetrievalService.retrieveApiVersions((String) null));
+        }
+
+        @Test
+        void whenRetrieveDefaultApiVersion() {
+            assertThrows(NullPointerException.class, () -> standaloneAPIDocRetrievalService.retrieveDefaultApiVersion((String )null));
+        }
     }
 }
