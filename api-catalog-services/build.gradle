@@ -29,6 +29,10 @@ def javaAgentPort = 6304
 def debugPort = 5124
 def componentName = "api-catalog-services"
 
+if (project.hasProperty("zowe.jib.image.suffix")) { // Prefix for the component name (for the standalone catalog container)
+    componentName += "-" + project.getProperty("zowe.jib.image.suffix")
+}
+
 setJib(componentName, javaAgentPort, debugPort)
 
 springBoot {
