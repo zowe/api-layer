@@ -22,7 +22,7 @@ public abstract class ReplicationTask {
     protected final String peerNodeName;
     protected final PeerAwareInstanceRegistryImpl.Action action;
 
-    public ReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action) {
+    ReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action) {
         this.peerNodeName = peerNodeName;
         this.action = action;
     }

@@ -18,7 +18,7 @@ public abstract class AsgReplicationTask extends ReplicationTask {
     private final String asgName;
     private final ASGResource.ASGStatus newStatus;
 
-    public AsgReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action, String asgName, ASGResource.ASGStatus newStatus) {
+    AsgReplicationTask(String peerNodeName, PeerAwareInstanceRegistryImpl.Action action, String asgName, ASGResource.ASGStatus newStatus) {
         super(peerNodeName, action);
         this.asgName = asgName;
         this.newStatus = newStatus;

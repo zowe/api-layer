@@ -19,6 +19,7 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ASGResource.ASGStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -72,42 +73,47 @@ class ApimlPeerEurekaNodeTest {
         assertThat(replicationInstance.getAction(), is(equalTo(Action.Cancel)));
     }
 
-    @Test
-    void testHeartbeatBatchReplication() throws Throwable {
-        createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
+    @Nested
+    class GivenHeartbeatBatch {
 
-        ReplicationInstance replicationInstance = expectSingleBatchRequest();
-        assertThat(replicationInstance.getAction(), is(equalTo(Action.Heartbeat)));
-    }
+        @Test
+        void givenBatchReplication_thenExpectSingleBatch() throws Throwable {
+            createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
 
-    @Test
-    void testHeartbeatReplicationFailure() throws Throwable {
-        httpReplicationClient.withNetworkStatusCode(200, 200);
-        httpReplicationClient.withBatchReply(404); // Not found, to trigger registration
-        createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
+            ReplicationInstance replicationInstance = expectSingleBatchRequest();
+            assertThat(replicationInstance.getAction(), is(equalTo(Action.Heartbeat)));
+        }
 
-        // Heartbeat replied with an error
-        ReplicationInstance replicationInstance = expectSingleBatchRequest();
-        assertThat(replicationInstance.getAction(), is(equalTo(Action.Heartbeat)));
+        @Test
+        void givenReplicationFailure_thenScheduleSecondRegistration() throws Throwable {
+            httpReplicationClient.withNetworkStatusCode(200, 200);
+            httpReplicationClient.withBatchReply(404); // Not found, to trigger registration
+            createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
 
-        // Second, registration task is scheduled
-        replicationInstance = expectSingleBatchRequest();
-        assertThat(replicationInstance.getAction(), is(equalTo(Action.Register)));
-    }
+            // Heartbeat replied with an error
+            ReplicationInstance replicationInstance = expectSingleBatchRequest();
+            assertThat(replicationInstance.getAction(), is(equalTo(Action.Heartbeat)));
 
-    @Test
-    void testHeartbeatWithInstanceInfoFromPeer() throws Throwable {
-        InstanceInfo instanceInfoFromPeer = instanceInfo2;
+            // Second, registration task is scheduled
+            replicationInstance = expectSingleBatchRequest();
+            assertThat(replicationInstance.getAction(), is(equalTo(Action.Register)));
+        }
 
-        httpReplicationClient.withNetworkStatusCode(200);
-        httpReplicationClient.withBatchReply(400);
-        httpReplicationClient.withInstanceInfo(instanceInfoFromPeer);
-        // InstanceInfo in response from peer will trigger local registry call
-        createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
-        expectRequestType(RequestType.Batch);
+        @Test
+        void givenInstanceInfoFromPeer_thenTriggerLocalCall() throws Throwable {
+            InstanceInfo instanceInfoFromPeer = instanceInfo2;
 
-        // Check that registry has instanceInfo from peer
-        verify(registry, timeout(1000).times(1)).register(instanceInfoFromPeer, true);
+            httpReplicationClient.withNetworkStatusCode(200);
+            httpReplicationClient.withBatchReply(400);
+            httpReplicationClient.withInstanceInfo(instanceInfoFromPeer);
+            // InstanceInfo in response from peer will trigger local registry call
+            createPeerEurekaNode().heartbeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
+            expectRequestType(RequestType.Batch);
+
+            // Check that registry has instanceInfo from peer
+            verify(registry, timeout(1000).times(1)).register(instanceInfoFromPeer, true);
+        }
+
     }
 
     @Test
