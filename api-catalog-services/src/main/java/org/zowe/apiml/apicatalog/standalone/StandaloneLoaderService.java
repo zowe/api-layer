@@ -22,12 +22,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -44,6 +50,8 @@ public class StandaloneLoaderService {
     private final InstanceInitializeService instanceInitializeService;
     private final CachedApiDocService cachedApiDocService;
     private final StandaloneAPIDocRetrievalService standaloneAPIDocRetrievalService;
+    private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory;
+    private final GatewayConfigProperties gatewayConfigProperties;
 
     public void initializeCache() {
         loadApplicationCache();
@@ -89,6 +97,17 @@ public class StandaloneLoaderService {
         }
     }
 
+    private ApiDocInfo createApiDocInfo(String apiDoc) {
+        ApiInfo apiInfo = new ApiInfo();
+        apiInfo.setGatewayUrl(String.format("%s://%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname()));
+        RoutedServices routedServices = new RoutedServices();
+        return new ApiDocInfo(
+            apiInfo,
+            apiDoc,
+            routedServices
+        );
+    }
+
     private void loadApiDocCache(File file) {
         try {
             String[] name = FilenameUtils.removeExtension(file.getName()).split("_");
@@ -96,13 +115,20 @@ public class StandaloneLoaderService {
                 log.warn("ApiDoc file has incorrect name format '{}'. The correct format is '{serviceId}_{version}(_default)'.", file.getName());
                 return;
             }
+            String serviceId = name[0];
+            String apiVersion = name[1];
+
 
             String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
+
+            ApiDocInfo apiDocInfo = createApiDocInfo(apiDoc);
+            apiDoc = beanApiDocFactory.apply(apiDoc).transformApiDoc(serviceId, apiDocInfo);
+
             if (name.length > 2 && name[2].equals("default")) {
-                cachedApiDocService.updateApiDocForService(name[0], CachedApiDocService.DEFAULT_API_KEY, apiDoc);
+                cachedApiDocService.updateApiDocForService(serviceId, CachedApiDocService.DEFAULT_API_KEY, apiDoc);
             }
 
-            cachedApiDocService.updateApiDocForService(name[0], name[1], apiDoc);
+            cachedApiDocService.updateApiDocForService(serviceId, apiVersion, apiDoc);
         } catch (IOException e) {
             log.error("Cannot read '{}' because {}", file.getName(), e.getMessage());
         }
