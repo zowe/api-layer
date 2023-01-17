@@ -21,11 +21,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -46,14 +48,31 @@ class StandaloneInitializerTest {
     @Test
     void testEventIsCalledOnlyOnce() {
         ApplicationReadyEvent event = mock(ApplicationReadyEvent.class);
-        ConfigurableApplicationContext ctx = mock(ConfigurableApplicationContext.class);
-        when(event.getApplicationContext()).thenReturn(ctx);
-        when(ctx.containsBean("standaloneInitializer")).thenReturn(true);
+        mockContext(event, true);
 
         publisher.publishEvent(event);
         publisher.publishEvent(event);
 
         verify(standaloneLoaderService, times(1)).initializeCache();
+    }
+
+    @Test
+    void notCalledIfStandaloneDisabled() {
+        ApplicationReadyEvent event = mock(ApplicationReadyEvent.class);
+        mockContext(event, false);
+
+        publisher.publishEvent(event);
+
+        verifyNoInteractions(standaloneLoaderService);
+    }
+
+    private ConfigurableApplicationContext mockContext(ApplicationReadyEvent event, boolean isStandalone) {
+        ConfigurableApplicationContext ctx = mock(ConfigurableApplicationContext.class);
+        ConfigurableEnvironment env = mock(ConfigurableEnvironment.class);
+        when(event.getApplicationContext()).thenReturn(ctx);
+        when(env.getProperty("apiml.catalog.standalone.enabled", "false")).thenReturn(String.valueOf(isStandalone));
+        when(ctx.getEnvironment()).thenReturn(env);
+        return ctx;
     }
 
     @Configuration

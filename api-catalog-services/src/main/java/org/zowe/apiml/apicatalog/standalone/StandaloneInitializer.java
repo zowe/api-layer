@@ -43,7 +43,7 @@ public class StandaloneInitializer {
     }
 
     private boolean isStandalone(ConfigurableApplicationContext context) {
-        return context.containsBean("standaloneInitializer");
+        return Boolean.parseBoolean(context.getEnvironment().getProperty("apiml.catalog.standalone.enabled", "false"));
     }
 
 }
