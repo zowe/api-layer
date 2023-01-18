@@ -22,6 +22,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
@@ -42,12 +43,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * Retrieves the API documentation for a registered service
  */
 @Service
+@ConditionalOnProperty(
+        value = "apiml.catalog.standalone.enabled",
+        havingValue = "false",
+        matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
 public class APIDocRetrievalService {
@@ -80,13 +86,19 @@ public class APIDocRetrievalService {
             throw new ApiVersionNotFoundException(e.getMessage());
         }
 
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        List<String> apiVersions = retrieveApiVersions(instanceInfo.getMetadata());
+        log.debug("For service '{}' found API versions '{}'", serviceId, apiVersions);
+
+        return apiVersions;
+    }
+
+    public List<String> retrieveApiVersions(@NonNull Map<String, String> metadata) {
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(metadata);
         List<String> apiVersions = new ArrayList<>();
         for (ApiInfo apiInfo : apiInfoList) {
             apiVersions.add(apiInfo.getApiId() + " v" + apiInfo.getVersion());
         }
 
-        log.debug("For service '{}' found API versions '{}'", serviceId, apiVersions);
         return apiVersions;
     }
 
@@ -109,16 +121,21 @@ public class APIDocRetrievalService {
             throw new ApiVersionNotFoundException(e.getMessage());
         }
 
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        String defaultVersion = retrieveDefaultApiVersion(instanceInfo.getMetadata());
+        log.debug("For service '{}' found default API version '{}'", serviceId, defaultVersion);
+
+        return defaultVersion;
+    }
+
+    public String retrieveDefaultApiVersion(@NonNull Map<String, String> metadata) {
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(metadata);
         ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
 
         if (defaultApiInfo == null) {
             return "";
         }
 
-        String defaultVersion = defaultApiInfo.getApiId() + " v" + defaultApiInfo.getVersion();
-        log.debug("For service '{}' found default API version '{}'", serviceId, defaultVersion);
-        return defaultVersion;
+        return String.format("%s v%s", defaultApiInfo.getApiId(), defaultApiInfo.getVersion());
     }
 
     /**

@@ -124,7 +124,7 @@ public class InstanceInitializeService {
     }
 
 
-    private void createContainers(Application application) {
+    public void createContainers(Application application) {
         cachedServicesService.updateService(application.getName(), application);
         application.getInstances().forEach(instanceInfo -> {
             String productFamilyId = instanceInfo.getMetadata().get(CATALOG_ID);
