@@ -17,8 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 @Data
-@Configuration
-@ConfigurationProperties(prefix = "apiml.security")
 public class WebFingerProperties {
 
     private List<WebFingerConfig> webFinger;

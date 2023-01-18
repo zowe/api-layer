@@ -10,11 +10,14 @@
 
 package org.zowe.apiml.gateway.security.webfinger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,12 +26,22 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class StaticWebFingerProvider implements WebFingerProvider {
-    @Autowired
-    private WebFingerProperties webFingerProperties;
+
+    @Value("${apiml.security.webfinger.fileLocation:-}")
+    private String webfingerDefinition;
+    private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
+
 
     @Override
     public WebFingerResponse getWebFingerConfig(String clientId) {
         //set basic response
+        ObjectMapper objectMapper = new ObjectMapper(YAML_FACTORY);
+        WebFingerProperties webFingerProperties;
+        try {
+            webFingerProperties = objectMapper.readValue(new File(webfingerDefinition), WebFingerProperties.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         WebFingerResponse response = new WebFingerResponse();
         response.setSubject(clientId);
         response.setLinks(Collections.emptyList());
