@@ -15,7 +15,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -48,7 +47,6 @@ import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @CatalogTest
-@Slf4j
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
@@ -133,9 +131,9 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
                 String swaggerServer = jsonContext.read("$.servers[0].url");
-                LinkedHashMap paths = jsonContext.read("$.paths");
-                LinkedHashMap componentSchemas = jsonContext.read("$.components.schemas");
-                LinkedHashMap securitySchemes = jsonContext.read("$.components.securitySchemes");
+                LinkedHashMap<?, ?> paths = jsonContext.read("$.paths");
+                LinkedHashMap<?, ?> componentSchemas = jsonContext.read("$.components.schemas");
+                LinkedHashMap<?, ?> securitySchemes = jsonContext.read("$.components.securitySchemes");
 
                 // Then
                 assertFalse(paths.isEmpty(), apiCatalogSwagger);
@@ -166,9 +164,9 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
                 String swaggerServer = jsonContext.read("$.servers[0].url");
-                LinkedHashMap paths = jsonContext.read("$.paths");
-                LinkedHashMap componentSchemas = jsonContext.read("$.components.schemas");
-                LinkedHashMap securitySchemes = jsonContext.read("$.components.securitySchemes");
+                LinkedHashMap<?, ?> paths = jsonContext.read("$.paths");
+                LinkedHashMap<?, ?> componentSchemas = jsonContext.read("$.components.schemas");
+                LinkedHashMap<?, ?> securitySchemes = jsonContext.read("$.components.securitySchemes");
 
                 // Then
                 assertFalse(paths.isEmpty(), apiCatalogSwagger);
