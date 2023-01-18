@@ -26,6 +26,9 @@ describe('Swagger Container', () => {
                     serviceId: 'service',
                 },
             },
+            tilesReducer: {
+                tiles: [{}],
+            },
         });
         container = render(
             <Provider store={store}>

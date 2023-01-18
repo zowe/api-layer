@@ -10,29 +10,26 @@
 
 package org.zowe.apiml.discovery.config;
 
-import com.netflix.appinfo.ApplicationInfoManager;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.EurekaServerConfig;
-import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
-import com.netflix.eureka.transport.JerseyReplicationClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
-import org.zowe.apiml.discovery.ApimlPeerEurekaNode;
-
-import java.util.Set;
+import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
 
 /**
  * Configuration to rewrite default Eureka's implementation with custom one
@@ -51,9 +48,10 @@ public class EurekaConfig {
         ServerCodecs serverCodecs,
         EurekaClient eurekaClient,
         InstanceRegistryProperties instanceRegistryProperties,
-        ApplicationContext appCntx) {
+        ApplicationContext appCntx)
+    {
         eurekaClient.getApplications(); // force initialization
-        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties, appCntx, new Tuple(tuple));
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties,appCntx, new Tuple(tuple));
     }
 
     @Bean
@@ -66,84 +64,6 @@ public class EurekaConfig {
             replicationClientAdditionalFilters);
     }
 
-    /**
-     * {@link PeerEurekaNodes} which updates peers when /refresh is invoked. Peers are
-     * updated only if <code>eureka.client.use-dns-for-fetching-service-urls</code> is
-     * <code>false</code> and one of following properties have changed.
-     * <p>
-     * </p>
-     * <ul>
-     * <li><code>eureka.client.availability-zones</code></li>
-     * <li><code>eureka.client.region</code></li>
-     * <li><code>eureka.client.service-url.&lt;zone&gt;</code></li>
-     * </ul>
-     */
-    static class RefreshablePeerEurekaNodes extends PeerEurekaNodes
-        implements ApplicationListener<EnvironmentChangeEvent> {
-
-        private ReplicationClientAdditionalFilters replicationClientAdditionalFilters;
-
-        RefreshablePeerEurekaNodes(final PeerAwareInstanceRegistry registry,
-                                   final EurekaServerConfig serverConfig,
-                                   final EurekaClientConfig clientConfig, final ServerCodecs serverCodecs,
-                                   final ApplicationInfoManager applicationInfoManager,
-                                   final ReplicationClientAdditionalFilters replicationClientAdditionalFilters) {
-            super(registry, serverConfig, clientConfig, serverCodecs,
-                applicationInfoManager);
-            this.replicationClientAdditionalFilters = replicationClientAdditionalFilters;
-        }
-
-        @Override
-        public PeerEurekaNode createPeerEurekaNode(String peerEurekaNodeUrl) {
-            JerseyReplicationClient replicationClient = JerseyReplicationClient
-                .createReplicationClient(serverConfig, serverCodecs,
-                    peerEurekaNodeUrl);
-
-            this.replicationClientAdditionalFilters.getFilters()
-                .forEach(replicationClient::addReplicationClientFilter);
-
-            String targetHost = hostFromUrl(peerEurekaNodeUrl);
-            if (targetHost == null) {
-                targetHost = "host";
-            }
-            return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl,
-                replicationClient, serverConfig);
-        }
-
-        @Override
-        public void onApplicationEvent(final EnvironmentChangeEvent event) {
-            if (shouldUpdate(event.getKeys())) {
-                updatePeerEurekaNodes(resolvePeerUrls());
-            }
-        }
-
-        /*
-         * Check whether specific properties have changed.
-         */
-        protected boolean shouldUpdate(final Set<String> changedKeys) {
-            assert changedKeys != null;
-
-            // if eureka.client.use-dns-for-fetching-service-urls is true, then
-            // service-url will not be fetched from environment.
-            if (this.clientConfig.shouldUseDnsForFetchingServiceUrls()) {
-                return false;
-            }
-
-            if (changedKeys.contains("eureka.client.region")) {
-                return true;
-            }
-
-            for (final String key : changedKeys) {
-                // property keys are not expected to be null.
-                if (key.startsWith("eureka.client.service-url.")
-                    || key.startsWith("eureka.client.availability-zones.")) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-    }
 
     public static class Tuple {
 
