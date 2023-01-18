@@ -10,10 +10,7 @@
 
 package org.zowe.apiml.discovery.config;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.EurekaServerConfig;
@@ -48,10 +45,9 @@ public class EurekaConfig {
         ServerCodecs serverCodecs,
         EurekaClient eurekaClient,
         InstanceRegistryProperties instanceRegistryProperties,
-        ApplicationContext appCntx)
-    {
+        ApplicationContext appCntx) {
         eurekaClient.getApplications(); // force initialization
-        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties,appCntx, new Tuple(tuple));
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties, appCntx, new Tuple(tuple));
     }
 
     @Bean
