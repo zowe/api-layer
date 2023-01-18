@@ -125,6 +125,9 @@
         "got": "12.1.0",
         "react-error-overlay": "6.0.9"
     },
+    "overrides": {
+        "debug": "3.1.0"
+    },
     "jest": {
         "transformIgnorePatterns": [
             "/node_modules/?!(swagger-ui-react/swagger-ui-es-bundle-core.js)"
@@ -139,8 +142,8 @@
         ]
     },
     "engines": {
-        "npm": "=8.1.0",
-        "node": "=14.19.3"
+        "npm": "=9.2.0",
+        "node": "=19.4.0"
     },
     "browserslist": [
         ">0.2%",
