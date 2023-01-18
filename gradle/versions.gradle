@@ -52,13 +52,13 @@ ext {
     jsr305Version = '3.0.2'
     junitJupiterVersion = '5.7.2'
     junitPlatformVersion = '1.8.2'
-    jqueryVersion = '3.6.0!!'
+    jqueryVersion = '3.6.3!!'
     lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.9'
     lombokVersion = '1.18.20'
     mockitoCoreVersion = '3.9.0'
     netflixServoVersion = '0.13.2'
-    nettyVersion = '4.1.77.Final'
+    nettyVersion = '4.1.86.Final'
     nimbusJoseJwtVersion = '9.23'
     openApiDiffVersion = '2.0.0-beta.10'
     reactorTestVersion = '3.4.9'
@@ -76,7 +76,7 @@ ext {
     tomcatVersion = '9.0.69'
     velocityVersion = '2.3'
     woodstoxVersion = '6.4.0'
-    xstreamVersion = '1.4.19!!'
+    xstreamVersion = '1.4.20!!'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
@@ -189,6 +189,7 @@ ext {
         mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
         netty                              : "io.netty:netty-all:${nettyVersion}",
+        netty_bom                          : "io.netty:netty-bom:${nettyVersion}",
         netty_buffer                       : "io.netty:netty-buffer:${nettyVersion}",
         netty_codec                        : "io.netty:netty-codec:${nettyVersion}",
         netty_codec_dns                    : "io.netty:netty-codec-dns:${nettyVersion}",

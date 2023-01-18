@@ -56,7 +56,6 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
-    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 
     public static Stream<Arguments> getTokens() {
         return Stream.of(
@@ -117,7 +116,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .get(scgUrl)
                 .then()
                 .body("headers.x-zowe-auth-failure", startsWith("ZWEAG141E"))
-                .header(AUTH_FAIL_HEADER, startsWith("ZWEAG141E"))
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG141E"))
                 .statusCode(200);
         }
     }

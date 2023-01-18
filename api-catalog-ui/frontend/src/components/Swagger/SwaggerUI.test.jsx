@@ -143,10 +143,11 @@ describe('>>> Swagger component tests', () => {
                 },
             },
         ];
+        const tiles = [{}];
         const container = document.createElement('div');
         document.body.appendChild(container);
 
-        await act(async () => render(<SwaggerUI selectedService={service} />, container));
+        await act(async () => render(<SwaggerUI selectedService={service} tiles={tiles} />, container));
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint}`);
     });
 
@@ -210,10 +211,10 @@ describe('>>> Swagger component tests', () => {
         ];
         const container = document.createElement('div');
         document.body.appendChild(container);
-
-        await act(async () => render(<SwaggerUI selectedService={service1} />, container));
+        const tiles = [{}];
+        await act(async () => render(<SwaggerUI selectedService={service1} tiles={tiles} />, container));
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint1}`);
-        await act(async () => render(<SwaggerUI selectedService={service2} />, container));
+        await act(async () => render(<SwaggerUI selectedService={service2} tiles={tiles} />, container));
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint2}`);
     });
 

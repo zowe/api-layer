@@ -31,9 +31,7 @@ import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 public class RouteLocator implements RouteDefinitionLocator {
@@ -131,6 +129,13 @@ public class RouteLocator implements RouteDefinitionLocator {
                 filerDef.setName("PassticketFilterFactory");
                 filerDef.addArg("applicationName", auth.getApplid());
                 routeDefinition.getFilters().add(filerDef);
+            } else if (AuthenticationScheme.X509.getScheme().equals(schemeName)) {
+                FilterDefinition x509filter = new FilterDefinition();
+                x509filter.setName("X509FilterFactory");
+                Map<String,String> m = new HashMap<>();
+                m.put("headers",auth.getHeaders());
+                x509filter.setArgs(m);
+                routeDefinition.getFilters().add(x509filter);
             }
         }
 
