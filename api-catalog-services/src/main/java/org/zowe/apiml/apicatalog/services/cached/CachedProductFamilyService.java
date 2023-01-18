@@ -58,7 +58,7 @@ public class CachedProductFamilyService {
 
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
-    @Value("${apiml.catalog.hideServiceInfo:false}")
+    @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
