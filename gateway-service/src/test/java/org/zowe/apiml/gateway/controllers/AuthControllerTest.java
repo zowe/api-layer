@@ -367,39 +367,60 @@ class AuthControllerTest {
         }
     }
 
-    @Test
-    void givenListedClientId_thenReturnWebfingerRecords() throws Exception {
-        when(webFingerProvider.isEnabled()).thenReturn(true);
-        WebFingerResponse webFingerResponse = new WebFingerResponse();
-        webFingerResponse.setSubject("foobar");
-        webFingerResponse.setLinks(Arrays.asList(new WebFingerResponse.Link("http://openid.net/specs/connect/1.0/issuer", "https://foo.org/.well-known")));
-        when(webFingerProvider.getWebFingerConfig("foobar")).thenReturn(webFingerResponse);
-        MvcResult result = mockMvc.perform(get("/gateway/auth/webfinger?resource=foobar"))
-            .andExpect(status().is(SC_OK)).andReturn();
-        ObjectMapper mapper = new ObjectMapper();
-        WebFingerResponse res = mapper.readValue(result.getResponse().getContentAsString(), WebFingerResponse.class);
-        assertEquals(webFingerResponse, res);
+    @Nested
+    class GivenWebfingerEnabled {
+        @BeforeEach
+        void setup() {
+            when(webFingerProvider.isEnabled()).thenReturn(true);
+        }
+
+        @Test
+        void givenListedClientId_thenReturnWebfingerRecords() throws Exception {
+            WebFingerResponse webFingerResponse = new WebFingerResponse();
+            webFingerResponse.setSubject("foobar");
+            webFingerResponse.setLinks(Arrays.asList(new WebFingerResponse.Link("http://openid.net/specs/connect/1.0/issuer", "https://foo.org/.well-known")));
+            when(webFingerProvider.getWebFingerConfig("foobar")).thenReturn(webFingerResponse);
+            MvcResult result = mockMvc.perform(get("/gateway/auth/oidc/webfinger?resource=foobar"))
+                .andExpect(status().is(SC_OK)).andReturn();
+            ObjectMapper mapper = new ObjectMapper();
+            WebFingerResponse res = mapper.readValue(result.getResponse().getContentAsString(), WebFingerResponse.class);
+            assertEquals(webFingerResponse, res);
+        }
+
+        @Test
+        void givenNoClientId_thenReturnEmptyList() throws Exception {
+            WebFingerResponse webFingerResponse = new WebFingerResponse();
+            when(webFingerProvider.getWebFingerConfig("")).thenReturn(webFingerResponse);
+            MvcResult result = mockMvc.perform(get("/gateway/auth/oidc/webfinger?resource="))
+                .andExpect(status().is(SC_OK)).andReturn();
+            ObjectMapper mapper = new ObjectMapper();
+            WebFingerResponse res = mapper.readValue(result.getResponse().getContentAsString(), WebFingerResponse.class);
+            assertEquals(webFingerResponse, res);
+        }
+
+        @Test
+        void givenExceptionThrownByWebfingerProvider_thenReturnErrorMessage() throws Exception {
+            body = new JSONObject();
+            when(webFingerProvider.getWebFingerConfig("foobar")).thenThrow(new IOException("some error"));
+            mockMvc.perform(
+                    get("/gateway/auth/oidc/webfinger?resource=foobar")
+                        .contentType(MediaType.APPLICATION_JSON).content(body.toString())
+                )
+                .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                .andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAG180E")));
+
+        }
     }
 
-    @Test
-    void givenExceptionThrownByWebfingerProvider_thenReturnErrorMessage() throws Exception {
-        body = new JSONObject();
-        when(webFingerProvider.isEnabled()).thenReturn(true);
-        when(webFingerProvider.getWebFingerConfig("foobar")).thenThrow(new IOException("some error"));
-        mockMvc.perform(
-                get("/gateway/auth/webfinger?resource=foobar")
-                    .contentType(MediaType.APPLICATION_JSON).content(body.toString())
-            )
-            .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
-            .andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAG180E")));
+    @Nested
+    class GivenWebfingerDisabled {
+        @Test
+        void whenRequestWithUserid_thenReturnNotFound() throws Exception {
+            when(webFingerProvider.isEnabled()).thenReturn(false);
+            mockMvc.perform(get("/gateway/auth/oidc/webfinger?resource=foobar"))
+                .andExpect(status().is(SC_NOT_FOUND));
+        }
 
-    }
-
-    @Test
-    void givenDisabledWebfinger_thenReturnNotFound() throws Exception {
-        when(webFingerProvider.isEnabled()).thenReturn(false);
-        mockMvc.perform(get("/gateway/auth/webfinger?resource=foobar"))
-            .andExpect(status().is(SC_NOT_FOUND));
     }
 
 }

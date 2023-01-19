@@ -85,7 +85,7 @@ public class AuthController {
     public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
     public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
-    public static final String OIDC_WEBFINGER_PATH = "/webfinger";
+    public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
 
     @DeleteMapping(path = INVALIDATE_PATH)
     @HystrixCommand
@@ -288,7 +288,7 @@ public class AuthController {
     /**
      * Proof of concept of WebFinger provider for OIDC clients.
      *
-     * @return Link to configured IDP and its link to the "/.well-known" configuration
+     * @return List of link's relation type and the target URI for provided clientID
      */
     @GetMapping(path = OIDC_WEBFINGER_PATH)
     @ResponseBody
