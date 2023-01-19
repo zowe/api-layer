@@ -12,18 +12,23 @@ package org.zowe.apiml.gateway.security.webfinger;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class WebFingerResponse {
+
     private static final String RELATION_URI = "http://openid.net/specs/connect/1.0/issuer";
     private String subject;
     private List<Link> links;
 
     @Data
     @AllArgsConstructor
-    static class Link {
+    @NoArgsConstructor
+    public static class Link {
+
         private String rel;
         private String href;
 
