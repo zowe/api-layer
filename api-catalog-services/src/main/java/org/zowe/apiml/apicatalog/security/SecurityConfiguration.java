@@ -171,7 +171,6 @@ public class SecurityConfiguration {
             }
             return http.build();
         }
-
     }
 
     private HttpSecurity baseConfiguration(HttpSecurity http) throws Exception {
