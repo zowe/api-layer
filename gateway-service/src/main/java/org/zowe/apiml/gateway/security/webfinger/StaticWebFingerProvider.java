@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,17 +32,12 @@ public class StaticWebFingerProvider implements WebFingerProvider {
     private String webfingerDefinition;
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
 
-
     @Override
-    public WebFingerResponse getWebFingerConfig(String clientId) {
+    public WebFingerResponse getWebFingerConfig(String clientId) throws IOException {
         //set basic response
         ObjectMapper objectMapper = new ObjectMapper(YAML_FACTORY);
         WebFingerProperties webFingerProperties;
-        try {
-            webFingerProperties = objectMapper.readValue(new File(webfingerDefinition), WebFingerProperties.class);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        webFingerProperties = objectMapper.readValue(new File(webfingerDefinition), WebFingerProperties.class);
         WebFingerResponse response = new WebFingerResponse();
         response.setSubject(clientId);
         response.setLinks(Collections.emptyList());
@@ -61,5 +57,9 @@ public class StaticWebFingerProvider implements WebFingerProvider {
             response.setLinks(links);
         }
         return response;
+    }
+
+    public boolean isEnabled() {
+        return (webfingerDefinition != null) && !webfingerDefinition.isEmpty();
     }
 }

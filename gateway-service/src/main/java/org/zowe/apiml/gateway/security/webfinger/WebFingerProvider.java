@@ -10,7 +10,11 @@
 
 package org.zowe.apiml.gateway.security.webfinger;
 
+import java.io.IOException;
+
 public interface WebFingerProvider {
 
-    WebFingerResponse getWebFingerConfig(String clientId);
+    WebFingerResponse getWebFingerConfig(String clientId) throws IOException;
+
+    boolean isEnabled();
 }

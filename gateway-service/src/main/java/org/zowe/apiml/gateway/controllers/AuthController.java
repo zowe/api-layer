@@ -20,6 +20,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
@@ -57,6 +58,7 @@ import static org.apache.http.HttpStatus.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(AuthController.CONTROLLER_PATH)
+@Slf4j
 public class AuthController {
 
     private final AuthenticationService authenticationService;
@@ -291,9 +293,19 @@ public class AuthController {
     @GetMapping(path = OIDC_WEBFINGER_PATH)
     @ResponseBody
     @HystrixCommand
-    public ResponseEntity<WebFingerResponse> getWebFinger(@RequestParam(name = "resource") String clientId) {
-        WebFingerResponse response = webFingerProvider.getWebFingerConfig(clientId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Object> getWebFinger(@RequestParam(name = "resource") String clientId) throws JsonProcessingException {
+        if (webFingerProvider.isEnabled()) {
+            try {
+                WebFingerResponse response = webFingerProvider.getWebFingerConfig(clientId);
+                return ResponseEntity.ok(response);
+            } catch (IOException e) {
+                log.debug("Error while reading webfinger configuration from source.", e);
+                final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.oidc.invalidWebfingerConfiguration").mapToView();
+                return ResponseEntity.internalServerError().body(writer.writeValueAsString(message));
+            }
+
+        }
+        return ResponseEntity.notFound().build();
     }
 
     private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {
