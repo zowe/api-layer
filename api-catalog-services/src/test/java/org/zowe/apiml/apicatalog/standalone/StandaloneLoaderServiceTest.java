@@ -71,7 +71,8 @@ class StandaloneLoaderServiceTest {
                     doReturn(s).when(abstractApiDocService).transformApiDoc(any(), any());
                     return abstractApiDocService;
                 },
-                GatewayConfigProperties.builder().scheme("https").hostname("localhost:10014").build()
+                GatewayConfigProperties.builder().scheme("https").hostname("localhost:10014").build(),
+                mock(ExampleService.class)
             );
 
             testData = setTestData("standalone/services");
@@ -151,7 +152,7 @@ class StandaloneLoaderServiceTest {
         @BeforeEach
         void init() {
             standaloneLoaderService =
-                new StandaloneLoaderService(new ObjectMapper(), null, null, null, null, null);
+                new StandaloneLoaderService(new ObjectMapper(), null, null, null, null, null, null);
         }
 
         @Test

@@ -16,12 +16,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.zowe.apiml.apicatalog.standalone.ExampleService;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -38,6 +43,9 @@ class MockControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ExampleService exampleService;
+
     @Nested
     class GivenEnabledController {
 
@@ -46,23 +54,26 @@ class MockControllerTest {
             mockMvc.perform(get("/mock/something"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("{}"));
+            verify(exampleService).replyExample(any(), eq("GET"), eq("/something"));
         }
 
         @Test
         void whenPostRequest() throws Exception {
-            mockMvc.perform(post("/mock/something"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string("{}"));
+            mockMvc.perform(post("/mock/something/else"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
+            verify(exampleService).replyExample(any(), eq("POST"), eq("/something/else"));
         }
 
     }
 
     @Configuration
+    @SpyBean(ExampleService.class)
     static class Context {
 
         @Bean
-        public MockController mockController() {
-            return new MockController();
+        public MockController mockController(ExampleService exampleService) {
+            return new MockController(exampleService);
         }
 
     }

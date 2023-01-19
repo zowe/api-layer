@@ -137,6 +137,7 @@ dependencies {
     implementation(libraries.swagger3_parser) {
         exclude group: "org.yaml", module: "snakeyaml"
     }
+    implementation libraries.swagger_inflector
 
     testImplementation libraries.rest_assured
     testImplementation libraries.spring_mock_mvc
