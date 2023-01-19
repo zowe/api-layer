@@ -2,6 +2,14 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.6.0 (2023-01-23)`
+
+* Feature: Spring Cloud Gateway implementation - Support of remapping to Passticket (#2046) closes ((#2046)[https://github.com/zowe/api-layer/issues/2046])*
+* Feature: Spring Cloud Gateway implementation - Support of remapping to client certificate (#2044) closes ((#2044)[https://github.com/zowe/api-layer/issues/2044])*
+* Bugfix: Improve the information for failure of extension loading (#2721) ((8a0455)[https://github.com/zowe/api-layer/commit/8a04550aa7eb545e504cc57acf4cf5e38824a7c2])*
+* Bugfix: Correctly process metadata for the Plain Java Enabler running on z/OS (#1927) ((b182323)[https://github.com/zowe/api-layer/commit/b1823238f3dac7738ab13e41653913469b56ee36]), closes [#1927](https://github.com/zowe/api-layer/issues/1927)
+
+
 ## `2.5.0 (22-12-12)`
 
 * Feature:  Retry failed request routed through the Cloud Gateway service (#2697) ([b2e86b3](https://github.com/zowe/api-layer/commit/b2e86b3)), closes [#2697](https://github.com/zowe/api-layer/issues/2697)
