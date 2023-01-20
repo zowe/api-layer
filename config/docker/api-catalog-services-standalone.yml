@@ -33,7 +33,7 @@ apiml:
     catalog:
         standalone:
             enabled: true
-            servicesDirectory: /
+            servicesDirectory: /docker/catalog-standalone-defs
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000
