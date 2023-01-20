@@ -83,10 +83,10 @@ public class ApiCatalogStandaloneTest {
     }
 
     @Nested
-    class ApiDoc {
+    class CatalogContent {
 
         @Nested
-        class ThenUpdatedReferences {
+        class HasRegisteredServices {
 
             @Test
             void givenItsStandalone() {
@@ -111,6 +111,11 @@ public class ApiCatalogStandaloneTest {
                     )
                     .then()
                     .statusCode(is(SC_OK));
+            }
+
+            @ParameterizedTest
+            void givenBasicAuthenticationIsProvided() {
+
             }
         }
     }
