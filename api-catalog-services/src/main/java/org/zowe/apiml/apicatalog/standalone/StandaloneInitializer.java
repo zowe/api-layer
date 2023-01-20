@@ -10,16 +10,16 @@
 
 package org.zowe.apiml.apicatalog.standalone;
 
-import lombok.RequiredArgsConstructor;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Initializes Catalog instances from files
@@ -37,13 +37,13 @@ public class StandaloneInitializer {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        if (isStandalone(event.getApplicationContext()) && hasRun.compareAndSet(false, true)) {
+        if (isStandalone() && hasRun.compareAndSet(false, true)) {
             standaloneLoaderService.initializeCache();
         }
     }
 
-    private boolean isStandalone(ConfigurableApplicationContext context) {
-        return Boolean.parseBoolean(context.getEnvironment().getProperty("apiml.catalog.standalone.enabled", "false"));
+    private boolean isStandalone() {
+        return standaloneLoaderService != null;
     }
 
 }

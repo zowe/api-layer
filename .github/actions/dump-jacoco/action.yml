@@ -11,3 +11,4 @@ runs:
                 java -jar ./scripts/jacococli.jar dump --address caching-service --port 6306 --destfile ./results/caching-service.exec
                 java -jar ./scripts/jacococli.jar dump --address discovery-service --port 6301 --destfile ./results/discovery-service.exec
                 java -jar ./scripts/jacococli.jar dump --address api-catalog-services --port 6304 --destfile ./results/api-catalog-services.exec
+                java -jar ./scripts/jacococli.jar dump --address api-catalog-services-standalone --port 6305 --destfile ./results/api-catalog-services-standalone.exec
