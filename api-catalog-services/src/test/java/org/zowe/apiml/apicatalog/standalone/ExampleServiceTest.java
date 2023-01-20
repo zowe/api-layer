@@ -140,17 +140,17 @@ class ExampleServiceTest {
 
             @Test
             void whenContainsSuccessResponseCode() {
-                assertEquals("200", ExampleService.getFirstApiRespones(createOperation("303", "200", "400")).getKey());
+                assertEquals("200", ExampleService.getFirstApiResponses(createOperation("303", "200", "400")).getKey());
             }
 
             @Test
             void whenDoesntContainsSuccessResponseCode() {
-                assertEquals("400", ExampleService.getFirstApiRespones(createOperation("400", "401", "404")).getKey());
+                assertEquals("400", ExampleService.getFirstApiResponses(createOperation("400", "401", "404")).getKey());
             }
 
             @Test
             void whenIsEmpty() {
-                assertNull(ExampleService.getFirstApiRespones(createOperation()));
+                assertNull(ExampleService.getFirstApiResponses(createOperation()));
             }
 
         }
