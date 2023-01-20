@@ -16,6 +16,8 @@ To build the UI:
 NPM: `npm run build`.
 Gradle: `./gradlew api-catalog-ui:build`
 
+**Note:** To build UI for standalone API catalog use command: `npx env-cmd -f api-catalog-ui/frontend/.env.standalone ./gradlew api-catalog-ui:build`
+
 ## Testing
 
 The front end is covered by Unit tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing can be done locally. 
