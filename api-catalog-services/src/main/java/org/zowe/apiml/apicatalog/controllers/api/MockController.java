@@ -19,8 +19,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * This controller simulates the responses of services that are not available in the standalone mode.
+ */
 @Controller
 @RequestMapping("/mock")
+@SuppressWarnings("squid:S3752") // this controller cannot be more accurate in definition, it should handle all requests
 @Tag(name = "API Catalog")
 @ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "true")
 public class MockController {
