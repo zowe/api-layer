@@ -46,7 +46,7 @@ class EurekaSecuredEndpointsTest {
     private MockMvc mvc;
 
     @Nested
-    class GivenCallToEureka{
+    class GivenCallToEureka {
 
         @Test
         void shouldAllowCallForEurekaUser () throws Exception {

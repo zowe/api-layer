@@ -59,7 +59,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
     @Nested
     class GivenApplicationEndpoints {
         @Test
-        void testApplicationInfoEndpointsWhenProvidedNothing() {
+        void applicationInfoEndpointsWhenProvidedNothing() {
             given()
                 .when()
                 .get(getDiscoveryUriWithPath("/application/info"))
@@ -68,7 +68,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
         }
 
         @Test
-        void testApplicationHealthEndpointsWhenProvidedNothing() {
+        void applicationHealthEndpointsWhenProvidedNothing() {
             given()
                 .when()
                 .get(getDiscoveryUriWithPath("/application/health"))

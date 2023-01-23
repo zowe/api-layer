@@ -62,9 +62,9 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Nested
-    class ProcessServicesData{
+    class ProcessServicesData {
         @Test
-        void testProcessServicesDataWithTwoRoutes() {
+        void processServicesDataWithTwoRoutes() {
             String routedServiceYaml = "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
                 "      instanceBaseUrls:\n" +
@@ -96,7 +96,7 @@ class ServiceDefinitionProcessorTest {
         }
 
         @Test
-        void testProcessServicesDataWithEmptyHomepage() {
+        void processServicesDataWithEmptyHomepage() {
             String routedServiceYamlEmptyRelativeUrls = "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
                 "      instanceBaseUrls:\n" +
@@ -125,7 +125,7 @@ class ServiceDefinitionProcessorTest {
         }
 
         @Test
-        void testServiceWithCatalogMetadata() {
+        void serviceWithCatalogMetadata() {
             String yaml =
                 "services:\n" +
                     "    - serviceId: casamplerestapiservice\n" +
@@ -146,7 +146,7 @@ class ServiceDefinitionProcessorTest {
         }
 
         @Test
-        void testServiceWithCustomMetadata() {
+        void serviceWithCustomMetadata() {
             String yaml =
                 "services:\n" +
                     "    - serviceId: casamplerestapiservice\n" +
@@ -195,7 +195,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
+    void fileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(
             Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath().toString());
 
@@ -392,7 +392,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testCreateInstancesWithMultipleYmls() {
+    void createInstancesWithMultipleYmls() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -443,7 +443,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testEnableUnsecurePortIfHttp() {
+    void enableUnsecurePortIfHttp() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -538,7 +538,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFindServicesWithTwoDirectories() {
+    void findServicesWithTwoDirectories() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";" + pathTwo);
@@ -547,7 +547,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFindServicesWithOneDirectory() {
+    void findServicesWithOneDirectory() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne);
 
@@ -555,7 +555,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFindServicesWithSecondEmptyDirectory() {
+    void findServicesWithSecondEmptyDirectory() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";");
 
@@ -563,7 +563,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testProcessServicesDataWithAuthenticationMetadata() {
+    void processServicesDataWithAuthenticationMetadata() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -580,7 +580,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testProcessServicesDataWithInvalidAuthenticationScheme() {
+    void processServicesDataWithInvalidAuthenticationScheme() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -594,7 +594,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testAdditionalServiceMetadata() {
+    void additionalServiceMetadata() {
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: testService\n" +
@@ -648,7 +648,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testAdditionalServiceMetadataMulti() {
+    void additionalServiceMetadataMulti() {
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: service1\n" +
