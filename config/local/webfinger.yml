@@ -1,0 +1,10 @@
+webFinger:
+    -
+        clientId: foobar
+        wellKnown: https://foo.org/.well-known
+    -
+        clientId: foobar
+        wellKnown: https://bar.org/.well-known
+    -
+        clientId: 0oa6a48mniXAqEMrx5d7
+        wellKnown: https://dev-95727686.okta.com/oauth2/default/.well-known/openid-configuration?client_id=0oa6a48mniXAqEMrx5d7

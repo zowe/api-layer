@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import org.json.JSONException;
@@ -27,16 +28,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.gateway.security.webfinger.WebFingerProvider;
+import org.zowe.apiml.gateway.security.webfinger.WebFingerResponse;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +49,7 @@ import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -69,6 +75,9 @@ class AuthControllerTest {
     @Mock
     private OIDCProvider oidcProvider;
 
+    @Mock
+    private WebFingerProvider webFingerProvider;
+
     private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
@@ -77,7 +86,7 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() throws ParseException, JSONException {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
-        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider);
+        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider, webFingerProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
         body = new JSONObject()
             .put("token", "token")
@@ -357,4 +366,61 @@ class AuthControllerTest {
             }
         }
     }
+
+    @Nested
+    class GivenWebfingerEnabled {
+        @BeforeEach
+        void setup() {
+            when(webFingerProvider.isEnabled()).thenReturn(true);
+        }
+
+        @Test
+        void givenListedClientId_thenReturnWebfingerRecords() throws Exception {
+            WebFingerResponse webFingerResponse = new WebFingerResponse();
+            webFingerResponse.setSubject("foobar");
+            webFingerResponse.setLinks(Arrays.asList(new WebFingerResponse.Link("http://openid.net/specs/connect/1.0/issuer", "https://foo.org/.well-known")));
+            when(webFingerProvider.getWebFingerConfig("foobar")).thenReturn(webFingerResponse);
+            MvcResult result = mockMvc.perform(get("/gateway/auth/oidc/webfinger?resource=foobar"))
+                .andExpect(status().is(SC_OK)).andReturn();
+            ObjectMapper mapper = new ObjectMapper();
+            WebFingerResponse res = mapper.readValue(result.getResponse().getContentAsString(), WebFingerResponse.class);
+            assertEquals(webFingerResponse, res);
+        }
+
+        @Test
+        void givenNoClientId_thenReturnEmptyList() throws Exception {
+            WebFingerResponse webFingerResponse = new WebFingerResponse();
+            when(webFingerProvider.getWebFingerConfig("")).thenReturn(webFingerResponse);
+            MvcResult result = mockMvc.perform(get("/gateway/auth/oidc/webfinger?resource="))
+                .andExpect(status().is(SC_OK)).andReturn();
+            ObjectMapper mapper = new ObjectMapper();
+            WebFingerResponse res = mapper.readValue(result.getResponse().getContentAsString(), WebFingerResponse.class);
+            assertEquals(webFingerResponse, res);
+        }
+
+        @Test
+        void givenExceptionThrownByWebfingerProvider_thenReturnErrorMessage() throws Exception {
+            body = new JSONObject();
+            when(webFingerProvider.getWebFingerConfig("foobar")).thenThrow(new IOException("some error"));
+            mockMvc.perform(
+                    get("/gateway/auth/oidc/webfinger?resource=foobar")
+                        .contentType(MediaType.APPLICATION_JSON).content(body.toString())
+                )
+                .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                .andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAG180E")));
+
+        }
+    }
+
+    @Nested
+    class GivenWebfingerDisabled {
+        @Test
+        void whenRequestWithUserid_thenReturnNotFound() throws Exception {
+            when(webFingerProvider.isEnabled()).thenReturn(false);
+            mockMvc.perform(get("/gateway/auth/oidc/webfinger?resource=foobar"))
+                .andExpect(status().is(SC_NOT_FOUND));
+        }
+
+    }
+
 }
