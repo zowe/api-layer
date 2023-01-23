@@ -36,8 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
 @AutoConfigureMockMvc
-class
-EurekaSecuredEndpointsTest {
+class EurekaSecuredEndpointsTest {
     private static final String EUREKA_ENDPOINT = "/eureka/apps";
 
     private String eurekaUserName = "eureka";
