@@ -24,8 +24,7 @@ import java.util.Collections;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class
-DiscoveryServiceHealthIndicatorTest {
+class DiscoveryServiceHealthIndicatorTest {
 
     private final DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
     private final DiscoveryServiceHealthIndicator discoverServiceHealthIndicator = new DiscoveryServiceHealthIndicator(discoveryClient);
@@ -33,9 +32,9 @@ DiscoveryServiceHealthIndicatorTest {
 
 
     @Nested
-    class GivenGatewayStatus{
+    class GivenGatewayStatus {
         @Test
-        void testStatusIsUpWhenGatewayIsAvailable() {
+        void statusIsUpWhenGatewayIsAvailable() {
             when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
                 Collections.singletonList(
                     new DefaultServiceInstance(null, CoreService.GATEWAY.getServiceId(), "host", 10010, true)));
@@ -47,7 +46,7 @@ DiscoveryServiceHealthIndicatorTest {
         }
 
         @Test
-        void testStatusIsPartialWhenGatewayIsNotAvailable() {
+        void statusIsPartialWhenGatewayIsNotAvailable() {
             when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
 
             discoverServiceHealthIndicator.doHealthCheck(builder);

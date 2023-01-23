@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.discovery;
 
+import org.junit.jupiter.api.Nested;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
 @AutoConfigureMockMvc
-class EurekaSecuredEndpointsTest {
+class
+EurekaSecuredEndpointsTest {
     private static final String EUREKA_ENDPOINT = "/eureka/apps";
 
     private String eurekaUserName = "eureka";
@@ -44,22 +46,27 @@ class EurekaSecuredEndpointsTest {
     @Autowired
     private MockMvc mvc;
 
-    @Test
-    void shouldAllowCallForEurekaUser() throws Exception {
+    @Nested
+    class GivenCallToEureka{
+
+        @Test
+        void shouldAllowCallForEurekaUser () throws Exception {
         String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserName + ":" + eurekaUserPassword).getBytes());
         mvc.perform(get(EUREKA_ENDPOINT)
-            .header("Authorization", basicToken)
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", basicToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
     }
 
-    @Test
-    void shouldForbidCallForNotEurekaUser() throws Exception {
+        @Test
+        void shouldForbidCallForNotEurekaUser () throws Exception {
         mvc.perform(get(EUREKA_ENDPOINT)
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
+    }
+
 
 }
