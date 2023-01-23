@@ -284,6 +284,7 @@ logging:
         org.springframework.web.servlet.PageNotFound: WARN
         net.sf.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
 
 ---
 spring:

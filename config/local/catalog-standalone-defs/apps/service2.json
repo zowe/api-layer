@@ -1,0 +1,50 @@
+{
+    "application": [
+        {
+            "name": "SERVICE2",
+            "instance": [
+                {
+                    "hostName": "zowe.org",
+                    "app": "service2",
+                    "ipAddr": "1.1.2.1",
+                    "status": "UP",
+                    "port": {
+                        "$": 3000,
+                        "@enabled": "false"
+                    },
+                    "securePort": {
+                        "$": 3000,
+                        "@enabled": "true"
+                    },
+                    "metadata": {
+                        "apiml.service.description": "Test mock application 2 - just for testing purposes",
+                        "apiml.catalog.tile.version": "1.0.0",
+                        "apiml.apiInfo.v1.version": "1.0.0",
+                        "apiml.apiInfo.v1.defaultApi": "true",
+                        "apiml.apiInfo.v1.gatewayUrl": "api",
+                        "apiml.apiInfo.v1.swaggerUrl": "/services/swagger/openapi.json",
+                        "apiml.apiInfo.v1.apiId": "org.zowe",
+                        "apiml.apiInfo.v1.documentationUrl": "https://www.zowe.org",
+                        "apiml.apiInfo.v2.version": "2.0.0",
+                        "apiml.apiInfo.v2.defaultApi": "false",
+                        "apiml.apiInfo.v2.gatewayUrl": "api",
+                        "apiml.apiInfo.v2.swaggerUrl": "/services/swagger/openapi.json",
+                        "apiml.apiInfo.v2.apiId": "org.zowe",
+                        "apiml.apiInfo.v2.documentationUrl": "https://www.zowe.org",
+                        "apiml.routes.api.serviceUrl": "",
+                        "apiml.service.title": "Test mock application 2",
+                        "apiml.catalog.tile.description": "Another mock apps from file",
+                        "version": "1.0.0",
+                        "apiml.routes.api.gatewayUrl": "api",
+                        "apiml.routes.ui.gatewayUrl": "ui",
+                        "apiml.catalog.tile.id": "mock2",
+                        "apiml.authentication.scheme": "zosmf",
+                        "apiml.catalog.tile.title": "Another mocked Services from file",
+                        "apiml.routes.ui.serviceUrl": ""
+                    },
+                    "homePageUrl": "https://www.zowe.org:1000"
+                }
+            ]
+        }
+    ]
+}
