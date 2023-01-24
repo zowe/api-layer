@@ -98,7 +98,7 @@ class MetadataTranslationServiceTest {
     }
 
     @Test
-    void testSetZosmfAuthentication() {
+    void setZosmfAuthentication() {
         MetadataTranslationService metadataTranslationService = new MetadataTranslationService();
         Map<String, String> metadata = new HashMap<>();
 
@@ -124,7 +124,7 @@ class MetadataTranslationServiceTest {
     }
 
     @Test
-    void testDependentMethods() {
+    void dependentMethods() {
         MetadataTranslationService metadataTranslationService = spy(new MetadataTranslationService());
         Map<String, String> metadata = new HashMap<>();
 
