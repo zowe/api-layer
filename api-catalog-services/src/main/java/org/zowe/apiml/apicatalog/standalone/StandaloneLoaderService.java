@@ -52,6 +52,7 @@ public class StandaloneLoaderService {
     private final StandaloneAPIDocRetrievalService standaloneAPIDocRetrievalService;
     private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory;
     private final GatewayConfigProperties gatewayConfigProperties;
+    private final ExampleService exampleService;
 
     public void initializeCache() {
         loadApplicationCache();
@@ -97,9 +98,9 @@ public class StandaloneLoaderService {
         }
     }
 
-    private ApiDocInfo createApiDocInfo(String apiDoc) {
+    private ApiDocInfo createApiDocInfo(String serviceId, String apiDoc) {
         ApiInfo apiInfo = new ApiInfo();
-        apiInfo.setGatewayUrl(String.format("%s://%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname()));
+        apiInfo.setGatewayUrl(String.format("%s://%s/%s/", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname(), serviceId));
         RoutedServices routedServices = new RoutedServices();
         return new ApiDocInfo(
             apiInfo,
@@ -121,7 +122,7 @@ public class StandaloneLoaderService {
 
             String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
 
-            ApiDocInfo apiDocInfo = createApiDocInfo(apiDoc);
+            ApiDocInfo apiDocInfo = createApiDocInfo(serviceId, apiDoc);
             apiDoc = beanApiDocFactory.apply(apiDoc).transformApiDoc(serviceId, apiDocInfo);
 
             if (name.length > 2 && name[2].equals("default")) {
@@ -129,6 +130,8 @@ public class StandaloneLoaderService {
             }
 
             cachedApiDocService.updateApiDocForService(serviceId, apiVersion, apiDoc);
+
+            exampleService.generateExamples(serviceId, apiDoc);
         } catch (IOException e) {
             log.error("Cannot read '{}' because {}", file.getName(), e.getMessage());
         }
