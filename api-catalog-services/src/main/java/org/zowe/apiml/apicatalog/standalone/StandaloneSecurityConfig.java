@@ -38,10 +38,14 @@ public class StandaloneSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain permitAll(HttpSecurity http) throws Exception {
         return http
-        .authorizeRequests()
-        .anyRequest().permitAll()
-        .and()
-        .build();
+            .csrf().disable()   // NOSONAR
+            .headers().httpStrictTransportSecurity().disable()
+            .frameOptions().disable().and()
+
+            .authorizeRequests()
+            .anyRequest().permitAll()
+            .and()
+            .build();
     }
 
 }

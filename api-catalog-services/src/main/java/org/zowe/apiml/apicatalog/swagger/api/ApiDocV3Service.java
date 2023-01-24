@@ -89,7 +89,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         if (openAPI.getServers() != null) {
             openAPI.getServers()
                 .forEach(server -> server.setUrl(
-                    String.format("%s://%s/%s", scheme, gatewayConfigProperties.getHostname(), server.getUrl())));
+                    String.format("%s://%s/%s", scheme, getHostname(serviceId), server.getUrl())));
         }
         if (!hidden) {
             openAPI.getInfo().setDescription(openAPI.getInfo().getDescription() + swaggerLink);
