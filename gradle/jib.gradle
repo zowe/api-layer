@@ -8,6 +8,7 @@ def setJib(componentName, javaAgentPort, debugPort) {
     jib.container.args = ['--spring.config.additional-location=file:/docker/' + componentName + '.yml', '--spring.profiles.include=dev,debug']
 
     jib.container.jvmFlags = project.hasProperty("zowe.docker.debug") ? ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort, '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort]: ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort]
+    jib.container.ports = ['10015']
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
 }
 
