@@ -101,7 +101,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
-    -Djava.io.tmpdir=/tmp \
+    -Djava.io.tmpdir=${TMPDIR:/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
