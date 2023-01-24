@@ -30,7 +30,7 @@ class ApiDocTransformForMockTest {
     private GatewayConfigProperties gatewayConfigProperties;
 
     @Test
-    void testGatewayConfigPropertiesForMock() {
+    void gatewayConfigPropertiesForMock() {
         assertNotNull(gatewayConfigProperties);
         assertEquals("host:123/apicatalog/mock", gatewayConfigProperties.getHostname());
         assertEquals("http", gatewayConfigProperties.getScheme());
