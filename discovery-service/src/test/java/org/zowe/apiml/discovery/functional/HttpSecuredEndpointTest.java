@@ -13,6 +13,7 @@ package org.zowe.apiml.discovery.functional;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.http.HttpHeaders;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -20,7 +21,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,27 +56,31 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             .statusCode(HttpStatus.OK.value());
     }
 
-    @Test
-    void testApplicationInfoEndpoints_whenProvidedNothing() throws Exception {
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/info"))
-            .then()
-            .statusCode(is(org.apache.http.HttpStatus.SC_OK));
+    @Nested
+    class GivenApplicationEndpoints {
+        @Test
+        void applicationInfoEndpointsWhenProvidedNothing() {
+            given()
+                .when()
+                .get(getDiscoveryUriWithPath("/application/info"))
+                .then()
+                .statusCode(is(org.apache.http.HttpStatus.SC_OK));
+        }
+
+        @Test
+        void applicationHealthEndpointsWhenProvidedNothing() {
+            given()
+                .when()
+                .get(getDiscoveryUriWithPath("/application/health"))
+                .then()
+                .statusCode(is(org.apache.http.HttpStatus.SC_OK));
+        }
     }
 
-    @Test
-    void testApplicationHealthEndpoints_whenProvidedNothing() throws Exception {
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/health"))
-            .then()
-            .statusCode(is(org.apache.http.HttpStatus.SC_OK));
-    }
 
     @ParameterizedTest(name = "givenATTLS_testApplicationBeansEndpoints_Get {index} {0} ")
     @ValueSource(strings = {"/application/beans", "/"})
-    void givenATTLS_testApplicationBeansEndpoints_Get(String path) throws Exception {
+    void givenATTLS_testApplicationBeansEndpoints_Get(String path) {
         given()
             .when()
             .get(getDiscoveryUriWithPath(path))
@@ -81,52 +89,59 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
 
-    @Test
-    void verifyHttpHeadersOnUi() {
-        Map<String, String> expectedHeaders = new HashMap<>();
-        expectedHeaders.put("X-Content-Type-Options", "nosniff");
-        expectedHeaders.put("X-XSS-Protection", "1; mode=block");
-        expectedHeaders.put("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
-        expectedHeaders.put("Pragma", "no-cache");
-        expectedHeaders.put("Content-Type", "text/html;charset=UTF-8");
-        expectedHeaders.put("Transfer-Encoding", "chunked");
-        expectedHeaders.put("X-Frame-Options", "DENY");
+    @Nested
+    class GivenHttpHeaders {
+        @Test
+        void verifyHttpHeadersOnUi() {
+            Map<String, String> expectedHeaders = new HashMap<>();
+            expectedHeaders.put("X-Content-Type-Options", "nosniff");
+            expectedHeaders.put("X-XSS-Protection", "1; mode=block");
+            expectedHeaders.put("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
+            expectedHeaders.put("Pragma", "no-cache");
+            expectedHeaders.put("Content-Type", "text/html;charset=UTF-8");
+            expectedHeaders.put("Transfer-Encoding", "chunked");
+            expectedHeaders.put("X-Frame-Options", "DENY");
 
-        List<String> forbiddenHeaders = new ArrayList<>();
-        forbiddenHeaders.add("Strict-Transport-Security");
+            List<String> forbiddenHeaders = new ArrayList<>();
+            forbiddenHeaders.add("Strict-Transport-Security");
+            Response response = RestAssured
+                .given()
+                .auth().basic(eurekaUserid, eurekaPassword)
+                .get(getDiscoveryUriWithPath("/"));
+            Map<String, String> responseHeaders = new HashMap<>();
 
-        Response response = RestAssured
-            .given()
-            .auth().basic(eurekaUserid, eurekaPassword)
-            .get(getDiscoveryUriWithPath("/"));
-        Map<String, String> responseHeaders = new HashMap<>();
-        response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
+            response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
+            //responseHeaders.forEach((k,v)->System.out.println("printing"+ k +"key"+ v + "value"));
 
-        expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
-        forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
+
+            expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
+            forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
+        }
+
+        @Test
+        void verifyHttpHeadersOnApi() {
+            Map<String, String> expectedHeaders = new HashMap<>();
+            expectedHeaders.put("X-Content-Type-Options", "nosniff");
+            expectedHeaders.put("X-XSS-Protection", "1; mode=block");
+            expectedHeaders.put("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
+            expectedHeaders.put("Pragma", "no-cache");
+            expectedHeaders.put("X-Frame-Options", "DENY");
+
+            List<String> forbiddenHeaders = new ArrayList<>();
+            forbiddenHeaders.add("Strict-Transport-Security");
+
+            Response response = RestAssured
+                .given()
+                .auth().basic(eurekaUserid, eurekaPassword)
+                .get(getDiscoveryUriWithPath("/application"));
+            Map<String, String> responseHeaders = new HashMap<>();
+            response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
+
+            expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
+            forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
+        }
+
     }
 
-    @Test
-    void verifyHttpHeadersOnApi() {
-        Map<String, String> expectedHeaders = new HashMap<>();
-        expectedHeaders.put("X-Content-Type-Options", "nosniff");
-        expectedHeaders.put("X-XSS-Protection", "1; mode=block");
-        expectedHeaders.put("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
-        expectedHeaders.put("Pragma", "no-cache");
-        expectedHeaders.put("X-Frame-Options", "DENY");
-
-        List<String> forbiddenHeaders = new ArrayList<>();
-        forbiddenHeaders.add("Strict-Transport-Security");
-
-        Response response = RestAssured
-            .given()
-            .auth().basic(eurekaUserid, eurekaPassword)
-            .get(getDiscoveryUriWithPath("/application"));
-        Map<String, String> responseHeaders = new HashMap<>();
-        response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
-
-        expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
-        forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
-    }
 
 }
