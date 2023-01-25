@@ -16,6 +16,7 @@
                         "$": 1000,
                         "@enabled": "true"
                     },
+                    "vipAddress": "service1",
                     "metadata": {
                         "apiml.service.description": "Test mock application 1 / instance 1 - just for testing purposes",
                         "apiml.catalog.tile.version": "1.0.0",
@@ -56,6 +57,7 @@
                         "$": 2000,
                         "@enabled": "true"
                     },
+                    "vipAddress": "service1",
                     "metadata": {
                         "apiml.service.description": "Test mock application 1 / instance 2 - just for testing purposes",
                         "apiml.catalog.tile.version": "1.0.0",
