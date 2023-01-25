@@ -23,7 +23,9 @@ import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.io.File;
@@ -34,6 +36,9 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 class StandaloneLoaderServiceTest {
 
@@ -56,8 +61,19 @@ class StandaloneLoaderServiceTest {
             InstanceInitializeService instanceInitializeService = new InstanceInitializeService(cachedProductFamilyService, cachedServicesService, null, null);
             StandaloneAPIDocRetrievalService standaloneAPIDocRetrievalService = new StandaloneAPIDocRetrievalService();
             cachedApiDocService = new CachedApiDocService(standaloneAPIDocRetrievalService, null);
-            standaloneLoaderService =
-                new StandaloneLoaderService(new ObjectMapper(), instanceInitializeService, cachedApiDocService, standaloneAPIDocRetrievalService);
+            standaloneLoaderService = new StandaloneLoaderService(
+                new ObjectMapper(),
+                instanceInitializeService,
+                cachedApiDocService,
+                standaloneAPIDocRetrievalService,
+                s -> {
+                    AbstractApiDocService<Object, Object> abstractApiDocService = mock(AbstractApiDocService.class);
+                    doReturn(s).when(abstractApiDocService).transformApiDoc(any(), any());
+                    return abstractApiDocService;
+                },
+                GatewayConfigProperties.builder().scheme("https").hostname("localhost:10014").build(),
+                mock(ExampleService.class)
+            );
 
             testData = setTestData("standalone/services");
             cachedApiDocService.resetCache();
@@ -136,7 +152,7 @@ class StandaloneLoaderServiceTest {
         @BeforeEach
         void init() {
             standaloneLoaderService =
-                new StandaloneLoaderService(new ObjectMapper(), null, null, null);
+                new StandaloneLoaderService(new ObjectMapper(), null, null, null, null, null, null);
         }
 
         @Test
