@@ -50,7 +50,9 @@ import java.util.*;
 @ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "true")
 public class ExampleService {
 
-    private static final Example DEFAULT_EXAMPLE = Example.builder().responseCode(200).content("{}").build();
+    private static final Example DEFAULT_EXAMPLE = Example.builder()
+        .responseCode(200).content("{}").mediaType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+        .build();
 
     /**
      * Collection of know responses. The key of the map represents method type. The list itself is all known
@@ -76,7 +78,7 @@ public class ExampleService {
     static void addExample(String method, String path, int responseCode, String mediaType, String content) {
         Example example = Example.builder()
             .method(method).path(path)
-            .responseCode(responseCode).content(content)
+            .responseCode(responseCode).mediaType(mediaType).content(content)
             .build();
 
         List<Example> byMethod = examples.computeIfAbsent(method, k -> Collections.synchronizedList(new ArrayList<>()));
@@ -185,10 +187,11 @@ public class ExampleService {
      */
     public void replyExample(HttpServletResponse httpServletResponse, String method, String path) throws IOException {
         Example example = getExample(method, path);
+        httpServletResponse.setContentType(example.getMediaType());
+        httpServletResponse.setStatus(example.getResponseCode());
         try (PrintWriter pw = httpServletResponse.getWriter()) {
             pw.print(example.getContent());
         }
-        httpServletResponse.setStatus(example.getResponseCode());
     }
 
     /**
@@ -203,6 +206,7 @@ public class ExampleService {
         private final String method;
         private final int responseCode;
         private final String content;
+        private final String mediaType;
 
         /**
          * Checking if the ant pattern of the example is matching with the requested path

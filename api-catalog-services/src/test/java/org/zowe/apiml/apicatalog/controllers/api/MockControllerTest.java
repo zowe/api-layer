@@ -19,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -53,6 +54,7 @@ class MockControllerTest {
         void whenGetRequest() throws Exception {
             mockMvc.perform(get("/mock/something"))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().string("{}"));
             verify(exampleService).replyExample(any(), eq("GET"), eq("/something"));
         }
@@ -61,6 +63,7 @@ class MockControllerTest {
         void whenPostRequest() throws Exception {
             mockMvc.perform(post("/mock/something/else"))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().string("{}"));
             verify(exampleService).replyExample(any(), eq("POST"), eq("/something/else"));
         }
