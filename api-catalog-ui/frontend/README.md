@@ -16,7 +16,15 @@ To build the UI:
 NPM: `npm run build`.
 Gradle: `./gradlew api-catalog-ui:build`
 
-**Note:** To build UI for standalone API catalog use command: `npx env-cmd -f api-catalog-ui/frontend/.env.standalone ./gradlew api-catalog-ui:build`
+### Standalone mode
+
+Standalone mode allows running API Catalog to visualize the mocked services. It uses different URL paths. Therefore, 
+it requires building the UI module with the proper environment file ([`.env.standalone`](.env.standalone)). There are 
+a couple ways how to switch the environment file. The easist one is using the NPM command 
+[`env-cmd`](https://www.npmjs.com/package/env-cmd). Basically, it requires adding 
+`npx env-cmd -f api-catalog-ui/frontend/.env.standalone` in the front of the regular command.
+
+**Example:** `npx env-cmd -f api-catalog-ui/frontend/.env.standalone ./gradlew api-catalog-ui:build`
 
 ## Testing
 
