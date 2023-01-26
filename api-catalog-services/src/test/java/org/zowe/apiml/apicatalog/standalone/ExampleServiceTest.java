@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -78,6 +79,7 @@ class ExampleServiceTest {
             exampleService.replyExample(response, "GET", "/unknown");
             assertEquals(200, response.getStatus());
             assertEquals("{}", response.getContentAsString());
+            assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getHeaders("Content-Type").get(0));
         }
 
     }
