@@ -1,5 +1,9 @@
 spring.profiles.include: diag,standalone
 
+logging:
+    level:
+        org.apache.http.impl.conn: INFO
+
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -9,7 +13,7 @@ eureka:
         leaseRenewalIntervalInSeconds: 1
 
 server:
-    address: localhost
+    address: 0.0.0.0
     ssl:
         keyAlias: localhost
         keyPassword: password
@@ -23,7 +27,7 @@ server:
 
 apiml:
     service:
-        hostname: api-catalog-services
+        hostname: api-catalog-services-standalone
         port: 10015
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         eurekaPassword: password

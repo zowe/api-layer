@@ -10,11 +10,21 @@
 
 package org.zowe.apiml.functional.apicatalog;
 
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
+
 import java.io.IOException;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -28,23 +38,19 @@ import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 @CatalogTest
 public class ApiCatalogStandaloneTest {
 
-    private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
-    private static final String GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog";
+    private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/containers";
+    private static final String GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT = "/apicatalog/apidoc/apicatalog";
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v1.0.0";
     private static final String CATALOG_SERVICE_ID = "apicatalog";
     private static final String CATALOG_SERVICE_ID_PATH = "/" + CATALOG_SERVICE_ID;
@@ -94,9 +100,19 @@ public class ApiCatalogStandaloneTest {
         class HasRegisteredServices {
 
             @Test
-            void whenGetContainers() {
+            void whenGetContainers() throws IOException {
                 // Verify simple /containers call, all services defined in the static definition directory should be available.
+                // should be simlpe call
+                final HttpResponse response = getResponse(GET_ALL_CONTAINERS_ENDPOINT, HttpStatus.SC_OK);
 
+                // When
+                final String jsonResponse = EntityUtils.toString(response.getEntity());
+                DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+                JSONArray containerTitles = jsonContext.read("$.[*].title");
+                JSONArray containerStatus = jsonContext.read("$.[*].status");
+
+                // Then
+                // assert the services are registered.
             }
         }
 

@@ -1,0 +1,5 @@
+./gradlew :api-catalog-services:jibDockerBuild \
+  -Pzowe.jib.spring.include.profile=standalone \
+  -Pzowe.jib.image.suffix=standalone \
+  -Pzowe.jib.image.javaAgentPort=6305 \
+  -Pzowe.jib.image.debugPort=5125
