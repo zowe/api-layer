@@ -15,7 +15,9 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -43,7 +45,8 @@ public class StaticDefinitionGenerator {
 
         checkIfFileExists(absoluteFilePath);
         String message = "The static definition file has been created by the user! Its location is: %s";
-        return writeContentToFile(fileContent, absoluteFilePath, String.format(message, absoluteFilePath));
+        String errorMessage = "Error when creating the static definition file!";
+        return writeContentToFile(fileContent, absoluteFilePath, String.format(message, absoluteFilePath), errorMessage);
     }
 
     public StaticAPIResponse overrideFile(String fileContent, String serviceId) throws IOException {
@@ -53,7 +56,8 @@ public class StaticDefinitionGenerator {
         String absoluteFilePath = getAbsolutePath(serviceId);
 
         String message = "The static definition file %s has been overwritten by the user!";
-        return writeContentToFile(fileContent, absoluteFilePath, String.format(message, absoluteFilePath));
+        String errorMessage = "Error when overwriting the static definition file!";
+        return writeContentToFile(fileContent, absoluteFilePath, String.format(message, absoluteFilePath), errorMessage);
     }
 
     public StaticAPIResponse deleteFile(String serviceId) throws IOException {
@@ -88,12 +92,15 @@ public class StaticDefinitionGenerator {
         return file;
     }
 
-    private StaticAPIResponse writeContentToFile(String fileContent, String fileName, String message) throws IOException {
+    private StaticAPIResponse writeContentToFile(String fileContent, String fileName, String message, String errorMessage) {
         fileContent = normalizeToUnixLineEndings(fileContent);
         try (FileOutputStream fos = new FileOutputStream(fileName)) {
             fos.write(fileContent.getBytes(StandardCharsets.UTF_8));
             log.debug(message);
             return new StaticAPIResponse(201, message);
+        } catch (IOException e) {
+            log.error("Cannot write the static definition file '{}' because: {}", fileName, e.getMessage());
+            return new StaticAPIResponse(400, errorMessage);
         }
     }
 
