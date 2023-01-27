@@ -6,6 +6,9 @@ Standalone mode allows displaying, without the need for authentication, services
 that are stored on the disk. Standalone API Catalog does not connect to any
 other service.
 
+It requires building the UI module differently. For more information please follow 
+[the documentation about UI](../api-catalog-ui/frontend/README.md).
+
 ### Configuration
 
  - `apiml.catalog.standalone.enabled` 
