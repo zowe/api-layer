@@ -14,5 +14,3 @@ def setJib(componentName, javaAgentPort, debugPort) {
 ext.setJib =  { componentName, javaAgentPort, debugPort ->
     setJib(componentName, javaAgentPort, debugPort)
 }
-
-// docker run --rm -it -p 10015:10015/tcp -P -p 10015:10015/udp ghcr.io/zowe/api-catalog-services-standalone:latest
