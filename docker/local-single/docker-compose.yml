@@ -6,7 +6,7 @@ services:
             - ../../config/docker/api-defs-shared:/api-defs
         ports:
             - "10014:10014"
-    api-catalog-services-standalone:
+    api-catalog-services-2:
         image: ghcr.io/zowe/api-catalog-services-standalone:latest
         volumes:
             - ../../config/docker/api-defs-shared:/api-defs

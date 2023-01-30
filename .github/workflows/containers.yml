@@ -39,7 +39,7 @@ jobs:
         timeout-minutes: 15
 
         services:
-            api-catalog-services-standalone:
+            api-catalog-services-2:
                 image: ghcr.io/balhar-jakub/api-catalog-services-standalone:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs

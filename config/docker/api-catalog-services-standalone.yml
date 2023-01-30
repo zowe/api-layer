@@ -27,7 +27,7 @@ server:
 
 apiml:
     service:
-        hostname: api-catalog-services-standalone
+        hostname: api-catalog-services-2
         port: 10015
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         eurekaPassword: password
