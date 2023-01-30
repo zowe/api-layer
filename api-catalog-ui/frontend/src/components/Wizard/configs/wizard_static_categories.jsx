@@ -54,7 +54,6 @@ export const staticSpecificCategories = [
                 value: '',
                 question: 'The id of the catalog tile:',
                 regexRestriction: [wizRegex.noWhiteSpaces],
-                dependencies: { type: 'Custom' },
                 tooltip: 'Example: static',
             },
         },
