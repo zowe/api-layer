@@ -14,6 +14,7 @@ eureka:
 
 server:
     address: 0.0.0.0
+    port: 10015
     ssl:
         keyAlias: localhost
         keyPassword: password
@@ -28,6 +29,7 @@ server:
 apiml:
     enabled: false
     service:
+        id: apicatalogstandalone
         hostname: api-catalog-services-2
         port: 10015
         discoveryServiceUrls: https://discovery-service:10011/eureka/
