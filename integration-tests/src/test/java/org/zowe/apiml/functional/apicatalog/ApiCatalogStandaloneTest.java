@@ -12,41 +12,29 @@ package org.zowe.apiml.functional.apicatalog;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.zowe.apiml.util.categories.CatalogTest;
 import org.zowe.apiml.util.config.ApiCatalogServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.http.HttpClientUtils;
-import org.zowe.apiml.util.http.HttpRequestUtils;
-
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
 
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.response.Validatable;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 
-@CatalogTest
 public class ApiCatalogStandaloneTest {
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/containers";
@@ -87,8 +75,9 @@ public class ApiCatalogStandaloneTest {
     void setUp() {
         ApiCatalogServiceConfiguration configuration = ConfigReader.environmentConfiguration().getApiCatalogStandaloneConfiguration();
         String host = configuration.getHost();
+        String scheme = configuration.getScheme();
         int port = configuration.getPort();
-        baseHost = host + ":" + port;
+        baseHost = scheme + "://" + host + ":" + port;
         RestAssured.config = RestAssured.config().sslConfig(SSLConfig.sslConfig());
         RestAssured.useRelaxedHTTPSValidation();
     }
@@ -101,18 +90,17 @@ public class ApiCatalogStandaloneTest {
 
             @Test
             void whenGetContainers() throws IOException {
-                // Verify simple /containers call, all services defined in the static definition directory should be available.
-                // should be simlpe call
-                final HttpResponse response = getResponse(GET_ALL_CONTAINERS_ENDPOINT, HttpStatus.SC_OK);
+                final ValidatableResponse response = given()
+                                                        .when()
+                                                            .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
+                                                        .then()
+                                                            .statusCode(is(SC_OK))
+                                                            .contentType("application/json");
 
-                // When
-                final String jsonResponse = EntityUtils.toString(response.getEntity());
-                DocumentContext jsonContext = JsonPath.parse(jsonResponse);
-                JSONArray containerTitles = jsonContext.read("$.[*].title");
-                JSONArray containerStatus = jsonContext.read("$.[*].status");
-
-                // Then
-                // assert the services are registered.
+                List<Map<String, Object>> list = response.extract().jsonPath().getList("$.");
+                assertEquals(2, list.size());
+                assertEquals("Mocked Services from file", list.get(0).get("title"));
+                assertEquals("Another mocked Services from file", list.get(1).get("title"));
             }
         }
 
@@ -133,30 +121,17 @@ public class ApiCatalogStandaloneTest {
         @Nested
         class AuthenticationIsNotRequired {
 
-            @ParameterizedTest
-            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogStandaloneTest#requestsToTest")
-            void givenNoAuthenticationIsProvided(String endpoint, Request request) {
-                request.execute(
-                        given()
-                            .when(),
-                        endpoint
-                    )
-                    .then()
-                    .statusCode(is(SC_OK));
-            }
-
-            @ParameterizedTest
+            @Test
             void givenBasicAuthenticationIsProvided() {
-                // Even if credentials are provided for some reason, the access to the standalone catalog works
+                given()
+                    .auth()
+                        .basic(USERNAME, PASSWORD)
+                    .when()
+                        .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
+                    .then()
+                        .statusCode(is(SC_OK))
+                        .contentType("application/json");
             }
         }
-    }
-
-    private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
-        HttpGet request = HttpRequestUtils.getRequest(endpoint);
-        HttpResponse response = HttpClientUtils.client().execute(request);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
-
-        return response;
     }
 }
