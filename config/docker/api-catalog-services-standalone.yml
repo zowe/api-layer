@@ -26,6 +26,7 @@ server:
         trustStoreType: PKCS12
 
 apiml:
+    enabled: false
     service:
         hostname: api-catalog-services-2
         port: 10015
