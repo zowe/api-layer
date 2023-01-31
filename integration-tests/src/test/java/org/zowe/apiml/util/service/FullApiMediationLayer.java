@@ -33,7 +33,6 @@ public class FullApiMediationLayer {
     private RunningService mockZosmfService;
     private RunningService discoverableClientService;
     private RunningService cloudGatewayService;
-    private RunningService apiCatalogStandaloneService;
 
     private ProcessBuilder nodeJsBuilder;
     private Process nodeJsSampleApp;
@@ -50,7 +49,6 @@ public class FullApiMediationLayer {
 
         prepareCaching();
         prepareCatalog();
-        prepareCatalogStandalone();
         prepareDiscoverableClient();
         prepareGateway();
         prepareMockServices();
@@ -81,16 +79,6 @@ public class FullApiMediationLayer {
 
     private void prepareCatalog() {
         apiCatalogService = new RunningService("apicatalog", "api-catalog-services/build/libs", null, null);
-    }
-
-    private void prepareCatalogStandalone() {
-        Map<String, String> before = new HashMap<>();
-        Map<String, String> after = new HashMap<>();
-        before.put("-Dspring.profiles.active", "diag,standalone");
-        before.put("-Dapiml.catalog.standalone.enabled", "true");
-        before.put("-Dapiml.catalog.standalone.servicesDirectory", "config/local/catalog-standalone-defs");
-
-        apiCatalogStandaloneService = new RunningService("apicatalog-standalone", "api-catalog-services/build/libs", before, after);
     }
 
     public void prepareCaching() {
@@ -137,9 +125,6 @@ public class FullApiMediationLayer {
             Map<String, String> catalogEnv = new HashMap<>(env);
             catalogEnv.put("ZWE_configs_port", "10014");
             apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin", catalogEnv);
-            Map<String, String> catalogStandaloneEnv = new HashMap<>();
-            catalogStandaloneEnv.put("ZWE_configs_port", "10015");
-            apiCatalogStandaloneService.startWithScript("api-catalog-package/src/main/resources/bin", catalogStandaloneEnv);
             Map<String, String> cachingEnv = new HashMap<>(env);
             cachingEnv.put("ZWE_configs_port", "10016");
             cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
