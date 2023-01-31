@@ -38,8 +38,7 @@ import io.restassured.specification.RequestSpecification;
 public class ApiCatalogStandaloneTest {
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/containers";
-    private static final String GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT = "/apicatalog/apidoc/apicatalog";
-    private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v1.0.0";
+    private static final String GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT = "/apicatalog/apidoc/service2";
     private static final String CATALOG_SERVICE_ID = "apicatalog";
     private static final String CATALOG_SERVICE_ID_PATH = "/" + CATALOG_SERVICE_ID;
     private static final String CATALOG_PREFIX = "/api/v1";
@@ -108,10 +107,15 @@ public class ApiCatalogStandaloneTest {
         class ApiDocIsAvailable {
 
             @Test
-            void test() {
-                // verify accessing the /containers endpoint to validate that the api doc link is there, and it is accessible (I can fetch the contents of the swagger/open api)
+            void whenGetApiDocEndpoint() {
+                final ValidatableResponse response = given()
+                                                        .when()
+                                                            .get(baseHost + GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT)
+                                                        .then()
+                                                            .statusCode(is(SC_OK))
+                                                            .contentType("application/json");
+                assertEquals("Service 2 - v1 (default)", response.extract().jsonPath().get("info.title"));
             }
-
         }
     }
 
