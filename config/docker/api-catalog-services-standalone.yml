@@ -28,24 +28,10 @@ server:
 
 apiml:
     enabled: false
-    service:
-        id: apicatalogstandalone
-        hostname: api-catalog-services-2
-        port: 10015
-        discoveryServiceUrls: https://discovery-service:10011/eureka/
-        eurekaPassword: password
-        eurekaUserName: eureka
-        gatewayHostname: https://gateway-service:10010
-        preferIpAddress: false
     catalog:
         standalone:
             enabled: true
             servicesDirectory: /docker/catalog-standalone-defs
-    service-registry:
-        cacheRefreshInitialDelayInMillis: 10000
-        cacheRefreshRetryDelayInMillis: 10000
-        cacheRefreshUpdateThresholdInMillis: 120000
-        serviceFetchDelayInMillis: 10000
     banner: console
     discovery:
         staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
