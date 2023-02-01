@@ -34,6 +34,7 @@ public class ApiCatalogStandaloneTest {
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/containers";
     private static final String GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT = "/apicatalog/apidoc/service2";
+    private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/apidoc/service2/org.zowe v2.0.0";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
@@ -82,7 +83,7 @@ public class ApiCatalogStandaloneTest {
         class ApiDocIsAvailable {
 
             @Test
-            void whenGetApiDocEndpoint() {
+            void whenGetApiDocDefaultEndpoint() {
                 final ValidatableResponse response = given()
                                                         .when()
                                                             .get(baseHost + GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT)
@@ -90,6 +91,17 @@ public class ApiCatalogStandaloneTest {
                                                             .statusCode(is(SC_OK))
                                                             .contentType("application/json");
                 assertEquals("Service 2 - v1 (default)", response.extract().jsonPath().get("info.title"));
+            }
+
+            @Test
+            void whenGetApiDocv2Endpoint() {
+                final ValidatableResponse response = given()
+                                                        .when()
+                                                            .get(baseHost + GET_API_CATALOG_API_DOC_ENDPOINT)
+                                                        .then()
+                                                            .statusCode(is(SC_OK))
+                                                            .contentType("application/json");
+                assertEquals("Service 2 - v2", response.extract().jsonPath().get("info.title"));
             }
         }
     }
