@@ -39,31 +39,11 @@ public class ApiCatalogStandaloneTest {
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/containers";
     private static final String GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT = "/apicatalog/apidoc/service2";
-    private static final String CATALOG_SERVICE_ID = "apicatalog";
-    private static final String CATALOG_SERVICE_ID_PATH = "/" + CATALOG_SERVICE_ID;
-    private static final String CATALOG_PREFIX = "/api/v1";
-    private static final String CATALOG_STATIC_REFRESH_ENDPOINT = "/static-api/refresh";
-    private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
 
     private String baseHost;
-
-    @FunctionalInterface
-    private interface Request {
-        Validatable<?, ?> execute(RequestSpecification when, String endpoint);
-    }
-
-    static Stream<Arguments> requestsToTest() {
-        return Stream.of(
-            Arguments.of(CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) ->
-                when.urlEncodingEnabled(false) // space in URL gets encoded by getUriFromGateway
-                    .get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))
-            ),
-            Arguments.of(CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
-        );
-    }
 
     @BeforeAll
     static void init() throws Exception {
