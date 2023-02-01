@@ -14,26 +14,21 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.Arguments;
 import org.zowe.apiml.util.config.ApiCatalogServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
-import io.restassured.response.Validatable;
 import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
 
 public class ApiCatalogStandaloneTest {
 
