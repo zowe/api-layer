@@ -29,15 +29,18 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     implements ApplicationListener<EnvironmentChangeEvent> {
 
     private ReplicationClientAdditionalFilters replicationClientAdditionalFilters;
+    private int maxRetries;
 
     public RefreshablePeerEurekaNodes(final PeerAwareInstanceRegistry registry,
                                       final EurekaServerConfig serverConfig,
                                       final EurekaClientConfig clientConfig, final ServerCodecs serverCodecs,
                                       final ApplicationInfoManager applicationInfoManager,
-                                      final ReplicationClientAdditionalFilters replicationClientAdditionalFilters) {
+                                      final ReplicationClientAdditionalFilters replicationClientAdditionalFilters,
+                                      final int maxRetries) {
         super(registry, serverConfig, clientConfig, serverCodecs,
             applicationInfoManager);
         this.replicationClientAdditionalFilters = replicationClientAdditionalFilters;
+        this.maxRetries = maxRetries;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
             targetHost = "host";
         }
         return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl,
-            replicationClient, serverConfig);
+            replicationClient, serverConfig, maxRetries);
     }
 
     @Override

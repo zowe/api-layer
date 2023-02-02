@@ -37,6 +37,9 @@ public class EurekaConfig {
     @Value("${apiml.discovery.serviceIdPrefixReplacer:#{null}}")
     private String tuple;
 
+    @Value("${apiml.discovery.maxRetries:10}")
+    private int maxRetries;
+
     @Bean
     @Primary
     public ApimlInstanceRegistry getApimlInstanceRegistry(
@@ -57,7 +60,7 @@ public class EurekaConfig {
                                            ReplicationClientAdditionalFilters replicationClientAdditionalFilters, ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig, EurekaClientConfig eurekaClientConfig) {
         return new RefreshablePeerEurekaNodes(registry, eurekaServerConfig,
             eurekaClientConfig, serverCodecs, applicationInfoManager,
-            replicationClientAdditionalFilters);
+            replicationClientAdditionalFilters, maxRetries);
     }
 
 

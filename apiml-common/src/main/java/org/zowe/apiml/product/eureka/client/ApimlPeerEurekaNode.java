@@ -88,14 +88,16 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
     private final TaskDispatcher<String, ReplicationTask> batchingDispatcher;
     private final TaskDispatcher<String, ReplicationTask> nonBatchingDispatcher;
 
-    public ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config) {
-        this(registry, targetHost, serviceUrl, replicationClient, config, BATCH_SIZE, MAX_BATCHING_DELAY_MS, RETRY_SLEEP_TIME_MS, SERVER_UNAVAILABLE_SLEEP_TIME_MS);
+    private final int maxRetries;
+
+    public ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config, int maxRetries) {
+        this(registry, targetHost, serviceUrl, replicationClient, config, BATCH_SIZE, MAX_BATCHING_DELAY_MS, RETRY_SLEEP_TIME_MS, SERVER_UNAVAILABLE_SLEEP_TIME_MS, maxRetries);
     }
 
     /* For testing */ ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl,
                                           HttpReplicationClient replicationClient, EurekaServerConfig config,
                                           int batchSize, long maxBatchingDelayMs,
-                                          long retrySleepTimeMs, long serverUnavailableSleepTimeMs) {
+                                          long retrySleepTimeMs, long serverUnavailableSleepTimeMs, int maxRetries) {
         super(registry, targetHost, serviceUrl, replicationClient, config);
         this.registry = registry;
         this.targetHost = targetHost;
@@ -104,9 +106,10 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         this.serviceUrl = serviceUrl;
         this.config = config;
         this.maxProcessingDelayMs = config.getMaxTimeForReplication();
+        this.maxRetries = maxRetries;
 
         String batcherName = getBatcherName();
-        ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient);
+        ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient, maxRetries);
         this.batchingDispatcher = TaskDispatchers.createBatchingTaskDispatcher(
             batcherName,
             config.getMaxElementsInPeerReplicationPool(),
@@ -375,14 +378,17 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
         private final NetworkIssueCounter networkIssueCounter = new NetworkIssueCounter();
 
-        public ReplicationTaskProcessor(String peerId, HttpReplicationClient replicationClient) {
+        private int maxRetries;
+
+        public ReplicationTaskProcessor(String peerId, HttpReplicationClient replicationClient, int maxRetries) {
             this.replicationClient = replicationClient;
             this.peerId = peerId;
+            this.maxRetries = maxRetries;
         }
 
-        static class NetworkIssueCounter {
+        class NetworkIssueCounter {
 
-            static final int MAX_RETRIES = 10;
+            final int MAX_RETRIES = maxRetries;
             final AtomicInteger counter = new AtomicInteger(0);
 
             public void success() {
