@@ -586,14 +586,6 @@ public class NewSecurityConfiguration {
                 return web -> {
                     web.httpFirewall(firewall);
 
-                    // Endpoints that skip Spring Security completely
-                    // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
-                    web.ignoring()
-                        .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                            "/application/health", "/application/info", "/application/version",
-                            AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
-                            AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
-
                     if (isMetricsEnabled) {
                         web.ignoring().antMatchers("/application/hystrix.stream");
                     }
@@ -605,6 +597,10 @@ public class NewSecurityConfiguration {
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             return baseConfigure(http.requestMatchers().antMatchers("/**", "/gateway/version").and())
                 .authorizeRequests()
+                .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
+                    "/application/health", "/application/info", "/application/version",
+                    AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
+                    AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH).permitAll()
                 .anyRequest()
                 .permitAll()
                 .and().logout().disable()
