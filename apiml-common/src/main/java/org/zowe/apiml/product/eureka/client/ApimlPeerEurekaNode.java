@@ -88,8 +88,6 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
     private final TaskDispatcher<String, ReplicationTask> batchingDispatcher;
     private final TaskDispatcher<String, ReplicationTask> nonBatchingDispatcher;
 
-    private final int maxRetries;
-
     public ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config, int maxRetries) {
         this(registry, targetHost, serviceUrl, replicationClient, config, BATCH_SIZE, MAX_BATCHING_DELAY_MS, RETRY_SLEEP_TIME_MS, SERVER_UNAVAILABLE_SLEEP_TIME_MS, maxRetries);
     }
@@ -106,7 +104,6 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         this.serviceUrl = serviceUrl;
         this.config = config;
         this.maxProcessingDelayMs = config.getMaxTimeForReplication();
-        this.maxRetries = maxRetries;
 
         String batcherName = getBatcherName();
         ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient, maxRetries);
@@ -378,7 +375,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
         private final NetworkIssueCounter networkIssueCounter = new NetworkIssueCounter();
 
-        private int maxRetries;
+        private final int maxRetries;
 
         public ReplicationTaskProcessor(String peerId, HttpReplicationClient replicationClient, int maxRetries) {
             this.replicationClient = replicationClient;
@@ -388,26 +385,25 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
         class NetworkIssueCounter {
 
-            final int MAX_RETRIES = maxRetries;
             final AtomicInteger counter = new AtomicInteger(0);
 
             public void success() {
                 int count = counter.get();
                 if (count > 0) {
-                    log.trace("Network error indicator was reset. The number of errors was {}/{}", count, MAX_RETRIES);
+                    log.trace("Network error indicator was reset. The number of errors was {}/{}", count, maxRetries);
                 }
                 counter.set(0);
             }
 
             public void fail(String errorMessage) {
-                int count = counter.getAndUpdate(prev -> Math.min(prev + 1, MAX_RETRIES));
+                int count = counter.getAndUpdate(prev -> Math.min(prev + 1, maxRetries));
                 log.trace("Network error ({}) occurred. The number of errors is {}{}/{}. The network error status is considered as {}.",
-                    errorMessage, counter.get(), count >= MAX_RETRIES ? "+" : "",
-                    MAX_RETRIES, isPermanent() ? "permanent" : "temporary");
+                    errorMessage, counter.get(), count >= maxRetries ? "+" : "",
+                    maxRetries, isPermanent() ? "permanent" : "temporary");
             }
 
             public boolean isPermanent() {
-                return counter.get() >= MAX_RETRIES;
+                return counter.get() >= maxRetries;
             }
 
         }
