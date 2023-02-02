@@ -25,7 +25,6 @@ import java.util.stream.IntStream;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode.ReplicationTaskProcessor;
-import static org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode.ReplicationTaskProcessor.NetworkIssueCounter.MAX_RETRIES;
 import static org.zowe.apiml.product.eureka.client.TestableInstanceReplicationTask.ProcessingState;
 import static org.zowe.apiml.product.eureka.client.TestableInstanceReplicationTask.aReplicationTask;
 
@@ -35,9 +34,11 @@ public class ReplicationTaskProcessorTest {
 
     private ReplicationTaskProcessor replicationTaskProcessor;
 
+    private static final int DEFAULT_MAX_RETRIES = 10;
+
     @BeforeEach
     public void setUp() {
-        replicationTaskProcessor = new ReplicationTaskProcessor("peerId#test", replicationClient);
+        replicationTaskProcessor = new ReplicationTaskProcessor("peerId#test", replicationClient, DEFAULT_MAX_RETRIES);
     }
 
     @Nested
@@ -83,12 +84,12 @@ public class ReplicationTaskProcessorTest {
 
         @Test
         void whenNetworkProblemRepeatedMultipleTimes_thenSetPermanentAndRecoverWhenNetworkIsOk() {
-            TestableInstanceReplicationTask task = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(MAX_RETRIES).build();
+            TestableInstanceReplicationTask task = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(DEFAULT_MAX_RETRIES).build();
 
             ProcessingResult status = replicationTaskProcessor.process(task);
             assertThat(status, is(ProcessingResult.TransientError));
 
-            IntStream.range(1, MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(task));
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(task));
 
             status = replicationTaskProcessor.process(task);
             assertThat(status, is(ProcessingResult.TransientError));
@@ -102,10 +103,10 @@ public class ReplicationTaskProcessorTest {
 
         @Test
         void whenNetworkProblemRepeatedMultipleTimes_thenResetCounterAfterSuccessfulConnection() {
-            TestableInstanceReplicationTask task1 = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(MAX_RETRIES - 5).build();
-            TestableInstanceReplicationTask task2 = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(MAX_RETRIES).build();
+            TestableInstanceReplicationTask task1 = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(DEFAULT_MAX_RETRIES - 5).build();
+            TestableInstanceReplicationTask task2 = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(DEFAULT_MAX_RETRIES).build();
 
-            IntStream.range(1, MAX_RETRIES - 5).forEach(n -> replicationTaskProcessor.process(task1));
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 5).forEach(n -> replicationTaskProcessor.process(task1));
 
             ProcessingResult status = replicationTaskProcessor.process(task1);
             assertThat(status, is(ProcessingResult.TransientError));
@@ -114,7 +115,7 @@ public class ReplicationTaskProcessorTest {
             assertThat(status, is(ProcessingResult.Success));
 
 
-            IntStream.range(1, MAX_RETRIES - 1).forEach(n -> replicationTaskProcessor.process(task2));
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 1).forEach(n -> replicationTaskProcessor.process(task2));
 
             status = replicationTaskProcessor.process(task2);
             assertThat(status, is(ProcessingResult.TransientError));
@@ -202,12 +203,12 @@ public class ReplicationTaskProcessorTest {
         void whenNetworkProblemRepeatedMultipleTimes_thenSetPermanentAndRecoverWhenNetworkIsOk() {
             TestableInstanceReplicationTask task = aReplicationTask().build();
             List<ReplicationTask> tasks = Collections.singletonList(task);
-            replicationClient.withNetworkError(MAX_RETRIES);
+            replicationClient.withNetworkError(DEFAULT_MAX_RETRIES);
 
             ProcessingResult status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.TransientError));
 
-            IntStream.range(1, MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(tasks));
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(tasks));
 
             status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.TransientError));
@@ -226,9 +227,9 @@ public class ReplicationTaskProcessorTest {
         void whenNetworkProblemRepeatedMultipleTimes_thenResetCounterAfterSuccessfulConnection() {
             TestableInstanceReplicationTask task = aReplicationTask().build();
             List<ReplicationTask> tasks = Collections.singletonList(task);
-            replicationClient.withNetworkError(MAX_RETRIES - 5);
+            replicationClient.withNetworkError(DEFAULT_MAX_RETRIES - 5);
 
-            IntStream.range(1, MAX_RETRIES - 5).forEach(n -> replicationTaskProcessor.process(tasks));
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 5).forEach(n -> replicationTaskProcessor.process(tasks));
 
             ProcessingResult status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.TransientError));
@@ -239,9 +240,9 @@ public class ReplicationTaskProcessorTest {
             status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.Success));
 
-            replicationClient.withNetworkError(MAX_RETRIES + 5);
+            replicationClient.withNetworkError(DEFAULT_MAX_RETRIES + 5);
 
-            IntStream.range(1, MAX_RETRIES - 1).forEach(n -> replicationTaskProcessor.process(tasks));
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 1).forEach(n -> replicationTaskProcessor.process(tasks));
 
             status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.TransientError));
