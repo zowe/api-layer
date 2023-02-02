@@ -114,7 +114,6 @@ public class ReplicationTaskProcessorTest {
             status = replicationTaskProcessor.process(task1);
             assertThat(status, is(ProcessingResult.Success));
 
-
             IntStream.range(1, DEFAULT_MAX_RETRIES - 1).forEach(n -> replicationTaskProcessor.process(task2));
 
             status = replicationTaskProcessor.process(task2);

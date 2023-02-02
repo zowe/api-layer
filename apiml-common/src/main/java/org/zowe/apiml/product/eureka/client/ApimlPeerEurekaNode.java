@@ -399,10 +399,10 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 int count = counter.getAndUpdate(prev -> Math.min(prev + 1, maxRetries));
                 log.trace("Network error ({}) occurred. The number of errors is {}{}/{}. The network error status is considered as {}.",
                     errorMessage, counter.get(), count >= maxRetries ? "+" : "",
-                    maxRetries, isPermanent() ? "permanent" : "temporary");
+                    maxRetries, hasReachedMax() ? "permanent" : "temporary");
             }
 
-            public boolean isPermanent() {
+            public boolean hasReachedMax() {
                 return counter.get() >= maxRetries;
             }
 
@@ -434,11 +434,11 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                     log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
                     //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
-                } else if (isNetworkConnectException(e) && !networkIssueCounter.isPermanent()) {
-                    logNetworkErrorSample(task, e, "; retrying after delay");
+                } else if (isNetworkConnectException(e) && !networkIssueCounter.hasReachedMax()) {
+                    logNetworkErrorSample(task, "; retrying after delay", e);
                     return ProcessingResult.TransientError;
                 } else {
-                    logNetworkErrorSample(task, e, "; not re-trying this exception because it does not seem to be a network exception");
+                    logNetworkErrorSample(task, "; not re-trying this exception because it does not seem to be a network exception", e);
                     return ProcessingResult.PermanentError;
                 }
             }
@@ -471,11 +471,11 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                     log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
                     //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
-                } else if (isNetworkConnectException(e) && !networkIssueCounter.isPermanent()) {
-                    logNetworkErrorSample(null, e, "; retrying after delay");
+                } else if (isNetworkConnectException(e) && !networkIssueCounter.hasReachedMax()) {
+                    logNetworkErrorSample(null, "; retrying after delay.", e);
                     return ProcessingResult.TransientError;
                 } else {
-                    logNetworkErrorSample(null, e, "; not re-trying this exception because it does not seem to be a network exception");
+                    logNetworkErrorSample(null, "; not re-trying this exception because it does not seem to be a network exception", e);
                     return ProcessingResult.PermanentError;
                 }
             }
@@ -488,16 +488,18 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
          * 20 threads * 100ms delay == 200 error entries / sec worst case
          * Still we would like to see the exception samples, so we print samples at regular intervals.
          */
-        private void logNetworkErrorSample(ReplicationTask task, Throwable e, String retryMessage) {
+        private void logNetworkErrorSample(ReplicationTask task, String additionalMessage, Throwable e) {
+            long messageTimeout = 10000;
             long now = System.currentTimeMillis();
-            if (now - lastNetworkErrorTime > 10000) {
+            if (now - lastNetworkErrorTime > messageTimeout) {
                 lastNetworkErrorTime = now;
                 StringBuilder sb = new StringBuilder();
                 sb.append("Network level connection to peer ").append(peerId);
                 if (task != null) {
                     sb.append(" for task ").append(task.getTaskName());
                 }
-                sb.append(retryMessage);
+                sb.append(additionalMessage);
+                sb.append(" This message will suppressed for ").append(messageTimeout).append("ms.");
                 log.error(sb.toString(), e);
             }
         }
