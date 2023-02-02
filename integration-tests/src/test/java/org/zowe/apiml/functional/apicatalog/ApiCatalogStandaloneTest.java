@@ -65,9 +65,8 @@ public class ApiCatalogStandaloneTest {
 
             @Test
             void whenGetContainers() throws IOException {
-                final ValidatableResponse response = given()
-                                                        .when()
-                                                            .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
+                final ValidatableResponse response = when()
+                                                        .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
                                                         .then()
                                                             .statusCode(is(SC_OK))
                                                             .contentType("application/json");
@@ -84,9 +83,8 @@ public class ApiCatalogStandaloneTest {
 
             @Test
             void whenGetApiDocDefaultEndpoint() {
-                final ValidatableResponse response = given()
-                                                        .when()
-                                                            .get(baseHost + GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT)
+                final ValidatableResponse response = when()
+                                                        .get(baseHost + GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT)
                                                         .then()
                                                             .statusCode(is(SC_OK))
                                                             .contentType("application/json");
@@ -95,9 +93,8 @@ public class ApiCatalogStandaloneTest {
 
             @Test
             void whenGetApiDocv2Endpoint() {
-                final ValidatableResponse response = given()
-                                                        .when()
-                                                            .get(baseHost + GET_API_CATALOG_API_DOC_ENDPOINT)
+                final ValidatableResponse response = when()
+                                                        .get(baseHost + GET_API_CATALOG_API_DOC_ENDPOINT)
                                                         .then()
                                                             .statusCode(is(SC_OK))
                                                             .contentType("application/json");
