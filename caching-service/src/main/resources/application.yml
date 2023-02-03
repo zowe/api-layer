@@ -141,7 +141,7 @@ server:
 
 management:
     endpoints:
-        migrate-legacy-ids: true
+#        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
