@@ -387,18 +387,28 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
             final AtomicInteger counter = new AtomicInteger(0);
 
+            private String getCountText() {
+                int count = counter.get();
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(count);
+                if (count >= maxRetries) sb.append('+');
+
+                return sb.toString();
+            }
+
             public void success() {
                 int count = counter.get();
                 if (count > 0) {
-                    log.trace("Network error indicator was reset. The number of errors was {}/{}", count, maxRetries);
+                    log.trace("Network error indicator was reset. The number of errors was {}/{}", getCountText(), maxRetries);
                 }
                 counter.set(0);
             }
 
             public void fail(String errorMessage) {
-                int count = counter.getAndUpdate(prev -> Math.min(prev + 1, maxRetries));
-                log.trace("Network error ({}) occurred. The number of errors is {}{}/{}. The network error status is considered as {}.",
-                    errorMessage, counter.get(), count >= maxRetries ? "+" : "",
+                counter.getAndUpdate(prev -> Math.min(prev + 1, maxRetries));
+                log.trace("Network error ({}) occurred. The number of errors is {}/{}. The network error status is considered as {}.",
+                    errorMessage, getCountText(),
                     maxRetries, hasReachedMax() ? "permanent" : "temporary");
             }
 
