@@ -28,6 +28,15 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6304
 def debugPort = 5124
 def componentName = "api-catalog-services"
+if (project.hasProperty('zowe.jib.image.suffix')) { // Prefix for the component name (for the standalone catalog container)
+    componentName += '-' + project.getProperty('zowe.jib.image.suffix')
+}
+if (project.hasProperty('zowe.jib.image.javaAgentPort')) {
+    javaAgentPort = project.getProperty('zowe.jib.image.javaAgentPort')
+}
+if (project.hasProperty('zowe.jib.image.debugPort')) {
+    debugPort = project.getProperty('zowe.jib.image.debugPort')
+}
 
 setJib(componentName, javaAgentPort, debugPort)
 
