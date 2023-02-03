@@ -16,14 +16,15 @@ logging:
         org.springframework.web.servlet.PageNotFound: ERROR
         net.sf.ehcache: WARN
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
-        org.springframework.security.config.annotation.web.builders.WebSecurity: OFF
-        org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: OFF
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
 
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.eclipse.jetty.util.ssl: ERROR
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
