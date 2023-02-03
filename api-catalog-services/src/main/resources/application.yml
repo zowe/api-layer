@@ -33,7 +33,7 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         net.sf.ehcache: WARN
-        org.springframework.security.config.annotation.web.builders.WebSecurity: OFF
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -161,6 +161,7 @@ eureka:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
