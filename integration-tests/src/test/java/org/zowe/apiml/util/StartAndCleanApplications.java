@@ -10,12 +10,10 @@
 
 package org.zowe.apiml.util;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
 import org.zowe.apiml.util.service.FullApiMediationLayer;
 
-@Slf4j
 public class StartAndCleanApplications implements TestExecutionListener {
     private FullApiMediationLayer fullApiMediationLayer;
 

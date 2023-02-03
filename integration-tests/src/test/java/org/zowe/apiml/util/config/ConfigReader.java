@@ -74,6 +74,7 @@ public class ConfigReader {
                             discoveryServiceConfiguration,
                             discoverableClientConfiguration,
                             new ApiCatalogServiceConfiguration(),
+                            new ApiCatalogServiceConfiguration(),
                             new CachingServiceConfiguration(),
                             new CloudGatewayConfiguration(),
                             tlsConfiguration,

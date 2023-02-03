@@ -1,4 +1,11 @@
+<!-- omit in toc -->
 # API Catalog Services
+
+- [Standalone mode](#standalone-mode)
+  - [Configuration](#configuration)
+  - [Service directory structure](#service-directory-structure)
+    - [Apps subdirectory](#apps-subdirectory)
+    - [ApiDocs subdirectory](#apidocs-subdirectory)
 
 ## Standalone mode
 
@@ -11,17 +18,17 @@ It requires building the UI module differently. For more information please foll
 
 ### Configuration
 
- - `apiml.catalog.standalone.enabled` 
+- `apiml.catalog.standalone.enabled`
     specifies whether to enable the standalone mode
-    Default: false 
- - `apiml.catalog.standalone.servicesDirectory`
+    Default: false
+- `apiml.catalog.standalone.servicesDirectory`
     specifies a directory where service definitions are stored
     Default: services
 
 ### Service directory structure
 
-The service directory contains definitions of services that are visible in 
-the Catalog. 
+The service directory contains definitions of services that are visible in
+the Catalog.
 
 It consists of the following subdirectories:
     - apps
@@ -34,7 +41,7 @@ JSON files inside the directory are processed. The file name does not have any
 specific format.
 
 The file contains the Eureka Instance descriptor of an API ML conformant
-service. It is serialized `com.netflix.discovery.shared.Applications` object. 
+service. It is serialized `com.netflix.discovery.shared.Applications` object.
 JSON `application` object contains a list of one or multiple services.
 
 You can use endpoints in the following link to obtain the file content:
