@@ -88,14 +88,14 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
     private final TaskDispatcher<String, ReplicationTask> batchingDispatcher;
     private final TaskDispatcher<String, ReplicationTask> nonBatchingDispatcher;
 
-    public ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config, int maxRetries) {
-        this(registry, targetHost, serviceUrl, replicationClient, config, BATCH_SIZE, MAX_BATCHING_DELAY_MS, RETRY_SLEEP_TIME_MS, SERVER_UNAVAILABLE_SLEEP_TIME_MS, maxRetries);
+    public ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config, int maxPeerRetries) {
+        this(registry, targetHost, serviceUrl, replicationClient, config, BATCH_SIZE, MAX_BATCHING_DELAY_MS, RETRY_SLEEP_TIME_MS, SERVER_UNAVAILABLE_SLEEP_TIME_MS, maxPeerRetries);
     }
 
     /* For testing */ ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl,
                                           HttpReplicationClient replicationClient, EurekaServerConfig config,
                                           int batchSize, long maxBatchingDelayMs,
-                                          long retrySleepTimeMs, long serverUnavailableSleepTimeMs, int maxRetries) {
+                                          long retrySleepTimeMs, long serverUnavailableSleepTimeMs, int maxPeerRetries) {
         super(registry, targetHost, serviceUrl, replicationClient, config);
         this.registry = registry;
         this.targetHost = targetHost;
@@ -106,7 +106,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         this.maxProcessingDelayMs = config.getMaxTimeForReplication();
 
         String batcherName = getBatcherName();
-        ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient, maxRetries);
+        ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient, maxPeerRetries);
         this.batchingDispatcher = TaskDispatchers.createBatchingTaskDispatcher(
             batcherName,
             config.getMaxElementsInPeerReplicationPool(),
@@ -375,12 +375,12 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
         private final NetworkIssueCounter networkIssueCounter = new NetworkIssueCounter();
 
-        private final int maxRetries;
+        private final int maxPeerRetries;
 
-        public ReplicationTaskProcessor(String peerId, HttpReplicationClient replicationClient, int maxRetries) {
+        public ReplicationTaskProcessor(String peerId, HttpReplicationClient replicationClient, int maxPeerRetries) {
             this.replicationClient = replicationClient;
             this.peerId = peerId;
-            this.maxRetries = maxRetries;
+            this.maxPeerRetries = maxPeerRetries;
         }
 
         class NetworkIssueCounter {
@@ -392,7 +392,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(count);
-                if (count >= maxRetries) sb.append('+');
+                if (count >= maxPeerRetries) sb.append('+');
 
                 return sb.toString();
             }
@@ -400,20 +400,20 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             public void success() {
                 int count = counter.get();
                 if (count > 0) {
-                    log.trace("Network error indicator was reset. The number of errors was {}/{}", getCountText(), maxRetries);
+                    log.trace("Network error indicator was reset. The number of errors was {}/{}", getCountText(), maxPeerRetries);
                 }
                 counter.set(0);
             }
 
             public void fail(String errorMessage) {
-                counter.getAndUpdate(prev -> Math.min(prev + 1, maxRetries));
+                counter.getAndUpdate(prev -> Math.min(prev + 1, maxPeerRetries));
                 log.trace("Network error ({}) occurred. The number of errors is {}/{}. The network error status is considered as {}.",
                     errorMessage, getCountText(),
-                    maxRetries, hasReachedMax() ? "permanent" : "temporary");
+                    maxPeerRetries, hasReachedMax() ? "permanent" : "temporary");
             }
 
             public boolean hasReachedMax() {
-                return counter.get() >= maxRetries;
+                return counter.get() >= maxPeerRetries;
             }
 
         }
