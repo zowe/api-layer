@@ -25,6 +25,7 @@ public class EnvironmentConfiguration {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoverableClientConfiguration discoverableClientConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
+    private ApiCatalogServiceConfiguration apiCatalogStandaloneConfiguration;
     private CachingServiceConfiguration cachingServiceConfiguration;
     private CloudGatewayConfiguration cloudGatewayConfiguration;
     private TlsConfiguration tlsConfiguration;
