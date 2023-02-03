@@ -74,15 +74,11 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Bean
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
-        String[] noSecurityAntMatchers = {
-            "/application/info",
-            "/application/health"
-        };
         baseConfigure(http)
             .httpBasic().realmName(DISCOVERY_REALM)
             .and()
             .authorizeRequests()
-            .antMatchers(noSecurityAntMatchers).permitAll()
+            .antMatchers("/application/info", "/application/health").permitAll()
             .antMatchers("/**").authenticated();
 
         if (isMetricsEnabled) {

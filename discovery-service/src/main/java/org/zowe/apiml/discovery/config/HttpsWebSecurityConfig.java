@@ -75,6 +75,8 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/js/**",
             "/eureka/fonts/**",
             "/eureka/images/**",
+            "/application/health",
+            "/application/info",
             "/favicon.ico"
         };
         return web -> {
@@ -92,10 +94,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(1)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
-        String[] noSecurityAntMatchers = {
-            "/application/health",
-            "/application/info",
-        };
         baseConfigure(http.requestMatchers().antMatchers(
                 "/application/**",
                 "/*"
@@ -104,7 +102,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
             .authorizeRequests()
-            .antMatchers(noSecurityAntMatchers).permitAll()
             .antMatchers("/**").authenticated()
             .and()
             .httpBasic().realmName(DISCOVERY_REALM);

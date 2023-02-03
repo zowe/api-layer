@@ -21,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -137,21 +138,24 @@ public class SecurityConfiguration {
     public class FilterChainBasicAuthOrTokenAllEndpoints {
 
         @Bean
-        public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
+        public WebSecurityCustomizer webSecurityCustomizer() {
             String[] noSecurityAntMatchers = {
                 "/",
                 "/static/**",
                 "/favicon.ico",
-                "/api-doc",
-                "/application/health",
-                "/application/info"
+                "/api-doc"
             };
+            return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+        }
+
+        @Bean
+        public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(baseConfiguration(http))
                 .authorizeRequests()
                 .antMatchers("/static-api/**").authenticated()
                 .antMatchers("/containers/**").authenticated()
                 .antMatchers(APIDOC_ROUTES).authenticated()
-                .antMatchers(noSecurityAntMatchers).permitAll()
+                .antMatchers("/application/health", "/application/info").permitAll()
                 .and()
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider);
