@@ -44,7 +44,7 @@ turbine:
         clusterConfig: DISCOVERABLECLIENT,APICATALOG # How to aggregate Hystrix metrics, in this case by service ID. Uppercase required.
     instanceUrlSuffix:
         DISCOVERABLECLIENT: discoverableclient/application/hystrixstream # Hystrix stream endpoint for Discoverable Client (not including host/port)
-        APICATALOG: apicatalog/application/hystrix.stream # Hystrix stream endpoint for API Catalog (not including host/port)
+        APICATALOG: apicatalog/application/hystrixstream # Hystrix stream endpoint for API Catalog (not including host/port)
     appConfig: discoverableclient,apicatalog # service IDs for which Hystrix metrics will be collected
 ```
 
