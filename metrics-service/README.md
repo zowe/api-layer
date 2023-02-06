@@ -43,12 +43,12 @@ turbine:
     aggregator:
         clusterConfig: DISCOVERABLECLIENT,APICATALOG # How to aggregate Hystrix metrics, in this case by service ID. Uppercase required.
     instanceUrlSuffix:
-        DISCOVERABLECLIENT: discoverableclient/application/hystrix.stream # Hystrix stream endpoint for Discoverable Client (not including host/port)
-        APICATALOG: apicatalog/application/hystrix.stream # Hystrix stream endpoint for API Catalog (not including host/port)
+        DISCOVERABLECLIENT: discoverableclient/application/hystrixstream # Hystrix stream endpoint for Discoverable Client (not including host/port)
+        APICATALOG: apicatalog/application/hystrixstream # Hystrix stream endpoint for API Catalog (not including host/port)
     appConfig: discoverableclient,apicatalog # service IDs for which Hystrix metrics will be collected
 ```
 
-Expected behaviour is each service needs to expose `hystrix.stream` in `management.endpoints.web.exposure.include`.
+Expected behaviour is each service needs to expose `hystrixstream` in `management.endpoints.web.exposure.include`.
 However, this is may change or not be needed if the Hystrix stream endpoint configured in the Metrics Service `turbine.instanceUrlSuffix` is a different endpoint.
 
 In the Metrics Service endpoint that displays the streaming metrics, `https://localhost:10010/metrics-service/sse/v1/turbine/stream?cluster=${cluster}`,

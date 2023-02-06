@@ -161,7 +161,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(gatewayTokenProvider);
 
             if (isMetricsEnabled) {
-                http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
+                http.authorizeRequests().antMatchers("/application/hystrixstream").permitAll();
             }
 
             http.authorizeRequests().antMatchers("/application/**").authenticated();
