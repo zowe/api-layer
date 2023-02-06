@@ -120,7 +120,7 @@ server:
 
 management:
     endpoints:
-#        migrate-legacy-ids: true
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
@@ -130,10 +130,10 @@ turbine:
     aggregator:
         clusterConfig: APICATALOG,CACHINGSERVICE,GATEWAY,DISCOVERY # uppercase serviceId
     instanceUrlSuffix:
-        APICATALOG: /apicatalog/application/hystrix.stream
-        CACHINGSERVICE: /cachingservice/application/hystrix.stream
-        GATEWAY: /application/hystrix.stream
-        DISCOVERY: /application/hystrix.stream
+        APICATALOG: /apicatalog/application/hystrixstream
+        CACHINGSERVICE: /cachingservice/application/hystrixstream
+        GATEWAY: /application/hystrixstream
+        DISCOVERY: /application/hystrixstream
     appConfig: apicatalog,cachingservice,gateway,discovery # lowercase serviceId
 
 ---

@@ -83,7 +83,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             web.ignoring().antMatchers(noSecurityAntMatchers);
 
             if (isMetricsEnabled) {
-                web.ignoring().antMatchers("/application/hystrix.stream");
+                web.ignoring().antMatchers("/application/hystrixstream");
             }
         };
     }

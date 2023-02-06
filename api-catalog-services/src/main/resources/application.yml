@@ -161,11 +161,11 @@ eureka:
 
 management:
     endpoints:
-#        migrate-legacy-ids: true
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,hystrix.stream
+                include: health,info,hystrixstream
     health:
         defaults:
             enabled: false
@@ -182,10 +182,11 @@ spring:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers,hystrix.stream
+                include: health,info,loggers,hystrixstream
 
 logging:
     level:
@@ -204,6 +205,7 @@ spring:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:

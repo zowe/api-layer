@@ -161,11 +161,11 @@ server:
 
 management:
     endpoints:
-#        migrate-legacy-ids: true
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: hystrix.stream, health, info, routes, shutdown
+                include: hystrixstream, health, info, routes, shutdown
     health:
         defaults:
             enabled: true
@@ -184,6 +184,7 @@ spring:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
