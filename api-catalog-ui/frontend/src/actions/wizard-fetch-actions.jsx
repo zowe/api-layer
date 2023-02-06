@@ -66,16 +66,14 @@ function yamlEndpointConnect(yamlText, serviceId, endpoint) {
         })
             .then((res) => {
                 const { status } = res;
-                // eslint-disable-next-line no-console
-                console.log('dwdwdw');
-                // eslint-disable-next-line no-console
-                console.log(res);
                 if (status === 201) {
                     dispatch(notifySuccess());
                 } else if (status === 409) {
                     dispatch(confirmStaticDefOverride());
                 } else {
-                    dispatch(notifyError(`The automatic onboarding was unsuccessful: ${res}`));
+                    res.text().then((text) => {
+                        dispatch(notifyError(`The automatic onboarding was unsuccessful: ${text}`));
+                    });
                 }
             })
             .catch((error) => dispatch(notifyError(`The automatic onboarding was unsuccessful: ${error}`)));
