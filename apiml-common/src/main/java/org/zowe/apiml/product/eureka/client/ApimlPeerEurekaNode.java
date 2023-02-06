@@ -445,10 +445,10 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                     //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
                 } else if (isNetworkConnectException(e) && !networkIssueCounter.hasReachedMax()) {
-                    logNetworkErrorSample(task, "; retrying after delay", e);
+                    logNetworkErrorSample(task, "; retrying after delay.", e);
                     return ProcessingResult.TransientError;
                 } else {
-                    logNetworkErrorSample(task, "; not re-trying this exception because it does not seem to be a network exception", e);
+                    logNetworkErrorSample(task, "; not re-trying this exception because it does not seem to be a network exception.", e);
                     return ProcessingResult.PermanentError;
                 }
             }
@@ -485,7 +485,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                     logNetworkErrorSample(null, "; retrying after delay.", e);
                     return ProcessingResult.TransientError;
                 } else {
-                    logNetworkErrorSample(null, "; not re-trying this exception because it does not seem to be a network exception", e);
+                    logNetworkErrorSample(null, "; not re-trying this exception because it does not seem to be a network exception.", e);
                     return ProcessingResult.PermanentError;
                 }
             }
