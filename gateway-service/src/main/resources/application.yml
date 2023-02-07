@@ -16,11 +16,15 @@ logging:
         org.springframework.web.servlet.PageNotFound: ERROR
         net.sf.ehcache: WARN
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
+
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.eclipse.jetty.util.ssl: ERROR
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -132,7 +136,7 @@ server:
         enabled: true
         clientAuth: want
         protocol: TLSv1.2
-        enabled-protocols: TLSv1.2,TLSv1.3
+        enabled-protocols: TLSv1.2+TLSv1.3
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
         keyStoreType: PKCS12
         trustStoreType: PKCS12
@@ -201,10 +205,11 @@ hystrix:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,shutdown,hystrix.stream
+                include: health,info,shutdown,hystrixstream
     health:
         defaults:
             enabled: false
@@ -264,10 +269,11 @@ spring:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,routes,loggers,shutdown,hystrix.stream
+                include: health,info,routes,loggers,shutdown,hystrixstream
     endpoint:
         shutdown:
             enabled: true
@@ -292,6 +298,7 @@ spring:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
