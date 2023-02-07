@@ -71,10 +71,12 @@ function yamlEndpointConnect(yamlText, serviceId, endpoint) {
                 } else if (status === 409) {
                     dispatch(confirmStaticDefOverride());
                 } else {
-                    dispatch(notifyError('The automatic onboarding was unsuccessful..'));
+                    res.text().then((text) => {
+                        dispatch(notifyError(`The automatic onboarding was unsuccessful: ${text}`));
+                    });
                 }
             })
-            .catch(() => dispatch(notifyError('The automatic onboarding was unsuccessful..')));
+            .catch((error) => dispatch(notifyError(`The automatic onboarding was unsuccessful: ${error}`)));
     };
 }
 
