@@ -16,5 +16,9 @@
   "dependencies": {
     "@zowe/apiml-onboarding-enabler-nodejs": "file:../onboarding-enabler-nodejs",
     "express": "^4.16.4"
+  },
+  "engines": {
+    "npm": "=7.10.0",
+    "node": "=16.0.0"
   }
 }

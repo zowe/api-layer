@@ -19,5 +19,9 @@
   },
   "devDependencies": {
     "js-yaml": "^4.0.0"
+  },
+  "engines": {
+    "npm": "=7.10.0",
+    "node": "=16.0.0"
   }
 }
