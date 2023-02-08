@@ -125,9 +125,6 @@
         "got": "12.1.0",
         "react-error-overlay": "6.0.9"
     },
-    "overrides": {
-        "debug": "3.1.0"
-    },
     "jest": {
         "transformIgnorePatterns": [
             "/node_modules/?!(swagger-ui-react/swagger-ui-es-bundle-core.js)"
