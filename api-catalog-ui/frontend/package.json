@@ -49,7 +49,6 @@
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
-        "preinstall": "npm-force-resolutions",
         "build": "react-scripts build",
         "postbuild": "rimraf build/**/*.map",
         "test": "react-scripts test --silent --watchAll=false --env=jsdom components/* utils/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* helpers/* --reporters=default --reporters=jest-html-reporter --coverage",
@@ -106,7 +105,6 @@
         "json-schema": "0.4.0",
         "mini-css-extract-plugin": "2.4.7",
         "nodemon": "2.0.18",
-        "npm-force-resolutions": "0.0.10",
         "nth-check": "2.0.1",
         "prettier": "2.3.0",
         "react-error-overlay": "6.0.9",
@@ -119,7 +117,7 @@
         "tmpl": "1.0.5",
         "yaml": "1.10.2"
     },
-    "resolutions": {
+    "overrides": {
         "nth-check": "2.0.1",
         "jsdom": "16.5.0",
         "got": "12.1.0",
