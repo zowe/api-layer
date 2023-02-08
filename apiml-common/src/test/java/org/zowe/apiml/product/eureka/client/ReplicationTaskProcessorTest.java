@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLException;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,9 +34,11 @@ public class ReplicationTaskProcessorTest {
 
     private ReplicationTaskProcessor replicationTaskProcessor;
 
+    private static final int DEFAULT_MAX_RETRIES = 10;
+
     @BeforeEach
     public void setUp() {
-        replicationTaskProcessor = new ReplicationTaskProcessor("peerId#test", replicationClient);
+        replicationTaskProcessor = new ReplicationTaskProcessor("peerId#test", replicationClient, DEFAULT_MAX_RETRIES);
     }
 
     @Nested
@@ -76,6 +80,55 @@ public class ReplicationTaskProcessorTest {
             ProcessingResult status = replicationTaskProcessor.process(task);
             assertThat(status, is(ProcessingResult.PermanentError));
             assertThat(task.getProcessingState(), is(ProcessingState.Failed));
+        }
+
+        @Test
+        void whenNetworkProblemRepeatedMultipleTimes_thenSetPermanentAndRecoverWhenNetworkIsOk() {
+            TestableInstanceReplicationTask task = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(DEFAULT_MAX_RETRIES).build();
+
+            // First network issue should cause TransientError
+            ProcessingResult status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(task));
+
+            // 9th network issue should still cause TransientError
+            status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            // 10th network issue should finally cause PermanentError
+            status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.PermanentError));
+
+            // Recovered network should lead to Success
+            status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.Success));
+        }
+
+        @Test
+        void whenNetworkProblemRepeatedMultipleTimes_thenResetCounterAfterSuccessfulConnection() {
+            TestableInstanceReplicationTask task1 = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(DEFAULT_MAX_RETRIES - 5).build();
+            TestableInstanceReplicationTask task2 = aReplicationTask().withAction(Action.Heartbeat).withNetworkFailures(DEFAULT_MAX_RETRIES).build();
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 5).forEach(n -> replicationTaskProcessor.process(task1));
+
+            // 5th network issue should cause TransientError
+            ProcessingResult status = replicationTaskProcessor.process(task1);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            // network issue counter is reset when network recovers
+            status = replicationTaskProcessor.process(task1);
+            assertThat(status, is(ProcessingResult.Success));
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 1).forEach(n -> replicationTaskProcessor.process(task2));
+
+            // 9th network issue should cause TransientError since the counter was reset
+            status = replicationTaskProcessor.process(task2);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            // 10th network issue should cause PermanentError
+            status = replicationTaskProcessor.process(task2);
+            assertThat(status, is(ProcessingResult.PermanentError));
         }
     }
 
@@ -151,6 +204,66 @@ public class ReplicationTaskProcessorTest {
 
             assertThat(status, is(ProcessingResult.Success));
             assertThat(task.getProcessingState(), is(ProcessingState.Failed));
+        }
+
+        @Test
+        void whenNetworkProblemRepeatedMultipleTimes_thenSetPermanentAndRecoverWhenNetworkIsOk() {
+            TestableInstanceReplicationTask task = aReplicationTask().build();
+            List<ReplicationTask> tasks = Collections.singletonList(task);
+            replicationClient.withNetworkError(DEFAULT_MAX_RETRIES);
+
+            // First network issue should cause TransientError
+            ProcessingResult status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(tasks));
+
+            // 9th network issue should still cause TransientError
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            // 10th network issue should finally cause PermanentError
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.PermanentError));
+
+            replicationClient.withBatchReply(200);
+            replicationClient.withNetworkStatusCode(200);
+
+            // Recovered network should lead to Success
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.Success));
+        }
+
+        @Test
+        void whenNetworkProblemRepeatedMultipleTimes_thenResetCounterAfterSuccessfulConnection() {
+            TestableInstanceReplicationTask task = aReplicationTask().build();
+            List<ReplicationTask> tasks = Collections.singletonList(task);
+            replicationClient.withNetworkError(DEFAULT_MAX_RETRIES - 5);
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 5).forEach(n -> replicationTaskProcessor.process(tasks));
+
+            // 5th network issue should cause TransientError
+            ProcessingResult status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            replicationClient.withBatchReply(200);
+            replicationClient.withNetworkStatusCode(200);
+
+            // network issue counter is reset when network recovers
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.Success));
+
+            replicationClient.withNetworkError(DEFAULT_MAX_RETRIES + 5);
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 1).forEach(n -> replicationTaskProcessor.process(tasks));
+
+            // 9th network issue should cause TransientError since the counter was reset
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            // 10th network issue should cause PermanentError
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.PermanentError));
         }
     }
 }
