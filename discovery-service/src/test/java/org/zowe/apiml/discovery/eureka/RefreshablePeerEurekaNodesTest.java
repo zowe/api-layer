@@ -33,6 +33,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class RefreshablePeerEurekaNodesTest {
+
+    private static final int DEFAULT_MAX_RETRIES = 10;
+
     PeerAwareInstanceRegistry registry;
     EurekaServerConfig serverConfig = mock(EurekaServerConfig.class);
     EurekaClientConfig clientConfig = mock(EurekaClientConfig.class);
@@ -45,7 +48,7 @@ class RefreshablePeerEurekaNodesTest {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters);
+        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
         PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
         assertTrue(node instanceof ApimlPeerEurekaNode);
     }
@@ -63,7 +66,7 @@ class RefreshablePeerEurekaNodesTest {
     @ParameterizedTest
     @MethodSource("values")
     void givenClientEvent_thenUpdate(Set<String> changedKeys) {
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters);
+        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(false);
 
         assertTrue(eurekaNodes.shouldUpdate(changedKeys));
@@ -71,14 +74,14 @@ class RefreshablePeerEurekaNodesTest {
 
     @Test
     void givenDNSShoudBeUsed_thenDoNotUpdate() {
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters);
+        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(true);
         assertFalse(eurekaNodes.shouldUpdate(new HashSet<>()));
     }
 
     @Test
     void givenNoEvents_thenDoNotUpdate() {
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters);
+        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(false);
         assertFalse(eurekaNodes.shouldUpdate(new HashSet<>()));
     }
