@@ -1,0 +1,15 @@
+{
+    "profiles": {
+        "my_idf": {
+            "type": "id-federation",
+            "properties": {
+                "esm": "RACF",
+                "lpar": "TST1"
+            }
+        }
+    },
+    "defaults": {
+        "id-federation": "my_idf"
+    },
+    "autoStore": true
+}
