@@ -23,14 +23,14 @@ class SemanticVersionTest {
     class GivenVersionToCompare {
         @Test
         void whenVersionIsLower_thenReturnMinusOne() {
-            semanticVersion= new SemanticVersion("1.0.0");
+            semanticVersion = new SemanticVersion("1.0.0");
             int result = semanticVersion.compareTo(new SemanticVersion("2.0.0"));
             assertEquals(-1, result);
         }
 
         @Test
         void whenVersionIsHigher_thenReturnOne() {
-            semanticVersion= new SemanticVersion("3.0.0");
+            semanticVersion = new SemanticVersion("3.0.0");
             int result = semanticVersion.compareTo(new SemanticVersion("2.0.0"));
             assertEquals(1, result);
         }
