@@ -255,6 +255,6 @@ ext {
     ]
 
     // for node projects
-    projectNodeVersion = '14.19.3'
-    projectNpmVersion = '8.1.0'
+    projectNodeVersion = '18.14.0'
+    projectNpmVersion = '9.3.1'
 }
