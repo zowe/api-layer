@@ -16,7 +16,8 @@ export default class MapHandler implements ICommandHandler {
         const file: string = params.arguments.inputFile;
         const esm: string = params.arguments.esm;
         const lpar: string = params.arguments.lpar;
-        params.response.console.log(`Input file: ${file}\nESM: ${esm}\nLPAR: ${lpar}`);
+        const registry: string = params.arguments.registry;
+        params.response.console.log(`Input file: ${file}\nESM: ${esm}\nLPAR: ${lpar}\nRegistry: ${registry}`);
 
         const missingArgs: string[] = [];
         if (!esm) {
@@ -25,11 +26,14 @@ export default class MapHandler implements ICommandHandler {
         if (!lpar) {
             missingArgs.push('lpar');
         }
+        if (!registry) {
+            missingArgs.push('registry');
+        }
         if (missingArgs.length != 0) {
             const msg: string = `Following arguments are missing: "${missingArgs.join(", ")}"`;
             throw new ImperativeError({msg});
         }
 
-        new Mapper(file, esm, lpar).map();
+        new Mapper(file, esm, lpar, registry).map();
     }
 }

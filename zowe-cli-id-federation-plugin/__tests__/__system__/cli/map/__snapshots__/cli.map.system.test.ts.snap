@@ -38,6 +38,10 @@ exports[`id-federation map should display the help 1`] = `
 
       The security domain on which command will be executed
 
+   --registry | -r (string)
+
+      The registry that contains the distributed-identity user name
+
  PROFILE OPTIONS
  ---------------
 
@@ -117,5 +121,6 @@ exports[`id-federation map should print input arguments 1`] = `
 "Input file: file.csv
 ESM: TSS
 LPAR: TST1
+Registry: ldap://12.34.56.78:910
 "
 `;

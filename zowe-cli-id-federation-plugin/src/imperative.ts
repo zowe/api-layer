@@ -14,16 +14,18 @@ import { ProfileConstants } from "./api/ProfileConstants";
 const config: IImperativeConfig = {
     commandModuleGlobs: ["**/cli/*/*.definition!(.d).*s"],
     pluginHealthCheck: __dirname + "/healthCheck.Handler",
-    pluginSummary: "Zowe CLI identity federation plug-in",
+    pluginSummary: "Zowe CLI Identity Federation plug-in",
     pluginAliases: ["idf"],
-    rootCommandDescription: "Welcome to the identity federation plug-in for Zowe CLI!\n\n The identity federation plug-in " +
-        "(& CLI) follows the Zowe CLI command syntax 'zowe [group] [action] [object] [options]'. " +
-        "Where, in the case of the plugin, " +
-        "the [group] is the package.json name, " +
-        "the [actions] are defined in the project under 'src/cli/', " +
-        "& the [objects] (definitions & handler) are defined in the project under 'src/cli/'.",
+    rootCommandDescription: "Welcome to the Identity Federation plug-in for Zowe CLI!\n\n The Identity Federation plug-in " +
+        "(& CLI) follows the Zowe CLI command syntax 'zowe [action] [object] [options]'. ",
     productDisplayName: "Zowe CLI Identity Federation Plug-in",
     name: "id-federation",
+    envVariablePrefix: "IDF",
+    logging: {
+        appLogging: {
+            level: "warn"
+        }
+    },
     profiles: [
         {
             type: "id-federation",
@@ -39,6 +41,10 @@ const config: IImperativeConfig = {
                     lpar: {
                         type: "string",
                         optionDefinition: ProfileConstants.IDF_OPTION_LPAR
+                    },
+                    registry: {
+                        type: "string",
+                        optionDefinition: ProfileConstants.IDF_OPTION_REGISTRY
                     }
                 }
             }

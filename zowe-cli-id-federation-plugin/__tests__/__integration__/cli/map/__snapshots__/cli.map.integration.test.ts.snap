@@ -2,7 +2,7 @@
 
 exports[`id-federation map command should fail when options are not passed 1`] = `
 "Command Error:
-Following arguments are missing: \\"esm, lpar\\"
+Following arguments are missing: \\"esm, lpar, registry\\"
 "
 `;
 
@@ -10,6 +10,7 @@ exports[`id-federation map command should fail when options are not passed 2`] =
 "Input file: file.csv
 ESM: undefined
 LPAR: undefined
+Registry: undefined
 "
 `;
 
@@ -17,6 +18,7 @@ exports[`id-federation map command should print input args from old school profi
 "Input file: file.csv
 ESM: ACF2
 LPAR: TST1
+Registry: ldap://zowe.org
 "
 `;
 
@@ -24,5 +26,6 @@ exports[`id-federation map command should print input args from team config prof
 "Input file: file.csv
 ESM: RACF
 LPAR: TST2
+Registry: ldap://12.34.56.78:910
 "
 `;

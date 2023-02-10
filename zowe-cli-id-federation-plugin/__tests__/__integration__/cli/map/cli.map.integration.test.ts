@@ -48,6 +48,7 @@ describe("id-federation map command", () => {
         const output = response.stdout.toString();
         expect(output).toContain("ESM: RACF");
         expect(output).toContain("LPAR: TST2");
+        expect(output).toContain("Registry: ldap://12.34.56.78:910");
         expect(output).toMatchSnapshot();
     });
 
@@ -58,6 +59,7 @@ describe("id-federation map command", () => {
         const output = response.stdout.toString();
         expect(output).toContain("ESM: ACF2");
         expect(output).toContain("LPAR: TST1");
+        expect(output).toContain("Registry: ldap://zowe.org");
         expect(output).toMatchSnapshot();
     });
 });

@@ -27,7 +27,8 @@ describe("map handler", () => {
                     _: ["fake"],
                     inputFile: "fake-file.csv",
                     esm: "fakeESM",
-                    lpar: "fakeLPAR"
+                    lpar: "fakeLPAR",
+                    registry: "fake://host:1234"
                 },
                 response: {
                     console: {

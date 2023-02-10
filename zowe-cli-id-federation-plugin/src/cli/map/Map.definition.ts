@@ -40,7 +40,7 @@ const MapDefinition: ICommandDefinition = {
         }
     ],
     profile: {
-        optional: ["id-federation"],
+        optional: ["id-federation"]
     },
     options: [...ProfileConstants.IDF_CONNECTION_OPTIONS]
 };

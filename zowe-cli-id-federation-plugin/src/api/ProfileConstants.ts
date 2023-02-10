@@ -30,8 +30,17 @@ export class ProfileConstants {
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
 
+    public static IDF_OPTION_REGISTRY: ICommandOptionDefinition = {
+        name: "registry",
+        aliases: ["r"],
+        description: "The registry that contains the distributed-identity user name",
+        type: "string",
+        group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
+    };
+
     public static IDF_CONNECTION_OPTIONS: ICommandOptionDefinition[] = [
         ProfileConstants.IDF_OPTION_ESM,
-        ProfileConstants.IDF_OPTION_LPAR
+        ProfileConstants.IDF_OPTION_LPAR,
+        ProfileConstants.IDF_OPTION_REGISTRY
     ];
 }

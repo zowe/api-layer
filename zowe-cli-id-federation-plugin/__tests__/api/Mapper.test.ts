@@ -14,11 +14,13 @@ describe("Mapper", () => {
         const INPUT_FILE = "fake-file.csv";
         const ESM = "fakeESM";
         const LPAR = "fakeLPAR";
+        const REGISTRY = "fake://host:1234";
 
-        const maper = new Mapper(INPUT_FILE, ESM, LPAR);
+        const maper = new Mapper(INPUT_FILE, ESM, LPAR, REGISTRY);
 
         expect(maper.file).toBe(INPUT_FILE);
         expect(maper.esm).toBe(ESM);
         expect(maper.lpar).toBe(LPAR);
+        expect(maper.registry).toBe(REGISTRY);
     });
 });

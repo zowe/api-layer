@@ -8,20 +8,24 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {Logger} from "@zowe/imperative";
+import {Logger, LoggingConfigurer} from "@zowe/imperative";
+import config = require("../imperative");
 
 export class Mapper {
     file: string;
     esm: string;
     lpar: string;
+    registry: string;
 
-    constructor(file: string, esm: string, lpar: string) {
+    constructor(file: string, esm: string, lpar: string, registry: string) {
+        Logger.initLogger(LoggingConfigurer.configureLogger(".zowe", config));
         this.file = file;
         this.esm = esm;
         this.lpar = lpar;
+        this.registry = registry;
     }
 
     map() {
-        Logger.getImperativeLogger().info("TBD"); //Here will be the code which generate JCL
+        Logger.getAppLogger().info("AppLogger: TBD");//Here will be the code which generate JCL
     }
 }
