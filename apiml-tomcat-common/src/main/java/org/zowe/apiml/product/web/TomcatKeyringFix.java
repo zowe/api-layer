@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 @Component
 public class TomcatKeyringFix implements TomcatConnectorCustomizer {
 
-    private static final Pattern KEYRING_PATTERN = Pattern.compile("^safkeyring[^:]*:/{2,4}[^/].*$");
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)[/](.+)$");
     private static final String KEYRING_PASSWORD = "password";
 
     @Value("${server.ssl.keyStore:#{null}}")
@@ -46,17 +46,26 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
         return matcher.matches();
     }
 
+    public static String formatKeyringUrl(String input) {
+        if (input == null) return null;
+        Matcher matcher = KEYRING_PATTERN.matcher(input);
+        if (matcher.matches()) {
+            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+        }
+        return input;
+    }
+
     @Override
     public void customize(Connector connector) {
         Arrays.stream(connector.findSslHostConfigs()).forEach(sslConfig -> {
             if (isKeyring(keyStore)) {
-                sslConfig.setCertificateKeystoreFile(keyStore);
+                sslConfig.setCertificateKeystoreFile(formatKeyringUrl(keyStore));
                 if (keyStorePassword == null) sslConfig.setCertificateKeystorePassword(KEYRING_PASSWORD);
                 if (keyPassword == null) sslConfig.setCertificateKeyPassword(KEYRING_PASSWORD);
             }
 
             if (isKeyring(trustStore)) {
-                sslConfig.setTruststoreFile(trustStore);
+                sslConfig.setTruststoreFile(formatKeyringUrl(trustStore));
                 if (trustStorePassword == null) sslConfig.setTruststorePassword(KEYRING_PASSWORD);
             }
         });
