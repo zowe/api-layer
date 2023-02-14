@@ -35,4 +35,42 @@ describe('>>> User actions tests', () => {
         const response = userActions.validateInput(credentials);
         expect(response).toEqual(expectedAction);
     });
+
+    it('should login', async () => {
+        const dispatch = jest.fn();
+        const expectedAction = { type: 'USERS_LOGIN_REQUEST', user: { password: 'password', username: 'user' } };
+
+        await userActions.login(credentials)(dispatch);
+        expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
+    });
+
+    it('should logout', async () => {
+        const dispatch = jest.fn();
+        const expectedAction = { type: 'USERS_LOGOUT_REQUEST'};
+
+        await userActions.logout(credentials)(dispatch);
+        expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
+    });
+
+    it('should dispatch authentication failure', async () => {
+        const dispatch = jest.fn();
+        const error = {
+            xhr: {
+                getResponseHeader: jest.fn(),
+            },
+        };
+        await userActions.authenticationFailure(error)(dispatch);
+        expect(dispatch.mock.calls[0][0].type).toBe('AUTHENTICATION_FAILURE');
+    });
+
+    it('should return to login', async () => {
+        const dispatch = jest.fn();
+        const error = {
+            xhr: {
+                getResponseHeader: jest.fn(),
+            },
+        };
+        await userActions.returnToLogin()(dispatch);
+        expect(dispatch.mock.calls[0][0].type).toBe('USERS_LOGIN_INIT');
+    });
 });
