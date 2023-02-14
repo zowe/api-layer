@@ -12,7 +12,7 @@ import * as fs from "fs";
 import {parse} from "csv-parse/sync";
 import {ImperativeError} from "@zowe/imperative";
 
-export interface IIdentities {
+export interface IIdentity {
     userName: string;
     distributedId: string;
     mainframeId: string;
@@ -24,12 +24,12 @@ export class CsvParser {
         public file: string) {
     }
 
-    getIdentities(): IIdentities[] {
+    getIdentities(): IIdentity[] {
         const fileContent = fs.readFileSync(this.file);
         const headers = ['userName', 'distributedId', 'mainframeId'];
 
         try {
-            return parse(fileContent, {columns: headers}) as IIdentities[];
+            return parse(fileContent, {columns: headers}) as IIdentity[];
         } catch (e) {
             throw new ImperativeError({msg: `Invalid CSV format: ${e.message ?? ''}`});
         }

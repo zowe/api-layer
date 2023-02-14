@@ -9,14 +9,20 @@
  */
 
 import {TextUtils} from "@zowe/imperative";
+import { warn } from "console";
 import * as fs from "fs";
-import {IIdentities} from "./CsvParser";
+import {IIdentity} from "./CsvParser";
+import {hasValidLength} from "./ValidateUtil";
 
 export class RacfCommands {
 
+    readonly maxLengthMainframeId = 8;
+    readonly maxLengthDistributedId = 246;
+    readonly maxLengthLabel = 32;
+
     constructor(
         private registry: string,
-        private identities: IIdentities[]
+        private identities: IIdentity[]
     ) {
     }
 
@@ -24,16 +30,36 @@ export class RacfCommands {
         const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
 
         let racfCommands = '';
-        this.identities.forEach(identity => racfCommands +=
-            TextUtils.renderWithMustache(racfTemplate, {
-                mainframe_id: identity.mainframeId.trim(),
-                distributed_id: identity.distributedId.trim(),
-                registry: this.registry,
-                user_name: identity.userName.trim()
-            })
-        );
+        this.identities.forEach(identity => racfCommands += this.getCommand(identity, racfTemplate));
 
         return racfCommands.trimRight();
+    }
+
+    private getCommand(identity: IIdentity, racfTemplate: string): string {
+        if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
+            warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
+           `Identity mapping for the user '${identity.userName}' is not be created.`);
+            return '';
+        }
+
+        if(!hasValidLength(identity.distributedId, this.maxLengthDistributedId)) {
+            warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.maxLengthDistributedId} characters. ` +
+                `Identity mapping for the user '${identity.userName}' is not be created.`);
+            return '';
+        }
+
+        if(!hasValidLength(identity.userName, this.maxLengthLabel)) {
+            warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.maxLengthLabel} characters. ` +
+                `Identity mapping for the user '${identity.userName}' is not be created.`);
+            return '';
+        }
+
+        return TextUtils.renderWithMustache(racfTemplate, {
+            mainframe_id: identity.mainframeId.trim(),
+            distributed_id: identity.distributedId.trim(),
+            registry: this.registry,
+            user_name: identity.userName.trim()
+        });
     }
 
 }

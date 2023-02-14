@@ -12,7 +12,7 @@ import {ImperativeError, TextUtils} from "@zowe/imperative";
 import {RacfCommands} from "./RacfCommands";
 import {getAccount} from "./JobUtil";
 import * as fs from "fs";
-import {CsvParser, IIdentities} from "./CsvParser";
+import {CsvParser, IIdentity} from "./CsvParser";
 
 
 export class Mapper {
@@ -44,7 +44,7 @@ export class Mapper {
         });
     }
 
-    createSafCommands(identities: IIdentities[]): string {
+    createSafCommands(identities: IIdentity[]): string {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
             case "racf": {

@@ -12,6 +12,7 @@ import {ICommandHandler, IHandlerParameters, ImperativeError} from "@zowe/impera
 import {Mapper} from "../../api/Mapper";
 
 export default class MapHandler implements ICommandHandler {
+
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;
         const esm: string = params.arguments.esm;
@@ -36,4 +37,5 @@ export default class MapHandler implements ICommandHandler {
         const mapper = new Mapper(file, esm, lpar, registry);
         params.response.console.log(await mapper.map());
     }
+
 }
