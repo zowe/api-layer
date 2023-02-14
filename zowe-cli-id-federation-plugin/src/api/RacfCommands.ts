@@ -59,7 +59,12 @@ export class RacfCommands {
             mainframe_id: identity.mainframeId.trim(),
             distributed_id: identity.distributedId.trim(),
             registry: this.registry,
-            user_name: identity.userName.trim()
+            user_name: identity.userName.trim(),
+            escape: function() {
+                return function(text: string, render: any) {
+                    return text.replace("'", "''");
+                }
+            }
         });
     }
 

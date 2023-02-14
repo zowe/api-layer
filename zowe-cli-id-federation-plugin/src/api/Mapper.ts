@@ -13,7 +13,7 @@ import {RacfCommands} from "./RacfCommands";
 import {getAccount} from "./JobUtil";
 import * as fs from "fs";
 import {CsvParser, IIdentity} from "./CsvParser";
-
+import {JclWriter} from "./JclWriter";
 
 export class Mapper {
     constructor(
@@ -36,11 +36,12 @@ export class Mapper {
     async createJcl(commands: string): Promise<string> {
         const jclTemplate = fs.readFileSync('src/api/templates/job.jcl').toString();
         const account = await getAccount();
+        const jclWriter = new JclWriter(commands, 1, 2);
         return TextUtils.renderWithMustache(jclTemplate, {
             esm: this.esm,
             lpar: this.lpar.toUpperCase(),
             account: account,
-            commands: commands
+            commands: jclWriter.getText()
         });
     }
 
