@@ -46,7 +46,7 @@ describe('>>> User actions tests', () => {
 
     it('should logout', async () => {
         const dispatch = jest.fn();
-        const expectedAction = { type: 'USERS_LOGOUT_REQUEST'};
+        const expectedAction = { type: 'USERS_LOGOUT_REQUEST' };
 
         await userActions.logout(credentials)(dispatch);
         expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
@@ -65,11 +65,6 @@ describe('>>> User actions tests', () => {
 
     it('should return to login', async () => {
         const dispatch = jest.fn();
-        const error = {
-            xhr: {
-                getResponseHeader: jest.fn(),
-            },
-        };
         await userActions.returnToLogin()(dispatch);
         expect(dispatch.mock.calls[0][0].type).toBe('USERS_LOGIN_INIT');
     });
