@@ -4,7 +4,7 @@
         "node",
         "jest"
       ],
-      "target": "es2015",
+      "target": "es2021",
       "module": "commonjs",
       "declaration": true,
       "moduleResolution": "node",

@@ -11,39 +11,39 @@ exports[`map definition should match the snapshot 1`] = `
  * Copyright Contributors to the Zowe Project.
  */
 
-import { ICommandDefinition } from \\"@zowe/imperative\\";
-import {ProfileConstants} from \\"../../api/ProfileConstants\\";
+import { ICommandDefinition } from "@zowe/imperative";
+import {ProfileConstants} from "../../api/ProfileConstants";
 /**
- * Command one [object] definition. This definition is of imperative type \\"command\\" and therefore must have a
- * command handler (which performs the \\"work\\" for this command).
+ * Command one [object] definition. This definition is of imperative type "command" and therefore must have a
+ * command handler (which performs the "work" for this command).
  *
- * In this case, \\"error-messages\\" will simply print console error (stderr) messages.
+ * In this case, "error-messages" will simply print console error (stderr) messages.
  *
  * Property Summary:
  * =================
- * \\"name\\" of the [object]. Should be a noun (e.g. data-set)
- * \\"aliases\\" normally contains a shortened form of the command
- * \\"summary\\" will display when issuing the help on this [objects] [action]
- * \\"type\\" is \\"command\\" which means a handler is required
- * \\"handler\\" is the file path to the handler (does the work)
- * \\"options\\" an array of options
+ * "name" of the [object]. Should be a noun (e.g. data-set)
+ * "aliases" normally contains a shortened form of the command
+ * "summary" will display when issuing the help on this [objects] [action]
+ * "type" is "command" which means a handler is required
+ * "handler" is the file path to the handler (does the work)
+ * "options" an array of options
  */
 const MapDefinition: ICommandDefinition = {
-    name: \\"map\\",
-    summary: \\"generates JCL with mapping of users\\",
-    description: \\"the command will generate JCL based on [inputFile] with users mapped to defined ESM\\",
-    type: \\"command\\",
-    handler: __dirname + \\"/Map.handler\\",
+    name: "map",
+    summary: "generates JCL with mapping of users",
+    description: "the command will generate JCL based on [inputFile] with users mapped to defined ESM",
+    type: "command",
+    handler: __dirname + "/Map.handler",
     positionals: [
         {
-            name: \\"input-file\\",
-            description: \\"File with the list of users\\",
-            type: \\"string\\",
+            name: "input-file",
+            description: "File with the list of users",
+            type: "string",
             required: true
         }
     ],
     profile: {
-        optional: [\\"id-federation\\"]
+        optional: ["id-federation"]
     },
     options: [...ProfileConstants.IDF_CONNECTION_OPTIONS]
 };
