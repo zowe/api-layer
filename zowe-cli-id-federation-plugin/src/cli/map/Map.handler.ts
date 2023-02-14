@@ -17,7 +17,6 @@ export default class MapHandler implements ICommandHandler {
         const esm: string = params.arguments.esm;
         const lpar: string = params.arguments.lpar;
         const registry: string = params.arguments.registry;
-        params.response.console.log(`Input file: ${file}\nESM: ${esm}\nLPAR: ${lpar}\nRegistry: ${registry}`);
 
         const missingArgs: string[] = [];
         if (!esm) {
@@ -34,6 +33,7 @@ export default class MapHandler implements ICommandHandler {
             throw new ImperativeError({msg});
         }
 
-        new Mapper(file, esm, lpar, registry).map();
+        const mapper = new Mapper(file, esm, lpar, registry);
+        params.response.console.log(await mapper.map());
     }
 }
