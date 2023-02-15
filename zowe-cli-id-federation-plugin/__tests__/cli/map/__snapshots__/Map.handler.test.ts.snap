@@ -14,4 +14,4 @@ LPAR: undefined
 Registry: undefined"
 `;
 
-exports[`map handler throw an error 2`] = `"Following arguments are missing: \\"esm, lpar, registry\\""`;
+exports[`map handler throw an error 2`] = `"Following arguments are missing: "esm, lpar, registry""`;
