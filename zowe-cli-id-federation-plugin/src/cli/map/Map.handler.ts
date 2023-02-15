@@ -10,8 +10,13 @@
 
 import {ICommandHandler, IHandlerParameters, ImperativeError} from "@zowe/imperative";
 import {Mapper} from "../../api/Mapper";
+import {hasValidLength} from "../../api/ValidateUtil";
 
 export default class MapHandler implements ICommandHandler {
+
+    //TODO: length valid for RACF, if other ESMs allow the different length -> refactor
+    readonly maxLengthRegistry = 255;
+    readonly maxLengthLpar = 4;
 
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;
@@ -30,7 +35,17 @@ export default class MapHandler implements ICommandHandler {
             missingArgs.push('registry');
         }
         if (missingArgs.length != 0) {
-            const msg: string = `Following arguments are missing: "${missingArgs.join(", ")}"`;
+            const msg = `Following arguments are missing: "${missingArgs.join(", ")}"`;
+            throw new ImperativeError({msg});
+        }
+
+        if(!hasValidLength(lpar, this.maxLengthLpar )) {
+            const msg = `The registry '${lpar}' has exceeded maximum length of ${this.maxLengthLpar} characters.`;
+            throw new ImperativeError({msg});
+        }
+
+        if(!hasValidLength(registry, this.maxLengthRegistry )) {
+            const msg = `The registry '${registry}' has exceeded maximum length of ${this.maxLengthRegistry} characters.`;
             throw new ImperativeError({msg});
         }
 
