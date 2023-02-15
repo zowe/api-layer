@@ -1,3 +1,4 @@
+//The following configuration is a sample that can be used when releasing the plugin. If it won't be used, it needs to be removed.
 module.exports = {
     branches: [
         {

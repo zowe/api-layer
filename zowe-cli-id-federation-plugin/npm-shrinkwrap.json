@@ -34,7 +34,7 @@
         "jest-environment-node-debug": "2.0.0",
         "jest-html-reporter": "3.7.0",
         "jest-junit": "6.3.0",
-        "jest-stare": "^2.5.0",
+        "jest-stare": "2.5.0",
         "json-server": "0.17.1",
         "madge": "5.0.1",
         "rimraf": "2.7.1",
@@ -45,7 +45,7 @@
         "uuid": "3.2.1"
       },
       "peerDependencies": {
-        "@zowe/imperative": "^5.0.0"
+        "@zowe/imperative": "5.8.3"
       }
     },
     "node_modules/@ampproject/remapping": {
