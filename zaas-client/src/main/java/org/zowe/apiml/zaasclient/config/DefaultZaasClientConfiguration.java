@@ -49,7 +49,7 @@ public class DefaultZaasClientConfiguration {
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
-    @Value("") // TODO define configuration name
+    @Value("${apiml.service.audit.zaas.enabled:false}")
     private boolean rauditxEnabled;
 
     @Bean
