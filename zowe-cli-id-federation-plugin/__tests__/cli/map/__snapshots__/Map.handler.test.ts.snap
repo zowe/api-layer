@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`map handler should accept options and print message 1`] = `
+" Input file: fake-file.csv
+ESM: fakeESM
+LPAR: fakeLPAR
+Registry: fake://host:1234"
+`;
+
+exports[`map handler throw an error 1`] = `
+" Input file: fake-file.csv
+ESM: undefined
+LPAR: undefined
+Registry: undefined"
+`;
+
+exports[`map handler throw an error 2`] = `"Following arguments are missing: "esm, lpar, registry""`;
