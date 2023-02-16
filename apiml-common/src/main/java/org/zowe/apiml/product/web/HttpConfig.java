@@ -15,6 +15,11 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,16 +31,16 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -109,6 +114,9 @@ public class HttpConfig {
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+    private ApimlPoolingHttpClientConnectionManager connectionManager;
+    private final Timer connectionManagerTimer = new Timer(
+        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
@@ -143,13 +151,20 @@ public class HttpConfig {
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
             HttpsFactory factory = new HttpsFactory(httpsConfig);
-            secureHttpClient = factory.createSecureHttpClient();
+            RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
+                .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+            socketFactoryRegistryBuilder.register("https", factory.createSslSocketFactory());
+            Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
+            connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, httpsConfig.getTimeToLive());
+            connectionManager.setDefaultMaxPerRoute(httpsConfig.getMaxConnectionsPerRoute());
+            connectionManager.setMaxTotal(httpsConfig.getMaxTotalConnections());
+            secureHttpClient = factory.createSecureHttpClient(connectionManager);
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
             optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
-            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
+            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManager);
 
             factory.setSystemSslProperties();
 
@@ -161,6 +176,19 @@ public class HttpConfig {
             apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
+    }
+
+
+    @Bean
+    public HttpClientConnectionManager httpClientConnectionManager() {
+        this.connectionManagerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                connectionManager.closeExpiredConnections();
+                connectionManager.closeIdleConnections(idleConnTimeoutSeconds, TimeUnit.SECONDS);
+            }
+        }, 30000, 30000);
+        return connectionManager;
     }
 
     @Bean
