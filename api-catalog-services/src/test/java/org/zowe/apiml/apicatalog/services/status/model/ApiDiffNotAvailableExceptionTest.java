@@ -12,7 +12,6 @@ package org.zowe.apiml.apicatalog.services.status.model;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
