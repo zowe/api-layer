@@ -10,6 +10,7 @@
 
 package org.zowe.apiml;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
@@ -18,17 +19,64 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class StoresTest {
 
-    @Test
-    void providedWrongPassword_thenStoresNotInitializeExceptionIsThrown() {
-        String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.truststore.p12",
-            "--keypasswd", "wrongPass",
-            "--keyalias", "localhost"};
-        ApimlConf conf = new ApimlConf();
-        new CommandLine(conf).parseArgs(args);
-        StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
-        assertEquals("keystore password was incorrect",e.getMessage());
+    @Nested
+    class GivenWrongPassword {
+        @Test
+        void whenExecuteCommand_thenStoresNotInitializeExceptionIsThrown() {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+                "--keypasswd", "wrongPass",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+            assertEquals("keystore password was incorrect",e.getMessage());
+        }
     }
+
+    @Nested
+    class GivenWrongTrustStorePath {
+        @Test
+        void whenExecuteCommand_thenStoresNotInitializeExceptionIsThrown() {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--truststore", "../wrongPath/localhost.truststore.p12",
+                "--keypasswd", "password",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+            assertEquals("Error while loading keystore file. Error message: ../wrongPath/localhost.truststore.p12 (No such file or directory)\n" +
+                "Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file.",e.getMessage());
+        }
+    }
+
+    @Nested
+    class GivenSafKeyring {
+        @Test
+        void whenNoPathFound_thenStoresNotInitializeExceptionIsThrown() {
+            String[] args = {"--keystore", "safkeyring:////userId/keyRing",
+                "--truststore", "safkeyring:////userId/keyRing",
+                "--keypasswd", "password",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+            assertEquals("unknown protocol: safkeyring",e.getMessage());
+        }
+
+        @Test
+        void whenWrongFormat_thenStoresNodtInitializeExceptionIsThrown() {
+            String[] args = {"--keystore", "safkeyring:/userId/keyRing",
+                "--truststore", "safkeyring:////userId/keyRing",
+                "--keypasswd", "password",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+            assertEquals("Incorrect key ring format: safkeyring:/userId/keyRing. Make sure you use format safkeyring:////userId/keyRing",e.getMessage());
+        }
+    }
+
 
 
 }
