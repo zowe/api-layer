@@ -28,6 +28,7 @@ import org.apache.http.cookie.SM;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -52,6 +53,8 @@ class ZaasJwtService implements TokenService {
     private final String logoutEndpoint;
     private final CloseableClientProvider httpClientProvider;
 
+    private RauditxService rauditxService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ZaasJwtService(CloseableClientProvider client, String baseUrl) {
@@ -60,6 +63,11 @@ class ZaasJwtService implements TokenService {
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
         logoutEndpoint = baseUrl + "/logout";
+    }
+
+    public ZaasJwtService(CloseableClientProvider client, String baseUrl, RauditxService rauditxService) {
+        this(client, baseUrl);
+        this.rauditxService = rauditxService;
     }
 
     @Override
@@ -272,13 +280,28 @@ class ZaasJwtService implements TokenService {
 
         String obtainedMessage = EntityUtils.toString(response.getEntity());
         if (httpResponseCode == 401) {
-            handleErrorMessage(obtainedMessage, ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
+            handleUnauthorized(obtainedMessage);
         }
         if (httpResponseCode == 400) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, obtainedMessage);
         }
         throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
+    }
+
+    private void handleUnauthorized(String obtainedMessage) throws ZaasClientException, IOException {
+        auditFailed();
+        handleErrorMessage(obtainedMessage, ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
+        throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
+    }
+
+    private void auditFailed() {
+        Optional.ofNullable(rauditxService)
+            .ifPresent(rauditx -> rauditx.builder()
+                .messageSegment("Authentication failed. Cannot generate Zaas JWT")
+                .alwaysLogSuccesses()
+                .alwaysLogFailures()
+                .failure()
+                .issue());
     }
 
     private void doRequest(Operation request) throws ZaasClientException {

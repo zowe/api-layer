@@ -1,6 +1,7 @@
 dependencies {
     annotationProcessor libraries.lombok
 
+    implementation project(':apiml-security-common')
     implementation libraries.http_client
     implementation libraries.jackson_annotations
     implementation libraries.jackson_databind

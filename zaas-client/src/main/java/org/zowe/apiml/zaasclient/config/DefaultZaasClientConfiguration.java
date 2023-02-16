@@ -12,6 +12,7 @@ package org.zowe.apiml.zaasclient.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
@@ -48,6 +49,9 @@ public class DefaultZaasClientConfiguration {
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
+    @Value("") // TODO define configuration name
+    private boolean rauditxEnabled;
+
     @Bean
     public ConfigProperties getConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties();
@@ -65,7 +69,10 @@ public class DefaultZaasClientConfiguration {
     }
 
     @Bean
-    public ZaasClient zaasClient(ConfigProperties getConfigProperties) throws ZaasConfigurationException {
-        return new ZaasClientImpl(getConfigProperties);
+    public ZaasClient zaasClient(ConfigProperties configProperties, RauditxService rauditxService) throws ZaasConfigurationException {
+        if (rauditxEnabled) {
+            return new ZaasClientImpl(configProperties, rauditxService);
+        }
+        return new ZaasClientImpl(configProperties);
     }
 }

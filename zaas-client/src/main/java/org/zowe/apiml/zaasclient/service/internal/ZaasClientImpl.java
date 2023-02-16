@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
-import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -22,10 +22,10 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
-@Slf4j
 public class ZaasClientImpl implements ZaasClient {
     private final TokenService tokens;
     private final PassTicketService passTickets;
+    private RauditxService rauditxService;
 
     public ZaasClientImpl(ConfigProperties configProperties) throws ZaasConfigurationException {
         if (!configProperties.isHttpOnly() && (configProperties.getKeyStorePath() == null)) {
@@ -39,6 +39,11 @@ public class ZaasClientImpl implements ZaasClient {
             configProperties.getApimlBaseUrl());
         tokens = new ZaasJwtService(httpClientProviderWithoutCert, baseUrl);
         passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl);
+    }
+
+    public ZaasClientImpl(ConfigProperties configProperties, RauditxService rauditxService) throws ZaasConfigurationException {
+        this(configProperties);
+        this.rauditxService = rauditxService;
     }
 
     private CloseableClientProvider getTokenProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
