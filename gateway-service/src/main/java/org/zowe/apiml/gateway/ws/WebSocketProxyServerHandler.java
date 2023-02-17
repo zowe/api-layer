@@ -206,7 +206,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             try {
                 session.sendMessageToServer(webSocketMessage);
             } catch (WebSocketException e) {
-                log.debug("Error sending WebSocket message: {}", e.getMessage());
+                log.debug("Error sending WebSocket message. Closing session due to exception:", e);
                 routedSessions.remove(webSocketSession.getId());
             }
         }
