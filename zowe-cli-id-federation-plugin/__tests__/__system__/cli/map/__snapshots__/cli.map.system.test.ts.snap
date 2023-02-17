@@ -10,8 +10,8 @@ exports[`id-federation map should display the help 1`] = `
  DESCRIPTION
  -----------
 
-   the command will generate JCL based on [inputFile] with users mapped to defined
-   ESM
+   Generate a JCL based on [inputFile] that creates a mapping association between a
+   mainframe user ID and a distributed user identity
 
  USAGE
  -----

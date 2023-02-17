@@ -30,8 +30,8 @@ import {ProfileConstants} from "../../api/ProfileConstants";
  */
 const MapDefinition: ICommandDefinition = {
     name: "map",
-    summary: "generates JCL with mapping of users",
-    description: "the command will generate JCL based on [inputFile] with users mapped to defined ESM",
+    summary: "Generate a mapping association between a mainframe user ID and a distributed user identity",
+    description: "Generate a JCL based on [inputFile] that creates a mapping association between a mainframe user ID and a distributed user identity",
     type: "command",
     handler: __dirname + "/Map.handler",
     positionals: [

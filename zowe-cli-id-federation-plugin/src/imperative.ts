@@ -16,8 +16,7 @@ const config: IImperativeConfig = {
     pluginHealthCheck: __dirname + "/healthCheck.Handler",
     pluginSummary: "Zowe CLI Identity Federation plug-in",
     pluginAliases: ["idf"],
-    rootCommandDescription: "Welcome to the Identity Federation plug-in for Zowe CLI!\n\n The Identity Federation plug-in " +
-        "(& CLI) follows the Zowe CLI command syntax 'zowe [action] [object] [options]'. ",
+    rootCommandDescription: "Identity Federation plug-in for generating a mapping association between user identities",
     productDisplayName: "Zowe CLI Identity Federation Plug-in",
     name: "id-federation",
     envVariablePrefix: "IDF",

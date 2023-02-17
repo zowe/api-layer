@@ -19,7 +19,7 @@ describe("imperative config", () => {
         expect(config.pluginHealthCheck).toContain("healthCheck.Handler");
         expect(config.pluginSummary).toBe("Zowe CLI Identity Federation plug-in");
         expect(config.productDisplayName).toBe("Zowe CLI Identity Federation Plug-in");
-        expect(config.rootCommandDescription).toContain("Welcome to the Identity Federation plug-in for Zowe CLI!");
+        expect(config.rootCommandDescription).toContain("Identity Federation plug-in for");
     });
 
 });
