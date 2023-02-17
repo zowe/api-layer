@@ -1,0 +1,126 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`id-federation map should display the help 1`] = `
+"
+ COMMAND NAME
+ ------------
+
+   map
+
+ DESCRIPTION
+ -----------
+
+   Generate a JCL based on [inputFile] that creates a mapping association between a
+   mainframe user ID and a distributed user identity
+
+ USAGE
+ -----
+
+   zowe id-federation map <input-file> [options]
+
+ POSITIONAL ARGUMENTS
+ --------------------
+
+   input-file		 (string)
+
+      File with the list of users
+
+ IDF CONNECTION OPTIONS
+ ----------------------
+
+   --esm | -e (string)
+
+      The ESM to execute command
+
+      Allowed values: RACF, TSS, ACF2
+
+   --lpar | -l (string)
+
+      The security domain on which command will be executed
+
+   --registry | -r (string)
+
+      The registry that contains the distributed-identity user name
+
+ PROFILE OPTIONS
+ ---------------
+
+   --id-federation-profile | --id-federation-p (string)
+
+      The name of a (id-federation) profile to load for this command execution.
+
+   --base-profile | --base-p (string)
+
+      The name of a (base) profile to load for this command execution.
+
+ BASE CONNECTION OPTIONS
+ -----------------------
+
+   --host | -H (string)
+
+      Host name of service on the mainframe.
+
+   --port | -P (number)
+
+      Port number of service on the mainframe.
+
+   --user | -u (string)
+
+      User name to authenticate to service on the mainframe.
+
+   --password | --pass | --pw (string)
+
+      Password to authenticate to service on the mainframe.
+
+   --reject-unauthorized | --ru (boolean)
+
+      Reject self-signed certificates.
+
+      Default value: true
+
+   --token-type | --tt (string)
+
+      The type of token to get and use for the API. Omit this option to use the
+      default token type, which is provided by 'zowe auth login'.
+
+   --token-value | --tv (string)
+
+      The value of the token to pass to the API.
+
+   --cert-file (local file path)
+
+      The file path to a certificate file to use for authentication
+
+   --cert-key-file (local file path)
+
+      The file path to a certificate key file to use for authentication
+
+ GLOBAL OPTIONS
+ --------------
+
+   --show-inputs-only (boolean)
+
+      Show command inputs and do not run the command
+
+   --response-format-json | --rfj (boolean)
+
+      Produce JSON formatted data from a command
+
+   --help | -h (boolean)
+
+      Display help text
+
+   --help-web | --hw (boolean)
+
+      Display HTML help in browser
+
+"
+`;
+
+exports[`id-federation map should print input arguments 1`] = `
+"Input file: file.csv
+ESM: TSS
+LPAR: TST1
+Registry: ldap://12.34.56.78:910
+"
+`;

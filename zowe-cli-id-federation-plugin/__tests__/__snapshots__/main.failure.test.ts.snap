@@ -1,0 +1,6 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`main failure should log an imperative init failure 1`] = `
+"An error occured during imperative initalization:
+Imperative init failed!"
+`;
