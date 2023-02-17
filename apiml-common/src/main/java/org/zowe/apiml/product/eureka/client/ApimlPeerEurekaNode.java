@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,14 +88,14 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
     private final TaskDispatcher<String, ReplicationTask> batchingDispatcher;
     private final TaskDispatcher<String, ReplicationTask> nonBatchingDispatcher;
 
-    public ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config) {
-        this(registry, targetHost, serviceUrl, replicationClient, config, BATCH_SIZE, MAX_BATCHING_DELAY_MS, RETRY_SLEEP_TIME_MS, SERVER_UNAVAILABLE_SLEEP_TIME_MS);
+    public ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config, int maxPeerRetries) {
+        this(registry, targetHost, serviceUrl, replicationClient, config, BATCH_SIZE, MAX_BATCHING_DELAY_MS, RETRY_SLEEP_TIME_MS, SERVER_UNAVAILABLE_SLEEP_TIME_MS, maxPeerRetries);
     }
 
     /* For testing */ ApimlPeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl,
                                           HttpReplicationClient replicationClient, EurekaServerConfig config,
                                           int batchSize, long maxBatchingDelayMs,
-                                          long retrySleepTimeMs, long serverUnavailableSleepTimeMs) {
+                                          long retrySleepTimeMs, long serverUnavailableSleepTimeMs, int maxPeerRetries) {
         super(registry, targetHost, serviceUrl, replicationClient, config);
         this.registry = registry;
         this.targetHost = targetHost;
@@ -105,7 +106,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         this.maxProcessingDelayMs = config.getMaxTimeForReplication();
 
         String batcherName = getBatcherName();
-        ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient);
+        ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient, maxPeerRetries);
         this.batchingDispatcher = TaskDispatchers.createBatchingTaskDispatcher(
             batcherName,
             config.getMaxElementsInPeerReplicationPool(),
@@ -372,9 +373,49 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
         private static final Pattern READ_TIME_OUT_PATTERN = Pattern.compile(".*read.*time.*out.*");
 
-        public ReplicationTaskProcessor(String peerId, HttpReplicationClient replicationClient) {
+        private final NetworkIssueCounter networkIssueCounter = new NetworkIssueCounter();
+
+        private final int maxPeerRetries;
+
+        public ReplicationTaskProcessor(String peerId, HttpReplicationClient replicationClient, int maxPeerRetries) {
             this.replicationClient = replicationClient;
             this.peerId = peerId;
+            this.maxPeerRetries = maxPeerRetries;
+        }
+
+        class NetworkIssueCounter {
+
+            final AtomicInteger counter = new AtomicInteger(0);
+
+            private String getCountText() {
+                int count = counter.get();
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(count);
+                if (count >= maxPeerRetries) sb.append('+');
+
+                return sb.toString();
+            }
+
+            public void success() {
+                int count = counter.get();
+                if (count > 0) {
+                    log.trace("Network error indicator was reset. The number of errors was {}/{}", getCountText(), maxPeerRetries);
+                }
+                counter.set(0);
+            }
+
+            public void fail(String errorMessage) {
+                counter.getAndUpdate(prev -> Math.min(prev + 1, maxPeerRetries));
+                log.trace("Network error ({}) occurred. The number of errors is {}/{}. The network error status is considered as {}.",
+                    errorMessage, getCountText(),
+                    maxPeerRetries, hasReachedMax() ? "permanent" : "temporary");
+            }
+
+            public boolean hasReachedMax() {
+                return counter.get() >= maxPeerRetries;
+            }
+
         }
 
         @Override
@@ -387,8 +428,10 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 log.debug("Replication task {} completed with status {}, (includes entity {})", task.getTaskName(), statusCode, entity != null);
 
                 if (isSuccess(statusCode)) {
+                    networkIssueCounter.success();
                     task.handleSuccess();
                 } else if (statusCode == 503) {
+                    networkIssueCounter.fail("Service is not available");
                     log.debug("Server busy (503) reply for task {}", task.getTaskName());
                     return ProcessingResult.Congestion;
                 } else {
@@ -396,16 +439,16 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                     return ProcessingResult.PermanentError;
                 }
             } catch (Throwable e) {
+                networkIssueCounter.fail(e.getLocalizedMessage());
                 if (maybeReadTimeOut(e)) {
                     log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
                     //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
-                } else if (isNetworkConnectException(e)) {
-                    logNetworkErrorSample(task, e);
+                } else if (isNetworkConnectException(e) && !networkIssueCounter.hasReachedMax()) {
+                    logNetworkErrorSample(task, "; retrying after delay.", e);
                     return ProcessingResult.TransientError;
                 } else {
-                    log.error("{}: {} Not re-trying this exception because it does not seem to be a network exception",
-                        peerId, task.getTaskName(), e);
+                    logNetworkErrorSample(task, "; not re-trying this exception because it does not seem to be a network exception.", e);
                     return ProcessingResult.PermanentError;
                 }
             }
@@ -420,6 +463,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 int statusCode = response.getStatusCode();
                 if (!isSuccess(statusCode)) {
                     if (statusCode == 503) {
+                        networkIssueCounter.fail("Service is not available");
                         log.warn("Server busy (503) HTTP status code received from the peer {}; rescheduling tasks after delay", peerId);
                         return ProcessingResult.Congestion;
                     } else {
@@ -428,18 +472,20 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                         return ProcessingResult.PermanentError;
                     }
                 } else {
+                    networkIssueCounter.success();
                     handleBatchResponse(tasks, response.getEntity().getResponseList());
                 }
             } catch (Throwable e) {
+                networkIssueCounter.fail(e.getLocalizedMessage());
                 if (maybeReadTimeOut(e)) {
                     log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
                     //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
-                } else if (isNetworkConnectException(e)) {
-                    logNetworkErrorSample(null, e);
+                } else if (isNetworkConnectException(e) && !networkIssueCounter.hasReachedMax()) {
+                    logNetworkErrorSample(null, "; retrying after delay.", e);
                     return ProcessingResult.TransientError;
                 } else {
-                    log.error("Not re-trying this exception because it does not seem to be a network exception", e);
+                    logNetworkErrorSample(null, "; not re-trying this exception because it does not seem to be a network exception.", e);
                     return ProcessingResult.PermanentError;
                 }
             }
@@ -452,16 +498,18 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
          * 20 threads * 100ms delay == 200 error entries / sec worst case
          * Still we would like to see the exception samples, so we print samples at regular intervals.
          */
-        private void logNetworkErrorSample(ReplicationTask task, Throwable e) {
+        private void logNetworkErrorSample(ReplicationTask task, String additionalMessage, Throwable e) {
+            long messageTimeout = 10000;
             long now = System.currentTimeMillis();
-            if (now - lastNetworkErrorTime > 10000) {
+            if (now - lastNetworkErrorTime > messageTimeout) {
                 lastNetworkErrorTime = now;
                 StringBuilder sb = new StringBuilder();
                 sb.append("Network level connection to peer ").append(peerId);
                 if (task != null) {
                     sb.append(" for task ").append(task.getTaskName());
                 }
-                sb.append("; retrying after delay");
+                sb.append(additionalMessage);
+                sb.append(" This message will suppressed for ").append(messageTimeout).append("ms.");
                 log.error(sb.toString(), e);
             }
         }

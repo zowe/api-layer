@@ -29,6 +29,12 @@ apiCatalogServiceConfiguration:
     host: localhost
     port: 10014
     instances: 1
+apiCatalogStandaloneConfiguration:
+    scheme: https
+    url:
+    host: localhost
+    port: 10015
+    instances: 1
 cachingServiceConfiguration:
     url:
 cloudGatewayConfiguration:

@@ -150,7 +150,8 @@ class ApimlPeerEurekaNodeTest {
             BATCH_SIZE,
             MAX_BATCHING_DELAY_MS,
             100,
-            1000
+            1000,
+            10
         );
         return peerEurekaNode;
     }
