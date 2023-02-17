@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -176,9 +177,6 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, webSocketClientFactory, this));
 
-        WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
-        routedSessions.put(webSocketSession.getId(), session);
-
 
     }
 
@@ -205,7 +203,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         log.debug("handleMessage(session={},message={})", webSocketSession, webSocketMessage);
         WebSocketRoutedSession session = getRoutedSession(webSocketSession);
         if (session != null) {
-            session.sendMessageToServer(webSocketMessage);
+            try {
+                session.sendMessageToServer(webSocketMessage);
+            } catch (WebSocketException e) {
+                log.debug("Error sending WebSocket message: {}", e.getMessage());
+                routedSessions.remove(webSocketSession.getId());
+            }
         }
     }
 

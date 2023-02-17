@@ -17,7 +17,7 @@ public interface WebSocketRoutedSessionFactory {
      * Create valid client websocket session based on the existing session, target Url and SSL Context.
      * @param webSocketSession Valid Server side WebSocket Session.
      * @param targetUrl Full websocket URL towards the server
-     * @param sslContextFactory Factory producing the current SSL Context.
+     * @param webSocketClientFactory Factory producing the current SSL Context.
      * @return Valid routed session handling the client session
      */
     WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, WebSocketClientFactory webSocketClientFactory);
