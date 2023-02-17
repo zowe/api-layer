@@ -14,8 +14,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class StoresTest {
 
@@ -45,8 +44,9 @@ class StoresTest {
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs(args);
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
-            assertEquals("Error while loading keystore file. Error message: ../wrongPath/localhost.truststore.p12 (No such file or directory)\n" +
-                "Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file.",e.getMessage());
+            String message = e.getMessage().replace("\\wrongPath\\", "/wrongPath/"); // replace to fix issue on windows
+            assertTrue(message.contains("Error while loading keystore file. Error message: ../wrongPath/localhost.truststore.p12"));
+            assertTrue(message.contains("Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file."));
         }
     }
 
