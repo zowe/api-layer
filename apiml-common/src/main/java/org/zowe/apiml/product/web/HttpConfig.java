@@ -113,7 +113,6 @@ public class HttpConfig {
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
-    private ApimlPoolingHttpClientConnectionManager connectionManager;
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
@@ -150,27 +149,15 @@ public class HttpConfig {
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
             HttpsFactory factory = new HttpsFactory(httpsConfig);
-            RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
-                .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
-            socketFactoryRegistryBuilder.register("https", factory.createSslSocketFactory());
-            Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
-            connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, httpsConfig.getTimeToLive());
-            this.connectionManagerTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    connectionManager.closeExpiredConnections();
-                    connectionManager.closeIdleConnections(idleConnTimeoutSeconds, TimeUnit.SECONDS);
-                }
-            }, 30000, 30000);
-            connectionManager.setDefaultMaxPerRoute(httpsConfig.getMaxConnectionsPerRoute());
-            connectionManager.setMaxTotal(httpsConfig.getMaxTotalConnections());
-            secureHttpClient = factory.createSecureHttpClient(connectionManager);
+            ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
+            secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
             optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
-            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManager);
+            ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
+            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
 
             factory.setSystemSslProperties();
 
@@ -182,6 +169,24 @@ public class HttpConfig {
             apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
+    }
+
+    public ApimlPoolingHttpClientConnectionManager getConnectionManager(HttpsFactory factory) {
+        RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
+            .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+        socketFactoryRegistryBuilder.register("https", factory.createSslSocketFactory());
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
+        ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, timeToLive);
+        this.connectionManagerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                connectionManager.closeExpiredConnections();
+                connectionManager.closeIdleConnections(idleConnTimeoutSeconds, TimeUnit.SECONDS);
+            }
+        }, 30000, 30000);
+        connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
+        connectionManager.setMaxTotal(maxTotalConnections);
+        return connectionManager;
     }
 
     @Bean
