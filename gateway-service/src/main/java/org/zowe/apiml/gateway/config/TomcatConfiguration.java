@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.config;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.zowe.apiml.security.SecurityUtils;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 /**
  * Configuration of Tomcat
@@ -61,10 +63,11 @@ public class TomcatConfiguration {
     private String address;
 
     @Bean
-    public ServletWebServerFactory servletContainer() throws UnknownHostException {
+    public ServletWebServerFactory servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) throws UnknownHostException {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        tomcat.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         if (enableInternalPort) {
             tomcat.addAdditionalTomcatConnectors(createSslConnector());
         }

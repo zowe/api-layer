@@ -45,6 +45,9 @@ import java.util.function.Supplier;
 @Slf4j
 @Configuration
 public class HttpConfig {
+
+    private static final char[] KEYRING_PASSWORD = "password".toCharArray();
+
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
 
@@ -127,6 +130,15 @@ public class HttpConfig {
 
     @PostConstruct
     public void init() {
+        if (SecurityUtils.isKeyring(keyStore)) {
+            keyStore = SecurityUtils.formatKeyringUrl(keyStore);
+            if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
+        }
+        if (SecurityUtils.isKeyring(trustStore)) {
+            trustStore = SecurityUtils.formatKeyringUrl(trustStore);
+            if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
+        }
+
         try {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
