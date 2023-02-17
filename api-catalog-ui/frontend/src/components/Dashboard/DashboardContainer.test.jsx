@@ -17,6 +17,7 @@ const mockStore = configureStore();
 jest.mock(
     '../Wizard/ConfirmDialogContainer.jsx',
     () =>
+        // eslint-disable-next-line react/display-name
         function () {
             const ConfirmDialogContainer = 'ConfirmDialogContainerMock';
             return <ConfirmDialogContainer />;
@@ -26,6 +27,7 @@ jest.mock(
 jest.mock(
     '../Wizard/WizardContainer.jsx',
     () =>
+        // eslint-disable-next-line react/display-name
         function () {
             const WizardContainer = 'WizardContainerMock';
             return <WizardContainer />;

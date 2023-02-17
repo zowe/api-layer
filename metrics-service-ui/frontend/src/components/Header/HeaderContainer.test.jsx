@@ -18,6 +18,7 @@ const mockStore = configureStore();
 jest.mock(
     '../Icons/MetricsIconButton.jsx',
     () =>
+        // eslint-disable-next-line react/display-name
         function () {
             const MetricsIconButton = 'MetricsIconButtonMock';
             return <MetricsIconButton />;
@@ -27,6 +28,7 @@ jest.mock(
 jest.mock(
     './Header.jsx',
     () =>
+        // eslint-disable-next-line react/display-name
         function () {
             const Header = 'HeaderMock';
             return <Header />;
