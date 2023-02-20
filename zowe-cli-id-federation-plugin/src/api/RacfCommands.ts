@@ -62,7 +62,7 @@ export class RacfCommands {
             escape: function() {
                 return function(text: string, render: any) {
                     return render(text).replace("'", "''");
-                }
+                };
             }
         });
     }

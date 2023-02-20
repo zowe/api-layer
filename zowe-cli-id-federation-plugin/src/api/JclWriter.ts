@@ -8,6 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+const MAX_LINE_LENGTH = 71;
+
 export class JclWriter {
 
     private commands: string = '';
@@ -67,7 +69,7 @@ export class JclWriter {
                 position++;
             }
 
-            if (position + word.length + (i == words.length - 1 ? 0 : " -".length) < 72) {
+            if (position + word.length + (i == words.length - 1 ? 0 : " -".length) <= MAX_LINE_LENGTH) {
                 // if there is enough room for the word (including line breaking if necessary)
                 formatted += word;
                 position += word.length;
@@ -77,21 +79,21 @@ export class JclWriter {
 
             if (!blank) {
                 // line is not blank, but the word has not enough room
-                if (position <= 71 - 1) {
+                if (position <= MAX_LINE_LENGTH - 1) {
                     // on line is room for line breaking, add it and continue on the next line
                     formatted += '-\n' + ''.padEnd(this.nextIdent, ' ');
                     position = this.nextIdent;
                 } else {
                     // there is no room for line breaking character, use JCL line break character
                     // it can happened immediately after to long (or split) word, see next treatment
-                    formatted += ''.padEnd(71 - position, ' ') + 'X\n';
+                    formatted += ''.padEnd(MAX_LINE_LENGTH - position, ' ') + 'X\n';
                     position = 0;
                 }
                 blank = true;
             }
 
             // try to write the whole long word into lines. The first line could be shorter
-            for (let j = 71 - position; word.length > 0; j = 71) {
+            for (let j = MAX_LINE_LENGTH - position; word.length > 0; j = MAX_LINE_LENGTH) {
                 if (j >= word.length) {
                     // the last piece of word could be written in the line
                     formatted += word;
