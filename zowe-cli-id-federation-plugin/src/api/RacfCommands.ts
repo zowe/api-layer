@@ -30,7 +30,9 @@ export class RacfCommands {
         const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
         const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
 
-        const racfCommands = this.identities.map(identity => this.getCommand(identity, racfTemplate));
+        const racfCommands = this.identities
+            .map(identity => this.getCommand(identity, racfTemplate))
+            .filter(command => command);
         racfCommands.push(racfRefreshCommand);
         return racfCommands;
     }
