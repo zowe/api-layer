@@ -36,7 +36,8 @@ export class Mapper {
     async createJcl(commands: string): Promise<string> {
         const jclTemplate = fs.readFileSync('src/api/templates/job.jcl').toString();
         const account = await getAccount();
-        const jclWriter = new JclWriter(commands, 1, 2);
+        const jclWriter = new JclWriter(1, 2);
+        commands.split('\n').forEach(c => jclWriter.add(c));
         return TextUtils.renderWithMustache(jclTemplate, {
             esm: this.esm,
             lpar: this.lpar.toUpperCase(),
