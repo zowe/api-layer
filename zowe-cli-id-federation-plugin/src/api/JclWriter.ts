@@ -26,32 +26,38 @@ export class JclWriter {
         let status = 0;
         for (let i = 0; i < command.length; i++) {
             switch (status) {
-                case 0:
+                case 0: // outside the string
                     if (command.charAt(i) == '\'') {
+                        // on apos switch to state 1 - parsing a string
                         status = 1;
                         lastWord += '\'';
                     } else if (command.charAt(i) == ' ') {
+                        // space means to store lastWord as fully parsed and wait for the next word
                         if (lastWord) {
                             words.push(lastWord);
                             lastWord = '';
                         }
                     } else {
+                        // everything else is a part of the word
                         lastWord += command.charAt(i);
                     }
                     break;
-                case 1:
+                case 1: // inside the string
                     lastWord += command.charAt(i);
                     if (command.charAt(i) == '\'') {
                         if ((command.length > i + 1) && (command.charAt(i + 1) == '\'')) {
+                            // two apos means escaped apos, still parsing the string
                             lastWord += '\'';
                             i++;
                         } else {
+                            // ending apos, stop parsing the string
                             status = 0;
                         }
                     }
                     break;
             }
         }
+        // if lastWord still contains a word add it to response (text without spaces on end or even opened string)
         if (lastWord) words.push(lastWord);
         return words;
     }
@@ -83,17 +89,17 @@ export class JclWriter {
                     // on line is room for line breaking, add it and continue on the next line
                     formatted += '-\n' + ''.padEnd(this.nextIdent, ' ');
                     position = this.nextIdent;
-                } else {
-                    // there is no room for line breaking character, use JCL line break character
-                    // it can happened immediately after to long (or split) word, see next treatment
-                    formatted += ''.padEnd(MAX_LINE_LENGTH - position, ' ') + 'X\n';
-                    position = 0;
                 }
                 blank = true;
             }
 
             // try to write the whole long word into lines. The first line could be shorter
-            for (let j = MAX_LINE_LENGTH - position; word.length > 0; j = MAX_LINE_LENGTH) {
+            for (let j = MAX_LINE_LENGTH - position - 1; word.length > 0; j = MAX_LINE_LENGTH - 1) {
+                if ((i < words.length - 1) && (position + word.length > MAX_LINE_LENGTH - 2) && (word.length < MAX_LINE_LENGTH)) {
+                    // if the latest piece of word would fulfill the line and it cannot be split, rather split the piece to two lines
+                    j = word.length - 1;
+                }
+
                 if (j >= word.length) {
                     // the last piece of word could be written in the line
                     formatted += word;
@@ -102,7 +108,8 @@ export class JclWriter {
                     break;
                 } else {
                     // there is no enough room for the whole word, put first part and use JCL breaking character
-                    formatted += word.substring(0, j) + 'X\n';
+                    formatted += word.substring(0, j) + '-\n';
+                    position = 0;
                     word = word.substring(j, word.length);
                 }
             }
