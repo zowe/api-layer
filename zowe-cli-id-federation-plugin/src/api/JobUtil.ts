@@ -15,6 +15,8 @@ export async function getAccount(): Promise<string> {
     await profInfo.readProfilesFromDisk();
 
     const tsoProfAttrs = profInfo.getDefaultProfile("tso");
+    if (!tsoProfAttrs) return "account";
+
     const tsoMergedArgs = profInfo.mergeArgsForProfile(tsoProfAttrs);
     const accountNumberFromProfile = tsoMergedArgs.knownArgs.find(
         arg => arg.argName === "account").argValue as string;

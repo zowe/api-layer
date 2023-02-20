@@ -62,7 +62,7 @@ export class RacfCommands {
             user_name: identity.userName.trim(),
             escape: function() {
                 return function(text: string, render: any) {
-                    return text.replace("'", "''");
+                    return render(text).replace("'", "''");
                 }
             }
         });
