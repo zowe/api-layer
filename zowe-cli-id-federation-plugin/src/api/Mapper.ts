@@ -33,11 +33,11 @@ export class Mapper {
         return `'${fileName}' was created. Review and submit this JCL on the ${this.lpar} LPAR.`;
     }
 
-    async createJcl(commands: string): Promise<string> {
+    async createJcl(commands: string[]): Promise<string> {
         const jclTemplate = fs.readFileSync('src/api/templates/job.jcl').toString();
         const account = await getAccount();
         const jclWriter = new JclWriter(1, 2);
-        commands.split('\n').forEach(c => jclWriter.add(c));
+        commands.forEach(c => jclWriter.add(c));
         return TextUtils.renderWithMustache(jclTemplate, {
             esm: this.esm,
             lpar: this.lpar.toUpperCase(),
@@ -46,7 +46,7 @@ export class Mapper {
         });
     }
 
-    createSafCommands(identities: IIdentity[]): string {
+    createSafCommands(identities: IIdentity[]): string[] {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
             case "racf": {
@@ -66,7 +66,7 @@ export class Mapper {
             }
         }
 
-        return commandProcessor ? commandProcessor.getCommands() : "";
+        return commandProcessor ? commandProcessor.getCommands() : [];
     }
 
 
