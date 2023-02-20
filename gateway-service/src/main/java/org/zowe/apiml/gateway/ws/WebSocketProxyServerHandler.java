@@ -177,6 +177,9 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, webSocketClientFactory, this));
 
+        WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
+        routedSessions.put(webSocketSession.getId(), session);
+
 
     }
 
