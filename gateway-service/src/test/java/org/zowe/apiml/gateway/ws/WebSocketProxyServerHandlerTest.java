@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.ws;
 
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -216,6 +218,15 @@ class WebSocketProxyServerHandlerTest {
             underTest.handleMessage(establishedSession, passedMessage);
 
             verify(internallyStoredSession).sendMessageToServer(passedMessage);
+        }
+
+        @Test
+        void whenExceptionIsThrown_thenRemoveRoutedSession() throws Exception {
+            WebSocketMessage<String> passedMessage = mock(WebSocketMessage.class);
+
+            doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
+            underTest.handleMessage(establishedSession, passedMessage);
+            assertTrue(routedSessions.isEmpty());
         }
 
     }
