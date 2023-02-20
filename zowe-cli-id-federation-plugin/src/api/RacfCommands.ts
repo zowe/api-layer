@@ -28,11 +28,12 @@ export class RacfCommands {
 
     getCommands(): string {
         const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
+        const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
 
         let racfCommands = '';
         this.identities.forEach(identity => racfCommands += this.getCommand(identity, racfTemplate));
 
-        return racfCommands.trimRight();
+        return racfCommands + racfRefreshCommand.trimEnd();
     }
 
     private getCommand(identity: IIdentity, racfTemplate: string): string {
