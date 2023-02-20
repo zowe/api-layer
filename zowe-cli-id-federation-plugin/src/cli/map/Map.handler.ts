@@ -16,7 +16,8 @@ export default class MapHandler implements ICommandHandler {
 
     //TODO: length valid for RACF, if other ESMs allow the different length -> refactor
     readonly maxLengthRegistry = 255;
-    readonly maxLengthLpar = 4;
+    //TODO: Allow running on multiple possible systems? (ex. SYS1,SYS2)
+    readonly maxLengthLpar = 8;
 
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;

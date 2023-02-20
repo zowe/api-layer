@@ -38,7 +38,7 @@ export class Mapper {
         const account = await getAccount();
         return TextUtils.renderWithMustache(jclTemplate, {
             esm: this.esm,
-            lpar: this.lpar,
+            lpar: this.lpar.toUpperCase(),
             account: account,
             commands: commands
         });
