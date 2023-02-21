@@ -191,13 +191,14 @@ class WebSocketProxyServerHandlerTest {
     class GivenValidExistingSession {
         WebSocketSession establishedSession;
         WebSocketRoutedSession internallyStoredSession;
+        WebSocketMessage<String> passedMessage;
 
         @BeforeEach
         void prepareSessionMock() {
             establishedSession = mock(WebSocketSession.class);
             String validSessionId = "123";
             when(establishedSession.getId()).thenReturn(validSessionId);
-
+            passedMessage = mock(WebSocketMessage.class);
             internallyStoredSession = mock(WebSocketRoutedSession.class);
             routedSessions.put(validSessionId, internallyStoredSession);
         }
@@ -213,8 +214,6 @@ class WebSocketProxyServerHandlerTest {
 
         @Test
         void whenTheMessageIsReceived_thenTheMessageIsPassedToTheSession() throws Exception {
-            WebSocketMessage<String> passedMessage = mock(WebSocketMessage.class);
-
             underTest.handleMessage(establishedSession, passedMessage);
 
             verify(internallyStoredSession).sendMessageToServer(passedMessage);
@@ -222,8 +221,6 @@ class WebSocketProxyServerHandlerTest {
 
         @Test
         void whenExceptionIsThrown_thenRemoveRoutedSession() throws Exception {
-            WebSocketMessage<String> passedMessage = mock(WebSocketMessage.class);
-
             doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
             underTest.handleMessage(establishedSession, passedMessage);
             assertTrue(routedSessions.isEmpty());
@@ -231,9 +228,7 @@ class WebSocketProxyServerHandlerTest {
 
         @Test
         void whenSessionIsNull_thenCloseAndReturn() throws IOException {
-            routedSessions.remove("123");
-            routedSessions.put("123", null);
-            WebSocketMessage<String> passedMessage = mock(WebSocketMessage.class);
+            routedSessions.replace("123", null);
 
             underTest.handleMessage(establishedSession, passedMessage);
             assertTrue(routedSessions.isEmpty());
