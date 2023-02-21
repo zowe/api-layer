@@ -25,7 +25,13 @@ export class CsvParser {
     }
 
     getIdentities(): IIdentity[] {
-        const fileContent = fs.readFileSync(this.file);
+        let fileContent;
+        try {
+            fileContent = fs.readFileSync(this.file);
+        } catch (error) {
+            const msg = `Cannot open the input CSV file. ${error.message}`;
+            throw new ImperativeError({msg});
+        }
         const headers = ['userName', 'distributedId', 'mainframeId'];
 
         try {

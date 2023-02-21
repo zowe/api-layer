@@ -11,6 +11,7 @@
 import {ICommandHandler, IHandlerParameters, ImperativeError} from "@zowe/imperative";
 import {Mapper} from "../../api/Mapper";
 import {hasValidLength} from "../../api/ValidateUtil";
+import * as fs from "fs";
 
 export default class MapHandler implements ICommandHandler {
 
@@ -37,6 +38,11 @@ export default class MapHandler implements ICommandHandler {
         }
         if (missingArgs.length != 0) {
             const msg = `Following arguments are missing: "${missingArgs.join(", ")}"`;
+            throw new ImperativeError({msg});
+        }
+
+        if(!fs.existsSync(file)) {
+            const msg = `The input CSV file does not exist.`;
             throw new ImperativeError({msg});
         }
 

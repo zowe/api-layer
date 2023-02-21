@@ -11,8 +11,13 @@
 import {ProfileInfo} from "@zowe/imperative";
 
 export async function getAccount(): Promise<string> {
-    const profInfo = new ProfileInfo('zowe', {overrideWithEnv: true});
-    await profInfo.readProfilesFromDisk();
+    let profInfo;
+    try {
+        profInfo = new ProfileInfo('zowe', {overrideWithEnv: true});
+        await profInfo.readProfilesFromDisk();
+    } catch (error) {
+        return "account";
+    }
 
     const tsoProfAttrs = profInfo.getDefaultProfile("tso");
     if (!tsoProfAttrs) return "account";

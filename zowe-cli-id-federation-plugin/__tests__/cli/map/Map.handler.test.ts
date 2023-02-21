@@ -9,7 +9,7 @@
  */
 
 describe("map handler", () => {
-    it("should accept options and print message", async () => {
+    it("should accept options and return successful message", async () => {
         // Require the handler and create a new instance
         const handlerReq = require("../../../src/cli/map/Map.handler");
         const handler = new handlerReq.default();
@@ -25,10 +25,10 @@ describe("map handler", () => {
                 arguments: {
                     $0: "fake",
                     _: ["fake"],
-                    inputFile: "fake-file.csv",
-                    esm: "fakeESM",
-                    lpar: "fakeLPAR",
-                    registry: "fake://host:1234"
+                    inputFile: "__tests__/__resources__/csv/users.csv",
+                    esm: "RACF",
+                    lpar: "LPAR",
+                    registry: "ldap://host:1234"
                 },
                 response: {
                     console: {
@@ -41,11 +41,12 @@ describe("map handler", () => {
         } catch (e) {
             error = e;
         }
+
         expect(error).toBeUndefined();
         expect(logMessage).toMatchSnapshot();
     });
 
-    it("throw an error", async () => {
+    it("throw an error when not all parameters provided", async () => {
         const handlerReq = require("../../../src/cli/map/Map.handler");
         const handler = new handlerReq.default();
 
@@ -57,7 +58,7 @@ describe("map handler", () => {
                 arguments: {
                     $0: "fake",
                     _: ["fake"],
-                    inputFile: "fake-file.csv"
+                    inputFile: "__tests__/__resources__/csv/users.csv",
                 },
                 response: {
                     console: {
@@ -70,7 +71,7 @@ describe("map handler", () => {
         } catch (e) {
             error = e;
         }
-        expect(logMessage).toMatchSnapshot();
+
         expect(error).toBeDefined();
         expect(error.message).toMatchSnapshot();
     });
