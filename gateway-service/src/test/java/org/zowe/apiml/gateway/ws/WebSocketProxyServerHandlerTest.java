@@ -23,6 +23,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -226,6 +227,17 @@ class WebSocketProxyServerHandlerTest {
             doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
             underTest.handleMessage(establishedSession, passedMessage);
             assertTrue(routedSessions.isEmpty());
+        }
+
+        @Test
+        void whenSessionIsNull_thenCloseAndReturn() throws IOException {
+            routedSessions.remove("123");
+            routedSessions.put("123", null);
+            WebSocketMessage<String> passedMessage = mock(WebSocketMessage.class);
+
+            underTest.handleMessage(establishedSession, passedMessage);
+            assertTrue(routedSessions.isEmpty());
+            verify(establishedSession, times(1)).close(CloseStatus.SESSION_NOT_RELIABLE);
         }
 
     }
