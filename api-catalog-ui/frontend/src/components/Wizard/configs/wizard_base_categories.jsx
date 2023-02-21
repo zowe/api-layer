@@ -285,7 +285,7 @@ export const baseCategories = [
             keyStoreType: {
                 value: 'PKCS12',
                 question: 'Type of the keystore:',
-                options: ['PKCS12', 'JKS', 'JCERACFKS'],
+                options: ['PKCS12', 'JKS', 'JCEKS', 'JCECCAKS', 'JCERACFKS', 'JCECCARACFKS', 'JCEHYBRIDRACFKS'],
             },
             trustStore: {
                 value: '',
@@ -301,7 +301,7 @@ export const baseCategories = [
             trustStoreType: {
                 value: 'PKCS12',
                 question: 'Truststore type:',
-                options: ['PKCS12', 'JKS', 'JCERACFKS'],
+                options: ['PKCS12', 'JKS', 'JCEKS', 'JCECCAKS', 'JCERACFKS', 'JCECCARACFKS', 'JCEHYBRIDRACFKS'],
             },
         },
     },
