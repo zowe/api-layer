@@ -6,13 +6,7 @@ Following arguments are missing: "esm, lpar, registry"
 "
 `;
 
-exports[`id-federation map command should fail when options are not passed 2`] = `
-"Input file: file.csv
-ESM: undefined
-LPAR: undefined
-Registry: undefined
-"
-`;
+exports[`id-federation map command should fail when options are not passed 2`] = `""`;
 
 exports[`id-federation map command should print input args from old school profile and other sources 1`] = `
 "Input file: file.csv

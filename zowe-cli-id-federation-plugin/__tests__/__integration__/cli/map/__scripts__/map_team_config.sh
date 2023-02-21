@@ -1,3 +1,6 @@
 #!/bin/bash
 set -e # fail the script if we get a non zero exit code
-zowe idf map file.csv --lpar TST2
+
+CSV=$1
+
+zowe idf map "${CSV}" --lpar TST2

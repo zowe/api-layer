@@ -10,30 +10,37 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { ITestEnvironment, TestEnvironment, runCliScript, stripProfileDeprecationMessages } from "@zowe/cli-test-utils";
-import { ITestPropertiesSchema } from "../../../__src__/environment/doc/ITestPropertiesSchema";
+import {ITestEnvironment, runCliScript, stripProfileDeprecationMessages, TestEnvironment} from "@zowe/cli-test-utils";
+import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
 
 // Test environment will be populated in the "beforeAll"
 let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
 
 const configJson = "zowe.config.json";
+const testCsv = "users.csv";
 
 describe("id-federation map command", () => {
+
+    let csv: string;
+
     // Create the unique test environment
-    beforeEach(async () => {
+    beforeAll(async () => {
         TEST_ENVIRONMENT = await TestEnvironment.setUp({
             installPlugin: true,
             testName: "map_command",
             skipProperties: true
         });
+
+        csv = path.join(TEST_ENVIRONMENT.workingDir, testCsv);
+        fs.copyFileSync(path.join(__dirname, "__resources__", testCsv), csv);
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await TestEnvironment.cleanUp(TEST_ENVIRONMENT);
     });
 
     it("should fail when options are not passed", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_error_handler.sh", TEST_ENVIRONMENT);
+        const response = runCliScript(__dirname + "/__scripts__/map_error_handler.sh", TEST_ENVIRONMENT, [csv]);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.status).toBe(1);
         expect(response.stdout.toString()).toMatchSnapshot();
@@ -42,7 +49,7 @@ describe("id-federation map command", () => {
     it("should print input args from team config profile and other sources", () => {
         fs.copyFileSync(path.join(__dirname, "__resources__", configJson), path.join(TEST_ENVIRONMENT.workingDir, configJson));
 
-        const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT);
+        const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [csv]);
         expect(response.stderr.toString()).toBe("");
         expect(response.status).toBe(0);
         const output = response.stdout.toString();
@@ -53,7 +60,7 @@ describe("id-federation map command", () => {
     });
 
     it("should print input args from old school profile and other sources", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT);
+        const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
         expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
         expect(response.status).toBe(0);
         const output = response.stdout.toString();
