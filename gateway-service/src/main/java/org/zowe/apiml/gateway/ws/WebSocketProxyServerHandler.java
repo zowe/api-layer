@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -185,33 +184,47 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        log.debug("afterConnectionClosed(session={},status={})", session, status);
+        routedSessions.remove(session.getId());
+    }
+
+    private void close(WebSocketRoutedSession webSocketRoutedSession, CloseStatus status) {
+        log.debug("close(webSocketRoutedSession={},status={})", webSocketRoutedSession, status);
+        if (webSocketRoutedSession == null) return;
+
         try {
-            session.close(status);
-
-            WebSocketRoutedSession webSocketRoutedSession = getRoutedSession(session);
-            if (webSocketRoutedSession != null) {
-                webSocketRoutedSession.close(status);
-            }
-
-            routedSessions.remove(session.getId());
-        } catch (NullPointerException | IOException e) {
+            webSocketRoutedSession.close(status);
+        } catch (IOException e) {
             log.debug("Error closing WebSocket connection: {}", e.getMessage(), e);
         }
     }
 
+    private void close(WebSocketSession session, CloseStatus status) {
+        log.debug("close(session={},status={})", session, status);
+        try {
+            session.close(status);
+        } catch (IOException e) {
+            log.debug("Error closing WebSocket connection: {}", e.getMessage(), e);
+        } finally {
+            routedSessions.remove(session.getId());
+            close(getRoutedSession(session), status);
+        }
+    }
+
     @Override
-    public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage)
-        throws Exception {
+    public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
         log.debug("handleMessage(session={},message={})", webSocketSession, webSocketMessage);
         WebSocketRoutedSession session = getRoutedSession(webSocketSession);
-        if (session != null) {
-            try {
-                session.sendMessageToServer(webSocketMessage);
-            } catch (WebSocketException e) {
-                log.debug("Error sending WebSocket message. Closing session due to exception:", e);
-                afterConnectionClosed(webSocketSession, CloseStatus.SESSION_NOT_RELIABLE);
-            }
+
+        if (session == null) {
+            close(webSocketSession, CloseStatus.SESSION_NOT_RELIABLE);
+            return;
+        }
+
+        try {
+            session.sendMessageToServer(webSocketMessage);
+        } catch (Exception ex) {
+            log.debug("Error sending WebSocket message. Closing session due to exception:", ex);
+            close(webSocketSession, CloseStatus.SESSION_NOT_RELIABLE);
         }
     }
 

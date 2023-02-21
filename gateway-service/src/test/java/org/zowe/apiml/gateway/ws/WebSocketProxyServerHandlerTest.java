@@ -202,12 +202,11 @@ class WebSocketProxyServerHandlerTest {
         }
 
         @Test
-        void whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() throws Exception {
+        void whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() {
             CloseStatus normalClose = CloseStatus.NORMAL;
 
             underTest.afterConnectionClosed(establishedSession, normalClose);
 
-            verify(establishedSession).close(normalClose);
             assertThat(routedSessions.entrySet(), hasSize(0));
         }
 
