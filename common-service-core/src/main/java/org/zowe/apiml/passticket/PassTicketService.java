@@ -40,11 +40,11 @@ public class PassTicketService {
                 IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
     }
 
-    public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
+    public synchronized void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
         irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
     }
 
-    public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
+    public synchronized String generate(String userId, String applId) throws IRRPassTicketGenerationException {
         return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
     }
 
