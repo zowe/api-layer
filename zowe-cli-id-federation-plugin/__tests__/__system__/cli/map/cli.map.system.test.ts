@@ -23,13 +23,14 @@ describe("id-federation map", () => {
             testName: "map_command"
         });
     });
+
     afterAll(async () => {
         await TestEnvironment.cleanUp(TEST_ENVIRONMENT);
     });
 
     it("should print input arguments", () => {
         const response = runCliScript(__dirname + "/__scripts__/map.sh", TEST_ENVIRONMENT,
-            ["file.csv", "TSS", "TST1", "ldap://12.34.56.78:910"]);
+            ["__resources__/users.csv", "TSS", "TST1", "ldap://12.34.56.78:910"]);
 
         expect(response.stderr.toString()).toBe("");
         expect(response.status).toBe(0);
