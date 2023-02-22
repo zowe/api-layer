@@ -37,9 +37,9 @@ const config: IImperativeConfig = {
                         type: "string",
                         optionDefinition: ProfileConstants.IDF_OPTION_ESM
                     },
-                    lpar: {
+                    system: {
                         type: "string",
-                        optionDefinition: ProfileConstants.IDF_OPTION_LPAR
+                        optionDefinition: ProfileConstants.IDF_OPTION_SYSTEM
                     },
                     registry: {
                         type: "string",

@@ -17,21 +17,17 @@ export default class MapHandler implements ICommandHandler {
 
     //TODO: length valid for RACF, if other ESMs allow the different length -> refactor
     readonly maxLengthRegistry = 255;
-    //TODO: Allow running on multiple possible systems? (ex. SYS1,SYS2)
-    readonly maxLengthLpar = 8;
+    readonly maxLengthSystem = 8;
 
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;
         const esm: string = params.arguments.esm;
-        const lpar: string = params.arguments.lpar;
         const registry: string = params.arguments.registry;
+        const system: string = params.arguments.system ? params.arguments.system : "";
 
         const missingArgs: string[] = [];
         if (!esm) {
             missingArgs.push('esm');
-        }
-        if (!lpar) {
-            missingArgs.push('lpar');
         }
         if (!registry) {
             missingArgs.push('registry');
@@ -41,22 +37,22 @@ export default class MapHandler implements ICommandHandler {
             throw new ImperativeError({msg});
         }
 
-        if(!fs.existsSync(file)) {
+        if (!fs.existsSync(file)) {
             const msg = `The input CSV file does not exist.`;
             throw new ImperativeError({msg});
         }
 
-        if(!hasValidLength(lpar, this.maxLengthLpar )) {
-            const msg = `The registry '${lpar}' has exceeded maximum length of ${this.maxLengthLpar} characters.`;
+        if (!hasValidLength(system, this.maxLengthSystem)) {
+            const msg = `The registry '${system}' has exceeded maximum length of ${this.maxLengthSystem} characters.`;
             throw new ImperativeError({msg});
         }
 
-        if(!hasValidLength(registry, this.maxLengthRegistry )) {
+        if (!hasValidLength(registry, this.maxLengthRegistry)) {
             const msg = `The registry '${registry}' has exceeded maximum length of ${this.maxLengthRegistry} characters.`;
             throw new ImperativeError({msg});
         }
 
-        const mapper = new Mapper(file, esm, lpar, registry);
+        const mapper = new Mapper(file, esm, system, registry);
         params.response.console.log(await mapper.map());
     }
 

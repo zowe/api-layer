@@ -16,16 +16,16 @@ export class ProfileConstants {
     public static IDF_OPTION_ESM: ICommandOptionDefinition = {
         name: "esm",
         aliases: ["e"],
-        description: "The ESM to execute command",
+        description: "The ESM product on the target system",
         type: "string",
         allowableValues: { values: ["RACF", "TSS", "ACF2"] },
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
 
-    public static IDF_OPTION_LPAR: ICommandOptionDefinition = {
-        name: "lpar",
+    public static IDF_OPTION_SYSTEM: ICommandOptionDefinition = {
+        name: "system",
         aliases: ["l"],
-        description: "The security domain on which command will be executed",
+        description: "The target JES system on which the command will be executed",
         type: "string",
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
@@ -33,14 +33,14 @@ export class ProfileConstants {
     public static IDF_OPTION_REGISTRY: ICommandOptionDefinition = {
         name: "registry",
         aliases: ["r"],
-        description: "The registry that contains the distributed-identity user name",
+        description: "The distributed identities registry",
         type: "string",
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
 
     public static IDF_CONNECTION_OPTIONS: ICommandOptionDefinition[] = [
         ProfileConstants.IDF_OPTION_ESM,
-        ProfileConstants.IDF_OPTION_LPAR,
+        ProfileConstants.IDF_OPTION_SYSTEM,
         ProfileConstants.IDF_OPTION_REGISTRY
     ];
 }

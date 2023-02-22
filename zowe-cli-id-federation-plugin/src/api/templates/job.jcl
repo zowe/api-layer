@@ -1,16 +1,15 @@
-//IDF{{esm}} JOB ({{account}}),CLASS=A,MSGCLASS=X
-/*JOBPARM SYSAFF={{lpar}}
+//IDF{{esm}} JOB ({{account}}),CLASS=A,MSGCLASS=X{{sysaff}}
 //*-------------------------------------------------------------------
 //*
 //* Zowe CLI ID Federation Plugin
 //*
-//* This JCL can be used for mapping between distributed identity
-//* and mainframe identity
+//* This JCL can be used for mapping from a distributed identity to
+//* a mainframe identity
 //*
 //* 1) Validate job header and make all necessary changes according
 //*    to your system environment.
 //*
-//* 2) Run the JCL on LPAR {{lpar}}
+//* 2) Run the JCL on {{system}}.
 //*
 //* Note(s):
 //*

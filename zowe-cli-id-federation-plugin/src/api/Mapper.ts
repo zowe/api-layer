@@ -19,7 +19,7 @@ export class Mapper {
     constructor(
         public file: string,
         public esm: string,
-        public lpar: string,
+        public system: string,
         public registry: string) {
     }
 
@@ -27,10 +27,11 @@ export class Mapper {
         const identities = new CsvParser(this.file).getIdentities();
         const commands = this.createSafCommands(identities);
         const jcl = await this.createJcl(commands);
-        const fileName = `idf_${this.lpar}.jcl`;
+        const fileName = `idf_${this.esm}${this.system ? `_${this.system}` : ""}.jcl`;
         fs.writeFileSync(fileName, jcl);
 
-        return `'${fileName}' was created. Review and submit this JCL on the ${this.lpar} LPAR.`;
+        const systemMsg = this.system ? ` on the system ${this.system}` : "";
+        return `'${fileName}' was created. Review and submit this JCL${systemMsg}.`;
     }
 
     async createJcl(commands: string[]): Promise<string> {
@@ -39,9 +40,9 @@ export class Mapper {
         const jclWriter = new JclWriter(1, 2);
         commands.forEach(c => jclWriter.add(c));
         return TextUtils.renderWithMustache(jclTemplate, {
-            esm: this.esm,
-            lpar: this.lpar.toUpperCase(),
             account: account,
+            sysaff: this.system ? `\n/*JOBPARM SYSAFF=${this.system.toUpperCase()}` : "",
+            system: this.system ? `system ${this.system}` : "a corresponding system",
             commands: jclWriter.getText()
         });
     }
