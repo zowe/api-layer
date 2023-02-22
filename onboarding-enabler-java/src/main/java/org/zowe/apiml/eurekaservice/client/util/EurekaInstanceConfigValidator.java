@@ -28,7 +28,6 @@ public class EurekaInstanceConfigValidator {
 
     private static final String UNSET_VALUE_STRING = "{apiml.";
     private static final char[] UNSET_VALUE_CHAR_ARRAY = UNSET_VALUE_STRING.toCharArray();
-    private static final String KEYRING_KEY = "JCERACFKS";
 
     private final List<String> missingSslParameters = new ArrayList<>();
     private final List<String> missingRoutesParameters = new ArrayList<>();
@@ -100,18 +99,24 @@ public class EurekaInstanceConfigValidator {
         }
     }
 
+    private boolean isKeyring(String in) {
+        if (in == null) return false;
+        if (!in.startsWith("JCE")) return false;
+        return in.endsWith("KS");
+    }
+
     private void validateSsl(Ssl ssl) {
         validateSslParameters(ssl, missingSslParameters);
         if (isInvalid(ssl.getTrustStorePassword()) && (isInvalid(ssl.getTrustStoreType()) ||
-                (!isInvalid(ssl.getTrustStoreType()) && !ssl.getTrustStoreType().equals(KEYRING_KEY)))) {
+                (!isInvalid(ssl.getTrustStoreType()) && !isKeyring(ssl.getTrustStoreType())))) {
             addParameterToProblemsList("trustStorePassword", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyStorePassword()) && (isInvalid(ssl.getKeyStoreType()) ||
-                (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals(KEYRING_KEY)))) {
+                (!isInvalid(ssl.getKeyStoreType()) && !isKeyring(ssl.getKeyStoreType())))) {
             addParameterToProblemsList("keyStorePassword", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyPassword()) && (isInvalid(ssl.getKeyStoreType()) ||
-            (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals(KEYRING_KEY)))) {
+            (!isInvalid(ssl.getKeyStoreType()) && !isKeyring(ssl.getKeyStoreType())))) {
             addParameterToProblemsList("keyPassword", missingSslParameters);
         }
 

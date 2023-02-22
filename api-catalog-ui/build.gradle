@@ -44,9 +44,6 @@ task javascriptClean(type: Delete) {
         delete 'frontend/node_modules'
     }
 
-    doLast {
-        ant.touch(file: "${project.rootDir}/updateflag")
-    }
 }
 clean.dependsOn javascriptClean
 
@@ -86,11 +83,6 @@ task npmLint(type: NpmTask) {
 }
 npmLint.dependsOn npmInstall
 
-task diffScript(type: NodeTask) {
-    script = file('file-updates.js')
-    args = ["${project.rootDir}"]
-}
-
 task npmBuild(type: NpmTask) {
 
     group = 'npm'
@@ -106,33 +98,13 @@ task npmBuild(type: NpmTask) {
 
     args = ['run', 'build']
 
-    doLast {
-        ant.delete(file: "${project.rootDir}/updateflag")
-    }
-
 }
 
-npmBuild.configure {
-    onlyIf {
-        file("${project.rootDir}/updateflag").exists()
-    }
-}
-npmInstall.configure {
-    onlyIf {
-        file("${project.rootDir}/updateflag").exists()
-    }
-}
-npmLint.configure {
-    onlyIf {
-        file("${project.rootDir}/updateflag").exists()
-    }
-}
+
 
 npmBuild.dependsOn npmInstall
 npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
-npmInstall.dependsOn diffScript
-npmLint.dependsOn diffScript
 
 jar {
     enabled false

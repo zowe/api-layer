@@ -16,10 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.UserTokenHandler;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -39,7 +37,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -58,21 +55,11 @@ public class HttpsFactory {
     }
 
 
-    public CloseableHttpClient createSecureHttpClient() {
-        Registry<ConnectionSocketFactory> socketFactoryRegistry;
-        RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
-            .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
-        UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
+    public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
 
-        socketFactoryRegistryBuilder.register("https", createSslSocketFactory());
-        socketFactoryRegistry = socketFactoryRegistryBuilder.build();
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectTimeout(config.getRequestConnectionTimeout()).build();
-        ApimlPoolingHttpClientConnectionManager connectionManager =
-            new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, config.getTimeToLive());
-        connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
-        connectionManager.closeIdleConnections(config.getIdleConnTimeoutSeconds(), TimeUnit.SECONDS);
-        connectionManager.setMaxTotal(config.getMaxTotalConnections());
+        UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
         return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(createHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
@@ -214,7 +201,7 @@ public class HttpsFactory {
                 validateSslConfig();
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                | UnrecoverableKeyException | KeyManagementException e) {
+                     | UnrecoverableKeyException | KeyManagementException e) {
                 log.error("error", e);
                 apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
