@@ -67,7 +67,7 @@ class EurekaInstanceRegisteredListenerTest {
     }
 
     @Test
-    void testListen() {
+    void registeredInstanceListen() {
         GatewayNotifier notifier = mock(GatewayNotifier.class);
         EurekaInstanceRegisteredListener listener = new EurekaInstanceRegisteredListener(Mockito.mock(MetadataTranslationService.class), Mockito.mock(MetadataDefaultsService.class), notifier);
 

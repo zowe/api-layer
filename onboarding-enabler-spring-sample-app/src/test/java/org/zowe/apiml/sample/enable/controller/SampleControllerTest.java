@@ -23,7 +23,7 @@ import static org.hamcrest.core.Is.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class SampleControllerUnitTests {
+class SampleControllerTest {
 
     private MockMvc mockMvc;
 

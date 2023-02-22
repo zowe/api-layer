@@ -28,4 +28,11 @@ describe('>>> User service tests', () => {
         expect(user).toEqual(result);
         expect(fetch).toHaveBeenCalledTimes(1);
     });
+
+    it('should logout', async () => {
+        const result = {};
+        const fetch = mockFetch(result);
+        await userService.logout();
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
 });

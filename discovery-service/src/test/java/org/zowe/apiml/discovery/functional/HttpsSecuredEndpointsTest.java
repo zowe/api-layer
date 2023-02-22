@@ -64,7 +64,7 @@ class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
     @Nested
     class ThenReturnOk {
         @Test
-        void testEurekaEndpoints_whenProvidedCertificate() {
+        void eurekaEndpoints_whenProvidedCertificate() {
             given().config(SslContext.clientCertApiml)
                 .when()
                 .get(getDiscoveryUriWithPath("/eureka/apps"))
@@ -73,7 +73,7 @@ class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
         }
 
         @Test
-        void testDiscoveryEndpoints_whenProvidedCertification() {
+        void discoveryEndpoints_whenProvidedCertification() {
             given().config(SslContext.clientCertApiml)
                 .when()
                 .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))

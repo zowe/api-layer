@@ -12,6 +12,7 @@ import SwaggerUI from './SwaggerUI';
 
 const mapStateToProps = (state) => ({
     selectedService: state.selectedServiceReducer.selectedService,
+    tiles: state.tilesReducer.tiles,
 });
 
 const mapDispatchToProps = {};

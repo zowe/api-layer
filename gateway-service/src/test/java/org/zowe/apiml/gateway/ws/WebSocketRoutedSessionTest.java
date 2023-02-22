@@ -11,17 +11,25 @@
 package org.zowe.apiml.gateway.ws;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 class WebSocketRoutedSessionTest {
     private WebSocketSession clientSession;
@@ -65,5 +73,63 @@ class WebSocketRoutedSessionTest {
     void givenBrokenClientSession_whenUriIsRequested_NullIsReturned() {
         when(clientSession.getUri()).thenReturn(null);
         assertThat(underTest.getClientUri(), is(nullValue()));
+    }
+
+    @Nested
+    class GivenFirstConstructor {
+        @Test
+        void whenFailingToCreateSession_thenThrowException() {
+            WebSocketClientFactory webSocketClientFactory = mock(WebSocketClientFactory.class);
+            JettyWebSocketClient jettyWebSocketClient = mock(JettyWebSocketClient.class);
+            when(webSocketClientFactory.getClientInstance()).thenReturn(jettyWebSocketClient);
+            HttpHeaders headers = new WebSocketHttpHeaders();
+            headers.add("header", "someHeader");
+            when(serverSession.getHandshakeHeaders()).thenReturn(headers);
+            assertThrows(WebSocketProxyError.class, () -> new WebSocketRoutedSession(serverSession, "", webSocketClientFactory));
+
+        }
+
+        @Test
+        void whenFailingOnHandshake_thenThrowException() {
+            WebSocketClientFactory webSocketClientFactory = mock(WebSocketClientFactory.class);
+            when(webSocketClientFactory.getClientInstance()).thenThrow(new IllegalStateException());
+            assertThrows(WebSocketProxyError.class, () -> new WebSocketRoutedSession(serverSession, "", webSocketClientFactory));
+        }
+    }
+
+    @Nested
+    class GivenWSMessage {
+        @Test
+        void whenAddressNotNull_thenSendMessage() throws IOException {
+            underTest.sendMessageToServer(mock(WebSocketMessage.class));
+            verify(clientSession, times(1)).sendMessage(any());
+        }
+    }
+
+    @Nested
+    class GivenServerRemoteAddress {
+        @Test
+        void whenAddressNotNull_thenReturnIt() {
+            when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
+            String serverRemoteAddress = underTest.getServerRemoteAddress();
+            assertThat(serverRemoteAddress, is("gateway:8080"));
+        }
+
+        @Test
+        void whenAddressNull_thenReturnNull() {
+            when(serverSession.getRemoteAddress()).thenReturn(null);
+            assertNull((underTest.getServerRemoteAddress()));
+        }
+    }
+
+    @Nested
+    class GivenCloseCall {
+        @Test
+        void whenClosingSession_thenClose() throws IOException {
+            CloseStatus closeStatus = new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode());
+            when(clientSession.isOpen()).thenReturn(true);
+            underTest.close(closeStatus);
+            verify(clientSession, times(1)).close(closeStatus);
+        }
     }
 }

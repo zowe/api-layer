@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,6 +48,13 @@ class SecurityUtilsTest {
             HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).build();
             Key secretKey = SecurityUtils.loadKey(httpsConfig);
             assertNotNull(secretKey);
+        }
+
+        @Test
+        void givenWrongKeystore_thenReturnNull() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyStore(null).build();
+            Key secretKey = SecurityUtils.loadKey(httpsConfig);
+            assertNull(secretKey);
         }
 
         @Test
@@ -140,6 +148,18 @@ class SecurityUtilsTest {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
         Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         assertFalse(certificatesBase64.isEmpty());
+    }
+    @Nested
+    class GivenKeyringUrl {
+        @Test
+        void thenThrowException() {
+            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:////userId/keyRing", "safkeyring:////userId/keyRing"));
+        }
+
+        @Test
+        void givenWrongFormat_thenThrowException() {
+            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:/userId/keyRing", "safkeyring/userId/keyRing"));
+        }
     }
 
 }
