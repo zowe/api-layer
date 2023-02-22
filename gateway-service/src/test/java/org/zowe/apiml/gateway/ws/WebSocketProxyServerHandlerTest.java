@@ -186,6 +186,20 @@ class WebSocketProxyServerHandlerTest {
 
                 verify(establishedSession).close(new CloseStatus(CloseStatus.SERVICE_RESTARTED.getCode(), "Requested service service-without-instance does not have available instance"));
             }
+
+            @Test
+            void givenNullService_thenCloseWebSocket() throws Exception {
+                when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/service-without-instance/ws/v1/valid-path"));
+                when(lbClient.choose(any())).thenReturn(null);
+                RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
+                when(routesForSpecificValidService.findServiceByGatewayUrl("ws/v1"))
+                    .thenReturn(null);
+                underTest.addRoutedServices("service-without-instance", routesForSpecificValidService);
+
+                underTest.afterConnectionEstablished(establishedSession);
+
+                verify(establishedSession).close(new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode(), "Requested ws/v1 url is not known by the gateway"));
+            }
         }
     }
 
