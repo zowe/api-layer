@@ -25,7 +25,9 @@ import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -235,5 +237,42 @@ class WebSocketProxyServerHandlerTest {
             verify(establishedSession, times(1)).close(CloseStatus.SESSION_NOT_RELIABLE);
         }
 
+        @Test
+        void whenClosingSessionThrowException_thenCatchIt() throws IOException {
+            CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
+            doThrow(new IOException()).when(establishedSession).close(status);
+            underTest.afterConnectionClosed(establishedSession, status);
+            assertTrue(routedSessions.isEmpty());
+        }
+
+        @Test
+        void whenClosingRoutedSessionThrowException_thenCatchIt() throws IOException {
+            CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
+            doThrow(new IOException()).when(routedSessions.get("123")).close(status);
+            underTest.afterConnectionClosed(establishedSession, status);
+            assertTrue(routedSessions.isEmpty());
+        }
+
+    }
+
+    @Nested
+    class WhenGettingRoutedSessions {
+        @Test
+        void thenReturnThem() {
+            Map<String, WebSocketRoutedSession> expectedRoutedSessions = underTest.getRoutedSessions();
+            assertThat(expectedRoutedSessions, is(routedSessions));
+        }
+    }
+
+    @Nested
+    class WhenGettingSubProtocols {
+        @Test
+        void thenReturnThem() {
+            ArrayList protocol = new ArrayList();
+            protocol.add("protocol");
+            ReflectionTestUtils.setField(underTest, "subProtocols", protocol);
+            List<String> subProtocols = underTest.getSubProtocols();
+            assertThat(subProtocols, is(protocol));
+        }
     }
 }
