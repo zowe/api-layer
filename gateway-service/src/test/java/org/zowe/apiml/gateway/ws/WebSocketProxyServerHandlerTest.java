@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.ws;
 
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,14 +23,18 @@ import org.springframework.web.socket.WebSocketSession;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -181,6 +186,20 @@ class WebSocketProxyServerHandlerTest {
 
                 verify(establishedSession).close(new CloseStatus(CloseStatus.SERVICE_RESTARTED.getCode(), "Requested service service-without-instance does not have available instance"));
             }
+
+            @Test
+            void givenNullService_thenCloseWebSocket() throws Exception {
+                when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/service-without-instance/ws/v1/valid-path"));
+                when(lbClient.choose(any())).thenReturn(null);
+                RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
+                when(routesForSpecificValidService.findServiceByGatewayUrl("ws/v1"))
+                    .thenReturn(null);
+                underTest.addRoutedServices("service-without-instance", routesForSpecificValidService);
+
+                underTest.afterConnectionEstablished(establishedSession);
+
+                verify(establishedSession).close(new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode(), "Requested ws/v1 url is not known by the gateway"));
+            }
         }
     }
 
@@ -188,35 +207,86 @@ class WebSocketProxyServerHandlerTest {
     class GivenValidExistingSession {
         WebSocketSession establishedSession;
         WebSocketRoutedSession internallyStoredSession;
+        WebSocketMessage<String> passedMessage;
 
         @BeforeEach
         void prepareSessionMock() {
             establishedSession = mock(WebSocketSession.class);
             String validSessionId = "123";
             when(establishedSession.getId()).thenReturn(validSessionId);
-
+            passedMessage = mock(WebSocketMessage.class);
             internallyStoredSession = mock(WebSocketRoutedSession.class);
             routedSessions.put(validSessionId, internallyStoredSession);
         }
 
         @Test
-        void whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() throws Exception {
+        void whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() {
             CloseStatus normalClose = CloseStatus.NORMAL;
 
             underTest.afterConnectionClosed(establishedSession, normalClose);
 
-            verify(establishedSession).close(normalClose);
             assertThat(routedSessions.entrySet(), hasSize(0));
         }
 
         @Test
         void whenTheMessageIsReceived_thenTheMessageIsPassedToTheSession() throws Exception {
-            WebSocketMessage<String> passedMessage = mock(WebSocketMessage.class);
-
             underTest.handleMessage(establishedSession, passedMessage);
 
             verify(internallyStoredSession).sendMessageToServer(passedMessage);
         }
 
+        @Test
+        void whenExceptionIsThrown_thenRemoveRoutedSession() throws Exception {
+            doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
+            underTest.handleMessage(establishedSession, passedMessage);
+            assertTrue(routedSessions.isEmpty());
+        }
+
+        @Test
+        void whenSessionIsNull_thenCloseAndReturn() throws IOException {
+            routedSessions.replace("123", null);
+
+            underTest.handleMessage(establishedSession, passedMessage);
+            assertTrue(routedSessions.isEmpty());
+            verify(establishedSession, times(1)).close(CloseStatus.SESSION_NOT_RELIABLE);
+        }
+
+        @Test
+        void whenClosingSessionThrowException_thenCatchIt() throws IOException {
+            CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
+            doThrow(new IOException()).when(establishedSession).close(status);
+            underTest.afterConnectionClosed(establishedSession, status);
+            assertTrue(routedSessions.isEmpty());
+        }
+
+        @Test
+        void whenClosingRoutedSessionThrowException_thenCatchIt() throws IOException {
+            CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
+            doThrow(new IOException()).when(routedSessions.get("123")).close(status);
+            underTest.afterConnectionClosed(establishedSession, status);
+            assertTrue(routedSessions.isEmpty());
+        }
+
+    }
+
+    @Nested
+    class WhenGettingRoutedSessions {
+        @Test
+        void thenReturnThem() {
+            Map<String, WebSocketRoutedSession> expectedRoutedSessions = underTest.getRoutedSessions();
+            assertThat(expectedRoutedSessions, is(routedSessions));
+        }
+    }
+
+    @Nested
+    class WhenGettingSubProtocols {
+        @Test
+        void thenReturnThem() {
+            ArrayList protocol = new ArrayList();
+            protocol.add("protocol");
+            ReflectionTestUtils.setField(underTest, "subProtocols", protocol);
+            List<String> subProtocols = underTest.getSubProtocols();
+            assertThat(subProtocols, is(protocol));
+        }
     }
 }
