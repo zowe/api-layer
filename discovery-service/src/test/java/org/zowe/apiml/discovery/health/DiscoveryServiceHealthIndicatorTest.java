@@ -11,6 +11,7 @@
 package org.zowe.apiml.discovery.health;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -29,26 +30,31 @@ class DiscoveryServiceHealthIndicatorTest {
     private final DiscoveryServiceHealthIndicator discoverServiceHealthIndicator = new DiscoveryServiceHealthIndicator(discoveryClient);
     private final Health.Builder builder = new Health.Builder();
 
-    @Test
-    void testStatusIsUpWhenGatewayIsAvailable() {
-        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
-            Collections.singletonList(
-                new DefaultServiceInstance(null, CoreService.GATEWAY.getServiceId(), "host", 10010, true)));
 
-        discoverServiceHealthIndicator.doHealthCheck(builder);
+    @Nested
+    class GivenGatewayStatus {
+        @Test
+        void statusIsUpWhenGatewayIsAvailable() {
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+                Collections.singletonList(
+                    new DefaultServiceInstance(null, CoreService.GATEWAY.getServiceId(), "host", 10010, true)));
 
-        Assertions.assertEquals(Status.UP, builder.build().getStatus());
-        Assertions.assertEquals(Status.UP, builder.build().getDetails().get("gateway"));
+            discoverServiceHealthIndicator.doHealthCheck(builder);
+
+            Assertions.assertEquals(Status.UP, builder.build().getStatus());
+            Assertions.assertEquals(Status.UP, builder.build().getDetails().get("gateway"));
+        }
+
+        @Test
+        void statusIsPartialWhenGatewayIsNotAvailable() {
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
+
+            discoverServiceHealthIndicator.doHealthCheck(builder);
+
+            Assertions.assertEquals(new Status("PARTIAL"), builder.build().getStatus());
+            Assertions.assertEquals("Authenticated endpoints not available.", builder.build().getStatus().getDescription());
+            Assertions.assertEquals(Status.DOWN, builder.build().getDetails().get("gateway"));
+        }
     }
 
-    @Test
-    void testStatusIsPartialWhenGatewayIsNotAvailable() {
-        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
-
-        discoverServiceHealthIndicator.doHealthCheck(builder);
-
-        Assertions.assertEquals(new Status("PARTIAL"), builder.build().getStatus());
-        Assertions.assertEquals("Authenticated endpoints not available.", builder.build().getStatus().getDescription());
-        Assertions.assertEquals(Status.DOWN, builder.build().getDetails().get("gateway"));
-    }
 }

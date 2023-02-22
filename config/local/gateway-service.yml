@@ -7,6 +7,8 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
     security:
         allowTokenRefresh: true
+        webfinger:
+            fileLocation: config/local/webfinger.yml
         personalAccessToken:
             enabled: false
         oAuth:
@@ -14,14 +16,13 @@ apiml:
             clientId:
             clientSecret:
             validationUrl:
-
         auth:
             jwt:
                 customAuthHeader:
             passticket:
                 customUserHeader:
                 customAuthHeader:
-            provider: dummy
+            provider: zosmf
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         ssl:
@@ -30,10 +31,6 @@ apiml:
             enabled: true
     banner: console
 
-eureka:
-    client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
 spring:
     config:
         useLegacyProcessing: true

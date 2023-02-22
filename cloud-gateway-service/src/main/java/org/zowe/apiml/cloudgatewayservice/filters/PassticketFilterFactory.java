@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
@@ -39,8 +40,6 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
     private final MessageService messageService;
     private final String ticketUrl = "%s://%s:%s/%s/api/v1/auth/ticket";
     private final ObjectWriter writer = new ObjectMapper().writer();
-    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
-
 
     public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(Config.class);
@@ -85,8 +84,8 @@ public class PassticketFilterFactory extends AbstractGatewayFilterFactory<Passti
     }
 
     private ServerHttpRequest updateHeadersForError(ServerWebExchange exchange, String errorMessage) {
-        ServerHttpRequest request = addRequestHeader(exchange, AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
-        exchange.getResponse().getHeaders().add(AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
+        ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
+        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
         return request;
     }
 

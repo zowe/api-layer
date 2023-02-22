@@ -12,6 +12,7 @@ package org.zowe.apiml.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -60,66 +61,128 @@ class ServiceDefinitionProcessorTest {
         return context;
     }
 
-    @Test
-    void testProcessServicesDataWithTwoRoutes() {
-        String routedServiceYaml = "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      instanceBaseUrls:\n" +
-            "        - https://localhost:10019/casamplerestapiservice/\n" +
-            "      homePageRelativeUrl: api/v1/pets\n" +
-            "      statusPageRelativeUrl: actuator/info\n" +
-            "      healthCheckRelativeUrl: actuator/health\n" +
-            "      routes:\n" +
-            "        - gatewayUrl: api/v1\n" +
-            "          serviceRelativeUrl: api/v1\n" +
-            "        - gatewayUrl: api/v2\n" +
-            "          serviceRelativeUrl: api/v2\n";
-        StaticRegistrationResult result = processServicesData(routedServiceYaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(1, instances.size());
-        assertEquals(10019, instances.get(0).getSecurePort());
-        assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-        assertEquals("https://localhost:10019/casamplerestapiservice/api/v1/pets", instances.get(0).getHomePageUrl());
-        assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
-            instances.get(0).getSecureHealthCheckUrl());
-        assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
-            instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
-        assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
-        assertEquals("/casamplerestapiservice/api/v1",
-            instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
-        assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
-        assertEquals(0, result.getErrors().size());
+    @Nested
+    class ProcessServicesData {
+        @Test
+        void processServicesDataWithTwoRoutes() {
+            String routedServiceYaml = "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      instanceBaseUrls:\n" +
+                "        - https://localhost:10019/casamplerestapiservice/\n" +
+                "      homePageRelativeUrl: api/v1/pets\n" +
+                "      statusPageRelativeUrl: actuator/info\n" +
+                "      healthCheckRelativeUrl: actuator/health\n" +
+                "      routes:\n" +
+                "        - gatewayUrl: api/v1\n" +
+                "          serviceRelativeUrl: api/v1\n" +
+                "        - gatewayUrl: api/v2\n" +
+                "          serviceRelativeUrl: api/v2\n";
+            StaticRegistrationResult result = processServicesData(routedServiceYaml);
+            List<InstanceInfo> instances = result.getInstances();
+            assertEquals(1, instances.size());
+            assertEquals(10019, instances.get(0).getSecurePort());
+            assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
+            assertEquals("https://localhost:10019/casamplerestapiservice/api/v1/pets", instances.get(0).getHomePageUrl());
+            assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
+                instances.get(0).getSecureHealthCheckUrl());
+            assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
+                instances.get(0).getStatusPageUrl());
+            assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
+            assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
+            assertEquals("/casamplerestapiservice/api/v1",
+                instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
+            assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
+            assertEquals(0, result.getErrors().size());
+        }
+
+        @Test
+        void processServicesDataWithEmptyHomepage() {
+            String routedServiceYamlEmptyRelativeUrls = "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      instanceBaseUrls:\n" +
+                "        - https://localhost:10019/casamplerestapiservice/\n" +
+                "      homePageRelativeUrl: ''\n" +
+                "      statusPageRelativeUrl: actuator/info\n" +
+                "      healthCheckRelativeUrl: actuator/health\n" +
+                "      routes:\n" +
+                "        - gatewayUrl: api/v1\n" +
+                "          serviceRelativeUrl:\n";
+            StaticRegistrationResult result = processServicesData(routedServiceYamlEmptyRelativeUrls);
+            List<InstanceInfo> instances = result.getInstances();
+            assertEquals(1, instances.size());
+            assertEquals(10019, instances.get(0).getSecurePort());
+            assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
+            assertEquals("https://localhost:10019/casamplerestapiservice/", instances.get(0).getHomePageUrl());
+            assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
+                instances.get(0).getSecureHealthCheckUrl());
+            assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
+                instances.get(0).getStatusPageUrl());
+            assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
+            assertEquals("/casamplerestapiservice/",
+                instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
+            assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
+            assertEquals(0, result.getErrors().size());
+        }
+
+        @Test
+        void serviceWithCatalogMetadata() {
+            String yaml =
+                "services:\n" +
+                    "    - serviceId: casamplerestapiservice\n" +
+                    "      title: Title\n" +
+                    "      description: Description\n" +
+                    "      catalogUiTileId: tileid\n" +
+                    "      instanceBaseUrls:\n" +
+                    "        - https://localhost:10019/casamplerestapiservice/\n" +
+                    "catalogUiTiles:\n" +
+                    "    tileid:\n" +
+                    "        title: Tile Title\n" +
+                    "        description: Tile Description\n";
+
+            StaticRegistrationResult result = processServicesData(yaml);
+            List<InstanceInfo> instances = result.getInstances();
+            assertEquals(1, instances.size());
+            assertEquals(7, result.getInstances().get(0).getMetadata().size());
+        }
+
+        @Test
+        void serviceWithCustomMetadata() {
+            String yaml =
+                "services:\n" +
+                    "    - serviceId: casamplerestapiservice\n" +
+                    "      title: Title\n" +
+                    "      description: Description\n" +
+                    "      catalogUiTileId: tileid\n" +
+                    "      instanceBaseUrls:\n" +
+                    "        - https://localhost:10019/casamplerestapiservice/\n" +
+                    "      customMetadata:\n" +
+                    "          key: value\n" +
+                    "          customService.key1: value1\n" +
+                    "          customService.key2: value2\n" +
+                    "          customService:\n" +
+                    "              key3: value3\n" +
+                    "              key4: value4\n" +
+                    "              evenmorelevels:\n" +
+                    "                  key5:\n" +
+                    "                      key6:\n" +
+                    "                          key7: value7\n" +
+                    "catalogUiTiles:\n" +
+                    "    tileid:\n" +
+                    "        title: Tile Title\n" +
+                    "        description: Tile Description\n";
+
+            StaticRegistrationResult result = processServicesData(yaml);
+            List<InstanceInfo> instances = result.getInstances();
+            assertEquals(1, instances.size());
+            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("key", "value"));
+            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key1", "value1"));
+            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key2", "value2"));
+            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key3", "value3"));
+            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key4", "value4"));
+            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.evenmorelevels.key5.key6.key7", "value7"));
+        }
     }
 
-    @Test
-    void testProcessServicesDataWithEmptyHomepage() {
-        String routedServiceYamlEmptyRelativeUrls = "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      instanceBaseUrls:\n" +
-            "        - https://localhost:10019/casamplerestapiservice/\n" +
-            "      homePageRelativeUrl: ''\n" +
-            "      statusPageRelativeUrl: actuator/info\n" +
-            "      healthCheckRelativeUrl: actuator/health\n" +
-            "      routes:\n" +
-            "        - gatewayUrl: api/v1\n" +
-            "          serviceRelativeUrl:\n";
-        StaticRegistrationResult result = processServicesData(routedServiceYamlEmptyRelativeUrls);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(1, instances.size());
-        assertEquals(10019, instances.get(0).getSecurePort());
-        assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-        assertEquals("https://localhost:10019/casamplerestapiservice/", instances.get(0).getHomePageUrl());
-        assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
-            instances.get(0).getSecureHealthCheckUrl());
-        assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
-            instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
-        assertEquals("/casamplerestapiservice/",
-            instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
-        assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
-        assertEquals(0, result.getErrors().size());
-    }
 
     @Test
     void givenUnknownFieldInTheStaticDefinition_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
@@ -132,7 +195,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
+    void fileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(
             Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath().toString());
 
@@ -177,63 +240,7 @@ class ServiceDefinitionProcessorTest {
         );
     }
 
-    @Test
-    void testServiceWithCatalogMetadata() {
-        String yaml =
-            "services:\n" +
-                "    - serviceId: casamplerestapiservice\n" +
-                "      title: Title\n" +
-                "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
-                "      instanceBaseUrls:\n" +
-                "        - https://localhost:10019/casamplerestapiservice/\n" +
-                "catalogUiTiles:\n" +
-                "    tileid:\n" +
-                "        title: Tile Title\n" +
-                "        description: Tile Description\n";
 
-        StaticRegistrationResult result = processServicesData(yaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(1, instances.size());
-        assertEquals(7, result.getInstances().get(0).getMetadata().size());
-    }
-
-    @Test
-    void testServiceWithCustomMetadata() {
-        String yaml =
-            "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      title: Title\n" +
-            "      description: Description\n" +
-            "      catalogUiTileId: tileid\n" +
-            "      instanceBaseUrls:\n" +
-            "        - https://localhost:10019/casamplerestapiservice/\n" +
-            "      customMetadata:\n" +
-            "          key: value\n" +
-            "          customService.key1: value1\n" +
-            "          customService.key2: value2\n" +
-            "          customService:\n" +
-            "              key3: value3\n" +
-            "              key4: value4\n" +
-            "              evenmorelevels:\n" +
-            "                  key5:\n" +
-            "                      key6:\n" +
-            "                          key7: value7\n" +
-            "catalogUiTiles:\n" +
-            "    tileid:\n" +
-            "        title: Tile Title\n" +
-            "        description: Tile Description\n";
-
-        StaticRegistrationResult result = processServicesData(yaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(1, instances.size());
-        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("key", "value"));
-        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key1", "value1"));
-        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key2", "value2"));
-        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key3", "value3"));
-        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key4", "value4"));
-        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.evenmorelevels.key5.key6.key7", "value7"));
-    }
 
     @Test
     void givenListAmongCustomMetadata_whenDefinitionIsLoaded_thenErrorIsReturned() {
@@ -385,7 +392,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testCreateInstancesWithMultipleYmls() {
+    void createInstancesWithMultipleYmls() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -436,7 +443,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testEnableUnsecurePortIfHttp() {
+    void enableUnsecurePortIfHttp() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -531,7 +538,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFindServicesWithTwoDirectories() {
+    void findServicesWithTwoDirectories() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";" + pathTwo);
@@ -540,7 +547,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFindServicesWithOneDirectory() {
+    void findServicesWithOneDirectory() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne);
 
@@ -548,7 +555,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testFindServicesWithSecondEmptyDirectory() {
+    void findServicesWithSecondEmptyDirectory() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";");
 
@@ -556,7 +563,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testProcessServicesDataWithAuthenticationMetadata() {
+    void processServicesDataWithAuthenticationMetadata() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -573,7 +580,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testProcessServicesDataWithInvalidAuthenticationScheme() {
+    void processServicesDataWithInvalidAuthenticationScheme() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -587,7 +594,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testAdditionalServiceMetadata() {
+    void additionalServiceMetadata() {
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: testService\n" +
@@ -641,7 +648,7 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void testAdditionalServiceMetadataMulti() {
+    void additionalServiceMetadataMulti() {
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: service1\n" +

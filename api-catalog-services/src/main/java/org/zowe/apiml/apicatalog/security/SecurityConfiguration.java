@@ -14,10 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -163,7 +161,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(gatewayTokenProvider);
 
             if (isMetricsEnabled) {
-                http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
+                http.authorizeRequests().antMatchers("/application/hystrixstream").permitAll();
             }
 
             http.authorizeRequests().antMatchers("/application/**").authenticated();
@@ -173,23 +171,6 @@ public class SecurityConfiguration {
             }
             return http.build();
         }
-
-        @Configuration
-        @Order(Ordered.HIGHEST_PRECEDENCE)
-        @ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "true")
-        public class StandaloneConfig {
-
-            @Bean
-            public SecurityFilterChain permitAll(HttpSecurity http) throws Exception {
-                return http
-                    .authorizeRequests()
-                    .anyRequest().permitAll()
-                    .and()
-                    .build();
-            }
-
-        }
-
     }
 
     private HttpSecurity baseConfiguration(HttpSecurity http) throws Exception {

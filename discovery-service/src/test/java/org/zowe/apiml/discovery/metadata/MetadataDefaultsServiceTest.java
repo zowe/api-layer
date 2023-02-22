@@ -80,7 +80,7 @@ class MetadataDefaultsServiceTest {
     }
 
     @Test
-    void testUpdating() {
+    void updatingStaticService() {
         serviceDefinitionProcessor.setLocation("api-defs");
 
         staticServicesRegistrationService.reloadServices();

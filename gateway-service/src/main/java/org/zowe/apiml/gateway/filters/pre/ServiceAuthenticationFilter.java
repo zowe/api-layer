@@ -17,6 +17,7 @@ import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
@@ -42,7 +43,6 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * load balancer. The request will be modified after specific instance will be selected.
  */
 public class ServiceAuthenticationFilter extends PreZuulFilter {
-    public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
 
@@ -124,8 +124,8 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
 
     private void sendErrorMessage(String error, RequestContext context) {
         logger.log(MessageType.DEBUG, error);
-        context.addZuulRequestHeader(AUTH_FAIL_HEADER, error);
-        context.addZuulResponseHeader(AUTH_FAIL_HEADER, error);
+        context.addZuulRequestHeader(ApimlConstants.AUTH_FAIL_HEADER, error);
+        context.addZuulResponseHeader(ApimlConstants.AUTH_FAIL_HEADER, error);
     }
 
     private boolean isSourceValidForCommand(AuthSource authSource, AuthenticationCommand cmd) {

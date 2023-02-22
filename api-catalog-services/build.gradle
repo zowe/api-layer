@@ -28,6 +28,15 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6304
 def debugPort = 5124
 def componentName = "api-catalog-services"
+if (project.hasProperty('zowe.jib.image.suffix')) { // Prefix for the component name (for the standalone catalog container)
+    componentName += '-' + project.getProperty('zowe.jib.image.suffix')
+}
+if (project.hasProperty('zowe.jib.image.javaAgentPort')) {
+    javaAgentPort = project.getProperty('zowe.jib.image.javaAgentPort')
+}
+if (project.hasProperty('zowe.jib.image.debugPort')) {
+    debugPort = project.getProperty('zowe.jib.image.debugPort')
+}
 
 setJib(componentName, javaAgentPort, debugPort)
 
@@ -79,10 +88,12 @@ dependencies {
     implementation libraries.spring_cloud_commons
     implementation libraries.spring_cloud_starter_bootstrap
     implementation(libraries.spring_cloud_starter_eureka) {
+        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
         exclude group: "com.google.code.gson", module: "gson"
         exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
         exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
     }
+    implementation libraries.woodstox
     implementation libraries.spring_boot_starter_aop
     implementation libraries.bcpkix
     implementation libraries.gson
@@ -135,6 +146,7 @@ dependencies {
     implementation(libraries.swagger3_parser) {
         exclude group: "org.yaml", module: "snakeyaml"
     }
+    implementation libraries.swagger_inflector
 
     testImplementation libraries.rest_assured
     testImplementation libraries.spring_mock_mvc

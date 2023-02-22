@@ -19,6 +19,7 @@ const mockStore = configureStore();
 jest.mock(
     '../Icons/MetricsIconButton.jsx',
     () =>
+        // eslint-disable-next-line react/display-name
         function () {
             const MetricsIconButton = 'MetricsIconButtonMock';
             return <MetricsIconButton />;

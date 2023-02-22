@@ -21,6 +21,7 @@ apiml:
 server:
     port: ${apiml.service.port}
     ssl:
+        clientAuth: want
         keyAlias: localhost
         keyPassword: password
         keyStore: keystore/localhost/localhost.keystore.p12

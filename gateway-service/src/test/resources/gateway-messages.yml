@@ -315,3 +315,11 @@ messages:
       text: "The 'apiml.authentication.applid' parameter is not specified for a service."
       reason: "The applid parameter is required for the calling service."
       action: "Provide the 'apiml.authentication.applid' parameter."
+
+    # OIDC error messages
+    - key: org.zowe.apiml.security.oidc.invalidWebfingerConfiguration
+      number: ZWEAG180
+      type: ERROR
+      text: "There was an error while reading webfinger configuration"
+      reason: "Webfinger provider contains incorrect configuration."
+      action: "Contact the administrator to validate webfinger configuration in gateway service."

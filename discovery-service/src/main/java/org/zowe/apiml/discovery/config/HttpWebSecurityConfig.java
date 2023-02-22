@@ -82,7 +82,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .antMatchers("/**").authenticated();
 
         if (isMetricsEnabled) {
-            http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
+            http.authorizeRequests().antMatchers("/application/hystrixstream").permitAll();
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();

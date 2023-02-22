@@ -595,7 +595,7 @@ public class NewSecurityConfiguration {
                             AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 
                     if (isMetricsEnabled) {
-                        web.ignoring().antMatchers("/application/hystrix.stream");
+                        web.ignoring().antMatchers("/application/hystrixstream");
                     }
                 };
             }

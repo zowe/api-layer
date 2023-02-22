@@ -10,27 +10,25 @@
 
 package org.zowe.apiml.tomcat;
 
-import java.io.IOException;
-
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityTestUtils;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -50,7 +48,7 @@ class TomcatHttpsTest {
         System.clearProperty("javax.net.ssl.trustStoreType");
     }
 
-   @Test
+    @Test
     void correctConfigurationShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().build();
         startTomcatAndDoHttpsRequest(httpsConfig);
@@ -71,7 +69,7 @@ class TomcatHttpsTest {
     @Test
     void trustStoreWithDifferentCertificateAuthorityShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings()
-                .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
@@ -83,14 +81,14 @@ class TomcatHttpsTest {
     @Test
     void trustStoreWithDifferentCertificateAuthorityShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().verifySslCertificatesOfServices(false)
-                .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
         startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
     void trustStoreInInvalidFormatShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings()
-                .trustStore(SecurityTestUtils.pathFromRepository("README.md")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("README.md")).build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN);
@@ -140,7 +138,12 @@ class TomcatHttpsTest {
         Tomcat tomcat = new TomcatServerFactory().startTomcat(serverConfig);
         try {
             HttpsFactory clientHttpsFactory = new HttpsFactory(clientConfig);
-            HttpClient client = clientHttpsFactory.createSecureHttpClient();
+            RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
+                .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+            socketFactoryRegistryBuilder.register("https", clientHttpsFactory.createSslSocketFactory());
+            Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
+
+            HttpClient client = clientHttpsFactory.createSecureHttpClient(new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, clientConfig.getTimeToLive()));
 
             int port = TomcatServerFactory.getLocalPort(tomcat);
             HttpGet get = new HttpGet(String.format("https://localhost:%d", port));

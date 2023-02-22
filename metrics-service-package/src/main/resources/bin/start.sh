@@ -112,7 +112,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java -Xms16m -Xmx512m \
    ${QUICK_START} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
-  -Djava.io.tmpdir=/tmp \
+  -Djava.io.tmpdir=${TMPDIR:-/tmp} \
   -Dspring.profiles.include=$LOG_LEVEL \
   -Dapiml.service.port=${ZWE_configs_port:-7551} \
   -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
