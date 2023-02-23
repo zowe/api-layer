@@ -1,9 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration name="spring-GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <module name="api-layer.gateway-service.main" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
-    <option name="ALTERNATIVE_JRE_PATH" />
-    <option name="SHORTEN_COMMAND_LINE" value="CLASSPATH_FILE" />
+  <configuration default="false" name="spring-GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ACTIVE_PROFILES" />
     <additionalParameters>
       <param>
         <option name="enabled" value="true" />
@@ -18,7 +15,15 @@
         <option name="name" value="apiml.service.corsEnabled" />
         <option name="value" value="true" />
       </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="apiml.security.auth.provider" />
+        <option name="value" value="dummy" />
+      </param>
     </additionalParameters>
+    <module name="api-layer.gateway-service.main" />
+    <option name="SHORTEN_COMMAND_LINE" value="CLASSPATH_FILE" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

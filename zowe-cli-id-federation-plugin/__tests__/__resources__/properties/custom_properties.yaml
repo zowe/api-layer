@@ -1,0 +1,13 @@
+# Example properties file for this plugin
+# Copy this to custom_properties.yaml in the same directory and modify to fill
+# in your customized connection and test details
+
+#-----------------------------------------------------------------------------#
+#  provide a guide for what the developer should replace in this file.        #
+###############################################################################
+
+
+idFederation:
+    esm: ACF2
+    lpar: TST1
+    registry: ldap://12.34.56.78:910
