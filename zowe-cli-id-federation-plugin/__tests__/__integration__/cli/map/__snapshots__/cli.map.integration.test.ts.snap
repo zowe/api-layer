@@ -2,7 +2,7 @@
 
 exports[`id-federation map command should fail when options are not passed 1`] = `
 "Command Error:
-Following arguments are missing: "esm, lpar, registry"
+Following arguments are missing: "esm, registry"
 "
 `;
 

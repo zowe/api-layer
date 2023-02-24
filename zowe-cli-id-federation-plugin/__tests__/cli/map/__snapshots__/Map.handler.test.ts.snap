@@ -1,5 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`map handler should accept options and return successful message 1`] = `" 'idf_LPAR.jcl' was created. Review and submit this JCL on the LPAR LPAR."`;
+exports[`map handler should accept options and return successful message 1`] = `" 'idf_RACF.jcl' was created. Review and submit this JCL."`;
 
-exports[`map handler throw an error when not all parameters provided 1`] = `"Following arguments are missing: "esm, lpar, registry""`;
+exports[`map handler throw an error when not all parameters provided 1`] = `"Following arguments are missing: "esm, registry""`;
