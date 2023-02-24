@@ -43,7 +43,7 @@ export default class MapHandler implements ICommandHandler {
         }
 
         if (!hasValidLength(system, this.maxLengthSystem)) {
-            const msg = `The registry '${system}' has exceeded maximum length of ${this.maxLengthSystem} characters.`;
+            const msg = `The system '${system}' has exceeded maximum length of ${this.maxLengthSystem} characters.`;
             throw new ImperativeError({msg});
         }
 

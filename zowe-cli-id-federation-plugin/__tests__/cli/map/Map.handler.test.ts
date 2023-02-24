@@ -27,7 +27,6 @@ describe("map handler", () => {
                     _: ["fake"],
                     inputFile: "__tests__/__resources__/csv/users.csv",
                     esm: "RACF",
-                    lpar: "LPAR",
                     registry: "ldap://host:1234"
                 },
                 response: {
@@ -75,4 +74,103 @@ describe("map handler", () => {
         expect(error).toBeDefined();
         expect(error.message).toMatchSnapshot();
     });
+
+    it("throw an error when file does not exist", async () => {
+        const handlerReq = require("../../../src/cli/map/Map.handler");
+        const handler = new handlerReq.default();
+
+        let error;
+        let logMessage = "";
+
+        try {
+            await handler.process({
+                arguments: {
+                    $0: "fake",
+                    _: ["fake"],
+                    inputFile: "no.csv",
+                    esm: "RACF",
+                    registry: "ldap://host:1234"
+                },
+                response: {
+                    console: {
+                        log: jest.fn((logArgs) => {
+                            logMessage += " " + logArgs;
+                        })
+                    }
+                }
+            });
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error).toBeDefined();
+        expect(error.message).toMatchSnapshot();
+    });
+
+
+    it("throw an error when system param is too long", async () => {
+        const handlerReq = require("../../../src/cli/map/Map.handler");
+        const handler = new handlerReq.default();
+
+        let error;
+        let logMessage = "";
+
+        try {
+            await handler.process({
+                arguments: {
+                    $0: "fake",
+                    _: ["fake"],
+                    inputFile: "__tests__/__resources__/csv/users.csv",
+                    esm: "RACF",
+                    registry: "ldap://host:1234",
+                    system: "123456789"
+                },
+                response: {
+                    console: {
+                        log: jest.fn((logArgs) => {
+                            logMessage += " " + logArgs;
+                        })
+                    }
+                }
+            });
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error).toBeDefined();
+        expect(error.message).toMatchSnapshot();
+    });
+
+    it("throw an error when system registry is too long", async () => {
+        const handlerReq = require("../../../src/cli/map/Map.handler");
+        const handler = new handlerReq.default();
+
+        let error;
+        let logMessage = "";
+
+        try {
+            await handler.process({
+                arguments: {
+                    $0: "fake",
+                    _: ["fake"],
+                    inputFile: "__tests__/__resources__/csv/users.csv",
+                    esm: "RACF",
+                    registry: "1234567890".repeat(26),
+                },
+                response: {
+                    console: {
+                        log: jest.fn((logArgs) => {
+                            logMessage += " " + logArgs;
+                        })
+                    }
+                }
+            });
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error).toBeDefined();
+        expect(error.message).toMatchSnapshot();
+    });
+
 });
