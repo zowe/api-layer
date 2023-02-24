@@ -30,7 +30,7 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
     private static final String KEYRING_PASSWORD = "password";
 
     @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStore;
+    protected String keyStore;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
     protected char[] keyStorePassword;
@@ -39,7 +39,7 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
     protected char[] keyPassword;
 
     @Value("${server.ssl.trustStore:#{null}}")
-    private String trustStore;
+    protected String trustStore;
 
     @Value("${server.ssl.trustStorePassword:#{null}}")
     protected char[] trustStorePassword;
@@ -65,13 +65,13 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
         return matcher.matches();
     }
 
-    public static String formatKeyringUrl(String input) {
-        if (input == null) return null;
-        Matcher matcher = KEYRING_PATTERN.matcher(input);
+    static String formatKeyringUrl(String keyringUrl) {
+        if (keyringUrl == null) return null;
+        Matcher matcher = KEYRING_PATTERN.matcher(keyringUrl);
         if (matcher.matches()) {
-            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+            keyringUrl = matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
         }
-        return input;
+        return keyringUrl;
     }
 
     @Override
