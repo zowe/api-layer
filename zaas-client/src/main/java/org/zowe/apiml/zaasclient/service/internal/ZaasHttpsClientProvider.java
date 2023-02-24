@@ -67,13 +67,13 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         this.keyStoreType = configProperties.getKeyStoreType();
     }
 
-    public boolean isKeyring(String input) {
+    static boolean isKeyring(String input) {
         if (input == null) return false;
         Matcher matcher = KEYRING_PATTERN.matcher(input);
         return matcher.matches();
     }
 
-    public String formatKeyringUrl(String input) {
+    static String formatKeyringUrl(String input) {
         if (input == null) return null;
         Matcher matcher = KEYRING_PATTERN.matcher(input);
         if (matcher.matches()) {

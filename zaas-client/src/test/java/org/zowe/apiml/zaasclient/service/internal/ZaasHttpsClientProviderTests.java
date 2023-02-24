@@ -12,7 +12,10 @@ package org.zowe.apiml.zaasclient.service.internal;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -148,6 +151,40 @@ class ZaasHttpsClientProviderTests {
             ZaasConfigurationException.class, () -> new ZaasHttpsClientProvider(config)
         );
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS502E"));
+    }
+
+    @Nested
+    class WhenKeyringUrl {
+
+        @CsvSource({
+                ",false",
+                "safkeyring://userid/ringid,true",
+                "safkeyring:////userid/ring/id,false",
+                "safkeyring:////userid//ringid,false",
+                "safkeyring://///userid//ringid,false",
+                "safkeyring:////id,false",
+                "safkeyringjce:////userid/ringid,true",
+                "keystore.p12,false"
+        })
+        @ParameterizedTest(name = "isKeyring({0}) should return {1}")
+        void isKeyringReturnsTrueIfItIsValid(String url, boolean validity) {
+            assertEquals(validity, ZaasHttpsClientProvider.isKeyring(url));
+        }
+
+        @CsvSource({
+                ",",
+                "safkeyring://userid/ringid,safkeyring://userid/ringid",
+                "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
+                "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
+                "safkeyring:////id,safkeyring:////id",
+                "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
+                "keystore.p12,keystore.p12"
+        })
+        @ParameterizedTest(name = "formatKeyringUrl({0}) should return {1}")
+        void formatKeyringUrlFixTheFormatIfPossible(String input, String expectedOutput) {
+            assertEquals(expectedOutput, ZaasHttpsClientProvider.formatKeyringUrl(input));
+        }
+
     }
 
 }
