@@ -76,6 +76,17 @@ project(":metrics-service-ui") {
     }
 }
 
+project(":zowe-cli-id-federation-plugin") {
+    sonarqube {
+        properties {
+            property "sonar.sources", "src"
+            property "sonar.tests", "__tests__"
+            property "sonar.javascript.lcov.reportPaths", "__tests__/__results__/unit/coverage/lcov.info"
+            property "sonar.exclusions", "**/*index.ts, **/*healthCheck.Handler.ts"
+        }
+    }
+}
+
 project(":onboarding-enabler-nodejs") {
     sonarqube {
         skipProject = true
