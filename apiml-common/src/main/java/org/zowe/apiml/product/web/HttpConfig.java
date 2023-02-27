@@ -127,9 +127,7 @@ public class HttpConfig {
     @Resource
     private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
 
-
-    @PostConstruct
-    public void init() {
+    void updateStorePaths() {
         if (SecurityUtils.isKeyring(keyStore)) {
             keyStore = SecurityUtils.formatKeyringUrl(keyStore);
             if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
@@ -138,6 +136,11 @@ public class HttpConfig {
             trustStore = SecurityUtils.formatKeyringUrl(trustStore);
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
+    }
+
+    @PostConstruct
+    public void init() {
+        updateStorePaths();
 
         try {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
