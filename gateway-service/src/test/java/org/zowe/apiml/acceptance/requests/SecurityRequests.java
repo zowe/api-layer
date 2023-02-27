@@ -12,13 +12,16 @@ package org.zowe.apiml.acceptance.requests;
 
 import io.restassured.http.Cookie;
 import lombok.RequiredArgsConstructor;
+
+import org.zowe.apiml.security.common.config.CookieNameForAuthentication;
 import org.zowe.apiml.security.common.login.LoginRequest;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.constants.ApimlConstants.COOKIE_AUTH_NAME;
+//import static org.zowe.apiml.constants.ApimlConstants.COOKIE_AUTH_NAME;
+
 
 @RequiredArgsConstructor
 public class SecurityRequests {
@@ -30,11 +33,13 @@ public class SecurityRequests {
         return given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(basePath + "/gateway/api/v1/auth/login")
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .extract()
-            .detailedCookie(COOKIE_AUTH_NAME);
+            .detailedCookie(CookieNameForAuthentication.COOKIE_AUTH_NAME);
+
+
     }
 }

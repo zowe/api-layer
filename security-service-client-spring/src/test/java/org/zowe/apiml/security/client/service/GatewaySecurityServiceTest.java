@@ -38,7 +38,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class GatewaySecurityServiceTest {
+public class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
     private static final String PASSWORD = "pass";
     private static final String NEW_PASSWORD = "newPass";
@@ -52,6 +52,7 @@ class GatewaySecurityServiceTest {
     private String cookie;
     private RestResponseHandler responseHandler;
     private CloseableHttpClient closeableHttpClient;
+
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
 
@@ -74,7 +75,8 @@ class GatewaySecurityServiceTest {
         );
 
         cookie = String.format("%s=%s",
-            authConfigurationProperties.getCookieProperties().getCookieName(), TOKEN);
+            "apimlAuthenticationToken", TOKEN);
+        // authConfigurationProperties.getCookieProperties().getCookieName(), TOKEN);
     }
 
 
@@ -125,7 +127,7 @@ class GatewaySecurityServiceTest {
                 Date issued = new Date();
                 Date exp = new Date(System.currentTimeMillis() + 10000);
 
-                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, null,null);
+                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, null, null);
                 String responseBody = objectMapper.writeValueAsString(expectedQueryResponse);
                 HttpEntity entity = mock(HttpEntity.class);
                 when(entity.getContent()).thenReturn(new ByteArrayInputStream(responseBody.getBytes()));

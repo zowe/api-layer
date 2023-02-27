@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.common.content;
 
+//import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -62,7 +63,10 @@ class CookieContentFilterTest {
         String token = "token";
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+       // String cookieAuthName = ApimlConstants.COOKIE_AUTH_NAME;
+        //System.out.println(ApimlConstants.COOKIE_AUTH_NAME + " :   cookieName");
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
+
         request.setCookies(cookie);
 
         cookieContentFilter.doFilter(request, response, filterChain);

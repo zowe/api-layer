@@ -150,7 +150,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
                     context.addZuulRequestHeader(customUserHeader, userId);
                     context.addZuulRequestHeader(customPassTicketHeader, passTicket);
                 }
-                String[] cookiesToBeRemoved = new String[]{cookieName,patCookieName};
+                String[] cookiesToBeRemoved = new String[]{cookieName, patCookieName};
                 JwtCommand.removeCookie(context, cookiesToBeRemoved);
             }
         }

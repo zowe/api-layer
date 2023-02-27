@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.common.config.CookieNameForAuthentication;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Collections;
@@ -40,7 +40,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         if (authentication instanceof TokenAuthentication) {
             TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
-            headers.set(HttpHeaders.COOKIE, ApimlConstants.COOKIE_AUTH_NAME + "=" + tokenAuthentication.getCredentials());
+            headers.set(HttpHeaders.COOKIE, CookieNameForAuthentication.COOKIE_AUTH_NAME + "=" + tokenAuthentication.getCredentials());
         }
         return new HttpEntity<>(headers);
     }
@@ -54,7 +54,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
         try {
             HttpEntity<HttpHeaders> httpEntity = createHttpEntity(authentication);
             ResponseEntity<Response> responseEntity = restTemplate.exchange(
-                    endpointUrl + URL_VARIABLE_SUFFIX, HttpMethod.GET, httpEntity, Response.class, resourceName, accessLevel
+                endpointUrl + URL_VARIABLE_SUFFIX, HttpMethod.GET, httpEntity, Response.class, resourceName, accessLevel
             );
             Response response = responseEntity.getBody();
             if (response != null && response.isError()) {

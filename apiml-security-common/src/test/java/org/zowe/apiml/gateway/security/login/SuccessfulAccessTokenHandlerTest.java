@@ -64,6 +64,8 @@ class SuccessfulAccessTokenHandlerTest {
 
         underTest = new SuccessfulAccessTokenHandler(accessTokenProvider, rauditxService);
         httpServletRequest.setAttribute(TOKEN_REQUEST, accessTokenRequest);
+
+
     }
 
     @Nested

@@ -22,9 +22,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.zowe.apiml.constants.ApimlConstants;
+//import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+//import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CookieNameForAuthentication;
+//import org.zowe.apiml.security.common.config.CookieNameForAuthentication;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
@@ -54,9 +57,13 @@ public abstract class ExternalMapper {
         try {
             HttpPost httpPost = new HttpPost(new URI(externalMapperUrl + mapperType.getUrlSuffix()));
             httpPost.setEntity(payload);
+            CookieNameForAuthentication cookieNameForAuthentication = new CookieNameForAuthentication();
 
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
-            httpPost.setHeader(new BasicHeader("Cookie", ApimlConstants.COOKIE_AUTH_NAME + "=" + jwtToken));
+
+//            httpPost.setHeader(new BasicHeader("Cookie", ApimlConstants.COOKIE_AUTH_NAME + "=" + jwtToken));
+//            System.out.println("CookieNameForAuthentication.ckName : " + CookieNameForAuthentication.ckName);
+            httpPost.setHeader(new BasicHeader("Cookie", cookieNameForAuthentication.getCookieName() + "=" + jwtToken));
             log.debug("Executing request against external mapper API: {}", httpPost);
 
             HttpResponse httpResponse = httpClientProxy.execute(httpPost);

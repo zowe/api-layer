@@ -27,12 +27,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContextTest {
 
+
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private final ConvertAuthTokenInUriToCookieFilter filter = new ConvertAuthTokenInUriToCookieFilter(
             authConfigurationProperties);
 
     @Test
     void doesNotDoAnythingWhenThereIsNoParam() {
+
+     //    System.getProperty("COOKIE_NAME");
         boolean ignoreThisFilter = this.filter.shouldFilter();
         assertThat(ignoreThisFilter, is(false));
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
@@ -41,10 +44,12 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
     @Test
     void doesNotDoAnythingWhenThereIsAnotherParam() {
         Map<String, List<String>> params = new HashMap<>();
+     //   System.getProperty("COOKIE_NAME");
         params.put("someParameter", Collections.singletonList("value"));
         ctx.setRequestQueryParams(params);
         boolean ignoreThisFilter = this.filter.shouldFilter();
         assertThat(ignoreThisFilter, is(false));
+
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
     }
 
