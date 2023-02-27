@@ -55,4 +55,5 @@ include 'onboarding-enabler-java-sample-app-plain-java'
 include 'apiml-sample-extension'
 include 'apiml-sample-extension-package'
 include 'apiml-extension-loader'
+include 'zowe-cli-id-federation-plugin'
 
