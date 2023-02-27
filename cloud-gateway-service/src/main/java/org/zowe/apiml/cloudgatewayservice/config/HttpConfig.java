@@ -158,7 +158,7 @@ public class HttpConfig {
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
             .trustStore(trustStorePath).trustStoreType(trustStoreType)
-            .keyAlias(keyAlias).keyStore(trustStorePath).keyPassword(keyPassword)
+            .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
         log.info("Using HTTPS configuration: {}", config.toString());
 
