@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {TextUtils} from "@zowe/imperative";
+import {ImperativeError, TextUtils} from "@zowe/imperative";
 import { warn } from "console";
 import * as fs from "fs";
 import {IIdentity} from "./CsvParser";
@@ -33,6 +33,10 @@ export class RacfCommands {
         const racfCommands = this.identities
             .map(identity => this.getCommand(identity, racfTemplate))
             .filter(command => command);
+
+        if (!racfCommands.some(Boolean)) {
+            throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
+        }
         racfCommands.push(racfRefreshCommand);
         return racfCommands;
     }
@@ -40,19 +44,19 @@ export class RacfCommands {
     private getCommand(identity: IIdentity, racfTemplate: string): string {
         if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
             warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
-           `Identity mapping for the user '${identity.userName}' is not be created.`);
+           `Identity mapping for the user '${identity.userName}' has not been created.`);
             return '';
         }
 
         if(!hasValidLength(identity.distributedId, this.maxLengthDistributedId)) {
             warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.maxLengthDistributedId} characters. ` +
-                `Identity mapping for the user '${identity.userName}' is not be created.`);
+                `Identity mapping for the user '${identity.userName}' has not been created.`);
             return '';
         }
 
         if(!hasValidLength(identity.userName, this.maxLengthLabel)) {
             warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.maxLengthLabel} characters. ` +
-                `Identity mapping for the user '${identity.userName}' is not be created.`);
+                `Identity mapping for the user '${identity.userName}' has not been created.`);
             return '';
         }
 

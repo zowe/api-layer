@@ -9,17 +9,13 @@ Following arguments are missing: "esm, registry"
 exports[`id-federation map command should fail when options are not passed 2`] = `""`;
 
 exports[`id-federation map command should print input args from old school profile and other sources 1`] = `
-"Input file: file.csv
-ESM: ACF2
-LPAR: TST1
-Registry: ldap://zowe.org
+"'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
 "
 `;
 
 exports[`id-federation map command should print input args from team config profile and other sources 1`] = `
-"Input file: file.csv
-ESM: RACF
-LPAR: TST2
-Registry: ldap://12.34.56.78:910
+"'idf_RACF_TST2.jcl' was created. Review and submit this JCL on the system TST2.
 "
 `;
+
+exports[`id-federation map command should return command error in case of invalid csv config with only single identity 1`] = `""`;

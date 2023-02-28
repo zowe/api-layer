@@ -18,10 +18,12 @@ let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
 
 const configJson = "zowe.config.json";
 const testCsv = "users.csv";
+const wrongTestCsv = "invalid.csv";
 
 describe("id-federation map command", () => {
 
     let csv: string;
+    let wrongCsv: string;
 
     // Create the unique test environment
     beforeAll(async () => {
@@ -32,7 +34,9 @@ describe("id-federation map command", () => {
         });
 
         csv = path.join(TEST_ENVIRONMENT.workingDir, testCsv);
+        wrongCsv = path.join(TEST_ENVIRONMENT.workingDir, wrongTestCsv);
         fs.copyFileSync(path.join(__dirname, "__resources__", testCsv), csv);
+        fs.copyFileSync(path.join(__dirname, "__resources__", wrongTestCsv), wrongCsv);
     });
 
     afterAll(async () => {
@@ -46,6 +50,15 @@ describe("id-federation map command", () => {
         expect(response.stdout.toString()).toMatchSnapshot();
     });
 
+    it("should print input args from old school profile and other sources", () => {
+        const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
+        expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
+        expect(response.status).toBe(0);
+        const output = response.stdout.toString();
+        expect(output).toContain("idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.");
+        expect(output).toMatchSnapshot();
+    });
+
     it("should print input args from team config profile and other sources", () => {
         fs.copyFileSync(path.join(__dirname, "__resources__", configJson), path.join(TEST_ENVIRONMENT.workingDir, configJson));
 
@@ -53,20 +66,20 @@ describe("id-federation map command", () => {
         expect(response.stderr.toString()).toBe("");
         expect(response.status).toBe(0);
         const output = response.stdout.toString();
-        expect(output).toContain("ESM: RACF");
-        expect(output).toContain("LPAR: TST2");
-        expect(output).toContain("Registry: ldap://12.34.56.78:910");
+        expect(output).toContain("'idf_RACF_TST2.jcl' was created. Review and submit this JCL on the system TST2");
         expect(output).toMatchSnapshot();
     });
 
-    it("should print input args from old school profile and other sources", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
-        expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
-        expect(response.status).toBe(0);
+    it("should return command error in case of invalid csv config with only single identity", () => {
+        const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [wrongCsv]);
+        const expectedMessage = "The user name 'Too looooooooooooooooooooooooooooong name' has exceeded maximum length of 32 characters. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.\n" +
+            "The distributed user ID ' Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' has exceeded maximum length of 246 characters. Identity mapping for the user 'Name' has not been created.\n" +
+            "The mainframe user ID ' mf_too_long' has exceeded maximum length of 8 characters. Identity mapping for the user 'Name' has not been created.\n" +
+            "Command Error:\n" +
+            "Error when trying to create the identity mapping.\n";
+        expect(response.stderr.toString()).toBe(expectedMessage);
+        expect(response.status).toBe(1);
         const output = response.stdout.toString();
-        expect(output).toContain("ESM: ACF2");
-        expect(output).toContain("LPAR: TST1");
-        expect(output).toContain("Registry: ldap://zowe.org");
         expect(output).toMatchSnapshot();
     });
 });
