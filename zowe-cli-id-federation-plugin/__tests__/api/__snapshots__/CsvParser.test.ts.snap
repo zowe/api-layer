@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Mapper should successfully parse the file 1`] = `
+[
+  {
+    "distributedId": " dist_jirka",
+    "mainframeId": " mf_jir",
+    "userName": "Jirka",
+  },
+  {
+    "distributedId": " dist_lena",
+    "mainframeId": " mf_lena",
+    "userName": "Lena",
+  },
+  {
+    "distributedId": " dist_pablo",
+    "mainframeId": " mf_pab",
+    "userName": "Pablo",
+  },
+  {
+    "distributedId": " ",
+    "mainframeId": "",
+    "userName": "Too looooooooooooooooooooooooooooong name",
+  },
+  {
+    "distributedId": " Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame",
+    "mainframeId": " mf_name",
+    "userName": "Name",
+  },
+  {
+    "distributedId": " Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok",
+    "mainframeId": " mf_name",
+    "userName": "Name",
+  },
+  {
+    "distributedId": " ",
+    "mainframeId": " mf_too_long",
+    "userName": "Name",
+  },
+]
+`;

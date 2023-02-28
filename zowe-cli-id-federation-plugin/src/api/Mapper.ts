@@ -55,10 +55,10 @@ export class Mapper {
                 break;
             }
             case "tss": {
-                break; //Here will be the code which generate JCL
+                break; //TODO: Here will be the code which generate TSS commands
             }
             case "acf2": {
-                break; //Here will be the code which generate JCL
+                break; //TODO: Here will be the code which generate ACF2 commands
             }
             default: {
                 const msg = `Unsupported ESM "${this.esm}".` +
