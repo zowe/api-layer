@@ -1,0 +1,74 @@
+plugins {
+    id "com.github.node-gradle.node" version "3.5.0"
+}
+
+node {
+    download = true
+    version = projectNodeVersion
+    npmVersion = projectNpmVersion
+    distBaseUrl = "https://nodejs.org/dist"
+    npmInstallCommand = "ci"
+    workDir = file("${project.projectDir}/tools/nodejs")
+    npmWorkDir = file("${project.projectDir}/tools/npm")
+    yarnWorkDir = file("${project.projectDir}/tools/yarn")
+    nodeProjectDir = file("${project.projectDir}")
+}
+
+// =================================================
+//
+//  Please manage all task dependencies in here and
+//  not in package.json. This is to leverage
+//  Gradle's incremental task feature
+//
+// =================================================
+
+task npmClean(type: Delete) {
+    group = 'npm'
+    delete 'lib'
+    delete '__tests__/__results__'
+
+    if (rootProject.cleanNodeModules == 'true') {
+        delete 'node_modules'
+    }
+
+}
+clean.dependsOn npmClean
+
+task npmLint(type: NpmTask) {
+    group = 'npm'
+    description = 'Run eslint'
+    args = ['run', 'lint']
+}
+npmLint.dependsOn npmInstall
+
+task npmBuild(type: NpmTask) {
+
+    group = 'npm'
+    description = "Executes npm build"
+
+    outputs.dir('lib')
+    outputs.cacheIf { true }
+
+    args = ['run', 'build']
+
+}
+npmBuild.dependsOn npmInstall
+npmBuild.dependsOn npmLint
+build.dependsOn npmBuild
+
+task npmTest(type: NpmTask) {
+    group = 'npm'
+    description = "Typescript unit, system and integration tests"
+
+    outputs.dir('__tests__/__results__')
+    outputs.cacheIf { true }
+
+    args = ['run', 'test']
+}
+npmTest.dependsOn npmInstall
+npmTest.dependsOn npmBuild
+test.dependsOn npmTest
+
+jar {
+    enabled false
+}
