@@ -50,7 +50,7 @@ describe("id-federation map command", () => {
         expect(response.stdout.toString()).toMatchSnapshot();
     });
 
-    it("should print input args from old school profile and other sources", () => {
+    it("should print the successful creation message from old school profile and other sources", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
         expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
         expect(response.status).toBe(0);
@@ -59,7 +59,7 @@ describe("id-federation map command", () => {
         expect(output).toMatchSnapshot();
     });
 
-    it("should print input args from team config profile and other sources", () => {
+    it("should print the successful creation message from team config profile and other sources", () => {
         fs.copyFileSync(path.join(__dirname, "__resources__", configJson), path.join(TEST_ENVIRONMENT.workingDir, configJson));
 
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [csv]);

@@ -6,4 +6,5 @@ ESM=$2
 SYSTEM=$3
 REGISTRY=$4
 
+cd ../../../../
 zowe idf map "$CSV" --esm "$ESM" --system "$SYSTEM" --registry "$REGISTRY"
