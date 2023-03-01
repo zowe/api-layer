@@ -9,14 +9,78 @@
  */
 
 import {getAccount} from "../../src/api/JobUtil";
-import {imperative} from "@zowe/cli";
+import {ProfileInfo} from "@zowe/imperative/lib/config/src/ProfileInfo";
+import {IProfAttrs} from "@zowe/imperative/lib/config/src/doc/IProfAttrs";
+import {ProfLocType} from "@zowe/imperative";
 
 describe("JobUtil", () => {
 
-    it("should successfully parse the file", async () => {
-        jest.spyOn(imperative.ProfileInfo.prototype, 'readProfilesFromDisk').mockImplementation(() => Promise.resolve());
-
-        expect(await getAccount()).toMatchSnapshot();
+    it("should return default value when no default profile found", async () => {
+        const result = await getAccount();
+        expect(result).toBe("account");
     });
 
+    it("should successfully parse the file", async () => {
+        const profAttrs: IProfAttrs = {
+            profName: "profName1",
+            profType: "profType1",
+            profLoc: {
+                locType: ProfLocType.TEAM_CONFIG,
+                osLoc: ["somewhere in the OS 1", "somewhere in the OS 2"],
+                jsonLoc: "somewhere in the JSON file"
+            },
+            isDefaultProfile: true
+        };
+        jest.spyOn(ProfileInfo.prototype, 'readProfilesFromDisk').mockImplementation();
+        jest.spyOn(ProfileInfo.prototype, 'getDefaultProfile').mockReturnValue(profAttrs);
+        jest.spyOn(ProfileInfo.prototype, 'mergeArgsForProfile').mockReturnValue({
+            knownArgs:
+                [
+                    {
+                        argName: "account",
+                        dataType: "string",
+                        argValue: "fake",
+                        argLoc: { locType: 0, osLoc: ["location"], jsonLoc: "jsonLoc" },
+                        secure: false,
+                    },
+                ],
+            missingArgs: []
+        });
+
+        const result = await getAccount();
+        expect(result).toBe("fake");
+        expect(result).toMatchSnapshot();
+    });
+
+    it("should return account if account number not defined", async () => {
+        const profAttrs: IProfAttrs = {
+            profName: "profName1",
+            profType: "profType1",
+            profLoc: {
+                locType: ProfLocType.TEAM_CONFIG,
+                osLoc: ["somewhere in the OS 1", "somewhere in the OS 2"],
+                jsonLoc: "somewhere in the JSON file"
+            },
+            isDefaultProfile: true
+        };
+        jest.spyOn(ProfileInfo.prototype, 'readProfilesFromDisk').mockImplementation();
+        jest.spyOn(ProfileInfo.prototype, 'getDefaultProfile').mockReturnValue(profAttrs);
+        jest.spyOn(ProfileInfo.prototype, 'mergeArgsForProfile').mockReturnValue({
+            knownArgs:
+                [
+                    {
+                        argName: "account",
+                        dataType: "string",
+                        argValue: null,
+                        argLoc: { locType: 0, osLoc: ["location"], jsonLoc: "jsonLoc" },
+                        secure: false,
+                    },
+                ],
+            missingArgs: []
+        });
+
+        const result = await getAccount();
+        expect(result).toBe("account");
+        expect(result).toMatchSnapshot();
+    });
 });

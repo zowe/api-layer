@@ -93,7 +93,7 @@ describe("id-federation map command", () => {
             "Option Description:\n" +
             "The target JES system on which the command will be executed\n" +
             "\n" +
-            "Use \"zowe idf map --help\" to view command description, usage, and options.\n"
+            "Use \"zowe idf map --help\" to view command description, usage, and options.\n";
         expect(response.stderr.toString()).toBe(expectedError);
         expect(response.status).toBe(1);
         expect(response.stdout.toString()).toMatchSnapshot();
@@ -112,8 +112,11 @@ describe("id-federation map command", () => {
 
     it("should return command error in case of csv config with invalid identities", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [wrongCsv]);
+        // eslint-disable-next-line max-len
         const expectedMessage = "The user name 'Too looooooooooooooooooooooooooooong name' has exceeded maximum length of 32 characters. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.\n" +
+            // eslint-disable-next-line max-len
             "The distributed user ID ' Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' has exceeded maximum length of 246 characters. Identity mapping for the user 'Name' has not been created.\n" +
+            // eslint-disable-next-line max-len
             "The mainframe user ID ' mf_too_long' has exceeded maximum length of 8 characters. Identity mapping for the user 'Name' has not been created.\n" +
             "Command Error:\n" +
             "Error when trying to create the identity mapping.\n";
