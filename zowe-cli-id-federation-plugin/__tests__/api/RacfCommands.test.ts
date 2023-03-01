@@ -10,6 +10,7 @@
 
 import { RacfCommands } from "../../src/api/RacfCommands";
 import {CsvParser} from "../../lib/api/CsvParser";
+import {ImperativeError} from "@zowe/imperative";
 
 describe("Racf Commands", () => {
     it('should create the commands', () => {
@@ -21,5 +22,13 @@ describe("Racf Commands", () => {
         // eslint-disable-next-line max-len
         expect(commands.toString()).toBe("RACMAP ID(mf_jir) MAP USERDIDFILTER(NAME('dist_jirka')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Jirka'),RACMAP ID(mf_lena) MAP USERDIDFILTER(NAME('dist_lena')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Lena'),RACMAP ID(mf_pab) MAP USERDIDFILTER(NAME('dist_pablo')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Pablo'),RACMAP ID(mf_name) MAP USERDIDFILTER(NAME('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Name'),SETROPTS RACLIST(IDIDMAP) REFRESH\n");
         expect(commands).toMatchSnapshot();
+    });
+
+    it('should throw error when config is not valid', () => {
+        const csvParser = new CsvParser('__tests__/__resources__/csv/invalid_identities.csv');
+        const identities = csvParser.getIdentities();
+
+        const racfCommands = new RacfCommands("ldap://host:1234", identities);
+        expect(() => racfCommands.getCommands()).toThrow(ImperativeError);
     });
 });
