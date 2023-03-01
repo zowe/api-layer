@@ -20,6 +20,12 @@ describe("JobUtil", () => {
         expect(result).toBe("account");
     });
 
+    it("should return default value when error is caught", async () => {
+        jest.spyOn(ProfileInfo.prototype, 'readProfilesFromDisk').mockRejectedValue("error");
+        const result = await getAccount();
+        expect(result).toBe("account");
+    });
+
     it("should successfully parse the file", async () => {
         const profAttrs: IProfAttrs = {
             profName: "profName1",
