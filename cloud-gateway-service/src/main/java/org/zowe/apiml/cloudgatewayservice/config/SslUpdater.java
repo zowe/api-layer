@@ -32,6 +32,9 @@ public class SslUpdater implements BeanPostProcessor {
                 if (StringUtils.isEmpty(ssl.getKeyStorePassword())) {
                     ssl.setKeyStorePassword(KEYRING_PASSWORD);
                 }
+                if (StringUtils.isEmpty(ssl.getKeyPassword())) {
+                    ssl.setKeyPassword(KEYRING_PASSWORD);
+                }
             }
             if (SecurityUtils.isKeyring(ssl.getTrustStore())) {
                 ssl.setTrustStore(SecurityUtils.formatKeyringUrl(ssl.getTrustStore()));

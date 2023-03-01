@@ -16,12 +16,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -192,6 +192,29 @@ public class SecurityUtils {
 
     /**
      * Loads keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}, from specified location
+     * @param type - type of store
+     * @param path - path or URL of store
+     * @param password - password to the store
+     * @return the new {@link KeyStore} or key ring as {@link KeyStore}
+     * @throws IOException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     */
+    public static KeyStore loadKeyStore(String type, String path, char[] password) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+        KeyStore ks = KeyStore.getInstance(type);
+        InputStream inputStream;
+        if (SecurityUtils.isKeyring(path)) {
+            inputStream = new URL(path).openStream();
+        } else {
+            inputStream = Files.newInputStream(Paths.get(path));
+        }
+        ks.load(inputStream, password);
+        return ks;
+    }
+
+    /**
+     * Loads keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}, from specified location
      *
      * @param config {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword,
      *               and optional filled: trustStore
@@ -202,17 +225,7 @@ public class SecurityUtils {
      * @throws NoSuchAlgorithmException
      */
     public static KeyStore loadKeyStore(HttpsConfig config) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-        InputStream inputStream;
-        if (isKeyring(config.getKeyStore())) {
-            URL url = keyRingUrl(config.getKeyStore(), config.getTrustStore());
-            inputStream = url.openStream();
-        } else {
-            File keyStoreFile = new File(config.getKeyStore());
-            inputStream = new FileInputStream(keyStoreFile);
-        }
-        ks.load(inputStream, config.getKeyStorePassword());
-        return ks;
+        return loadKeyStore(config.getKeyStoreType(), config.getKeyStore(), config.getKeyStorePassword());
     }
 
     /**

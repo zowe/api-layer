@@ -48,6 +48,7 @@ class SslUpdaterTest {
             assertEquals("/path1", ssl.getKeyStore());
             assertEquals("/path/2", ssl.getTrustStore());
             assertNull(ssl.getKeyStorePassword());
+            assertNull(ssl.getKeyPassword());
             assertNull(ssl.getTrustStorePassword());
         }
     }
@@ -65,6 +66,7 @@ class SslUpdaterTest {
         void givenNoPassword_thenSetThem() {
             new SslUpdater().postProcessAfterInitialization(serverProperties, "bean");
             assertEquals("password", ssl.getKeyStorePassword());
+            assertEquals("password", ssl.getKeyPassword());
             assertEquals("password", ssl.getTrustStorePassword());
         }
 

@@ -61,9 +61,6 @@ import reactor.netty.http.client.HttpClient;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -170,16 +167,12 @@ public class HttpConfig {
         return httpClient -> httpClient.secure(b -> b.sslContext(sslContext()));
     }
 
+
+
     SslContext sslContext() {
         try {
-            KeyStore keyStore = KeyStore.getInstance(this.keyStoreType);
-            try (InputStream inStream = Files.newInputStream(Paths.get(keyStorePath))) {
-                keyStore.load(inStream, keyStorePassword);
-            }
-            KeyStore trustStore = KeyStore.getInstance(this.trustStoreType);
-            try (InputStream inStream = Files.newInputStream(Paths.get(this.trustStorePath))) {
-                trustStore.load(inStream, this.trustStorePassword);
-            }
+            KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
+            KeyStore trustStore = SecurityUtils.loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
 
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             keyManagerFactory.init(keyStore, keyStorePassword);
