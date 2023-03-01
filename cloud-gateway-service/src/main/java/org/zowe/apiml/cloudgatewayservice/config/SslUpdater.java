@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.web.server.Ssl;
@@ -28,13 +29,13 @@ public class SslUpdater implements BeanPostProcessor {
             Ssl ssl = serverProperties.getSsl();
             if (SecurityUtils.isKeyring(ssl.getKeyStore())) {
                 ssl.setKeyStore(SecurityUtils.formatKeyringUrl(ssl.getKeyStore()));
-                if (ssl.getKeyStorePassword() == null) {
+                if (StringUtils.isEmpty(ssl.getKeyStorePassword())) {
                     ssl.setKeyStorePassword(KEYRING_PASSWORD);
                 }
             }
             if (SecurityUtils.isKeyring(ssl.getTrustStore())) {
                 ssl.setTrustStore(SecurityUtils.formatKeyringUrl(ssl.getTrustStore()));
-                if (ssl.getTrustStorePassword() == null) {
+                if (StringUtils.isEmpty(ssl.getTrustStorePassword())) {
                     ssl.setTrustStorePassword(KEYRING_PASSWORD);
                 }
             }
