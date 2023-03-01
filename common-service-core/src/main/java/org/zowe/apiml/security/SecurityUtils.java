@@ -16,12 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -207,7 +206,7 @@ public class SecurityUtils {
         if (SecurityUtils.isKeyring(path)) {
             inputStream = new URL(path).openStream();
         } else {
-            inputStream = Files.newInputStream(Paths.get(path));
+            inputStream = new FileInputStream(path);
         }
         ks.load(inputStream, password);
         return ks;
