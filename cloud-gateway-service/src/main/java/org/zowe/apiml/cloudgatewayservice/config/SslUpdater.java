@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.web.server.Ssl;
@@ -22,7 +21,8 @@ public class SslUpdater implements BeanPostProcessor {
 
     private static final String KEYRING_PASSWORD = "password";
 
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) {
         if (bean instanceof ServerProperties) {
             ServerProperties serverProperties = (ServerProperties) bean;
             Ssl ssl = serverProperties.getSsl();
