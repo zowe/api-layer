@@ -29,8 +29,7 @@ export class CsvParser {
         try {
             fileContent = fs.readFileSync(this.file);
         } catch (error) {
-            const msg = `Cannot open the input CSV file. ${error.message}`;
-            throw new ImperativeError({msg});
+            throw new ImperativeError({msg: `Cannot open the input CSV file. ${error.message}`});
         }
         const headers = ['userName', 'distributedId', 'mainframeId'];
 

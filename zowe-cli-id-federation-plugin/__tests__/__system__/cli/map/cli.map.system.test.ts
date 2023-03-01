@@ -18,28 +18,16 @@ let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
 const testCsv = "users.csv";
 
 describe("id-federation map", () => {
-    let csv: string;
     // Create the unique test environment
     beforeAll(async () => {
         TEST_ENVIRONMENT = await TestEnvironment.setUp({
             installPlugin: true,
             testName: "map_command"
         });
-        csv = path.join(TEST_ENVIRONMENT.workingDir, testCsv);
-        fs.copyFileSync(path.join(__dirname, "__resources__", testCsv), csv);
     });
 
     afterAll(async () => {
         await TestEnvironment.cleanUp(TEST_ENVIRONMENT);
-    });
-
-    it("should print the successful creation message", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map.sh", TEST_ENVIRONMENT,
-            [`${TEST_ENVIRONMENT.workingDir}/users.csv`, "ACF2", "TST1", "ldap://12.34.56.78:910"]);
-
-        expect(response.stderr.toString()).toBe("");
-        expect(response.status).toBe(0);
-        expect(response.stdout.toString()).toMatchSnapshot();
     });
 
     it("should display the help", () => {

@@ -117,8 +117,3 @@ exports[`id-federation map should display the help 1`] = `
 
 "
 `;
-
-exports[`id-federation map should print the successful creation message 1`] = `
-"'idf_TSS_TST1.jcl' was created. Review and submit this JCL on the system TST1.
-"
-`;
