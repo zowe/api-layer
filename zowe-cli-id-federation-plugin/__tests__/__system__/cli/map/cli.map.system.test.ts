@@ -35,7 +35,7 @@ describe("id-federation map", () => {
 
     it("should print the successful creation message", () => {
         const response = runCliScript(__dirname + "/__scripts__/map.sh", TEST_ENVIRONMENT,
-            [`${TEST_ENVIRONMENT.workingDir}/users.csv`, "TSS", "TST1", "ldap://12.34.56.78:910"]);
+            [`${TEST_ENVIRONMENT.workingDir}/users.csv`, "ACF2", "TST1", "ldap://12.34.56.78:910"]);
 
         expect(response.stderr.toString()).toBe("");
         expect(response.status).toBe(0);

@@ -10,6 +10,7 @@
 
 import {ImperativeError, TextUtils} from "@zowe/imperative";
 import {RacfCommands} from "./RacfCommands";
+import { TssCommands } from "./TssCommands";
 import {getAccount} from "./JobUtil";
 import * as fs from "fs";
 import {CsvParser, IIdentity} from "./CsvParser";
@@ -55,7 +56,8 @@ export class Mapper {
                 break;
             }
             case "tss": {
-                break; //Here will be the code which generate JCL
+                commandProcessor = new TssCommands(this.registry, identities);
+                break;
             }
             case "acf2": {
                 break; //Here will be the code which generate JCL
