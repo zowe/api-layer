@@ -21,45 +21,52 @@ export class JclWriter {
     }
 
     parse(command: string): string[] {
-        const words = [];
+        const words: string[] = [];
         let lastWord = "";
-        let status = 0;
-        for (let i = 0; i < command.length; i++) {
-            switch (status) {
-                case 0: // outside the string
-                    if (command.charAt(i) == '\'') {
-                        // on apos switch to state 1 - parsing a string
-                        status = 1;
-                        lastWord += '\'';
-                    } else if (command.charAt(i) == ' ') {
-                        // space means to store lastWord as fully parsed and wait for the next word
-                        if (lastWord) {
-                            words.push(lastWord);
-                            lastWord = '';
-                        }
-                    } else {
-                        // everything else is a part of the word
-                        lastWord += command.charAt(i);
-                    }
-                    break;
-                case 1: // inside the string
-                    lastWord += command.charAt(i);
-                    if (command.charAt(i) == '\'') {
-                        if ((command.length > i + 1) && (command.charAt(i + 1) == '\'')) {
-                            // two apos means escaped apos, still parsing the string
-                            lastWord += '\'';
-                            i++;
-                        } else {
-                            // ending apos, stop parsing the string
-                            status = 0;
-                        }
-                    }
-                    break;
-            }
-        }
+        const status = 0;
+        lastWord = JclWriter.getLastWord(command, status, lastWord, words);
         // if lastWord still contains a word add it to response (text without spaces on end or even opened string)
         if (lastWord) words.push(lastWord);
         return words;
+    }
+
+    private static getLastWord(command: string, status: number, lastWord: string, words: string[]) {
+        for (let i = 0; i < command.length; i++) {
+            if (status === 0) {// outside the string
+                [status, lastWord] = JclWriter.parseCommand(command, i, status, lastWord, words);
+            } else if (status === 1) {// inside the string
+                lastWord += command.charAt(i);
+                if (command.charAt(i) == '\'') {
+                    if ((command.length > i + 1) && (command.charAt(i + 1) == '\'')) {
+                        // two apos means escaped apos, still parsing the string
+                        lastWord += '\'';
+                        i++;
+                    } else {
+                        // ending apos, stop parsing the string
+                        status = 0;
+                    }
+                }
+            }
+        }
+        return lastWord;
+    }
+
+    private static parseCommand(command: string, i: number, status: number, lastWord: string, words: string[]) {
+        if (command.charAt(i) == '\'') {
+            // on apos switch to state 1 - parsing a string
+            status = 1;
+            lastWord += '\'';
+        } else if (command.charAt(i) == ' ') {
+            // space means to store lastWord as fully parsed and wait for the next word
+            if (lastWord) {
+                words.push(lastWord);
+                lastWord = '';
+            }
+        } else {
+            // everything else is a part of the word
+            lastWord += command.charAt(i);
+        }
+        return [status, lastWord] as const;
     }
 
     format(words: string[]): string {
