@@ -65,15 +65,18 @@ class StoresTest {
         }
 
         @Test
-        void whenWrongFormat_thenStoresNodtInitializeExceptionIsThrown() {
-            String[] args = {"--keystore", "safkeyring:/userId/keyRing",
+        void whenWrongFormat_thenStoresNotInitializeExceptionIsThrown() {
+            String[] args = {"--keystore", "keyring://userId/keyRing",
                 "--truststore", "safkeyring:////userId/keyRing",
                 "--keypasswd", "password",
                 "--keyalias", "localhost"};
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs(args);
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
-            assertEquals("Incorrect key ring format: safkeyring:/userId/keyRing. Make sure you use format safkeyring:////userId/keyRing",e.getMessage());
+            assertTrue(
+                e.getMessage().replace('\\', '/')
+                    .contains("Error while loading keystore file. Error message: keyring:/userId/keyRing")
+            );
         }
     }
 
