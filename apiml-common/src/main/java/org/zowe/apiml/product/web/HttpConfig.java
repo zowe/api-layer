@@ -45,6 +45,9 @@ import java.util.function.Supplier;
 @Slf4j
 @Configuration
 public class HttpConfig {
+
+    private static final char[] KEYRING_PASSWORD = "password".toCharArray();
+
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
 
@@ -124,9 +127,21 @@ public class HttpConfig {
     @Resource
     private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
 
+    void updateStorePaths() {
+        if (SecurityUtils.isKeyring(keyStore)) {
+            keyStore = SecurityUtils.formatKeyringUrl(keyStore);
+            if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
+        }
+        if (SecurityUtils.isKeyring(trustStore)) {
+            trustStore = SecurityUtils.formatKeyringUrl(trustStore);
+            if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
+        }
+    }
 
     @PostConstruct
     public void init() {
+        updateStorePaths();
+
         try {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
@@ -197,7 +212,7 @@ public class HttpConfig {
 
     private void setTruststore(SslContextFactory sslContextFactory) {
         if (StringUtils.isNotEmpty(trustStore)) {
-            sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
+            sslContextFactory.setTrustStorePath(SecurityUtils.formatKeyringUrl(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
         }
