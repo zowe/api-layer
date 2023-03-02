@@ -24,9 +24,11 @@ import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @SpringBootTest
@@ -73,6 +75,39 @@ class HttpConfigTest {
         void thenCreateIt() {
             Assertions.assertNotNull(httpConfig.eurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler));
         }
+    }
+
+    @Nested
+    class KeyringFormatAndPasswordUpdate {
+
+        @Test
+        void whenKeyringHasWrongFormatAndMissingPasswords_thenFixIt() {
+            HttpConfig httpConfig = new HttpConfig(null);
+            ReflectionTestUtils.setField(httpConfig, "keyStorePath", "safkeyring:///userId/ringId1");
+            ReflectionTestUtils.setField(httpConfig, "trustStorePath", "safkeyring:////userId/ringId2");
+
+            httpConfig.init();
+
+            assertEquals("safkeyring://userId/ringId1", ReflectionTestUtils.getField(httpConfig, "keyStorePath"));
+            assertEquals("safkeyring://userId/ringId2", ReflectionTestUtils.getField(httpConfig, "trustStorePath"));
+            assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(httpConfig, "keyStorePassword"));
+            assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(httpConfig, "trustStorePassword"));
+        }
+
+        @Test
+        void whenKeystore_thenDoNothing() {
+            HttpConfig httpConfig = new HttpConfig(null);
+            ReflectionTestUtils.setField(httpConfig, "keyStorePath", "/path1");
+            ReflectionTestUtils.setField(httpConfig, "trustStorePath", "/path2");
+
+            httpConfig.init();
+
+            assertEquals("/path1", ReflectionTestUtils.getField(httpConfig, "keyStorePath"));
+            assertEquals("/path2", ReflectionTestUtils.getField(httpConfig, "trustStorePath"));
+            assertNull(ReflectionTestUtils.getField(httpConfig, "keyStorePassword"));
+            assertNull(ReflectionTestUtils.getField(httpConfig, "trustStorePassword"));
+        }
+
     }
 
 }

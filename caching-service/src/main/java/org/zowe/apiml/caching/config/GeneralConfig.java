@@ -18,9 +18,13 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
+import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
+import org.zowe.apiml.product.web.TomcatKeyringFix;
 
 @Configuration
+@Import({ TomcatKeyringFix.class, TomcatAcceptFixConfig.class })
 @Data
 @ToString
 public class GeneralConfig {
