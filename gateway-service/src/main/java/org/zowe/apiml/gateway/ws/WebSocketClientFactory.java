@@ -10,10 +10,13 @@
 
 package org.zowe.apiml.gateway.ws;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
@@ -25,13 +28,14 @@ import javax.annotation.PreDestroy;
  * Manages the client lifecycle
  */
 @Component
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE) // for testing purposes
 @Slf4j
 public class WebSocketClientFactory {
 
     private final JettyWebSocketClient client;
 
+    @Autowired
     public WebSocketClientFactory(SslContextFactory.Client jettyClientSslContextFactory) {
-
         log.debug("Creating Jetty WebSocket client, with SslFactory: {}",
             jettyClientSslContextFactory);
         client = new JettyWebSocketClient(new WebSocketClient(new HttpClient(jettyClientSslContextFactory)));
@@ -43,10 +47,10 @@ public class WebSocketClientFactory {
     }
 
     @PreDestroy
-    private void closeClient() {
+    void closeClient() {
         if (client.isRunning()) {
             log.debug("Closing Jetty WebSocket client");
-            closeClient();
+            client.stop();
         }
     }
 
