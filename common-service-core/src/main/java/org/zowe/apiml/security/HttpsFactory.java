@@ -109,7 +109,7 @@ public class HttpsFactory {
         if (StringUtils.isNotEmpty(config.getTrustStore())) {
             sslContextBuilder.setKeyStoreType(config.getTrustStoreType()).setProtocol(config.getProtocol());
 
-            if (!config.getTrustStore().startsWith(SecurityUtils.SAFKEYRING)) {
+            if (!SecurityUtils.isKeyring(config.getTrustStore())) {
                 if (config.getTrustStorePassword() == null) {
                     apimlLog.log("org.zowe.apiml.common.truststorePasswordNotDefined");
                     throw new HttpsConfigError("server.ssl.trustStorePassword configuration parameter is not defined",
@@ -145,7 +145,7 @@ public class HttpsFactory {
         if (StringUtils.isNotEmpty(config.getKeyStore())) {
             sslContextBuilder.setKeyStoreType(config.getKeyStoreType()).setProtocol(config.getProtocol());
 
-            if (!config.getKeyStore().startsWith(SecurityUtils.SAFKEYRING)) {
+            if (!SecurityUtils.isKeyring(config.getKeyStore())) {
                 loadKeystoreMaterial(sslContextBuilder);
             } else {
                 loadKeyringMaterial(sslContextBuilder);
@@ -247,12 +247,12 @@ public class HttpsFactory {
     }
 
     public void setSystemSslProperties() {
-        setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.replaceFourSlashes(config.getKeyStore()));
+        setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.formatKeyringUrl(config.getKeyStore()));
         setSystemProperty("javax.net.ssl.keyStorePassword",
             config.getKeyStorePassword() == null ? null : String.valueOf(config.getKeyStorePassword()));
         setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
 
-        setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.replaceFourSlashes(config.getTrustStore()));
+        setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.formatKeyringUrl(config.getTrustStore()));
         setSystemProperty("javax.net.ssl.trustStorePassword",
             config.getTrustStorePassword() == null ? null : String.valueOf(config.getTrustStorePassword()));
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
