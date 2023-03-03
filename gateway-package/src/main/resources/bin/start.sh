@@ -234,6 +234,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -jar ${JAR_FILE} &
 
 pid=$!

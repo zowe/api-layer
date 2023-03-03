@@ -162,6 +162,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUI
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${DISCOVERY_LOADER_PATH} \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djava.library.path=${LIBPATH} \
     -jar "${JAR_FILE}" &
 pid=$!
