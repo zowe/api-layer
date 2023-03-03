@@ -75,7 +75,7 @@ export class JclWriter {
         let blank = true;
 
         for (let i = 0; i < words.length; i++) {
-            let word = words[i];
+            const word = words[i];
             if (!blank) {
                 // if previous word is on the same line add separator
                 formatted += ' ';
@@ -101,7 +101,7 @@ export class JclWriter {
             }
 
             // try to write the whole long word into lines. The first line could be shorter
-            [position, word, formatted, blank] = JclWriter.formatWord(position, word, i, words, formatted, blank);
+            [position, formatted, blank] = JclWriter.formatWord(position, word, i, words, formatted, blank);
         }
 
         return formatted;
@@ -127,7 +127,7 @@ export class JclWriter {
                 word = word.substring(j, word.length);
             }
         }
-        return [position, word, formatted, blank] as const;
+        return [position, formatted, blank] as const;
     }
 
     add(command: string) {
