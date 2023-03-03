@@ -6,8 +6,8 @@
 //* This JCL can be used for mapping from a distributed identity to
 //* a mainframe identity
 //*
-//* 1) Validate job header and make all necessary changes according
-//*    to your system environment.
+//* 1) Validate the job header and make all necessary changes
+//*    according to your system environment.
 //*
 //* 2) Run the JCL on {{system}}.
 //*

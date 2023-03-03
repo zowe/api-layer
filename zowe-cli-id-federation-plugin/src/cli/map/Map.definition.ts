@@ -28,7 +28,7 @@ import {ProfileConstants} from "../../api/ProfileConstants";
 const MapDefinition: ICommandDefinition = {
     name: "map",
     summary: "Generate a mapping association from a distributed user identity to a mainframe user ID",
-    description: "When you need to configure mainframe security for a user identity propagation, you this command to" +
+    description: "When you need to configure mainframe security for a user identity propagation, use this command to " +
         "generate a JCL based on [inputFile] that creates a mapping association from a distributed user identity to a mainframe user ID. ",
     type: "command",
     handler: __dirname + "/Map.handler",
