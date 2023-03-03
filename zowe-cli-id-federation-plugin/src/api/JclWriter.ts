@@ -101,28 +101,33 @@ export class JclWriter {
             }
 
             // try to write the whole long word into lines. The first line could be shorter
-            for (let j = MAX_LINE_LENGTH - position - 1; word.length > 0; j = MAX_LINE_LENGTH - 1) {
-                if ((i < words.length - 1) && (position + word.length > MAX_LINE_LENGTH - 2) && (word.length < MAX_LINE_LENGTH)) {
-                    // if the latest piece of word would fulfill the line and it cannot be split, rather split the piece to two lines
-                    j = word.length - 1;
-                }
-
-                if (j >= word.length) {
-                    // the last piece of word could be written in the line
-                    formatted += word;
-                    position = word.length;
-                    blank = false;
-                    break;
-                } else {
-                    // there is no enough room for the whole word, put first part and use JCL breaking character
-                    formatted += word.substring(0, j) + '-\n';
-                    position = 0;
-                    word = word.substring(j, word.length);
-                }
-            }
+            [position, word, formatted, blank] = JclWriter.formatWord(position, word, i, words, formatted, blank);
         }
 
         return formatted;
+    }
+
+    private static formatWord(position: number, word: string, i: number, words: string[], formatted: string, blank: boolean) {
+        for (let j = MAX_LINE_LENGTH - position - 1; word.length > 0; j = MAX_LINE_LENGTH - 1) {
+            if ((i < words.length - 1) && (position + word.length > MAX_LINE_LENGTH - 2) && (word.length < MAX_LINE_LENGTH)) {
+                // if the latest piece of word would fulfill the line and it cannot be split, rather split the piece to two lines
+                j = word.length - 1;
+            }
+
+            if (j >= word.length) {
+                // the last piece of word could be written in the line
+                formatted += word;
+                position = word.length;
+                blank = false;
+                break;
+            } else {
+                // there is no enough room for the whole word, put first part and use JCL breaking character
+                formatted += word.substring(0, j) + '-\n';
+                position = 0;
+                word = word.substring(j, word.length);
+            }
+        }
+        return [position, word, formatted, blank] as const;
     }
 
     add(command: string) {
