@@ -19,8 +19,6 @@ describe("Racf Commands", () => {
 
         const racfCommands = new RacfCommands("ldap://host:1234", identities);
         const commands = racfCommands.getCommands();
-        // eslint-disable-next-line max-len
-        expect(commands.toString()).toBe("RACMAP ID(mf_jir) MAP USERDIDFILTER(NAME('dist_jirka')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Jirka'),RACMAP ID(mf_lena) MAP USERDIDFILTER(NAME('dist_lena')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Lena'),RACMAP ID(mf_pab) MAP USERDIDFILTER(NAME('dist_pablo')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Pablo'),RACMAP ID(mf_name) MAP USERDIDFILTER(NAME('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Name'),SETROPTS RACLIST(IDIDMAP) REFRESH\n");
         expect(commands).toMatchSnapshot();
     });
 
