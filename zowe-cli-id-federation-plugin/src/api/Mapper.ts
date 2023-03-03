@@ -27,7 +27,8 @@ export class Mapper {
         const identities = new CsvParser(this.file).getIdentities();
         const commands = this.createSafCommands(identities);
         const jcl = await this.createJcl(commands);
-        const fileName = `idf_${this.esm}${this.system ? `_${this.system}` : ""}.jcl`;
+        const fileMsg = this.system ? `_${this.system}` : "";
+        const fileName = `idf_${this.esm}${fileMsg}.jcl`;
         fs.writeFileSync(fileName, jcl);
 
         const systemMsg = this.system ? ` on the system ${this.system}` : "";
