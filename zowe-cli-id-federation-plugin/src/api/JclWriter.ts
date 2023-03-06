@@ -21,45 +21,52 @@ export class JclWriter {
     }
 
     parse(command: string): string[] {
-        const words = [];
+        const words: string[] = [];
         let lastWord = "";
-        let status = 0;
-        for (let i = 0; i < command.length; i++) {
-            switch (status) {
-                case 0: // outside the string
-                    if (command.charAt(i) == '\'') {
-                        // on apos switch to state 1 - parsing a string
-                        status = 1;
-                        lastWord += '\'';
-                    } else if (command.charAt(i) == ' ') {
-                        // space means to store lastWord as fully parsed and wait for the next word
-                        if (lastWord) {
-                            words.push(lastWord);
-                            lastWord = '';
-                        }
-                    } else {
-                        // everything else is a part of the word
-                        lastWord += command.charAt(i);
-                    }
-                    break;
-                case 1: // inside the string
-                    lastWord += command.charAt(i);
-                    if (command.charAt(i) == '\'') {
-                        if ((command.length > i + 1) && (command.charAt(i + 1) == '\'')) {
-                            // two apos means escaped apos, still parsing the string
-                            lastWord += '\'';
-                            i++;
-                        } else {
-                            // ending apos, stop parsing the string
-                            status = 0;
-                        }
-                    }
-                    break;
-            }
-        }
+        const status = 0;
+        lastWord = JclWriter.getLastWord(command, status, lastWord, words);
         // if lastWord still contains a word add it to response (text without spaces on end or even opened string)
         if (lastWord) words.push(lastWord);
         return words;
+    }
+
+    private static getLastWord(command: string, status: number, lastWord: string, words: string[]) {
+        for (let i = 0; i < command.length; i++) {
+            if (status === 0) {// outside the string
+                [status, lastWord] = JclWriter.parseCommand(command, i, status, lastWord, words);
+            } else if (status === 1) {// inside the string
+                lastWord += command.charAt(i);
+                if (command.charAt(i) == '\'') {
+                    if ((command.length > i + 1) && (command.charAt(i + 1) == '\'')) {
+                        // two apos means escaped apos, still parsing the string
+                        lastWord += '\'';
+                        i++;
+                    } else {
+                        // ending apos, stop parsing the string
+                        status = 0;
+                    }
+                }
+            }
+        }
+        return lastWord;
+    }
+
+    private static parseCommand(command: string, i: number, status: number, lastWord: string, words: string[]) {
+        if (command.charAt(i) == '\'') {
+            // on apos switch to state 1 - parsing a string
+            status = 1;
+            lastWord += '\'';
+        } else if (command.charAt(i) == ' ') {
+            // space means to store lastWord as fully parsed and wait for the next word
+            if (lastWord) {
+                words.push(lastWord);
+                lastWord = '';
+            }
+        } else {
+            // everything else is a part of the word
+            lastWord += command.charAt(i);
+        }
+        return [status, lastWord] as const;
     }
 
     format(words: string[]): string {
@@ -68,7 +75,7 @@ export class JclWriter {
         let blank = true;
 
         for (let i = 0; i < words.length; i++) {
-            let word = words[i];
+            const word = words[i];
             if (!blank) {
                 // if previous word is on the same line add separator
                 formatted += ' ';
@@ -94,28 +101,33 @@ export class JclWriter {
             }
 
             // try to write the whole long word into lines. The first line could be shorter
-            for (let j = MAX_LINE_LENGTH - position - 1; word.length > 0; j = MAX_LINE_LENGTH - 1) {
-                if ((i < words.length - 1) && (position + word.length > MAX_LINE_LENGTH - 2) && (word.length < MAX_LINE_LENGTH)) {
-                    // if the latest piece of word would fulfill the line and it cannot be split, rather split the piece to two lines
-                    j = word.length - 1;
-                }
-
-                if (j >= word.length) {
-                    // the last piece of word could be written in the line
-                    formatted += word;
-                    position = word.length;
-                    blank = false;
-                    break;
-                } else {
-                    // there is no enough room for the whole word, put first part and use JCL breaking character
-                    formatted += word.substring(0, j) + '-\n';
-                    position = 0;
-                    word = word.substring(j, word.length);
-                }
-            }
+            [position, formatted, blank] = JclWriter.formatWord(position, word, i, words, formatted, blank);
         }
 
         return formatted;
+    }
+
+    private static formatWord(position: number, word: string, i: number, words: string[], formatted: string, blank: boolean) {
+        for (let j = MAX_LINE_LENGTH - position - 1; word.length > 0; j = MAX_LINE_LENGTH - 1) {
+            if ((i < words.length - 1) && (position + word.length > MAX_LINE_LENGTH - 2) && (word.length < MAX_LINE_LENGTH)) {
+                // if the latest piece of word would fulfill the line and it cannot be split, rather split the piece to two lines
+                j = word.length - 1;
+            }
+
+            if (j >= word.length) {
+                // the last piece of word could be written in the line
+                formatted += word;
+                position = word.length;
+                blank = false;
+                break;
+            } else {
+                // there is no enough room for the whole word, put first part and use JCL breaking character
+                formatted += word.substring(0, j) + '-\n';
+                position = 0;
+                word = word.substring(j, word.length);
+            }
+        }
+        return [position, formatted, blank] as const;
     }
 
     add(command: string) {

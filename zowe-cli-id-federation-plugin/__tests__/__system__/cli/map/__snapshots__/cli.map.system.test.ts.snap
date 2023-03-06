@@ -11,7 +11,7 @@ exports[`id-federation map should display the help 1`] = `
  -----------
 
    When you need to configure mainframe security for a user identity propagation,
-   you this command togenerate a JCL based on [inputFile] that creates a mapping
+   use this command to generate a JCL based on [inputFile] that creates a mapping
    association from a distributed user identity to a mainframe user ID.
 
  USAGE

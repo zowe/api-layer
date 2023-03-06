@@ -10,10 +10,13 @@
 
 package org.zowe.apiml.client.configuration;
 
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * Configuration of Tomcat
@@ -21,11 +24,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TomcatConfiguration {
     @Bean
-    public ServletWebServerFactory servletContainer() {
+    public ServletWebServerFactory servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         System.setProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", "true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        tomcat.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         return tomcat;
     }
 }
