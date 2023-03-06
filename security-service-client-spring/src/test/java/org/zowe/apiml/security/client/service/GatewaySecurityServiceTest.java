@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
-public class GatewaySecurityServiceTest {
+class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
     private static final String PASSWORD = "pass";
     private static final String NEW_PASSWORD = "newPass";
@@ -62,10 +62,10 @@ public class GatewaySecurityServiceTest {
     void setup() {
         gatewayConfigProperties = GatewayConfigProperties.builder().scheme(GATEWAY_SCHEME).hostname(GATEWAY_HOST).build();
         GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
-        authConfigurationProperties = mock(AuthConfigurationProperties.class);
-        cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
-        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
-        when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn(COOKIE_NAME);
+        authConfigurationProperties = new AuthConfigurationProperties();
+        cookieProperties = new AuthConfigurationProperties.CookieProperties();
+        authConfigurationProperties.setCookieProperties(cookieProperties);
+        cookieProperties.setCookieName(COOKIE_NAME);
         closeableHttpClient = mock(CloseableHttpClient.class);
         responseHandler = spy(new RestResponseHandler());
 

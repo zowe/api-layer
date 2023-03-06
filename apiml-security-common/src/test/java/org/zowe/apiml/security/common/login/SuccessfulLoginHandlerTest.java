@@ -18,11 +18,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import javax.servlet.http.Cookie;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 class SuccessfulLoginHandlerTest {
     private final TokenAuthentication dummyAuth = new TokenAuthentication("TEST_TOKEN_STRING");
@@ -39,7 +39,7 @@ class SuccessfulLoginHandlerTest {
 
         authConfigurationProperties = new AuthConfigurationProperties();
         successfulLoginHandler = new SuccessfulLoginHandler(authConfigurationProperties);
-        authConfigurationProperties.getCookieProperties().setCookieName(COOKIE_NAME);
+        authConfigurationProperties.getCookieProperties().setCookieName(SecurityUtils.COOKIE_NAME);
     }
 
     @Nested

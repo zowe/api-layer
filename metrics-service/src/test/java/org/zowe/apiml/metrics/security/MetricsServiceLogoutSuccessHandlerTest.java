@@ -12,7 +12,6 @@ package org.zowe.apiml.metrics.security;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -23,7 +22,6 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import javax.servlet.http.Cookie;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 class MetricsServiceLogoutSuccessHandlerTest {
@@ -40,12 +38,12 @@ class MetricsServiceLogoutSuccessHandlerTest {
         mockHttpServletResponse = new MockHttpServletResponse();
         mockHttpSession = new MockHttpSession();
 
-        authConfigurationProperties = mock(AuthConfigurationProperties.class);
-        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+        authConfigurationProperties = new AuthConfigurationProperties();
+        AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
+        cookieProperties.setCookieName(COOKIE_NAME);
+        authConfigurationProperties.setCookieProperties(cookieProperties);
 
         underTest = new MetricsServiceLogoutSuccessHandler(authConfigurationProperties);
-        Mockito.when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
-        Mockito.when(cookieProperties.getCookieName()).thenReturn(COOKIE_NAME);
     }
 
     @Test

@@ -273,12 +273,11 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             @Test
             void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
-                AuthConfigurationProperties authConfigurationPropertiesMock = mock(AuthConfigurationProperties.class);
-                AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
-                when(authConfigurationPropertiesMock.getCookieProperties()).thenReturn(cookieProperties);
-                when(authConfigurationPropertiesMock.getCookieProperties().getCookieName()).thenReturn(COOKIE_NAME);
 
-                String cookieName = authConfigurationPropertiesMock.getCookieProperties().getCookieName();
+                AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
+                cookieProperties.setCookieName(COOKIE_NAME);
+                authConfigurationProperties.setCookieProperties(cookieProperties);
+                String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
                 request.setCookies(new Cookie(cookieName, "jwtInCookies"));
 
                 Optional<String> token = authService.getJwtTokenFromRequest(request);

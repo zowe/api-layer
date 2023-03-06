@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,32 +26,13 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
-
 
 class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContextTest {
 
-    AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
+    AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+    AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
     private final ConvertAuthTokenInUriToCookieFilter filter = new ConvertAuthTokenInUriToCookieFilter(
         authConfigurationProperties);
-
-    @BeforeEach
-    void setUp() {
-        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
-        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
-        authConfigurationProperties.getCookieProperties().setCookieComment("");
-        authConfigurationProperties.getCookieProperties().setCookieNamePAT("PAT");
-        authConfigurationProperties.getCookieProperties().setCookieMaxAge(null);
-        authConfigurationProperties.getCookieProperties().setCookieSecure(true);
-        authConfigurationProperties.getCookieProperties().setCookieSameSite(SameSiteCookies.STRICT);
-        when(authConfigurationProperties.getCookieProperties().getCookieSameSite()).thenReturn(SameSiteCookies.STRICT);
-        when(authConfigurationProperties.getCookieProperties().getCookiePath()).thenReturn("/");
-        when(authConfigurationProperties.getCookieProperties().isCookieSecure()).thenReturn(true);
-        when(authConfigurationProperties.getCookieProperties().getCookieMaxAge()).thenReturn(null);
-        when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn(COOKIE_NAME);
-    }
 
     @Test
     void doesNotDoAnythingWhenThereIsNoParam() {
@@ -73,9 +55,12 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
 
     @Test
     void setsCookieForCorrectParameter() {
+
+        cookieProperties.setCookieName(SecurityUtils.COOKIE_NAME);
+        authConfigurationProperties.setCookieProperties(cookieProperties);
         ctx.setRequest(new MockHttpServletRequest("GET", "/service/api/v1"));
         Map<String, List<String>> params = new HashMap<>();
-        params.put(COOKIE_NAME, Collections.singletonList("token"));
+        params.put(SecurityUtils.COOKIE_NAME, Collections.singletonList("token"));
         ctx.setRequestQueryParams(params);
         boolean ignoreThisFilter = this.filter.shouldFilter();
         assertThat(ignoreThisFilter, is(true));
@@ -87,9 +72,11 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
 
     @Test
     void setsLocationToDashboardForApiCatalog() {
+
+        authConfigurationProperties.setCookieProperties(cookieProperties);
         ctx.setRequest(new MockHttpServletRequest("GET", "/apicatalog/ui/v1/"));
         Map<String, List<String>> params = new HashMap<>();
-        params.put(COOKIE_NAME, Collections.singletonList("token"));
+        params.put(SecurityUtils.COOKIE_NAME, Collections.singletonList("token"));
         ctx.setRequestQueryParams(params);
         boolean ignoreThisFilter = this.filter.shouldFilter();
         assertThat(ignoreThisFilter, is(true));

@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -37,12 +38,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 class CookieContentFilterTest {
 
     private CookieContentFilter cookieContentFilter;
-    private final AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
+    private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private final MockHttpServletRequest request = new MockHttpServletRequest();
     private final MockHttpServletResponse response = new MockHttpServletResponse();
     private final FilterChain filterChain = mock(FilterChain.class);
@@ -56,9 +56,9 @@ class CookieContentFilterTest {
             failureHandler,
             resourceAccessExceptionHandler,
             authConfigurationProperties);
-        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
-        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
-        when(cookieProperties.getCookieName()).thenReturn(COOKIE_NAME);
+        AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
+        authConfigurationProperties.setCookieProperties(cookieProperties);
+        cookieProperties.setCookieName(SecurityUtils.COOKIE_NAME);
     }
 
     @Test
