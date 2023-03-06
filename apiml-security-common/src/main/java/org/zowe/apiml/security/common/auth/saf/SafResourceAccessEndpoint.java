@@ -43,6 +43,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
             TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
             headers.set(HttpHeaders.COOKIE, COOKIE_NAME + "=" + tokenAuthentication.getCredentials());
         }
+
         return new HttpEntity<>(headers);
     }
 
