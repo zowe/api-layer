@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"management.server.port=10090","server.internal.enabled=false","apiml.routing.instanceIdHeader=true"})
+    properties = {"management.server.port=10090","server.internal.enabled=false","apiml.routing.instanceIdHeader=true","apiml.security.auth.CookieProperties.cookieName=apimlAuthenticationToken"})
 @Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
 @DirtiesContext
 public @interface AcceptanceTest {

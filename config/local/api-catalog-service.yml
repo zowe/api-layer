@@ -40,6 +40,11 @@ apiml:
     banner: console
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
+    security:
+         auth:
+            CookieProperties:
+                cookieName: apimlAuthenticationToken
+
 
 spring:
     config:

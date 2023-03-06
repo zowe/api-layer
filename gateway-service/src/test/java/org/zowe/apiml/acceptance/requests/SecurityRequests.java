@@ -12,22 +12,18 @@ package org.zowe.apiml.acceptance.requests;
 
 import io.restassured.http.Cookie;
 import lombok.RequiredArgsConstructor;
-
-import org.zowe.apiml.security.common.config.CookieNameForAuthentication;
 import org.zowe.apiml.security.common.login.LoginRequest;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
-//import static org.zowe.apiml.constants.ApimlConstants.COOKIE_AUTH_NAME;
-
 
 @RequiredArgsConstructor
 public class SecurityRequests {
     private final String basePath;
 
-    public Cookie validJwtToken() {
+    public Cookie validJwtToken(String cookieName) {
         LoginRequest loginRequest = new LoginRequest("user", "user");
 
         return given()
@@ -38,7 +34,7 @@ public class SecurityRequests {
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .extract()
-            .detailedCookie(CookieNameForAuthentication.COOKIE_AUTH_NAME);
+            .detailedCookie(cookieName);
 
 
     }

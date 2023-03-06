@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
+import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
@@ -51,6 +52,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void init() {
         passTicketService = spy(new PassTicketService());
         authSourceService = mock(AuthSourceService.class);
+        authConfigurationProperties.getCookieProperties().setCookieName(COOKIE_NAME);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
     }
 

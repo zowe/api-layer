@@ -64,8 +64,6 @@ class SuccessfulAccessTokenHandlerTest {
 
         underTest = new SuccessfulAccessTokenHandler(accessTokenProvider, rauditxService);
         httpServletRequest.setAttribute(TOKEN_REQUEST, accessTokenRequest);
-
-
     }
 
     @Nested
@@ -133,7 +131,6 @@ class SuccessfulAccessTokenHandlerTest {
             verify(rauditBuilder).failure();
             verify(rauditBuilder).issue();
         }
-
     }
 
     private void executeLoginHandler() throws IOException {

@@ -97,11 +97,8 @@ public class AuthConfigurationProperties {
     //Cookie properties
     @Data
     public static class CookieProperties {
-        public String getCookieName() {
-            CookieNameForAuthentication cookieNameForAuthentication = new CookieNameForAuthentication();
-            return cookieNameForAuthentication.getCookieName();
-        }
 
+        public String cookieName;
         private String cookieNamePAT = ApimlConstants.PAT_COOKIE_AUTH_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";

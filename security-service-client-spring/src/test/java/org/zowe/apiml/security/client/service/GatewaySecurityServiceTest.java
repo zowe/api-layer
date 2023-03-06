@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 public class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
@@ -48,6 +49,7 @@ public class GatewaySecurityServiceTest {
 
     private GatewayConfigProperties gatewayConfigProperties;
     private AuthConfigurationProperties authConfigurationProperties;
+    private AuthConfigurationProperties.CookieProperties cookieProperties;
     private GatewaySecurityService securityService;
     private String cookie;
     private RestResponseHandler responseHandler;
@@ -58,25 +60,19 @@ public class GatewaySecurityServiceTest {
 
     @BeforeEach
     void setup() {
-        gatewayConfigProperties = GatewayConfigProperties.builder()
-            .scheme(GATEWAY_SCHEME)
-            .hostname(GATEWAY_HOST)
-            .build();
+        gatewayConfigProperties = GatewayConfigProperties.builder().scheme(GATEWAY_SCHEME).hostname(GATEWAY_HOST).build();
         GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
-        authConfigurationProperties = new AuthConfigurationProperties();
+        authConfigurationProperties = mock(AuthConfigurationProperties.class);
+        cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
+        when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn(COOKIE_NAME);
         closeableHttpClient = mock(CloseableHttpClient.class);
         responseHandler = spy(new RestResponseHandler());
 
-        securityService = new GatewaySecurityService(
-            gatewayClient,
-            authConfigurationProperties,
-            closeableHttpClient,
-            responseHandler
-        );
+        securityService = new GatewaySecurityService(gatewayClient, authConfigurationProperties, closeableHttpClient, responseHandler);
 
         cookie = String.format("%s=%s",
-            "apimlAuthenticationToken", TOKEN);
-        // authConfigurationProperties.getCookieProperties().getCookieName(), TOKEN);
+            authConfigurationProperties.getCookieProperties().getCookieName(), TOKEN);
     }
 
 
@@ -95,8 +91,7 @@ public class GatewaySecurityServiceTest {
             header = mock(Header.class);
             when(response.getFirstHeader(HttpHeaders.SET_COOKIE)).thenReturn(header);
             when(header.getValue()).thenReturn(cookie);
-            when(closeableHttpClient.execute(any()))
-                .thenReturn(response);
+            when(closeableHttpClient.execute(any())).thenReturn(response);
         }
 
         @Nested
@@ -148,7 +143,6 @@ public class GatewaySecurityServiceTest {
             }
         }
 
-
         @Nested
         class WhenHandleBadResponse {
             private static final String LOG_PARAMETER_STRING = "Cannot access Gateway service. Uri '{}' returned: {}";
@@ -162,8 +156,7 @@ public class GatewaySecurityServiceTest {
 
             @BeforeEach
             void setup() {
-                uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
-                    gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
+                uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
                 response = mock(CloseableHttpResponse.class);
                 statusLine = mock(StatusLine.class);
                 when(response.getStatusLine()).thenReturn(statusLine);
@@ -182,8 +175,7 @@ public class GatewaySecurityServiceTest {
                 void givenInvalidMessageKey() throws IOException {
                     String errorMessage = MESSAGE_KEY_STRING + "badKey\"";
                     when(entity.getContent()).thenReturn(new ByteArrayInputStream(errorMessage.getBytes()));
-                    when(closeableHttpClient.execute(any()))
-                        .thenReturn(response);
+                    when(closeableHttpClient.execute(any())).thenReturn(response);
                     assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
                     verify(responseHandler).handleErrorType(response, ErrorType.AUTH_GENERAL, LOG_PARAMETER_STRING, uri);
                 }
@@ -192,8 +184,7 @@ public class GatewaySecurityServiceTest {
                 void givenGatewayUnauthorized_thenThrowException() throws IOException {
 
                     when(entity.getContent()).thenReturn(new ByteArrayInputStream("message".getBytes()));
-                    when(closeableHttpClient.execute(any()))
-                        .thenReturn(response);
+                    when(closeableHttpClient.execute(any())).thenReturn(response);
                     Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
                     assertEquals("Invalid Credentials", exception.getMessage());
                 }
@@ -202,13 +193,11 @@ public class GatewaySecurityServiceTest {
                 void givenValidMessageKey_thenHandleErrorTypeForThatMessageKey() throws IOException {
                     String errorMessage = MESSAGE_KEY_STRING + "org.zowe.apiml.security.login.invalidCredentials\"";
                     when(entity.getContent()).thenReturn(new ByteArrayInputStream(errorMessage.getBytes()));
-                    when(closeableHttpClient.execute(any()))
-                        .thenReturn(response);
+                    when(closeableHttpClient.execute(any())).thenReturn(response);
                     assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
                     verify(responseHandler).handleErrorType(response, ErrorType.BAD_CREDENTIALS, LOG_PARAMETER_STRING, uri);
                 }
             }
         }
-
     }
 }

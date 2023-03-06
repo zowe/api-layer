@@ -179,6 +179,10 @@ server:
 apiml:
     service:
         scheme: http
+    security:
+            auth:
+                CookieProperties:
+                    cookieName: apimlAuthencticationToken20
 
 eureka:
     instance:

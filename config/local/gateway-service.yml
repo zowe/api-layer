@@ -17,6 +17,8 @@ apiml:
             clientSecret:
             validationUrl:
         auth:
+            CookieProperties:
+                cookieName: apimlAuthenticationToken
             jwt:
                 customAuthHeader:
             passticket:

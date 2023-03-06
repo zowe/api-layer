@@ -30,6 +30,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.COOKIE_HEADER;
+import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 
 class ZoweJwtSchemeTest {
@@ -40,6 +41,7 @@ class ZoweJwtSchemeTest {
     HttpServletRequest request;
     AuthSourceService authSourceService;
     AuthConfigurationProperties configurationProperties;
+    AuthConfigurationProperties.CookieProperties cookieProperties;
     ZoweJwtScheme scheme;
     AuthenticationCommand command;
 
@@ -53,8 +55,10 @@ class ZoweJwtSchemeTest {
 
         authSourceService = mock(AuthSourceService.class);
         configurationProperties = mock(AuthConfigurationProperties.class);
-        when(configurationProperties.getCookieProperties()).thenReturn(new AuthConfigurationProperties.CookieProperties());
+        cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+        when(configurationProperties.getCookieProperties()).thenReturn(cookieProperties);
         when(configurationProperties.getTokenProperties()).thenReturn(new AuthConfigurationProperties.TokenProperties());
+        when(configurationProperties.getCookieProperties().getCookieName()).thenReturn(COOKIE_NAME);
 
         when(authSourceService.getJWT(authSource)).thenReturn("jwtToken");
         scheme = new ZoweJwtScheme(authSourceService, configurationProperties);

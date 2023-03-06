@@ -67,6 +67,9 @@ apiml:
             trustStore: ${server.ssl.truststore}
             trustStoreType: ${server.ssl.truststoreType}
             trustStorePassword: ${server.ssl.truststorePassword}
+        auth:
+            CookieProperties:
+                cookieName: apimlAuthenticationToken
 
     catalog:
         id: apimediationlayer

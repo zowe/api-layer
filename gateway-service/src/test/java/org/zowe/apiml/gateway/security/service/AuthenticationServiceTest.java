@@ -57,6 +57,7 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -107,6 +108,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
+        authConfigurationProperties.getCookieProperties().setCookieName(COOKIE_NAME);
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
@@ -271,7 +273,12 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             @Test
             void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
-                String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+                AuthConfigurationProperties authConfigurationPropertiesMock = mock(AuthConfigurationProperties.class);
+                AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+                when(authConfigurationPropertiesMock.getCookieProperties()).thenReturn(cookieProperties);
+                when(authConfigurationPropertiesMock.getCookieProperties().getCookieName()).thenReturn(COOKIE_NAME);
+
+                String cookieName = authConfigurationPropertiesMock.getCookieProperties().getCookieName();
                 request.setCookies(new Cookie(cookieName, "jwtInCookies"));
 
                 Optional<String> token = authService.getJwtTokenFromRequest(request);
@@ -395,7 +402,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
             assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
-
         }
 
         @Test

@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.security.common.content;
 
-//import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -38,11 +37,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 class CookieContentFilterTest {
 
     private CookieContentFilter cookieContentFilter;
-    private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+    private final AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
     private final MockHttpServletRequest request = new MockHttpServletRequest();
     private final MockHttpServletResponse response = new MockHttpServletResponse();
     private final FilterChain filterChain = mock(FilterChain.class);
@@ -56,6 +56,9 @@ class CookieContentFilterTest {
             failureHandler,
             resourceAccessExceptionHandler,
             authConfigurationProperties);
+        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
+        when(cookieProperties.getCookieName()).thenReturn(COOKIE_NAME);
     }
 
     @Test
@@ -63,8 +66,6 @@ class CookieContentFilterTest {
         String token = "token";
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-       // String cookieAuthName = ApimlConstants.COOKIE_AUTH_NAME;
-        //System.out.println(ApimlConstants.COOKIE_AUTH_NAME + " :   cookieName");
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
 
         request.setCookies(cookie);
@@ -162,16 +163,13 @@ class CookieContentFilterTest {
 
         assertTrue(content.isPresent());
         assertEquals(actualToken, content.get());
-
     }
 
     @Test
     void shouldReturnEmptyIfCookieValueIsEmpty() {
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), "");
         request.setCookies(cookie);
-
         Optional<AbstractAuthenticationToken> content = cookieContentFilter.extractContent(request);
-
         assertFalse(content.isPresent());
     }
 }
