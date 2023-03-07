@@ -11,5 +11,5 @@
 package org.zowe.apiml.security.common.utils;
 
 public class SecurityUtils {
-    public final static String COOKIE_NAME = "apimlAuthenticationToken";
+    public final static String COOKIE_AUTH_NAME = "apimlAuthenticationToken";
 }

@@ -24,7 +24,7 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
-import org.zowe.apiml.security.common.utils.SecurityUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
@@ -55,8 +55,10 @@ public abstract class ExternalMapper {
             HttpPost httpPost = new HttpPost(new URI(externalMapperUrl + mapperType.getUrlSuffix()));
             httpPost.setEntity(payload);
 
+            AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
-            httpPost.setHeader(new BasicHeader("Cookie", SecurityUtils.COOKIE_NAME + "=" + jwtToken));
+            httpPost.setHeader(new BasicHeader("Cookie", authConfigurationProperties.getCookieProperties().getCookieName() + "=" + jwtToken));
             log.debug("Executing request against external mapper API: {}", httpPost);
 
             HttpResponse httpResponse = httpClientProxy.execute(httpPost);

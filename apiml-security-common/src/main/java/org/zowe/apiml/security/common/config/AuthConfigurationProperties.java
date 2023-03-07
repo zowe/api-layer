@@ -98,7 +98,7 @@ public class AuthConfigurationProperties {
     //Cookie properties
     @Data
     public static class CookieProperties {
-        private String cookieName = SecurityUtils.COOKIE_NAME;
+        private String cookieName = SecurityUtils.COOKIE_AUTH_NAME;
         private String cookieNamePAT = ApimlConstants.PAT_COOKIE_AUTH_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";

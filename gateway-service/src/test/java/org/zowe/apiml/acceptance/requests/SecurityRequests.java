@@ -18,7 +18,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 public class SecurityRequests {
@@ -35,6 +35,6 @@ public class SecurityRequests {
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .extract()
-            .detailedCookie(COOKIE_NAME);
+            .detailedCookie(COOKIE_AUTH_NAME);
     }
 }
