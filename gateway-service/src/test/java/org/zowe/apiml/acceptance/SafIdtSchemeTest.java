@@ -33,7 +33,6 @@ import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
@@ -63,8 +62,6 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
 
     @Autowired
     protected SafRestAuthenticationService safRestAuthenticationService;
-    @Autowired
-    protected AuthConfigurationProperties authConfigurationProperties;
 
     private RestTemplate mockTemplate;
 
