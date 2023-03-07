@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
-import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import javax.servlet.http.Cookie;
 
@@ -27,11 +26,6 @@ class ApiCatalogLogoutSuccessHandlerTest {
 
     @Test
     void testOnLogoutSuccess() {
-        AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
-        AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
-        cookieProperties.setCookieName(SecurityUtils.COOKIE_NAME);
-        authConfigurationProperties.setCookieProperties(cookieProperties);
-
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         MockHttpSession mockHttpSession = new MockHttpSession();
         httpServletRequest.setSession(mockHttpSession);

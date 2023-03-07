@@ -21,7 +21,6 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +37,6 @@ class SuccessfulRefreshHandlerTest {
     AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     AuthenticationService authenticationService = mock(AuthenticationService.class);
     TokenCreationService tokenCreationService = mock(TokenCreationService.class);
-    AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
     SuccessfulRefreshHandler underTest = new SuccessfulRefreshHandler(authConfigurationProperties,
         authenticationService, tokenCreationService);
     HttpServletRequest request;
@@ -49,8 +47,6 @@ class SuccessfulRefreshHandlerTest {
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
         when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("NEWTOKEN");
-        cookieProperties.setCookieName(SecurityUtils.COOKIE_NAME);
-        authConfigurationProperties.setCookieProperties(cookieProperties);
     }
 
     @Nested

@@ -23,7 +23,6 @@ import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
@@ -52,7 +51,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     void init() {
         passTicketService = spy(new PassTicketService());
         authSourceService = mock(AuthSourceService.class);
-        authConfigurationProperties.getCookieProperties().setCookieName(SecurityUtils.COOKIE_NAME);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authSourceService, authConfigurationProperties);
     }
 

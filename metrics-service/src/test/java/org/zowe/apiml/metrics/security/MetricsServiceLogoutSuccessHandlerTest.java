@@ -22,7 +22,6 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import javax.servlet.http.Cookie;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 class MetricsServiceLogoutSuccessHandlerTest {
 
@@ -39,9 +38,6 @@ class MetricsServiceLogoutSuccessHandlerTest {
         mockHttpSession = new MockHttpSession();
 
         authConfigurationProperties = new AuthConfigurationProperties();
-        AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
-        cookieProperties.setCookieName(COOKIE_NAME);
-        authConfigurationProperties.setCookieProperties(cookieProperties);
         underTest = new MetricsServiceLogoutSuccessHandler(authConfigurationProperties);
     }
 

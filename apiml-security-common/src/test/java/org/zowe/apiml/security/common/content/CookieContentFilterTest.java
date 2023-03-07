@@ -22,7 +22,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -56,9 +55,6 @@ class CookieContentFilterTest {
             failureHandler,
             resourceAccessExceptionHandler,
             authConfigurationProperties);
-        AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
-        authConfigurationProperties.setCookieProperties(cookieProperties);
-        cookieProperties.setCookieName(SecurityUtils.COOKIE_NAME);
     }
 
     @Test

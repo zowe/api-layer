@@ -18,7 +18,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.utils.SecurityUtils;
 
 import javax.servlet.http.Cookie;
 
@@ -39,7 +38,6 @@ class SuccessfulLoginHandlerTest {
 
         authConfigurationProperties = new AuthConfigurationProperties();
         successfulLoginHandler = new SuccessfulLoginHandler(authConfigurationProperties);
-        authConfigurationProperties.getCookieProperties().setCookieName(SecurityUtils.COOKIE_NAME);
     }
 
     @Nested

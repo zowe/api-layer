@@ -57,7 +57,6 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -108,7 +107,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
-        authConfigurationProperties.getCookieProperties().setCookieName(COOKIE_NAME);
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
@@ -273,9 +271,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             @Test
             void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
-                AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
-                cookieProperties.setCookieName(COOKIE_NAME);
-                authConfigurationProperties.setCookieProperties(cookieProperties);
                 String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
                 request.setCookies(new Cookie(cookieName, "jwtInCookies"));
 
