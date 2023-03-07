@@ -9,6 +9,7 @@
  */
 
 package org.zowe.apiml.apicatalog.security;
+
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,6 @@ class ApiCatalogLogoutSuccessHandlerTest {
 
     @Test
     void testOnLogoutSuccess() {
-
         AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
         AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
         cookieProperties.setCookieName(SecurityUtils.COOKIE_NAME);
@@ -38,7 +38,8 @@ class ApiCatalogLogoutSuccessHandlerTest {
 
         MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
 
-        ApiCatalogLogoutSuccessHandler apiCatalogLogoutSuccessHandler = new ApiCatalogLogoutSuccessHandler(authConfigurationProperties);
+        AuthConfigurationProperties securityConfigurationProperties = new AuthConfigurationProperties();
+        ApiCatalogLogoutSuccessHandler apiCatalogLogoutSuccessHandler = new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
 
         apiCatalogLogoutSuccessHandler.onLogoutSuccess(
             httpServletRequest,
@@ -50,7 +51,7 @@ class ApiCatalogLogoutSuccessHandlerTest {
         assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
 
         Cookie cookie = httpServletResponse.getCookie(
-            authConfigurationProperties.getCookieProperties().getCookieName());
+            securityConfigurationProperties.getCookieProperties().getCookieName());
         assertNotNull(cookie);
         assertTrue(cookie.getSecure());
         assertTrue(cookie.isHttpOnly());

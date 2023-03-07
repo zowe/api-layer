@@ -55,6 +55,7 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
      */
     private void setCookie(String token, HttpServletResponse response) {
         // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
+        // so specify Set-Cookie header directly
 
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
         String cookieHeader = new CookieUtil.CookieHeaderBuilder(cp.getCookieName(), token)

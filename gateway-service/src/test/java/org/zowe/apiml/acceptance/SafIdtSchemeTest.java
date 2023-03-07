@@ -63,7 +63,6 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
 
     @Autowired
     protected SafRestAuthenticationService safRestAuthenticationService;
-
     @Autowired
     protected AuthConfigurationProperties authConfigurationProperties;
 

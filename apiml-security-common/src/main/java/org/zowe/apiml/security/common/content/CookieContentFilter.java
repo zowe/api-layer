@@ -26,7 +26,7 @@ import java.util.Optional;
  * Authenticate the JWT token stored in the cookie
  */
 public class CookieContentFilter extends AbstractSecureContentFilter {
-    public final AuthConfigurationProperties authConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     public CookieContentFilter(AuthenticationManager authenticationManager,
                                AuthenticationFailureHandler failureHandler,

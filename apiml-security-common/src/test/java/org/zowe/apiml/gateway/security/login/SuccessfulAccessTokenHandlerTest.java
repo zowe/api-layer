@@ -131,6 +131,7 @@ class SuccessfulAccessTokenHandlerTest {
             verify(rauditBuilder).failure();
             verify(rauditBuilder).issue();
         }
+
     }
 
     private void executeLoginHandler() throws IOException {

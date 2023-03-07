@@ -76,10 +76,10 @@ apiml:
         id: apimediationlayer
         title: API Mediation Layer API
         description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
-        version: 1.0.0
+        version:  1.0.0
 
     service-registry:
-        serviceFetchDelayInMillis: 20000
+        serviceFetchDelayInMillis:  20000
         cacheRefreshUpdateThresholdInMillis: 30000
         cacheRefreshInitialDelayInMillis: 30000
         cacheRefreshRetryDelayInMillis: 30000
@@ -141,10 +141,10 @@ eureka:
                         serviceUrl: /apicatalog
 
                 apiInfo:
-                    -   apiId: zowe.apiml.apicatalog
-                        version: 1.0.0
-                        gatewayUrl: api/v1
-                        swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 
                 service:
                     title: API Catalog
@@ -237,14 +237,12 @@ eureka:
             apiml:
                 corsEnabled: true
                 apiInfo:
-                    -   apiId: zowe.apiml.apicatalog
-                        version: 1.0.0
-                        gatewayUrl: api/v1
-                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 apiml:
     service:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false
-    security:
-         auth:

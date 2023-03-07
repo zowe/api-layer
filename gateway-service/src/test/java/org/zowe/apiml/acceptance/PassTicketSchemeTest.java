@@ -57,7 +57,7 @@ public class PassTicketSchemeTest extends AcceptanceTestWithTwoServices {
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                     .then()
                     .log().all()
-                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR)).body("messages[0].messageKey", is("org.zowe.apiml.security.ticket.generateFailed"));
+                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR)).body("messages[0].messageKey",is("org.zowe.apiml.security.ticket.generateFailed"));
             }
         }
     }

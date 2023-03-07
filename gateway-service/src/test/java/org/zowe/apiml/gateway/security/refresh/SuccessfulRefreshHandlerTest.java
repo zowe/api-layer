@@ -39,7 +39,8 @@ class SuccessfulRefreshHandlerTest {
     AuthenticationService authenticationService = mock(AuthenticationService.class);
     TokenCreationService tokenCreationService = mock(TokenCreationService.class);
     AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
-    SuccessfulRefreshHandler underTest = new SuccessfulRefreshHandler(authConfigurationProperties, authenticationService, tokenCreationService);
+    SuccessfulRefreshHandler underTest = new SuccessfulRefreshHandler(authConfigurationProperties,
+        authenticationService, tokenCreationService);
     HttpServletRequest request;
     HttpServletResponse response;
 
@@ -69,7 +70,8 @@ class SuccessfulRefreshHandlerTest {
             underTest.onAuthenticationSuccess(request, response, auth);
             verify(authenticationService, atLeastOnce()).invalidateJwtToken("TOKEN", true);
             assertThat(response.getStatus(), is(HttpStatus.NO_CONTENT.value()));
-            assertThat(response.getHeader(HttpHeaders.SET_COOKIE), is("apimlAuthenticationToken=NEWTOKEN; Path=/; Secure; HttpOnly; SameSite=Strict"));
+            assertThat(response.getHeader(HttpHeaders.SET_COOKIE),
+                is("apimlAuthenticationToken=NEWTOKEN; Path=/; Secure; HttpOnly; SameSite=Strict"));
         }
     }
 

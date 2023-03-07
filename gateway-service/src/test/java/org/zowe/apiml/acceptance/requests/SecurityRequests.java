@@ -14,11 +14,11 @@ import io.restassured.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.security.common.login.LoginRequest;
 
-import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.security.common.utils.SecurityUtils.COOKIE_NAME;
 
 @RequiredArgsConstructor
 public class SecurityRequests {
@@ -30,9 +30,9 @@ public class SecurityRequests {
         return given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
+        .when()
             .post(basePath + "/gateway/api/v1/auth/login")
-            .then()
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .extract()
             .detailedCookie(COOKIE_NAME);

@@ -179,8 +179,6 @@ server:
 apiml:
     service:
         scheme: http
-    security:
-            auth:
 
 eureka:
     instance:

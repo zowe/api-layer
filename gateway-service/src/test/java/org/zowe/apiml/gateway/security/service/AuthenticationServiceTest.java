@@ -273,7 +273,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             @Test
             void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
-
                 AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
                 cookieProperties.setCookieName(COOKIE_NAME);
                 authConfigurationProperties.setCookieProperties(cookieProperties);
@@ -401,6 +400,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
             assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
+
         }
 
         @Test

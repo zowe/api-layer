@@ -54,7 +54,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
         try {
             HttpEntity<HttpHeaders> httpEntity = createHttpEntity(authentication);
             ResponseEntity<Response> responseEntity = restTemplate.exchange(
-                endpointUrl + URL_VARIABLE_SUFFIX, HttpMethod.GET, httpEntity, Response.class, resourceName, accessLevel
+                    endpointUrl + URL_VARIABLE_SUFFIX, HttpMethod.GET, httpEntity, Response.class, resourceName, accessLevel
             );
             Response response = responseEntity.getBody();
             if (response != null && response.isError()) {
@@ -76,6 +76,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
         private boolean authorized;
         private boolean error;
         private String message;
+
     }
 
 }

@@ -40,9 +40,6 @@ apiml:
     banner: console
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-    security:
-         auth:
-
 
 spring:
     config:

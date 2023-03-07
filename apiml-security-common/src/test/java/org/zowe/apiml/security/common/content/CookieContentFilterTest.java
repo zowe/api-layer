@@ -67,7 +67,6 @@ class CookieContentFilterTest {
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
-
         request.setCookies(cookie);
 
         cookieContentFilter.doFilter(request, response, filterChain);
@@ -163,13 +162,16 @@ class CookieContentFilterTest {
 
         assertTrue(content.isPresent());
         assertEquals(actualToken, content.get());
+
     }
 
     @Test
     void shouldReturnEmptyIfCookieValueIsEmpty() {
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), "");
         request.setCookies(cookie);
+
         Optional<AbstractAuthenticationToken> content = cookieContentFilter.extractContent(request);
+
         assertFalse(content.isPresent());
     }
 }

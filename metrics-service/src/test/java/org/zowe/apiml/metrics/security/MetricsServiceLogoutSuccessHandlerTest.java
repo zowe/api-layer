@@ -42,7 +42,6 @@ class MetricsServiceLogoutSuccessHandlerTest {
         AuthConfigurationProperties.CookieProperties cookieProperties = new AuthConfigurationProperties.CookieProperties();
         cookieProperties.setCookieName(COOKIE_NAME);
         authConfigurationProperties.setCookieProperties(cookieProperties);
-
         underTest = new MetricsServiceLogoutSuccessHandler(authConfigurationProperties);
     }
 

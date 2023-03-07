@@ -36,6 +36,7 @@ public class GatewayRequests {
     private static final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
     private static final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
+
     private final Requests requests;
     private final String scheme;
     private final String host;

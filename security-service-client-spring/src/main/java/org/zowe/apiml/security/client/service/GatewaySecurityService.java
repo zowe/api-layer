@@ -46,9 +46,7 @@ public class GatewaySecurityService {
     private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
 
     private final GatewayClient gatewayClient;
-
     private final AuthConfigurationProperties authConfigurationProperties;
-
     private final CloseableHttpClient closeableHttpClient;
     private final RestResponseHandler responseHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -76,7 +74,6 @@ public class GatewaySecurityService {
             String json = objectMapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
             CloseableHttpResponse response = closeableHttpClient.execute(post);
-
             final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 final HttpEntity responseEntity = response.getEntity();
@@ -89,9 +86,7 @@ public class GatewaySecurityService {
                     "Cannot access Gateway service. Uri '{}' returned: {}", uri);
                 return Optional.empty();
             }
-
             return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
-
         } catch (IOException e) {
             responseHandler.handleException(e);
         }
@@ -105,20 +100,16 @@ public class GatewaySecurityService {
      * @return JWT token data as {@link QueryResponse}
      */
     public QueryResponse query(String token) {
-
-
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
-
         String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);
+
 
         try {
             HttpGet get = new HttpGet(uri);
             get.addHeader(HttpHeaders.COOKIE, cookie);
-
             CloseableHttpResponse response = closeableHttpClient.execute(get);
-
             final HttpEntity responseEntity = response.getEntity();
             String responseBody = null;
             if (responseEntity != null) {
@@ -160,8 +151,6 @@ public class GatewaySecurityService {
     }
 
     private Optional<String> extractToken(String cookies) {
-
-
         String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
 
         if (cookies == null || cookies.isEmpty() || !cookies.contains(cookieName)) {
