@@ -248,5 +248,3 @@ apiml:
         securePortEnabled: false
     security:
          auth:
-            CookieProperties:
-                cookieName: apimlAuthenticationToken

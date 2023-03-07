@@ -48,8 +48,6 @@ apiml:
             zosmf:
                 serviceId: zosmf  # Replace me with the correct z/OSMF service id
                 jwtAutoconfiguration: jwt
-            CookieProperties:
-                cookieName: apimlAuthenticationToken
         saf:
             provider: rest
             urls:

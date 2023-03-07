@@ -181,8 +181,6 @@ apiml:
         scheme: http
     security:
             auth:
-             CookieProperties:
-                 cookieName : apimlAuthencticationToken
 
 eureka:
     instance:

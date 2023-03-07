@@ -15,9 +15,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.config.PassTicketFailureConfig;
@@ -29,19 +27,16 @@ import static org.hamcrest.core.Is.is;
  * This test verifies that a REST message is returned in case of failure during generation of PassTicket.
  */
 @AcceptanceTest
-@ActiveProfiles("test")
 @Import(PassTicketFailureConfig.class)
 public class PassTicketSchemeTest extends AcceptanceTestWithTwoServices {
 
-    @Value("${apiml.security.auth.CookieProperties.cookieName}")
-    private String cookieName ;
     @Nested
     class GivenValidJwtToken {
         Cookie validJwtToken;
 
         @BeforeEach
         void setUp() {
-            validJwtToken = securityRequests.validJwtToken(cookieName);
+            validJwtToken = securityRequests.validJwtToken();
         }
 
         @Nested
@@ -62,7 +57,7 @@ public class PassTicketSchemeTest extends AcceptanceTestWithTwoServices {
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
                     .then()
                     .log().all()
-                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR)).body("messages[0].messageKey",is("org.zowe.apiml.security.ticket.generateFailed"));
+                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR)).body("messages[0].messageKey", is("org.zowe.apiml.security.ticket.generateFailed"));
             }
         }
     }

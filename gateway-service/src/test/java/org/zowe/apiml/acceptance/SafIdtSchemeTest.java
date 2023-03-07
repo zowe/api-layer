@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
@@ -55,14 +54,11 @@ import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
  */
 @AcceptanceTest
 @TestPropertySource(properties = {"spring.profiles.active=debug", "apiml.security.x509.externalMapperUrl="})
-@ActiveProfiles("test")
 class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;
     @Value("${server.ssl.keyStore}")
     private String keystore;
-    @Value("${apiml.security.auth.CookieProperties.cookieName}")
-    private String cookieName;
     private final String clientKeystore = "../keystore/client_cert/client-certs.p12";
 
     @Autowired
@@ -85,7 +81,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
 
         @BeforeEach
         void setUp() {
-            validJwtToken = securityRequests.validJwtToken(cookieName);
+            validJwtToken = securityRequests.validJwtToken();
         }
 
         @Nested

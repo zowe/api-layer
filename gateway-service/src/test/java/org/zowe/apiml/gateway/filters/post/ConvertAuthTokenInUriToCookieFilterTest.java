@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.filters.post;
 
-import org.apache.tomcat.util.http.SameSiteCookies;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
@@ -72,7 +70,7 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
 
     @Test
     void setsLocationToDashboardForApiCatalog() {
-
+        cookieProperties.setCookieName(SecurityUtils.COOKIE_NAME);
         authConfigurationProperties.setCookieProperties(cookieProperties);
         ctx.setRequest(new MockHttpServletRequest("GET", "/apicatalog/ui/v1/"));
         Map<String, List<String>> params = new HashMap<>();

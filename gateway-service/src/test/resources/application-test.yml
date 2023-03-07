@@ -39,8 +39,6 @@ apiml:
             provider: dummy
             zosmf:
                 serviceId: zosmf  # Replace me with the correct z/OSMF service id
-            CookieProperties:
-                cookieName: apimlAuthenticationToken
         zosmf:
             useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
         saf:
@@ -197,8 +195,8 @@ eureka:
                     description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
                 security:
                     auth:
-                        CookieProperties:
-                            cookieName: apimlAuthenticationToken
+#                        CookieProperties:
+#                            cookieName: apimlAuthenticationToken
     client:
         fetchRegistry: false
         registerWithEureka: false

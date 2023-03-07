@@ -102,6 +102,12 @@ then
     QUICK_START=-Xquickstart
 fi
 
+# setting the cookieName based on the instances
+
+if [ -z "${ZWE_configs_apiml_security_auth_uniqueCookie}" ]; then
+    cookieName="apimlAuthenticationToken."+${ZWE_haInstance_id}
+fi
+
 DISCOVERY_LOADER_PATH=${COMMON_LIB}
 
 if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
@@ -163,6 +169,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUI
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-} \
     -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true} \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \

@@ -42,8 +42,6 @@ apiml:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
          auth:
-            CookieProperties:
-                cookieName: apimlAuthenticationToken
 
 
 spring:
