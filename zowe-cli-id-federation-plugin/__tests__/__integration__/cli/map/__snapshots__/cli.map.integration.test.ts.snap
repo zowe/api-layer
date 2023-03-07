@@ -1,5 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`id-federation map command should fail when arguments are not valid 1`] = `
+"Command Error:
+Unknown argument: invalidarg
+Command failed due to improper syntax
+Did you mean: plugins validate?
+
+Command entered: "idf invalidarg"
+Use "zowe idf --help" to view groups, commands, and options.
+Error Details:
+Unknown argument: invalidarg
+"
+`;
+
+exports[`id-federation map command should fail when arguments are not valid 2`] = `""`;
+
 exports[`id-federation map command should fail when options are not passed 1`] = `
 "Command Error:
 Following arguments are missing: "esm, registry"
@@ -18,4 +33,43 @@ exports[`id-federation map command should print the successful creation message 
 "
 `;
 
-exports[`id-federation map command should return command error in case of invalid csv config with only single identity 1`] = `""`;
+exports[`id-federation map command should print the successful creation message with passed args 1`] = `
+"'idf_TSS_TST1.jcl' was created. Review and submit this JCL on the system TST1.
+"
+`;
+
+exports[`id-federation map command should return command error in case of csv config not found 1`] = `
+"Command Error:
+The input CSV file does not exist.
+"
+`;
+
+exports[`id-federation map command should return command error in case of csv config not found 2`] = `""`;
+
+exports[`id-federation map command should return command error in case of csv config with invalid identities 1`] = `""`;
+
+exports[`id-federation map command should return command error in case of invalid format csv config 1`] = `
+"Command Error:
+Invalid CSV format: Invalid Record Length: columns length is 3, got 1 on line 1
+"
+`;
+
+exports[`id-federation map command should return command error in case of invalid format csv config 2`] = `""`;
+
+exports[`id-federation map command should return command error in case of missing arguments 1`] = `
+"
+Syntax Error:
+No value specified for option:
+--system
+
+This option requires a value of type:
+string
+
+Option Description:
+The target JES system on which the command will be executed
+
+Use "zowe idf map --help" to view command description, usage, and options.
+"
+`;
+
+exports[`id-federation map command should return command error in case of missing arguments 2`] = `""`;
