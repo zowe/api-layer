@@ -19,7 +19,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.common.utils.SecurityUtils;
+import org.zowe.apiml.security.SecurityUtils;
 
 
 /**

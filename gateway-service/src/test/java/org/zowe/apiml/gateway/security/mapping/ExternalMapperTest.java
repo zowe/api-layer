@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -47,6 +48,7 @@ class ExternalMapperTest {
     private CloseableHttpResponse httpResponse;
     private StatusLine statusLine;
     private HttpEntity responseEntity;
+    private AuthConfigurationProperties authConfigurationProperties;
 
 
     @BeforeEach
@@ -61,10 +63,11 @@ class ExternalMapperTest {
         when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("validJwtToken");
         responseEntity = mock(HttpEntity.class);
         when(httpResponse.getEntity()).thenReturn(responseEntity);
-
+        authConfigurationProperties = new AuthConfigurationProperties();
         mapper = new TestExternalMapper(closeableHttpClient, tokenCreationService);
-        ReflectionTestUtils.setField(mapper,"externalMapperUrl","http://localhost/test");
-        ReflectionTestUtils.setField(mapper,"externalMapperUser","mapper_user");
+        mapper.authConfigurationProperties = authConfigurationProperties;
+        ReflectionTestUtils.setField(mapper, "externalMapperUrl", "http://localhost/test");
+        ReflectionTestUtils.setField(mapper, "externalMapperUser", "mapper_user");
     }
 
     @Nested
@@ -73,9 +76,7 @@ class ExternalMapperTest {
         class WhenUserMappingExists {
             @BeforeEach
             void setup() throws IOException {
-                when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream(
-                    "{\"userid\":\"ZOSUSER\",\"returnCode\":0,\"safReturnCode\":0,\"racfReturnCode\":0,\"racfReasonCode\":0}".getBytes()
-                ));
+                when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("{\"userid\":\"ZOSUSER\",\"returnCode\":0,\"safReturnCode\":0,\"racfReturnCode\":0,\"racfReasonCode\":0}".getBytes()));
             }
 
             @Test
@@ -113,6 +114,7 @@ class ExternalMapperTest {
             }
         }
     }
+
     @Nested
     class GivenInvalidMapperResponse {
 
@@ -122,6 +124,7 @@ class ExternalMapperTest {
             void setup() {
                 when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
             }
+
             @Test
             void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
@@ -136,6 +139,7 @@ class ExternalMapperTest {
             void setup() {
                 when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_PROCESSING);
             }
+
             @Test
             void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
@@ -150,6 +154,7 @@ class ExternalMapperTest {
             void setup() {
                 when(httpResponse.getStatusLine()).thenReturn(null);
             }
+
             @Test
             void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
@@ -164,6 +169,7 @@ class ExternalMapperTest {
             void setup() throws IOException {
                 when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("invalid content".getBytes()));
             }
+
             @Test
             void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
@@ -178,6 +184,7 @@ class ExternalMapperTest {
             void setup() throws IOException {
                 when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("".getBytes()));
             }
+
             @Test
             void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
@@ -191,7 +198,7 @@ class ExternalMapperTest {
     class GivenInvalidMapperUrl {
         @BeforeEach
         void setup() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUrl","%");
+            ReflectionTestUtils.setField(mapper, "externalMapperUrl", "%");
         }
 
         @Test
