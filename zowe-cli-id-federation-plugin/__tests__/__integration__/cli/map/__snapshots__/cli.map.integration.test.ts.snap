@@ -48,6 +48,8 @@ exports[`id-federation map command should return command error in case of csv co
 
 exports[`id-federation map command should return command error in case of csv config with invalid identities 1`] = `""`;
 
+exports[`id-federation map command should return command error in case of csv config with invalid identities 2`] = `""`;
+
 exports[`id-federation map command should return command error in case of invalid format csv config 1`] = `
 "Command Error:
 Invalid CSV format: Invalid Record Length: columns length is 3, got 1 on line 1

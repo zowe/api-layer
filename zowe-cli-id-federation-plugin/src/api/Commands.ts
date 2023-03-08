@@ -10,11 +10,10 @@
 
 import {ImperativeError, TextUtils} from "@zowe/imperative";
 import { warn } from "console";
-import * as fs from "fs";
 import {IIdentity} from "./CsvParser";
 import {hasValidLength} from "./ValidateUtil";
 
-export class TssCommands {
+export class Commands {
 
     readonly maxLengthMainframeId = 8;
     readonly maxLengthDistributedId = 246;
@@ -22,26 +21,25 @@ export class TssCommands {
 
     constructor(
         private registry: string,
-        private identities: IIdentity[]
+        private identities: IIdentity[],
+        private commandTemplate: string,
+        private refreshCommand: string
     ) {
     }
 
     getCommands(): string[] {
-        const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
-        const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-
-        const tssCommands = this.identities
-            .map(identity => this.getCommand(identity, tssTemplate))
+        const commands = this.identities
+            .map(identity => this.getCommand(identity))
             .filter(command => command);
 
-        if (!tssCommands.some(Boolean)) {
+        if (!commands.some(Boolean)) {
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
-        tssCommands.push(tssRefreshCommand);
-        return tssCommands;
+        commands.push(this.refreshCommand);
+        return commands;
     }
 
-    private getCommand(identity: IIdentity, tssTemplate: string): string {
+    private getCommand(identity: IIdentity): string {
         if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
             warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
@@ -60,7 +58,7 @@ export class TssCommands {
             return '';
         }
 
-        return TextUtils.renderWithMustache(tssTemplate, {
+        return TextUtils.renderWithMustache(this.commandTemplate, {
             mainframe_id: identity.mainframeId.trim(),
             distributed_id: identity.distributedId.trim(),
             registry: this.registry,

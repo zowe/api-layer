@@ -9,8 +9,7 @@
  */
 
 import {ImperativeError, TextUtils} from "@zowe/imperative";
-import {RacfCommands} from "./RacfCommands";
-import { TssCommands } from "./TssCommands";
+import { Commands } from "./Commands";
 import {getAccount} from "./JobUtil";
 import * as fs from "fs";
 import {CsvParser, IIdentity} from "./CsvParser";
@@ -53,11 +52,15 @@ export class Mapper {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
             case "racf": {
-                commandProcessor = new RacfCommands(this.registry, identities);
+                const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
+                const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
+                commandProcessor = new Commands(this.registry, identities, racfTemplate, racfRefreshCommand);
                 break;
             }
             case "tss": {
-                commandProcessor = new TssCommands(this.registry, identities);
+                const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
+                const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
+                commandProcessor = new Commands(this.registry, identities,tssTemplate, tssRefreshCommand);
                 break;
             }
             case "acf2": {
