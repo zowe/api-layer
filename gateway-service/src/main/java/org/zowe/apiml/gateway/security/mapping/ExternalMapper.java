@@ -21,7 +21,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -43,8 +42,7 @@ public abstract class ExternalMapper {
     private final CloseableHttpClient httpClientProxy;
     private final TokenCreationService tokenCreationService;
     private final Type mapperType;
-    @Autowired
-    AuthConfigurationProperties authConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

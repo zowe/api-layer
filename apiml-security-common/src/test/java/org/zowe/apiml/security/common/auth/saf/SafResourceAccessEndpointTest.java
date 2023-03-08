@@ -52,9 +52,8 @@ class SafResourceAccessEndpointTest {
 
     @BeforeEach
     void setUp() {
-        safResourceAccessEndpoint = new SafResourceAccessEndpoint(restTemplate);
         authConfigurationProperties = new AuthConfigurationProperties();
-        safResourceAccessEndpoint.authConfigurationProperties = authConfigurationProperties;
+        safResourceAccessEndpoint = new SafResourceAccessEndpoint(restTemplate, authConfigurationProperties);
         ReflectionTestUtils.setField(safResourceAccessEndpoint, "endpointUrl", TEST_URL);
     }
 

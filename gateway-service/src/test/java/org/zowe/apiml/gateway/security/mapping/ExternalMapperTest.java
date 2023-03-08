@@ -37,7 +37,7 @@ class ExternalMapperTest {
 
     class TestExternalMapper extends ExternalMapper {
         public TestExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
-            super(httpClientProxy, tokenCreationService, Type.X509);
+            super(httpClientProxy, tokenCreationService, Type.X509, authConfigurationProperties);
         }
     }
 
@@ -66,7 +66,6 @@ class ExternalMapperTest {
         authConfigurationProperties = new AuthConfigurationProperties();
 
         mapper = new TestExternalMapper(closeableHttpClient, tokenCreationService);
-        mapper.authConfigurationProperties = authConfigurationProperties;
         ReflectionTestUtils.setField(mapper,"externalMapperUrl","http://localhost/test");
         ReflectionTestUtils.setField(mapper,"externalMapperUser","mapper_user");
     }

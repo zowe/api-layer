@@ -15,7 +15,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
@@ -34,8 +33,8 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
     private String endpointUrl;
 
     private final RestTemplate restTemplate;
-    @Autowired
-    AuthConfigurationProperties authConfigurationProperties;
+
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     private <T> HttpEntity<T> createHttpEntity(Authentication authentication) {
 
