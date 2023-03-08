@@ -12,6 +12,8 @@ apiml:
             clientSecret:
             validationUrl:
         auth:
+            cookieProperties:
+                cookieName: apimlAuthenticationToken
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         ssl:

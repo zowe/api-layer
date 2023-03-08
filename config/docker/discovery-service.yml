@@ -5,6 +5,9 @@ apiml:
         staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
         allPeersUrls: https://discovery-service:10011/eureka
     security:
+        auth:
+            cookieProperties:
+                cookieName: apimlAuthenticationToken
         ssl:
             verifySslCertificatesOfServices: true
     banner: console

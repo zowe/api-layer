@@ -22,6 +22,10 @@ server:
         trustStoreType: PKCS12
 
 apiml:
+    security:
+        auth:
+            cookieProperties:
+                cookieName: apimlAuthenticationToken
     service:
         hostname: api-catalog-services
         port: 10014
