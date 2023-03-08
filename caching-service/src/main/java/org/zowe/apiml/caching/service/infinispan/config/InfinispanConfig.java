@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
@@ -29,7 +30,10 @@ import org.springframework.core.io.ResourceLoader;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
+import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
+import static org.zowe.apiml.security.SecurityUtils.isKeyring;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -37,6 +41,8 @@ import java.io.InputStream;
 @ConfigurationProperties(value = "caching.storage.infinispan")
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
 public class InfinispanConfig {
+
+    private static final String KEYRING_PASSWORD = "password";
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -55,6 +61,13 @@ public class InfinispanConfig {
     @Value("${jgroups.bind.address}")
     private String address;
 
+    @PostConstruct
+    void updateKeyring() {
+        if (isKeyring(keyStore)) {
+            keyStore = formatKeyringUrl(keyStore);
+            if (StringUtils.isBlank(keyStorePass)) keyStorePass = KEYRING_PASSWORD;
+        }
+    }
 
     @Bean
     DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {

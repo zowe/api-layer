@@ -25,10 +25,13 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Stores {
 
-    public static final String SAFKEYRING = "safkeyring";
+    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
+
     private KeyStore keyStore;
     private KeyStore trustStore;
     private final Config conf;
@@ -37,6 +40,21 @@ public class Stores {
     public Stores(Config conf) {
         this.conf = conf;
         init();
+    }
+
+    public static boolean isKeyring(String input) {
+        if (input == null) return false;
+        Matcher matcher = KEYRING_PATTERN.matcher(input);
+        return matcher.matches();
+    }
+
+    public static String formatKeyringUrl(String input) {
+        if (input == null) return null;
+        Matcher matcher = KEYRING_PATTERN.matcher(input);
+        if (matcher.matches()) {
+            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+        }
+        return input;
     }
 
     void init() {
@@ -79,7 +97,7 @@ public class Stores {
             }
             return;
         }
-        if (conf.getKeyStore().startsWith(SAFKEYRING)) {
+        if (isKeyring(conf.getKeyStore())) {
             try (InputStream keyringIStream = keyRingUrl(conf.getKeyStore()).openStream()) {
                 this.keyStore = readKeyStore(keyringIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
@@ -143,16 +161,13 @@ public class Stores {
     }
 
     public static URL keyRingUrl(String uri) throws MalformedURLException {
-        if (!uri.startsWith(SAFKEYRING + ":////")) {
+        if (!isKeyring(uri)) {
             throw new StoresNotInitializeException("Incorrect key ring format: " + uri
-                + ". Make sure you use format safkeyring:////userId/keyRing");
+                + ". Make sure you use format safkeyring://userId/keyRing");
         }
 
-        return new URL(replaceFourSlashes(uri));
+        return new URL(formatKeyringUrl(uri));
 
     }
 
-    public static String replaceFourSlashes(String storeUri) {
-        return storeUri == null ? null : storeUri.replaceFirst("////", "//");
-    }
 }

@@ -71,7 +71,8 @@ class HttpsFactoryTest {
     void shouldCreateSecureHttpClient() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        HttpClient httpClient = httpsFactory.createSecureHttpClient();
+
+        HttpClient httpClient = httpsFactory.createSecureHttpClient(null);
         assertEquals("org.apache.http.impl.client.InternalHttpClient", httpClient.getClass().getName());
     }
 
@@ -120,11 +121,11 @@ class HttpsFactoryTest {
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         httpsFactory.setSystemSslProperties();
 
-        assertEquals(SecurityUtils.replaceFourSlashes(httpsConfig.getKeyStore()), System.getProperty("javax.net.ssl.keyStore"));
+        assertEquals(SecurityUtils.formatKeyringUrl(httpsConfig.getKeyStore()), System.getProperty("javax.net.ssl.keyStore"));
         assertEquals(String.valueOf(httpsConfig.getKeyStorePassword()), System.getProperty("javax.net.ssl.keyStorePassword"));
         assertEquals(httpsConfig.getKeyStoreType(), System.getProperty("javax.net.ssl.keyStoreType"));
 
-        assertEquals(SecurityUtils.replaceFourSlashes(httpsConfig.getTrustStore()), System.getProperty("javax.net.ssl.trustStore"));
+        assertEquals(SecurityUtils.formatKeyringUrl(httpsConfig.getTrustStore()), System.getProperty("javax.net.ssl.trustStore"));
         assertEquals(String.valueOf(httpsConfig.getTrustStorePassword()), System.getProperty("javax.net.ssl.trustStorePassword"));
         assertEquals(httpsConfig.getTrustStoreType(), System.getProperty("javax.net.ssl.trustStoreType"));
     }

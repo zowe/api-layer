@@ -54,14 +54,13 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -73,6 +72,9 @@ import java.util.Map;
 @Configuration
 @Slf4j
 public class HttpConfig {
+
+    private static final char[] KEYRING_PASSWORD = "password".toCharArray();
+
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
 
@@ -127,6 +129,18 @@ public class HttpConfig {
         this.context = context;
     }
 
+    @PostConstruct
+    public void init() {
+        if (SecurityUtils.isKeyring(keyStorePath)) {
+            keyStorePath = SecurityUtils.formatKeyringUrl(keyStorePath);
+            if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
+        }
+        if (SecurityUtils.isKeyring(trustStorePath)) {
+            trustStorePath = SecurityUtils.formatKeyringUrl(trustStorePath);
+            if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
+        }
+    }
+
     @Bean
     @Qualifier("apimlEurekaJerseyClient")
     EurekaJerseyClient getEurekaJerseyClient() {
@@ -153,16 +167,12 @@ public class HttpConfig {
         return httpClient -> httpClient.secure(b -> b.sslContext(sslContext()));
     }
 
+
+
     SslContext sslContext() {
         try {
-            KeyStore keyStore = KeyStore.getInstance(this.keyStoreType);
-            try (InputStream inStream = Files.newInputStream(Paths.get(keyStorePath))) {
-                keyStore.load(inStream, keyStorePassword);
-            }
-            KeyStore trustStore = KeyStore.getInstance(this.trustStoreType);
-            try (InputStream inStream = Files.newInputStream(Paths.get(this.trustStorePath))) {
-                trustStore.load(inStream, this.trustStorePassword);
-            }
+            KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
+            KeyStore trustStore = SecurityUtils.loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
 
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             keyManagerFactory.init(keyStore, keyStorePassword);

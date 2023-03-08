@@ -15,6 +15,10 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,21 +30,24 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Slf4j
 @Configuration
 public class HttpConfig {
+
+    private static final char[] KEYRING_PASSWORD = "password".toCharArray();
+
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
 
@@ -109,6 +116,8 @@ public class HttpConfig {
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+    private final Timer connectionManagerTimer = new Timer(
+        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
@@ -118,9 +127,21 @@ public class HttpConfig {
     @Resource
     private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
 
+    void updateStorePaths() {
+        if (SecurityUtils.isKeyring(keyStore)) {
+            keyStore = SecurityUtils.formatKeyringUrl(keyStore);
+            if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
+        }
+        if (SecurityUtils.isKeyring(trustStore)) {
+            trustStore = SecurityUtils.formatKeyringUrl(trustStore);
+            if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
+        }
+    }
 
     @PostConstruct
     public void init() {
+        updateStorePaths();
+
         try {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
@@ -143,13 +164,15 @@ public class HttpConfig {
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
             HttpsFactory factory = new HttpsFactory(httpsConfig);
-            secureHttpClient = factory.createSecureHttpClient();
+            ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
+            secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
             optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
-            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
+            ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
+            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
 
             factory.setSystemSslProperties();
 
@@ -163,6 +186,24 @@ public class HttpConfig {
         }
     }
 
+    public ApimlPoolingHttpClientConnectionManager getConnectionManager(HttpsFactory factory) {
+        RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
+            .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+        socketFactoryRegistryBuilder.register("https", factory.createSslSocketFactory());
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
+        ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, timeToLive);
+        this.connectionManagerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                connectionManager.closeExpiredConnections();
+                connectionManager.closeIdleConnections(idleConnTimeoutSeconds, TimeUnit.SECONDS);
+            }
+        }, 30000, 30000);
+        connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
+        connectionManager.setMaxTotal(maxTotalConnections);
+        return connectionManager;
+    }
+
     @Bean
     @Qualifier("publicKeyCertificatesBase64")
     public Set<String> publicKeyCertificatesBase64() {
@@ -171,7 +212,7 @@ public class HttpConfig {
 
     private void setTruststore(SslContextFactory sslContextFactory) {
         if (StringUtils.isNotEmpty(trustStore)) {
-            sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
+            sslContextFactory.setTrustStorePath(SecurityUtils.formatKeyringUrl(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
         }

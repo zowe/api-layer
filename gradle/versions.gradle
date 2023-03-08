@@ -20,6 +20,7 @@ ext {
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.10.0'
     commonsIoVersion = '2.7!!'
+    commonsFileUploadVersion = '1.5'
     ehCacheVersion = '2.10.9.2'
     eurekaClientVersion = '1.10.17'
     findBugsVersion = '3.0.2'
@@ -131,6 +132,8 @@ ext {
         apache_commons_codec               : "commons-codec:commons-codec:${commonsCodecVersion}",
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
+        commons_fileupload                 : "commons-fileupload:commons-fileupload:${commonsFileUploadVersion}",
+
         apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
         awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
         bcprov                             : "org.bouncycastle:bcprov-jdk15on:${bouncyCastleVersion}",
