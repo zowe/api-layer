@@ -31,6 +31,7 @@ apimlServices:
 configs:
   port: 7554
   debug: false
+  sslDebug: ""
 
   apiml:
     security:
