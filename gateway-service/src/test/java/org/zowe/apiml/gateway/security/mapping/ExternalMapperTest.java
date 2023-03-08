@@ -67,8 +67,8 @@ class ExternalMapperTest {
 
         mapper = new TestExternalMapper(closeableHttpClient, tokenCreationService);
         mapper.authConfigurationProperties = authConfigurationProperties;
-        ReflectionTestUtils.setField(mapper,"externalMapperUrl", "http://localhost/test");
-        ReflectionTestUtils.setField(mapper,"externalMapperUser", "mapper_user");
+        ReflectionTestUtils.setField(mapper,"externalMapperUrl","http://localhost/test");
+        ReflectionTestUtils.setField(mapper,"externalMapperUser","mapper_user");
     }
 
     @Nested
