@@ -12,6 +12,7 @@ import {ICommandHandler, IHandlerParameters, ImperativeError} from "@zowe/impera
 import {Mapper} from "../../api/Mapper";
 import {hasValidLength} from "../../api/ValidateUtil";
 import * as fs from "fs";
+import {Constants} from "../../api/Constants";
 
 export default class MapHandler implements ICommandHandler {
 
@@ -34,25 +35,29 @@ export default class MapHandler implements ICommandHandler {
         }
         if (missingArgs.length != 0) {
             const msg = `Following arguments are missing: "${missingArgs.join(", ")}"`;
+            params.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg});
         }
 
         if (!fs.existsSync(file)) {
             const msg = `The input CSV file does not exist.`;
+            params.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg});
         }
 
         if (!hasValidLength(system, this.maxLengthSystem)) {
             const msg = `The system '${system}' has exceeded maximum length of ${this.maxLengthSystem} characters.`;
+            params.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg});
         }
 
         if (!hasValidLength(registry, this.maxLengthRegistry)) {
             const msg = `The registry '${registry}' has exceeded maximum length of ${this.maxLengthRegistry} characters.`;
+            params.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg});
         }
 
-        const mapper = new Mapper(file, esm, system, registry);
+        const mapper = new Mapper(file, esm, system, registry, params.response);
         params.response.console.log(await mapper.map());
     }
 

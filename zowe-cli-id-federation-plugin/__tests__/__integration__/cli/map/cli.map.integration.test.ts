@@ -12,6 +12,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {ITestEnvironment, runCliScript, stripProfileDeprecationMessages, TestEnvironment} from "@zowe/cli-test-utils";
 import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
+import {Constants} from "../../../../lib/api/Constants";
 
 // Test environment will be populated in the "beforeAll"
 let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
@@ -50,7 +51,7 @@ describe("id-federation map command", () => {
     it("should fail when options are not passed", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_error_handler.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.fatalCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -58,7 +59,7 @@ describe("id-federation map command", () => {
     it("should fail when arguments are not valid", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_error_handler_invalid_argument.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.fatalCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -67,7 +68,7 @@ describe("id-federation map command", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
 
         expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
-        expect(response.status).toBe(0);
+        expect(response.status).toBe(Constants.okayCode);
         expect(response.stdout.toString()).toContain("idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -76,7 +77,7 @@ describe("id-federation map command", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_with_passed_args.sh", TEST_ENVIRONMENT,
             [`${TEST_ENVIRONMENT.workingDir}/users.csv`, "TSS", "TST1", "ldap://12.34.56.78:910"]);
 
-        expect(response.status).toBe(0);
+        expect(response.status).toBe(Constants.okayCode);
         expect(response.stderr.toString()).toBe("");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -85,7 +86,7 @@ describe("id-federation map command", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_with_passed_args.sh", TEST_ENVIRONMENT,
             [csv, "TSS", "", "ldap://12.34.56.78:910"]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.fatalCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -95,7 +96,7 @@ describe("id-federation map command", () => {
 
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(0);
+        expect(response.status).toBe(Constants.okayCode);
         expect(response.stderr.toString()).toBe("");
         expect(response.stdout.toString()).toContain("'idf_RACF_TST2.jcl' was created. Review and submit this JCL on the system TST2");
         expect(response.stdout.toString()).toMatchSnapshot();
@@ -104,7 +105,7 @@ describe("id-federation map command", () => {
     it("should return command error in case of csv config with invalid identities", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [wrongCsv]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.warnCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -112,7 +113,7 @@ describe("id-federation map command", () => {
     it("should return command error in case of invalid format csv config", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [wrongFormatCsv]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.fatalCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -120,7 +121,7 @@ describe("id-federation map command", () => {
     it("should return command error in case of csv config not found", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, ["/wrong/path"]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.fatalCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });

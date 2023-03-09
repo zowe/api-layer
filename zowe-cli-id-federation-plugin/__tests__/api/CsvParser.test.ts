@@ -10,25 +10,33 @@
 
 import {CsvParser} from "../../lib/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
+import {ResponseMock} from "../__src__/ResponseMock";
+import {Constants} from "../../lib/api/Constants";
 
 describe("Mapper", () => {
 
     it("should successfully parse the file", () => {
-        const csvParser = new CsvParser('__tests__/__resources__/csv/users.csv');
+        const response = new ResponseMock();
+        const csvParser = new CsvParser('__tests__/__resources__/csv/users.csv', response);
 
         expect(csvParser.getIdentities()).toMatchSnapshot();
+        expect(response.exitCode).toBe(Constants.okayCode);
     });
 
     it("throw error when cannot read file", () => {
-        const csvParser = new CsvParser('no.csv');
+        const response = new ResponseMock();
+        const csvParser = new CsvParser('no.csv', response);
 
         expect(() => csvParser.getIdentities()).toThrow(ImperativeError);
+        expect(response.exitCode).toBe(Constants.fatalCode);
     });
 
     it("throw error when invalid Csv file", () => {
-        const csvParser = new CsvParser('__tests__/__resources__/csv/invalid.csv');
+        const response = new ResponseMock();
+        const csvParser = new CsvParser('__tests__/__resources__/csv/invalid.csv', response);
 
         expect(() => csvParser.getIdentities()).toThrow(ImperativeError);
+        expect(response.exitCode).toBe(Constants.fatalCode);
     });
 
 });

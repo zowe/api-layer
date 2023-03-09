@@ -17,25 +17,5 @@ exports[`Mapper should successfully parse the file 1`] = `
     "mainframeId": " mf_pab",
     "userName": "Pablo",
   },
-  {
-    "distributedId": " ",
-    "mainframeId": "",
-    "userName": "Too looooooooooooooooooooooooooooong name",
-  },
-  {
-    "distributedId": " Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame",
-    "mainframeId": " mf_name",
-    "userName": "Name",
-  },
-  {
-    "distributedId": " Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok",
-    "mainframeId": " mf_name",
-    "userName": "Name",
-  },
-  {
-    "distributedId": " ",
-    "mainframeId": " mf_too_long",
-    "userName": "Name",
-  },
 ]
 `;
