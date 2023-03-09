@@ -25,7 +25,7 @@ apiml:
     security:
         auth:
             cookieProperties:
-                cookieName: apimlAuthenticationToken
+                cookieName: apimlAuthenticationToken.s0w1
     service:
         hostname: api-catalog-services
         port: 10014
