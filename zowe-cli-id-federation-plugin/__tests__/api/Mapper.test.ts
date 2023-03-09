@@ -11,6 +11,7 @@
 import { Mapper } from "../../src";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 
+//TODO: Review these tests
 describe("Mapper", () => {
 
     it("should arguments passed correctly", () => {

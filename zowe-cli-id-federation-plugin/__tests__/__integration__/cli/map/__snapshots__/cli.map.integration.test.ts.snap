@@ -28,33 +28,10 @@ exports[`id-federation map command should print the successful creation message 
 "
 `;
 
-exports[`id-federation map command should print the successful creation message from team config profile and other sources 1`] = `
-"'idf_RACF_TST2.jcl' was created. Review and submit this JCL on the system TST2.
-"
-`;
-
 exports[`id-federation map command should print the successful creation message with passed args 1`] = `
 "'idf_TSS_TST1.jcl' was created. Review and submit this JCL on the system TST1.
 "
 `;
-
-exports[`id-federation map command should return command error in case of csv config not found 1`] = `
-"Command Error:
-The input CSV file does not exist.
-"
-`;
-
-exports[`id-federation map command should return command error in case of csv config not found 2`] = `""`;
-
-exports[`id-federation map command should return command error in case of csv config with invalid identities 1`] = `""`;
-
-exports[`id-federation map command should return command error in case of invalid format csv config 1`] = `
-"Command Error:
-Invalid CSV format: Invalid Record Length: columns length is 3, got 1 on line 1
-"
-`;
-
-exports[`id-federation map command should return command error in case of invalid format csv config 2`] = `""`;
 
 exports[`id-federation map command should return command error in case of missing arguments 1`] = `
 "

@@ -10,7 +10,9 @@
 
 export class Constants {
 
+    // Plugin return codes
     public static readonly okayCode = 0;
+    public static readonly zoweErrorCode = 1;
     public static readonly warnCode = 4;
     public static readonly fatalCode = 16;
 
