@@ -64,6 +64,7 @@ public class DefaultZaasClientConfiguration {
         configProperties.setTrustStorePassword(trustStorePassword);
         configProperties.setTrustStoreType(trustStoreType);
         configProperties.setNonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices);
+        configProperties.setTokenPrefix(tokenPrefix);
         return configProperties;
     }
 
