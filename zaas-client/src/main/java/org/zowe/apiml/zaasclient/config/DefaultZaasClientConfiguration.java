@@ -48,6 +48,9 @@ public class DefaultZaasClientConfiguration {
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
+    @Value("${apiml.service.ssl.cookieName:apimlAuthenticationToken}")
+    private String tokenPrefix;
+
     @Bean
     public ConfigProperties getConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties();
