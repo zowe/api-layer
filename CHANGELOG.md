@@ -2,6 +2,46 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.7.0 (2023-03-10)`
+
+* Feature:  zowe-cli-id-federation-plugin included as gradle module (#2808) ([c3b63e2](https://github.com/zowe/api-layer/commit/c3b63e2)), closes [#2808](https://github.com/zowe/api-layer/issues/2808)
+* Feature:  Support of other keyring types (#2799) ([952bf2b](https://github.com/zowe/api-layer/commit/952bf2b)), closes [#2799](https://github.com/zowe/api-layer/issues/2799)
+* Feature:  Skeleton of Zowe CLI plugin for identity federation ESM mapping (#2790) ([ffa4021](https://github.com/zowe/api-layer/commit/ffa4021)), closes [#2790](https://github.com/zowe/api-layer/issues/2790)
+* Feature:  add standalone catalog integration tests (#2751) ([eea374f](https://github.com/zowe/api-layer/commit/eea374f)), closes [#2751](https://github.com/zowe/api-layer/issues/2751)
+* Feature:  provide OIDC info via webfinger (#2757) ([71e88ba](https://github.com/zowe/api-layer/commit/71e88ba)), closes [#2757](https://github.com/zowe/api-layer/issues/2757)
+* Feature:  Hide service information in Catalog (#2743) ([2fbbc65](https://github.com/zowe/api-layer/commit/2fbbc65)), closes [#2743](https://github.com/zowe/api-layer/issues/2743)
+* Feature:  remap client cert (#2729) ([731cdf5](https://github.com/zowe/api-layer/commit/731cdf5)), closes [#2729](https://github.com/zowe/api-layer/issues/2729)
+* Feature:  add API Catalog standalone mode - only remove authentication (#2726) ([4685292](https://github.com/zowe/api-layer/commit/4685292)), closes [#2726](https://github.com/zowe/api-layer/issues/2726)
+* Feature:  support passticket auth scheme in cloud gateway service  (#2718) ([c93de03](https://github.com/zowe/api-layer/commit/c93de03)), closes [#2718](https://github.com/zowe/api-layer/issues/2718)
+* Feature:  CGW Service Retry  + Acceptance Tests (#2697) ([b2e86b3](https://github.com/zowe/api-layer/commit/b2e86b3)), closes [#2697](https://github.com/zowe/api-layer/issues/2697)
+* Feature:  handle CORS in cloud gateway (#2701) ([f5ab7b8](https://github.com/zowe/api-layer/commit/f5ab7b8)), closes [#2701](https://github.com/zowe/api-layer/issues/2701)
+* Feature:  Issuing SMF records #83 about PAT generation via Rauditx (#2691) ([97df0bc](https://github.com/zowe/api-layer/commit/97df0bc)), closes [#83](https://github.com/zowe/api-layer/issues/83) [#2691](https://github.com/zowe/api-layer/issues/2691)
+* Feature:  CGW circuit breaker (#2679) ([b704413](https://github.com/zowe/api-layer/commit/b704413)), closes [#2679](https://github.com/zowe/api-layer/issues/2679)
+
+
+* Bugfix:  update keyring config (#2828) ([c1e1cc9](https://github.com/zowe/api-layer/commit/c1e1cc9)), closes [#2828](https://github.com/zowe/api-layer/issues/2828)
+* Bugfix: run gateway instances with own cache storage (#2807) ([4d08707](https://github.com/zowe/api-layer/commit/4d08707)), closes [#2807](https://github.com/zowe/api-layer/issues/2807)
+* Bugfix:  Fix stack overflow during cleaning websocket client (#2815) ([376f818](https://github.com/zowe/api-layer/commit/376f818)), closes [#2815](https://github.com/zowe/api-layer/issues/2815)
+* Bugfix:  Fix support of different type of keyrings in proper format (just two slashes) (#2687) ([dfb0168](https://github.com/zowe/api-layer/commit/dfb0168)), closes [#2687](https://github.com/zowe/api-layer/issues/2687)
+* Bugfix:  handle WebSocket connection failure (#2805) ([232bade](https://github.com/zowe/api-layer/commit/232bade)), closes [#2805](https://github.com/zowe/api-layer/issues/2805)
+* Bugfix:  periodically clean connection pool (#2797) ([7058290](https://github.com/zowe/api-layer/commit/7058290)), closes [#2797](https://github.com/zowe/api-layer/issues/2797)
+* Bugfix:  clean before build (#2787) ([d76e7bf](https://github.com/zowe/api-layer/commit/d76e7bf)), closes [#2787](https://github.com/zowe/api-layer/issues/2787)
+* Bugfix:  recognize profile settings (#2789) ([adf5ea5](https://github.com/zowe/api-layer/commit/adf5ea5)), closes [#2789](https://github.com/zowe/api-layer/issues/2789)
+* Bugfix:  remove diff script (#2788) ([022d158](https://github.com/zowe/api-layer/commit/022d158)), closes [#2788](https://github.com/zowe/api-layer/issues/2788) [#2787](https://github.com/zowe/api-layer/issues/2787)
+* Bugfix:  Eureka peer connections loop (#2775) ([85a27ea](https://github.com/zowe/api-layer/commit/85a27ea)), closes [#2775](https://github.com/zowe/api-layer/issues/2775)
+* Bugfix:  Reduce number of WARN logs (#2780) ([df0243f](https://github.com/zowe/api-layer/commit/df0243f)), closes [#2780](https://github.com/zowe/api-layer/issues/2780)
+* Bugfix:  Fix bug in Wizard static onboarding method (#2773) ([c8d7c66](https://github.com/zowe/api-layer/commit/c8d7c66)), closes [#2773](https://github.com/zowe/api-layer/issues/2773)
+* Bugfix:  improve handling of SSL errors (#2744) ([bb9792b](https://github.com/zowe/api-layer/commit/bb9792b)), closes [#2744](https://github.com/zowe/api-layer/issues/2744)
+* Bugfix:  missing z/OS related metadata (#2724) ([b182323](https://github.com/zowe/api-layer/commit/b182323)), closes [#2724](https://github.com/zowe/api-layer/issues/2724)
+* Bugfix:  regex vulnerability (#2711) ([03c3da6](https://github.com/zowe/api-layer/commit/03c3da6)), closes [#2711](https://github.com/zowe/api-layer/issues/2711)
+* Bugfix:  rauditx prefix in configuration values (#2705) ([97dc1ef](https://github.com/zowe/api-layer/commit/97dc1ef)), closes [#2705](https://github.com/zowe/api-layer/issues/2705)
+* Bugfix:  remove old version of Java Servlet API (#2699) ([190f4b8](https://github.com/zowe/api-layer/commit/190f4b8)), closes [#2699](https://github.com/zowe/api-layer/issues/2699)
+* Bugfix:  Upgrade swagger parser and exclude bugged version (#2702) ([6b966b2](https://github.com/zowe/api-layer/commit/6b966b2)), closes [#2702](https://github.com/zowe/api-layer/issues/2702)
+* Bugfix:  allow to set key password separately (#2684) ([4e3d3c7](https://github.com/zowe/api-layer/commit/4e3d3c7)), closes [#2684](https://github.com/zowe/api-layer/issues/2684)
+* Bugfix:  set content type header when calling caching service (#2682) ([97cb29c](https://github.com/zowe/api-layer/commit/97cb29c)), closes [#2682](https://github.com/zowe/api-layer/issues/2682)
+* Bugfix:  update libraries (#2680) ([b0b131d](https://github.com/zowe/api-layer/commit/b0b131d)), closes [#2680](https://github.com/zowe/api-layer/issues/2680)
+* Bugfix:  register java time module to parse date in swagger (#2634) ([b3d53b2](https://github.com/zowe/api-layer/commit/b3d53b2)), closes [#2634](https://github.com/zowe/api-layer/issues/2634)
+
 ## `2.6.0 (2023-01-23)`
 
 * Feature: Spring Cloud Gateway implementation - Support of remapping to Passticket (#2046) closes ((#2046)[https://github.com/zowe/api-layer/issues/2046])*
