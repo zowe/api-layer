@@ -45,7 +45,6 @@ import java.util.stream.Stream;
 @Slf4j
 class ZaasJwtService implements TokenService {
 
-    // private String TOKEN_PREFIX;
     private static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
 
     private final String loginEndpoint;
@@ -55,7 +54,6 @@ class ZaasJwtService implements TokenService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     ConfigProperties zassConfigProperties;
-
 
     public ZaasJwtService(CloseableClientProvider client, String baseUrl, ConfigProperties configProperties) {
         this.httpClientProvider = client;
