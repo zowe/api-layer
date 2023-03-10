@@ -28,6 +28,7 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 
 /**
@@ -65,9 +66,9 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     }
 
     public ApiMediationClientImpl(
-            EurekaClientProvider eurekaClientProvider,
-            EurekaClientConfigProvider eurekaClientConfigProvider,
-            EurekaInstanceConfigCreator instanceConfigCreator
+        EurekaClientProvider eurekaClientProvider,
+        EurekaClientConfigProvider eurekaClientConfigProvider,
+        EurekaInstanceConfigCreator instanceConfigCreator
     ) {
         this(eurekaClientProvider, eurekaClientConfigProvider, instanceConfigCreator, new DefaultCustomMetadataHelper());
     }
@@ -131,6 +132,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         HttpsConfig.HttpsConfigBuilder builder = HttpsConfig.builder();
         if (sslConfig != null) {
+            updateStorePaths(sslConfig);
             builder.protocol(sslConfig.getProtocol());
             if (Boolean.TRUE.equals(sslConfig.getEnabled())) {
                 builder.keyAlias(sslConfig.getKeyAlias())
@@ -152,6 +154,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         HttpsConfig httpsConfig = builder.build();
 
         HttpsFactory factory = new HttpsFactory(httpsConfig);
+
         EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
             config.getDiscoveryServiceUrls().get(0), config.getServiceId()).build();
 
@@ -159,6 +162,17 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         args.setEurekaJerseyClient(eurekaJerseyClient);
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
         return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, args);
+    }
+
+    void updateStorePaths(Ssl config) {
+        if (SecurityUtils.isKeyring(config.getKeyStore())) {
+            config.setKeyStore(SecurityUtils.formatKeyringUrl(config.getKeyStore()));
+            if (config.getKeyStorePassword() == null) config.setKeyStorePassword("password".toCharArray());
+        }
+        if (SecurityUtils.isKeyring(config.getTrustStore())) {
+            config.setTrustStore(SecurityUtils.formatKeyringUrl(config.getTrustStore()));
+            if (config.getTrustStorePassword() == null) config.setTrustStorePassword("password".toCharArray());
+        }
     }
 
     private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException {
