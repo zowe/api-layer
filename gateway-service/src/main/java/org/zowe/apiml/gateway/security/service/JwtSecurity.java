@@ -98,17 +98,24 @@ public class JwtSecurity {
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
+    void updateStorePaths() {
+        if (SecurityUtils.isKeyring(keyStore)) {
+            keyStore = SecurityUtils.formatKeyringUrl(keyStore);
+            if (keyStorePassword == null) keyStorePassword = "password".toCharArray();
+        }
+    }
+
     /**
      * When the class is constructed and fully set, understand the zOSMF configuration and/or API ML configuration to
      * load the key used to sign the JWT token.
-     *
+     * <p>
      * In case the configuration is altogether invalid, stop the Gateway Service with the appropriate ERROR. This could
      * take a while as we are waiting in certain scenarios for the zOSMF to properly start.
      */
     @PostConstruct
     public void loadAppropriateJwtKeyOrFail() {
+        updateStorePaths();
         JwtProducer used = actualJwtProducer();
-
         loadJwtSecret();
         switch (used) {
             case ZOSMF:
@@ -282,7 +289,7 @@ public class JwtSecurity {
         private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
             @Override
             public void onEvent(EurekaEvent event) {
-                if (!(event instanceof  CacheRefreshedEvent)) {
+                if (!(event instanceof CacheRefreshedEvent)) {
                     return;
                 }
 
