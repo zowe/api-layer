@@ -34,6 +34,8 @@ public class ConfigProperties {
 
     private static final String GATEWAY_SERVICE_ID = "gateway";
 
+    private String TOKEN_PREFIX;
+
     @Tolerate
     public ConfigProperties() {
         // no args constructor

@@ -71,6 +71,8 @@ class ZaasClientImplHttpsTests {
     private String expiredToken;
     private String invalidToken;
 
+    private final ConfigProperties configProperties = new ConfigProperties();
+
     private static final String VALID_USER = "user";
     private static final String VALID_PASSWORD = "user";
     private static final String INVALID_USER = "use";
@@ -105,9 +107,11 @@ class ZaasClientImplHttpsTests {
         when(closeableHttpResponse.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
+        configProperties.setTOKEN_PREFIX("apimlAuthenticationToken");
+
         String baseUrl = "/gateway/api/v1/auth";
-        tokenService = new ZaasJwtService(zaasHttpsClientProvider, baseUrl);
-        passTicketService = new PassTicketServiceImpl(zaasHttpsClientProvider, baseUrl);
+        tokenService = new ZaasJwtService(zaasHttpsClientProvider, baseUrl, configProperties);
+        passTicketService = new PassTicketServiceImpl(zaasHttpsClientProvider, baseUrl, configProperties);
     }
 
     private String getToken(long now, long expiration, Key jwtSecretKey) {

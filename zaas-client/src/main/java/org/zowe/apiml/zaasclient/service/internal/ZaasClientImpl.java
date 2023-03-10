@@ -37,8 +37,8 @@ public class ZaasClientImpl implements ZaasClient {
 
         String baseUrl = String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
             configProperties.getApimlBaseUrl());
-        tokens = new ZaasJwtService(httpClientProviderWithoutCert, baseUrl);
-        passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl);
+        tokens = new ZaasJwtService(httpClientProviderWithoutCert, baseUrl, configProperties);
+        passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl, configProperties);
     }
 
     private CloseableClientProvider getTokenProvider(ConfigProperties configProperties) throws ZaasConfigurationException {

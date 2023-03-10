@@ -28,6 +28,7 @@ import org.apache.http.cookie.SM;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -44,7 +45,7 @@ import java.util.stream.Stream;
 @Slf4j
 class ZaasJwtService implements TokenService {
 
-    private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
+    // private String TOKEN_PREFIX;
     private static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
 
     private final String loginEndpoint;
@@ -53,13 +54,16 @@ class ZaasJwtService implements TokenService {
     private final CloseableClientProvider httpClientProvider;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    ConfigProperties zassConfigProperties;
 
-    public ZaasJwtService(CloseableClientProvider client, String baseUrl) {
+
+    public ZaasJwtService(CloseableClientProvider client, String baseUrl, ConfigProperties configProperties) {
         this.httpClientProvider = client;
 
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
         logoutEndpoint = baseUrl + "/logout";
+        zassConfigProperties = configProperties;
     }
 
     @Override
@@ -140,7 +144,7 @@ class ZaasJwtService implements TokenService {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return Optional.empty();
         return Arrays.stream(cookies)
-            .filter(cookie -> cookie.getName().equals(TOKEN_PREFIX))
+            .filter(cookie -> cookie.getName().equals(zassConfigProperties.getTOKEN_PREFIX()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
             .map(Cookie::getValue);
@@ -162,7 +166,7 @@ class ZaasJwtService implements TokenService {
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpGet httpGet = new HttpGet(queryEndpoint);
-        httpGet.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
+        httpGet.addHeader(SM.COOKIE, zassConfigProperties.getTOKEN_PREFIX() + "=" + jwtToken);
         return new ClientWithResponse(client, client.execute(httpGet));
     }
 
@@ -173,7 +177,7 @@ class ZaasJwtService implements TokenService {
         if (jwtToken.startsWith(BEARER_AUTHENTICATION_PREFIX)) {
             httpPost.addHeader(HttpHeaders.AUTHORIZATION, jwtToken);
         } else {
-            httpPost.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
+            httpPost.addHeader(SM.COOKIE, zassConfigProperties.getTOKEN_PREFIX() + "=" + jwtToken);
         }
         return getClientWithResponse(client, httpPost);
     }
@@ -262,7 +266,7 @@ class ZaasJwtService implements TokenService {
         if (httpResponseCode == 204) {
             HeaderElement[] elements = response.getHeaders(SM.SET_COOKIE)[0].getElements();
             Optional<HeaderElement> apimlAuthCookie = Stream.of(elements)
-                .filter(element -> element.getName().equals(TOKEN_PREFIX))
+                .filter(element -> element.getName().equals(zassConfigProperties.getTOKEN_PREFIX()))
                 .findFirst();
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get().getValue();

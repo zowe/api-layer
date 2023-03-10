@@ -29,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -51,6 +52,8 @@ class ZaasJwtServiceTest {
     private static final String BASE_URL = "/api/v1";
 
     private final ObjectMapper mapper = new ObjectMapper();
+
+    private final ConfigProperties configProperties = new ConfigProperties();
 
     private static final String EXPIRED_PASSWORD_RESPONSE =
         "{\n" +
@@ -75,8 +78,9 @@ class ZaasJwtServiceTest {
     @BeforeEach
     void setUp() throws ZaasConfigurationException {
         doReturn(closeableHttpClient).when(closeableClientProvider).getHttpClient();
+        configProperties.setTOKEN_PREFIX("apimlAuthenticationToken");
 
-        zaasJwtService = new ZaasJwtService(closeableClientProvider, BASE_URL);
+        zaasJwtService = new ZaasJwtService(closeableClientProvider, BASE_URL, configProperties);
     }
 
     @Test
