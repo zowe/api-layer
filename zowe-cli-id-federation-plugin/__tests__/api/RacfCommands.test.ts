@@ -14,7 +14,7 @@ import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
 import {Constants} from "../../lib/api/Constants";
 
-describe("Racf Commands", () => {
+describe("Racf Commands unit test", () => {
 
     it('should create the commands without warning', () => {
         const racfCommands = getRacfCommands('__tests__/__resources__/csv/users.csv');

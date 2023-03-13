@@ -16,4 +16,7 @@ export class Constants {
     public static readonly warnCode = 4;
     public static readonly fatalCode = 16;
 
+    // CSV
+    public static readonly headers = ['userName', 'distributedId', 'mainframeId'];
+
 }

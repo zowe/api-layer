@@ -23,7 +23,7 @@ const invalidTestCsv = "invalid_identities.csv";
 const allInvalidTestCsv = "all_invalid_identities.csv";
 const wrongFormatTestCsv = "invalid_format.csv";
 
-describe("id-federation map command", () => {
+describe("id-federation map command integration tests", () => {
 
     let csv: string;
     let invalidCsv: string;

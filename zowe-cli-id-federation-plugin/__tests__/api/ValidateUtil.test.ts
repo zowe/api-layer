@@ -10,7 +10,8 @@
 
 import { hasValidLength } from "../../src/api/ValidateUtil";
 
-describe("ValidateUtil", () => {
+describe("ValidateUtil unit tests", () => {
+
     it('should return true if string length is valid', () => {
         expect(hasValidLength("valid", 8)).toBeTruthy();
     });
@@ -18,4 +19,5 @@ describe("ValidateUtil", () => {
     it('should return true if string is too long', () => {
         expect(hasValidLength("toooooooooooolong", 8)).toBeFalsy();
     });
+
 });

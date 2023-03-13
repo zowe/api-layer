@@ -19,7 +19,7 @@ let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
 
 const testCsv = "users.csv";
 
-describe("id-federation map command", () => {
+describe("id-federation map command integration tests", () => {
 
     let csv: string;
 

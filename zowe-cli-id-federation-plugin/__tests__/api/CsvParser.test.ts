@@ -13,7 +13,7 @@ import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
 import {Constants} from "../../lib/api/Constants";
 
-describe("Mapper", () => {
+describe("CSV parser unit tests", () => {
 
     it("should successfully parse the file", () => {
         const response = new ResponseMock();

@@ -35,10 +35,9 @@ export class CsvParser {
             this.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg: `Cannot open the input CSV file. ${error.message}`});
         }
-        const headers = ['userName', 'distributedId', 'mainframeId'];
 
         try {
-            return parse(fileContent, {columns: headers}) as IIdentity[];
+            return parse(fileContent, {columns: Constants.headers}) as IIdentity[];
         } catch (e) {
             this.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg: `Invalid CSV format: ${e.message ?? ''}`});
