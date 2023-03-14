@@ -9,10 +9,10 @@
  */
 
 import {RacfCommands} from "../../src/api/RacfCommands";
-import {CsvParser} from "../../lib/api/CsvParser";
+import {CsvParser} from "../../src/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
-import {Constants} from "../../lib/api/Constants";
+import {Constants} from "../../src/api/Constants";
 
 describe("Racf Commands unit test", () => {
 
