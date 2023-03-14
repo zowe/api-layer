@@ -12,7 +12,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {ITestEnvironment, runCliScript, TestEnvironment} from "@zowe/cli-test-utils";
 import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
-import {Constants} from "../../../../lib/api/Constants";
+import {Constants} from "../../../../src/api/Constants";
 
 // Test environment will be populated in the "beforeAll"
 let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;

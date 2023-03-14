@@ -10,3 +10,5 @@ __tests__/__results__
 *.iml
 npm-shrinkwrap.json
 package-lock.json
+/tools
+junit.xml
