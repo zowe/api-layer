@@ -19,6 +19,7 @@ import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -39,7 +40,7 @@ class X509ExternalMapperTest {
         x509Certificate = mock(X509Certificate.class);
         when(x509Certificate.getEncoded()).thenReturn(new byte[2]);
         x509AuthSource = new X509AuthSource(x509Certificate);
-        x509ExternalMapper = spy(new X509ExternalMapper(mock(CloseableHttpClient.class), mock(TokenCreationService.class)));
+        x509ExternalMapper = spy(new X509ExternalMapper(mock(CloseableHttpClient.class), mock(TokenCreationService.class), mock(AuthConfigurationProperties.class)));
     }
 
     @Nested

@@ -51,6 +51,8 @@ public class SecurityUtils {
         return input;
     }
 
+    public final static String COOKIE_AUTH_NAME = "apimlAuthenticationToken";
+
     /**
      * Loads secret key from keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}
      *
