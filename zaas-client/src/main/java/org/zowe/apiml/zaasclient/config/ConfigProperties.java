@@ -34,6 +34,7 @@ public class ConfigProperties {
 
     private static final String GATEWAY_SERVICE_ID = "gateway";
 
+    private String tokenPrefix = "apimlAuthenticationToken";
     @Tolerate
     public ConfigProperties() {
         // no args constructor

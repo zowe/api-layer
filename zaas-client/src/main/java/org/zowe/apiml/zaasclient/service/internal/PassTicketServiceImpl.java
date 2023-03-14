@@ -22,6 +22,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
+import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
 import java.io.IOException;
 import org.apache.http.HttpHeaders;
@@ -29,14 +30,16 @@ import org.apache.http.cookie.SM;
 
 @Slf4j
 class PassTicketServiceImpl implements PassTicketService {
-    private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
 
     private final CloseableClientProvider httpClientProvider;
     private final String ticketUrl;
 
-    public PassTicketServiceImpl(CloseableClientProvider client, String baseUrl) {
+    ConfigProperties passConfigProperties;
+
+    public PassTicketServiceImpl(CloseableClientProvider client, String baseUrl, ConfigProperties configProperties) {
         httpClientProvider = client;
         ticketUrl = baseUrl + "/ticket";
+        passConfigProperties = configProperties;
     }
 
     @Override
@@ -50,7 +53,7 @@ class PassTicketServiceImpl implements PassTicketService {
             HttpPost httpPost = new HttpPost(ticketUrl);
             httpPost.setEntity(new StringEntity(mapper.writeValueAsString(zaasClientTicketRequest)));
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-            httpPost.setHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
+            httpPost.setHeader(SM.COOKIE, passConfigProperties.getTokenPrefix() + "=" + jwtToken);
 
             CloseableHttpResponse response = closeableHttpsClient.execute(httpPost);
             return extractPassTicket(response);
