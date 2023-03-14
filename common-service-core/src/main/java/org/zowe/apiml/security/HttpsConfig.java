@@ -22,7 +22,7 @@ public class HttpsConfig {
     @Builder.Default
     String protocol = "TLSv1.2";
     @Builder.Default
-    String[] supportedProtocols = "TLSv1.2,TSLv1.3".split(",");
+    String[] supportedProtocols = "TLSv1.2,TLSv1.3".split(",");
     String trustStore;
     char[] trustStorePassword;
     @Builder.Default
