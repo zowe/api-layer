@@ -60,11 +60,14 @@ export class Mapper {
             case "tss": {
                 const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
                 const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-                commandProcessor = new Commands(this.registry, identities,tssTemplate, tssRefreshCommand);
+                commandProcessor = new Commands(this.registry, identities, tssTemplate, tssRefreshCommand);
                 break;
             }
             case "acf2": {
-                break; //TODO: Here will be the code which generate ACF2 commands
+                const acf2Template = fs.readFileSync('src/api/templates/acf2.jcl').toString();
+                const acf2RefreshCommand = fs.readFileSync('src/api/templates/acf2_refresh.jcl').toString();
+                commandProcessor = new Commands(this.registry, identities, acf2Template, acf2RefreshCommand);
+                break;
             }
             default: {
                 const msg = `Unsupported ESM "${this.esm}".` +
