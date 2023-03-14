@@ -33,7 +33,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -50,7 +49,6 @@ public class HttpsFactory {
 
     public HttpsFactory(HttpsConfig httpsConfig) {
         this.config = httpsConfig;
-        this.secureSslContext = null;
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
@@ -61,7 +59,7 @@ public class HttpsFactory {
             .setConnectTimeout(config.getRequestConnectionTimeout()).build();
         UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
-        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(createHostnameVerifier())
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(getHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
@@ -70,18 +68,11 @@ public class HttpsFactory {
 
     public ConnectionSocketFactory createSslSocketFactory() {
         if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
-            return createSecureSslSocketFactory();
+            return getSSLConnectionSocketFactory();
         } else {
             apimlLog.log("org.zowe.apiml.common.ignoringSsl");
             return createIgnoringSslSocketFactory();
         }
-    }
-
-    /**
-     * Method is only for testing purpose. It is stored only in case of empty keystore (not if keystore is provided).
-     */
-    KeyStore getUsedStore() {
-        return usedKeyStore;
     }
 
     private ConnectionSocketFactory createIgnoringSslSocketFactory() {
@@ -121,8 +112,10 @@ public class HttpsFactory {
 
                 sslContextBuilder.loadTrustMaterial(trustStoreFile, config.getTrustStorePassword());
             } else {
-                log.info("Loading trust store key ring: " + config.getTrustStore());
-                sslContextBuilder.loadTrustMaterial(keyRingUrl(config.getTrustStore()), config.getTrustStorePassword());
+                log.info("Original truststore keyring URL from configuration: " + config.getTrustStore());
+                URL keyRingUrl = SecurityUtils.keyRingUrl(config.getTrustStore());
+                log.info("Loading trusted certificates from keyring: " + keyRingUrl);
+                sslContextBuilder.loadTrustMaterial(keyRingUrl, config.getTrustStorePassword());
             }
         } else {
             if (config.isTrustStoreRequired()) {
@@ -136,10 +129,6 @@ public class HttpsFactory {
         }
     }
 
-    private URL keyRingUrl(String uri) throws MalformedURLException {
-        return SecurityUtils.keyRingUrl(uri, config.getTrustStore());
-    }
-
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
         KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
         if (StringUtils.isNotEmpty(config.getKeyStore())) {
@@ -151,7 +140,7 @@ public class HttpsFactory {
                 loadKeyringMaterial(sslContextBuilder);
             }
         } else {
-            log.info("No key store is defined");
+            log.info("No keystore is defined and empty will be used.");
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
             usedKeyStore = emptyKeystore;
@@ -171,7 +160,7 @@ public class HttpsFactory {
             throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
                 ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
         }
-        log.info("Loading key store file: " + config.getKeyStore());
+        log.info("Loading keystore file: " + config.getKeyStore());
         File keyStoreFile = new File(config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(
             keyStoreFile, config.getKeyStorePassword(), config.getKeyPassword(),
@@ -185,8 +174,10 @@ public class HttpsFactory {
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-        log.info("Loading trust key ring: " + config.getKeyStore());
-        sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()), config.getKeyStorePassword(),
+        log.info("Original keyring URL from configuration: " + config.getKeyStore());
+        URL keyRingUrl = SecurityUtils.keyRingUrl(config.getKeyStore());
+        log.info("Loading keyring from updated URL: " + keyRingUrl);
+        sslContextBuilder.loadKeyMaterial(keyRingUrl, config.getKeyStorePassword(),
             config.getKeyPassword(), getPrivateKeyStrategy());
     }
 
@@ -222,15 +213,15 @@ public class HttpsFactory {
         }
     }
 
-    private ConnectionSocketFactory createSecureSslSocketFactory() {
-
+    private ConnectionSocketFactory getSSLConnectionSocketFactory() {
         return new SSLConnectionSocketFactory(
             createSecureSslContext(),
-            createHostnameVerifier()
+            config.getSupportedProtocols(), config.getCipherSuite(),
+            getHostnameVerifier()
         );
     }
 
-    public SSLContext createSslContext() {
+    public SSLContext getSslContext() {
         if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
             return createSecureSslContext();
         } else {
@@ -258,7 +249,7 @@ public class HttpsFactory {
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
     }
 
-    public HostnameVerifier createHostnameVerifier() {
+    public HostnameVerifier getHostnameVerifier() {
         if (config.isVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
@@ -284,9 +275,9 @@ public class HttpsFactory {
             if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
                 setSystemSslProperties();
             }
-            builder.withCustomSSL(createSslContext());
+            builder.withCustomSSL(getSslContext());
 
-            builder.withHostnameVerifier(createHostnameVerifier());
+            builder.withHostnameVerifier(getHostnameVerifier());
         }
         return builder;
     }
