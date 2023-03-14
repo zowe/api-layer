@@ -25,15 +25,17 @@ export class ResponseMock implements IHandlerResponseApi {
     exitCode = 0;
 
     constructor() {
-        //const t = this;
+
         const setExitCode = (code: number) => {
             this.exitCode = code;
             return code;
         };
+
         this.data = {
             setExitCode: setExitCode,
             setObj: (data: any, merge?: boolean) => undefined,
             setMessage: (message: string, ...values: any[]) => 'not implemented'
         };
+
     }
 }

@@ -35,7 +35,7 @@ exports[`id-federation map should display the help 1`] = `
 
       Allowed values: RACF, TSS, ACF2
 
-   --system | -l (string)
+   --system | -s (string)
 
       The target JES system on which the command will be executed
 

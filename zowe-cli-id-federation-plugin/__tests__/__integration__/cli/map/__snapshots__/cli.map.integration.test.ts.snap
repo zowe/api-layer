@@ -16,8 +16,22 @@ Unknown argument: invalidarg
 exports[`id-federation map command integration tests should fail when arguments are not valid 2`] = `""`;
 
 exports[`id-federation map command integration tests should fail when options are not passed 1`] = `
-"Command Error:
-Following arguments are missing: "esm, registry"
+"
+Syntax Error:
+Missing Required Option:
+--esm (-e)
+
+Option Description:
+The ESM product on the target system
+
+Syntax Error:
+Missing Required Option:
+--registry (-r)
+
+Option Description:
+The distributed identities registry
+
+Use "zowe idf map --help" to view command description, usage, and options.
 "
 `;
 
@@ -44,6 +58,15 @@ string
 
 Option Description:
 The target JES system on which the command will be executed
+
+Syntax Error:
+Invalid value length for option:
+--system
+
+You specified a string of length 0:
+
+
+The length must be between 1 and 8 (inclusive)
 
 Use "zowe idf map --help" to view command description, usage, and options.
 "

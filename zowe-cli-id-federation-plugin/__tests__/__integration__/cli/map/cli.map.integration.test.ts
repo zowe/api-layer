@@ -42,7 +42,7 @@ describe("id-federation map command integration tests", () => {
     it("should fail when options are not passed", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_error_handler.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(Constants.fatalCode);
+        expect(response.status).toBe(Constants.zoweErrorCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
