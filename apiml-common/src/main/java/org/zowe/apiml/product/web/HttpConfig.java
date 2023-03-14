@@ -75,9 +75,6 @@ public class HttpConfig {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${server.ssl.ciphers:.*}")
-    private String[] ciphers;
-
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
@@ -107,9 +104,6 @@ public class HttpConfig {
     private int readTimeout;
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
-
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
 
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
@@ -166,8 +160,8 @@ public class HttpConfig {
             HttpsFactory factory = new HttpsFactory(httpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
             secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
-            secureSslContext = factory.createSslContext();
-            secureHostnameVerifier = factory.createHostnameVerifier();
+            secureSslContext = factory.getSslContext();
+            secureHostnameVerifier = factory.getHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
             optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
