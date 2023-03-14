@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Mapper should successfully parse the file 1`] = `
+exports[`CSV parser unit tests should successfully parse the file 1`] = `
 [
   {
     "distributedId": " dist_jirka",
