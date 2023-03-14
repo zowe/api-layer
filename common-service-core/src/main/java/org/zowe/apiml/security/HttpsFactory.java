@@ -182,24 +182,20 @@ public class HttpsFactory {
     }
 
     private synchronized SSLContext createSecureSslContext() {
-        if (secureSslContext == null) {
-            log.debug("Protocol: {}", config.getProtocol());
-            SSLContextBuilder sslContextBuilder = SSLContexts.custom();
-            try {
-                loadTrustMaterial(sslContextBuilder);
-                loadKeyMaterial(sslContextBuilder);
-                secureSslContext = sslContextBuilder.build();
-                validateSslConfig();
-                return secureSslContext;
-            } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                     | UnrecoverableKeyException | KeyManagementException e) {
-                log.error("error", e);
-                apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
-                throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                    ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
-            }
-        } else {
+        log.debug("Protocol: {}", config.getProtocol());
+        SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+        try {
+            loadTrustMaterial(sslContextBuilder);
+            loadKeyMaterial(sslContextBuilder);
+            secureSslContext = sslContextBuilder.build();
+            validateSslConfig();
             return secureSslContext;
+        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
+                 | UnrecoverableKeyException | KeyManagementException e) {
+            log.error("error", e);
+            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
         }
     }
 
