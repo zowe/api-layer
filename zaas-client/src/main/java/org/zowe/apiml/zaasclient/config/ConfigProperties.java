@@ -34,13 +34,11 @@ public class ConfigProperties {
 
     private static final String GATEWAY_SERVICE_ID = "gateway";
 
-    @Builder.Default
     private String tokenPrefix = "apimlAuthenticationToken";
 
     @Tolerate
     public ConfigProperties() {
-//        builder default bug workaround
-        this.tokenPrefix = "apimlAuthenticationToken";
+//        empty constructor
     }
 
     public ConfigProperties withoutKeyStore() {
