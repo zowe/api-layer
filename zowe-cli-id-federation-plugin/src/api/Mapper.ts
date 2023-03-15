@@ -44,7 +44,9 @@ export class Mapper {
             account: account,
             sysaff: this.system ? `\n/*JOBPARM SYSAFF=${this.system.toUpperCase()}` : "",
             system: this.system ? `system ${this.system}` : "a corresponding system",
-            commands: jclWriter.getText()
+            begin: this.esm.toLowerCase() === "acf2" ? " ACF\n SET PROFILE(USER) DIVISION(IDMAP)\n" : "",
+            commands: jclWriter.getText(),
+            end: this.esm.toLowerCase() === "acf2" ? "\n END" : ""
         });
     }
 

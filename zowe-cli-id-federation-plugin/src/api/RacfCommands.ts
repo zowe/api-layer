@@ -37,6 +37,7 @@ export class RacfCommands {
         if (!racfCommands.some(Boolean)) {
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
+        racfCommands.push("");
         racfCommands.push(racfRefreshCommand);
         return racfCommands;
     }
