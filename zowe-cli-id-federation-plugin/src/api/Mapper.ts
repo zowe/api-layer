@@ -14,17 +14,20 @@ import {getAccount} from "./JobUtil";
 import * as fs from "fs";
 import {CsvParser, IIdentity} from "./CsvParser";
 import {JclWriter} from "./JclWriter";
+import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
+import {Constants} from "./Constants";
 
 export class Mapper {
     constructor(
         public file: string,
         public esm: string,
         public system: string,
-        public registry: string) {
+        public registry: string,
+        public response: IHandlerResponseApi) {
     }
 
     async map(): Promise<string> {
-        const identities = new CsvParser(this.file).getIdentities();
+        const identities = new CsvParser(this.file,this.response).getIdentities();
         const commands = this.createSafCommands(identities);
         const jcl = await this.createJcl(commands);
         const fileMsg = this.system ? `_${this.system}` : "";
@@ -54,9 +57,7 @@ export class Mapper {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
             case "racf": {
-                const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
-                const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
-                commandProcessor = new Commands(this.registry, identities, racfTemplate, racfRefreshCommand);
+                commandProcessor = new RacfCommands(this.registry, identities, this.response);
                 break;
             }
             case "tss": {
@@ -72,6 +73,7 @@ export class Mapper {
                 break;
             }
             default: {
+                this.response.data.setExitCode(Constants.fatalCode);
                 const msg = `Unsupported ESM "${this.esm}".` +
                     `Id Federation Plugin supports only the following security systems: RACF, TSS, and ACF2.`;
                 throw new ImperativeError({msg});

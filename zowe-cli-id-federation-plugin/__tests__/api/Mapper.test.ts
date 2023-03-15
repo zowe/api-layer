@@ -9,18 +9,23 @@
  */
 
 import { Mapper } from "../../src";
+import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
+
+//TODO: Review these tests
 describe("Mapper", () => {
+
     it("should arguments passed correctly", () => {
         const INPUT_FILE = "fake-file.csv";
         const ESM = "fakeESM";
         const SYSTEM = "fakeLPAR";
         const REGISTRY = "fake://host:1234";
 
-        const maper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY);
+        const maper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, {} as IHandlerResponseApi);
 
         expect(maper.file).toBe(INPUT_FILE);
         expect(maper.esm).toBe(ESM);
         expect(maper.system).toBe(SYSTEM);
         expect(maper.registry).toBe(REGISTRY);
     });
+
 });

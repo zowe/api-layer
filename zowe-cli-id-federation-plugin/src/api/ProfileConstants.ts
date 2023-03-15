@@ -9,6 +9,7 @@
  */
 
 import { ICommandOptionDefinition } from "@zowe/imperative";
+import {Constants} from "./Constants";
 
 export class ProfileConstants {
     public static IDF_CONNECTION_OPTION_GROUP = "IDF Connection Options";
@@ -17,6 +18,7 @@ export class ProfileConstants {
         name: "esm",
         aliases: ["e"],
         description: "The ESM product on the target system",
+        required: true,
         type: "string",
         allowableValues: { values: ["RACF", "TSS", "ACF2"] },
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
@@ -24,8 +26,9 @@ export class ProfileConstants {
 
     public static IDF_OPTION_SYSTEM: ICommandOptionDefinition = {
         name: "system",
-        aliases: ["l"],
+        aliases: ["s"],
         description: "The target JES system on which the command will be executed",
+        stringLengthRange: [1, Constants.maxLengthSystem],
         type: "string",
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
@@ -34,7 +37,9 @@ export class ProfileConstants {
         name: "registry",
         aliases: ["r"],
         description: "The distributed identities registry",
+        required: true,
         type: "string",
+        stringLengthRange: [1, Constants.maxLengthRegistry],
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
 

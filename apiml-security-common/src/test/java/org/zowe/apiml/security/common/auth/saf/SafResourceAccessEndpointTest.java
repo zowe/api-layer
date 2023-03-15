@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,9 +48,12 @@ class SafResourceAccessEndpointTest {
 
     private SafResourceAccessEndpoint safResourceAccessEndpoint;
 
+    private AuthConfigurationProperties authConfigurationProperties;
+
     @BeforeEach
     void setUp() {
-        safResourceAccessEndpoint = new SafResourceAccessEndpoint(restTemplate);
+        authConfigurationProperties = new AuthConfigurationProperties();
+        safResourceAccessEndpoint = new SafResourceAccessEndpoint(restTemplate, authConfigurationProperties);
         ReflectionTestUtils.setField(safResourceAccessEndpoint, "endpointUrl", TEST_URL);
     }
 

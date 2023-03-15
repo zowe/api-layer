@@ -11,6 +11,8 @@
 import * as fs from "fs";
 import {parse} from "csv-parse/sync";
 import {ImperativeError} from "@zowe/imperative";
+import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
+import {Constants} from "./Constants";
 
 export interface IIdentity {
     userName: string;
@@ -21,7 +23,8 @@ export interface IIdentity {
 export class CsvParser {
 
     constructor(
-        public file: string) {
+        public file: string,
+        public response: IHandlerResponseApi) {
     }
 
     getIdentities(): IIdentity[] {
@@ -29,13 +32,14 @@ export class CsvParser {
         try {
             fileContent = fs.readFileSync(this.file);
         } catch (error) {
+            this.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg: `Cannot open the input CSV file. ${error.message}`});
         }
-        const headers = ['userName', 'distributedId', 'mainframeId'];
 
         try {
-            return parse(fileContent, {columns: headers}) as IIdentity[];
+            return parse(fileContent, {columns: Constants.headers}) as IIdentity[];
         } catch (e) {
+            this.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg: `Invalid CSV format: ${e.message ?? ''}`});
         }
     }

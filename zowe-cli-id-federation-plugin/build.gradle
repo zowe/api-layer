@@ -60,6 +60,9 @@ task npmTest(type: NpmTask) {
     group = 'npm'
     description = "Typescript unit, system and integration tests"
 
+    inputs.dir('src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+
     outputs.dir('__tests__/__results__')
     outputs.cacheIf { true }
 

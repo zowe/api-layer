@@ -96,6 +96,12 @@ then
   export LOG_LEVEL="debug"
 fi
 
+# setting the cookieName based on the instances
+
+if [  "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
+    cookieName="apimlAuthenticationToken."+${ZWE_haInstance_id}
+fi
+
 # FIXME: APIML_DIAG_MODE_ENABLED is not officially mentioned. We can still use it behind the scene,
 # or we can define configs.diagMode in manifest, then use "$ZWE_configs_diagMode".
 # DIAG_MODE=${APIML_DIAG_MODE_ENABLED}
@@ -196,6 +202,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.auth.zosmf.serviceId=${ZWE_configs_apiml_security_auth_zosmf_serviceId:-zosmf} \
     -Dapiml.security.auth.provider=${ZWE_configs_apiml_security_auth_provider:-zosmf} \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.auth.passticket.customUserHeader=${ZWE_configs_apiml_security_auth_passticket_customUserHeader:-} \
     -Dapiml.security.auth.passticket.customAuthHeader=${ZWE_configs_apiml_security_auth_passticket_customAuthHeader:-} \
     -Dapiml.security.personalAccessToken.enabled=${ZWE_configs_apiml_security_personalAccessToken_enabled:-false} \
@@ -234,6 +241,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -jar ${JAR_FILE} &
 
 pid=$!

@@ -13,6 +13,8 @@ import { warn } from "console";
 import * as fs from "fs";
 import {IIdentity} from "./CsvParser";
 import {hasValidLength} from "./ValidateUtil";
+import {Constants} from "./Constants";
+import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 
 export class RacfCommands {
 
@@ -22,7 +24,8 @@ export class RacfCommands {
 
     constructor(
         private registry: string,
-        private identities: IIdentity[]
+        private identities: IIdentity[],
+        private response: IHandlerResponseApi
     ) {
     }
 
@@ -35,6 +38,7 @@ export class RacfCommands {
             .filter(command => command);
 
         if (!racfCommands.some(Boolean)) {
+            this.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
         racfCommands.push("");
@@ -46,18 +50,21 @@ export class RacfCommands {
         if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
             warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
+            this.response.data.setExitCode(Constants.warnCode);
             return '';
         }
 
         if(!hasValidLength(identity.distributedId, this.maxLengthDistributedId)) {
             warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.maxLengthDistributedId} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
+            this.response.data.setExitCode(Constants.warnCode);
             return '';
         }
 
         if(!hasValidLength(identity.userName, this.maxLengthLabel)) {
             warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.maxLengthLabel} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
+            this.response.data.setExitCode(Constants.warnCode);
             return '';
         }
 

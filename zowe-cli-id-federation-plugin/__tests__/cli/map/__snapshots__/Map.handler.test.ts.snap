@@ -1,11 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`map handler should accept options and return successful message 1`] = `" 'idf_RACF.jcl' was created. Review and submit this JCL."`;
+exports[`map handler unit tests should accept options and return successful message 1`] = `" 'idf_RACF.jcl' was created. Review and submit this JCL."`;
 
-exports[`map handler throw an error when file does not exist 1`] = `"The input CSV file does not exist."`;
-
-exports[`map handler throw an error when not all parameters provided 1`] = `"Following arguments are missing: "esm, registry""`;
-
-exports[`map handler throw an error when system param is too long 1`] = `"The system '123456789' has exceeded maximum length of 8 characters."`;
-
-exports[`map handler throw an error when system registry is too long 1`] = `"The registry '12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890' has exceeded maximum length of 255 characters."`;
+exports[`map handler unit tests throw an error when file does not exist 1`] = `"The input CSV file does not exist."`;

@@ -9,7 +9,7 @@
  */
 
 import { JclWriter } from "../../src/api/JclWriter";
-describe("JclWriter", () => {
+describe("JclWriter unit tests", () => {
 
     describe("parse", () => {
 
