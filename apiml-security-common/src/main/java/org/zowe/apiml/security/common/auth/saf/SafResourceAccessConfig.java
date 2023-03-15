@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -36,8 +37,8 @@ public class SafResourceAccessConfig {
     @Value("${apiml.security.authorization.endpoint.enabled:false}")
     private boolean endpointEnabled;
 
-    protected SafResourceAccessVerifying createEndpoint(RestTemplate restTemplate) {
-        return new SafResourceAccessEndpoint(restTemplate);
+    protected SafResourceAccessVerifying createEndpoint(RestTemplate restTemplate, AuthConfigurationProperties authConfigurationProperties) {
+        return new SafResourceAccessEndpoint(restTemplate, authConfigurationProperties);
     }
 
     protected SafResourceAccessVerifying createNative() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
@@ -48,11 +49,11 @@ public class SafResourceAccessConfig {
         return new SafResourceAccessDummy();
     }
 
-    private SafResourceAccessVerifying create(RestTemplate restTemplate, String type, boolean force) {
+    private SafResourceAccessVerifying create(RestTemplate restTemplate,AuthConfigurationProperties authConfigurationProperties, String type, boolean force) {
         switch (StringUtils.lowerCase(type)) {
             case ENDPOINT:
                 if (endpointEnabled || force) {
-                    return createEndpoint(restTemplate);
+                    return createEndpoint(restTemplate, authConfigurationProperties);
                 }
                 return null;
             case NATIVE:
@@ -78,13 +79,13 @@ public class SafResourceAccessConfig {
     }
 
     @Bean
-    public SafResourceAccessVerifying safResourceAccessVerifying(RestTemplate restTemplate) {
+    public SafResourceAccessVerifying safResourceAccessVerifying(RestTemplate restTemplate, AuthConfigurationProperties authConfigurationProperties) {
         if (!StringUtils.isEmpty(provider)) {
-            return create(restTemplate, provider, true);
+            return create(restTemplate, authConfigurationProperties, provider, true);
         }
 
         for (String type : PROVIDERS) {
-            SafResourceAccessVerifying srv = create(restTemplate, type, false);
+            SafResourceAccessVerifying srv = create(restTemplate, authConfigurationProperties, type, false);
             if (srv != null) return srv;
         }
 

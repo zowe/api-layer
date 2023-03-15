@@ -38,3 +38,4 @@ configs:
 #        serviceIdPrefixReplacer: ""
   port: 7553
   debug: false
+  sslDebug: ""

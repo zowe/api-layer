@@ -19,6 +19,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.SecurityUtils;
 
 
 /**
@@ -97,7 +98,7 @@ public class AuthConfigurationProperties {
     //Cookie properties
     @Data
     public static class CookieProperties {
-        private String cookieName = ApimlConstants.COOKIE_AUTH_NAME;
+        private String cookieName = SecurityUtils.COOKIE_AUTH_NAME;
         private String cookieNamePAT = ApimlConstants.PAT_COOKIE_AUTH_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";

@@ -91,18 +91,6 @@ key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_pas
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
 
-# Workaround for Java desiring safkeyring://// instead of just ://
-# We can handle both cases of user input by just adding extra "//" if we detect its missing.
-ensure_keyring_slashes() {
-  keyring_string="${1}"
-  only_two_slashes=$(echo "${keyring_string}" | grep "^safkeyring://[^//]")
-  if [ -n "${only_two_slashes}" ]; then
-    keyring_string=$(echo "${keyring_string}" | sed "s#safkeyring://#safkeyring:////#")
-  fi
-  # else, unmodified, perhaps its even p12
-  echo $keyring_string
-}
-
 # NOTE: these are moved from below
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
@@ -132,6 +120,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStorePassword="${truststore_pass}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -Dloader.path=${COMMON_LIB} \
+  -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
   -Djava.library.path=${LIBPATH} \
   -jar ${JAR_FILE} &
 pid=$!

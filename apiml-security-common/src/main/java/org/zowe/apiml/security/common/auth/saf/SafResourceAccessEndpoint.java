@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Collections;
@@ -34,13 +34,16 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
 
     private final RestTemplate restTemplate;
 
+    private final AuthConfigurationProperties authConfigurationProperties;
+
     private <T> HttpEntity<T> createHttpEntity(Authentication authentication) {
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         if (authentication instanceof TokenAuthentication) {
             TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
-            headers.set(HttpHeaders.COOKIE, ApimlConstants.COOKIE_AUTH_NAME + "=" + tokenAuthentication.getCredentials());
+            headers.set(HttpHeaders.COOKIE, authConfigurationProperties.getCookieProperties().getCookieName() + "=" + tokenAuthentication.getCredentials());
         }
         return new HttpEntity<>(headers);
     }

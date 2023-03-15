@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,7 +37,7 @@ class ExternalMapperTest {
 
     class TestExternalMapper extends ExternalMapper {
         public TestExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
-            super(httpClientProxy, tokenCreationService, Type.X509);
+            super(httpClientProxy, tokenCreationService, Type.X509, authConfigurationProperties);
         }
     }
 
@@ -47,6 +48,7 @@ class ExternalMapperTest {
     private CloseableHttpResponse httpResponse;
     private StatusLine statusLine;
     private HttpEntity responseEntity;
+    private AuthConfigurationProperties authConfigurationProperties;
 
 
     @BeforeEach
@@ -61,6 +63,7 @@ class ExternalMapperTest {
         when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("validJwtToken");
         responseEntity = mock(HttpEntity.class);
         when(httpResponse.getEntity()).thenReturn(responseEntity);
+        authConfigurationProperties = new AuthConfigurationProperties();
 
         mapper = new TestExternalMapper(closeableHttpClient, tokenCreationService);
         ReflectionTestUtils.setField(mapper,"externalMapperUrl","http://localhost/test");
