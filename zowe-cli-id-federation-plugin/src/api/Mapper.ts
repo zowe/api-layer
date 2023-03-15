@@ -56,20 +56,10 @@ export class Mapper {
     createSafCommands(identities: IIdentity[]): string[] {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
-            case "racf": {
-                commandProcessor = new RacfCommands(this.registry, identities, this.response);
-                break;
-            }
-            case "tss": {
-                const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
-                const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-                commandProcessor = new Commands(this.registry, identities, tssTemplate, tssRefreshCommand);
-                break;
-            }
+            case "racf":
+            case "tss":
             case "acf2": {
-                const acf2Template = fs.readFileSync('src/api/templates/acf2.jcl').toString();
-                const acf2RefreshCommand = fs.readFileSync('src/api/templates/acf2_refresh.jcl').toString();
-                commandProcessor = new Commands(this.registry, identities, acf2Template, acf2RefreshCommand);
+                commandProcessor = new Commands(this.registry, identities, this.esm.toLowerCase(), this.response);
                 break;
             }
             default: {

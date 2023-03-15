@@ -9,7 +9,8 @@
  */
 
 import { Mapper } from "../../src";
-import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
+import {ImperativeError} from '@zowe/imperative';
+import {ResponseMock} from '../__src__/ResponseMock';
 
 //TODO: Review these tests
 describe("Mapper", () => {
@@ -20,12 +21,23 @@ describe("Mapper", () => {
         const SYSTEM = "fakeLPAR";
         const REGISTRY = "fake://host:1234";
 
-        const maper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, {} as IHandlerResponseApi);
+        const maper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, new ResponseMock());
 
         expect(maper.file).toBe(INPUT_FILE);
         expect(maper.esm).toBe(ESM);
         expect(maper.system).toBe(SYSTEM);
         expect(maper.registry).toBe(REGISTRY);
+    });
+
+    it('should throw error when creating SAF commands and esm is unsupported', () => {
+        const INPUT_FILE = "fake-file.csv";
+        const ESM = "fakeESM";
+        const SYSTEM = "fakeLPAR";
+        const REGISTRY = "fake://host:1234";
+
+        const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, new ResponseMock());
+
+        expect(() => mapper.createSafCommands(null)).toThrow(ImperativeError);
     });
 
 });

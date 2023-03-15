@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ACF2 Commands unit test should create the commands with warning 1`] = `
+[
+  "INSERT mf_jir.zwednmap IDMAPDN(dist_jirka) IDMAPRN(ldap://host:1234) IDLABEL(Jirka)
+",
+  "INSERT mf_lena.zwednmap IDMAPDN(dist_lena) IDMAPRN(ldap://host:1234) IDLABEL(Lena)
+",
+  "INSERT mf_pab.zwednmap IDMAPDN(dist_pablo) IDMAPRN(ldap://host:1234) IDLABEL(Pablo)
+",
+  "INSERT mf_name.zwednmap IDMAPDN(Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok) IDMAPRN(ldap://host:1234) IDLABEL(Name)
+",
+  "",
+  "F ACF2,REBUILD(USR),CLASS(P),DIVISION(IDMAP)
+",
+]
+`;
+
+exports[`ACF2 Commands unit test should create the commands without warning 1`] = `
+[
+  "INSERT mf_jir.zwednmap IDMAPDN(dist_jirka) IDMAPRN(ldap://host:1234) IDLABEL(Jirka)
+",
+  "INSERT mf_lena.zwednmap IDMAPDN(dist_lena) IDMAPRN(ldap://host:1234) IDLABEL(Lena)
+",
+  "INSERT mf_pab.zwednmap IDMAPDN(dist_pablo) IDMAPRN(ldap://host:1234) IDLABEL(Pablo)
+",
+  "",
+  "F ACF2,REBUILD(USR),CLASS(P),DIVISION(IDMAP)
+",
+]
+`;

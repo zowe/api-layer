@@ -11,25 +11,36 @@
 import { Commands } from "../../src/api/Commands";
 import {CsvParser} from "../../lib/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
-import * as fs from "fs";
+import {ResponseMock} from '../__src__/ResponseMock';
+import {Constants} from '../../src/api/Constants';
 
 describe("Tss Commands", () => {
-    const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
-    const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-    
+
     it('should create the commands', () => {
-        const csvParser = new CsvParser('__tests__/__resources__/csv/users.csv');
-        const identities = csvParser.getIdentities();
-        const tssCommands = new Commands("ldap://host:1234", identities, tssTemplate, tssRefreshCommand);
-        const commands = tssCommands.getCommands();
+        const tssCommands = getTssCommands('__tests__/__resources__/csv/users.csv');
+        const commands = tssCommands.commands.getCommands();
         expect(commands).toMatchSnapshot();
+        expect(tssCommands.response.exitCode).toBe(Constants.okayCode);
+    });
+
+    it('should create the commands with warning', () => {
+        const tssCommands = getTssCommands('__tests__/__resources__/csv/users_with_warnings.csv');
+        const commands = tssCommands.commands.getCommands();
+        expect(commands).toMatchSnapshot();
+        expect(tssCommands.response.exitCode).toBe(Constants.warnCode);
     });
 
     it('should throw error when config is not valid', () => {
-        const csvParser = new CsvParser('__tests__/__resources__/csv/invalid_identities.csv');
-        const identities = csvParser.getIdentities();
-
-        const tssCommands = new Commands("ldap://host:1234", identities, tssTemplate, tssRefreshCommand);
-        expect(() => tssCommands.getCommands()).toThrow(ImperativeError);
+        const tssCommands = getTssCommands('__tests__/__resources__/csv/invalid_identities.csv');
+        expect(() => tssCommands.commands.getCommands()).toThrow(ImperativeError);
+        expect(tssCommands.response.exitCode).toBe(Constants.fatalCode);
     });
 });
+
+function getTssCommands(file: string): { commands: Commands, response: ResponseMock } {
+    const response = new ResponseMock();
+    const csvParser = new CsvParser(file, response);
+    const commands = new Commands('ldap://host:1234', csvParser.getIdentities(), "tss", response);
+
+    return {commands, response};
+}
