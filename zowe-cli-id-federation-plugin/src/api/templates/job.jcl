@@ -20,7 +20,5 @@
 //RUN      EXEC PGM=IKJEFT01,REGION=0M
 //SYSTSPRT DD SYSOUT=*
 //SYSTSIN     DD DATA,SYMBOLS=JCLONLY
-{{begin}}
-{{commands}}
-{{end}}
+{{begin}}{{commands}}{{end}}
 /*
