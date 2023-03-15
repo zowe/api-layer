@@ -8,8 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import * as path from "path";
-import * as fs from "fs";
 import { ITestEnvironment, TestEnvironment, runCliScript } from "@zowe/cli-test-utils";
 import { ITestPropertiesSchema } from "../../../__src__/environment/doc/ITestPropertiesSchema";
 
