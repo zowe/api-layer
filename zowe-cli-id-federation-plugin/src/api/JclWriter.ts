@@ -110,7 +110,7 @@ export class JclWriter {
     }
 
     private static formatWord(position: number, word: string, i: number, words: string[], formatted: string, blank: boolean) {
-        let j = MAX_LINE_LENGTH - position - 1
+        let j = MAX_LINE_LENGTH - position - 1;
         while (word.length > 0) {
             if ((i < words.length - 1) && (position + word.length > MAX_LINE_LENGTH - 2) && (word.length < MAX_LINE_LENGTH)) {
                 // if the latest piece of word would fulfill the line and it cannot be split, rather split the piece to two lines
@@ -130,7 +130,7 @@ export class JclWriter {
                 word = word.substring(j, word.length);
             }
 
-            j = MAX_LINE_LENGTH - 1
+            j = MAX_LINE_LENGTH - 1;
         }
 
         return [position, formatted, blank] as const;
