@@ -2,11 +2,11 @@
 
 exports[`Tss Commands should create the commands 1`] = `
 [
-  "TSS ADD(mf_jir) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('Jirka')
+  "TSS ADD(mf_jirka) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('Jirka')
 ",
   "TSS ADD(mf_lena) IDMAP(zwednmap) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('Lena')
 ",
-  "TSS ADD(mf_pab) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('Pablo')
+  "TSS ADD(mf_pablo) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('Pablo')
 ",
   "",
   "TSS REFRESH
@@ -16,11 +16,11 @@ exports[`Tss Commands should create the commands 1`] = `
 
 exports[`Tss Commands should create the commands with warning 1`] = `
 [
-  "TSS ADD(mf_jir) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('Jirka')
+  "TSS ADD(mf_jirka) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('Jirka')
 ",
   "TSS ADD(mf_lena) IDMAP(zwednmap) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('Lena')
 ",
-  "TSS ADD(mf_pab) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('Pablo')
+  "TSS ADD(mf_pablo) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('Pablo')
 ",
   "TSS ADD(mf_name) IDMAP(zwednmap) IDMAPDN('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok') IDMAPRN('ldap://host:1234') IDLABEL('Name')
 ",
