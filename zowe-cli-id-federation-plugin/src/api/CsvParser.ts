@@ -37,7 +37,7 @@ export class CsvParser {
         }
 
         try {
-            let identities = parse(fileContent, {columns: Constants.HEADERS}) as IIdentity[];
+            const identities = parse(fileContent, {columns: Constants.HEADERS}) as IIdentity[];
             identities.forEach(function (id) {
                 id.userName = id.userName.trim();
                 id.distributedId = id.distributedId.trim();
