@@ -76,20 +76,22 @@ public class TomcatServerFactory {
         httpsConnector.setPort(0);
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("clientAuth",
-            Boolean.toString(httpsConfig.isClientAuth() && httpsConfig.isVerifySslCertificatesOfServices()));
-        httpsConnector.setAttribute("keystoreFile", httpsConfig.getKeyStore());
-        httpsConnector.setAttribute("keystorePass",
+        httpsConnector.setProperty("clientAuth",
+            Boolean.toString(Boolean.parseBoolean(httpsConfig.getClientAuth()) && httpsConfig.isVerifySslCertificatesOfServices()));
+        httpsConnector.setProperty("keystoreFile", httpsConfig.getKeyStore());
+        httpsConnector.setProperty("ciphers",String.join(",",httpsConfig.getCipherSuite()));
+        httpsConnector.setProperty("enabled-protocols",String.join("+",httpsConfig.getEnabledProtocols()));
+        httpsConnector.setProperty("keystorePass",
             httpsConfig.getKeyStorePassword() == null ? null : String.valueOf(httpsConfig.getKeyStorePassword())
         );
-        if (httpsConfig.isClientAuth()) {
-            httpsConnector.setAttribute("truststoreFile", httpsConfig.getTrustStore());
-            httpsConnector.setAttribute("truststorePass",
+        if (Boolean.parseBoolean(httpsConfig.getClientAuth()) || "want".equals(httpsConfig.getClientAuth())) {
+            httpsConnector.setProperty("truststoreFile", httpsConfig.getTrustStore());
+            httpsConnector.setProperty("truststorePass",
                 httpsConfig.getTrustStorePassword() == null ? null : String.valueOf(httpsConfig.getTrustStorePassword())
             );
         }
-        httpsConnector.setAttribute("sslProtocol", httpsConfig.getProtocol());
-        httpsConnector.setAttribute("SSLEnabled", true);
+        httpsConnector.setProperty("sslProtocol", httpsConfig.getProtocol());
+        httpsConnector.setProperty("SSLEnabled", "true");
         return httpsConnector;
     }
 

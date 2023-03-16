@@ -33,17 +33,19 @@ import static org.mockito.Mockito.mock;
 
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
-class HttpConfigTest {
+class ConnectionsConfigTest {
 
     @Autowired
-    private HttpConfig httpConfig;
+    private ConnectionsConfig connectionsConfig;
+    @Autowired
+    private RoutingConfig routingConfig;
 
     @Nested
     class WhenCreateEurekaJerseyClientBuilder {
         @Test
         void thenIsNotNull() {
-            Assertions.assertNotNull(httpConfig);
-            Assertions.assertNotNull(httpConfig.getEurekaJerseyClient());
+            Assertions.assertNotNull(connectionsConfig);
+            Assertions.assertNotNull(connectionsConfig.getEurekaJerseyClient());
         }
     }
 
@@ -53,7 +55,7 @@ class HttpConfigTest {
         void thenIsNotNull() {
             ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
             DiscoveryLocatorProperties properties = mock(DiscoveryLocatorProperties.class);
-            Assertions.assertNotNull(httpConfig.proxyRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value")), null, null));
+            Assertions.assertNotNull(routingConfig.proxyRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value")), null, null));
         }
     }
 
@@ -73,7 +75,7 @@ class HttpConfigTest {
 
         @Test
         void thenCreateIt() {
-            Assertions.assertNotNull(httpConfig.eurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler));
+            Assertions.assertNotNull(connectionsConfig.eurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler));
         }
     }
 
@@ -82,30 +84,30 @@ class HttpConfigTest {
 
         @Test
         void whenKeyringHasWrongFormatAndMissingPasswords_thenFixIt() {
-            HttpConfig httpConfig = new HttpConfig(null);
-            ReflectionTestUtils.setField(httpConfig, "keyStorePath", "safkeyring:///userId/ringId1");
-            ReflectionTestUtils.setField(httpConfig, "trustStorePath", "safkeyring:////userId/ringId2");
+            ConnectionsConfig connectionsConfig = new ConnectionsConfig(null);
+            ReflectionTestUtils.setField(connectionsConfig, "keyStorePath", "safkeyring:///userId/ringId1");
+            ReflectionTestUtils.setField(connectionsConfig, "trustStorePath", "safkeyring:////userId/ringId2");
 
-            httpConfig.init();
+            connectionsConfig.updateConfigParameters();
 
-            assertEquals("safkeyring://userId/ringId1", ReflectionTestUtils.getField(httpConfig, "keyStorePath"));
-            assertEquals("safkeyring://userId/ringId2", ReflectionTestUtils.getField(httpConfig, "trustStorePath"));
-            assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(httpConfig, "keyStorePassword"));
-            assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(httpConfig, "trustStorePassword"));
+            assertEquals("safkeyring://userId/ringId1", ReflectionTestUtils.getField(connectionsConfig, "keyStorePath"));
+            assertEquals("safkeyring://userId/ringId2", ReflectionTestUtils.getField(connectionsConfig, "trustStorePath"));
+            assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(connectionsConfig, "keyStorePassword"));
+            assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(connectionsConfig, "trustStorePassword"));
         }
 
         @Test
         void whenKeystore_thenDoNothing() {
-            HttpConfig httpConfig = new HttpConfig(null);
-            ReflectionTestUtils.setField(httpConfig, "keyStorePath", "/path1");
-            ReflectionTestUtils.setField(httpConfig, "trustStorePath", "/path2");
+            ConnectionsConfig connectionsConfig = new ConnectionsConfig(null);
+            ReflectionTestUtils.setField(connectionsConfig, "keyStorePath", "/path1");
+            ReflectionTestUtils.setField(connectionsConfig, "trustStorePath", "/path2");
 
-            httpConfig.init();
+            connectionsConfig.updateConfigParameters();
 
-            assertEquals("/path1", ReflectionTestUtils.getField(httpConfig, "keyStorePath"));
-            assertEquals("/path2", ReflectionTestUtils.getField(httpConfig, "trustStorePath"));
-            assertNull(ReflectionTestUtils.getField(httpConfig, "keyStorePassword"));
-            assertNull(ReflectionTestUtils.getField(httpConfig, "trustStorePassword"));
+            assertEquals("/path1", ReflectionTestUtils.getField(connectionsConfig, "keyStorePath"));
+            assertEquals("/path2", ReflectionTestUtils.getField(connectionsConfig, "trustStorePath"));
+            assertNull(ReflectionTestUtils.getField(connectionsConfig, "keyStorePassword"));
+            assertNull(ReflectionTestUtils.getField(connectionsConfig, "trustStorePassword"));
         }
 
     }

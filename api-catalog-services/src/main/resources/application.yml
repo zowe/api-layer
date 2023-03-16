@@ -67,7 +67,7 @@ apiml:
     security:
         ssl:
             sslEnabled: true
-            protocol: TLSv1.2
+            protocol: TLS
             trustStore: ${server.ssl.truststore}
             trustStoreType: ${server.ssl.truststoreType}
             trustStorePassword: ${server.ssl.truststorePassword}
