@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import {expect, describe, it} from '@jest/globals';
 
 describe("imperative config", () => {
