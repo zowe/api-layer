@@ -34,11 +34,13 @@ public class ConfigProperties {
 
     private static final String GATEWAY_SERVICE_ID = "gateway";
 
+    @Builder.Default
     private String tokenPrefix = "apimlAuthenticationToken";
 
     @Tolerate
     public ConfigProperties() {
-//        empty constructor
+        // lombok Builder.Default bug workaround
+        this.tokenPrefix = "apimlAuthenticationToken";
     }
 
     public ConfigProperties withoutKeyStore() {
