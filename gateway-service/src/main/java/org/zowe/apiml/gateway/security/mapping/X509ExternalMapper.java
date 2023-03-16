@@ -20,6 +20,7 @@ import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -35,8 +36,8 @@ import java.security.cert.X509Certificate;
 )
 public class X509ExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
-    public X509ExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
-        super(httpClientProxy, tokenCreationService, Type.X509);
+    public X509ExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService, AuthConfigurationProperties authConfigurationProperties) {
+        super(httpClientProxy, tokenCreationService, Type.X509, authConfigurationProperties);
     }
 
     /**

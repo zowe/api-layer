@@ -10,49 +10,23 @@
 
 import {ICommandHandler, IHandlerParameters, ImperativeError} from "@zowe/imperative";
 import {Mapper} from "../../api/Mapper";
-import {hasValidLength} from "../../api/ValidateUtil";
 import * as fs from "fs";
+import {Constants} from "../../api/Constants";
 
 export default class MapHandler implements ICommandHandler {
 
-    //TODO: length valid for RACF, if other ESMs allow the different length -> refactor
-    readonly maxLengthRegistry = 255;
-    readonly maxLengthSystem = 8;
 
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;
-        const esm: string = params.arguments.esm;
-        const registry: string = params.arguments.registry;
         const system: string = params.arguments.system ? params.arguments.system : "";
-
-        const missingArgs: string[] = [];
-        if (!esm) {
-            missingArgs.push('esm');
-        }
-        if (!registry) {
-            missingArgs.push('registry');
-        }
-        if (missingArgs.length != 0) {
-            const msg = `Following arguments are missing: "${missingArgs.join(", ")}"`;
-            throw new ImperativeError({msg});
-        }
 
         if (!fs.existsSync(file)) {
             const msg = `The input CSV file does not exist.`;
+            params.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg});
         }
 
-        if (!hasValidLength(system, this.maxLengthSystem)) {
-            const msg = `The system '${system}' has exceeded maximum length of ${this.maxLengthSystem} characters.`;
-            throw new ImperativeError({msg});
-        }
-
-        if (!hasValidLength(registry, this.maxLengthRegistry)) {
-            const msg = `The registry '${registry}' has exceeded maximum length of ${this.maxLengthRegistry} characters.`;
-            throw new ImperativeError({msg});
-        }
-
-        const mapper = new Mapper(file, esm, system, registry);
+        const mapper = new Mapper(file, params.arguments.esm, system, params.arguments.registry, params.response);
         params.response.console.log(await mapper.map());
     }
 

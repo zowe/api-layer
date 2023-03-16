@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`id-federation map should display the help 1`] = `
+exports[`id-federation map system test should display the help 1`] = `
 "
  COMMAND NAME
  ------------
@@ -35,13 +35,14 @@ exports[`id-federation map should display the help 1`] = `
 
       Allowed values: RACF, TSS, ACF2
 
-   --system | -l (string)
+   --system | -s (string)
 
       The target JES system on which the command will be executed
 
    --registry | -r (string)
 
-      The distributed identities registry
+      The distributed identities registry (e.g., ldaps://enterprise.com,
+      ldap://12.34.56.78:389)
 
  PROFILE OPTIONS
  ---------------

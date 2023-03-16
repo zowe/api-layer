@@ -26,16 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
-import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.cloud.gateway.config.HttpClientCustomizer;
-import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
-import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
@@ -48,8 +44,6 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
-import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
-import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
@@ -63,15 +57,11 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 @Configuration
 @Slf4j
-public class HttpConfig {
+public class ConnectionsConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
@@ -121,16 +111,14 @@ public class HttpConfig {
     private int requestTimeout;
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
-    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled:-}")
-    private String ignoredHeadersWhenCorsEnabled;
     private final ApplicationContext context;
 
-    public HttpConfig(ApplicationContext context) {
+    public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
     }
 
     @PostConstruct
-    public void init() {
+    public void updateConfigParameters() {
         if (SecurityUtils.isKeyring(keyStorePath)) {
             keyStorePath = SecurityUtils.formatKeyringUrl(keyStorePath);
             if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
@@ -168,7 +156,9 @@ public class HttpConfig {
     }
 
 
-
+    /**
+     * @return io.netty.handler.ssl.SslContext for http client.
+     */
     SslContext sslContext() {
         try {
             KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
@@ -208,21 +198,6 @@ public class HttpConfig {
         return cloudEurekaClient;
     }
 
-
-    @Bean
-    @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
-    public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
-        return new RouteLocator(discoveryClient, properties, filters, context, corsUtils);
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "true")
-    public RouteLocator proxyRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
-        return new ProxyRouteLocator(discoveryClient, properties, filters, context, corsUtils);
-    }
-
     @Bean
     public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
@@ -234,29 +209,6 @@ public class HttpConfig {
         HttpClient client = HttpClient.create().secure(ssl -> ssl.sslContext(sslContext()));
         return WebClient.builder().clientConnector(new ReactorClientHttpConnector(client)).build();
 
-    }
-
-    @Bean
-    public List<FilterDefinition> filters() {
-        FilterDefinition circuitBreakerFilter = new FilterDefinition();
-        circuitBreakerFilter.setName("CircuitBreaker");
-        FilterDefinition retryFilter = new FilterDefinition();
-        retryFilter.setName("Retry");
-
-        retryFilter.addArg("retries", "5");
-        retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
-        List<FilterDefinition> filters = new ArrayList<>();
-        filters.add(circuitBreakerFilter);
-        filters.add(retryFilter);
-        for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
-            FilterDefinition removeHeaders = new FilterDefinition();
-            removeHeaders.setName("RemoveRequestHeader");
-            Map<String, String> args = new HashMap<>();
-            args.put("name", headerName);
-            removeHeaders.setArgs(args);
-            filters.add(removeHeaders);
-        }
-        return filters;
     }
 
     @Bean

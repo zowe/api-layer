@@ -10,13 +10,14 @@
 
 import * as fs from "fs";
 import { Imperative } from "@zowe/imperative";
+import {expect, describe, it} from '@jest/globals';
 
 describe("map definition", () => {
     it("should match the snapshot", () => {
         // Attempt to read the full file contents. We could require the module here, however there is normally non-
         // deterministic data (filepaths, etc.) that are resolved when the module is loaded, so it is simpler to
         // check the contents for changes (sanity/protection agaisnt undesired changes to the definition)
-        let contents: string;
+        let contents: string = "";
         let error;
         try {
             contents = fs.readFileSync(__dirname + "/../../../src/cli/map/Map.definition.ts").toString();

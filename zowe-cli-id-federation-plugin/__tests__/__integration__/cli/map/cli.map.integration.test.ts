@@ -12,20 +12,17 @@ import * as fs from "fs";
 import * as path from "path";
 import {ITestEnvironment, runCliScript, stripProfileDeprecationMessages, TestEnvironment} from "@zowe/cli-test-utils";
 import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
+import {Constants} from "../../../../src/api/Constants";
+import {expect, describe, it, beforeAll, afterAll} from '@jest/globals';
 
 // Test environment will be populated in the "beforeAll"
 let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
 
-const configJson = "zowe.config.json";
 const testCsv = "users.csv";
-const wrongTestCsv = "invalid_identities.csv";
-const wrongFormatTestCsv = "invalid_format.csv";
 
-describe("id-federation map command", () => {
+describe("id-federation map command integration tests", () => {
 
     let csv: string;
-    let wrongCsv: string;
-    let wrongFormatCsv: string;
 
     // Create the unique test environment
     beforeAll(async () => {
@@ -36,11 +33,7 @@ describe("id-federation map command", () => {
         });
 
         csv = path.join(TEST_ENVIRONMENT.workingDir, testCsv);
-        wrongCsv = path.join(TEST_ENVIRONMENT.workingDir, wrongTestCsv);
-        wrongFormatCsv = path.join(TEST_ENVIRONMENT.workingDir, wrongFormatTestCsv);
         fs.copyFileSync(path.join(__dirname, "__resources__", testCsv), csv);
-        fs.copyFileSync(path.join(__dirname, "__resources__", wrongTestCsv), wrongCsv);
-        fs.copyFileSync(path.join(__dirname, "__resources__", wrongFormatTestCsv), wrongFormatCsv);
     });
 
     afterAll(async () => {
@@ -50,7 +43,7 @@ describe("id-federation map command", () => {
     it("should fail when options are not passed", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_error_handler.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.zoweErrorCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -58,7 +51,7 @@ describe("id-federation map command", () => {
     it("should fail when arguments are not valid", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_error_handler_invalid_argument.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.zoweErrorCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -67,7 +60,7 @@ describe("id-federation map command", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
 
         expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
-        expect(response.status).toBe(0);
+        expect(response.status).toBe(Constants.okayCode);
         expect(response.stdout.toString()).toContain("idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -76,7 +69,7 @@ describe("id-federation map command", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_with_passed_args.sh", TEST_ENVIRONMENT,
             [`${TEST_ENVIRONMENT.workingDir}/users.csv`, "TSS", "TST1", "ldap://12.34.56.78:910"]);
 
-        expect(response.status).toBe(0);
+        expect(response.status).toBe(Constants.okayCode);
         expect(response.stderr.toString()).toBe("");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -85,42 +78,7 @@ describe("id-federation map command", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_with_passed_args.sh", TEST_ENVIRONMENT,
             [csv, "TSS", "", "ldap://12.34.56.78:910"]);
 
-        expect(response.status).toBe(1);
-        expect(response.stderr.toString()).toMatchSnapshot();
-        expect(response.stdout.toString()).toMatchSnapshot();
-    });
-
-    it("should print the successful creation message from team config profile and other sources", () => {
-        fs.copyFileSync(path.join(__dirname, "__resources__", configJson), path.join(TEST_ENVIRONMENT.workingDir, configJson));
-
-        const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [csv]);
-
-        expect(response.status).toBe(0);
-        expect(response.stderr.toString()).toBe("");
-        expect(response.stdout.toString()).toContain("'idf_RACF_TST2.jcl' was created. Review and submit this JCL on the system TST2");
-        expect(response.stdout.toString()).toMatchSnapshot();
-    });
-
-    it("should return command error in case of csv config with invalid identities", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [wrongCsv]);
-
-        expect(response.status).toBe(1);
-        expect(response.stderr.toString()).toMatchSnapshot();
-        expect(response.stdout.toString()).toMatchSnapshot();
-    });
-
-    it("should return command error in case of invalid format csv config", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [wrongFormatCsv]);
-
-        expect(response.status).toBe(1);
-        expect(response.stderr.toString()).toMatchSnapshot();
-        expect(response.stdout.toString()).toMatchSnapshot();
-    });
-
-    it("should return command error in case of csv config not found", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, ["/wrong/path"]);
-
-        expect(response.status).toBe(1);
+        expect(response.status).toBe(Constants.zoweErrorCode);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });

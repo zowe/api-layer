@@ -9,6 +9,7 @@
  */
 
 import { ProfileConstants } from "../../src/api/ProfileConstants";
+import {expect, describe, it} from '@jest/globals';
 
 describe("Profile Constants", () => {
     it('should return correct values for all the constants', () => {

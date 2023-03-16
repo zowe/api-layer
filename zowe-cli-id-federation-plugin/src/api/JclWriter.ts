@@ -31,7 +31,8 @@ export class JclWriter {
     }
 
     private static getLastWord(command: string, status: number, lastWord: string, words: string[]) {
-        for (let i = 0; i < command.length; i++) {
+        let i = 0;
+        while (i < command.length) {
             if (status === 0) {// outside the string
                 [status, lastWord] = JclWriter.parseCommand(command, i, status, lastWord, words);
             } else if (status === 1) {// inside the string
@@ -47,6 +48,7 @@ export class JclWriter {
                     }
                 }
             }
+            i++;
         }
         return lastWord;
     }
@@ -108,7 +110,8 @@ export class JclWriter {
     }
 
     private static formatWord(position: number, word: string, i: number, words: string[], formatted: string, blank: boolean) {
-        for (let j = MAX_LINE_LENGTH - position - 1; word.length > 0; j = MAX_LINE_LENGTH - 1) {
+        let j = MAX_LINE_LENGTH - position - 1;
+        while (word.length > 0) {
             if ((i < words.length - 1) && (position + word.length > MAX_LINE_LENGTH - 2) && (word.length < MAX_LINE_LENGTH)) {
                 // if the latest piece of word would fulfill the line and it cannot be split, rather split the piece to two lines
                 j = word.length - 1;
@@ -126,7 +129,10 @@ export class JclWriter {
                 position = 0;
                 word = word.substring(j, word.length);
             }
+
+            j = MAX_LINE_LENGTH - 1;
         }
+
         return [position, formatted, blank] as const;
     }
 

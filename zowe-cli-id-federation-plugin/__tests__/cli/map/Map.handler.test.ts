@@ -8,7 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-describe("map handler", () => {
+import {ResponseMock} from "../../__src__/ResponseMock";
+import {Constants} from "../../../src/api/Constants";
+import {expect, jest, describe, it} from '@jest/globals';
+
+describe("map handler unit tests", () => {
+
     it("should accept options and return successful message", async () => {
         // Require the handler and create a new instance
         const handlerReq = require("../../../src/cli/map/Map.handler");
@@ -45,43 +50,12 @@ describe("map handler", () => {
         expect(logMessage).toMatchSnapshot();
     });
 
-    it("throw an error when not all parameters provided", async () => {
-        const handlerReq = require("../../../src/cli/map/Map.handler");
-        const handler = new handlerReq.default();
-
-        let error;
-        let logMessage = "";
-
-        try {
-            await handler.process({
-                arguments: {
-                    $0: "fake",
-                    _: ["fake"],
-                    inputFile: "__tests__/__resources__/csv/users.csv",
-                },
-                response: {
-                    console: {
-                        log: jest.fn((logArgs) => {
-                            logMessage += " " + logArgs;
-                        })
-                    }
-                }
-            });
-        } catch (e) {
-            error = e;
-        }
-
-        expect(error).toBeDefined();
-        expect(error.message).toMatchSnapshot();
-    });
-
     it("throw an error when file does not exist", async () => {
         const handlerReq = require("../../../src/cli/map/Map.handler");
         const handler = new handlerReq.default();
 
         let error;
-        let logMessage = "";
-
+        const response = new ResponseMock();
         try {
             await handler.process({
                 arguments: {
@@ -91,84 +65,13 @@ describe("map handler", () => {
                     esm: "RACF",
                     registry: "ldap://host:1234"
                 },
-                response: {
-                    console: {
-                        log: jest.fn((logArgs) => {
-                            logMessage += " " + logArgs;
-                        })
-                    }
-                }
+                response: response
             });
         } catch (e) {
             error = e;
         }
 
-        expect(error).toBeDefined();
-        expect(error.message).toMatchSnapshot();
-    });
-
-
-    it("throw an error when system param is too long", async () => {
-        const handlerReq = require("../../../src/cli/map/Map.handler");
-        const handler = new handlerReq.default();
-
-        let error;
-        let logMessage = "";
-
-        try {
-            await handler.process({
-                arguments: {
-                    $0: "fake",
-                    _: ["fake"],
-                    inputFile: "__tests__/__resources__/csv/users.csv",
-                    esm: "RACF",
-                    registry: "ldap://host:1234",
-                    system: "123456789"
-                },
-                response: {
-                    console: {
-                        log: jest.fn((logArgs) => {
-                            logMessage += " " + logArgs;
-                        })
-                    }
-                }
-            });
-        } catch (e) {
-            error = e;
-        }
-
-        expect(error).toBeDefined();
-        expect(error.message).toMatchSnapshot();
-    });
-
-    it("throw an error when system registry is too long", async () => {
-        const handlerReq = require("../../../src/cli/map/Map.handler");
-        const handler = new handlerReq.default();
-
-        let error;
-        let logMessage = "";
-
-        try {
-            await handler.process({
-                arguments: {
-                    $0: "fake",
-                    _: ["fake"],
-                    inputFile: "__tests__/__resources__/csv/users.csv",
-                    esm: "RACF",
-                    registry: "1234567890".repeat(26),
-                },
-                response: {
-                    console: {
-                        log: jest.fn((logArgs) => {
-                            logMessage += " " + logArgs;
-                        })
-                    }
-                }
-            });
-        } catch (e) {
-            error = e;
-        }
-
+        expect(response.exitCode).toBe(Constants.fatalCode);
         expect(error).toBeDefined();
         expect(error.message).toMatchSnapshot();
     });
