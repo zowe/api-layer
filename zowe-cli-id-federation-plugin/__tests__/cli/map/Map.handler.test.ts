@@ -71,7 +71,7 @@ describe("map handler unit tests", () => {
             error = e;
         }
 
-        expect(response.exitCode).toBe(Constants.fatalCode);
+        expect(response.exitCode).toBe(Constants.FATAL_CODE);
         expect(error).toBeDefined();
         expect(error.message).toMatchSnapshot();
     });
