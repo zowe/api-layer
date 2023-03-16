@@ -46,6 +46,10 @@ task npmBuild(type: NpmTask) {
     group = 'npm'
     description = "Executes npm build"
 
+    inputs.dir('src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+
     outputs.dir('lib')
     outputs.cacheIf { true }
 

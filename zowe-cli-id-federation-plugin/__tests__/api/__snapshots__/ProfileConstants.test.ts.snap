@@ -41,7 +41,7 @@ exports[`Profile Constants should return correct values for all the constants 3`
   "aliases": [
     "r",
   ],
-  "description": "The distributed identities registry",
+  "description": "The distributed identities registry (e.g., ldaps://enterprise.com, ldap://12.34.56.78:389)",
   "group": "IDF Connection Options",
   "name": "registry",
   "required": true,
@@ -91,7 +91,7 @@ exports[`Profile Constants should return correct values for all the constants 5`
     "aliases": [
       "r",
     ],
-    "description": "The distributed identities registry",
+    "description": "The distributed identities registry (e.g., ldaps://enterprise.com, ldap://12.34.56.78:389)",
     "group": "IDF Connection Options",
     "name": "registry",
     "required": true,

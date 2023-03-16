@@ -29,7 +29,8 @@ Missing Required Option:
 --registry (-r)
 
 Option Description:
-The distributed identities registry
+The distributed identities registry (e.g., ldaps://enterprise.com,
+ldap://12.34.56.78:389)
 
 Use "zowe idf map --help" to view command description, usage, and options.
 "
