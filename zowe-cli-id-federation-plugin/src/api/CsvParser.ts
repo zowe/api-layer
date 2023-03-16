@@ -37,7 +37,13 @@ export class CsvParser {
         }
 
         try {
-            return parse(fileContent, {columns: Constants.HEADERS}) as IIdentity[];
+            let identities = parse(fileContent, {columns: Constants.HEADERS}) as IIdentity[];
+            identities.forEach(function (id) {
+                id.userName = id.userName.trim();
+                id.distributedId = id.distributedId.trim();
+                id.mainframeId = id.mainframeId.trim();
+            });
+            return identities;
         } catch (e) {
             this.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg: `Invalid CSV format: ${e.message ?? ''}`});

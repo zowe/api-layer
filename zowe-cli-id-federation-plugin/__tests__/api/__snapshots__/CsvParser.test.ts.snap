@@ -3,18 +3,18 @@
 exports[`CSV parser unit tests should successfully parse the file 1`] = `
 [
   {
-    "distributedId": " dist_jirka",
-    "mainframeId": " mf_jir",
+    "distributedId": "dist_jirka",
+    "mainframeId": "mf_jirka",
     "userName": "Jirka",
   },
   {
-    "distributedId": " dist_lena",
-    "mainframeId": " mf_lena",
+    "distributedId": "dist_lena",
+    "mainframeId": "mf_lena",
     "userName": "Lena",
   },
   {
-    "distributedId": " dist_pablo",
-    "mainframeId": " mf_pab",
+    "distributedId": "dist_pablo",
+    "mainframeId": "mf_pablo",
     "userName": "Pablo",
   },
 ]
