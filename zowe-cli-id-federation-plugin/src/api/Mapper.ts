@@ -65,7 +65,7 @@ export class Mapper {
                 break; //TODO: Here will be the code which generate ACF2 commands
             }
             default: {
-                this.response.data.setExitCode(Constants.fatalCode);
+                this.response.data.setExitCode(Constants.FATAL_CODE);
                 const msg = `Unsupported ESM "${this.esm}".` +
                     `Id Federation Plugin supports only the following security systems: RACF, TSS, and ACF2.`;
                 throw new ImperativeError({msg});

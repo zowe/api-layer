@@ -28,7 +28,7 @@ export class ProfileConstants {
         name: "system",
         aliases: ["s"],
         description: "The target JES system on which the command will be executed",
-        stringLengthRange: [1, Constants.maxLengthSystem],
+        stringLengthRange: [1, Constants.MAX_LENGTH_SYSTEM],
         type: "string",
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
@@ -39,7 +39,7 @@ export class ProfileConstants {
         description: "The distributed identities registry (e.g., ldaps://enterprise.com, ldap://12.34.56.78:389)",
         required: true,
         type: "string",
-        stringLengthRange: [1, Constants.maxLengthRegistry],
+        stringLengthRange: [1, Constants.MAX_LENGTH_REGISTRY],
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
 

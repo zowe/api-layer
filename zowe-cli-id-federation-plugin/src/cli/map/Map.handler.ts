@@ -22,7 +22,7 @@ export default class MapHandler implements ICommandHandler {
 
         if (!fs.existsSync(file)) {
             const msg = `The input CSV file does not exist.`;
-            params.response.data.setExitCode(Constants.fatalCode);
+            params.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg});
         }
 
