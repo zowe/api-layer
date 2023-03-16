@@ -10,6 +10,7 @@
 
 import {ResponseMock} from "../../__src__/ResponseMock";
 import {Constants} from "../../../src/api/Constants";
+import {expect, jest, describe, it} from '@jest/globals';
 
 describe("map handler unit tests", () => {
 

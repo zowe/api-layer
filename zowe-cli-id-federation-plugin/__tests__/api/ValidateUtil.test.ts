@@ -9,6 +9,7 @@
  */
 
 import { hasValidLength } from "../../src/api/ValidateUtil";
+import {expect, describe, it} from '@jest/globals';
 
 describe("ValidateUtil unit tests", () => {
 

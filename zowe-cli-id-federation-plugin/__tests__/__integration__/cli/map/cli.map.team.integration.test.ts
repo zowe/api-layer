@@ -13,6 +13,7 @@ import * as path from "path";
 import {ITestEnvironment, runCliScript, TestEnvironment} from "@zowe/cli-test-utils";
 import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
 import {Constants} from "../../../../src/api/Constants";
+import {expect, describe, it, beforeAll, afterAll} from '@jest/globals';
 
 // Test environment will be populated in the "beforeAll"
 let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
