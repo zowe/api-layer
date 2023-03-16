@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.*;
 import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
 
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 
@@ -110,22 +109,22 @@ class TomcatHttpsTest {
 
     @Test
     void correctConfigurationWithClientAuthenticationShouldWork() throws IOException, LifecycleException {
-        HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().clientAuth(true).build();
+        HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().clientAuth("true").build();
         startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
-    void wrongClientCertificateShouldFail() {
-        HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth(true).build();
+    void wrongClientCertificateShouldNotFailWhenClientAuthIsWant() throws Exception {
+        HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth("want").build();
         HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
-        assertThrows(SSLException.class, () ->
-            startTomcatAndDoHttpsRequest(serverConfig, clientConfig)
-        );
+
+        startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
+
     }
 
     @Test
     void wrongClientCertificateShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
-        HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth(true).verifySslCertificatesOfServices(false).build();
+        HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth("true").verifySslCertificatesOfServices(false).build();
         HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
         startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
     }
@@ -142,10 +141,10 @@ class TomcatHttpsTest {
                 .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
             socketFactoryRegistryBuilder.register("https", clientHttpsFactory.createSslSocketFactory());
             Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
-
-            HttpClient client = clientHttpsFactory.createSecureHttpClient(new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, clientConfig.getTimeToLive()));
-
+            ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, clientConfig.getTimeToLive());
+            HttpClient client = clientHttpsFactory.createSecureHttpClient(connectionManager);
             int port = TomcatServerFactory.getLocalPort(tomcat);
+
             HttpGet get = new HttpGet(String.format("https://localhost:%d", port));
             HttpResponse response = client.execute(get);
 
