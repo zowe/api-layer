@@ -145,16 +145,17 @@ class SecurityUtilsTest {
         Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         assertFalse(certificatesBase64.isEmpty());
     }
+
     @Nested
     class GivenKeyringUrl {
         @Test
         void thenThrowException() {
-            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:////userId/keyRing", "safkeyring:////userId/keyRing"));
+            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:////userId/keyRing"));
         }
 
         @Test
         void givenWrongFormat_thenThrowException() {
-            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:/userId/keyRing", "safkeyring/userId/keyRing"));
+            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:/userId/keyRing"));
         }
     }
 
