@@ -20,20 +20,20 @@ describe("Tss Commands", () => {
         const tssCommands = getTssCommands('__tests__/__resources__/csv/users.csv');
         const commands = tssCommands.commands.getCommands();
         expect(commands).toMatchSnapshot();
-        expect(tssCommands.response.exitCode).toBe(Constants.okayCode);
+        expect(tssCommands.response.exitCode).toBe(Constants.OKAY_CODE);
     });
 
     it('should create the commands with warning', () => {
         const tssCommands = getTssCommands('__tests__/__resources__/csv/users_with_warnings.csv');
         const commands = tssCommands.commands.getCommands();
         expect(commands).toMatchSnapshot();
-        expect(tssCommands.response.exitCode).toBe(Constants.warnCode);
+        expect(tssCommands.response.exitCode).toBe(Constants.WARN_CODE);
     });
 
     it('should throw error when config is not valid', () => {
         const tssCommands = getTssCommands('__tests__/__resources__/csv/invalid_identities.csv');
         expect(() => tssCommands.commands.getCommands()).toThrow(ImperativeError);
-        expect(tssCommands.response.exitCode).toBe(Constants.fatalCode);
+        expect(tssCommands.response.exitCode).toBe(Constants.FATAL_CODE);
     });
 });
 

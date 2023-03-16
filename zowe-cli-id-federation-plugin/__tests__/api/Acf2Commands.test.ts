@@ -20,14 +20,14 @@ describe("ACF2 Commands unit test", () => {
         const acf2Commands = getAcf2Commands('__tests__/__resources__/csv/users.csv');
 
         expect(acf2Commands.commands.getCommands()).toMatchSnapshot();
-        expect(acf2Commands.response.exitCode).toBe(Constants.okayCode);
+        expect(acf2Commands.response.exitCode).toBe(Constants.OKAY_CODE);
     });
 
     it('should create the commands with warning', () => {
         const acf2Commands = getAcf2Commands('__tests__/__resources__/csv/users_with_warnings.csv');
 
         expect(acf2Commands.commands.getCommands()).toMatchSnapshot();
-        expect(acf2Commands.response.exitCode).toBe(Constants.warnCode);
+        expect(acf2Commands.response.exitCode).toBe(Constants.WARN_CODE);
     });
 
 
@@ -35,7 +35,7 @@ describe("ACF2 Commands unit test", () => {
         const acf2Commands = getAcf2Commands('__tests__/__resources__/csv/invalid_identities.csv');
 
         expect(() => acf2Commands.commands.getCommands()).toThrow(ImperativeError);
-        expect(acf2Commands.response.exitCode).toBe(Constants.fatalCode);
+        expect(acf2Commands.response.exitCode).toBe(Constants.FATAL_CODE);
     });
 
 });

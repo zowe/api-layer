@@ -57,7 +57,7 @@ describe("id-federation map command integration tests", () => {
     it("should print the successful creation message from team config profile and other sources", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(Constants.okayCode);
+        expect(response.status).toBe(Constants.OKAY_CODE);
         expect(response.stderr.toString()).toBe("");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -65,7 +65,7 @@ describe("id-federation map command integration tests", () => {
     it("should return command error in case of csv config with some invalid identities", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [invalidCsv]);
 
-        expect(response.status).toBe(Constants.warnCode);
+        expect(response.status).toBe(Constants.WARN_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -73,7 +73,7 @@ describe("id-federation map command integration tests", () => {
     it("should return command error in case of csv config with all invalid identities", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [allInvalidCsv]);
 
-        expect(response.status).toBe(Constants.fatalCode);
+        expect(response.status).toBe(Constants.FATAL_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -82,7 +82,7 @@ describe("id-federation map command integration tests", () => {
     it("should return command error in case of invalid format csv config", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, [wrongFormatCsv]);
 
-        expect(response.status).toBe(Constants.fatalCode);
+        expect(response.status).toBe(Constants.FATAL_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -90,7 +90,7 @@ describe("id-federation map command integration tests", () => {
     it("should return command error in case of csv config not found", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_team_config.sh", TEST_ENVIRONMENT, ["/wrong/path"]);
 
-        expect(response.status).toBe(Constants.fatalCode);
+        expect(response.status).toBe(Constants.FATAL_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });

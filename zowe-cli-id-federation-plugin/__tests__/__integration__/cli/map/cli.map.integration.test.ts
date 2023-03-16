@@ -43,7 +43,7 @@ describe("id-federation map command integration tests", () => {
     it("should fail when options are not passed", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_error_handler.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(Constants.zoweErrorCode);
+        expect(response.status).toBe(Constants.ZOWE_ERROR_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -51,7 +51,7 @@ describe("id-federation map command integration tests", () => {
     it("should fail when arguments are not valid", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_error_handler_invalid_argument.sh", TEST_ENVIRONMENT, [csv]);
 
-        expect(response.status).toBe(Constants.zoweErrorCode);
+        expect(response.status).toBe(Constants.ZOWE_ERROR_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -60,7 +60,7 @@ describe("id-federation map command integration tests", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
 
         expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
-        expect(response.status).toBe(Constants.okayCode);
+        expect(response.status).toBe(Constants.OKAY_CODE);
         expect(response.stdout.toString()).toContain("idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -69,7 +69,7 @@ describe("id-federation map command integration tests", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_with_passed_args.sh", TEST_ENVIRONMENT,
             [`${TEST_ENVIRONMENT.workingDir}/users.csv`, "TSS", "TST1", "ldap://12.34.56.78:910"]);
 
-        expect(response.status).toBe(Constants.okayCode);
+        expect(response.status).toBe(Constants.OKAY_CODE);
         expect(response.stderr.toString()).toBe("");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
@@ -78,7 +78,7 @@ describe("id-federation map command integration tests", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_with_passed_args.sh", TEST_ENVIRONMENT,
             [csv, "TSS", "", "ldap://12.34.56.78:910"]);
 
-        expect(response.status).toBe(Constants.zoweErrorCode);
+        expect(response.status).toBe(Constants.ZOWE_ERROR_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
         expect(response.stdout.toString()).toMatchSnapshot();
     });

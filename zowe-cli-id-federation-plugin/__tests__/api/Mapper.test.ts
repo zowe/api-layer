@@ -27,10 +27,10 @@ jest.mock('../../src/api/Commands', () => {
 
 describe("Mapper", () => {
 
-        const INPUT_FILE = "fake-file.csv";
-        const ESM = "fakeESM";
-        const SYSTEM = "fakeLPAR";
-        const REGISTRY = "fake://host:1234";
+    const INPUT_FILE = "fake-file.csv";
+    const ESM = "fakeESM";
+    const SYSTEM = "fakeLPAR";
+    const REGISTRY = "fake://host:1234";
 
     it("should arguments passed correctly", () => {
         const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, new ResponseMock());
@@ -42,6 +42,10 @@ describe("Mapper", () => {
     });
 
     describe("ESM function is called when", () => {
+
+        afterEach(() => {
+            mockGetCommands.mockClear();
+        });
 
         it("is RACF", () => {
             const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, new ResponseMock());
@@ -67,7 +71,7 @@ describe("Mapper", () => {
             expect(mockGetCommands).toHaveBeenCalledTimes(1);
         });
 
-        it('is not supported then throw error ', () => {
+        it('is not supported then throw error', () => {
             const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, new ResponseMock());
 
             expect(() => mapper.createSafCommands([])).toThrow(ImperativeError);

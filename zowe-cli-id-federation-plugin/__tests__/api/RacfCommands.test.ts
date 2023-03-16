@@ -21,14 +21,14 @@ describe("Racf Commands unit test", () => {
         const racfCommands = getRacfCommands('__tests__/__resources__/csv/users.csv');
 
         expect(racfCommands.commands.getCommands()).toMatchSnapshot();
-        expect(racfCommands.response.exitCode).toBe(Constants.okayCode);
+        expect(racfCommands.response.exitCode).toBe(Constants.OKAY_CODE);
     });
 
     it('should create the commands with warning', () => {
         const racfCommands = getRacfCommands('__tests__/__resources__/csv/users_with_warnings.csv');
 
         expect(racfCommands.commands.getCommands()).toMatchSnapshot();
-        expect(racfCommands.response.exitCode).toBe(Constants.warnCode);
+        expect(racfCommands.response.exitCode).toBe(Constants.WARN_CODE);
     });
 
 
@@ -36,7 +36,7 @@ describe("Racf Commands unit test", () => {
         const racfCommands = getRacfCommands('__tests__/__resources__/csv/invalid_identities.csv');
 
         expect(() => racfCommands.commands.getCommands()).toThrow(ImperativeError);
-        expect(racfCommands.response.exitCode).toBe(Constants.fatalCode);
+        expect(racfCommands.response.exitCode).toBe(Constants.FATAL_CODE);
     });
 
 });
