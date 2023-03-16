@@ -8,9 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {ImperativeError, TextUtils} from "@zowe/imperative";
+import {IHandlerResponseApi, ImperativeError, TextUtils} from "@zowe/imperative";
 import { warn } from "console";
 import {IIdentity} from "./CsvParser";
+import {Constants} from "./Constants";
 import {hasValidLength} from "./ValidateUtil";
 
 export class Commands {
@@ -23,7 +24,8 @@ export class Commands {
         private registry: string,
         private identities: IIdentity[],
         private commandTemplate: string,
-        private refreshCommand: string
+        private refreshCommand: string,
+        private response: IHandlerResponseApi
     ) {
     }
 
@@ -33,6 +35,7 @@ export class Commands {
             .filter(command => command);
 
         if (!commands.some(Boolean)) {
+            this.response.data.setExitCode(Constants.fatalCode);
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
         commands.push(this.refreshCommand);
@@ -43,18 +46,21 @@ export class Commands {
         if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
             warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
+           this.response.data.setExitCode(Constants.warnCode);
             return '';
         }
 
         if(!hasValidLength(identity.distributedId, this.maxLengthDistributedId)) {
             warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.maxLengthDistributedId} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
-            return '';
+            this.response.data.setExitCode(Constants.warnCode);
+                return '';
         }
 
         if(!hasValidLength(identity.userName, this.maxLengthLabel)) {
             warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.maxLengthLabel} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
+                this.response.data.setExitCode(Constants.warnCode);
             return '';
         }
 

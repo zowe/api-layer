@@ -8,12 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {RacfCommands} from "../../src/api/RacfCommands";
+import {Commands} from "../../src/api/Commands";
 import {CsvParser} from "../../src/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
 import {Constants} from "../../src/api/Constants";
 import {expect, describe, it} from '@jest/globals';
+import * as fs from "fs";
 
 describe("Racf Commands unit test", () => {
 
@@ -41,10 +42,12 @@ describe("Racf Commands unit test", () => {
 
 });
 
-function getRacfCommands(file: string): { commands: RacfCommands, response: ResponseMock } {
+function getRacfCommands(file: string): { commands: Commands, response: ResponseMock } {
     const response = new ResponseMock();
     const csvParser = new CsvParser(file, response);
-    const commands = new RacfCommands('ldap://host:1234', csvParser.getIdentities(), response);
+    const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
+    const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
+    const commands = new Commands('ldap://host:1234', csvParser.getIdentities(), racfTemplate, racfRefreshCommand, response);
 
     return {commands, response};
 }

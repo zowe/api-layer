@@ -58,13 +58,13 @@ export class Mapper {
             case "racf": {
                 const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
                 const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
-                commandProcessor = new RacfCommands(this.registry, identities, this.response);
+                commandProcessor = new Commands(this.registry, identities,racfTemplate, racfRefreshCommand, this.response)
                 break;
             }
             case "tss": {
                 const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
                 const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-                commandProcessor = new Commands(this.registry, identities,tssTemplate, tssRefreshCommand);
+                commandProcessor = new Commands(this.registry, identities,tssTemplate, tssRefreshCommand, this.response);
                 break;
             }
             case "acf2": {
