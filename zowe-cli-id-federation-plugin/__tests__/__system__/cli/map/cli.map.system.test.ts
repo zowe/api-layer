@@ -8,16 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import * as path from "path";
-import * as fs from "fs";
-import { ITestEnvironment, TestEnvironment, runCliScript } from "@zowe/cli-test-utils";
-import { ITestPropertiesSchema } from "../../../__src__/environment/doc/ITestPropertiesSchema";
+import {ITestEnvironment, runCliScript, TestEnvironment} from "@zowe/cli-test-utils";
+import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
 
 // Test environment will be populated in the "beforeAll"
 let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
-const testCsv = "users.csv";
 
-describe("id-federation map", () => {
+describe("id-federation map system test", () => {
+
     // Create the unique test environment
     beforeAll(async () => {
         TEST_ENVIRONMENT = await TestEnvironment.setUp({
@@ -37,4 +35,5 @@ describe("id-federation map", () => {
         expect(response.status).toBe(0);
         expect(response.stdout.toString()).toMatchSnapshot();
     });
+
 });
