@@ -32,14 +32,14 @@ export class CsvParser {
         try {
             fileContent = fs.readFileSync(this.file);
         } catch (error) {
-            this.response.data.setExitCode(Constants.fatalCode);
+            this.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg: `Cannot open the input CSV file. ${error.message}`});
         }
 
         try {
-            return parse(fileContent, {columns: Constants.headers}) as IIdentity[];
+            return parse(fileContent, {columns: Constants.HEADERS}) as IIdentity[];
         } catch (e) {
-            this.response.data.setExitCode(Constants.fatalCode);
+            this.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg: `Invalid CSV format: ${e.message ?? ''}`});
         }
     }

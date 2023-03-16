@@ -12,16 +12,16 @@ export class Constants {
 
     // Parameters maximum length
     //TODO: length valid for RACF, if other ESMs allow the different length -> refactor
-    public static readonly maxLengthRegistry = 255;
-    public static readonly maxLengthSystem = 8;
+    public static readonly MAX_LENGTH_REGISTRY = 255;
+    public static readonly MAX_LENGTH_SYSTEM = 8;
 
     // Plugin return codes
-    public static readonly okayCode = 0;
-    public static readonly zoweErrorCode = 1;
-    public static readonly warnCode = 4;
-    public static readonly fatalCode = 16;
+    public static readonly OKAY_CODE = 0;
+    public static readonly ZOWE_ERROR_CODE = 1;
+    public static readonly WARN_CODE = 4;
+    public static readonly FATAL_CODE = 16;
 
     // CSV
-    public static readonly headers = ['userName', 'distributedId', 'mainframeId'];
+    public static readonly HEADERS = ['userName', 'distributedId', 'mainframeId'];
 
 }

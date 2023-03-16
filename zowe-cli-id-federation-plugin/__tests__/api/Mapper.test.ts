@@ -12,16 +12,16 @@ import { Mapper } from "../../src";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import {expect, jest, describe, it} from '@jest/globals';
 
-const mockGetCommands = jest.fn().mockReturnValue(['abc'])
+const mockGetCommands = jest.fn().mockReturnValue(['abc']);
 
 jest.mock('../../src/api/Commands', () => {
     return {
         Commands: jest.fn().mockImplementation(() => {
             return {
                 getCommands: mockGetCommands
-            }
+            };
         })
-    }
+    };
 });
 
 describe("Mapper", () => {

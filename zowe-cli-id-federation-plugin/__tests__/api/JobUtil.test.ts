@@ -11,7 +11,7 @@
 import {getAccount} from "../../src/api/JobUtil";
 import {ProfileInfo} from "@zowe/imperative/lib/config/src/ProfileInfo";
 import {IProfAttrs} from "@zowe/imperative/lib/config/src/doc/IProfAttrs";
-import {IProfArgValue, ProfLocType} from "@zowe/imperative";
+import {ProfLocType} from "@zowe/imperative";
 import {IProfMergedArg} from "@zowe/imperative/lib/config/src/doc/IProfMergedArg";
 import {expect, jest, describe, it} from '@jest/globals';
 

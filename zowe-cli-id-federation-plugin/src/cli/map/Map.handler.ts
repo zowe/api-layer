@@ -18,11 +18,11 @@ export default class MapHandler implements ICommandHandler {
 
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;
-        const system: string = params.arguments.system ? params.arguments.system : "";
+        const system: string = params.arguments.system ?? '';
 
         if (!fs.existsSync(file)) {
             const msg = `The input CSV file does not exist.`;
-            params.response.data.setExitCode(Constants.fatalCode);
+            params.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg});
         }
 
