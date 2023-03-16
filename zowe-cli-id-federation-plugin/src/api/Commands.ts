@@ -18,9 +18,9 @@ import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api
 
 export class Commands {
 
-    readonly maxLengthMainframeId = 8;
-    readonly maxLengthDistributedId = 246;
-    readonly maxLengthLabel = 32;
+    readonly MAX_LENGTH_MAINFRAME_ID = 8;
+    readonly MAX_LENGTH_DISTRIBUTED_ID = 246;
+    readonly MAX_LENGTH_LABEL = 32;
 
     constructor(
         private registry: string,
@@ -39,7 +39,7 @@ export class Commands {
             .filter(command => command);
 
         if (!commands.some(Boolean)) {
-            this.response.data.setExitCode(Constants.fatalCode);
+            this.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
         commands.push("");
@@ -48,24 +48,24 @@ export class Commands {
     }
 
     private getCommand(identity: IIdentity, commandTemplate: string): string {
-        if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
-            warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
+        if(!hasValidLength(identity.mainframeId, this.MAX_LENGTH_MAINFRAME_ID)) {
+            warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.MAX_LENGTH_MAINFRAME_ID} characters. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
-            this.response.data.setExitCode(Constants.warnCode);
+            this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
-        if(!hasValidLength(identity.distributedId, this.maxLengthDistributedId)) {
-            warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.maxLengthDistributedId} characters. ` +
+        if(!hasValidLength(identity.distributedId, this.MAX_LENGTH_DISTRIBUTED_ID)) {
+            warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.MAX_LENGTH_DISTRIBUTED_ID} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
-            this.response.data.setExitCode(Constants.warnCode);
+            this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
-        if(!hasValidLength(identity.userName, this.maxLengthLabel)) {
-            warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.maxLengthLabel} characters. ` +
+        if(!hasValidLength(identity.userName, this.MAX_LENGTH_LABEL)) {
+            warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.MAX_LENGTH_LABEL} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
-            this.response.data.setExitCode(Constants.warnCode);
+            this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 

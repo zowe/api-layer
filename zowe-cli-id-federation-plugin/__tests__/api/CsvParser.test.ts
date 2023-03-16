@@ -12,6 +12,7 @@ import {CsvParser} from "../../src/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
 import {Constants} from "../../src/api/Constants";
+import {expect, describe, it} from '@jest/globals';
 
 describe("CSV parser unit tests", () => {
 
@@ -20,7 +21,7 @@ describe("CSV parser unit tests", () => {
         const csvParser = new CsvParser('__tests__/__resources__/csv/users.csv', response);
 
         expect(csvParser.getIdentities()).toMatchSnapshot();
-        expect(response.exitCode).toBe(Constants.okayCode);
+        expect(response.exitCode).toBe(Constants.OKAY_CODE);
     });
 
     it("throw error when cannot read file", () => {
@@ -28,7 +29,7 @@ describe("CSV parser unit tests", () => {
         const csvParser = new CsvParser('no.csv', response);
 
         expect(() => csvParser.getIdentities()).toThrow(ImperativeError);
-        expect(response.exitCode).toBe(Constants.fatalCode);
+        expect(response.exitCode).toBe(Constants.FATAL_CODE);
     });
 
     it("throw error when invalid Csv file", () => {
@@ -36,7 +37,7 @@ describe("CSV parser unit tests", () => {
         const csvParser = new CsvParser('__tests__/__resources__/csv/invalid.csv', response);
 
         expect(() => csvParser.getIdentities()).toThrow(ImperativeError);
-        expect(response.exitCode).toBe(Constants.fatalCode);
+        expect(response.exitCode).toBe(Constants.FATAL_CODE);
     });
 
 });

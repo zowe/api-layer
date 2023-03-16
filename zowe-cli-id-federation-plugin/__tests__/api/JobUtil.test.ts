@@ -13,6 +13,7 @@ import {ProfileInfo} from "@zowe/imperative/lib/config/src/ProfileInfo";
 import {IProfAttrs} from "@zowe/imperative/lib/config/src/doc/IProfAttrs";
 import {ProfLocType} from "@zowe/imperative";
 import {IProfMergedArg} from "@zowe/imperative/lib/config/src/doc/IProfMergedArg";
+import {expect, jest, describe, it} from '@jest/globals';
 
 describe("JobUtil unit tests", () => {
 
@@ -51,7 +52,7 @@ describe("JobUtil unit tests", () => {
                 ],
             missingArgs: []
         };
-        jest.spyOn(ProfileInfo.prototype, 'readProfilesFromDisk').mockImplementation();
+        jest.spyOn(ProfileInfo.prototype, 'readProfilesFromDisk').mockImplementation(() => Promise.resolve());
         jest.spyOn(ProfileInfo.prototype, 'getDefaultProfile').mockReturnValue(profAttrs);
         jest.spyOn(ProfileInfo.prototype, 'mergeArgsForProfile').mockReturnValue(profMergedArg);
 
@@ -68,14 +69,14 @@ describe("JobUtil unit tests", () => {
                     {
                         argName: "account",
                         dataType: "string",
-                        argValue: null,
+                        argValue: "",
                         argLoc: { locType: 0, osLoc: ["location"], jsonLoc: "jsonLoc" },
                         secure: false,
                     },
                 ],
             missingArgs: []
         };
-        jest.spyOn(ProfileInfo.prototype, 'readProfilesFromDisk').mockImplementation();
+        jest.spyOn(ProfileInfo.prototype, 'readProfilesFromDisk').mockImplementation(() => Promise.resolve());
         jest.spyOn(ProfileInfo.prototype, 'getDefaultProfile').mockReturnValue(profAttrs);
         jest.spyOn(ProfileInfo.prototype, 'mergeArgsForProfile').mockReturnValue(profMergedArg);
 

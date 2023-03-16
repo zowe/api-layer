@@ -9,6 +9,8 @@
  */
 
 import { JclWriter } from "../../src/api/JclWriter";
+import {expect, describe, it} from '@jest/globals';
+
 describe("JclWriter unit tests", () => {
 
     describe("parse", () => {

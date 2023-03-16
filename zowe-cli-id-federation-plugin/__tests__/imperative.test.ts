@@ -8,6 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import {expect, describe, it} from '@jest/globals';
+
 describe("imperative config", () => {
 
     // Will fail if imperative config object is changed. This is a sanity/protection check to ensure that any
