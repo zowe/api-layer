@@ -11,7 +11,7 @@
       "dependencies": {
         "@zowe/core-for-zowe-sdk": "7.10.4",
         "@zowe/zosmf-for-zowe-sdk": "7.10.4",
-        "csv-parse": "^5.3.5"
+        "csv-parse": "5.3.5"
       },
       "devDependencies": {
         "@types/fs-extra": "11.0.1",
