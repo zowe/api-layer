@@ -27,8 +27,10 @@ import java.util.Set;
  */
 public class PassTicketService {
 
-    public synchronized void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
-        IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
+    private IRRPassTicket irrPassTicket;
+
+    public PassTicketService() {
+        this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
             "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
@@ -36,30 +38,17 @@ public class PassTicketService {
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
                 IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
+    }
+
+    public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
         irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
     }
 
-    public synchronized String generate(String userId, String applId) throws IRRPassTicketGenerationException {
-        IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
-            "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
-                IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn"),
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
-                IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
+    public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
         return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
     }
 
     public boolean isUsingSafImplementation() {
-        IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
-            "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
-                IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn"),
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
-                IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
         ClassOrDefaultProxyUtils.ClassOrDefaultProxyState stateInterface = (ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) irrPassTicket;
         return stateInterface.isUsingBaseImplementation();
     }
