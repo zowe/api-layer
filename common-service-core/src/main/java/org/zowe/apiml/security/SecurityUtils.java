@@ -73,7 +73,7 @@ public class SecurityUtils {
                 }
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                | UnrecoverableKeyException e) {
+                     | UnrecoverableKeyException e) {
                 apimlLog.log("org.zowe.apiml.common.errorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError(e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
@@ -182,7 +182,8 @@ public class SecurityUtils {
                     }
                 }
                 return key;
-            } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | UnrecoverableKeyException e) {
+            } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException |
+                     UnrecoverableKeyException e) {
                 apimlLog.log("org.zowe.apiml.common.errorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError("Error loading secret key: " + e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
@@ -193,8 +194,9 @@ public class SecurityUtils {
 
     /**
      * Loads keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}, from specified location
-     * @param type - type of store
-     * @param path - path or URL of store
+     *
+     * @param type     - type of store
+     * @param path     - path or URL of store
      * @param password - password to the store
      * @return the new {@link KeyStore} or key ring as {@link KeyStore}
      * @throws IOException
@@ -232,14 +234,13 @@ public class SecurityUtils {
     /**
      * Creates an {@link URL} to key ring location
      *
-     * @param uri        - key ring location
-     * @param trustStore - truststore location
+     * @param uri - key ring location
      * @return the new {@link URL} with 2 slashes instead of 4
      * @throws MalformedURLException throws in case of incorrect key ring format
      */
-    public static URL keyRingUrl(String uri, String trustStore) throws MalformedURLException {
+    public static URL keyRingUrl(String uri) throws MalformedURLException {
         if (!isKeyring(uri)) {
-            throw new MalformedURLException("Incorrect key ring format: " + trustStore
+            throw new MalformedURLException("Incorrect key ring format: " + uri
                 + ". Make sure you use format safkeyring://userId/keyRing");
         }
         return new URL(formatKeyringUrl(uri));
