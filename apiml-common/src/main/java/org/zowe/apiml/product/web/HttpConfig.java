@@ -48,8 +48,12 @@ public class HttpConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
-    @Value("${server.ssl.protocol:TLSv1.2}")
+    @Value("${server.ssl.protocol:TLS}")
     private String protocol;
+    @Value("${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}")
+    private String[] supportedProtocols;
+    @Value("${server.ssl.ciphers:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}")
+    private String[] ciphers;
 
     @Value("${server.ssl.trustStore:#{null}}")
     private String trustStore;
@@ -139,7 +143,7 @@ public class HttpConfig {
         try {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
-                    .protocol(protocol)
+                    .protocol(protocol).enabledProtocols(supportedProtocols).cipherSuite(ciphers)
                     .trustStore(trustStore).trustStoreType(trustStoreType)
                     .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
@@ -150,7 +154,7 @@ public class HttpConfig {
 
             HttpsConfig httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
                 .build();
 
             HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();

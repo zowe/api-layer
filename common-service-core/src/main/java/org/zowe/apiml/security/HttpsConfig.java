@@ -20,9 +20,9 @@ import lombok.Value;
 public class HttpsConfig {
 
     @Builder.Default
-    String protocol = "TLSv1.2";
+    String protocol = "TLS";
     @Builder.Default
-    String[] supportedProtocols = "TLSv1.2,TLSv1.3".split(",");
+    String[] enabledProtocols = "TLSv1.2,TLSv1.3".split(",");
     String trustStore;
     char[] trustStorePassword;
     @Builder.Default
@@ -36,7 +36,7 @@ public class HttpsConfig {
     String[] cipherSuite = "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384".split(",");
     @Builder.Default
     String keyStoreType = "PKCS12";
-    boolean clientAuth;
+    String clientAuth;
     @Builder.Default
     boolean verifySslCertificatesOfServices = true;
     @Builder.Default

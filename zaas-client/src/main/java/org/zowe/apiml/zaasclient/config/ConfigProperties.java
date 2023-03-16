@@ -51,6 +51,7 @@ public class ConfigProperties {
             .trustStorePassword(trustStorePassword)
             .httpOnly(httpOnly)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
+            .tokenPrefix(tokenPrefix)
             .build();
     }
 

@@ -212,7 +212,7 @@ public class HttpsFactory {
     private ConnectionSocketFactory getSSLConnectionSocketFactory() {
         return new SSLConnectionSocketFactory(
             createSecureSslContext(),
-            config.getSupportedProtocols(), config.getCipherSuite(),
+            config.getEnabledProtocols(), config.getCipherSuite(),
             getHostnameVerifier()
         );
     }
