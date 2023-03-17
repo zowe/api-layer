@@ -68,10 +68,10 @@ export class RacfCommands {
         }
 
         return TextUtils.renderWithMustache(racfTemplate, {
-            mainframe_id: identity.mainframeId.trim(),
-            distributed_id: identity.distributedId.trim(),
+            mainframe_id: identity.mainframeId,
+            distributed_id: identity.distributedId,
             registry: this.registry,
-            user_name: identity.userName.trim(),
+            user_name: identity.userName,
             escape: function() {
                 return function(text: string, render: any) {
                     return render(text).replace(/'/g, "''");

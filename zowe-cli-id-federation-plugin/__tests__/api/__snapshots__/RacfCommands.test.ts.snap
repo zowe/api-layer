@@ -2,9 +2,9 @@
 
 exports[`Racf Commands unit test should create the commands with warning 1`] = `
 [
-  "RACMAP ID(mf_jir) MAP USERDIDFILTER(NAME('dist_jirka')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Jirka')",
+  "RACMAP ID(mf_jirka) MAP USERDIDFILTER(NAME('dist_jirka')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Jirka')",
   "RACMAP ID(mf_lena) MAP USERDIDFILTER(NAME('dist_lena')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Lena')",
-  "RACMAP ID(mf_pab) MAP USERDIDFILTER(NAME('dist_pablo')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Pablo')",
+  "RACMAP ID(mf_pablo) MAP USERDIDFILTER(NAME('dist_pablo')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Pablo')",
   "RACMAP ID(mf_name) MAP USERDIDFILTER(NAME('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Name')",
   "SETROPTS RACLIST(IDIDMAP) REFRESH
 ",
@@ -13,9 +13,9 @@ exports[`Racf Commands unit test should create the commands with warning 1`] = `
 
 exports[`Racf Commands unit test should create the commands without warning 1`] = `
 [
-  "RACMAP ID(mf_jir) MAP USERDIDFILTER(NAME('dist_jirka')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Jirka')",
+  "RACMAP ID(mf_jirka) MAP USERDIDFILTER(NAME('dist_jirka')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Jirka')",
   "RACMAP ID(mf_lena) MAP USERDIDFILTER(NAME('dist_lena')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Lena')",
-  "RACMAP ID(mf_pab) MAP USERDIDFILTER(NAME('dist_pablo')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Pablo')",
+  "RACMAP ID(mf_pablo) MAP USERDIDFILTER(NAME('dist_pablo')) REGISTRY(NAME('ldap://host:1234')) WITHLABEL('Pablo')",
   "SETROPTS RACLIST(IDIDMAP) REFRESH
 ",
 ]
