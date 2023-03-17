@@ -34,7 +34,7 @@ export class ResponseMock implements IHandlerResponseApi {
         this.data = {
             setExitCode: setExitCode,
             setObj: (data: any, merge?: boolean) => undefined,
-            setMessage: (message: string, ...values: any[]) => 'not implemented'
+            setMessage: (message: string, ...values: any[]) => { throw new Error ("not implemented"); }
         };
 
     }
