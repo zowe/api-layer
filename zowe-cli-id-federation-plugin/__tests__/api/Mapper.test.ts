@@ -60,13 +60,16 @@ describe("Mapper", () => {
         });
     });
 
-    describe("createJcl", () => {
+    describe("createJcl unit test", () => {
+
         it("creates with mustache template", async () => {
             const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, {} as IHandlerResponseApi);
             jest.spyOn(JobUtil, "getAccount").mockReturnValue(Promise.resolve("account1"));
             const reply = await mapper.createJcl(["command1", "command2"]);
-            expect(await mapper.createJcl(["command1", "command2"])).toBe(`//IDF JOB (account1),CLASS=A,MSGCLASS=X\n/*JOBPARM SYSAFF=FAKELPAR\n//*-------------------------------------------------------------------\n//*\n//* Zowe CLI ID Federation Plugin\n//*\n//* This JCL can be used for mapping from a distributed identity to\n//* a mainframe identity\n//*\n//* 1) Validate the job header and make all necessary changes\n//*    according to your system environment.\n//*\n//* 2) Run the JCL on system fakeLPAR.\n//*\n//* Note(s):\n//*\n//* 1. THE USER ID THAT RUNS THIS JOB MUST HAVE SUFFICIENT AUTHORITY\n//*    TO ALTER SECURITY DEFINITIONS\n//*\n//*-------------------------------------------------------------------\n//RUN      EXEC PGM=IKJEFT01,REGION=0M\n//SYSTSPRT DD SYSOUT=*\n//SYSTSIN     DD DATA,SYMBOLS=JCLONLY\n command1\n command2\n/*\n`);
+
+            expect(reply).toMatchSnapshot();
         });
+
     });
 
 });
