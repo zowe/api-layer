@@ -26,5 +26,5 @@ export async function getAccount(): Promise<string> {
     const accountNumberFromProfile = tsoMergedArgs.knownArgs.find(
         arg => arg.argName === "account").argValue as string;
 
-    return accountNumberFromProfile ? accountNumberFromProfile : "account";
+    return accountNumberFromProfile ?? "account";
 }
