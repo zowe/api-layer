@@ -1,0 +1,105 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Profile Constants should return correct values for all the constants 1`] = `
+{
+  "aliases": [
+    "e",
+  ],
+  "allowableValues": {
+    "values": [
+      "RACF",
+      "TSS",
+      "ACF2",
+    ],
+  },
+  "description": "The ESM product on the target system",
+  "group": "IDF Connection Options",
+  "name": "esm",
+  "required": true,
+  "type": "string",
+}
+`;
+
+exports[`Profile Constants should return correct values for all the constants 2`] = `
+{
+  "aliases": [
+    "s",
+  ],
+  "description": "The target JES system on which the command will be executed",
+  "group": "IDF Connection Options",
+  "name": "system",
+  "stringLengthRange": [
+    1,
+    8,
+  ],
+  "type": "string",
+}
+`;
+
+exports[`Profile Constants should return correct values for all the constants 3`] = `
+{
+  "aliases": [
+    "r",
+  ],
+  "description": "The distributed identities registry (e.g., ldaps://enterprise.com, ldap://12.34.56.78:389)",
+  "group": "IDF Connection Options",
+  "name": "registry",
+  "required": true,
+  "stringLengthRange": [
+    1,
+    255,
+  ],
+  "type": "string",
+}
+`;
+
+exports[`Profile Constants should return correct values for all the constants 4`] = `"IDF Connection Options"`;
+
+exports[`Profile Constants should return correct values for all the constants 5`] = `
+[
+  {
+    "aliases": [
+      "e",
+    ],
+    "allowableValues": {
+      "values": [
+        "RACF",
+        "TSS",
+        "ACF2",
+      ],
+    },
+    "description": "The ESM product on the target system",
+    "group": "IDF Connection Options",
+    "name": "esm",
+    "required": true,
+    "type": "string",
+  },
+  {
+    "aliases": [
+      "s",
+    ],
+    "description": "The target JES system on which the command will be executed",
+    "group": "IDF Connection Options",
+    "name": "system",
+    "stringLengthRange": [
+      1,
+      8,
+    ],
+    "type": "string",
+  },
+  {
+    "aliases": [
+      "r",
+    ],
+    "description": "The distributed identities registry (e.g., ldaps://enterprise.com, ldap://12.34.56.78:389)",
+    "group": "IDF Connection Options",
+    "name": "registry",
+    "required": true,
+    "stringLengthRange": [
+      1,
+      255,
+    ],
+    "type": "string",
+  },
+]
+`;

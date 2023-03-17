@@ -8,8 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-describe("map handler", () => {
-    it("should accept options and print message", async () => {
+import {ResponseMock} from "../../__src__/ResponseMock";
+import {Constants} from "../../../src/api/Constants";
+import {expect, jest, describe, it} from '@jest/globals';
+
+describe("map handler unit tests", () => {
+
+    it("should accept options and return successful message", async () => {
         // Require the handler and create a new instance
         const handlerReq = require("../../../src/cli/map/Map.handler");
         const handler = new handlerReq.default();
@@ -25,10 +30,9 @@ describe("map handler", () => {
                 arguments: {
                     $0: "fake",
                     _: ["fake"],
-                    inputFile: "fake-file.csv",
-                    esm: "fakeESM",
-                    lpar: "fakeLPAR",
-                    registry: "fake://host:1234"
+                    inputFile: "__tests__/__resources__/csv/users.csv",
+                    esm: "RACF",
+                    registry: "ldap://host:1234"
                 },
                 response: {
                     console: {
@@ -41,37 +45,35 @@ describe("map handler", () => {
         } catch (e) {
             error = e;
         }
+
         expect(error).toBeUndefined();
         expect(logMessage).toMatchSnapshot();
     });
 
-    it("throw an error", async () => {
+    it("throw an error when file does not exist", async () => {
         const handlerReq = require("../../../src/cli/map/Map.handler");
         const handler = new handlerReq.default();
 
         let error;
-        let logMessage = "";
-
+        const response = new ResponseMock();
         try {
             await handler.process({
                 arguments: {
                     $0: "fake",
                     _: ["fake"],
-                    inputFile: "fake-file.csv"
+                    inputFile: "no.csv",
+                    esm: "RACF",
+                    registry: "ldap://host:1234"
                 },
-                response: {
-                    console: {
-                        log: jest.fn((logArgs) => {
-                            logMessage += " " + logArgs;
-                        })
-                    }
-                }
+                response: response
             });
         } catch (e) {
             error = e;
         }
-        expect(logMessage).toMatchSnapshot();
+
+        expect(response.exitCode).toBe(Constants.FATAL_CODE);
         expect(error).toBeDefined();
         expect(error.message).toMatchSnapshot();
     });
+
 });

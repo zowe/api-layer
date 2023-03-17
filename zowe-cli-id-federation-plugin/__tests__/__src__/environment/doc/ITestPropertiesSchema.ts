@@ -16,7 +16,7 @@ export interface ITestPropertiesSchema {
 
     idFederation: {
         esm: string;
-        lpar: string;
+        system: string;
         registry: string;
     };
 }

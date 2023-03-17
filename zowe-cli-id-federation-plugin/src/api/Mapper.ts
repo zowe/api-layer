@@ -8,24 +8,72 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {Logger, LoggingConfigurer} from "@zowe/imperative";
-import config = require("../imperative");
+import {ImperativeError, TextUtils} from "@zowe/imperative";
+import {RacfCommands} from "./RacfCommands";
+import {getAccount} from "./JobUtil";
+import * as fs from "fs";
+import {CsvParser, IIdentity} from "./CsvParser";
+import {JclWriter} from "./JclWriter";
+import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
+import {Constants} from "./Constants";
 
 export class Mapper {
-    file: string;
-    esm: string;
-    lpar: string;
-    registry: string;
-
-    constructor(file: string, esm: string, lpar: string, registry: string) {
-        Logger.initLogger(LoggingConfigurer.configureLogger(".zowe", config));
-        this.file = file;
-        this.esm = esm;
-        this.lpar = lpar;
-        this.registry = registry;
+    constructor(
+        public file: string,
+        public esm: string,
+        public system: string,
+        public registry: string,
+        public response: IHandlerResponseApi) {
     }
 
-    map() {
-        Logger.getAppLogger().info("AppLogger: TBD");//Here will be the code which generate JCL
+    async map(): Promise<string> {
+        const identities = new CsvParser(this.file,this.response).getIdentities();
+        const commands = this.createSafCommands(identities);
+        const jcl = await this.createJcl(commands);
+        const fileMsg = this.system ? `_${this.system}` : "";
+        const fileName = `idf_${this.esm}${fileMsg}.jcl`;
+        fs.writeFileSync(fileName, jcl);
+
+        const systemMsg = this.system ? ` on the system ${this.system}` : "";
+        return `'${fileName}' was created. Review and submit this JCL${systemMsg}.`;
     }
+
+    async createJcl(commands: string[]): Promise<string> {
+        const jclTemplate = fs.readFileSync('src/api/templates/job.jcl').toString();
+        const account = await getAccount();
+        const jclWriter = new JclWriter(1, 2);
+        commands.forEach(c => jclWriter.add(c));
+        return TextUtils.renderWithMustache(jclTemplate, {
+            account: account,
+            sysaff: this.system ? `\n/*JOBPARM SYSAFF=${this.system.toUpperCase()}` : "",
+            system: this.system ? `system ${this.system}` : "a corresponding system",
+            commands: jclWriter.getText()
+        });
+    }
+
+    createSafCommands(identities: IIdentity[]): string[] {
+        let commandProcessor;
+        switch (this.esm.toLowerCase()) {
+            case "racf": {
+                commandProcessor = new RacfCommands(this.registry, identities, this.response);
+                break;
+            }
+            case "tss": {
+                break; //TODO: Here will be the code which generate TSS commands
+            }
+            case "acf2": {
+                break; //TODO: Here will be the code which generate ACF2 commands
+            }
+            default: {
+                this.response.data.setExitCode(Constants.FATAL_CODE);
+                const msg = `Unsupported ESM "${this.esm}".` +
+                    `Id Federation Plugin supports only the following security systems: RACF, TSS, and ACF2.`;
+                throw new ImperativeError({msg});
+            }
+        }
+
+        return commandProcessor ? commandProcessor.getCommands() : [];
+    }
+
+
 }

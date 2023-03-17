@@ -8,7 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { ICommandOptionDefinition } from "@zowe/imperative";
+import {ICommandOptionDefinition} from "@zowe/imperative";
+import {Constants} from "./Constants";
 
 export class ProfileConstants {
     public static IDF_CONNECTION_OPTION_GROUP = "IDF Connection Options";
@@ -16,16 +17,18 @@ export class ProfileConstants {
     public static IDF_OPTION_ESM: ICommandOptionDefinition = {
         name: "esm",
         aliases: ["e"],
-        description: "The ESM to execute command",
+        description: "The ESM product on the target system",
+        required: true,
         type: "string",
-        allowableValues: { values: ["RACF", "TSS", "ACF2"] },
+        allowableValues: {values: ["RACF", "TSS", "ACF2"]},
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
 
-    public static IDF_OPTION_LPAR: ICommandOptionDefinition = {
-        name: "lpar",
-        aliases: ["l"],
-        description: "The security domain on which command will be executed",
+    public static IDF_OPTION_SYSTEM: ICommandOptionDefinition = {
+        name: "system",
+        aliases: ["s"],
+        description: "The target JES system on which the command will be executed",
+        stringLengthRange: [1, Constants.MAX_LENGTH_SYSTEM],
         type: "string",
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
@@ -33,14 +36,16 @@ export class ProfileConstants {
     public static IDF_OPTION_REGISTRY: ICommandOptionDefinition = {
         name: "registry",
         aliases: ["r"],
-        description: "The registry that contains the distributed-identity user name",
+        description: "The distributed identities registry (e.g., ldaps://enterprise.com, ldap://12.34.56.78:389)",
+        required: true,
         type: "string",
+        stringLengthRange: [1, Constants.MAX_LENGTH_REGISTRY],
         group: ProfileConstants.IDF_CONNECTION_OPTION_GROUP
     };
 
     public static IDF_CONNECTION_OPTIONS: ICommandOptionDefinition[] = [
         ProfileConstants.IDF_OPTION_ESM,
-        ProfileConstants.IDF_OPTION_LPAR,
+        ProfileConstants.IDF_OPTION_SYSTEM,
         ProfileConstants.IDF_OPTION_REGISTRY
     ];
 }

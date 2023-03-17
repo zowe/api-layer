@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`id-federation map command integration tests should print the successful creation message from team config profile and other sources 1`] = `
+"'idf_RACF_TST2.jcl' was created. Review and submit this JCL on the system TST2.
+"
+`;
+
+exports[`id-federation map command integration tests should return command error in case of csv config not found 1`] = `
+"Command Error:
+The input CSV file does not exist.
+"
+`;
+
+exports[`id-federation map command integration tests should return command error in case of csv config not found 2`] = `""`;
+
+exports[`id-federation map command integration tests should return command error in case of csv config with all invalid identities 1`] = `
+"The user name 'Too looooooooooooooooooooooooooooong name' has exceeded maximum length of 32 characters. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.
+The distributed user ID 'Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' has exceeded maximum length of 246 characters. Identity mapping for the user 'Name' has not been created.
+The mainframe user ID 'mf_too_long' has exceeded maximum length of 8 characters. Identity mapping for the user 'Name' has not been created.
+Command Error:
+Error when trying to create the identity mapping.
+"
+`;
+
+exports[`id-federation map command integration tests should return command error in case of csv config with all invalid identities 2`] = `""`;
+
+exports[`id-federation map command integration tests should return command error in case of csv config with some invalid identities 1`] = `
+"The user name 'Too looooooooooooooooooooooooooooong name' has exceeded maximum length of 32 characters. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.
+The distributed user ID 'Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' has exceeded maximum length of 246 characters. Identity mapping for the user 'Name' has not been created.
+The mainframe user ID 'mf_too_long' has exceeded maximum length of 8 characters. Identity mapping for the user 'Name' has not been created.
+"
+`;
+
+exports[`id-federation map command integration tests should return command error in case of csv config with some invalid identities 2`] = `
+"'idf_RACF_TST2.jcl' was created. Review and submit this JCL on the system TST2.
+"
+`;
+
+exports[`id-federation map command integration tests should return command error in case of invalid format csv config 1`] = `
+"Command Error:
+Invalid CSV format: Invalid Record Length: columns length is 3, got 1 on line 1
+"
+`;
+
+exports[`id-federation map command integration tests should return command error in case of invalid format csv config 2`] = `""`;
