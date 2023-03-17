@@ -9,7 +9,7 @@
  */
 
 import * as fs from "fs";
-import {Imperative} from "@zowe/imperative";
+import { Imperative } from "@zowe/imperative";
 import {expect, describe, it} from '@jest/globals';
 
 describe("map definition unit test", () => {
