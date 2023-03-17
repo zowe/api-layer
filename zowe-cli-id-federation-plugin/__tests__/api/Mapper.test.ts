@@ -12,10 +12,11 @@ import { Mapper } from "../../src";
 import {ImperativeError} from '@zowe/imperative';
 import {ResponseMock} from '../__src__/ResponseMock';
 import {expect, jest, describe, it} from '@jest/globals';
+import * as JobUtil from "../../src/api/JobUtil";
 
 const mockGetCommands = jest.fn().mockReturnValue(['abc']);
 
-jest.mock('../../src/api/Commands', () => {
+jest.mock("../../src/api/RacfCommands", () => {
     return {
         Commands: jest.fn().mockImplementation(() => {
             return {
@@ -76,6 +77,18 @@ describe("Mapper", () => {
 
             expect(() => mapper.createSafCommands([])).toThrow(ImperativeError);
         });
+    });
+
+    describe("createJcl unit test", () => {
+
+        it("creates with mustache template", async () => {
+            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, new ResponseMock());
+            jest.spyOn(JobUtil, "getAccount").mockReturnValue(Promise.resolve("account1"));
+            const reply = await mapper.createJcl(["command1", "command2"]);
+
+            expect(reply).toMatchSnapshot();
+        });
+
     });
 
 });
