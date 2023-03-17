@@ -91,6 +91,9 @@ key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_pas
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
 
+keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
+truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
+
 # NOTE: these are moved from below
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
