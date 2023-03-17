@@ -96,7 +96,7 @@ then
   export LOG_LEVEL="debug"
 fi
 
-# setting the cookieName for the multi instances
+# setting the cookieName for  multi instances
 
 if [  "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
     cookieName="apimlAuthenticationToken."+${ZWE_zowe_cookieIdentifier}

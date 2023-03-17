@@ -89,7 +89,7 @@ fi
 #   export APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
 # fi
 
-# setting the cookieName for the multi instances
+# setting the cookieName for  multi instances
 
 if [  "${ZWE_components_gateway_security_auth_uniqueCookie}" = "true" ]; then
     cookieName="apimlAuthenticationToken."+${ZWE_zowe_cookieIdentifier}

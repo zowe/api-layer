@@ -102,7 +102,7 @@ then
     QUICK_START=-Xquickstart
 fi
 
-# setting the cookieName based for multi instances
+# setting the cookieName  for multi instances
 
 if [ "${ZWE_components_gateway_security_auth_uniqueCookie}" = "true"]; then
     cookieName="apimlAuthenticationToken."+${ZWE_zowe_cookieIdentifier}
