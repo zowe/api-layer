@@ -92,7 +92,7 @@ fi
 # setting the cookieName based on the instances
 
 if [  "${ZWE_components_gateway_security_auth_uniqueCookie}" = "true" ]; then
-    cookieName="apimlAuthenticationToken."+${ZWE_haInstance_id}
+    cookieName="apimlAuthenticationToken."+${ZWE_zowe_cookieIdentifier}
 fi
 
 # how to verifyCertificates
