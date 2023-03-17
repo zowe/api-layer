@@ -20,31 +20,35 @@ import lombok.Value;
 public class HttpsConfig {
 
     @Builder.Default
-    private String protocol = "TLSv1.2";
-    private String trustStore;
-    private char[] trustStorePassword;
+    String protocol = "TLS";
     @Builder.Default
-    private String trustStoreType = "PKCS12";
-    private boolean trustStoreRequired;
-    private String keyAlias;
-    private String keyStore;
-    private char[] keyStorePassword;
-    private char[] keyPassword;
+    String[] enabledProtocols = "TLSv1.2,TLSv1.3".split(",");
+    String trustStore;
+    char[] trustStorePassword;
     @Builder.Default
-    private String keyStoreType = "PKCS12";
-    private boolean clientAuth;
+    String trustStoreType = "PKCS12";
+    boolean trustStoreRequired;
+    String keyAlias;
+    String keyStore;
+    char[] keyStorePassword;
+    char[] keyPassword;
     @Builder.Default
-    private boolean verifySslCertificatesOfServices = true;
+    String[] cipherSuite = "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384".split(",");
     @Builder.Default
-    private boolean nonStrictVerifySslCertificatesOfServices = false;
+    String keyStoreType = "PKCS12";
+    String clientAuth;
     @Builder.Default
-    private int maxConnectionsPerRoute = 10;
+    boolean verifySslCertificatesOfServices = true;
     @Builder.Default
-    private int maxTotalConnections = 100;
+    boolean nonStrictVerifySslCertificatesOfServices = false;
     @Builder.Default
-    private int idleConnTimeoutSeconds = 5;
+    int maxConnectionsPerRoute = 10;
     @Builder.Default
-    private int requestConnectionTimeout = 10_000;
+    int maxTotalConnections = 100;
     @Builder.Default
-    private int timeToLive = 10_000;
+    int idleConnTimeoutSeconds = 5;
+    @Builder.Default
+    int requestConnectionTimeout = 10_000;
+    @Builder.Default
+    int timeToLive = 10_000;
 }

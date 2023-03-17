@@ -63,7 +63,7 @@ class HttpsFactoryTest {
     void shouldCreateSecureSslContextWithEmptyKeystoreWhenNoKeystoreIsProvided() throws KeyStoreException {
         HttpsConfig httpsConfig = HttpsConfig.builder().protocol("TLSv1.2").verifySslCertificatesOfServices(true).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        httpsFactory.createSslContext();
+        httpsFactory.getSslContext();
         assertFalse(httpsFactory.getUsedKeyStore().aliases().hasMoreElements());
     }
 
@@ -80,7 +80,7 @@ class HttpsFactoryTest {
     void shouldCreateSecureSslContext() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        SSLContext sslContext = httpsFactory.createSslContext();
+        SSLContext sslContext = httpsFactory.getSslContext();
         assertNotNull(sslContext);
         assertEquals(SSLContext.class, sslContext.getClass());
     }
@@ -89,7 +89,7 @@ class HttpsFactoryTest {
     void shouldCreateIgnoringSslContext() {
         HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        SSLContext sslContext = httpsFactory.createSslContext();
+        SSLContext sslContext = httpsFactory.getSslContext();
         assertNotNull(sslContext);
         assertEquals(SSLContext.class, sslContext.getClass());
     }
@@ -98,21 +98,21 @@ class HttpsFactoryTest {
     void wrongKeyPasswordConfigurationShouldFail() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(INCORRECT_PARAMETER_VALUE.toCharArray()).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        assertThrows(HttpsConfigError.class, () -> httpsFactory.createSslContext());
+        assertThrows(HttpsConfigError.class, () -> httpsFactory.getSslContext());
     }
 
     @Test
     void specificIncorrectAliasShouldFail() {
         HttpsConfig httpsConfig = httpsConfigBuilder.trustStorePassword(INCORRECT_PARAMETER_VALUE.toCharArray()).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        assertThrows(HttpsConfigError.class, () -> httpsFactory.createSslContext());
+        assertThrows(HttpsConfigError.class, () -> httpsFactory.getSslContext());
     }
 
     @Test
     void incorrectProtocolShouldFail() {
         HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).protocol(INCORRECT_PARAMETER_VALUE).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        assertThrows(HttpsConfigError.class, () -> httpsFactory.createSslContext());
+        assertThrows(HttpsConfigError.class, () -> httpsFactory.getSslContext());
     }
 
     @Test
@@ -134,7 +134,7 @@ class HttpsFactoryTest {
     void shouldCreateDefaultHostnameVerifier() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        HostnameVerifier hostnameVerifier = httpsFactory.createHostnameVerifier();
+        HostnameVerifier hostnameVerifier = httpsFactory.getHostnameVerifier();
         assertEquals(DefaultHostnameVerifier.class, hostnameVerifier.getClass());
     }
 
@@ -142,7 +142,7 @@ class HttpsFactoryTest {
     void shouldCreateNoopHostnameVerifier() {
         HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        HostnameVerifier hostnameVerifier = httpsFactory.createHostnameVerifier();
+        HostnameVerifier hostnameVerifier = httpsFactory.getHostnameVerifier();
         assertEquals(NoopHostnameVerifier.class, hostnameVerifier.getClass());
     }
 

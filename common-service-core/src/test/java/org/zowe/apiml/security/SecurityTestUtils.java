@@ -28,7 +28,7 @@ public class SecurityTestUtils {
     }
 
     public static HttpsConfig.HttpsConfigBuilder correctHttpsKeyStoreSettings() {
-        return HttpsConfig.builder().protocol("TLSv1.2")
+        return HttpsConfig.builder()
             .keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost.keystore.p12"))
             .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD);
     }

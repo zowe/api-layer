@@ -34,10 +34,13 @@ public class ConfigProperties {
 
     private static final String GATEWAY_SERVICE_ID = "gateway";
 
+    @Builder.Default
     private String tokenPrefix = "apimlAuthenticationToken";
+
     @Tolerate
     public ConfigProperties() {
-        // no args constructor
+        // lombok Builder.Default bug workaround
+        this.tokenPrefix = "apimlAuthenticationToken";
     }
 
     public ConfigProperties withoutKeyStore() {
@@ -50,29 +53,25 @@ public class ConfigProperties {
             .trustStorePassword(trustStorePassword)
             .httpOnly(httpOnly)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
+            .tokenPrefix(tokenPrefix)
             .build();
     }
 
     public void setApimlBaseUrl(String baseUrl) {
         if (baseUrl == null) { // default path
             apimlBaseUrl = "/gateway/api/v1/auth";
-        }
-        else if (baseUrl.contains("/") && baseUrl.contains(GATEWAY_SERVICE_ID)) {
+        } else if (baseUrl.contains("/") && baseUrl.contains(GATEWAY_SERVICE_ID)) {
             String[] baseUrlParts = baseUrl.split("/");
             if (Objects.equals(baseUrlParts[2], GATEWAY_SERVICE_ID)) {
                 apimlBaseUrl = "/gateway/" + baseUrlParts[0] + "/" + baseUrlParts[1] + "/auth";
-            }
-            else if (Objects.equals(baseUrlParts[3], GATEWAY_SERVICE_ID)) {
+            } else if (Objects.equals(baseUrlParts[3], GATEWAY_SERVICE_ID)) {
                 apimlBaseUrl = "/gateway/" + baseUrlParts[1] + "/" + baseUrlParts[2] + "/auth";
-            }
-            else if (!baseUrl.startsWith("/")) { // starts with gateway/..
+            } else if (!baseUrl.startsWith("/")) { // starts with gateway/..
                 apimlBaseUrl = "/" + baseUrl;
-            }
-            else {
+            } else {
                 apimlBaseUrl = baseUrl;
             }
-        }
-        else {
+        } else {
             apimlBaseUrl = baseUrl;
         }
     }
