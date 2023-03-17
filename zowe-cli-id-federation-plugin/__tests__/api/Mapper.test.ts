@@ -16,7 +16,7 @@ import * as JobUtil from "../../src/api/JobUtil";
 
 const mockGetCommands = jest.fn().mockReturnValue(['abc']);
 
-jest.mock("../../src/api/RacfCommands", () => {
+jest.mock("../../src/api/Commands", () => {
     return {
         Commands: jest.fn().mockImplementation(() => {
             return {
@@ -32,9 +32,10 @@ describe("Mapper", () => {
     const ESM = "fakeESM";
     const SYSTEM = "fakeLPAR";
     const REGISTRY = "fake://host:1234";
+    const response = new ResponseMock();
 
     it("should arguments passed correctly", () => {
-        const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, new ResponseMock());
+        const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, response);
 
         expect(mapper.file).toBe(INPUT_FILE);
         expect(mapper.esm).toBe(ESM);
@@ -49,7 +50,7 @@ describe("Mapper", () => {
         });
 
         it("is RACF", () => {
-            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, new ResponseMock());
+            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, response);
             const commandProcessor = mapper.createSafCommands([]);
 
             expect(commandProcessor).toHaveLength(1);
@@ -57,7 +58,7 @@ describe("Mapper", () => {
         });
 
         it("is ACF2", () => {
-            const mapper = new Mapper(INPUT_FILE, "ACF2", SYSTEM, REGISTRY, new ResponseMock());
+            const mapper = new Mapper(INPUT_FILE, "ACF2", SYSTEM, REGISTRY, response);
             const commandProcessor = mapper.createSafCommands([]);
 
             expect(commandProcessor).toHaveLength(1);
@@ -65,7 +66,7 @@ describe("Mapper", () => {
         });
 
         it("is TopSecret", () => {
-            const mapper = new Mapper(INPUT_FILE, "TSS", SYSTEM, REGISTRY, new ResponseMock());
+            const mapper = new Mapper(INPUT_FILE, "TSS", SYSTEM, REGISTRY, response);
             const commandProcessor = mapper.createSafCommands([]);
 
             expect(commandProcessor).toHaveLength(1);
@@ -73,7 +74,7 @@ describe("Mapper", () => {
         });
 
         it('is not supported then throw error', () => {
-            const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, new ResponseMock());
+            const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, response);
 
             expect(() => mapper.createSafCommands([])).toThrow(ImperativeError);
         });
@@ -82,7 +83,7 @@ describe("Mapper", () => {
     describe("createJcl unit test", () => {
 
         it("creates with mustache template", async () => {
-            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, new ResponseMock());
+            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, response);
             jest.spyOn(JobUtil, "getAccount").mockReturnValue(Promise.resolve("account1"));
             const reply = await mapper.createJcl(["command1", "command2"]);
 
