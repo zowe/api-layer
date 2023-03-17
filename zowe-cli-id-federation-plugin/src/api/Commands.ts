@@ -35,7 +35,7 @@ export class Commands {
             .filter(command => command);
 
         if (!commands.some(Boolean)) {
-            this.response.data.setExitCode(Constants.fatalCode);
+            this.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
         commands.push(this.refreshCommand);
@@ -46,21 +46,21 @@ export class Commands {
         if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
             warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
-           this.response.data.setExitCode(Constants.warnCode);
+           this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
         if(!hasValidLength(identity.distributedId, this.maxLengthDistributedId)) {
             warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.maxLengthDistributedId} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
-            this.response.data.setExitCode(Constants.warnCode);
+            this.response.data.setExitCode(Constants.WARN_CODE);
                 return '';
         }
 
         if(!hasValidLength(identity.userName, this.maxLengthLabel)) {
             warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.maxLengthLabel} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
-                this.response.data.setExitCode(Constants.warnCode);
+                this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
