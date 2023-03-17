@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`map definition should match the snapshot 1`] = `
+exports[`map definition unit test should match the snapshot 1`] = `
 "/**
  * This program and the accompanying materials are made available and may be used, at your option, under either:
  * * Eclipse Public License v2.0, available at https://www.eclipse.org/legal/epl-v20.html, OR

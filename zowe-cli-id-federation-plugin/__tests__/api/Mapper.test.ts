@@ -11,6 +11,7 @@
 import { Mapper } from "../../src";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import {expect, jest, describe, it} from '@jest/globals';
+import * as JobUtil from "../../src/api/JobUtil";
 
 const mockGetCommands = jest.fn().mockReturnValue(['abc']);
 
@@ -57,6 +58,18 @@ describe("Mapper", () => {
         it("is TopSecret", () => {
             // TODO define when TopSecret is available
         });
+    });
+
+    describe("createJcl unit test", () => {
+
+        it("creates with mustache template", async () => {
+            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, {} as IHandlerResponseApi);
+            jest.spyOn(JobUtil, "getAccount").mockReturnValue(Promise.resolve("account1"));
+            const reply = await mapper.createJcl(["command1", "command2"]);
+
+            expect(reply).toMatchSnapshot();
+        });
+
     });
 
 });
