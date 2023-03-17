@@ -10,13 +10,13 @@
 
 import {ImperativeError, TextUtils} from "@zowe/imperative";
 import {RacfCommands} from "./RacfCommands";
-import { Commands } from "./Commands";
 import {getAccount} from "./JobUtil";
 import * as fs from "fs";
 import {CsvParser, IIdentity} from "./CsvParser";
 import {JclWriter} from "./JclWriter";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import {Constants} from "./Constants";
+import { TssCommands } from "./TssCommands";
 
 export class Mapper {
     constructor(
@@ -56,15 +56,11 @@ export class Mapper {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
             case "racf": {
-                const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
-                const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
-                commandProcessor = new Commands(this.registry, identities,racfTemplate, racfRefreshCommand, this.response)
+                commandProcessor = new RacfCommands(this.registry, identities, this.response)
                 break;
             }
             case "tss": {
-                const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
-                const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-                commandProcessor = new Commands(this.registry, identities,tssTemplate, tssRefreshCommand, this.response);
+                commandProcessor = new TssCommands(this.registry, identities, this.response);
                 break;
             }
             case "acf2": {

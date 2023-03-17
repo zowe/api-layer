@@ -14,10 +14,11 @@ import {expect, jest, describe, it} from '@jest/globals';
 import * as JobUtil from "../../src/api/JobUtil";
 
 const mockGetCommands = jest.fn().mockReturnValue(['abc']);
+const mockGetTssCommands = jest.fn().mockReturnValue(['abc']);
 
-jest.mock('../../src/api/Commands', () => {
+jest.mock('../../src/api/RacfCommands', () => {
     return {
-        Commands: jest.fn().mockImplementation(() => {
+        RacfCommands: jest.fn().mockImplementation(() => {
             return {
                 getCommands: mockGetCommands
             };
@@ -25,6 +26,15 @@ jest.mock('../../src/api/Commands', () => {
     };
 });
 
+jest.mock('../../src/api/TssCommands', () => {
+    return {
+        TssCommands: jest.fn().mockImplementation(() => {
+            return {
+                getCommands: mockGetTssCommands
+            };
+        })
+    };
+});
 describe("Mapper", () => {
 
     const INPUT_FILE = "fake-file.csv";
@@ -56,7 +66,11 @@ describe("Mapper", () => {
         });
 
         it("is TopSecret", () => {
-            // TODO define when TopSecret is available
+            const mapper = new Mapper(INPUT_FILE, "TSS", SYSTEM, REGISTRY, {} as IHandlerResponseApi);
+            const commandProcessor = mapper.createSafCommands([]);
+
+            expect(commandProcessor).toHaveLength(1);
+            expect(mockGetTssCommands).toHaveBeenCalledTimes(1);
         });
     });
 
