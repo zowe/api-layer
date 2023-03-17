@@ -17,7 +17,7 @@ describe("map definition", () => {
         // Attempt to read the full file contents. We could require the module here, however there is normally non-
         // deterministic data (filepaths, etc.) that are resolved when the module is loaded, so it is simpler to
         // check the contents for changes (sanity/protection agaisnt undesired changes to the definition)
-        let contents = '';
+        let contents = "";
         let error;
         try {
             contents = fs.readFileSync(__dirname + "/../../../src/cli/map/Map.definition.ts").toString();
