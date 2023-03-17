@@ -10,30 +10,24 @@
 
 import {ICommandHandler, IHandlerParameters, ImperativeError} from "@zowe/imperative";
 import {Mapper} from "../../api/Mapper";
+import * as fs from "fs";
+import {Constants} from "../../api/Constants";
 
 export default class MapHandler implements ICommandHandler {
+
+
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;
-        const esm: string = params.arguments.esm;
-        const lpar: string = params.arguments.lpar;
-        const registry: string = params.arguments.registry;
-        params.response.console.log(`Input file: ${file}\nESM: ${esm}\nLPAR: ${lpar}\nRegistry: ${registry}`);
+        const system: string = params.arguments.system ?? '';
 
-        const missingArgs: string[] = [];
-        if (!esm) {
-            missingArgs.push('esm');
-        }
-        if (!lpar) {
-            missingArgs.push('lpar');
-        }
-        if (!registry) {
-            missingArgs.push('registry');
-        }
-        if (missingArgs.length != 0) {
-            const msg: string = `Following arguments are missing: "${missingArgs.join(", ")}"`;
+        if (!fs.existsSync(file)) {
+            const msg = `The input CSV file does not exist.`;
+            params.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg});
         }
 
-        new Mapper(file, esm, lpar, registry).map();
+        const mapper = new Mapper(file, params.arguments.esm, system, params.arguments.registry, params.response);
+        params.response.console.log(await mapper.map());
     }
+
 }

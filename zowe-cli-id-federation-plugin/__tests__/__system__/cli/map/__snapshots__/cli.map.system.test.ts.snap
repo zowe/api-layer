@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`id-federation map should display the help 1`] = `
+exports[`id-federation map system test should display the help 1`] = `
 "
  COMMAND NAME
  ------------
@@ -10,8 +10,9 @@ exports[`id-federation map should display the help 1`] = `
  DESCRIPTION
  -----------
 
-   Generate a JCL based on [inputFile] that creates a mapping association between a
-   mainframe user ID and a distributed user identity
+   When you need to configure mainframe security for a user identity propagation,
+   use this command to generate a JCL based on [inputFile] that creates a mapping
+   association from a distributed user identity to a mainframe user ID.
 
  USAGE
  -----
@@ -30,17 +31,18 @@ exports[`id-federation map should display the help 1`] = `
 
    --esm | -e (string)
 
-      The ESM to execute command
+      The ESM product on the target system
 
       Allowed values: RACF, TSS, ACF2
 
-   --lpar | -l (string)
+   --system | -s (string)
 
-      The security domain on which command will be executed
+      The target JES system on which the command will be executed
 
    --registry | -r (string)
 
-      The registry that contains the distributed-identity user name
+      The distributed identities registry (e.g., ldaps://enterprise.com,
+      ldap://12.34.56.78:389)
 
  PROFILE OPTIONS
  ---------------
@@ -114,13 +116,5 @@ exports[`id-federation map should display the help 1`] = `
 
       Display HTML help in browser
 
-"
-`;
-
-exports[`id-federation map should print input arguments 1`] = `
-"Input file: file.csv
-ESM: TSS
-LPAR: TST1
-Registry: ldap://12.34.56.78:910
 "
 `;

@@ -4,7 +4,7 @@
             "type": "id-federation",
             "properties": {
                 "esm": "RACF",
-                "lpar": "TST1",
+                "system": "TST1",
                 "registry": "ldap://12.34.56.78:910"
             }
         }

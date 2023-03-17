@@ -8,13 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { ITestEnvironment, TestEnvironment, runCliScript } from "@zowe/cli-test-utils";
-import { ITestPropertiesSchema } from "../../../__src__/environment/doc/ITestPropertiesSchema";
+import {ITestEnvironment, runCliScript, TestEnvironment} from "@zowe/cli-test-utils";
+import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
+import {expect, describe, it, beforeAll, afterAll} from '@jest/globals';
 
 // Test environment will be populated in the "beforeAll"
 let TEST_ENVIRONMENT: ITestEnvironment<ITestPropertiesSchema>;
 
-describe("id-federation map", () => {
+describe("id-federation map system test", () => {
 
     // Create the unique test environment
     beforeAll(async () => {
@@ -23,17 +24,9 @@ describe("id-federation map", () => {
             testName: "map_command"
         });
     });
+
     afterAll(async () => {
         await TestEnvironment.cleanUp(TEST_ENVIRONMENT);
-    });
-
-    it("should print input arguments", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map.sh", TEST_ENVIRONMENT,
-            ["file.csv", "TSS", "TST1", "ldap://12.34.56.78:910"]);
-
-        expect(response.stderr.toString()).toBe("");
-        expect(response.status).toBe(0);
-        expect(response.stdout.toString()).toMatchSnapshot();
     });
 
     it("should display the help", () => {
@@ -43,4 +36,5 @@ describe("id-federation map", () => {
         expect(response.status).toBe(0);
         expect(response.stdout.toString()).toMatchSnapshot();
     });
+
 });

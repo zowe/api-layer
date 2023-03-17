@@ -10,13 +10,15 @@
 
 import * as fs from "fs";
 import { Imperative } from "@zowe/imperative";
+import {expect, describe, it} from '@jest/globals';
 
-describe("map definition", () => {
+describe("map definition unit test", () => {
+
     it("should match the snapshot", () => {
-        // Attempt to read the full file contents. We could require the module here, however there is normally non-
-        // deterministic data (filepaths, etc.) that are resolved when the module is loaded, so it is simpler to
-        // check the contents for changes (sanity/protection agaisnt undesired changes to the definition)
-        let contents: string;
+        // Attempt to read the full file contents. We could require the module here, however there is normally
+        // nondeterministic data (file paths, etc.) that are resolved when the module is loaded, so it is simpler to
+        // check the contents for changes (sanity/protection against undesired changes to the definition)
+        let contents = "";
         let error;
         try {
             contents = fs.readFileSync(__dirname + "/../../../src/cli/map/Map.definition.ts").toString();
@@ -24,7 +26,9 @@ describe("map definition", () => {
             error = e;
             Imperative.console.error(`Error reading Map.definition.ts Did you move the file? Details: ${e.message}`);
         }
+
         expect(error).toBeUndefined();
         expect(contents).toMatchSnapshot();
     });
+
 });
