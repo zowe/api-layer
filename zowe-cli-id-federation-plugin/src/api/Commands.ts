@@ -48,7 +48,7 @@ export class Commands {
         if(!hasValidLength(identity.mainframeId, this.maxLengthMainframeId)) {
             warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.maxLengthMainframeId} characters. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
-           this.response.data.setExitCode(Constants.WARN_CODE);
+            this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
@@ -56,13 +56,13 @@ export class Commands {
             warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.maxLengthDistributedId} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
             this.response.data.setExitCode(Constants.WARN_CODE);
-                return '';
+            return '';
         }
 
         if(!hasValidLength(identity.userName, this.maxLengthLabel)) {
             warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.maxLengthLabel} characters. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
-                this.response.data.setExitCode(Constants.WARN_CODE);
+            this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
