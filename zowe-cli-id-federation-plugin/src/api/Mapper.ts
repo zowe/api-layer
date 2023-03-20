@@ -16,6 +16,7 @@ import {CsvParser, IIdentity} from "./CsvParser";
 import {JclWriter} from "./JclWriter";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import {Constants} from "./Constants";
+import { TssCommands } from "./TssCommands";
 
 export class Mapper {
     constructor(
@@ -59,7 +60,8 @@ export class Mapper {
                 break;
             }
             case "tss": {
-                break; //TODO: Here will be the code which generate TSS commands
+                commandProcessor = new TssCommands(this.registry, identities, this.response);
+                break;
             }
             case "acf2": {
                 break; //TODO: Here will be the code which generate ACF2 commands
