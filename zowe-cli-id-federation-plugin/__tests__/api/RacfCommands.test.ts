@@ -15,7 +15,6 @@ import {ResponseMock} from "../__src__/ResponseMock";
 import {Constants} from "../../src/api/Constants";
 import {expect, describe, it} from '@jest/globals';
 
-
 describe("Racf Commands unit test", () => {
 
     it('should create the commands without warning', () => {
