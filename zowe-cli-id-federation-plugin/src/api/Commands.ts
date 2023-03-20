@@ -38,7 +38,9 @@ export class Commands {
             this.response.data.setExitCode(Constants.FATAL_CODE);
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
-        commands.push(this.refreshCommand);
+        if(this.refreshCommand != null){
+            commands.push(this.refreshCommand);
+        }
         return commands;
     }
 

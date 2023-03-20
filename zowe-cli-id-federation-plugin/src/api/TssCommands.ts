@@ -21,7 +21,6 @@ export class TssCommands extends Commands{
         response: IHandlerResponseApi
     ) {
         const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
-        const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-        super(registry,identities,tssTemplate,tssRefreshCommand,response);
+        super(registry,identities,tssTemplate,null,response);
     }
 }
