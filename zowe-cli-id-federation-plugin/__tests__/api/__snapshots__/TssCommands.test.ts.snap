@@ -2,30 +2,24 @@
 
 exports[`Tss Commands unit test should create the commands with warning 1`] = `
 [
-  "TSS ADD(mf_jirka) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+  "TSS ADD(mf_jirka) IDMAP(ZWEDNMAP) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('Jirka')
 ",
-  "TSS ADD(mf_lena) IDMAP(zwednmap) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+  "TSS ADD(mf_lena) IDMAP(ZWEDNMAP) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('Lena')
 ",
-  "TSS ADD(mf_pablo) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+  "TSS ADD(mf_pablo) IDMAP(ZWEDNMAP) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('Pablo')
 ",
-  "TSS ADD(mf_name) IDMAP(zwednmap) IDMAPDN('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
-",
-  "",
-  "TSS REFRESH
+  "TSS ADD(mf_name) IDMAP(ZWEDNMAP) IDMAPDN('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok') IDMAPRN('ldap://host:1234') IDLABEL('Name')
 ",
 ]
 `;
 
 exports[`Tss Commands unit test should create the commands without warning 1`] = `
 [
-  "TSS ADD(mf_jirka) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+  "TSS ADD(mf_jirka) IDMAP(ZWEDNMAP) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('Jirka')
 ",
-  "TSS ADD(mf_lena) IDMAP(zwednmap) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+  "TSS ADD(mf_lena) IDMAP(ZWEDNMAP) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('Lena')
 ",
-  "TSS ADD(mf_pablo) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
-",
-  "",
-  "TSS REFRESH
+  "TSS ADD(mf_pablo) IDMAP(ZWEDNMAP) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('Pablo')
 ",
 ]
 `;

@@ -8,13 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { Commands } from "../../src/api/Commands";
 import {CsvParser} from "../../src/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
 import {Constants} from "../../src/api/Constants";
-import * as fs from "fs";
 import {expect, describe, it} from '@jest/globals';
+import {TssCommands} from "../../src/api/TssCommands";
 
 describe("Tss Commands unit test", () => {
 
@@ -41,14 +40,12 @@ describe("Tss Commands unit test", () => {
     });
 
 });
-const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
-const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
-function getTssCommands(file: string): { commands: Commands, response: ResponseMock } {
+function getTssCommands(file: string): { commands: TssCommands, response: ResponseMock } {
     const response = new ResponseMock();
     const csvParser = new CsvParser(file, response);
     const identities = csvParser.getIdentities();
 
-    const commands = new Commands("ldap://host:1234", identities, tssTemplate, tssRefreshCommand, response);
+    const commands = new TssCommands("ldap://host:1234", identities, response);
 
     return {commands, response};
 }
