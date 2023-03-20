@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {Commands} from "../../src/api/Commands";
+import {RacfCommands} from "../../src/api/RacfCommands";
 import {CsvParser} from "../../src/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
@@ -41,10 +41,10 @@ describe("Racf Commands unit test", () => {
 
 });
 
-function getRacfCommands(file: string): { commands: Commands, response: ResponseMock } {
+function getRacfCommands(file: string): { commands: RacfCommands, response: ResponseMock } {
     const response = new ResponseMock();
     const csvParser = new CsvParser(file, response);
-    const commands = new Commands('ldap://host:1234', csvParser.getIdentities(), "racf", response);
+    const commands = new RacfCommands('ldap://host:1234', csvParser.getIdentities(), response);
 
     return {commands, response};
 }

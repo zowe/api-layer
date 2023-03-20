@@ -16,7 +16,8 @@ import {CsvParser, IIdentity} from "./CsvParser";
 import {JclWriter} from "./JclWriter";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import {Constants} from "./Constants";
-import { TssCommands } from "./TssCommands";
+import {TssCommands} from "./TssCommands";
+import {Acf2Commands} from "./Acf2Commands";
 
 export class Mapper {
     constructor(

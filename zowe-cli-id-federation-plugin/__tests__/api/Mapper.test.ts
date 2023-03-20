@@ -14,14 +14,25 @@ import {ResponseMock} from '../__src__/ResponseMock';
 import {expect, jest, describe, it} from '@jest/globals';
 import * as JobUtil from "../../src/api/JobUtil";
 
-const mockGetCommands = jest.fn().mockReturnValue(['abc']);
-const mockGetTssCommands = jest.fn().mockReturnValue(['abc']);
+const mockGetRacfCommands = jest.fn().mockReturnValue(['abc']);
+const mockGetAcf2Commands = jest.fn().mockReturnValue(['def']);
+const mockGetTssCommands = jest.fn().mockReturnValue(['ghi']);
 
 jest.mock("../../src/api/RacfCommands", () => {
     return {
         RacfCommands: jest.fn().mockImplementation(() => {
             return {
-                getCommands: mockGetCommands
+                getCommands: mockGetRacfCommands
+            };
+        })
+    };
+});
+
+jest.mock('../../src/api/Acf2Commands', () => {
+    return {
+        Acf2Commands: jest.fn().mockImplementation(() => {
+            return {
+                getCommands: mockGetAcf2Commands
             };
         })
     };
@@ -36,6 +47,7 @@ jest.mock('../../src/api/TssCommands', () => {
         })
     };
 });
+
 describe("Mapper", () => {
 
     const INPUT_FILE = "fake-file.csv";
@@ -60,11 +72,15 @@ describe("Mapper", () => {
             const commandProcessor = mapper.createSafCommands([]);
 
             expect(commandProcessor).toHaveLength(1);
-            expect(mockGetCommands).toHaveBeenCalledTimes(1);
+            expect(mockGetRacfCommands).toHaveBeenCalledTimes(1);
         });
 
         it("is ACF2", () => {
-            // TODO define when ACF2 is available
+            const mapper = new Mapper(INPUT_FILE, "ACF2", SYSTEM, REGISTRY, response);
+            const commandProcessor = mapper.createSafCommands([]);
+
+            expect(commandProcessor).toHaveLength(1);
+            expect(mockGetAcf2Commands).toHaveBeenCalledTimes(1);
         });
 
         it("is TopSecret", () => {
