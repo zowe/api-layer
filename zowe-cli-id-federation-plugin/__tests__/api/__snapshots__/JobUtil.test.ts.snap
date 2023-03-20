@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`JobUtil unit tests should return account if account number not defined 1`] = `"account"`;
+
+exports[`JobUtil unit tests should successfully parse the file 1`] = `"fake"`;

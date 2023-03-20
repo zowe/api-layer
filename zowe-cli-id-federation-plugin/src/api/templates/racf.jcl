@@ -1,0 +1,1 @@
+RACMAP ID({{mainframe_id}}) MAP USERDIDFILTER(NAME('{{#escape}}{{distributed_id}}{{/escape}}')) REGISTRY(NAME('{{#escape}}{{registry}}{{/escape}}')) WITHLABEL('{{#escape}}{{user_name}}{{/escape}}')

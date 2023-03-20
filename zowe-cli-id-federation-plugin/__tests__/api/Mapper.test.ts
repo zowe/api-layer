@@ -9,18 +9,67 @@
  */
 
 import { Mapper } from "../../src";
+import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
+import {expect, jest, describe, it} from '@jest/globals';
+import * as JobUtil from "../../src/api/JobUtil";
+
+const mockGetCommands = jest.fn().mockReturnValue(['abc']);
+
+jest.mock("../../src/api/RacfCommands", () => {
+    return {
+        RacfCommands: jest.fn().mockImplementation(() => {
+            return {
+                getCommands: mockGetCommands
+            };
+        })
+    };
+});
+
 describe("Mapper", () => {
+
+    const INPUT_FILE = "fake-file.csv";
+    const ESM = "fakeESM";
+    const SYSTEM = "fakeLPAR";
+    const REGISTRY = "fake://host:1234";
+
     it("should arguments passed correctly", () => {
-        const INPUT_FILE = "fake-file.csv";
-        const ESM = "fakeESM";
-        const LPAR = "fakeLPAR";
-        const REGISTRY = "fake://host:1234";
+        const mapper = new Mapper(INPUT_FILE, ESM, SYSTEM, REGISTRY, {} as IHandlerResponseApi);
 
-        const maper = new Mapper(INPUT_FILE, ESM, LPAR, REGISTRY);
-
-        expect(maper.file).toBe(INPUT_FILE);
-        expect(maper.esm).toBe(ESM);
-        expect(maper.lpar).toBe(LPAR);
-        expect(maper.registry).toBe(REGISTRY);
+        expect(mapper.file).toBe(INPUT_FILE);
+        expect(mapper.esm).toBe(ESM);
+        expect(mapper.system).toBe(SYSTEM);
+        expect(mapper.registry).toBe(REGISTRY);
     });
+
+    describe("ESM function is called when", () => {
+
+        it("is RACF", () => {
+            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, {} as IHandlerResponseApi);
+            const commandProcessor = mapper.createSafCommands([]);
+
+            expect(commandProcessor).toHaveLength(1);
+            expect(mockGetCommands).toHaveBeenCalledTimes(1);
+        });
+
+        it("is ACF2", () => {
+            // TODO define when ACF2 is available
+        });
+
+        it("is TopSecret", () => {
+            // TODO define when TopSecret is available
+        });
+    });
+
+    describe("createJcl unit test", () => {
+
+        it("creates with mustache template", async () => {
+            const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, {} as IHandlerResponseApi);
+            jest.spyOn(JobUtil, "getAccount").mockReturnValue(Promise.resolve("account1"));
+            const reply = await mapper.createJcl(["command1", "command2"]);
+
+            expect(reply).toMatchSnapshot();
+        });
+
+    });
+
 });

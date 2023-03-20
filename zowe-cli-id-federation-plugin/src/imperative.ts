@@ -9,7 +9,7 @@
  */
 
 import {IImperativeConfig} from "@zowe/imperative";
-import { ProfileConstants } from "./api/ProfileConstants";
+import {ProfileConstants} from "./api/ProfileConstants";
 
 const config: IImperativeConfig = {
     commandModuleGlobs: ["**/cli/*/*.definition!(.d).*s"],
@@ -37,9 +37,9 @@ const config: IImperativeConfig = {
                         type: "string",
                         optionDefinition: ProfileConstants.IDF_OPTION_ESM
                     },
-                    lpar: {
+                    system: {
                         type: "string",
-                        optionDefinition: ProfileConstants.IDF_OPTION_LPAR
+                        optionDefinition: ProfileConstants.IDF_OPTION_SYSTEM
                     },
                     registry: {
                         type: "string",

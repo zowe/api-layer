@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`map definition should match the snapshot 1`] = `
+exports[`map definition unit test should match the snapshot 1`] = `
 "/**
  * This program and the accompanying materials are made available and may be used, at your option, under either:
  * * Eclipse Public License v2.0, available at https://www.eclipse.org/legal/epl-v20.html, OR
@@ -30,8 +30,9 @@ import {ProfileConstants} from "../../api/ProfileConstants";
  */
 const MapDefinition: ICommandDefinition = {
     name: "map",
-    summary: "Generate a mapping association between a mainframe user ID and a distributed user identity",
-    description: "Generate a JCL based on [inputFile] that creates a mapping association between a mainframe user ID and a distributed user identity",
+    summary: "Generate a mapping association from a distributed user identity to a mainframe user ID",
+    description: "When you need to configure mainframe security for a user identity propagation, use this command to " +
+        "generate a JCL based on [inputFile] that creates a mapping association from a distributed user identity to a mainframe user ID. ",
     type: "command",
     handler: __dirname + "/Map.handler",
     positionals: [

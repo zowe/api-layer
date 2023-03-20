@@ -9,5 +9,5 @@
 
 idFederation:
     esm: ACF2
-    lpar: TST1
+    system: TST1
     registry: ldap://12.34.56.78:910
