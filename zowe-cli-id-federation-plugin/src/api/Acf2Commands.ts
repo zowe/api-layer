@@ -24,4 +24,11 @@ export class Acf2Commands extends Commands{
         const acf2RefreshCommand = fs.readFileSync('src/api/templates/acf2_refresh.jcl').toString();
         super(registry,identities,acf2Template,acf2RefreshCommand,response);
     }
+
+    getCommands(): string[] {
+        const commands = super.getCommands();
+        commands.unshift("ACF", "SET PROFILE(USER) DIVISION(IDMAP)");
+        commands.push("END");
+        return commands;
+    }
 }
