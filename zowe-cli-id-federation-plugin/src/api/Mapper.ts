@@ -9,7 +9,7 @@
  */
 
 import {ImperativeError, TextUtils} from "@zowe/imperative";
-import { Commands } from "./Commands";
+import {Commands} from "./Commands";
 import {getAccount} from "./JobUtil";
 import * as fs from "fs";
 import {CsvParser, IIdentity} from "./CsvParser";
@@ -72,6 +72,4 @@ export class Mapper {
 
         return commandProcessor ? commandProcessor.getCommands() : [];
     }
-
-
 }

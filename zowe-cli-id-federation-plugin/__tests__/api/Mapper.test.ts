@@ -45,10 +45,6 @@ describe("Mapper", () => {
 
     describe("ESM function is called when", () => {
 
-        afterEach(() => {
-            mockGetCommands.mockClear();
-        });
-
         it("is RACF", () => {
             const mapper = new Mapper(INPUT_FILE, "RACF", SYSTEM, REGISTRY, response);
             const commandProcessor = mapper.createSafCommands([]);
