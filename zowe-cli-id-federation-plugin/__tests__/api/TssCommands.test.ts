@@ -8,39 +8,47 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {Commands} from "../../src/api/Commands";
+import { Commands } from "../../src/api/Commands";
 import {CsvParser} from "../../src/api/CsvParser";
 import {ImperativeError} from "@zowe/imperative";
-import {ResponseMock} from '../__src__/ResponseMock';
-import {Constants} from '../../src/api/Constants';
+import {ResponseMock} from "../__src__/ResponseMock";
+import {Constants} from "../../src/api/Constants";
+import * as fs from "fs";
+import {expect, describe, it} from '@jest/globals';
 
-describe("Tss Commands", () => {
+describe("Tss Commands unit test", () => {
 
-    it('should create the commands', () => {
+    it('should create the commands without warning', () => {
         const tssCommands = getTssCommands('__tests__/__resources__/csv/users.csv');
-        const commands = tssCommands.commands.getCommands();
-        expect(commands).toMatchSnapshot();
+
+        expect(tssCommands.commands.getCommands()).toMatchSnapshot();
         expect(tssCommands.response.exitCode).toBe(Constants.OKAY_CODE);
     });
 
     it('should create the commands with warning', () => {
         const tssCommands = getTssCommands('__tests__/__resources__/csv/users_with_warnings.csv');
-        const commands = tssCommands.commands.getCommands();
-        expect(commands).toMatchSnapshot();
+
+        expect(tssCommands.commands.getCommands()).toMatchSnapshot();
         expect(tssCommands.response.exitCode).toBe(Constants.WARN_CODE);
     });
 
+
     it('should throw error when config is not valid', () => {
         const tssCommands = getTssCommands('__tests__/__resources__/csv/invalid_identities.csv');
+
         expect(() => tssCommands.commands.getCommands()).toThrow(ImperativeError);
         expect(tssCommands.response.exitCode).toBe(Constants.FATAL_CODE);
     });
-});
 
+});
+const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
+const tssRefreshCommand = fs.readFileSync('src/api/templates/tss_refresh.jcl').toString();
 function getTssCommands(file: string): { commands: Commands, response: ResponseMock } {
     const response = new ResponseMock();
     const csvParser = new CsvParser(file, response);
-    const commands = new Commands('ldap://host:1234', csvParser.getIdentities(), "tss", response);
+    const identities = csvParser.getIdentities();
+
+    const commands = new Commands("ldap://host:1234", identities, tssTemplate, tssRefreshCommand, response);
 
     return {commands, response};
 }

@@ -9,13 +9,14 @@
  */
 
 import {ImperativeError, TextUtils} from "@zowe/imperative";
-import {Commands} from "./Commands";
+import {RacfCommands} from "./RacfCommands";
 import {getAccount} from "./JobUtil";
 import * as fs from "fs";
 import {CsvParser, IIdentity} from "./CsvParser";
 import {JclWriter} from "./JclWriter";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import {Constants} from "./Constants";
+import { TssCommands } from "./TssCommands";
 
 export class Mapper {
     constructor(
@@ -56,10 +57,16 @@ export class Mapper {
     createSafCommands(identities: IIdentity[]): string[] {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
-            case "racf":
-            case "tss":
+            case "racf": {
+                commandProcessor = new RacfCommands(this.registry, identities, this.response);
+                break;
+            }
+            case "tss": {
+                commandProcessor = new TssCommands(this.registry, identities, this.response);
+                break;
+            }
             case "acf2": {
-                commandProcessor = new Commands(this.registry, identities, this.esm.toLowerCase(), this.response);
+                commandProcessor = new Acf2Commands(this.registry, identities, this.response);
                 break;
             }
             default: {
@@ -72,4 +79,6 @@ export class Mapper {
 
         return commandProcessor ? commandProcessor.getCommands() : [];
     }
+
+
 }

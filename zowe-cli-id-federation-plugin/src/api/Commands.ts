@@ -8,13 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {ImperativeError, TextUtils} from "@zowe/imperative";
+import {IHandlerResponseApi, ImperativeError, TextUtils} from "@zowe/imperative";
 import { warn } from "console";
-import * as fs from "fs";
 import {IIdentity} from "./CsvParser";
-import {hasValidLength} from "./ValidateUtil";
 import {Constants} from "./Constants";
-import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
+import {hasValidLength} from "./ValidateUtil";
 
 export class Commands {
 
@@ -25,17 +23,15 @@ export class Commands {
     constructor(
         private registry: string,
         private identities: IIdentity[],
-        private esm: string,
+        private commandTemplate: string,
+        private refreshCommand: string,
         private response: IHandlerResponseApi
     ) {
     }
 
     getCommands(): string[] {
-        const commandTemplate = fs.readFileSync(`src/api/templates/${this.esm.toLowerCase()}.jcl`).toString();
-        const refreshCommand = fs.readFileSync(`src/api/templates/${this.esm.toLowerCase()}_refresh.jcl`).toString();
-
         const commands = this.identities
-            .map(identity => this.getCommand(identity, commandTemplate))
+            .map(identity => this.getCommand(identity))
             .filter(command => command);
 
         if (!commands.some(Boolean)) {
@@ -43,11 +39,11 @@ export class Commands {
             throw new ImperativeError({msg: "Error when trying to create the identity mapping."});
         }
         commands.push("");
-        commands.push(refreshCommand);
+        commands.push(this.refreshCommand);
         return commands;
     }
 
-    private getCommand(identity: IIdentity, commandTemplate: string): string {
+    private getCommand(identity: IIdentity): string {
         if(!hasValidLength(identity.mainframeId, this.MAX_LENGTH_MAINFRAME_ID)) {
             warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.MAX_LENGTH_MAINFRAME_ID} characters. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
@@ -69,7 +65,7 @@ export class Commands {
             return '';
         }
 
-        return TextUtils.renderWithMustache(commandTemplate, {
+        return TextUtils.renderWithMustache(this.commandTemplate, {
             mainframe_id: identity.mainframeId,
             distributed_id: identity.distributedId,
             registry: this.registry,
