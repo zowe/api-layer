@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tss Commands unit test should create the commands with warning 1`] = `
+[
+  "TSS ADD(mf_jirka) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+",
+  "TSS ADD(mf_lena) IDMAP(zwednmap) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+",
+  "TSS ADD(mf_pablo) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+",
+  "TSS ADD(mf_name) IDMAP(zwednmap) IDMAPDN('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+",
+  "TSS REFRESH
+",
+]
+`;
+
+exports[`Tss Commands unit test should create the commands without warning 1`] = `
+[
+  "TSS ADD(mf_jirka) IDMAP(zwednmap) IDMAPDN('dist_jirka') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+",
+  "TSS ADD(mf_lena) IDMAP(zwednmap) IDMAPDN('dist_lena') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+",
+  "TSS ADD(mf_pablo) IDMAP(zwednmap) IDMAPDN('dist_pablo') IDMAPRN('ldap://host:1234') IDLABEL('dn user mapping')
+",
+  "TSS REFRESH
+",
+]
+`;
