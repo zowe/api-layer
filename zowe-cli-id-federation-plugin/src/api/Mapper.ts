@@ -56,7 +56,7 @@ export class Mapper {
         let commandProcessor;
         switch (this.esm.toLowerCase()) {
             case "racf": {
-                commandProcessor = new RacfCommands(this.registry, identities, this.response)
+                commandProcessor = new RacfCommands(this.registry, identities, this.response);
                 break;
             }
             case "tss": {

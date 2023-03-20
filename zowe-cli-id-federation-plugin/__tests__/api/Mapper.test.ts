@@ -16,7 +16,7 @@ import * as JobUtil from "../../src/api/JobUtil";
 const mockGetCommands = jest.fn().mockReturnValue(['abc']);
 const mockGetTssCommands = jest.fn().mockReturnValue(['abc']);
 
-jest.mock('../../src/api/RacfCommands', () => {
+jest.mock("../../src/api/RacfCommands", () => {
     return {
         RacfCommands: jest.fn().mockImplementation(() => {
             return {

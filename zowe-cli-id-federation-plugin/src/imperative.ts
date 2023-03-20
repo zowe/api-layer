@@ -9,7 +9,7 @@
  */
 
 import {IImperativeConfig} from "@zowe/imperative";
-import { ProfileConstants } from "./api/ProfileConstants";
+import {ProfileConstants} from "./api/ProfileConstants";
 
 const config: IImperativeConfig = {
     commandModuleGlobs: ["**/cli/*/*.definition!(.d).*s"],
