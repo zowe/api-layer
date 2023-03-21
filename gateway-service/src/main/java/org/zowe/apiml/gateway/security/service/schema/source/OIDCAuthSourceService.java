@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,12 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class OIDCAuthSourceService implements AuthSourceService {
+public class OIDCAuthSourceService extends TokenAuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
@@ -36,8 +38,19 @@ public class OIDCAuthSourceService implements AuthSourceService {
     private final TokenCreationService tokenService;
 
     @Override
-    public Optional<AuthSource> getAuthSourceFromRequest() {
-        return Optional.empty();
+    protected ApimlLogger getLogger() {
+        return logger;
+    }
+
+    @Override
+    public Function<String, AuthSource> getMapper() {
+        return OIDCAuthSource::new;
+    }
+
+    @Override
+    public Optional<String> getToken(RequestContext context) {
+        // should there be some specific cookie name/header name for the oidc token?
+        return authenticationService.getJwtTokenFromRequest(context.getRequest());
     }
 
     @Override
@@ -99,4 +112,5 @@ public class OIDCAuthSourceService implements AuthSourceService {
         QueryResponse response = authenticationService.parseJwtToken(zosmfToken);
         return AuthSource.Origin.valueByIssuer(response.getSource().name());
     }
+
 }
