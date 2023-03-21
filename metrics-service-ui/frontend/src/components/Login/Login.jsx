@@ -87,7 +87,7 @@ function unexpectedError(error) {
     );
 }
 
-const Login = (props) => {
+function Login(props) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const { authentication, isFetching, errorText } = props;
@@ -183,6 +183,6 @@ const Login = (props) => {
             </div>
         </div>
     );
-};
+}
 
 export default Login;
