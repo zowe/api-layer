@@ -28,5 +28,10 @@ public class MapperResponse {
     @JsonProperty("racfReturnCode")
     private int racfRc;
     @JsonProperty("racfReasonCode")
-    private int reasonCode;
+    private int racfRs;
+
+    public String toString() {
+        return "User: " + userId + ", rc=" + rc + ", safRc=" + safRc + ", racfRc=" + racfRc + ", racfRs=" + racfRs;
+    }
+
 }

@@ -44,8 +44,9 @@ public abstract class ExternalMapper {
     private final Type mapperType;
     private final AuthConfigurationProperties authConfigurationProperties;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    protected static final ObjectMapper objectMapper = new ObjectMapper();
 
+    //TODO: shouldn't we rename it (remove X509) (without breaking change)
     @Value("${apiml.security.x509.externalMapperUrl}")
     private String externalMapperUrl;
     @Value("${apiml.security.x509.externalMapperUser}")
@@ -84,7 +85,8 @@ public abstract class ExternalMapper {
 
     enum Type {
         X509("/x509/map"),
-        OAUTH2("/oauth2/map");
+        OAUTH2("/oauth2/map"),
+        OIDC("/dn");
 
         @Getter
         private final String urlSuffix;

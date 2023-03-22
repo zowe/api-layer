@@ -90,7 +90,7 @@ class ExternalMapperTest {
                 assertEquals(0, response.getRc());
                 assertEquals(0, response.getSafRc());
                 assertEquals(0, response.getRacfRc());
-                assertEquals(0, response.getReasonCode());
+                assertEquals(0, response.getRacfRs());
             }
         }
 
@@ -112,7 +112,7 @@ class ExternalMapperTest {
                 assertEquals(0, response.getRc());
                 assertEquals(8, response.getSafRc());
                 assertEquals(8, response.getRacfRc());
-                assertEquals(48, response.getReasonCode());
+                assertEquals(48, response.getRacfRs());
             }
         }
     }
