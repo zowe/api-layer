@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.gateway.security.mapping.OIDCExternalMapperAuthException;
 
 @Data
 @NoArgsConstructor
@@ -32,6 +33,13 @@ public class MapperResponse {
 
     public String toString() {
         return "User: " + userId + ", rc=" + rc + ", safRc=" + safRc + ", racfRc=" + racfRc + ", racfRs=" + racfRs;
+    }
+
+    //TODO: Add messages for other code combinations
+    public void validateOIDCResults() {
+        if (rc > 0 || safRc > 0 || racfRc > 0 || racfRs > 0) {
+            throw new OIDCExternalMapperAuthException("Failed to map distributed to mainframe identity.", this);
+        }
     }
 
 }

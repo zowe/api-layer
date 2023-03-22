@@ -20,7 +20,6 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
         super(httpClientProxy, tokenCreationService, Type.OIDC, authConfigurationProperties);
     }
 
-    //TODO: use APIML logger or exceptions
     public String mapToMainframeUserId(AuthSource authSource) {
         if (!(authSource instanceof OIDCAuthSource)) {
             return null;
@@ -31,35 +30,17 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             StringEntity payload = new StringEntity(objectMapper.writeValueAsString(oidcRequest));
             MapperResponse mapperResponse = callExternalMapper(payload);
 
-            if(isValidIdentityResponse(mapperResponse)) {
-                return mapperResponse.getUserId().trim();
+            if (mapperResponse == null) {
+                throw new OIDCExternalMapperException("External identity mapper returned no response");
             }
+            mapperResponse.validateOIDCResults();
 
+            return mapperResponse.getUserId().trim();
         } catch (UnsupportedEncodingException e) {
-            log.error("Cannot encode input data", e);
+            throw new OIDCExternalMapperException("Unable to encode payload for identity mapping request", e);
         } catch (JsonProcessingException e) {
-            log.error("Cannot create JSON payload", e);
+            throw new OIDCExternalMapperException("Unable to generate JSON payload for identity mapping request", e);
         }
-
-        return null;
-    }
-
-    public boolean isValidIdentityResponse(MapperResponse mapperResponse) {
-        if (mapperResponse == null) {
-            log.error("ZSS identity mapping service has not returned any response");
-            return false;
-        }
-
-        //TODO: Add reasonable messages to known code combinations
-        if (mapperResponse.getRc() > 0 ||
-            mapperResponse.getSafRc() > 0 ||
-            mapperResponse.getRacfRc() > 0 ||
-            mapperResponse.getRacfRs() > 0) {
-            log.error("Failed to nap distributed identity to mainframe identity. {}", mapperResponse);
-            return false;
-        }
-
-        return true;
     }
 
 }
