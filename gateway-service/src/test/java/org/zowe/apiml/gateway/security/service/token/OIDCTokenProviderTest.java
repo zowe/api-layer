@@ -18,9 +18,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
-import org.zowe.apiml.gateway.security.service.schema.OIDCAuthException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -101,18 +101,18 @@ class OIDCTokenProviderTest {
 
         @Test
         void whenTokenIsNull_ThenThrowException() {
-            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(null));
+            assertFalse(oidcTokenProvider.isValid(null));
         }
 
         @Test
         void whenTokenIsEmpty_ThenThrowException() {
-            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(""));
+            assertFalse(oidcTokenProvider.isValid(""));
         }
 
         @Test
         void whenProviderDisabled_ThenThrowException() {
             ReflectionTestUtils.setField(oidcTokenProvider, "isEnabled", false);
-            assertThrows(OIDCAuthException.class, () -> oidcTokenProvider.isValid(null));
+            assertFalse(oidcTokenProvider.isValid(null));
         }
     }
 

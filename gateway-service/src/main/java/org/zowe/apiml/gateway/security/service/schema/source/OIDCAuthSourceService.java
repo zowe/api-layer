@@ -58,7 +58,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         if (authSource instanceof OIDCAuthSource) {
             String token = ((OIDCAuthSource) authSource).getRawSource();
             logger.log(MessageType.DEBUG, "Validating OIDC token.");
-            return token != null && oidcProvider.isValid(token);
+            return oidcProvider.isValid(token);
         }
         return false;
     }
