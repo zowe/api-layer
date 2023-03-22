@@ -150,6 +150,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
+  -Dserver.ssl.protocol=${ZWE_components_gateway_server_ssl_protocol:-"TLSv1.2"}  \
   -Dserver.ssl.keyStore="${keystore_location}" \
   -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
   -Dserver.ssl.keyStorePassword="${keystore_pass}" \

@@ -20,7 +20,7 @@ import lombok.Value;
 public class HttpsConfig {
 
     @Builder.Default
-    String protocol = "TLS";
+    String protocol = "TLSv1.2";
     @Builder.Default
     String[] enabledProtocols = "TLSv1.2,TLSv1.3".split(",");
     String trustStore;
