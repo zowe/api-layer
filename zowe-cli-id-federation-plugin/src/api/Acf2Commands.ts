@@ -13,15 +13,22 @@ import {IIdentity} from "./CsvParser";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import { Commands } from "./Commands";
 
-export class RacfCommands extends Commands{
+export class Acf2Commands extends Commands{
 
     constructor(
         registry: string,
         identities: IIdentity[],
         response: IHandlerResponseApi
     ) {
-        const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
-        const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
-        super(registry,identities,racfTemplate,racfRefreshCommand,response);
+        const acf2Template = fs.readFileSync('src/api/templates/acf2.jcl').toString();
+        const acf2RefreshCommand = fs.readFileSync('src/api/templates/acf2_refresh.jcl').toString();
+        super(registry,identities,acf2Template,acf2RefreshCommand,response);
+    }
+
+    getCommands(): string[] {
+        const commands = super.getCommands();
+        commands.unshift("ACF", "SET PROFILE(USER) DIVISION(IDMAP)");
+        commands.push("END");
+        return commands;
     }
 }
