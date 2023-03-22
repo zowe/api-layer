@@ -27,7 +27,7 @@ public class OIDCAuthSource implements AuthSource {
     private final String source;
 
     @Override
-    public Object getRawSource() {
+    public String getRawSource() {
         return source;
     }
 
