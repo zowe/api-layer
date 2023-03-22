@@ -9,7 +9,7 @@
  */
 import { Text } from 'mineral-ui';
 import renderHTML from 'react-render-html';
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 
 const colorDanger = '#de1b1b';
 const colorWarning = '#ad5f00';
