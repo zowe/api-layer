@@ -15,7 +15,7 @@ node {
     yarnWorkDir = file("${project.projectDir}/tools/yarn")
     nodeProjectDir = file("${project.projectDir}/frontend")
 }
-
+npmInstall.args = ['--force']
 if (project.hasProperty('omitDevDependencies')) {
     npmInstall.args = ['--production', '--omit=dev'] // different args for different npm versions
 }
