@@ -81,10 +81,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     private ParsedTokenAuthSource parseOIDCToken(OIDCAuthSource oidcAuthSource, AuthenticationMapper mapper) {
         String token = oidcAuthSource.getRawSource();
 
-        // TODO get mapped user id
-        String mappedUser = "";
-//            String mappedUser = mapper.mapToMainframeUserId(OIDCAuthSource);
-        // oidc is a jwt token, can be parsed using the method we already have?
+        String mappedUser = mapper.mapToMainframeUserId(oidcAuthSource);
         logger.log(MessageType.DEBUG, "Parsing OIDC token.");
         QueryResponse response = authenticationService.parseJwtWithSignature(token);
 
