@@ -403,6 +403,10 @@ public class AuthenticationService {
         return header != null ? Optional.of(header) : Optional.empty();
     }
 
+    public Optional<String> getOIDCTokenFromRequest(@NonNull HttpServletRequest request) {
+        return getPATFromHeader(request.getHeader(ApimlConstants.OIDC_HEADER_NAME));
+    }
+
     private Optional<String> getTokenFromCookie(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return Optional.empty();

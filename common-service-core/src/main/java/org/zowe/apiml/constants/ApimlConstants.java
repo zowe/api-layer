@@ -23,5 +23,6 @@ public final class ApimlConstants {
     public static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
     public static final String PAT_HEADER_NAME = "PRIVATE-TOKEN";
+    public static final String OIDC_HEADER_NAME = "OIDC-TOKEN";
     public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
 }
