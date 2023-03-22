@@ -50,7 +50,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     @Override
     public Optional<String> getToken(RequestContext context) {
         // should there be some specific cookie name/header name for the oidc token?
-        return authenticationService.getJwtTokenFromRequest(context.getRequest());
+        return authenticationService.getOIDCTokenFromRequest(context.getRequest());
     }
 
     @Override
