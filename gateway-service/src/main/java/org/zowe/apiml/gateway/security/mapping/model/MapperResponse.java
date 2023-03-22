@@ -35,8 +35,13 @@ public class MapperResponse {
         return "User: " + userId + ", rc=" + rc + ", safRc=" + safRc + ", racfRc=" + racfRc + ", racfRs=" + racfRs;
     }
 
-    //TODO: Add messages for other code combinations
     public void validateOIDCResults() {
+        if (rc == 8 || safRc == 8 || racfRc == 8 || racfRs == 48) {
+            throw new OIDCExternalMapperAuthException("There is no distributed identity filter mapping the supplied" +
+                " distributed identity to a SAF user ID, or the IDIDMAP SAF general resource class is not active or not" +
+                " RACLISTed.", this);
+        }
+
         if (rc > 0 || safRc > 0 || racfRc > 0 || racfRs > 0) {
             throw new OIDCExternalMapperAuthException("Failed to map distributed to mainframe identity.", this);
         }
