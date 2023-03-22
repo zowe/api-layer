@@ -9,7 +9,7 @@
  */
 
 import * as log from 'loglevel';
-import { v4 as uuidv4 } from 'uuid';
+import uuidv4 from 'uuid/v4';
 import { SEND_ERROR, CLEAR_ALL_ERRORS } from '../constants/error-constants';
 
 export function sendError(error) {
