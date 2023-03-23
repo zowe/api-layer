@@ -139,6 +139,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+  -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
   -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-reject} \
   -Dcaching.storage.size=${ZWE_configs_storage_size:-10000} \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
