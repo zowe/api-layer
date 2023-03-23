@@ -37,11 +37,11 @@ public class MapperResponse {
 
     public void validateOIDCResults() {
         if (rc == 8 || safRc == 8 || racfRc == 8) {
-            if(racfRs == 44) {
+            if (racfRs == 44) {
                 throw new OIDCExternalMapperAuthException("The Registry Name length is not valid, or the Registry Name" +
                     " string is all blanks (x'20'), all nulls (x'00'), or a combination of blanks and nulls.", this);
             }
-            if(racfRs == 48) {
+            if (racfRs == 48) {
                 throw new OIDCExternalMapperAuthException("There is no distributed identity filter mapping the supplied" +
                     " distributed identity to a SAF user ID, or the IDIDMAP SAF general resource class is not active or not" +
                     " RACLISTed.", this);
