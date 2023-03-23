@@ -4,7 +4,7 @@ ext {
     springCloudCommonsVersion = '2.2.9.RELEASE!!'
     springCloudVersion3 = '3.1.4'
     springSecurityVersion = '5.7.5!!'
-    springFrameworkVersion = '5.3.24!!'
+    springFrameworkVersion = '5.3.25!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
@@ -36,7 +36,7 @@ ext {
     jaxbApiVersion = '2.3.1'
     jerseyVersion = '2.26'
     jettyWebSocketClientVersion = '9.4.48.v20220622'
-    jettisonVersion = '1.5.1'
+    jettisonVersion = '1.5.4'
     jjwtVersion = '0.11.2'
     jjwtFullVersion = '0.9.1'
     jsonPathVersion = '2.6.0'
@@ -53,7 +53,7 @@ ext {
     lombokVersion = '1.18.20'
     mockitoCoreVersion = '3.9.0'
     netflixServoVersion = '0.13.2'
-    nettyVersion = '4.1.77.Final'
+    nettyVersion = '4.1.90.Final'
     nimbusJoseJwtVersion = '8.21.1'
     openApiDiffVersion = '2.0.0-beta.10'
     reactorTestVersion = '3.4.9'
@@ -68,9 +68,10 @@ ext {
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
-    tomcatVersion = '9.0.69'
+    tomcatVersion = '9.0.73'
     velocityVersion = '2.3'
-    xstreamVersion = '1.4.19!!'
+    woodstoxVersion = '6.4.0'
+    xstreamVersion = '1.4.20!!'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
@@ -228,6 +229,7 @@ ext {
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         tomcat_embed_websocket             : "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}",
         tomcat_embed_el                    :"org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
+        woodstox                           : "com.fasterxml.woodstox:woodstox-core:${woodstoxVersion}",
         xstream                            : "com.thoughtworks.xstream:xstream:${xstreamVersion}",
 
         // Sample apps only
@@ -240,6 +242,6 @@ ext {
     ]
 
     // for node projects
-    projectNodeVersion = '14.19.3'
-    projectNpmVersion = '8.1.0'
+    projectNodeVersion = '18.14.0'
+    projectNpmVersion = '9.3.1'
 }
