@@ -13,7 +13,7 @@ import {ImperativeError} from "@zowe/imperative";
 import {ResponseMock} from "../__src__/ResponseMock";
 import {Constants} from "../../src/api/Constants";
 import {expect, describe, it} from '@jest/globals';
-import {TssCommands} from "../../lib/api/TssCommands";
+import {TssCommands} from "../../src/api/TssCommands";
 
 describe("Tss Commands unit test", () => {
 

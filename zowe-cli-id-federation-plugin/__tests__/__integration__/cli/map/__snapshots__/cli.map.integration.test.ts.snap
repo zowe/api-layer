@@ -43,8 +43,143 @@ exports[`id-federation map command integration tests should print the successful
 "
 `;
 
-exports[`id-federation map command integration tests should print the successful creation message with passed args 1`] = `
+exports[`id-federation map command integration tests should print the successful creation message with passed args for ACF2 1`] = `
+"'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
+"
+`;
+
+exports[`id-federation map command integration tests should print the successful creation message with passed args for ACF2 2`] = `
+"//IDF JOB (account),CLASS=A,MSGCLASS=X
+/*JOBPARM SYSAFF=TST1
+//*-------------------------------------------------------------------
+//*
+//* Zowe CLI ID Federation Plugin
+//*
+//* This JCL can be used for mapping from a distributed identity to
+//* a mainframe identity
+//*
+//* 1) Validate the job header and make all necessary changes
+//*    according to your system environment.
+//*
+//* 2) Run the JCL on system TST1.
+//*
+//* Note(s):
+//*
+//* 1. THE USER ID THAT RUNS THIS JOB MUST HAVE SUFFICIENT AUTHORITY
+//*    TO ALTER SECURITY DEFINITIONS
+//*
+//*-------------------------------------------------------------------
+//RUN      EXEC PGM=IKJEFT01,REGION=0M
+//SYSTSPRT DD SYSOUT=*
+//SYSTSIN     DD DATA,SYMBOLS=JCLONLY
+ ACF
+ SET PROFILE(USER) DIVISION(IDMAP)
+ INSERT mf_jir.ZWEDNMAP IDMAPDN(dist_jirka) -
+  IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Jirka)
+ INSERT mf_lena.ZWEDNMAP IDMAPDN(dist_lena) -
+  IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Lena)
+ INSERT mf_pab.ZWEDNMAP IDMAPDN(dist_pablo) -
+  IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Pablo)
+ INSERT mf_name.ZWEDNMAP IDMAPDN(Dist -
+  naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok) -
+  IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Name)
+ 
+ F ACF2,REBUILD(USR),CLASS(P),DIVISION(IDMAP)
+ END
+/*
+"
+`;
+
+exports[`id-federation map command integration tests should print the successful creation message with passed args for RACF 1`] = `
+"'idf_RACF_TST1.jcl' was created. Review and submit this JCL on the system TST1.
+"
+`;
+
+exports[`id-federation map command integration tests should print the successful creation message with passed args for RACF 2`] = `
+"//IDF JOB (account),CLASS=A,MSGCLASS=X
+/*JOBPARM SYSAFF=TST1
+//*-------------------------------------------------------------------
+//*
+//* Zowe CLI ID Federation Plugin
+//*
+//* This JCL can be used for mapping from a distributed identity to
+//* a mainframe identity
+//*
+//* 1) Validate the job header and make all necessary changes
+//*    according to your system environment.
+//*
+//* 2) Run the JCL on system TST1.
+//*
+//* Note(s):
+//*
+//* 1. THE USER ID THAT RUNS THIS JOB MUST HAVE SUFFICIENT AUTHORITY
+//*    TO ALTER SECURITY DEFINITIONS
+//*
+//*-------------------------------------------------------------------
+//RUN      EXEC PGM=IKJEFT01,REGION=0M
+//SYSTSPRT DD SYSOUT=*
+//SYSTSIN     DD DATA,SYMBOLS=JCLONLY
+ RACMAP ID(mf_jir) MAP USERDIDFILTER(NAME('dist_jirka')) -
+  REGISTRY(NAME('ldap://12.34.56.78:910')) WITHLABEL('Jirka')
+ RACMAP ID(mf_lena) MAP USERDIDFILTER(NAME('dist_lena')) -
+  REGISTRY(NAME('ldap://12.34.56.78:910')) WITHLABEL('Lena')
+ RACMAP ID(mf_pab) MAP USERDIDFILTER(NAME('dist_pablo')) -
+  REGISTRY(NAME('ldap://12.34.56.78:910')) WITHLABEL('Pablo')
+ RACMAP ID(mf_name) MAP -
+  USERDIDFILTER(NAME('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+aaaaaaame ok')) REGISTRY(NAME('ldap://12.34.56.78:910')) -
+  WITHLABEL('Name')
+ 
+ SETROPTS RACLIST(IDIDMAP) REFRESH
+/*
+"
+`;
+
+exports[`id-federation map command integration tests should print the successful creation message with passed args for TSS 1`] = `
 "'idf_TSS_TST1.jcl' was created. Review and submit this JCL on the system TST1.
+"
+`;
+
+exports[`id-federation map command integration tests should print the successful creation message with passed args for TSS 2`] = `
+"//IDF JOB (account),CLASS=A,MSGCLASS=X
+/*JOBPARM SYSAFF=TST1
+//*-------------------------------------------------------------------
+//*
+//* Zowe CLI ID Federation Plugin
+//*
+//* This JCL can be used for mapping from a distributed identity to
+//* a mainframe identity
+//*
+//* 1) Validate the job header and make all necessary changes
+//*    according to your system environment.
+//*
+//* 2) Run the JCL on system TST1.
+//*
+//* Note(s):
+//*
+//* 1. THE USER ID THAT RUNS THIS JOB MUST HAVE SUFFICIENT AUTHORITY
+//*    TO ALTER SECURITY DEFINITIONS
+//*
+//*-------------------------------------------------------------------
+//RUN      EXEC PGM=IKJEFT01,REGION=0M
+//SYSTSPRT DD SYSOUT=*
+//SYSTSIN     DD DATA,SYMBOLS=JCLONLY
+ TSS ADD(mf_jir) IDMAP(ZWEDNMAP) IDMAPDN('dist_jirka') -
+  IDMAPRN('ldap://12.34.56.78:910') IDLABEL('Jirka')
+ TSS ADD(mf_lena) IDMAP(ZWEDNMAP) IDMAPDN('dist_lena') -
+  IDMAPRN('ldap://12.34.56.78:910') IDLABEL('Lena')
+ TSS ADD(mf_pab) IDMAP(ZWEDNMAP) IDMAPDN('dist_pablo') -
+  IDMAPRN('ldap://12.34.56.78:910') IDLABEL('Pablo')
+ TSS ADD(mf_name) IDMAP(ZWEDNMAP) -
+  IDMAPDN('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame o-
+k') IDMAPRN('ldap://12.34.56.78:910') IDLABEL('Name')
+/*
 "
 `;
 
