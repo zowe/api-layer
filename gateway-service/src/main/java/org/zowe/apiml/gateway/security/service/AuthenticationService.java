@@ -396,15 +396,17 @@ public class AuthenticationService {
     public Optional<String> getPATFromRequest(@NonNull HttpServletRequest request) {
         Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNamePAT());
         return fromCookie.isPresent() ?
-            fromCookie : getPATFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
+            fromCookie : getAccessTokenFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
     }
 
-    private Optional<String> getPATFromHeader(String header) {
+    private Optional<String> getAccessTokenFromHeader(String header) {
         return header != null ? Optional.of(header) : Optional.empty();
     }
 
     public Optional<String> getOIDCTokenFromRequest(@NonNull HttpServletRequest request) {
-        return getPATFromHeader(request.getHeader(ApimlConstants.OIDC_HEADER_NAME));
+        Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNameOIDC());
+        return fromCookie.isPresent() ?
+            fromCookie : getAccessTokenFromHeader(request.getHeader(ApimlConstants.OIDC_HEADER_NAME));
     }
 
     private Optional<String> getTokenFromCookie(HttpServletRequest request, String cookieName) {

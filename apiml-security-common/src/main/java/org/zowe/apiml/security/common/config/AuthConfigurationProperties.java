@@ -100,6 +100,7 @@ public class AuthConfigurationProperties {
     public static class CookieProperties {
         private String cookieName = SecurityUtils.COOKIE_AUTH_NAME;
         private String cookieNamePAT = ApimlConstants.PAT_COOKIE_AUTH_NAME;
+        private String cookieNameOIDC = ApimlConstants.OIDC_COOKIE_AUTH_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
