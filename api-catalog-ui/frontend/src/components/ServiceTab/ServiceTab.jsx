@@ -52,7 +52,6 @@ export default class ServiceTab extends Component {
             selectedTile,
             selectService,
         } = this.props;
-
         tiles[0].services.forEach((service) => {
             if (service.serviceId === serviceId) {
                 if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
@@ -147,7 +146,7 @@ export default class ServiceTab extends Component {
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
 
         return (
-            <Fragment>
+            <>
                 {currentService === null && (
                     <Text element="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
                         <br />
@@ -156,93 +155,91 @@ export default class ServiceTab extends Component {
                     </Text>
                 )}
                 <Shield title={message}>
-                    <Fragment>
-                        <div className="serviceTab">
-                            <div className="header">
-                                <Text element="h2">{selectedService.title}</Text>
-                                {hasHomepage && (
-                                    <Fragment>
-                                        {selectedService.status === 'UP' && (
-                                            <Tooltip
-                                                key={selectedService.serviceId}
-                                                content="Open Service Homepage"
-                                                placement="bottom"
-                                            >
-                                                <Link href={selectedService.homePageUrl}>
-                                                    <strong>Service Homepage</strong>
-                                                </Link>
-                                            </Tooltip>
-                                        )}
-                                        {selectedService.status === 'DOWN' && (
-                                            <Tooltip
-                                                key={selectedService.serviceId}
-                                                content="Service Homepage navigation is disabled as the service is not running"
-                                                placement="bottom"
-                                            >
-                                                <Link variant="danger">
-                                                    <strong>Service Homepage</strong>
-                                                </Link>
-                                            </Tooltip>
-                                        )}
-                                    </Fragment>
-                                )}
-                                <br />
-                                <br />
-                                <div className="apiInfo-item">
-                                    <Tooltip
-                                        key={basePath}
-                                        content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
-                                        placement="bottom"
-                                    >
-                                        <Text>
-                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                            <label htmlFor="apiBasePath">API Base Path:</label>
-                                            <span id="apiBasePath">{basePath}</span>
-                                        </Text>
-                                    </Tooltip>
-                                    <br />
-                                    <Tooltip
-                                        key={selectedService.serviceId}
-                                        content="The identifier for this service"
-                                        placement="bottom"
-                                    >
-                                        <Text>
-                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                            <label htmlFor="serviceId">Service ID:</label>
-                                            <span id="serviceId">{selectedService.serviceId}</span>
-                                        </Text>
-                                    </Tooltip>
-                                    <br />
-                                    <Tooltip
-                                        key={selectedService.ssoAllInstances}
-                                        content="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
-                                        placement="bottom"
-                                    >
-                                        <Text>
-                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                            <label htmlFor="sso">SSO:</label>
-                                            <span id="sso">{sso}</span>
-                                        </Text>
-                                    </Tooltip>
-                                </div>
-
-                                <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
-                            </div>
-                            <div className="tabs-container" style={{ width: '100%' }}>
-                                {apiVersions}
-                            </div>
-                            {selectedVersion !== 'diff' ? (
-                                <SwaggerContainer selectedVersion={selectedVersion} />
-                            ) : (
-                                <ServiceVersionDiffContainer
-                                    serviceId={selectedService.serviceId}
-                                    versions={currentService.apiVersions}
-                                />
+                    <div className="serviceTab">
+                        <div className="header">
+                            <Text element="h2">{selectedService.title}</Text>
+                            {hasHomepage && (
+                                <>
+                                    {selectedService.status === 'UP' && (
+                                        <Tooltip
+                                            key={selectedService.serviceId}
+                                            content="Open Service Homepage"
+                                            placement="bottom"
+                                        >
+                                            <Link href={selectedService.homePageUrl}>
+                                                <strong>Service Homepage</strong>
+                                            </Link>
+                                        </Tooltip>
+                                    )}
+                                    {selectedService.status === 'DOWN' && (
+                                        <Tooltip
+                                            key={selectedService.serviceId}
+                                            content="Service Homepage navigation is disabled as the service is not running"
+                                            placement="bottom"
+                                        >
+                                            <Link variant="danger">
+                                                <strong>Service Homepage</strong>
+                                            </Link>
+                                        </Tooltip>
+                                    )}
+                                </>
                             )}
+                            <br />
+                            <br />
+                            <div className="apiInfo-item">
+                                <Tooltip
+                                    key={basePath}
+                                    content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
+                                    placement="bottom"
+                                >
+                                    <Text>
+                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                        <label htmlFor="apiBasePath">API Base Path:</label>
+                                        <span id="apiBasePath">{basePath}</span>
+                                    </Text>
+                                </Tooltip>
+                                <br />
+                                <Tooltip
+                                    key={selectedService.serviceId}
+                                    content="The identifier for this service"
+                                    placement="bottom"
+                                >
+                                    <Text>
+                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                        <label htmlFor="serviceId">Service ID:</label>
+                                        <span id="serviceId">{selectedService.serviceId}</span>
+                                    </Text>
+                                </Tooltip>
+                                <br />
+                                <Tooltip
+                                    key={selectedService.ssoAllInstances}
+                                    content="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
+                                    placement="bottom"
+                                >
+                                    <Text>
+                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                        <label htmlFor="sso">SSO:</label>
+                                        <span id="sso">{sso}</span>
+                                    </Text>
+                                </Tooltip>
+                            </div>
+
+                            <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                         </div>
-                    </Fragment>
+                        <div className="tabs-container" style={{ width: '100%' }}>
+                            {apiVersions}
+                        </div>
+                        {selectedVersion !== 'diff' ? (
+                            <SwaggerContainer selectedVersion={selectedVersion} />
+                        ) : (
+                            <ServiceVersionDiffContainer
+                                serviceId={selectedService.serviceId}
+                                versions={currentService.apiVersions}
+                            />
+                        )}
+                    </div>
                 </Shield>
-            </Fragment>
+            </>
         );
     }
 }
