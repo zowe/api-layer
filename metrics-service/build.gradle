@@ -60,6 +60,7 @@ dependencies {
     implementation libraries.jackson_annotations
     implementation libraries.jackson_core
     implementation libraries.jackson_databind
+    implementation libraries.jackson_mapper
     implementation libraries.jetty_client
     implementation libraries.jetty_http
     implementation libraries.jetty_io
