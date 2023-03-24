@@ -11,7 +11,6 @@
 export class Constants {
 
     // Parameters maximum length
-    //TODO: length valid for RACF, if other ESMs allow the different length -> refactor
     public static readonly MAX_LENGTH_REGISTRY = 255;
     public static readonly MAX_LENGTH_SYSTEM = 8;
 

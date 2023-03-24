@@ -13,15 +13,14 @@ import {IIdentity} from "./CsvParser";
 import {IHandlerResponseApi} from "@zowe/imperative/lib/cmd/src/doc/response/api/handler/IHandlerResponseApi";
 import { Commands } from "./Commands";
 
-export class RacfCommands extends Commands{
+export class TssCommands extends Commands{
 
     constructor(
         registry: string,
         identities: IIdentity[],
         response: IHandlerResponseApi
     ) {
-        const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
-        const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
-        super(registry,identities,racfTemplate,racfRefreshCommand,response);
+        const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
+        super(registry,identities,tssTemplate,null,response);
     }
 }
