@@ -417,7 +417,7 @@ public class AuthenticationService {
         } else if (fromParameter.isPresent()) {
             return fromParameter;
         } else {
-            return getAccessTokenFromHeader(request.getHeader(ApimlConstants.OIDC_HEADER_NAME));
+            return getAccessTokenFromHeader(request.getHeader(ApimlConstants.BEARER_AUTHENTICATION_PREFIX));
         }
     }
 

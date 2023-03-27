@@ -22,13 +22,15 @@ import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.token.OIDCProvider;
+import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {
@@ -76,6 +78,44 @@ class OIDCAuthSourceServiceTest {
             when(provider.isValid(token)).thenReturn(true);
             OIDCAuthSource authSource = new OIDCAuthSource(token);
             assertTrue(service.isValid(authSource));
+        }
+
+        @Test
+        void whenParse_thenCorrect() {
+            when(provider.isValid(token)).thenReturn(true);
+            OIDCAuthSource authSource = new OIDCAuthSource(token);
+            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.OIDC);
+            when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
+            when(mapper.mapToMainframeUserId(authSource)).thenReturn("user");
+            AuthSource.Parsed parsedSource = service.parse(authSource);
+
+            verify(mapper, times(1)).mapToMainframeUserId(authSource);
+            assertEquals(response.getUserId(), parsedSource.getUserId());
+        }
+
+        @Test
+        void givenValidAuthSource_thenReturnLTPAToken() {
+            when(provider.isValid(token)).thenReturn(true);
+            String ltpa = "ltpa";
+            OIDCAuthSource authSource = new OIDCAuthSource(token);
+            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.ZOWE);
+            when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
+            when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
+            when(authenticationService.parseJwtToken(token)).thenReturn(response);
+            when(authenticationService.getLtpaToken(token)).thenReturn(ltpa);
+            String ltpaResult = service.getLtpaToken(authSource);
+            assertEquals(ltpa, ltpaResult);
+        }
+
+        @Test
+        void givenValidAuthSource_thenReturnJWT() {
+            when(provider.isValid(token)).thenReturn(true);
+            OIDCAuthSource authSource = new OIDCAuthSource(token);
+            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.OIDC);
+            when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
+            when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
+            String jwt = service.getJWT(authSource);
+            assertEquals(token, jwt);
         }
     }
 
