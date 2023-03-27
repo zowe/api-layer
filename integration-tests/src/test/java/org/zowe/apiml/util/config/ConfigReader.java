@@ -67,6 +67,7 @@ public class ConfigReader {
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
+                        IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "client-id", "user", "user");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -80,7 +81,8 @@ public class ConfigReader {
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
-                            null);
+                            null,
+                            idpConfiguration);
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));

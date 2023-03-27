@@ -58,6 +58,11 @@ zosmfServiceConfiguration:
     serviceId: mockzosmf
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
+idpConfiguration:
+    host: https://dev-95727686.okta.com
+    clientId: 0oa6a48mniXAqEMrx5d7
+    user: it_test@acme.com
+    password: ZowePswd01
 instanceEnv:
     CMMN_LB: build/libs/api-layer-lite-lib-all.jar
     ZWE_haInstance_hostname: localhost
