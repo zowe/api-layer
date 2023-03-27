@@ -46,7 +46,7 @@ jobs:
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
                   npm version ${{ github.event.inputs.release_version }}
                   npm publish --access public
-                  cd zowe-cli-id-federation-plugin
+                  cd ../zowe-cli-id-federation-plugin
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
                   npm publish --access public
                   git add package.json
