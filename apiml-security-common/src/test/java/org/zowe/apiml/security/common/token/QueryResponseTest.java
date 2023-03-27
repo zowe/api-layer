@@ -42,6 +42,10 @@ class QueryResponseTest {
         assertEquals(QueryResponse.Source.ZOSMF, QueryResponse.Source.valueByIssuer("zOSMF"));
         assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("apiml"));
         assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("APIML"));
+        assertEquals(QueryResponse.Source.ZOWE_PAT, QueryResponse.Source.valueByIssuer("apiml_pat"));
+        assertEquals(QueryResponse.Source.ZOWE_PAT, QueryResponse.Source.valueByIssuer("APIML_PAT"));
+        assertEquals(QueryResponse.Source.OIDC, QueryResponse.Source.valueByIssuer("oidc"));
+        assertEquals(QueryResponse.Source.OIDC, QueryResponse.Source.valueByIssuer("OIDC"));
 
         Exception tnve = assertThrows(TokenNotValidException.class, () -> QueryResponse.Source.valueByIssuer(null));
         assertEquals("Unknown token type : null", tnve.getMessage());
