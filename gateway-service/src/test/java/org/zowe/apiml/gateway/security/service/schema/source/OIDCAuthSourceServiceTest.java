@@ -35,12 +35,12 @@ import static org.mockito.Mockito.times;
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {
     private RequestContext context;
-    TokenCreationService tokenCreationService;
-    OIDCAuthSourceService service;
-    AuthenticationService authenticationService;
-    OIDCProvider provider;
-    AuthenticationMapper mapper;
-    String token = "token";
+    private TokenCreationService tokenCreationService;
+    private OIDCAuthSourceService service;
+    private AuthenticationService authenticationService;
+    private OIDCProvider provider;
+    private AuthenticationMapper mapper;
+    private final String token = "token";
 
     @BeforeEach
     void setup() {
