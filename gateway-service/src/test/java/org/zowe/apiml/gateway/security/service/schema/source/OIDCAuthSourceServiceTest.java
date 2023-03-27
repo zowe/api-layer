@@ -97,6 +97,7 @@ class OIDCAuthSourceServiceTest {
         void givenValidAuthSource_thenReturnLTPAToken() {
             when(provider.isValid(token)).thenReturn(true);
             String ltpa = "ltpa";
+            when(mapper.mapToMainframeUserId(any())).thenReturn("user");
             OIDCAuthSource authSource = new OIDCAuthSource(token);
             QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.ZOWE);
             when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
@@ -110,6 +111,7 @@ class OIDCAuthSourceServiceTest {
         @Test
         void givenValidAuthSource_thenReturnJWT() {
             when(provider.isValid(token)).thenReturn(true);
+            when(mapper.mapToMainframeUserId(any())).thenReturn("user");
             OIDCAuthSource authSource = new OIDCAuthSource(token);
             QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.OIDC);
             when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
