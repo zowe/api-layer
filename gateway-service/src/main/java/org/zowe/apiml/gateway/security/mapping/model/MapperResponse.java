@@ -38,8 +38,8 @@ public class MapperResponse {
     public void validateOIDCResults() {
         if (rc == 8 || safRc == 8 || racfRc == 8) {
             if (racfRs == 44) {
-                throw new OIDCExternalMapperAuthException("The Registry Name length is not valid, or the Registry Name" +
-                    " string is all blanks (x'20'), all nulls (x'00'), or a combination of blanks and nulls.", this);
+                throw new OIDCExternalMapperAuthException("The Registry Name or supplied distributed identity is all" +
+                    " blanks (x'20'), all nulls (x'00'), or a combination of blanks and nulls.", this);
             }
             if (racfRs == 48) {
                 throw new OIDCExternalMapperAuthException("There is no distributed identity filter mapping the supplied" +

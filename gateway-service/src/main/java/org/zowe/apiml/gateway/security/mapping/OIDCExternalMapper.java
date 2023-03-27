@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.mapping.model.OIDCRequest;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -26,6 +27,9 @@ import java.io.UnsupportedEncodingException;
 @Slf4j
 public class OIDCExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
+    @Value("${apiml.security.oidc.registry}")
+    private String registry;
+
     public OIDCExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService, AuthConfigurationProperties authConfigurationProperties) {
         super(httpClientProxy, tokenCreationService, Type.OIDC, authConfigurationProperties);
     }
@@ -35,7 +39,7 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             return null;
         }
 
-        OIDCRequest oidcRequest = new OIDCRequest((String) authSource.getRawSource(), (String) authSource.getRawSource()); // TODO: Fix source
+        OIDCRequest oidcRequest = new OIDCRequest((String) authSource.getRawSource(), registry); // TODO: Fix source
         try {
             StringEntity payload = new StringEntity(objectMapper.writeValueAsString(oidcRequest));
             MapperResponse mapperResponse = callExternalMapper(payload);

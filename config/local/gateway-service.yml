@@ -29,6 +29,7 @@ apiml:
             verifySslCertificatesOfServices: true
         x509:
             enabled: true
+        oidc.registry: enterprise.okta.com
     banner: console
 
 spring:
