@@ -1,0 +1,49 @@
+name: zowe-cli-plugin
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+    release:
+        if: github.event_name == 'push' && github.ref_protected
+        needs: test
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+                  ref: ${{ github.ref }}
+
+            - name: Use Node.js LTS
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 'lts/*'
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Update Dependencies
+              uses: zowe-actions/octorelease-script@master
+              env:
+                  GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
+                  GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
+                  NPM_RESOLUTIONS: ${{ needs.test.outputs.npm-resolutions }}
+              with:
+                  script: npmUpdate
+
+            - name: Build Source with Gradle
+              run: |
+                  ./gradlew zowe-cli-id-federation-plugin:clean
+                  ./gradlew zowe-cli-id-federation-plugin:build
+
+            - uses: zowe-actions/octorelease@master
+              env:
+                  GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
+                  GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
+                  GIT_CREDENTIALS: x-access-token:${{ secrets.ZOWE_ROBOT_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  NPM_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  NPM_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  NPM_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
