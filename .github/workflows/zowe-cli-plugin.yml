@@ -30,7 +30,7 @@ jobs:
               env:
                   GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
                   GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
-                  NPM_RESOLUTIONS: ${{ needs.test.outputs.npm-resolutions }}
+#                  NPM_RESOLUTIONS: ${{ needs.test.outputs.npm-resolutions }}
               with:
                   script: npmUpdate
 
