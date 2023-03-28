@@ -14,6 +14,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Date;
+
 /**
  * Implementation of OIDC token source of authentication.
  */
@@ -34,5 +36,15 @@ public class OIDCAuthSource implements AuthSource {
     @Override
     public AuthSource.AuthSourceType getType() {
         return type;
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    @EqualsAndHashCode
+    public static class Parsed implements AuthSource.Parsed {
+        private final String userId;
+        private final Date creation;
+        private final Date expiration;
+        private final AuthSource.Origin origin;
     }
 }
