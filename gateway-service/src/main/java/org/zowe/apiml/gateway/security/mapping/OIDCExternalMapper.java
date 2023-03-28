@@ -39,7 +39,7 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             return null;
         }
 
-        OIDCRequest oidcRequest = new OIDCRequest((String) authSource.getRawSource(), registry); // TODO: Fix source
+        OIDCRequest oidcRequest = new OIDCRequest(((OIDCAuthSource) authSource).getDistributedId(), registry);
         try {
             StringEntity payload = new StringEntity(objectMapper.writeValueAsString(oidcRequest));
             MapperResponse mapperResponse = callExternalMapper(payload);

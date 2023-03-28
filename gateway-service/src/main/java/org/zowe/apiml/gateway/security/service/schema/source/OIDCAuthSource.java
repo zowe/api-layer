@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 
@@ -37,6 +38,9 @@ public class OIDCAuthSource implements AuthSource {
     public AuthSource.AuthSourceType getType() {
         return type;
     }
+
+    @Setter
+    private String distributedId;
 
     @RequiredArgsConstructor
     @Getter

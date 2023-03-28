@@ -17,6 +17,9 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.cache.EntryExpiration;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +35,7 @@ public class QueryResponse implements EntryExpiration {
     private String userId;
     private Date creation;
     private Date expiration;
+    private String issuer;
     @JsonIgnore
     private List<String> scopes;
     @JsonIgnore
@@ -79,12 +83,20 @@ public class QueryResponse implements EntryExpiration {
             if (StringUtils.equalsIgnoreCase(issuer, "APIML_PAT")) {
                 return ZOWE_PAT;
             }
-            if (StringUtils.equalsIgnoreCase(issuer, "OIDC")) {
+            if (isValidURL(issuer)) {
                 return OIDC;
             }
-            throw new TokenNotValidException("Unknown token type : " + issuer);
+            throw new TokenNotValidException("Unknown token issued by: " + issuer);
         }
 
+        private static boolean isValidURL(String url) {
+            try {
+                new URL(url).toURI();
+                return true;
+            } catch (MalformedURLException | URISyntaxException e) {
+                return false;
+            }
+        }
     }
 
 }

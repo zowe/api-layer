@@ -25,12 +25,12 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {
@@ -40,7 +40,10 @@ class OIDCAuthSourceServiceTest {
     private AuthenticationService authenticationService;
     private OIDCProvider provider;
     private AuthenticationMapper mapper;
-    private final String token = "token";
+    private static final String TOKEN = "token";
+    private static final String ISSUER = "issuer";
+    private static final String DISTRIB_USER = "pc.user@acme.com";
+    private static final String MF_USER = "MF_USER";
 
     @BeforeEach
     void setup() {
@@ -60,7 +63,7 @@ class OIDCAuthSourceServiceTest {
 
     @Test
     void returnOIDCSourceMapper() {
-        assertTrue(service.getMapper().apply("token") instanceof OIDCAuthSource);
+        assertTrue(service.getMapper().apply(TOKEN) instanceof OIDCAuthSource);
     }
 
     @Test
@@ -74,55 +77,49 @@ class OIDCAuthSourceServiceTest {
         void givenTokenInRequestContext_thenReturnTheToken() {
             HttpServletRequest request = new MockHttpServletRequest();
             when(context.getRequest()).thenReturn(request);
-            when(authenticationService.getOIDCTokenFromRequest(request)).thenReturn(Optional.of(token));
-            assertEquals(token, service.getToken(context).get());
+            when(authenticationService.getOIDCTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
+            assertEquals(TOKEN, service.getToken(context).get());
         }
 
         @Test
         void givenTokenInAuthSource_thenReturnValid() {
-            when(provider.isValid(token)).thenReturn(true);
-            OIDCAuthSource authSource = new OIDCAuthSource(token);
+            OIDCAuthSource authSource = mockValidAuthSource();
             assertTrue(service.isValid(authSource));
         }
 
         @Test
         void whenParse_thenCorrect() {
-            when(provider.isValid(token)).thenReturn(true);
-            OIDCAuthSource authSource = new OIDCAuthSource(token);
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.OIDC);
-            when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
-            when(mapper.mapToMainframeUserId(authSource)).thenReturn("user");
+            OIDCAuthSource authSource = mockValidAuthSource();
+            when(mapper.mapToMainframeUserId(authSource)).thenReturn(MF_USER);
             AuthSource.Parsed parsedSource = service.parse(authSource);
 
             verify(mapper, times(1)).mapToMainframeUserId(authSource);
-            assertEquals(response.getUserId(), parsedSource.getUserId());
+            assertEquals(MF_USER, parsedSource.getUserId());
         }
 
         @Test
         void givenValidAuthSource_thenReturnLTPAToken() {
-            when(provider.isValid(token)).thenReturn(true);
-            String ltpa = "ltpa";
-            when(mapper.mapToMainframeUserId(any())).thenReturn("user");
-            OIDCAuthSource authSource = new OIDCAuthSource(token);
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.ZOWE);
-            when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
-            when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
-            when(authenticationService.parseJwtToken(token)).thenReturn(response);
-            when(authenticationService.getLtpaToken(token)).thenReturn(ltpa);
+            OIDCAuthSource authSource = mockValidAuthSource();
+            String expectedToken = "ltpa-token";
+            when(mapper.mapToMainframeUserId(any())).thenReturn(MF_USER);
+            String zoweToken = "zowe-token";
+            when(tokenCreationService.createJwtTokenWithoutCredentials(MF_USER)).thenReturn(zoweToken);
+            QueryResponse response = new QueryResponse(null, DISTRIB_USER, new Date(), new Date(), ISSUER, null, QueryResponse.Source.ZOWE);
+            when(authenticationService.parseJwtToken(zoweToken)).thenReturn(response);
+            when(authenticationService.getLtpaToken(zoweToken)).thenReturn(expectedToken);
+
             String ltpaResult = service.getLtpaToken(authSource);
-            assertEquals(ltpa, ltpaResult);
+            assertEquals(expectedToken, ltpaResult);
         }
 
         @Test
         void givenValidAuthSource_thenReturnJWT() {
-            when(provider.isValid(token)).thenReturn(true);
-            when(mapper.mapToMainframeUserId(any())).thenReturn("user");
-            OIDCAuthSource authSource = new OIDCAuthSource(token);
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.OIDC);
-            when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
-            when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
-            String jwt = service.getJWT(authSource);
-            assertEquals(token, jwt);
+            OIDCAuthSource authSource = mockValidAuthSource();
+            when(mapper.mapToMainframeUserId(any())).thenReturn(MF_USER);
+            String expectedToken = "jwt-token";
+            when(tokenCreationService.createJwtTokenWithoutCredentials(MF_USER)).thenReturn(expectedToken);
+            String jwtResult = service.getJWT(authSource);
+            assertEquals(expectedToken, jwtResult);
         }
     }
 
@@ -131,14 +128,14 @@ class OIDCAuthSourceServiceTest {
 
         @Test
         void givenJWTAuthSourceWhenValidating_thenReturnFalse() {
-            JwtAuthSource authSource = new JwtAuthSource(token);
+            JwtAuthSource authSource = new JwtAuthSource(TOKEN);
             boolean isValid = service.isValid(authSource);
             assertFalse(isValid);
         }
 
         @Test
         void givenJWTAuthSource_thenReturnNull() {
-            JwtAuthSource authSource = new JwtAuthSource(token);
+            JwtAuthSource authSource = new JwtAuthSource(TOKEN);
             AuthSource.Parsed parsedSource = service.parse(authSource);
             assertNull(parsedSource);
         }
@@ -157,5 +154,12 @@ class OIDCAuthSourceServiceTest {
             OIDCAuthSource authSource = new OIDCAuthSource("");
             assertFalse(service.isValid(authSource));
         }
+    }
+
+    private OIDCAuthSource mockValidAuthSource() {
+        QueryResponse tokenResponse = new QueryResponse("domain", DISTRIB_USER, new Date(), new Date(), ISSUER, Collections.emptyList(), QueryResponse.Source.OIDC);
+        when(authenticationService.parseJwtToken(TOKEN)).thenReturn(tokenResponse);
+        when(provider.isValid(TOKEN, ISSUER)).thenReturn(true);
+        return new OIDCAuthSource(TOKEN);
     }
 }

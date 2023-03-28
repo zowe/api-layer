@@ -10,25 +10,36 @@
 
 package org.zowe.apiml.gateway.security.service.token;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.*;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class OIDCTokenProviderTest {
 
     private OIDCTokenProvider oidcTokenProvider;
-    private RestTemplate restTemplate;
-    private ResponseEntity response;
+    private CloseableHttpClient httpClient;
+    private CloseableHttpResponse response;
+
+    private StatusLine responseStatusLine;
+    private BasicHttpEntity responseEntity;
 
     private static final String BODY = "{\n" +
         "    \"active\": true,\n" +
@@ -47,72 +58,84 @@ class OIDCTokenProviderTest {
         "    \"active\": false\n" +
         "}";
 
+    private static final String TOKEN = "token";
+    private static final String ISSUER = "https://issuer.com";
+
     @BeforeEach
-    void setup() throws CachingServiceClientException {
-        restTemplate = mock(RestTemplate.class);
-        response = mock(ResponseEntity.class);
-        oidcTokenProvider = new OIDCTokenProvider(restTemplate);
+    void setup() throws CachingServiceClientException, IOException {
+        httpClient = mock(CloseableHttpClient.class);
+        response = mock(CloseableHttpResponse.class);
+        responseStatusLine = mock(StatusLine.class);
+        responseEntity = new BasicHttpEntity();
+        responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
+        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        when(response.getStatusLine()).thenReturn(responseStatusLine);
+        when(response.getEntity()).thenReturn(responseEntity);
+        when(httpClient.execute(any())).thenReturn(response);
+        oidcTokenProvider = new OIDCTokenProvider(httpClient);
         ReflectionTestUtils.setField(oidcTokenProvider, "isEnabled", true);
     }
 
     @Nested
     class GivenTokenForValidation {
         @Test
-        void whenRequestIsSuccessful_thenReturnValid() {
-            doReturn(HttpStatus.OK).when(response).getStatusCode();
-            doReturn(BODY).when(response).getBody();
-            when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), (Class<?>) any())).thenReturn(response);
-            assertTrue(oidcTokenProvider.isValid("token"));
+        void tokenIsActive_thenReturnValid() {
+            responseEntity.setContent(IOUtils.toInputStream(BODY, StandardCharsets.UTF_8));
+            assertTrue(oidcTokenProvider.isValid(TOKEN, ISSUER));
         }
 
         @Test
-        void whenRequestIsNotSuccessful_thenReturnInvalid() {
-            doReturn(HttpStatus.OK).when(response).getStatusCode();
-            doReturn(NOT_VALID_BODY).when(response).getBody();
-            when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), (Class<?>) any())).thenReturn(response);
-            assertFalse(oidcTokenProvider.isValid("token"));
+        void tokenIsExpired_thenReturnInvalid() {
+            responseEntity.setContent(IOUtils.toInputStream(NOT_VALID_BODY, StandardCharsets.UTF_8));
+            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
         }
 
         @Test
-        void whenThrowException_thenReturnInvalid() {
-            doReturn(HttpStatus.OK).when(response).getStatusCode();
-            doReturn(NOT_VALID_BODY).when(response).getBody();
-            HttpClientErrorException exception =
-                HttpClientErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "statusText", new HttpHeaders(), new byte[]{}, null);
-            when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), (Class<?>) any())).thenThrow(exception);
-            assertFalse(oidcTokenProvider.isValid("token"));
+        void whenClientThrowsException_thenReturnInvalid() throws IOException {
+            ClientProtocolException exception = new ClientProtocolException("http error");
+            when(httpClient.execute(any())).thenThrow(exception);
+            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
         }
 
         @Test
-        void whenNotValidJson_thenReturnInvalid() {
-            doReturn(HttpStatus.OK).when(response).getStatusCode();
-            doReturn("{notValid}").when(response).getBody();
-            when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), (Class<?>) any())).thenReturn(response);
-            assertFalse(oidcTokenProvider.isValid("token"));
+        void whenResponseIsNotValidJson_thenReturnInvalid() {
+            responseEntity.setContent(IOUtils.toInputStream("{notValid}", StandardCharsets.UTF_8));
+            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
         }
 
         @Test
         void whenResponseStatusIsNotOk_thenReturnInvalid() {
-            doReturn(HttpStatus.UNAUTHORIZED).when(response).getStatusCode();
-            doReturn(BODY).when(response).getBody();
-            when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), (Class<?>) any())).thenReturn(response);
-            assertFalse(oidcTokenProvider.isValid("token"));
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
+            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
         }
 
         @Test
-        void whenTokenIsNull_ThenThrowException() {
-            assertFalse(oidcTokenProvider.isValid(null));
+        void whenTokenIsNull_thenReturnInvalid() {
+            assertFalse(oidcTokenProvider.isValid(null, ISSUER));
         }
 
         @Test
-        void whenTokenIsEmpty_ThenThrowException() {
-            assertFalse(oidcTokenProvider.isValid(""));
+        void whenTokenIsEmpty_thenReturnInvalid() {
+            assertFalse(oidcTokenProvider.isValid("", ISSUER));
         }
 
         @Test
-        void whenProviderDisabled_ThenThrowException() {
+        void whenIssuerIsNull_thenReturnInvalid() {
+            assertFalse(oidcTokenProvider.isValid(TOKEN, null));
+        }
+
+        @Test
+        void whenIssuerIsEmpty_thenReturnInvalid() {
+            assertFalse(oidcTokenProvider.isValid(TOKEN, ""));
+        }
+        @Test
+        void whenIssuerIsNotURL_thenReturnInvalid() {
+            assertFalse(oidcTokenProvider.isValid(TOKEN, "not valid url"));
+        }
+        @Test
+        void whenProviderDisabled_thenReturnInvalid() {
             ReflectionTestUtils.setField(oidcTokenProvider, "isEnabled", false);
-            assertFalse(oidcTokenProvider.isValid(null));
+            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
         }
     }
 

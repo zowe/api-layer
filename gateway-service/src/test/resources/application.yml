@@ -34,7 +34,6 @@ apiml:
             enabled: false
             clientId:
             clientSecret:
-            validationUrl:
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5

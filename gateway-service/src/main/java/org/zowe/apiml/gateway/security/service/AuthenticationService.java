@@ -348,6 +348,7 @@ public class AuthenticationService {
             claims.getSubject(),
             claims.getIssuedAt(),
             claims.getExpiration(),
+            claims.getIssuer(),
             scopes,
             QueryResponse.Source.valueByIssuer(claims.getIssuer())
         );

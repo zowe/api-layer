@@ -15,7 +15,6 @@ apiml:
             enabled: false
             clientId:
             clientSecret:
-            validationUrl:
         auth:
             jwt:
                 customAuthHeader:

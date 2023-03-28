@@ -32,8 +32,8 @@ class QueryResponseTest {
         c.add(Calendar.MINUTE, 2);
         final Date after = c.getTime();
 
-        assertTrue(new QueryResponse("domain", "user", now, before, Collections.emptyList(), QueryResponse.Source.ZOWE).isExpired());
-        assertFalse(new QueryResponse("domain", "user", now, after, Collections.emptyList(), QueryResponse.Source.ZOWE).isExpired());
+        assertTrue(new QueryResponse("domain", "user", now, before, "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE).isExpired());
+        assertFalse(new QueryResponse("domain", "user", now, after, "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE).isExpired());
     }
 
     @Test
@@ -44,14 +44,14 @@ class QueryResponseTest {
         assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("APIML"));
         assertEquals(QueryResponse.Source.ZOWE_PAT, QueryResponse.Source.valueByIssuer("apiml_pat"));
         assertEquals(QueryResponse.Source.ZOWE_PAT, QueryResponse.Source.valueByIssuer("APIML_PAT"));
-        assertEquals(QueryResponse.Source.OIDC, QueryResponse.Source.valueByIssuer("oidc"));
-        assertEquals(QueryResponse.Source.OIDC, QueryResponse.Source.valueByIssuer("OIDC"));
+        assertEquals(QueryResponse.Source.OIDC, QueryResponse.Source.valueByIssuer("https://test.issuer.ORG"));
+        assertEquals(QueryResponse.Source.OIDC, QueryResponse.Source.valueByIssuer("HTTPS://TEST.ISSUER.ORG"));
 
         Exception tnve = assertThrows(TokenNotValidException.class, () -> QueryResponse.Source.valueByIssuer(null));
-        assertEquals("Unknown token type : null", tnve.getMessage());
+        assertEquals("Unknown token issued by: null", tnve.getMessage());
 
         tnve = assertThrows(TokenNotValidException.class, () -> QueryResponse.Source.valueByIssuer("unknown"));
-        assertEquals("Unknown token type : unknown", tnve.getMessage());
+        assertEquals("Unknown token issued by: unknown", tnve.getMessage());
     }
 
 }

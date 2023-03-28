@@ -99,7 +99,7 @@ public class RequestAuthenticationServiceTest {
         @Test
         void principalWithValidToken() {
             doReturn(Optional.of("jwtTokenString")).when(authenticationService).getJwtTokenFromRequest(any());
-            doReturn(new QueryResponse("domain", "user", new Date(), new Date(), Collections.emptyList(), QueryResponse.Source.ZOSMF)).when(authenticationService).parseJwtToken(any());
+            doReturn(new QueryResponse("domain", "user", new Date(), new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOSMF)).when(authenticationService).parseJwtToken(any());
             assertThat(underTest.getPrincipalFromRequest(request), is(Optional.of("user")));
         }
     }
