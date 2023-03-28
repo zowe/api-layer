@@ -63,6 +63,11 @@ class OIDCAuthSourceServiceTest {
         assertTrue(service.getMapper().apply("token") instanceof OIDCAuthSource);
     }
 
+    @Test
+    void returnLogger() {
+        assertNotNull(service.getLogger());
+    }
+
     @Nested
     class GivenValidTokenTest {
         @Test
@@ -118,6 +123,24 @@ class OIDCAuthSourceServiceTest {
             when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
             String jwt = service.getJWT(authSource);
             assertEquals(token, jwt);
+        }
+    }
+
+    @Nested
+    class GivenDifferentAuthSourcesTest {
+
+        @Test
+        void givenJWTAuthSourceWhenValidating_thenReturnFalse() {
+            JwtAuthSource authSource = new JwtAuthSource(token);
+            boolean isValid = service.isValid(authSource);
+            assertFalse(isValid);
+        }
+
+        @Test
+        void givenJWTAuthSource_thenReturnNull() {
+            JwtAuthSource authSource = new JwtAuthSource(token);
+            AuthSource.Parsed parsedSource = service.parse(authSource);
+            assertNull(parsedSource);
         }
     }
 

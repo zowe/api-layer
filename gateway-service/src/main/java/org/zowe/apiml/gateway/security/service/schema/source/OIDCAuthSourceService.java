@@ -51,7 +51,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<String> getToken(RequestContext context) {
-        // should there be some specific cookie name/header name for the oidc token?
+        // TODO we should store the OIDC (including the PAT) in the apiml cookie in next future
         return authenticationService.getOIDCTokenFromRequest(context.getRequest());
     }
 
@@ -93,6 +93,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         return new OIDCAuthSource.Parsed(mappedUser, response.getCreation(), response.getExpiration(), origin);
     }
 
+    //this method should be removed from the unrelated auth sources
     @Override
     public String getLtpaToken(AuthSource authSource) {
         String zosmfToken = getJWT(authSource);
