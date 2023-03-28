@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -55,6 +56,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
+    @Cacheable(value = "validationOIDCToken", key = "#oidcToken", condition = "#oidcToken != null")
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof OIDCAuthSource) {
             String token = ((OIDCAuthSource) authSource).getRawSource();
@@ -65,6 +67,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
+    @Cacheable(value = "parseOIDCToken", key = "#parsedOIDCToken", condition = "#parsedOIDCToken != null")
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof OIDCAuthSource) {
             return isValid(authSource) ? parseOIDCToken((OIDCAuthSource) authSource, mapper) : null;
