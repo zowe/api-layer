@@ -12,20 +12,20 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,11 +57,14 @@ public class StaticAPIService {
             try {
                 HttpPost post = getHttpRequest(discoveryServiceUrl);
                 CloseableHttpResponse response = httpClient.execute(post);
-
+                final HttpEntity responseEntity = response.getEntity();
+                String responseBody = "";
+                if (responseEntity != null) {
+                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                }
                 // Return response if successful response or if none have been successful and this is the last URL to try
                 if (isSuccessful(response) || i == discoveryServiceUrls.size() - 1) {
-                    String body = new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
-                    return new StaticAPIResponse(response.getStatusLine().getStatusCode(), body);
+                    return new StaticAPIResponse(response.getStatusLine().getStatusCode(), responseBody);
                 }
 
             } catch (Exception e) {
@@ -75,6 +78,7 @@ public class StaticAPIService {
     private boolean isSuccessful(CloseableHttpResponse response) {
         return response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 299;
     }
+
     private HttpPost getHttpRequest(String discoveryServiceUrl) {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpPost post = new HttpPost(discoveryServiceUrl);
