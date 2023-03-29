@@ -32,7 +32,7 @@ jobs:
             - name: Update Dependencies
               uses: zowe-actions/octorelease-script@master
               with:
-                  working-directory: zowe-cli-id-federation-plugin
+                  working-dir: zowe-cli-id-federation-plugin
                   script: npmUpdate
 
               env:
