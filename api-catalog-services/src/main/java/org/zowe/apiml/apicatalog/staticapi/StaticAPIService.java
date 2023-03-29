@@ -16,16 +16,17 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,7 @@ public class StaticAPIService {
                 final HttpEntity responseEntity = response.getEntity();
                 String responseBody = "";
                 if (responseEntity != null) {
-                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                    responseBody = new BufferedReader(new InputStreamReader(responseEntity.getContent())).lines().collect(Collectors.joining("\n"));
                 }
                 // Return response if successful response or if none have been successful and this is the last URL to try
                 if (isSuccessful(response) || i == discoveryServiceUrls.size() - 1) {
