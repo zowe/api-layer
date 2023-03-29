@@ -2,14 +2,18 @@
 module.exports = {
     branches: [
         {
-            name: "v2.x.x",
+            name: "master",
             level: "minor"
         },
         {
             name: "zowe-v?-lts",
             level: "patch"
         }
-        ],
+        // {
+        //     name: "next",
+        //     prerelease: true
+        // }
+    ],
     plugins: [
         "@octorelease/changelog",
         ["@octorelease/npm", {
