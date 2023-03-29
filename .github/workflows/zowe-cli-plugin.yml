@@ -43,11 +43,11 @@ jobs:
 
 
             - name: Build Source with Gradle
-              run: |
-                  ./gradlew zowe-cli-id-federation-plugin:clean
-                  ./gradlew zowe-cli-id-federation-plugin:build
+              run: npm run build
 
             - uses: zowe-actions/octorelease@master
+              with:
+                  working-dir: zowe-cli-id-federation-plugin
               env:
                   GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
                   GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
