@@ -2,7 +2,7 @@
 module.exports = {
     branches: [
         {
-            name: "master",
+            name: "apiml/publish-zowe-plugin",
             level: "minor"
         },
         {
