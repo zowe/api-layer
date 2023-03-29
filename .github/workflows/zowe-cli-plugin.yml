@@ -41,13 +41,11 @@ jobs:
 #                  NPM_RESOLUTIONS: ${{ needs.test.outputs.npm-resolutions }}
 #              with:
             - name: Build Source
+            - uses: zowe-actions/octorelease@master
               with:
                   working-dir: zowe-cli-id-federation-plugin
               run: npm run build
 
-            - uses: zowe-actions/octorelease@master
-              with:
-                  working-dir: zowe-cli-id-federation-plugin
               env:
                   GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
                   GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
