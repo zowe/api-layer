@@ -9,10 +9,6 @@ module.exports = {
             name: "zowe-v?-lts",
             level: "patch"
         }
-        // {
-        //     name: "next",
-        //     prerelease: true
-        // }
     ],
     plugins: [
         "@octorelease/changelog",
