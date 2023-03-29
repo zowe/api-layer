@@ -35,6 +35,7 @@ public class QueryResponse implements EntryExpiration {
     private String userId;
     private Date creation;
     private Date expiration;
+    @JsonIgnore
     private String issuer;
     @JsonIgnore
     private List<String> scopes;
@@ -42,7 +43,6 @@ public class QueryResponse implements EntryExpiration {
     private Source source;
 
     @Override
-    @JsonIgnore
     public boolean isExpired() {
         return expiration.before(new Date());
     }
