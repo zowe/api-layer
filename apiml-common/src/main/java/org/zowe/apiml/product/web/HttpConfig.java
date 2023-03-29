@@ -48,7 +48,7 @@ public class HttpConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
-    @Value("${server.ssl.protocol:TLS}")
+    @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
     @Value("${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}")
     private String[] supportedProtocols;
