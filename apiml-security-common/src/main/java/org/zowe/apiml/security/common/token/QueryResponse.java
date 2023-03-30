@@ -43,6 +43,7 @@ public class QueryResponse implements EntryExpiration {
     private Source source;
 
     @Override
+    @JsonIgnore
     public boolean isExpired() {
         return expiration.before(new Date());
     }
