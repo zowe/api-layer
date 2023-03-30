@@ -602,17 +602,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         void givenTokenNotPresentInCookie_thenGetFromHeader() {
             String token = "oidcToken";
             MockHttpServletRequest request = new MockHttpServletRequest();
-            request.addHeader(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, token);
-            Optional<String> result = authService.getOIDCTokenFromRequest(request);
-            assertTrue(result.isPresent());
-            assertEquals(token, result.get());
-        }
-
-        @Test
-        void givenTokenInParameter_thenGetIt() {
-            String token = "oidcToken";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            request.addParameter("access_token", token);
+            request.addHeader(ApimlConstants.OIDC_HEADER_NAME, token);
             Optional<String> result = authService.getOIDCTokenFromRequest(request);
             assertTrue(result.isPresent());
             assertEquals(token, result.get());

@@ -411,12 +411,8 @@ public class AuthenticationService {
      */
     public Optional<String> getOIDCTokenFromRequest(@NonNull HttpServletRequest request) {
         Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNameOIDC());
-
-        if (fromCookie.isPresent()) {
-            return fromCookie;
-        } else {
-            return getAccessTokenFromHeader(request.getHeader(ApimlConstants.BEARER_AUTHENTICATION_PREFIX));
-        }
+        return fromCookie.isPresent() ?
+            fromCookie : getAccessTokenFromHeader(request.getHeader(ApimlConstants.OIDC_HEADER_NAME));
     }
 
     private Optional<String> getTokenFromCookie(HttpServletRequest request, String cookieName) {
