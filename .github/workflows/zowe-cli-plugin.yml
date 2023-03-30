@@ -8,8 +8,7 @@ on:
 
 jobs:
     release:
-#        if: github.event_name == 'push' && github.ref_protected
-#        needs: test
+        if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
         timeout-minutes: 40
 
@@ -40,8 +39,7 @@ jobs:
               env:
                   GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
                   GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
-#                  NPM_RESOLUTIONS: ${{ needs.test.outputs.npm-resolutions }}
-#              with:
+
             - name: Build Source
               run: |
                   cd zowe-cli-id-federation-plugin
