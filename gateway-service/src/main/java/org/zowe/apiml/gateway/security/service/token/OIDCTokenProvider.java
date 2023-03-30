@@ -46,13 +46,13 @@ import java.util.List;
 @Slf4j
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.security.oAuth.clientId:}")
+    @Value("${apiml.security.oidc.clientId:}")
     private String clientId;
 
-    @Value("${apiml.security.oAuth.clientSecret:}")
+    @Value("${apiml.security.oidc.clientSecret:}")
     private String clientSecret;
 
-    @Value("${apiml.security.oAuth.enabled:false}")
+    @Value("${apiml.security.oidc.enabled:false}")
     private boolean isEnabled;
 
     @Autowired

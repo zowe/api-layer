@@ -61,7 +61,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
                                     PATAuthSourceService patAuthSourceService,
                                     @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled,
                                     OIDCAuthSourceService oidcAuthSourceService,
-                                    @Value("${apiml.security.oAuth.enabled:false}") boolean isOIDCEnabled) {
+                                    @Value("${apiml.security.oidc.enabled:false}") boolean isOIDCEnabled) {
         this.isPATEnabled = isPATEnabled;
         this.isOIDCEnabled = isOIDCEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);

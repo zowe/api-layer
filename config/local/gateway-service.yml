@@ -11,10 +11,11 @@ apiml:
             fileLocation: config/local/webfinger.yml
         personalAccessToken:
             enabled: false
-        oAuth:
+        oidc:
             enabled: false
             clientId:
             clientSecret:
+            registry:
         auth:
             jwt:
                 customAuthHeader:
@@ -28,7 +29,6 @@ apiml:
             verifySslCertificatesOfServices: true
         x509:
             enabled: true
-        oidc.registry: enterprise.okta.com
     banner: console
 
 spring:

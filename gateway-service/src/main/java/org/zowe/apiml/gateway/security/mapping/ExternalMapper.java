@@ -85,7 +85,6 @@ public abstract class ExternalMapper {
 
     enum Type {
         X509("/x509/map"),
-        OAUTH2("/oauth2/map"),
         OIDC("/dn");
 
         @Getter
