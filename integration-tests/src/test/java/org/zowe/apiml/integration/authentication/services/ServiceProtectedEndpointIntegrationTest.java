@@ -39,7 +39,7 @@ import static org.hamcrest.core.Is.is;
  */
 @zOSMFAuthTest
 class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstances {
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
@@ -99,7 +99,7 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 String dsname2 = "SYS1.PROCLIB";
 
                 given()
-                    .auth().preemptive().basic(USERNAME, PASSWORD)
+                    .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                     .header("X-CSRF-ZOSMF-HEADER", "zosmf")
                 .when()
                     .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))

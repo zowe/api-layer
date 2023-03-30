@@ -66,7 +66,7 @@ public class SecurityUtils {
     private final static int gatewayPort = serviceConfiguration.getPort();
 
     public final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    public final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
     public final static String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
@@ -98,11 +98,11 @@ public class SecurityUtils {
         return gatewayToken(gatewayLoginEndpoint, USERNAME, PASSWORD);
     }
 
-    public static String gatewayToken(String username, String password) {
+    public static String gatewayToken(String username, char[] password) {
         return gatewayToken(HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN), username, password);
     }
 
-    public static String gatewayToken(URI gatewayLoginEndpoint, String username, String password) {
+    public static String gatewayToken(URI gatewayLoginEndpoint, String username, char[] password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();

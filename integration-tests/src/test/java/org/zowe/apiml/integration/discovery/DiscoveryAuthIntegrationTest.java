@@ -39,7 +39,7 @@ class DiscoveryAuthIntegrationTest implements TestWithStartedInstances {
     private final static String COOKIE = "apimlAuthenticationToken";
     private String scheme;
     private String username;
-    private String password;
+    private char[] password;
     private String host;
     private int port;
 

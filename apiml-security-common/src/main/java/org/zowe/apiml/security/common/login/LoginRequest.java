@@ -10,50 +10,59 @@
 
 package org.zowe.apiml.security.common.login;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.Authentication;
+
+import java.util.Arrays;
+
+import static org.zowe.apiml.security.SecurityUtils.readPassword;
 
 /**
  * Represents the login JSON with credentials
  */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class LoginRequest {
+
     private String username;
-    private String password;
-    private String newPassword;
+    private char[] password;
+    private char[] newPassword;
 
-    public LoginRequest(String username, String password) {
+    public LoginRequest(String username, char[] password) {
         this.username = username;
         this.password = password;
     }
 
-    public LoginRequest(String username, String password, String newPassword) {
-        this.username = username;
-        this.password = password;
-        this.newPassword = newPassword;
-    }
-
-    public static String getPassword(Authentication authentication) {
-        String password;
+    public static char[] getPassword(Authentication authentication) {
         if (authentication.getCredentials() instanceof LoginRequest) {
             LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
-            password = loginRequest.getPassword();
-        } else {
-            password = (String) authentication.getCredentials();
+            return readPassword(loginRequest.getPassword());
         }
-        return password;
+
+        return readPassword(authentication.getCredentials());
     }
 
-    public static String getNewPassword(Authentication authentication) {
-        String password;
+    public static char[] getNewPassword(Authentication authentication) {
         if (authentication.getCredentials() instanceof LoginRequest) {
             LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
-            password = loginRequest.getNewPassword();
-        } else {
-            password = null;
+            return readPassword(loginRequest.getNewPassword());
         }
-        return password;
+        return null;
     }
+
+    public void evictSensitiveData() {
+        if (this.password != null) {
+            Arrays.fill(this.password, (char) 0);
+            this.password = null;
+        }
+
+        if (this.newPassword != null) {
+            Arrays.fill(this.newPassword, (char) 0);
+            this.newPassword = null;
+        }
+    }
+
 }

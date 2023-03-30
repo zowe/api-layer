@@ -38,7 +38,7 @@ public class ApiCatalogStandaloneTest {
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/apidoc/service2/org.zowe v2.0.0";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
+    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
 
     private String baseHost;
 
@@ -114,7 +114,7 @@ public class ApiCatalogStandaloneTest {
             void givenBasicAuthenticationIsProvided() {
                 given()
                     .auth()
-                        .basic(USERNAME, PASSWORD)
+                        .basic(USERNAME, new String(PASSWORD))
                     .when()
                         .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
                     .then()

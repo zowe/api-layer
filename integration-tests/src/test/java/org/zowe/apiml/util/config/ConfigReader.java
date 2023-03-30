@@ -47,7 +47,7 @@ public class ConfigReader {
                         configuration = mapper.readValue(configFile, EnvironmentConfiguration.class);
                     } catch (IOException e) {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
-                        Credentials credentials = new Credentials("user", "user");
+                        Credentials credentials = new Credentials("user", "user".toCharArray());
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", ROUTED_SERVICE);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
@@ -84,7 +84,7 @@ public class ConfigReader {
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
-                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", configuration.getCredentials().getPassword()));
+                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", new String(configuration.getCredentials().getPassword())).toCharArray());
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));

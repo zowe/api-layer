@@ -45,7 +45,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @GeneralAuthenticationTest
 class ApiCatalogAuthenticationTest {
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     private static final String CATALOG_SERVICE_ID = "apicatalog";
@@ -59,7 +59,7 @@ class ApiCatalogAuthenticationTest {
     private final static String COOKIE = "apimlAuthenticationToken";
     private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
     private final static String INVALID_USERNAME = "incorrectUser";
-    private final static String INVALID_PASSWORD = "incorrectPassword";
+    private final static char[] INVALID_PASSWORD = "incorrectPassword".toCharArray();
 
     private static String apiCatalogServiceUrl = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUrl();
 
@@ -114,7 +114,7 @@ class ApiCatalogAuthenticationTest {
             void givenValidBasicAuthentication(String endpoint, Request request) {
                 request.execute(
                         given()
-                            .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                            .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
                             .when(),
                         endpoint
                     )
@@ -142,7 +142,7 @@ class ApiCatalogAuthenticationTest {
                 request.execute(
                         given()
                             .config(SslContext.clientCertApiml)
-                            .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                            .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
                             .when(),
                         endpoint
                     )
@@ -179,7 +179,7 @@ class ApiCatalogAuthenticationTest {
 
                 request.execute(
                         given()
-                            .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
+                            .auth().preemptive().basic(INVALID_USERNAME, new String(INVALID_PASSWORD))
                             .when(),
                         endpoint
                     )
@@ -254,7 +254,7 @@ class ApiCatalogAuthenticationTest {
                     request.execute(
                             given()
                                 .config(SslContext.clientCertApiml)
-                                .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                                .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
                                 .when(),
                             endpoint
                         )

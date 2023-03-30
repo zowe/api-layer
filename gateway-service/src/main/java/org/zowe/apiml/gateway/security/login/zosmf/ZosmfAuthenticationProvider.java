@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,8 +48,8 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-        final String newPassword = LoginRequest.getNewPassword(authentication);
-        if (StringUtils.isNotEmpty(newPassword)) {
+        final char[] newPassword = LoginRequest.getNewPassword(authentication);
+        if (ArrayUtils.isNotEmpty(newPassword)) {
             zosmfService.changePassword(authentication);
             authentication = new UsernamePasswordAuthenticationToken(user, newPassword);
         }

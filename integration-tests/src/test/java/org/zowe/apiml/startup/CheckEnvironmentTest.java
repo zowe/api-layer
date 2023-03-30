@@ -25,7 +25,7 @@ import static org.hamcrest.core.Is.is;
 class CheckEnvironmentTest {
 
     private String username;
-    private String password;
+    private char[] password;
     private String zosmfHost;
     private int zosmfPort;
     private String zosmfAuthEndpoint;
@@ -50,7 +50,7 @@ class CheckEnvironmentTest {
         // login with Basic and get LTPA
         String ltpa2 =
             given()
-                .auth().preemptive().basic(username, password)
+                .auth().preemptive().basic(username, new String(password))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
                 .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
@@ -72,7 +72,7 @@ class CheckEnvironmentTest {
 
         // login with Basic and get JWT
         String basicJWT =
-            given().auth().preemptive().basic(username, password)
+            given().auth().preemptive().basic(username, new String(password))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
                 .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))

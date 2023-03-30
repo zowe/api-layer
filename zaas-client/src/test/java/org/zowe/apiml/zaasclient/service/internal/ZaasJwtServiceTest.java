@@ -194,7 +194,7 @@ class ZaasJwtServiceTest {
     void givenExpiredPassword_whenLogin_thenThrowException() throws IOException {
         mockHttpClient(401, EXPIRED_PASSWORD_RESPONSE);
         zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_PASSWORD, "The specified password is expired",
-            () -> zaasJwtService.login("user", "password"));
+            () -> zaasJwtService.login("user", "password".toCharArray()));
     }
 
     @Test

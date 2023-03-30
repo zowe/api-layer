@@ -11,9 +11,8 @@
 package org.zowe.apiml.security.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,6 +29,7 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.io.IOException;
@@ -58,16 +58,14 @@ public class GatewaySecurityService {
      * @param password Password
      * @return Valid JWT token for the supplied credentials
      */
-    public Optional<String> login(String username, String password, String newPassword) {
+    public Optional<String> login(String username, char[] password, char[] newPassword) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
-        ObjectNode loginRequest = objectMapper.createObjectNode();
-        loginRequest.put("username", username);
-        loginRequest.put("password", password);
-        if (StringUtils.isNotEmpty(newPassword)) {
-            loginRequest.put("newPassword", newPassword);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        if (!ArrayUtils.isEmpty(newPassword)) {
+            loginRequest.setNewPassword(newPassword);
         }
         try {
             HttpPost post = new HttpPost(uri);
@@ -89,6 +87,8 @@ public class GatewaySecurityService {
             return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
         } catch (IOException e) {
             responseHandler.handleException(e);
+        } finally {
+            loginRequest.evictSensitiveData();
         }
         return Optional.empty();
     }

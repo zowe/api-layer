@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.security.SecurityUtils.readPassword;
 
 @GeneralAuthenticationTest
 class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
@@ -36,9 +37,9 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static char[] PASSWORD = readPassword(ConfigReader.environmentConfiguration().getCredentials().getPassword());
     private final static String INVALID_USERNAME = "incorrectUser";
-    private final static String INVALID_PASSWORD = "incorrectPassword";
+    private final static char[] INVALID_PASSWORD = "incorrectPassword".toCharArray();
 
     private final static URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(CATALOG_SERVICE_ID + CATALOG_PREFIX + LOGIN_ENDPOINT);
 

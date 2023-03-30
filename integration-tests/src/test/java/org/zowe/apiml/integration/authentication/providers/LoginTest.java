@@ -57,9 +57,9 @@ class LoginTest implements TestWithStartedInstances {
     public static final URI LOGIN_ENDPOINT_URL_OLD_FORMAT = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN_OLD_FORMAT);
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
-    private final static String INVALID_PASSWORD = "incorrectPassword";
+    private final static char[] INVALID_PASSWORD = "incorrectPassword".toCharArray();
 
     protected static URI[] loginUrlsSource() {
         return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
@@ -69,7 +69,7 @@ class LoginTest implements TestWithStartedInstances {
         return USERNAME;
     }
 
-    public String getPassword() {
+    public char[] getPassword() {
         return PASSWORD;
     }
 
@@ -111,7 +111,7 @@ class LoginTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInHeader(URI loginUrl) {
                 String token = given()
-                    .auth().preemptive().basic(getUsername(), getPassword())
+                    .auth().preemptive().basic(getUsername(), new String(getPassword()))
                     .contentType(JSON)
                 .when()
                     .post(loginUrl)
@@ -237,7 +237,7 @@ class LoginTest implements TestWithStartedInstances {
     private static Stream<Arguments> testLoginFactCombinationsSource() {
 
         LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD);
-        LoginRequest incorrectUser = new LoginRequest("aaa", "aaa");
+        LoginRequest incorrectUser = new LoginRequest("aaa", "aaa".toCharArray());
         URI loginNew = LOGIN_ENDPOINT_URL;
         URI loginOld = LOGIN_ENDPOINT_URL_OLD_FORMAT;
 

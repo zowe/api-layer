@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Arrays;
+
 /**
  * Represents the change password body request in JSON format
  */
@@ -23,13 +25,26 @@ public class ChangePasswordRequest {
     @JsonProperty("userID")
     private String username;
     @JsonProperty("oldPwd")
-    private String password;
+    private char[] password;
     @JsonProperty("newPwd")
-    private String newPassword;
+    private char[] newPassword;
 
     public ChangePasswordRequest(LoginRequest loginRequest) {
         this.username = loginRequest.getUsername();
         this.password = loginRequest.getPassword();
         this.newPassword = loginRequest.getNewPassword();
     }
+
+    public void evictSensitiveData() {
+        if (this.password != null) {
+            Arrays.fill(this.password, (char) 0);
+            this.password = null;
+        }
+
+        if (this.newPassword != null) {
+            Arrays.fill(this.newPassword, (char) 0);
+            this.newPassword = null;
+        }
+    }
+
 }

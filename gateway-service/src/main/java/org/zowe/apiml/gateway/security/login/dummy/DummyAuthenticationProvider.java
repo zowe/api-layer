@@ -24,6 +24,8 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import static org.zowe.apiml.security.SecurityUtils.readPassword;
+
 /**
  * Authentication provider for development purposes
  * <p>
@@ -55,11 +57,11 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
 
         try {
-            String password;
+            char[] password;
             if (authentication.getCredentials() instanceof LoginRequest) {
                 password = ((LoginRequest) authentication.getCredentials()).getPassword();
             } else {
-                password = (String) authentication.getCredentials();
+                password = readPassword(authentication.getCredentials());
             }
 
             authentication = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), password);
