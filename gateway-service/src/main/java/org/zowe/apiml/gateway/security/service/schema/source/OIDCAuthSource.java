@@ -41,14 +41,4 @@ public class OIDCAuthSource implements AuthSource {
 
     @Setter
     private String distributedId;
-
-    @RequiredArgsConstructor
-    @Getter
-    @EqualsAndHashCode
-    public static class Parsed implements AuthSource.Parsed {
-        private final String userId;
-        private final Date creation;
-        private final Date expiration;
-        private final AuthSource.Origin origin;
-    }
 }

@@ -90,7 +90,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
      * @param mapper     instance of {@link AuthenticationMapper} to use for parsing.
      * @return parsed authentication source.
      */
-    private OIDCAuthSource.Parsed parseOIDCToken(OIDCAuthSource oidcAuthSource, AuthenticationMapper mapper) {
+    private AuthSource.Parsed parseOIDCToken(OIDCAuthSource oidcAuthSource, AuthenticationMapper mapper) {
         String token = oidcAuthSource.getRawSource();
 
         String mappedUser = mapper.mapToMainframeUserId(oidcAuthSource);
@@ -98,7 +98,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         QueryResponse response = authenticationService.parseJwtToken(token);
 
         AuthSource.Origin origin = AuthSource.Origin.valueByIssuer(response.getSource().name());
-        return new OIDCAuthSource.Parsed(mappedUser, response.getCreation(), response.getExpiration(), origin);
+        return new ParsedTokenAuthSource(mappedUser, response.getCreation(), response.getExpiration(), origin);
     }
 
     //this method should be removed from the unrelated auth sources
