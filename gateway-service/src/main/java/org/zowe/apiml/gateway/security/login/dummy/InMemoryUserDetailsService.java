@@ -38,6 +38,11 @@ public class InMemoryUserDetailsService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private char[] toCharArray(String i) {
+        if (i == null) return new char[0];
+        return i.toCharArray();
+    }
+
     /**
      * Find user by username and return information
      *
@@ -49,8 +54,8 @@ public class InMemoryUserDetailsService implements UserDetailsService {
 
         // Hard coding the users. All passwords must be encoded.
         final List<AppUser> users = Arrays.asList(
-            new AppUser(1, "user", passwordEncoder.encode("user").toCharArray()),
-            new AppUser(2, "expire", passwordEncoder.encode("expire").toCharArray())
+            new AppUser(1, "user", toCharArray(passwordEncoder.encode("user"))),
+            new AppUser(2, "expire", toCharArray(passwordEncoder.encode("expire")))
         );
 
         return users.stream()
