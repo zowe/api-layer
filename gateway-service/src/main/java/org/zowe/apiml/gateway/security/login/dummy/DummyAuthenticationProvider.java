@@ -57,11 +57,16 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
 
         try {
-            char[] password;
+            /**
+             * this implementation is just for testing purposes, therefore it is not necessary to use only array of
+             * characters. It is pretty complicated once tests use BCrypt
+             */
+            String password;
             if (authentication.getCredentials() instanceof LoginRequest) {
-                password = ((LoginRequest) authentication.getCredentials()).getPassword();
+                LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+                password = new String(loginRequest.getPassword());
             } else {
-                password = readPassword(authentication.getCredentials());
+                password = new String(readPassword(authentication.getCredentials()));
             }
 
             authentication = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), password);
