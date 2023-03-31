@@ -407,7 +407,7 @@ public class AuthenticationService {
     /**
      * Extract the OIDC token from the request.
      * @param request http request
-     * @return the OIDC token from different supported sources: cookie, query parameter, body or header.
+     * @return the OIDC token from different supported sources: cookie or header.
      */
     public Optional<String> getOIDCTokenFromRequest(@NonNull HttpServletRequest request) {
         Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNameOIDC());
