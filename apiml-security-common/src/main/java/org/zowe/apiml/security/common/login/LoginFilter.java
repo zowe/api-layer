@@ -163,7 +163,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
         try {
             credentials = Base64.getDecoder().decode(base64Credentials);
             int index = ArrayUtils.indexOf(credentials, (byte) ':');
-            if (index > 0) {
+            if (index >= 0) {
                 byte[] password = null;
                 char[] passwordChars;
                 try {
