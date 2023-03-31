@@ -68,7 +68,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
     ZaasClient tokenService;
 
     private static String getAuthHeader(String userName, char[] password) {
-        String auth = userName + ":" + new String(password);
+        String auth = userName + ":" + (password == null ? null : new String(password));
         byte[] encodedAuth = Base64.encodeBase64(
             auth.getBytes(StandardCharsets.ISO_8859_1));
         return "Basic " + new String(encodedAuth);
