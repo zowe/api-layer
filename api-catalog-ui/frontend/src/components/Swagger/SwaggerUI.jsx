@@ -11,6 +11,7 @@ import { Component } from 'react';
 import * as React from 'react';
 import SwaggerUiReact, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
+import { Buffer } from 'buffer';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 
 function transformSwaggerToCurrentHost(swagger) {
@@ -84,6 +85,7 @@ export default class SwaggerUI extends Component {
     });
 
     retrieveSwagger = () => {
+        window.Buffer = window.Buffer || Buffer;
         const { selectedService, selectedVersion } = this.props;
         try {
             // If no version selected use the default apiDoc
