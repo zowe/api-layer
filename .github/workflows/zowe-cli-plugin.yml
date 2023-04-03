@@ -1,12 +1,12 @@
 name: zowe-cli-plugin
 
-on: [push, pull_request, workflow_dispatch]
-#    push:
-#        branches: [ master, v2.x.x ]
-#    pull_request:
-#        branches: [ master, v2.x.x ]
-#    patch:
-#        branches: [ master, v2.x.x ]
+on:
+    push:
+        branches: [ master, v2.x.x ]
+    pull_request:
+        branches: [ master, v2.x.x ]
+    workflow_dispatch:
+
 
 jobs:
     release:
