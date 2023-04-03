@@ -39,7 +39,7 @@ import static org.hamcrest.core.Is.is;
  */
 @zOSMFAuthTest
 class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstances {
-    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();

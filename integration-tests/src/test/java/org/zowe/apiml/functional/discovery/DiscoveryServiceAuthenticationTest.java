@@ -30,7 +30,7 @@ import static org.hamcrest.core.Is.is;
 @GeneralAuthenticationTest
 class DiscoveryServiceAuthenticationTest {
 
-    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private static final String ACTUATOR_ENDPOINT = "/application";
 

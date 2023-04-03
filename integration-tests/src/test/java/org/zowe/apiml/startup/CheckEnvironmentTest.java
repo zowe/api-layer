@@ -25,7 +25,7 @@ import static org.hamcrest.core.Is.is;
 class CheckEnvironmentTest {
 
     private String username;
-    private char[] password;
+    private String password;
     private String zosmfHost;
     private int zosmfPort;
     private String zosmfAuthEndpoint;

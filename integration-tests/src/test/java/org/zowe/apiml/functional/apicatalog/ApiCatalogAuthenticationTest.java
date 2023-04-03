@@ -45,7 +45,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @GeneralAuthenticationTest
 class ApiCatalogAuthenticationTest {
-    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     private static final String CATALOG_SERVICE_ID = "apicatalog";
@@ -59,7 +59,7 @@ class ApiCatalogAuthenticationTest {
     private final static String COOKIE = "apimlAuthenticationToken";
     private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
     private final static String INVALID_USERNAME = "incorrectUser";
-    private final static char[] INVALID_PASSWORD = "incorrectPassword".toCharArray();
+    private final static String INVALID_PASSWORD = "incorrectPassword";
 
     private static String apiCatalogServiceUrl = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUrl();
 

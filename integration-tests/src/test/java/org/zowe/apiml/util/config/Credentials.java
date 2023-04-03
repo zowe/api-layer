@@ -21,9 +21,9 @@ public class Credentials {
 
     private String key;
     private String user;
-    private char[] password;
+    private String password;
 
-    public Credentials(String user, char[] password) {
+    public Credentials(String user, String password) {
         this.user = user;
         this.password = password;
     }

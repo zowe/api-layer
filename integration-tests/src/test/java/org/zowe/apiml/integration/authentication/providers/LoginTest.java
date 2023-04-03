@@ -57,9 +57,9 @@ class LoginTest implements TestWithStartedInstances {
     public static final URI LOGIN_ENDPOINT_URL_OLD_FORMAT = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN_OLD_FORMAT);
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
-    private final static char[] INVALID_PASSWORD = "incorrectPassword".toCharArray();
+    private final static String INVALID_PASSWORD = "incorrectPassword";
 
     protected static URI[] loginUrlsSource() {
         return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
@@ -69,7 +69,7 @@ class LoginTest implements TestWithStartedInstances {
         return USERNAME;
     }
 
-    public char[] getPassword() {
+    public String getPassword() {
         return PASSWORD;
     }
 
@@ -90,7 +90,7 @@ class LoginTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenValidCredentialsInBody {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInBody(URI loginUrl) {
-                LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+                LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword().toCharArray());
 
                 Cookie cookie = given()
                     .contentType(JSON)
@@ -136,7 +136,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInBody(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
 
-                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD.toCharArray());
 
                 given()
                     .contentType(JSON)
@@ -155,7 +155,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInHeader(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
 
-                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD.toCharArray());
 
                 given()
                     .contentType(JSON)
@@ -217,7 +217,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenValidCredentialsInJsonBody(URI loginUrl) {
                 String expectedMessage = "Authentication method 'GET' is not supported for URL '" + getPath(loginUrl) + "'";
 
-                LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+                LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword().toCharArray());
 
                 given()
                     .contentType(JSON)
@@ -234,9 +234,10 @@ class LoginTest implements TestWithStartedInstances {
     }
     //@formatter:on
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> testLoginFactCombinationsSource() {
 
-        LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD);
+        LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD.toCharArray());
         LoginRequest incorrectUser = new LoginRequest("aaa", "aaa".toCharArray());
         URI loginNew = LOGIN_ENDPOINT_URL;
         URI loginOld = LOGIN_ENDPOINT_URL_OLD_FORMAT;

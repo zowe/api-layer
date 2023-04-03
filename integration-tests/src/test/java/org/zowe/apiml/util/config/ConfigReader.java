@@ -24,7 +24,7 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 @Slf4j
 public class ConfigReader {
 
-    private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+    private static final String PASSWORD = "password";
     private static String configurationFile;
 
     static {
@@ -47,7 +47,7 @@ public class ConfigReader {
                         configuration = mapper.readValue(configFile, EnvironmentConfiguration.class);
                     } catch (IOException e) {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
-                        Credentials credentials = new Credentials("user", "user".toCharArray());
+                        Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", ROUTED_SERVICE);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
@@ -55,13 +55,13 @@ public class ConfigReader {
 
                         TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
                             .keyAlias("localhost")
-                            .keyPassword(PASSWORD)
+                            .keyPassword(PASSWORD.toCharArray())
                             .keyStoreType("PKCS12")
                             .keyStore("../keystore/localhost/localhost.keystore.p12")
-                            .keyStorePassword(PASSWORD)
+                            .keyStorePassword(PASSWORD.toCharArray())
                             .trustStoreType("PKCS12")
                             .trustStore("../keystore/localhost/localhost.truststore.p12")
-                            .trustStorePassword(PASSWORD)
+                            .trustStorePassword(PASSWORD.toCharArray())
                             .build();
 
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
@@ -84,7 +84,7 @@ public class ConfigReader {
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
-                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", new String(configuration.getCredentials().getPassword())).toCharArray());
+                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", new String(configuration.getCredentials().getPassword())));
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));

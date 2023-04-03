@@ -43,7 +43,7 @@ class QueryTest implements TestWithStartedInstances {
     private final static String BASE_PATH = "/gateway/api/v1";
     private final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     private final static String QUERY_ENDPOINT = "/auth/query";
-    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String COOKIE = "apimlAuthenticationToken";
 

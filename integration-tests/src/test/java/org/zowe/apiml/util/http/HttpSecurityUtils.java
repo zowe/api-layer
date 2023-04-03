@@ -31,12 +31,12 @@ public class HttpSecurityUtils {
     public static String getCookieForGateway() throws IOException {
         Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
         String user = credentials.getUser();
-        char[] password = credentials.getPassword();
+        String password = credentials.getPassword();
         URI uri = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN);
         return getCookie(uri, user, password);
     }
 
-    private static String getCookie(URI loginUrl, String user, char[] password) throws IOException {
+    private static String getCookie(URI loginUrl, String user, String password) throws IOException {
         HttpPost request = new HttpPost(loginUrl);
         HttpClient client = HttpClientUtils.client();
         String credentials = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", user, new String(password));
