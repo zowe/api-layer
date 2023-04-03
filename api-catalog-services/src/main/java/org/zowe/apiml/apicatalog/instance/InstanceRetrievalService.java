@@ -82,14 +82,14 @@ public class InstanceRetrievalService {
         // iterate over list of discovery services, return at first success
         for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
             // call Eureka REST endpoint to fetch single or all Instances
-                try {
-                    String responseBody = queryDiscoveryForInstances(requestInfo);
-                    if (responseBody != null) {
-                        return extractSingleInstanceFromApplication(serviceId, responseBody);
-                    }
-                } catch (Exception e) {
-                    log.debug("Error getting instance info from {}, error message: {}", requestInfo.getLeft(), e.getMessage());
+            try {
+                String responseBody = queryDiscoveryForInstances(requestInfo);
+                if (responseBody != null) {
+                    return extractSingleInstanceFromApplication(serviceId, responseBody);
                 }
+            } catch (Exception e) {
+                log.debug("Error getting instance info from {}, error message: {}", requestInfo.getLeft(), e.getMessage());
+            }
         }
         String msg = "An error occurred when trying to get instance info for:  " + serviceId;
         throw new InstanceInitializationException(msg);
@@ -119,7 +119,7 @@ public class InstanceRetrievalService {
     /**
      * Parse information from the response and extract the Applications object which contains all the registry information returned by eureka server
      *
-     * @param responseBody    the http response body
+     * @param responseBody the http response body
      * @return Applications object that wraps all the registry information
      */
     private Applications extractApplications(String responseBody) {
@@ -149,21 +149,23 @@ public class InstanceRetrievalService {
         }
         CloseableHttpResponse response = httpClient.execute(httpGet);
         final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+        final HttpEntity responseEntity = response.getEntity();
+        String responseBody = "";
+        if (responseEntity != null) {
+            responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+        }
         if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
-            final HttpEntity responseEntity = response.getEntity();
-            if (responseEntity != null) {
-                return EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-            }
+            return responseBody;
         }
         apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
-            statusCode, response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : "",
+            statusCode, response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody,
             requestInfo.getLeft());
         return null;
     }
 
     /**
-     * @param serviceId the service to search for
-     * @param responseBody  the fetch attempt response body
+     * @param serviceId    the service to search for
+     * @param responseBody the fetch attempt response body
      * @return service instance
      */
     private InstanceInfo extractSingleInstanceFromApplication(String serviceId, String responseBody) {
