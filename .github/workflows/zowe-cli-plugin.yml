@@ -5,6 +5,8 @@ on:
         branches: [ master, v2.x.x ]
     pull_request:
         branches: [ master, v2.x.x ]
+    patch:
+        branches: [ master, v2.x.x ]
 
 jobs:
     release:
@@ -44,6 +46,7 @@ jobs:
               run: |
                   cd zowe-cli-id-federation-plugin
                   npm run build
+                  npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
 
             - uses: zowe-actions/octorelease@master
               with:
