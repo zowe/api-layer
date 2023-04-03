@@ -89,7 +89,8 @@ public class OIDCTokenProvider implements OIDCProvider {
 
         String credentials = clientId + ":" + clientSecret;
         byte[] base64encoded = Base64.getEncoder().encode(credentials.getBytes());
-        post.setHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(base64encoded)));
+        final String headerValue = "Basic " + new String(base64encoded);
+        post.setHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, headerValue));
         post.setHeader(new BasicHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE));
         post.setHeader(new BasicHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE));
 
