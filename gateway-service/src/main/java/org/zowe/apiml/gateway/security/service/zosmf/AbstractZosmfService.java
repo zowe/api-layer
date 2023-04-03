@@ -89,13 +89,13 @@ public abstract class AbstractZosmfService {
         final byte[] credentials = new byte[userByteArray.length + 1 + password.length];
 
         int j = 0;
-        for (int i = 0; i < userByteArray.length; i++) {
-            credentials[j++] = userByteArray[i];
+        for (byte b : userByteArray) {
+            credentials[j++] = b;
         }
         credentials[j++] = (byte) ':';
         try {
-            for (int i = 0; i < password.length; i++) {
-                credentials[j++] = (byte) password[i];
+            for (char c : password) {
+                credentials[j++] = (byte) c;
             }
 
             return "Basic " + Base64.getEncoder().encodeToString(credentials);
