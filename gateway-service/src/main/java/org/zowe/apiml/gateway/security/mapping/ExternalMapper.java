@@ -73,11 +73,14 @@ public abstract class ExternalMapper {
             HttpResponse httpResponse = httpClientProxy.execute(httpPost);
 
             final int statusCode = httpResponse.getStatusLine() != null ? httpResponse.getStatusLine().getStatusCode() : 0;
+            String response = "";
+            if (httpResponse.getEntity() != null) {
+                response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+            }
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                log.error("Unexpected response from external mapper. Status: {}", httpResponse.getStatusLine());
+                log.error("Unexpected response from external mapper. Status: {} body: {}", httpResponse.getStatusLine(), response);
                 return null;
             }
-            String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             log.debug("External mapper API returned: {}", response);
             if (response == null || response.isEmpty()) {
                 log.error("Unexpected empty response from external mapper.");
