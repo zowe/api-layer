@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.mapping.model.OIDCRequest;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -25,6 +26,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import java.io.UnsupportedEncodingException;
 
 @Slf4j
+@Component("oidcMapper")
 public class OIDCExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
     @Value("${apiml.security.oidc.registry}")
