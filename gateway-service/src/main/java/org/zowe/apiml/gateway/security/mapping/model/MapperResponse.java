@@ -36,7 +36,7 @@ public class MapperResponse {
     }
 
     public void validateOIDCResults() {
-        if (rc == 8 || safRc == 8 || racfRc == 8) {
+        if (rc == 8 && safRc == 8 && racfRc == 8) {
             if (racfRs == 44) {
                 throw new OIDCExternalMapperAuthException("The Registry Name or supplied distributed identity is all" +
                     " blanks (x'20'), all nulls (x'00'), or a combination of blanks and nulls.", this);
@@ -48,6 +48,7 @@ public class MapperResponse {
             }
         }
 
+        // Some codes may be 4 and the result is still valid. But deny unless we know it for sure
         if (rc > 0 || safRc > 0 || racfRc > 0 || racfRs > 0) {
             throw new OIDCExternalMapperAuthException("Failed to map distributed to mainframe identity.", this);
         }
