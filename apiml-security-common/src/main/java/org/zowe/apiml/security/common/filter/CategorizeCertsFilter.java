@@ -15,12 +15,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.*;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -53,7 +57,6 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
             request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, notCertificateForClientAuth));
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
-            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE));
         }
     }
 
@@ -61,9 +64,9 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * This filter removes all certificates in attribute "javax.servlet.request.X509Certificate" which has no relations
      * with private certificate of apiml and then call original implementation (without "foreign" certificates)
      *
-     * @param request  request to process
-     * @param response response of call
-     * @param filterChain    chain of filters to evaluate
+     * @param request     request to process
+     * @param response    response of call
+     * @param filterChain chain of filters to evaluate
      **/
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
