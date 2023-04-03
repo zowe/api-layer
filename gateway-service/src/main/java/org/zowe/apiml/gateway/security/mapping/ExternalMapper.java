@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -47,12 +48,20 @@ public abstract class ExternalMapper {
     protected static final ObjectMapper objectMapper = new ObjectMapper();
 
     //TODO: shouldn't we rename it (remove X509) (without breaking change)
-    @Value("${apiml.security.x509.externalMapperUrl}")
+    @Value("${apiml.security.x509.externalMapperUrl:}")
     private String externalMapperUrl;
-    @Value("${apiml.security.x509.externalMapperUser}")
+    @Value("${apiml.security.x509.externalMapperUser:}")
     private String externalMapperUser;
 
     MapperResponse callExternalMapper(@NotNull HttpEntity payload) {
+        if (StringUtils.isBlank(externalMapperUrl)) {
+            log.error("Configuration of the external mapper URL is empty.");
+            return null;
+        }
+        if (StringUtils.isBlank(externalMapperUser)) {
+            log.error("Configuration of the external mapper user is empty.");
+            return null;
+        }
         try {
             HttpPost httpPost = new HttpPost(new URI(externalMapperUrl + mapperType.getUrlSuffix()));
             httpPost.setEntity(payload);

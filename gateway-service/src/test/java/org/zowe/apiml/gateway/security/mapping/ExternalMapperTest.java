@@ -191,14 +191,38 @@ class ExternalMapperTest {
     }
 
     @Nested
-    class GivenInvalidMapperUrl {
-        @BeforeEach
-        void setup() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUrl","%");
-        }
-
+    class GivenInvalidMapperSetup {
         @Test
-        void thenResponseIsNull() {
+        void whenMapperUrlNull_thenResponseIsNull() {
+            ReflectionTestUtils.setField(mapper,"externalMapperUrl",null);
+            HttpEntity payload = new BasicHttpEntity();
+            MapperResponse response = mapper.callExternalMapper(payload);
+            assertNull(response);
+        }
+        @Test
+        void whenMapperUrlEmpty_thenResponseIsNull() {
+            ReflectionTestUtils.setField(mapper,"externalMapperUrl","");
+            HttpEntity payload = new BasicHttpEntity();
+            MapperResponse response = mapper.callExternalMapper(payload);
+            assertNull(response);
+        }
+        @Test
+        void whenMapperUrlInvalid_thenResponseIsNull() {
+            ReflectionTestUtils.setField(mapper,"externalMapperUrl","%");
+            HttpEntity payload = new BasicHttpEntity();
+            MapperResponse response = mapper.callExternalMapper(payload);
+            assertNull(response);
+        }
+        @Test
+        void whenMapperUserNull_thenResponseIsNull() {
+            ReflectionTestUtils.setField(mapper,"externalMapperUser",null);
+            HttpEntity payload = new BasicHttpEntity();
+            MapperResponse response = mapper.callExternalMapper(payload);
+            assertNull(response);
+        }
+        @Test
+        void whenMapperUserEmpty_thenResponseIsNull() {
+            ReflectionTestUtils.setField(mapper,"externalMapperUser","");
             HttpEntity payload = new BasicHttpEntity();
             MapperResponse response = mapper.callExternalMapper(payload);
             assertNull(response);
