@@ -18,7 +18,7 @@ import org.zowe.apiml.zss.model.OIDCRequest;
 public class OIDCProvider {
 
     public MapperResponse mapUserIdentity(OIDCRequest oidcRequest) {
-        if (!oidcRequest.getRegistry().isEmpty() || !oidcRequest.getDn().isEmpty()) {
+        if (oidcRequest.getRegistry().isEmpty() || oidcRequest.getDn().isEmpty()) {
             return new MapperResponse("", 8, 8, 8, 44);
         }
 
