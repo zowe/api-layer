@@ -12,10 +12,12 @@ package org.zowe.apiml.integration.authentication.oauth2;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.http.Header;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.integration.authentication.pat.ValidateRequestModel;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -24,11 +26,13 @@ import org.zowe.apiml.util.requests.Endpoints;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.mockito.ArgumentMatchers.isNotNull;
 
 @Tag("OktaOauth2Test")
 public class OktaOauth2Test {
 
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
+    public static final URI REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/request");
 
     @Nested
     class GivenValidOktaToken {
@@ -66,5 +70,22 @@ public class OktaOauth2Test {
         }
     }
 
+    @Nested
+    class GivenOktaTokenRequest {
+        private final String token = SecurityUtils.validOktaAccessToken();
+
+        @Test
+        void whenPassingInHeader_thenReturnInfo() {
+            RestAssured.useRelaxedHTTPSValidation();
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .when()
+                .get(REQUEST_ENDPOINT)
+                .then().body("headers.OIDC-TOKEN", isNotNull())
+                .statusCode(200);
+        }
+    }
 
 }
