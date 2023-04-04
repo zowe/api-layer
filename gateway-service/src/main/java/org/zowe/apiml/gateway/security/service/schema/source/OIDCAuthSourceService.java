@@ -24,6 +24,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -102,7 +103,12 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     private AuthSource.Parsed parseOIDCToken(OIDCAuthSource oidcAuthSource, AuthenticationMapper mapper) {
         String token = oidcAuthSource.getRawSource();
 
+        logger.log(MessageType.DEBUG, "Calling identity mapper to retrieve mainframe user id.");
         String mappedUser = mapper.mapToMainframeUserId(oidcAuthSource);
+        if (StringUtils.isEmpty(mappedUser)) {
+            logger.log(MessageType.DEBUG, "No mainframe user id retrieved. Cancel parsing of OIDC token.");
+            throw new TokenNotValidException("No mainframe identity found.");
+        }
         logger.log(MessageType.DEBUG, "Parsing OIDC token.");
         QueryResponse response = authenticationService.parseJwtToken(token);
 

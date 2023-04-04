@@ -14,8 +14,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.zowe.apiml.gateway.security.mapping.OIDCExternalMapperAuthException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,19 +39,19 @@ public class MapperResponse {
     public void validateOIDCResults() {
         if (rc == 8 && safRc == 8 && racfRc == 8) {
             if (racfRs == 44) {
-                throw new OIDCExternalMapperAuthException("The Registry Name or supplied distributed identity is all" +
-                    " blanks (x'20'), all nulls (x'00'), or a combination of blanks and nulls.", this);
+                log.debug("The Registry Name or supplied distributed identity is all" +
+                    " blanks (x'20'), all nulls (x'00'), or a combination of blanks and nulls. {}", this);
             }
             if (racfRs == 48) {
-                throw new OIDCExternalMapperAuthException("There is no distributed identity filter mapping the supplied" +
+                log.debug("There is no distributed identity filter mapping the supplied" +
                     " distributed identity to a SAF user ID, or the IDIDMAP SAF general resource class is not active or not" +
-                    " RACLISTed.", this);
+                    " RACLISTed. {}", this);
             }
         }
 
         // Some codes may be 4 and the result is still valid. But deny unless we know it for sure
         if (rc > 0 || safRc > 0 || racfRc > 0 || racfRs > 0) {
-            throw new OIDCExternalMapperAuthException("Failed to map distributed to mainframe identity.", this);
+            log.debug("Failed to map distributed to mainframe identity. {}", this);
         }
     }
 
