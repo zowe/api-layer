@@ -129,15 +129,10 @@ class ExternalMapperTest {
                 when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
             }
             @Test
-            void thenThrowException() {
+            void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
-                Exception exception = assertThrows(ExternalMapperException.class, () -> {
-                    mapper.callExternalMapper(payload);
-                });
-                String expectedMessage = "Unexpected response from the external identity mapper. Status: 400";
-                String actualMessage = exception.getMessage();
-
-                assertTrue(actualMessage.contains(expectedMessage));
+                MapperResponse response = mapper.callExternalMapper(payload);
+                assertNull(response);
             }
         }
 
@@ -148,15 +143,10 @@ class ExternalMapperTest {
                 when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_PROCESSING);
             }
             @Test
-            void thenThrowException() {
+            void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
-                Exception exception = assertThrows(ExternalMapperException.class, () -> {
-                    mapper.callExternalMapper(payload);
-                });
-                String expectedMessage = "Unexpected response from the external identity mapper. Status: 102";
-                String actualMessage = exception.getMessage();
-
-                assertTrue(actualMessage.contains(expectedMessage));
+                MapperResponse response = mapper.callExternalMapper(payload);
+                assertNull(response);
             }
         }
 
@@ -167,15 +157,10 @@ class ExternalMapperTest {
                 when(httpResponse.getStatusLine()).thenReturn(null);
             }
             @Test
-            void thenThrowException() {
+            void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
-                Exception exception = assertThrows(ExternalMapperException.class, () -> {
-                    mapper.callExternalMapper(payload);
-                });
-                String expectedMessage = "Unexpected response from the external identity mapper. Status: 0";
-                String actualMessage = exception.getMessage();
-
-                assertTrue(actualMessage.contains(expectedMessage));
+                MapperResponse response = mapper.callExternalMapper(payload);
+                assertNull(response);
             }
         }
 
@@ -186,15 +171,10 @@ class ExternalMapperTest {
                 when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("invalid content".getBytes()));
             }
             @Test
-            void thenThrowException() {
+            void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
-                Exception exception = assertThrows(ExternalMapperException.class, () -> {
-                    mapper.callExternalMapper(payload);
-                });
-                String expectedMessage = "Error occurred while communicating with external identity mapper";
-                String actualMessage = exception.getMessage();
-
-                assertTrue(actualMessage.contains(expectedMessage));
+                MapperResponse response = mapper.callExternalMapper(payload);
+                assertNull(response);
             }
         }
 
@@ -205,15 +185,10 @@ class ExternalMapperTest {
                 when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("".getBytes()));
             }
             @Test
-            void thenThrowException() {
+            void thenResponseIsNull() {
                 HttpEntity payload = new BasicHttpEntity();
-                Exception exception = assertThrows(ExternalMapperException.class, () -> {
-                    mapper.callExternalMapper(payload);
-                });
-                String expectedMessage = "Unexpected empty response";
-                String actualMessage = exception.getMessage();
-
-                assertTrue(actualMessage.contains(expectedMessage));
+                MapperResponse response = mapper.callExternalMapper(payload);
+                assertNull(response);
             }
         }
     }
@@ -225,33 +200,23 @@ class ExternalMapperTest {
         @ValueSource(strings = {"%", "https:\\\\"})
         @NullSource
         @EmptySource
-        void whenMapperUrlInvalid_thenThrowException(String url) {
+        void whenMapperUrlInvalid_thenResponseIsNull(String url) {
             ReflectionTestUtils.setField(mapper,"externalMapperUrl",url);
             HttpEntity payload = new BasicHttpEntity();
-            Exception exception = assertThrows(ExternalMapperException.class, () -> {
-                mapper.callExternalMapper(payload);
-            });
-
-            String expectedMessage = "Configuration error";
-            String actualMessage = exception.getMessage();
-
-            assertTrue(actualMessage.contains(expectedMessage));
+            MapperResponse response = mapper.callExternalMapper(payload);
+            assertNull(response);
+            verify(tokenCreationService, times(0)).createJwtTokenWithoutCredentials(anyString());
         }
 
         @ParameterizedTest
         @NullSource
         @EmptySource
-        void whenMapperUserInvalid_thenThrowException(String user) {
+        void whenMapperUserInvalid_thenResponseIsNull(String user) {
             ReflectionTestUtils.setField(mapper,"externalMapperUser",user);
             HttpEntity payload = new BasicHttpEntity();
-            Exception exception = assertThrows(ExternalMapperException.class, () -> {
-               mapper.callExternalMapper(payload);
-            });
-
-            String expectedMessage = "Configuration error";
-            String actualMessage = exception.getMessage();
-
-            assertTrue(actualMessage.contains(expectedMessage));
+            MapperResponse response = mapper.callExternalMapper(payload);
+            assertNull(response);
+            verify(tokenCreationService, times(0)).createJwtTokenWithoutCredentials(anyString());
         }
     }
 }

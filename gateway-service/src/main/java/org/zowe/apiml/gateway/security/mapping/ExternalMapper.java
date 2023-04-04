@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
 
 /**
  * Common implementation of an external mapper to call identity mapping API in the ZSS on mainframe.
@@ -56,10 +55,16 @@ public abstract class ExternalMapper {
 
     MapperResponse callExternalMapper(@NotNull HttpEntity payload) {
         if (StringUtils.isBlank(externalMapperUser)) {
-            throw new ExternalMapperException("Configuration error: External identity mapper user is empty.");
+            log.debug("Configuration error: External identity mapper user is not set.");
+            return null;
         }
         try {
-            HttpPost httpPost = new HttpPost(getMapperURI());
+            URI mapperUri = getMapperURI();
+            if (mapperUri == null) {
+                log.debug("Configuration error: Cannot construct the URL of the External identity mapper.");
+                return null;
+            }
+            HttpPost httpPost = new HttpPost(mapperUri);
             httpPost.setEntity(payload);
 
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
@@ -74,18 +79,17 @@ public abstract class ExternalMapper {
                 response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             }
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                String message = MessageFormat.format("Unexpected response from the external identity mapper. Status: {0} body: {1}",
-                    statusCode, response);
-                throw new ExternalMapperException(message);
+                log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                return null;
             }
             log.debug("External identity mapper API returned: {}", response);
-            if (StringUtils.isEmpty(response)) {
-                throw new ExternalMapperException("Unexpected empty response from external identity mapper.");
+            if (StringUtils.isNotEmpty(response)) {
+                return objectMapper.readValue(response, MapperResponse.class);
             }
-            return objectMapper.readValue(response, MapperResponse.class);
         } catch (IOException e) {
-            throw new ExternalMapperException("Error occurred while communicating with external identity mapper", e);
+            log.debug("Error occurred while communicating with external identity mapper", e);
         }
+        return null;
     }
 
     enum Type {
@@ -102,7 +106,7 @@ public abstract class ExternalMapper {
 
     private URI getMapperURI() {
         if (StringUtils.isBlank(externalMapperUrl)) {
-            throw new ExternalMapperException("Configuration error: External identity mapper URL is empty.");
+            log.debug("Configuration error: External identity mapper URL is not set.");
         } else {
             // do not introduce braking change - if externalMapperUrl for x509 has been already configured
             // with the /x509/map at the end then make sure to remove the suffix before
@@ -112,8 +116,9 @@ public abstract class ExternalMapper {
             try {
                 return new URI(url + mapperType.getUrlSuffix());
             } catch (URISyntaxException e) {
-                throw new ExternalMapperException("Configuration error: Failed to construct the external identity mapper URL.", e);
+                log.debug("Configuration error: Failed to construct the external identity mapper URL.", e);
             }
         }
+        return null;
     }
 }
