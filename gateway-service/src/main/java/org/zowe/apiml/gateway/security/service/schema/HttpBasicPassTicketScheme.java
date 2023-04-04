@@ -49,7 +49,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     private final AuthSourceService authSourceService;
     private final String cookieName;
     private final String patCookieName;
-    private final String oidcCookieName;
 
     @org.springframework.beans.factory.annotation.Value("${apiml.security.auth.passticket.customUserHeader:}")
     private String customUserHeader;
@@ -66,7 +65,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         this.authSourceService = authSourceService;
         cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
         patCookieName = authConfigurationProperties.getCookieProperties().getCookieNamePAT();
-        oidcCookieName = authConfigurationProperties.getCookieProperties().getCookieNameOIDC();
     }
 
     @Override
@@ -115,7 +113,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         final String value = "Basic " + encoded;
 //        passticket is valid only once, therefore this command needs to expire immediately and each call should generate new passticket
         long expiration = System.currentTimeMillis();
-        return new PassTicketCommand(value, cookieName, patCookieName, oidcCookieName, expiration, customUserHeader, customPassTicketHeader, userId, passTicket);
+        return new PassTicketCommand(value, cookieName, patCookieName, expiration, customUserHeader, customPassTicketHeader, userId, passTicket);
     }
 
     @Override
@@ -135,7 +133,6 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
         String authorizationValue;
         String cookieName;
         String patCookieName;
-        String oidcCookieName;
         Long expireAt;
         String customUserHeader;
         String customPassTicketHeader;
@@ -153,7 +150,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
                     context.addZuulRequestHeader(customUserHeader, userId);
                     context.addZuulRequestHeader(customPassTicketHeader, passTicket);
                 }
-                String[] cookiesToBeRemoved = new String[]{cookieName,patCookieName,oidcCookieName};
+                String[] cookiesToBeRemoved = new String[]{cookieName,patCookieName};
                 JwtCommand.removeCookie(context, cookiesToBeRemoved);
             }
         }

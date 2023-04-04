@@ -588,18 +588,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     @Nested
     class GivenOIDCTokenInTheRequestTest {
-        @Test
-        void givenTokenIsAvailableInCookie_thenGetFromCookie() {
-            String token = "oidcToken";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            request.setCookies(new Cookie(ApimlConstants.OIDC_COOKIE_AUTH_NAME, token));
-            Optional<String> result = authService.getOIDCTokenFromRequest(request);
-            assertTrue(result.isPresent());
-            assertEquals(token, result.get());
-        }
 
         @Test
-        void givenTokenNotPresentInCookie_thenGetFromHeader() {
+        void givenTokenIsPresent_thenGetFromHeader() {
             String token = "oidcToken";
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.addHeader(ApimlConstants.OIDC_HEADER_NAME, token);
