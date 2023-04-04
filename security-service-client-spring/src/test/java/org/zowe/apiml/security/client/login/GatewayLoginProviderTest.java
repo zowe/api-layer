@@ -52,7 +52,7 @@ class GatewayLoginProviderTest {
         class AuthenticationSuccess {
             @Test
             void givenValidLoginRequestWithUsernamePassword() {
-                when(gatewaySecurityService.login(USER, VALID_PASSWORD, null)).thenReturn(Optional.of(VALID_TOKEN));
+                when(gatewaySecurityService.login(USER, VALID_PASSWORD, new char[0])).thenReturn(Optional.of(VALID_TOKEN));
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, VALID_PASSWORD));
                 Authentication processedAuthentication = gatewayLoginProvider.authenticate(auth);

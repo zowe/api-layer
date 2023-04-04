@@ -32,8 +32,8 @@ class LoginRequestTest {
         }
 
         @Test
-        void returnNull() {
-            assertNull(LoginRequest.getNewPassword(auth));
+        void returnEmpty() {
+            assertEquals(0, LoginRequest.getNewPassword(auth).length);
         }
 
     }
