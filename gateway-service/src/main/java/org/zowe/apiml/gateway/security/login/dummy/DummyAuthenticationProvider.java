@@ -57,7 +57,7 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
 
         try {
-            /**
+            /*
              * this implementation is just for testing purposes, therefore it is not necessary to use only array of
              * characters. It is pretty complicated once tests use BCrypt
              */

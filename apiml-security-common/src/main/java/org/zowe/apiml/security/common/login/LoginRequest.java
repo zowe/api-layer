@@ -50,7 +50,7 @@ public class LoginRequest {
             LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
             return readPassword(loginRequest.getNewPassword());
         }
-        return null;
+        return new char[0];
     }
 
     public void evictSensitiveData() {

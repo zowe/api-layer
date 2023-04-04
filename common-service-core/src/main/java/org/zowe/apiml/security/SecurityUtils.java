@@ -266,7 +266,7 @@ public class SecurityUtils {
     }
 
     public static char[] readPassword(Object value) {
-        if (value == null) return null;
+        if (value == null) return new char[0];
         if (value instanceof char[]) {
             return (char[]) value;
         }
