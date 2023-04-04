@@ -47,15 +47,15 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             MapperResponse mapperResponse = callExternalMapper(payload);
 
             if (mapperResponse == null) {
-                throw new OIDCExternalMapperException("External identity mapper returned no response");
+                throw new ExternalMapperException("External identity mapper returned no response");
             }
             mapperResponse.validateOIDCResults();
 
             return mapperResponse.getUserId().trim();
         } catch (UnsupportedEncodingException e) {
-            throw new OIDCExternalMapperException("Unable to encode payload for identity mapping request", e);
+            throw new ExternalMapperException("Unable to encode payload for identity mapping request", e);
         } catch (JsonProcessingException e) {
-            throw new OIDCExternalMapperException("Unable to generate JSON payload for identity mapping request", e);
+            throw new ExternalMapperException("Unable to generate JSON payload for identity mapping request", e);
         }
     }
 

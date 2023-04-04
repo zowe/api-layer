@@ -15,14 +15,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class OIDCExternalMapperExceptionTest {
+class ExternalMapperExceptionTest {
     @Nested
     class GivenExceptionMessage {
 
         @Test
         void thenReturnMessage() {
             String message = "This is an error message";
-            OIDCExternalMapperException exception = new OIDCExternalMapperException(message);
+            ExternalMapperException exception = new ExternalMapperException(message);
             assertEquals(message, exception.getMessage());
         }
     }

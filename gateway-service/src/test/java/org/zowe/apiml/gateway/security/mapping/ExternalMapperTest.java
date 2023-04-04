@@ -19,6 +19,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -30,8 +34,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ExternalMapperTest {
 
@@ -126,10 +129,15 @@ class ExternalMapperTest {
                 when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
             }
             @Test
-            void thenResponseIsNull() {
+            void thenThrowException() {
                 HttpEntity payload = new BasicHttpEntity();
-                MapperResponse response = mapper.callExternalMapper(payload);
-                assertNull(response);
+                Exception exception = assertThrows(ExternalMapperException.class, () -> {
+                    mapper.callExternalMapper(payload);
+                });
+                String expectedMessage = "Unexpected response from the external identity mapper. Status: 400";
+                String actualMessage = exception.getMessage();
+
+                assertTrue(actualMessage.contains(expectedMessage));
             }
         }
 
@@ -140,10 +148,15 @@ class ExternalMapperTest {
                 when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_PROCESSING);
             }
             @Test
-            void thenResponseIsNull() {
+            void thenThrowException() {
                 HttpEntity payload = new BasicHttpEntity();
-                MapperResponse response = mapper.callExternalMapper(payload);
-                assertNull(response);
+                Exception exception = assertThrows(ExternalMapperException.class, () -> {
+                    mapper.callExternalMapper(payload);
+                });
+                String expectedMessage = "Unexpected response from the external identity mapper. Status: 102";
+                String actualMessage = exception.getMessage();
+
+                assertTrue(actualMessage.contains(expectedMessage));
             }
         }
 
@@ -154,10 +167,15 @@ class ExternalMapperTest {
                 when(httpResponse.getStatusLine()).thenReturn(null);
             }
             @Test
-            void thenResponseIsNull() {
+            void thenThrowException() {
                 HttpEntity payload = new BasicHttpEntity();
-                MapperResponse response = mapper.callExternalMapper(payload);
-                assertNull(response);
+                Exception exception = assertThrows(ExternalMapperException.class, () -> {
+                    mapper.callExternalMapper(payload);
+                });
+                String expectedMessage = "Unexpected response from the external identity mapper. Status: 0";
+                String actualMessage = exception.getMessage();
+
+                assertTrue(actualMessage.contains(expectedMessage));
             }
         }
 
@@ -168,10 +186,15 @@ class ExternalMapperTest {
                 when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("invalid content".getBytes()));
             }
             @Test
-            void thenResponseIsNull() {
+            void thenThrowException() {
                 HttpEntity payload = new BasicHttpEntity();
-                MapperResponse response = mapper.callExternalMapper(payload);
-                assertNull(response);
+                Exception exception = assertThrows(ExternalMapperException.class, () -> {
+                    mapper.callExternalMapper(payload);
+                });
+                String expectedMessage = "Error occurred while communicating with external identity mapper";
+                String actualMessage = exception.getMessage();
+
+                assertTrue(actualMessage.contains(expectedMessage));
             }
         }
 
@@ -182,50 +205,53 @@ class ExternalMapperTest {
                 when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("".getBytes()));
             }
             @Test
-            void thenResponseIsNull() {
+            void thenThrowException() {
                 HttpEntity payload = new BasicHttpEntity();
-                MapperResponse response = mapper.callExternalMapper(payload);
-                assertNull(response);
+                Exception exception = assertThrows(ExternalMapperException.class, () -> {
+                    mapper.callExternalMapper(payload);
+                });
+                String expectedMessage = "Unexpected empty response";
+                String actualMessage = exception.getMessage();
+
+                assertTrue(actualMessage.contains(expectedMessage));
             }
         }
     }
 
     @Nested
     class GivenInvalidMapperSetup {
-        @Test
-        void whenMapperUrlNull_thenResponseIsNull() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUrl",null);
+
+        @ParameterizedTest
+        @ValueSource(strings = {"%", "https:\\\\"})
+        @NullSource
+        @EmptySource
+        void whenMapperUrlInvalid_thenThrowException(String url) {
+            ReflectionTestUtils.setField(mapper,"externalMapperUrl",url);
             HttpEntity payload = new BasicHttpEntity();
-            MapperResponse response = mapper.callExternalMapper(payload);
-            assertNull(response);
+            Exception exception = assertThrows(ExternalMapperException.class, () -> {
+                mapper.callExternalMapper(payload);
+            });
+
+            String expectedMessage = "Configuration error";
+            String actualMessage = exception.getMessage();
+
+            assertTrue(actualMessage.contains(expectedMessage));
         }
-        @Test
-        void whenMapperUrlEmpty_thenResponseIsNull() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUrl","");
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void whenMapperUserInvalid_thenThrowException(String user) {
+            ReflectionTestUtils.setField(mapper,"externalMapperUser",user);
             HttpEntity payload = new BasicHttpEntity();
-            MapperResponse response = mapper.callExternalMapper(payload);
-            assertNull(response);
-        }
-        @Test
-        void whenMapperUrlInvalid_thenResponseIsNull() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUrl","%");
-            HttpEntity payload = new BasicHttpEntity();
-            MapperResponse response = mapper.callExternalMapper(payload);
-            assertNull(response);
-        }
-        @Test
-        void whenMapperUserNull_thenResponseIsNull() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUser",null);
-            HttpEntity payload = new BasicHttpEntity();
-            MapperResponse response = mapper.callExternalMapper(payload);
-            assertNull(response);
-        }
-        @Test
-        void whenMapperUserEmpty_thenResponseIsNull() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUser","");
-            HttpEntity payload = new BasicHttpEntity();
-            MapperResponse response = mapper.callExternalMapper(payload);
-            assertNull(response);
+            Exception exception = assertThrows(ExternalMapperException.class, () -> {
+               mapper.callExternalMapper(payload);
+            });
+
+            String expectedMessage = "Configuration error";
+            String actualMessage = exception.getMessage();
+
+            assertTrue(actualMessage.contains(expectedMessage));
         }
     }
 }
