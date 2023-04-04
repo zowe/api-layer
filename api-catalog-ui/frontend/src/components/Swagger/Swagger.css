@@ -1744,3 +1744,11 @@ body {
 div.info > hgroup.main > a {
     display: none;
 }
+
+button.opblock-summary-control {
+    display: contents;
+}
+
+svg.svg-assets {
+    display: none;
+}
