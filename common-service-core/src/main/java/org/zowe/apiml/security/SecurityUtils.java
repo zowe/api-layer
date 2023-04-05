@@ -16,11 +16,11 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -191,7 +191,7 @@ public class SecurityUtils {
             inputStream = url.openStream();
         } else {
             File keyStoreFile = new File(config.getKeyStore());
-            inputStream = Files.newInputStream(keyStoreFile.toPath());
+            inputStream = new FileInputStream(keyStoreFile);
         }
         ks.load(inputStream, config.getKeyStorePassword());
         return ks;
