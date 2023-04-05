@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 class RedisConfigurationTest {
     private static final String USERNAME = "username";
-    private static final String PASSWORD = "password";
+    private static final char[] PASSWORD = "password".toCharArray();
     private static final String MASTER_IP = "127.0.0.1";
     private static final int MASTER_PORT = 6379;
     private static final int TIMEOUT = 60;
@@ -67,7 +67,7 @@ class RedisConfigurationTest {
         RedisURI result = underTest.createRedisUri();
 
         assertThat(result.getUsername(), is(USERNAME));
-        assertThat(result.getPassword(), is(PASSWORD.toCharArray()));
+        assertThat(result.getPassword(), is(PASSWORD));
         assertThat(result.getHost(), is(MASTER_IP));
         assertThat(result.getPort(), is(MASTER_PORT));
         assertThat(result.getTimeout(), is(Duration.ofSeconds(TIMEOUT)));
@@ -100,8 +100,8 @@ class RedisConfigurationTest {
             String ip2 = "5.6.7.8";
             int port1 = 6379;
             int port2 = 6380;
-            String password1 = "password1";
-            String password2 = "password2";
+            char[] password1 = "password1".toCharArray();
+            char[] password2 = "password2".toCharArray();
 
             RedisConfig.Sentinel.SentinelNode node1 = mock(RedisConfig.Sentinel.SentinelNode.class);
             when(node1.getHost()).thenReturn(ip1);
@@ -120,7 +120,7 @@ class RedisConfigurationTest {
 
             RedisURI result = underTest.createRedisUri();
             assertThat(result.getUsername(), is(USERNAME));
-            assertThat(result.getPassword(), is(PASSWORD.toCharArray()));
+            assertThat(result.getPassword(), is(PASSWORD));
             assertThat(result.getSentinelMasterId(), is(MASTER));
 
             List<RedisURI> sentinelUris = result.getSentinels();
@@ -130,12 +130,12 @@ class RedisConfigurationTest {
             RedisURI sentinel1 = sentinelUris.get(0);
             assertThat(sentinel1.getHost(), is(ip1));
             assertThat(sentinel1.getPort(), is(port1));
-            assertThat(sentinel1.getPassword(), is(password1.toCharArray()));
+            assertThat(sentinel1.getPassword(), is(password1));
 
             RedisURI sentinel2 = sentinelUris.get(1);
             assertThat(sentinel2.getHost(), is(ip2));
             assertThat(sentinel2.getPort(), is(port2));
-            assertThat(sentinel2.getPassword(), is(password2.toCharArray()));
+            assertThat(sentinel2.getPassword(), is(password2));
         }
     }
 }

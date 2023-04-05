@@ -72,16 +72,16 @@ public class ZaasClientImpl implements ZaasClient {
     }
 
     @Override
-    public String login(String userId, String password, String newPassword) throws ZaasClientException {
-        if (userId == null || password == null || newPassword == null || userId.isEmpty() || password.isEmpty() || newPassword.isEmpty()) {
+    public String login(String userId, char[] password, char[] newPassword) throws ZaasClientException {
+        if (userId == null || password == null || newPassword == null || userId.isEmpty() || password.length == 0 || newPassword.length == 0) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
         return tokens.login(userId, password, newPassword);
     }
 
     @Override
-    public String login(String userId, String password) throws ZaasClientException {
-        if (userId == null || password == null || userId.isEmpty() || password.isEmpty()) {
+    public String login(String userId, char[] password) throws ZaasClientException {
+        if (userId == null || password == null || userId.isEmpty() || password.length == 0) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
         return tokens.login(userId, password);

@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.security.common.content;
 
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -18,29 +17,25 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 class BasicContentFilterTest {
     private final static String PRINCIPAL = "user";
-    private final static String PASSWORD = "password";
+    private final static char[] PASSWORD = "password".toCharArray();
     private final static String BASIC_AUTH = "Basic dXNlcjpwYXNzd29yZA==";
 
     private BasicContentFilter basicContentFilter;
@@ -62,11 +57,21 @@ class BasicContentFilterTest {
     @Test
     void authenticationWithBasicAuthHeader() throws ServletException, IOException {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
+
+        AtomicBoolean called = new AtomicBoolean(false);
+        doAnswer(invocation -> {
+            assertArrayEquals(
+                PASSWORD,
+                (char[]) ((Authentication) invocation.getArguments()[0]).getCredentials()
+            );
+            assertEquals(PRINCIPAL, ((Authentication) invocation.getArguments()[0]).getPrincipal());
+            called.set(true);
+            return null;
+        }).when(authenticationManager).authenticate(any());
 
         basicContentFilter.doFilter(request, response, filterChain);
 
-        verify(authenticationManager).authenticate(authentication);
+        assertTrue(called.get());
         verify(filterChain).doFilter(request, response);
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
         verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
@@ -94,14 +99,13 @@ class BasicContentFilterTest {
     @Test
     void shouldNotAuthenticateWithBadCredentials() throws ServletException, IOException {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
         AuthenticationException exception = new BadCredentialsException("Token not valid");
 
-        when(authenticationManager.authenticate(authentication)).thenThrow(exception);
+        when(authenticationManager.authenticate(any())).thenThrow(exception);
 
         basicContentFilter.doFilter(request, response, filterChain);
 
-        verify(authenticationManager).authenticate(authentication);
+        verify(authenticationManager).authenticate(any());
         verify(filterChain, never()).doFilter(any(), any());
         verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
         verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
@@ -110,14 +114,13 @@ class BasicContentFilterTest {
     @Test
     void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
         RuntimeException exception = new RuntimeException("No Gateway");
 
-        when(authenticationManager.authenticate(authentication)).thenThrow(exception);
+        when(authenticationManager.authenticate(any())).thenThrow(exception);
 
         basicContentFilter.doFilter(request, response, filterChain);
 
-        verify(authenticationManager).authenticate(authentication);
+        verify(authenticationManager).authenticate(any());
         verify(filterChain, never()).doFilter(any(), any());
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
         verify(resourceAccessExceptionHandler).handleException(request, response, exception);
@@ -140,7 +143,7 @@ class BasicContentFilterTest {
 
         assertTrue(token.isPresent());
         assertEquals("user", token.get().getPrincipal());
-        assertEquals("password", token.get().getCredentials().toString());
+        assertArrayEquals(PASSWORD, (char[]) token.get().getCredentials());
     }
 
     @Test

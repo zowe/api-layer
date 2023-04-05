@@ -16,11 +16,11 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -30,7 +30,7 @@ import java.util.*;
 @UtilityClass
 public class SecurityUtils {
 
-    private ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
+    private final ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
 
     public static final String SAFKEYRING = "safkeyring";
 
@@ -191,7 +191,7 @@ public class SecurityUtils {
             inputStream = url.openStream();
         } else {
             File keyStoreFile = new File(config.getKeyStore());
-            inputStream = new FileInputStream(keyStoreFile);
+            inputStream = Files.newInputStream(keyStoreFile.toPath());
         }
         ks.load(inputStream, config.getKeyStorePassword());
         return ks;
@@ -241,4 +241,18 @@ public class SecurityUtils {
         }
         return kp;
     }
+
+    public static char[] readPassword(Object value) {
+        if (value == null) return new char[0];
+
+        if (value instanceof char[]) {
+            return (char[]) value;
+        }
+        if (!(value instanceof String)) {
+            value = value.toString();
+        }
+
+        return ((String) value).toCharArray();
+    }
+
 }

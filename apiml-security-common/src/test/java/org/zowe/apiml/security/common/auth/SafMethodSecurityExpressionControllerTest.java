@@ -25,6 +25,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,8 +49,10 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -153,7 +157,12 @@ class SafMethodSecurityExpressionControllerTest {
                         authenticationManager(),
                         failedAuthenticationHandler(),
                         resourceAccessExceptionHandler()
-                    ), UsernamePasswordAuthenticationFilter.class);
+                ) {
+                    // test provider does not support char[] as credentials. This replaces it with a String
+                    public Optional<AbstractAuthenticationToken> extractContent(HttpServletRequest request) {
+                        return super.extractContent(request).map(a -> new UsernamePasswordAuthenticationToken(a.getPrincipal(), new String((char[]) a.getCredentials())));
+                    }
+                }, UsernamePasswordAuthenticationFilter.class);
         }
 
         @Autowired

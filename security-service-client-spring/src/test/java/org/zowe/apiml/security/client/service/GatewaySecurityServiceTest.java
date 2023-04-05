@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.security.client.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,6 +21,7 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -34,7 +33,7 @@ import static org.mockito.Mockito.*;
 
 class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
-    private static final String PASSWORD = "pass";
+    private static final char[] PASSWORD = "pass".toCharArray();
     private static final String TOKEN = "token";
     private static final String GATEWAY_SCHEME = "https";
     private static final String GATEWAY_HOST = "localhost:10010";
@@ -144,11 +143,7 @@ class GatewaySecurityServiceTest {
         }
 
         private HttpEntity createLoginRequest() {
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode loginRequest = mapper.createObjectNode();
-            loginRequest.put("username", USERNAME);
-            loginRequest.put("password", PASSWORD);
-
+            LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setContentType(MediaType.APPLICATION_JSON);
             return new HttpEntity<>(loginRequest, requestHeaders);

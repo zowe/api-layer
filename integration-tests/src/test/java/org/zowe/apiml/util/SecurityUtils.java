@@ -58,7 +58,7 @@ public class SecurityUtils {
     public final static String GATEWAY_BASE_PATH = "/gateway/api/v1";
     public final static String GATEWAY_BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
 
-    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();;
+    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     private final static String gatewayScheme = serviceConfiguration.getScheme();
     private final static String gatewayHost = serviceConfiguration.getHost();
@@ -109,7 +109,7 @@ public class SecurityUtils {
     }
 
     public static String gatewayToken(URI gatewayLoginEndpoint, String username, String password) {
-        LoginRequest loginRequest = new LoginRequest(username, password);
+        LoginRequest loginRequest = new LoginRequest(username, password.toCharArray());
 
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());

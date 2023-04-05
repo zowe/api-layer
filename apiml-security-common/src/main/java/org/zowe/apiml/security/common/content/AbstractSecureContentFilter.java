@@ -79,6 +79,14 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
                 failureHandler.onAuthenticationFailure(request, response, authenticationException);
             } catch (RuntimeException e) {
                 resourceAccessExceptionHandler.handleException(request, response, e);
+            } finally {
+                Authentication authentication = authenticationToken.get();
+                if (authentication != null) {
+                    Object credentials = authenticationToken.get().getCredentials();
+                    if (credentials instanceof char[]) {
+                        Arrays.fill((char[]) credentials, (char) 0);
+                    }
+                }
             }
         } else {
             filterChain.doFilter(request, response);

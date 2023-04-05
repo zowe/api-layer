@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.login.dummy;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,12 +44,13 @@ public class InMemoryUserDetailsService implements UserDetailsService {
      * @return user information
      */
     @Override
+    @SuppressWarnings("java:S6437")
     public UserDetails loadUserByUsername(String username) {
 
         // Hard coding the users. All passwords must be encoded.
         final List<AppUser> users = Arrays.asList(
-            new AppUser(1, "user", passwordEncoder.encode("user")),
-            new AppUser(2, "expire", passwordEncoder.encode("expire"))
+            new AppUser(1, "user", toCharArray(passwordEncoder.encode("user"))),
+            new AppUser(2, "expire", toCharArray(passwordEncoder.encode("expire")))
         );
 
         return users.stream()
@@ -56,23 +58,24 @@ public class InMemoryUserDetailsService implements UserDetailsService {
             .map(appUser ->
                 // The "User" class is provided by Spring and represents a model class for user to be returned by UserDetailsService
                 // And used by auth manager to verify and check user authentication.
-                new User(appUser.getUsername(), appUser.getPassword(), AuthorityUtils.NO_AUTHORITIES)
+                new User(appUser.getUsername(), new String(appUser.getPassword()), AuthorityUtils.NO_AUTHORITIES)
             )
             .findFirst()
             .orElseThrow(() -> new UsernameNotFoundException("Username: " + username + " not found."));
     }
 
+    private char[] toCharArray(String i) {
+        if (i == null) return new char[0];
+        return i.toCharArray();
+    }
+
     // A class represent the user saved in the database.
     @Data
+    @AllArgsConstructor
     private static class AppUser {
         private Integer id;
         private String username;
-        private String password;
-
-        AppUser(Integer id, String username, String password) {
-            this.id = id;
-            this.username = username;
-            this.password = password;
-        }
+        private char[] password;
     }
+
 }

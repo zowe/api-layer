@@ -33,10 +33,10 @@ class ZosAuthenticationProviderTests {
     private static ZosAuthenticationProvider provider;
     private static AuthenticationService mockService;
 
-    private UsernamePasswordAuthenticationToken VALID_TOKEN = new UsernamePasswordAuthenticationToken(VALID_USERID,
-        new LoginRequest(VALID_USERID, VALID_PASSWORD));
-    private UsernamePasswordAuthenticationToken INVALID_TOKEN = new UsernamePasswordAuthenticationToken(INVALID_USERID,
-        new LoginRequest(INVALID_USERID, INVALID_PASSWORD));
+    private final UsernamePasswordAuthenticationToken VALID_TOKEN = new UsernamePasswordAuthenticationToken(VALID_USERID,
+        new LoginRequest(VALID_USERID, VALID_PASSWORD.toCharArray()));
+    private final UsernamePasswordAuthenticationToken INVALID_TOKEN = new UsernamePasswordAuthenticationToken(INVALID_USERID,
+        new LoginRequest(INVALID_USERID, INVALID_PASSWORD.toCharArray()));
 
     @BeforeAll
     static void setup() {

@@ -21,6 +21,8 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
 
+import static org.zowe.apiml.security.SecurityUtils.readPassword;
+
 /**
  * Authentication provider that authenticates UsernamePasswordAuthenticationToken against Gateway
  */
@@ -38,12 +40,12 @@ public class GatewayLoginProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         String username = authentication.getPrincipal().toString();
-        String password;
+        char[] password;
         if (authentication.getCredentials() instanceof LoginRequest) {
             LoginRequest credentials = (LoginRequest) authentication.getCredentials();
             password = credentials.getPassword();
         } else {
-            password = (String) authentication.getCredentials();
+            password = readPassword(authentication.getCredentials());
         }
 
         Optional<String> token = gatewaySecurityService.login(username, password);

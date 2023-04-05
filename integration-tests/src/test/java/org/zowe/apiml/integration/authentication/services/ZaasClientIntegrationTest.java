@@ -31,6 +31,7 @@ import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Date;
@@ -90,7 +91,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         KeyStore ks = KeyStore.getInstance(configProperties.getKeyStoreType());
 
         File keyStoreFile = new File(configProperties.getKeyStorePath());
-        inputStream = new FileInputStream(keyStoreFile);
+        inputStream = Files.newInputStream(keyStoreFile.toPath());
         ks.load(inputStream, configProperties.getKeyStorePassword());
 
         return ks.getKey("localhost", configProperties.getKeyStorePassword());
@@ -150,7 +151,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         class ValidTokenIsReturned {
             @Test
             void givenValidCredentials() throws ZaasClientException {
-                String token = tokenService.login(USERNAME, PASSWORD);
+                String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
                 assertNotNull(token);
                 assertThat(token, is(not(EMPTY_STRING)));
             }
@@ -169,7 +170,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenInvalidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidUsernamePassword")
             void givenInvalidCredentials(String username, String password, ZaasClientErrorCodes expectedCode) {
-                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
+                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password.toCharArray()));
 
                 assertThatExceptionContainValidCode(exception, expectedCode);
             }
@@ -178,7 +179,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenInvalidPassword {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidPassword")
             void givenInvalidPassword(String username, String password, ZaasClientErrorCodes expectedCode) {
-                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
+                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password.toCharArray()));
 
                 assertThatExceptionContainValidCode(exception, expectedCode);
             }
@@ -207,7 +208,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
         @Test
         void givenValidToken_thenValidDetailsAreProvided() throws ZaasClientException {
-            String token = tokenService.login(USERNAME, PASSWORD);
+            String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
             ZaasToken zaasToken = tokenService.query(token);
             assertNotNull(zaasToken);
             assertThat(zaasToken.getUserId(), is(USERNAME));
@@ -248,7 +249,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
     class WhenPassTicketRequested {
         @Test
         void givenValidToken_thenValidPassTicketIsReturned() throws ZaasClientException, ZaasConfigurationException {
-            String token = tokenService.login(USERNAME, PASSWORD);
+            String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
             String passTicket = tokenService.passTicket(token, "ZOWEAPPL");
             assertNotNull(passTicket);
             assertThat(token, is(not(EMPTY_STRING)));
@@ -275,7 +276,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
             @Test
             void givenValidTokenButInvalidApplicationId() throws ZaasClientException {
-                String token = tokenService.login(USERNAME, PASSWORD);
+                String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
                 assertThrows(ZaasClientException.class, () -> {
                     String emptyApplicationId = "";
                     tokenService.passTicket(token, emptyApplicationId);
@@ -290,7 +291,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
         @Test
         void givenValidTokenBut_thenSuccess() throws ZaasClientException {
-            String token = tokenService.login(USERNAME, PASSWORD);
+            String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
             assertDoesNotThrow(() -> tokenService.logout(token));
         }
 

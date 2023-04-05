@@ -35,9 +35,9 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static char[] PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword().toCharArray();
     private final static String INVALID_USERNAME = "incorrectUser";
-    private final static String INVALID_PASSWORD = "incorrectPassword";
+    private final static char[] INVALID_PASSWORD = "incorrectPassword".toCharArray();
 
     private final static URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + LOGIN_ENDPOINT);
 

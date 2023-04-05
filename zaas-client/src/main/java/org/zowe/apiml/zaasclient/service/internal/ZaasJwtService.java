@@ -55,20 +55,20 @@ class ZaasJwtService implements TokenService {
     }
 
     @Override
-    public String login(String userId, String password, String newPassword) throws ZaasClientException {
+    public String login(String userId, char[] password, char[] newPassword) throws ZaasClientException {
         return (String) doRequest(
             () -> loginWithCredentials(userId, password, newPassword),
             this::extractToken);
     }
 
     @Override
-    public String login(String userId, String password) throws ZaasClientException {
+    public String login(String userId, char[] password) throws ZaasClientException {
         return (String) doRequest(
             () -> loginWithCredentials(userId, password, null),
             this::extractToken);
     }
 
-    private ClientWithResponse loginWithCredentials(String userId, String password, String newPassword) throws ZaasConfigurationException, IOException {
+    private ClientWithResponse loginWithCredentials(String userId, char[] password, char[] newPassword) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
@@ -280,8 +280,8 @@ class ZaasJwtService implements TokenService {
     @AllArgsConstructor
     static class Credentials {
         String username;
-        String password;
-        String newPassword;
+        char[] password;
+        char[] newPassword;
     }
 
     @Data
