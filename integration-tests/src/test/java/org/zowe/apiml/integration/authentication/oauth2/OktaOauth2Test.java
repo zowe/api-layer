@@ -26,13 +26,19 @@ import org.zowe.apiml.util.requests.Endpoints;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.mockito.ArgumentMatchers.isNotNull;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("OktaOauth2Test")
 public class OktaOauth2Test {
 
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
-    public static final URI REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/request");
+    public static final URI PASS_TICKET_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
+    public static final URI ZOWE_JWT_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
+    public static final URI SAF_IDT_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
+    public static final URI ZOSMF_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/request");
 
     @Nested
     class GivenValidOktaToken {
@@ -71,19 +77,101 @@ public class OktaOauth2Test {
     }
 
     @Nested
-    class GivenOktaTokenRequest {
+    class WhenTestingZoweJwtScheme {
         private final String token = SecurityUtils.validOktaAccessToken();
 
         @Test
-        void whenPassingInHeader_thenReturnInfo() {
+        void givenTokenInHeader_thenReturnInfo() {
             RestAssured.useRelaxedHTTPSValidation();
 
             given()
                 .contentType(ContentType.JSON)
                 .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
                 .when()
-                .get(REQUEST_ENDPOINT)
-                .then().body("headers.OIDC-TOKEN", isNotNull())
+                .get(ZOWE_JWT_REQUEST_ENDPOINT)
+                .then()
+                .body("headers.cookie", isNotNull())
+                .body("cookies.apimlAuthenticationToken", isNotNull())
+                .statusCode(200);
+        }
+    }
+
+    @Nested
+    class WhenTestingZosmfScheme {
+        private final String token = SecurityUtils.validOktaAccessToken();
+
+        @Test
+        void givenTokenInHeader_thenReturnInfo() {
+            RestAssured.useRelaxedHTTPSValidation();
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .when()
+                .get(ZOSMF_REQUEST_ENDPOINT)
+                .then()
+                .body("headers.cookie", isNotNull())
+                .body("cookies.apimlAuthenticationToken", isNotNull())
+                .statusCode(200);
+        }
+    }
+
+    @Nested
+    class WhenTestingSafIdtScheme {
+        private final String token = SecurityUtils.validOktaAccessToken();
+
+        @Test
+        void givenTokenInHeader_thenReturnInfo() {
+            RestAssured.useRelaxedHTTPSValidation();
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .when()
+                .get(SAF_IDT_REQUEST_ENDPOINT)
+                .then()
+                .body("headers.cookie", isNotNull())
+                .body("cookies.apimlAuthenticationToken", isNotNull())
+                .statusCode(200);
+        }
+    }
+
+    @Nested
+    class WhenTestingPassticketScheme {
+        private final String token = SecurityUtils.validOktaAccessToken();
+
+        @Test
+        void givenTokenInHeader_thenReturnInfo() {
+            RestAssured.useRelaxedHTTPSValidation();
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .when()
+                .get(PASS_TICKET_REQUEST_ENDPOINT)
+                .then()
+                .body("headers.cookie", isNotNull())
+                .body("cookies.apimlAuthenticationToken", isNotNull())
+                .statusCode(200);
+        }
+    }
+
+    @Nested
+    class WhenProvidingInvalidToken {
+        private final String token = SecurityUtils.validOktaAccessToken();
+
+        @Test
+        void givenTokenInHeader_thenAdd() {
+            RestAssured.useRelaxedHTTPSValidation();
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .when()
+                .get(ZOWE_JWT_REQUEST_ENDPOINT)
+                .then()
+                .body("headers.x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG102E Token is not valid"))
                 .statusCode(200);
         }
     }
