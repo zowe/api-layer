@@ -153,7 +153,7 @@ public class OktaOauth2Test {
     }
 
     @Nested
-    class WhenTestingPassticketScheme {
+    class GivenOktaTokenRequest {
         private final String token = SecurityUtils.validOktaAccessToken();
 
         @Test
