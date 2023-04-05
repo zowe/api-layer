@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +49,8 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
 
             if (mapperResponse != null) {
                 mapperResponse.validateOIDCResults();
-                return mapperResponse.getUserId().trim();
+                String userId = mapperResponse.getUserId().trim();
+                return StringUtils.isNotEmpty(userId) ? userId : null;
             }
 
         } catch (UnsupportedEncodingException e) {
