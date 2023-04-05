@@ -61,7 +61,6 @@ public abstract class ExternalMapper {
         try {
             URI mapperUri = getMapperURI();
             if (mapperUri == null) {
-                log.debug("Configuration error: Cannot construct the URL of the External identity mapper.");
                 return null;
             }
             HttpPost httpPost = new HttpPost(mapperUri);

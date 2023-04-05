@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,7 +28,6 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import java.util.Optional;
 import java.util.function.Function;
 
-@Slf4j
 @Service
 public class OIDCAuthSourceService extends TokenAuthSourceService {
     @InjectApimlLogger
