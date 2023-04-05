@@ -91,7 +91,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         KeyStore ks = KeyStore.getInstance(configProperties.getKeyStoreType());
 
         File keyStoreFile = new File(configProperties.getKeyStorePath());
-        inputStream = Files.newInputStream(keyStoreFile.toPath());
+        inputStream = new FileInputStream(keyStoreFile);
         ks.load(inputStream, configProperties.getKeyStorePassword());
 
         return ks.getKey("localhost", configProperties.getKeyStorePassword());
