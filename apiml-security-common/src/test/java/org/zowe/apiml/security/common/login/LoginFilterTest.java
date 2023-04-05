@@ -92,18 +92,27 @@ class LoginFilterTest {
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
         httpServletResponse = new MockHttpServletResponse();
 
-        AtomicBoolean called = new AtomicBoolean(false);
-        doAnswer(invocation -> {
-            UsernamePasswordAuthenticationToken authentication
-                    = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
-            assertEquals(authentication, invocation.getArguments()[0]);
-            called.set(true);
-            return invocation.callRealMethod();
-        }).when(authenticationManager).authenticate(any());
+        AtomicBoolean called = assertAuthenticateCalled(null);
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         assertTrue(called.get());
+    }
+
+    private AtomicBoolean assertAuthenticateCalled(char[] newPassword) {
+        AtomicBoolean called = new AtomicBoolean(false);
+        doAnswer(invocation -> {
+            UsernamePasswordAuthenticationToken authentication;
+            if (newPassword == null) {
+                authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));;
+            } else {
+                 authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD, NEW_PASSWORD));
+            }
+            assertEquals(authentication, invocation.getArguments()[0]);
+            called.set(true);
+            return invocation.callRealMethod();
+        }).when(authenticationManager).authenticate(any());
+        return called;
     }
 
     @Test
@@ -113,14 +122,7 @@ class LoginFilterTest {
         httpServletRequest.setContent(VALID_JSON.getBytes());
         httpServletResponse = new MockHttpServletResponse();
 
-        AtomicBoolean called = new AtomicBoolean(false);
-        doAnswer(invocation -> {
-            UsernamePasswordAuthenticationToken authentication
-                    = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD));
-            assertEquals(authentication, invocation.getArguments()[0]);
-            called.set(true);
-            return invocation.callRealMethod();
-        }).when(authenticationManager).authenticate(any());
+        AtomicBoolean called = assertAuthenticateCalled(null);
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
@@ -134,14 +136,7 @@ class LoginFilterTest {
         httpServletRequest.setContent(JSON_WITH_NEW_PW.getBytes());
         httpServletResponse = new MockHttpServletResponse();
 
-        AtomicBoolean called = new AtomicBoolean(false);
-        doAnswer(invocation -> {
-            UsernamePasswordAuthenticationToken authentication
-                    = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD, NEW_PASSWORD));
-            assertEquals(authentication, invocation.getArguments()[0]);
-            called.set(true);
-            return invocation.callRealMethod();
-        }).when(authenticationManager).authenticate(any());
+        AtomicBoolean called = assertAuthenticateCalled(NEW_PASSWORD);
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
