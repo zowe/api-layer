@@ -19,7 +19,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class IDPConfiguration {
     private String host;
-    private String clientId;
     private String user;
     private String password;
 }
