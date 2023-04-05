@@ -179,7 +179,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenInvalidPassword {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidPassword")
             void givenInvalidPassword(String username, String password, ZaasClientErrorCodes expectedCode) {
-                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password.toCharArray()));
+                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password == null ? null : password.toCharArray()));
 
                 assertThatExceptionContainValidCode(exception, expectedCode);
             }

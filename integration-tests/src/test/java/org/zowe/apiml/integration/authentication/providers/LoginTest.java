@@ -256,8 +256,8 @@ class LoginTest implements TestWithStartedInstances {
             Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
             Arguments.of("Login with trusted cert", loginOld, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
 
-            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
-            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginOld, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)
+            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, new String(LoginTest.PASSWORD), HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginOld, SslContext.clientCertValid, null, LoginTest.USERNAME, new String(LoginTest.PASSWORD), HttpStatus.NO_CONTENT, LoginTest.USERNAME)
             );
     }
 
