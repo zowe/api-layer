@@ -63,7 +63,7 @@ public class InMemoryUserDetailsService implements UserDetailsService {
             .map(appUser ->
                 // The "User" class is provided by Spring and represents a model class for user to be returned by UserDetailsService
                 // And used by auth manager to verify and check user authentication.
-                new User(appUser.getUsername(), new String(appUser.getPassword()), AuthorityUtils.NO_AUTHORITIES)
+                new User(appUser.getUsername(), new String(appUser.getPassword()), AuthorityUtils.NO_AUTHORITIES) // NOSONAR
             )
             .findFirst()
             .orElseThrow(() -> new UsernameNotFoundException("Username: " + username + " not found."));

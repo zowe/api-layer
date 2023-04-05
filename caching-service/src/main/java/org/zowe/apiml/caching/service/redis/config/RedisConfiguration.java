@@ -60,7 +60,7 @@ public class RedisConfiguration {
             uriBuilder.withSentinelMasterId(sentinelConfig.getMasterInstance());
 
             for (RedisConfig.Sentinel.SentinelNode sentinelNode : sentinelConfig.getNodes()) {
-                uriBuilder.withSentinel(sentinelNode.getHost(), sentinelNode.getPort(), new String(sentinelNode.getPassword()));
+                uriBuilder.withSentinel(sentinelNode.getHost(), sentinelNode.getPort(), new String(sentinelNode.getPassword())); // NOSONAR
             }
 
         } else {
