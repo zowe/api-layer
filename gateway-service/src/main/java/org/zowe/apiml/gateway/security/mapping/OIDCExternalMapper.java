@@ -38,6 +38,7 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
 
     public String mapToMainframeUserId(AuthSource authSource) {
         if (!(authSource instanceof OIDCAuthSource)) {
+            log.debug("The used authentication source type is {} and not OIDC", authSource.getType());
             return null;
         }
 
