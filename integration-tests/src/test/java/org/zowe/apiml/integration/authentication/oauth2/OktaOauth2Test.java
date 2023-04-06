@@ -74,6 +74,20 @@ public class OktaOauth2Test {
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(HttpStatus.SC_UNAUTHORIZED);
         }
+
+        @Test
+        void whenPassingToHeader_thenAddFailureHeader() {
+            RestAssured.useRelaxedHTTPSValidation();
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .when()
+                .get(ZOWE_JWT_REQUEST_ENDPOINT)
+                .then()
+                .body("headers.x-zowe-auth-failure", is("ZWEAG103E The token has expired"))
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG103E The token has expired"))
+                .statusCode(200);
+        }
     }
 
     @Nested
@@ -158,15 +172,13 @@ public class OktaOauth2Test {
 
     @Nested
     class WhenProvidingInvalidToken {
-        private final String token = SecurityUtils.validOktaAccessToken();
-
         @Test
-        void givenTokenInHeader_thenAdd() {
+        void givenTokenInHeader_thenAddFailureHeader() {
             RestAssured.useRelaxedHTTPSValidation();
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, "invalidToken"))
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
                 .then()
