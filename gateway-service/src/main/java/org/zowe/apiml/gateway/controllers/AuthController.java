@@ -281,9 +281,7 @@ public class AuthController {
     @HystrixCommand
     public ResponseEntity<String> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
-        log.error("OIDC-DEBUG: token: {}", token);
         QueryResponse tokenClaims = authenticationService.parseJwtToken(token);
-        log.error("OIDC-DEBUG: tokenClaims: {}", tokenClaims.toString());
         if (oidcProvider.isValid(token, tokenClaims.getIssuer())) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
