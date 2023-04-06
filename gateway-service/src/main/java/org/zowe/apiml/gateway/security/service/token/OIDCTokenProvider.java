@@ -64,7 +64,9 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Override
     public boolean isValid(String token, String issuer) {
+        log.error("OIDC-DEBUG: before introspect");
         OIDCTokenClaims claims = introspect(token, issuer);
+        log.error("OIDC-DEBUG: after introspect: {}", claims != null ? claims.toString() : "no claims");
         if (claims != null) {
             return claims.getActive();
         }
@@ -81,13 +83,14 @@ public class OIDCTokenProvider implements OIDCProvider {
             return null;
         }
         HttpPost post = new HttpPost(issuer + "/v1/introspect");
-
+        log.error("OIDC-DEBUG: introspect URI: {}", post.getURI().toString());
         List<NameValuePair> bodyParams = new ArrayList<>();
         bodyParams.add(new BasicNameValuePair("token", token));
         bodyParams.add(new BasicNameValuePair("token_type_hint", "access_token"));
         post.setEntity(new UrlEncodedFormEntity(bodyParams, StandardCharsets.UTF_8));
 
         String credentials = clientId + ":" + clientSecret;
+        log.error("OIDC-DEBUG: credentials: {}", credentials);
         byte[] base64encoded = Base64.getEncoder().encode(credentials.getBytes());
         final String headerValue = "Basic " + new String(base64encoded);
         post.setHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, headerValue));
@@ -103,7 +106,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                     return mapper.readValue(responseEntity.getContent(), OIDCTokenClaims.class);
                 }
             } else {
-                log.error("Failed to validate the OIDC access token. Unexpected response: {}", response.getStatusLine());
+                log.error("Failed to validate the OIDC access token. Unexpected response: {}", statusCode);
                 return null;
             }
         } catch (IOException e) {

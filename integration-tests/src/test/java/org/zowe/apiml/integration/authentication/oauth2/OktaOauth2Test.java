@@ -32,7 +32,7 @@ public class OktaOauth2Test {
 
     @Nested
     class GivenValidOktaToken {
-        private String token = SecurityUtils.validOktaAccessToken();
+        private final String token = SecurityUtils.validOktaAccessToken();
 
         @Test
         void thenValidateReturns200() {
@@ -50,7 +50,7 @@ public class OktaOauth2Test {
 
     @Nested
     class GivenExpiredOktaToken {
-        private String token = SecurityUtils.expiredOktaAccessToken();
+        private final String token = SecurityUtils.expiredOktaAccessToken();
 
         @Test
         void thenValidateReturns401() {
