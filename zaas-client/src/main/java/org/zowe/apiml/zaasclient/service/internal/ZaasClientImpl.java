@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
-import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -22,7 +21,6 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
-@Slf4j
 public class ZaasClientImpl implements ZaasClient {
     private final TokenService tokens;
     private final PassTicketService passTickets;
@@ -70,6 +68,16 @@ public class ZaasClientImpl implements ZaasClient {
     ZaasClientImpl(TokenService tokens, PassTicketService passTickets) {
         this.tokens = tokens;
         this.passTickets = passTickets;
+    }
+
+    @Override
+    public String login(String userId, String password, String newPassword) throws ZaasClientException {
+        return login(userId, password.toCharArray(), newPassword.toCharArray());
+    }
+
+    @Override
+    public String login(String userId, String password) throws ZaasClientException {
+        return login(userId, password.toCharArray());
     }
 
     @Override
