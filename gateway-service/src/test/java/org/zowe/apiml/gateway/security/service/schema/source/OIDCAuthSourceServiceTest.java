@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
@@ -98,6 +99,16 @@ class OIDCAuthSourceServiceTest {
         }
 
         @Test
+        void givenNoMapping_whenParse_thenThrowException() {
+            OIDCAuthSource authSource = mockValidAuthSource();
+            when(mapper.mapToMainframeUserId(authSource)).thenReturn(null);
+
+            assertThrows(TokenNotValidException.class, () -> {
+                service.parse(authSource);
+            });
+        }
+
+        @Test
         void givenValidAuthSource_thenReturnLTPAToken() {
             OIDCAuthSource authSource = mockValidAuthSource();
             String expectedToken = "ltpa-token";
@@ -153,6 +164,23 @@ class OIDCAuthSourceServiceTest {
         void whenTokenIsEmpty_thenReturnTokenInvalid() {
             OIDCAuthSource authSource = new OIDCAuthSource("");
             assertFalse(service.isValid(authSource));
+        }
+
+        @Test
+        void whenIsInvalid_thenReturnTokenInvalid() {
+            OIDCAuthSource authSource = mockValidAuthSource();
+            when(provider.isValid(TOKEN, ISSUER)).thenReturn(false);
+            assertFalse(service.isValid(authSource));
+        }
+
+        @Test
+        void whenParse_thenReturnNull() {
+            OIDCAuthSource authSource = mockValidAuthSource();
+            when(provider.isValid(TOKEN, ISSUER)).thenReturn(false);
+            AuthSource.Parsed parsedSource = service.parse(authSource);
+
+            verify(mapper, times(0)).mapToMainframeUserId(authSource);
+            assertNull(parsedSource);
         }
     }
 
