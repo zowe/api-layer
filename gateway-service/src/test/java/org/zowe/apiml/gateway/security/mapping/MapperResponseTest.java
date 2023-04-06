@@ -15,7 +15,7 @@ import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MapperResponseTest {
+class MapperResponseTest {
 
     private static final String USER = "ZOSUSER";
     private static final int RC = 1;

@@ -170,6 +170,9 @@ public class SecurityUtils {
     }
 
     public static String validOktaAccessToken() {
+        assertNotNull(OKTA_HOSTNAME, "OKTA host name is not set.");
+        assertNotNull(OKTA_CLIENT_ID, "OKTA client id is not set.");
+
         JSONObject requestBody = new JSONObject();
         requestBody.put("username", OKTA_USER);
         requestBody.put("password", OKTA_PASSWORD);
