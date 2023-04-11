@@ -83,10 +83,9 @@ public class OktaOauth2Test {
                 .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
-                .then()
+                .then().statusCode(200)
                 .body("headers.x-zowe-auth-failure", is("ZWEAG103E The token has expired"))
-                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG103E The token has expired"))
-                .statusCode(200);
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG103E The token has expired"));
         }
     }
 
@@ -103,10 +102,9 @@ public class OktaOauth2Test {
                 .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
-                .then()
+                .then().statusCode(200)
                 .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull())
-                .statusCode(200);
+                .body("cookies.apimlAuthenticationToken", isNotNull());
         }
     }
 
@@ -123,10 +121,9 @@ public class OktaOauth2Test {
                 .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
                 .when()
                 .get(ZOSMF_REQUEST_ENDPOINT)
-                .then()
+                .then().statusCode(200)
                 .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull())
-                .statusCode(200);
+                .body("cookies.apimlAuthenticationToken", isNotNull());
         }
     }
 
@@ -143,10 +140,9 @@ public class OktaOauth2Test {
                 .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
                 .when()
                 .get(SAF_IDT_REQUEST_ENDPOINT)
-                .then()
+                .then().statusCode(200)
                 .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull())
-                .statusCode(200);
+                .body("cookies.apimlAuthenticationToken", isNotNull());
         }
     }
 
@@ -163,10 +159,9 @@ public class OktaOauth2Test {
                 .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
                 .when()
                 .get(PASS_TICKET_REQUEST_ENDPOINT)
-                .then()
+                .then().statusCode(200)
                 .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull())
-                .statusCode(200);
+                .body("cookies.apimlAuthenticationToken", isNotNull());
         }
     }
 
@@ -181,10 +176,9 @@ public class OktaOauth2Test {
                 .header(new Header(ApimlConstants.OIDC_HEADER_NAME, "invalidToken"))
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
-                .then()
+                .then().statusCode(200)
                 .body("headers.x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
-                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG102E Token is not valid"))
-                .statusCode(200);
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG102E Token is not valid"));
         }
     }
 
