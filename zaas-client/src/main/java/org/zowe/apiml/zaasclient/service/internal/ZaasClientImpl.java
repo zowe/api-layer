@@ -72,6 +72,16 @@ public class ZaasClientImpl implements ZaasClient {
     }
 
     @Override
+    public String login(String userId, String password, String newPassword) throws ZaasClientException {
+        return login(userId, password.toCharArray(), newPassword.toCharArray());
+    }
+
+    @Override
+    public String login(String userId, String password) throws ZaasClientException {
+        return login(userId, password.toCharArray());
+    }
+
+    @Override
     public String login(String userId, char[] password, char[] newPassword) throws ZaasClientException {
         if (userId == null || password == null || newPassword == null || userId.isEmpty() || password.length == 0 || newPassword.length == 0) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
