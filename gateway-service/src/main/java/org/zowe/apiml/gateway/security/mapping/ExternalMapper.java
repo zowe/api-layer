@@ -23,6 +23,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -67,7 +69,9 @@ public abstract class ExternalMapper {
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
             httpPost.setHeader(new BasicHeader("Cookie", authConfigurationProperties.getCookieProperties().getCookieName() + "=" + jwtToken));
             log.debug("Executing request against external identity mapper API: {}", httpPost);
-
+            if (mapperType.equals(Type.OIDC)) {
+                httpPost.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+            }
             HttpResponse httpResponse = httpClientProxy.execute(httpPost);
 
             final int statusCode = httpResponse.getStatusLine() != null ? httpResponse.getStatusLine().getStatusCode() : 0;
