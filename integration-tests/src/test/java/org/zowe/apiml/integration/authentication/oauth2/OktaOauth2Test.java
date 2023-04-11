@@ -86,6 +86,7 @@ public class OktaOauth2Test {
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
                 .body("headers.x-zowe-auth-failure", is("ZWEAG103E The token has expired"))
                 .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG103E The token has expired"));
         }
