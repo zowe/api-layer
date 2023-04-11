@@ -28,6 +28,8 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.hasKey;
+import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
@@ -84,6 +86,7 @@ public class OktaOauth2Test {
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
                 .body("headers.x-zowe-auth-failure", is("ZWEAG103E The token has expired"))
                 .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG103E The token has expired"));
         }
@@ -103,6 +106,7 @@ public class OktaOauth2Test {
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
+                .body("headers", not(hasKey("x-zowe-auth-failure")))
                 .body("headers.cookie", isNotNull())
                 .body("cookies.apimlAuthenticationToken", isNotNull());
         }
@@ -122,6 +126,7 @@ public class OktaOauth2Test {
                 .when()
                 .get(ZOSMF_REQUEST_ENDPOINT)
                 .then().statusCode(200)
+                .body("headers", not(hasKey("x-zowe-auth-failure")))
                 .body("headers.cookie", isNotNull())
                 .body("cookies.apimlAuthenticationToken", isNotNull());
         }
@@ -141,6 +146,7 @@ public class OktaOauth2Test {
                 .when()
                 .get(SAF_IDT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
+                .body("headers", not(hasKey("x-zowe-auth-failure")))
                 .body("headers.cookie", isNotNull())
                 .body("cookies.apimlAuthenticationToken", isNotNull());
         }
@@ -160,6 +166,7 @@ public class OktaOauth2Test {
                 .when()
                 .get(PASS_TICKET_REQUEST_ENDPOINT)
                 .then().statusCode(200)
+                .body("headers", not(hasKey("x-zowe-auth-failure")))
                 .body("headers.cookie", isNotNull())
                 .body("cookies.apimlAuthenticationToken", isNotNull());
         }
@@ -177,6 +184,7 @@ public class OktaOauth2Test {
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
                 .body("headers.x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
                 .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG102E Token is not valid"));
         }
