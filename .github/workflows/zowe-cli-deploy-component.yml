@@ -6,6 +6,15 @@ on:
     pull_request:
         branches: [ v2.x.x ]
     workflow_dispatch:
+        inputs:
+            pkg-name:
+                description: "Name of the package to be deployed (the @zowe scope will be prepended)"
+                default: "id-federation-for-zowe-cli"
+                required: true
+            pkg-tags:
+                description: "Tags to be distributed from Artifactory (separate multiple by spaces)"
+                default: "latest"
+                required: true
 
 jobs:
     deploy:
