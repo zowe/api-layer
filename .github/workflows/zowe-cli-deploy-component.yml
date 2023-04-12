@@ -21,8 +21,8 @@ jobs:
         runs-on: ubuntu-latest
 
         env:
-            PKG_NAME: ${{ github.event.inputs.pkg-name }}
-            PKG_TAGS: ${{ github.event.inputs.pkg-tags }}
+            PKG_NAME: id-federation-for-zowe-cli
+            PKG_TAGS: latest
 
         steps:
             - name: Checkout
@@ -53,5 +53,5 @@ jobs:
                   node scripts/deploy-component.js ${{ env.PKG_NAME }} ${{ env.PKG_TAGS }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  PKG_NAME: ${{ github.event.inputs.pkg-name }}
-                  PKG_TAGS: ${{ github.event.inputs.pkg-tags }}
+                  PKG_NAME: ${{ env.PKG_NAME }}
+                  PKG_TAGS: ${{ env.PKG_TAGS }}
