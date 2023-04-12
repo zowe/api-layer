@@ -52,7 +52,7 @@ jobs:
               id: deploy
               run: |
                   cd zowe-plugin-deploy-components
-                  node scripts/deploy-component.js ${{ env.PKG_NAME }} ${{ env.PKG_TAGS }}
+                  node scripts/deploy-components.js ${{ env.PKG_NAME }} ${{ env.PKG_TAGS }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   PKG_NAME: ${{ env.PKG_NAME }}
