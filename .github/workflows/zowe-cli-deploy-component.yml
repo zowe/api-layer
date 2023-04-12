@@ -44,9 +44,9 @@ jobs:
                   cd zowe-plugin-deploy-components
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
-                  env:
-                     NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
-                     DIST_REGISTRY: https://registry.npmjs.org/
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
+                  DIST_REGISTRY: https://registry.npmjs.org/
 
             - name: Deploy Package
               id: deploy
