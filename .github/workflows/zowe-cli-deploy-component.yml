@@ -1,0 +1,69 @@
+name: zowe CLI Deploy Component
+
+on:
+    push:
+        branches: [ v2.x.x ]
+    pull_request:
+        branches: [ v2.x.x ]
+    workflow_dispatch:
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        timeout-minutes: 40
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Use Node.js 16
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '16'
+                  cache: ${{ (!env.ACT && 'npm') || '' }}
+
+            - name: Install Dependencies
+              run: |
+                 cd zowe-plugin-deploy-components
+                 npm ci
+
+    deploy:
+        needs: setup
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Set Environment Variables
+              run: |
+                  echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_ENV
+                  echo "PKG_TAGS=${PKG_TAGS}" >> $GITHUB_ENV
+
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Use Node.js 16
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '16'
+                  cache: ${{ (!env.ACT && 'npm') || '' }}
+
+            - name: Install Dependencies
+              run: |
+                  cd zowe-plugin-deploy-components
+                  npm ci
+
+            - name: NPM Login
+              run: |
+                  cd zowe-plugin-deploy-components
+                  run: bash scripts/npm_login.sh ${{ env.NPM_REGISTRY || 'https://registry.npmjs.org/' }}
+                  env:
+                     NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
+
+            - name: Deploy Package
+              id: deploy
+              run: |
+                  cd zowe-plugin-deploy-components
+                  node scripts/deploy-component.js ${{ env.PKG_NAME }} ${{ env.PKG_TAGS }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  PKG_NAME: ${{ github.event.inputs.pkg-name }}
+                  PKG_TAGS: ${{ github.event.inputs.pkg-tags }}
