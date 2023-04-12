@@ -15,12 +15,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 @Slf4j
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class MapperResponse {
+
+    private static final String OIDC_FAILED_MESSAGE_KEY = "org.zowe.apiml.common.OIDCMappingFailed";
+
     @JsonProperty("userid")
     private String userId;
     @JsonProperty("returnCode")
@@ -32,27 +37,38 @@ public class MapperResponse {
     @JsonProperty("racfReasonCode")
     private int racfRs;
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     public String toString() {
         return "User: " + userId + ", rc=" + rc + ", safRc=" + safRc + ", racfRc=" + racfRc + ", racfRs=" + racfRs;
     }
 
-    public void validateOIDCResults() {
+    public boolean isOIDCResultValid() {
+        // Some codes may be 4 and the result is still valid. But deny unless we know it for sure
+        if (rc == 0 || safRc == 0 || racfRc == 0 || racfRs == 0) {
+            return true;
+        }
+
         if (rc == 8 && safRc == 8 && racfRc == 8) {
             if (racfRs == 44) {
-                log.debug("The Registry Name or supplied distributed identity is all" +
-                    " blanks (x'20'), all nulls (x'00'), or a combination of blanks and nulls. {}", this);
+                apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
+                    "The Registry Name or supplied distributed identity is all blanks (x'20'), all nulls" +
+                        " (x'00'), or a combination of blanks and nulls.");
+
+                return false;
             }
             if (racfRs == 48) {
-                log.debug("There is no distributed identity filter mapping the supplied" +
-                    " distributed identity to a SAF user ID, or the IDIDMAP SAF general resource class is not active or not" +
-                    " RACLISTed. {}", this);
+                apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
+                    "There is no distributed identity filter mapping the supplied distributed identity to" +
+                        " a SAF user ID, or the IDIDMAP SAF general resource class is not active or not RACLISTed.");
+
+                return false;
             }
         }
 
-        // Some codes may be 4 and the result is still valid. But deny unless we know it for sure
-        if (rc > 0 || safRc > 0 || racfRc > 0 || racfRs > 0) {
-            log.debug("Failed to map distributed to mainframe identity. {}", this);
-        }
+        apimlLog.log(OIDC_FAILED_MESSAGE_KEY, "SAF response: " + this);
+        return false;
     }
 
 }

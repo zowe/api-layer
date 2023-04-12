@@ -22,6 +22,8 @@ import org.zowe.apiml.gateway.security.mapping.model.OIDCRequest;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSource;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.UnsupportedEncodingException;
@@ -32,6 +34,9 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
 
     @Value("${apiml.security.oidc.registry}")
     private String registry;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     public OIDCExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService, AuthConfigurationProperties authConfigurationProperties) {
         super(httpClientProxy, tokenCreationService, Type.OIDC, authConfigurationProperties);
@@ -48,17 +53,21 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             StringEntity payload = new StringEntity(objectMapper.writeValueAsString(oidcRequest));
             MapperResponse mapperResponse = callExternalMapper(payload);
 
-            if (mapperResponse != null) {
-                mapperResponse.validateOIDCResults();
+            if (mapperResponse != null && mapperResponse.isOIDCResultValid()) {
                 String userId = mapperResponse.getUserId().trim();
                 return StringUtils.isNotEmpty(userId) ? userId : null;
             }
 
         } catch (UnsupportedEncodingException e) {
-            log.debug("Unable to encode payload for identity mapping request", e);
+            apimlLog.log("org.zowe.apiml.common.OIDCMappingError",
+                "Unable to encode payload for identity mapping request",
+                e.getMessage());
         } catch (JsonProcessingException e) {
-            log.debug("Unable to generate JSON payload for identity mapping request", e);
+            apimlLog.log("org.zowe.apiml.common.OIDCMappingError",
+                "Unable to generate JSON payload for identity mapping request",
+                e.getMessage());
         }
+
         return null;
     }
 

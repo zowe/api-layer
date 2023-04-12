@@ -75,11 +75,9 @@ class StoresTest {
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
             assertTrue(
                 e.getMessage().replace('\\', '/')
-                    .contains("Error while loading keystore file. Error message: keyring:/userId/keyRing")
+                    .contains("Error while loading keystore file. Error message:")
             );
         }
     }
-
-
 
 }

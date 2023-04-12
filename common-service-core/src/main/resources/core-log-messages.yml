@@ -42,7 +42,9 @@ messages:
       reason: "The endpoint you are looking for could not be located."
       action: "Verify that the URL of the endpoint you are trying to reach is correct."
 
-    # Ticket messages (140 - 149)
+    # Ticket messages
+    # 140 - 149
+
     - key: org.zowe.apiml.security.ticket.invalidApplicationName
       number: ZWEAG140
       type: ERROR
@@ -56,6 +58,7 @@ messages:
       text: "The generation of the PassTicket failed. Reason: %s"
       reason: "An error occurred in the SAF Auth Service. Review the reason in the error message."
       action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
+
     # HTTP, Protocol messages
     # 400-499
 
@@ -69,7 +72,6 @@ messages:
       - Incorrect security algorithm\n
       - The keystore is invalid or corrupted\n
       - The certificate is invalid or corrupted"
-
 
     # TLS, Certificate messages
     # 500-599
@@ -189,6 +191,19 @@ messages:
       text: "Invalid parameter in metadata: '%s'"
       reason: "An invalid apiInfo parameter was found while parsing the service metadata."
       action: "Remove or fix the referenced metadata parameter."
+
+    - key: org.zowe.apiml.common.OIDCMappingError
+      number: ZWEAM601
+      type: ERROR
+      text: "Error mapping between distributed and mainframe identity. Reason: %s %s"
+      reason: "Unexpected error occurred when mapping between distributed and mainframe identity "
+      action: "Contact Broadcom support."
+
+    - key: org.zowe.apiml.common.OIDCMappingFailed
+      number: ZWEAM602
+      type: WARNING
+      text: "Mapping between distributed and mainframe identity failed. Reason: %s"
+      reason: "Mapping between distributed and mainframe identity failed."
 
     # Service specific messages
     # 700-999
