@@ -9,7 +9,6 @@ on:
 
 jobs:
     deploy:
-        needs: setup
         runs-on: ubuntu-latest
 
         env:
