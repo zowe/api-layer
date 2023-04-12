@@ -43,8 +43,28 @@
     "ts-jest": "29.0.5",
     "ts-node": "10.9.1",
     "typedoc": "0.23.27",
-    "typescript": "4.9.5"
+    "typescript": "4.9.5",
+      "@actions/core": "^1.10.0",
+      "@actions/exec": "^1.1.0",
+      "@actions/github": "^5.0.3",
+      "adm-zip": "^0.5.10",
+      "csv2md": "^1.1.0",
+      "delay": "^5.0.0",
+      "env-cmd": "^10.1.0",
+      "flat": "^5.0.2",
+      "glob": "^7.2.0",
+      "js-yaml": "^4.1.0",
+      "jsonfile": "^6.1.0",
+      "moment": "^2.29.4",
+      "node-fetch": "^2.6.7",
+      "parse-lcov": "^1.0.4",
+      "shebang-regex": "^2.0.0",
+      "strip-comments": "^2.0.1",
+      "xml-js": "^1.6.11"
   },
+    "overrides": {
+        "yargs-parser": "~13.1.2"
+    },
   "peerDependencies": {
     "@zowe/imperative": "5.9.1"
   },
