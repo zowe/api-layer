@@ -8,35 +8,15 @@ on:
     workflow_dispatch:
 
 jobs:
-    release:
-        runs-on: ubuntu-latest
-        timeout-minutes: 40
-
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v3
-
-            - name: Use Node.js 16
-              uses: actions/setup-node@v3
-              with:
-                  node-version: '16'
-                  cache: ${{ (!env.ACT && 'npm') || '' }}
-
-            - name: Install Dependencies
-              run: |
-                 cd zowe-plugin-deploy-components
-                 npm ci
-
     deploy:
         needs: setup
         runs-on: ubuntu-latest
 
-        steps:
-            - name: Set Environment Variables
-              run: |
-                  echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_ENV
-                  echo "PKG_TAGS=${PKG_TAGS}" >> $GITHUB_ENV
+        env:
+            PKG_NAME: ${{ github.event.inputs.pkg-name }}
+            PKG_TAGS: ${{ github.event.inputs.pkg-tags }}
 
+        steps:
             - name: Checkout
               uses: actions/checkout@v3
 
