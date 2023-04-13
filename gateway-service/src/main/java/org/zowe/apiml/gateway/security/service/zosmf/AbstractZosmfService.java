@@ -106,7 +106,7 @@ public abstract class AbstractZosmfService {
             if (cleanup) {
                 Arrays.fill(password, (char) 0);
             }
-            if(credentials != null) {
+            if (credentials != null) {
                 Arrays.fill(credentials, (byte) 0);
             }
         }
