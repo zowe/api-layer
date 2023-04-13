@@ -37,8 +37,8 @@ jobs:
             - name: Set Environment variables
               run: |
                   cd zowe-plugin-deploy-components
-                  echo "PKG_NAME=${node -p "require('./package.json').name"}" >> $GITHUB_ENV
-                  echo "PKG_TAGS=${node -p "require('./package.json').version"}" >> $GITHUB_ENV
+                  echo "PKG_NAME=node -p "require('./package.json').name" >> $GITHUB_ENV
+                  echo "PKG_TAGS=node -p "require('./package.json').version" >> $GITHUB_ENV
                   echo "updated the env variables  ${{ env.PKG_NAME }} ${{ env.PKG_TAGS }}"
 #                  PKG_TAGS: {$(echo $(node -p "require('./package.json').version"))}
 
