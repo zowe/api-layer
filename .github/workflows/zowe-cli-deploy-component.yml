@@ -15,9 +15,9 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
 
-#        env:
-#            PKG_NAME: id-federation-for-zowe-cli
-#            PKG_TAGS: latest
+        env:
+            PKG_NAME: id-federation-for-zowe-cli
+            PKG_TAGS: latest
 
         steps:
             - name: Checkout
@@ -37,9 +37,10 @@ jobs:
             - name: Set env variables
               run: |
                   cd zowe-plugin-deploy-components
-                  PKG_NAME: {$(echo $(node -p "require('./package.json').name"))}
-                  PKG_TAGS: {$(echo $(node -p "require('./package.json').version"))}
-#                  echo "PKG_TAGS=$(node -p "require('./package.json').version")"
+                  echo "updating the env variables $PKG_NAME "
+                  echo "::set-env name=PKG_NAME::$(echo $(node -p "require('./package.json').name"))
+                  echo "::set-env name=PKG_TAGS::$(echo $(node -p "require('./package.json').version"))
+#                  PKG_TAGS: {$(echo $(node -p "require('./package.json').version"))}
 
             - name: NPM Login
               run: |
@@ -54,7 +55,7 @@ jobs:
               id: deploy
               run: |
                   cd zowe-plugin-deploy-components
-                  node scripts/deploy-components.js  ${ PKG_NAME }  ${ env.PKG_TAGS }
+                  node scripts/deploy-components.js  ${ PKG_NAME }  ${ PKG_TAGS }
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
  #                 PKG_NAME: ${{ PKG_NAME }}
