@@ -108,7 +108,7 @@ public class DiscoveryRequests {
 
             given()
                 .contentType(JSON)
-                .auth().basic(credentials.getUser(), credentials.getPassword())
+                .auth().basic(credentials.getUser(), new String(credentials.getPassword()))
             .when()
                 .post(getDiscoveryUriWithPath(Endpoints.SHUTDOWN))
             .then()

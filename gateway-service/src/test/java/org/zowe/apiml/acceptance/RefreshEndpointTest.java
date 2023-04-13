@@ -32,7 +32,7 @@ import static org.hamcrest.core.Is.is;
 public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
 
     private final static String USERNAME = "USER";
-    private final static String PASSWORD = "validPassword";
+    private final static char[] PASSWORD = "validPassword".toCharArray();
 
     private RestAssuredConfig restAssuredConfig;
 

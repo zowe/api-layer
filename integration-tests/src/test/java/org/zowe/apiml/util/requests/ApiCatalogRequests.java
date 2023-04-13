@@ -71,7 +71,7 @@ public class ApiCatalogRequests {
         try {
             given()
                 .contentType(JSON)
-                .auth().basic(credentials.getUser(), credentials.getPassword())
+                .auth().basic(credentials.getUser(), new String(credentials.getPassword()))
                 .when()
                 .post(getApiCatalogUriWithPath(Endpoints.SHUTDOWN))
                 .then()

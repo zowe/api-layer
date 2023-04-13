@@ -11,7 +11,7 @@
 package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,8 +21,8 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -47,8 +47,8 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-        final String newPassword = LoginRequest.getNewPassword(authentication);
-        if (StringUtils.isNotEmpty(newPassword)) {
+        final char[] newPassword = LoginRequest.getNewPassword(authentication);
+        if (ArrayUtils.isNotEmpty(newPassword)) {
             zosmfService.changePassword(authentication);
             authentication = new UsernamePasswordAuthenticationToken(user, newPassword);
         }

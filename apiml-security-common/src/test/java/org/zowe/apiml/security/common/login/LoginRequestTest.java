@@ -14,13 +14,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class LoginRequestTest {
 
-    public static final String NEW_PASS = "newPass";
-    public static final String PASS = "pass";
+    public static final char[] NEW_PASS = "newPass".toCharArray();
+    public static final char[] PASS = "pass".toCharArray();
     public static final String USERNAME = "user";
 
     @Nested
@@ -33,8 +32,8 @@ class LoginRequestTest {
         }
 
         @Test
-        void returnNull() {
-            assertNull(LoginRequest.getNewPassword(auth));
+        void returnEmpty() {
+            assertEquals(0, LoginRequest.getNewPassword(auth).length);
         }
 
     }
@@ -47,13 +46,13 @@ class LoginRequestTest {
         @Test
         void returnNewPassword() {
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
-            assertEquals(NEW_PASS, LoginRequest.getNewPassword(auth));
+            assertArrayEquals(NEW_PASS, LoginRequest.getNewPassword(auth));
         }
 
         @Test
         void returnPassword() {
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
-            assertEquals(PASS, LoginRequest.getPassword(auth));
+            assertArrayEquals(PASS, LoginRequest.getPassword(auth));
         }
     }
 

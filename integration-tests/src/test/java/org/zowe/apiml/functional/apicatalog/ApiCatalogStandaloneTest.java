@@ -114,7 +114,7 @@ public class ApiCatalogStandaloneTest {
             void givenBasicAuthenticationIsProvided() {
                 given()
                     .auth()
-                        .basic(USERNAME, PASSWORD)
+                        .basic(USERNAME, new String(PASSWORD))
                     .when()
                         .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
                     .then()

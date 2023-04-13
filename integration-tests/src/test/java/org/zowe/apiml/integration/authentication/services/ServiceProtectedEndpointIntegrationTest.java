@@ -99,7 +99,7 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 String dsname2 = "SYS1.PROCLIB";
 
                 given()
-                    .auth().preemptive().basic(USERNAME, PASSWORD)
+                    .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                     .header("X-CSRF-ZOSMF-HEADER", "zosmf")
                 .when()
                     .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))

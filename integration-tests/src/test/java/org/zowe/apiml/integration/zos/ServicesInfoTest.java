@@ -154,7 +154,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
                 //@formatter:off
                 given()
-                    .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
+                    .auth().basic(UNAUTHORIZED_USERNAME, new String(UNAUTHORIZED_PASSWORD))
                     .when()
                     .get(getUriFromGateway(ROUTED_SERVICE))
                     .then()
