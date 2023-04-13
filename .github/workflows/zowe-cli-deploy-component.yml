@@ -1,17 +1,23 @@
 name: zowe CLI Deploy Component
 
 on:
-    workflow_run:
-        workflows: [ "zowe-cli-plugin-deployment" ]
-        types: [ completed ]
+#    workflow_run:
+#        workflows: [ "zowe-cli-plugin-deployment" ]
+#        types: [ completed ]
+#
+        push:
+            branches: [ v2.x.x ]
+        pull_request:
+            branches: [ v2.x.x ]
+        workflow_dispatch:
 
 jobs:
     deploy:
         runs-on: ubuntu-latest
 
-        env:
-            PKG_NAME: id-federation-for-zowe-cli
-            PKG_TAGS: latest
+#        env:
+#            PKG_NAME: id-federation-for-zowe-cli
+#            PKG_TAGS: latest
 
         steps:
             - name: Checkout
@@ -28,6 +34,12 @@ jobs:
                   cd zowe-plugin-deploy-components
                   npm ci
 
+            - name: Set environment variables
+              run: |
+                  cd zowe-plugin-deploy-components
+                 echo "::set-env name=PKG_TAGS::$(node -p -e \"require(`./package.json').version\")"
+                 echo "::set-env name=PKG_NAME::$(node -p -e \"require(`./package.json').name\")"
+
             - name: NPM Login
               run: |
                   cd zowe-plugin-deploy-components
@@ -41,8 +53,8 @@ jobs:
               id: deploy
               run: |
                   cd zowe-plugin-deploy-components
-                  node scripts/deploy-components.js ${{ env.PKG_NAME }} ${{ env.PKG_TAGS }}
+                  node scripts/deploy-components.js ${{ PKG_NAME }} ${{ PKG_TAGS }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  PKG_NAME: ${{ env.PKG_NAME }}
-                  PKG_TAGS: ${{ env.PKG_TAGS }}
+ #                 PKG_NAME: ${{ PKG_NAME }}
+ #                 PKG_TAGS: ${{ package.json.version }}
