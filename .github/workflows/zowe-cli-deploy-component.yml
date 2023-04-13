@@ -34,11 +34,11 @@ jobs:
                   cd zowe-plugin-deploy-components
                   npm ci
 
-            - name: Set environment variables
+            - name: Set env variables
               run: |
                   cd zowe-plugin-deploy-components
-                 echo "::set-env name=PKG_TAGS::$(node -p -e \"require(`./package.json').version\")"
-                 echo "::set-env name=PKG_NAME::$(node -p -e \"require(`./package.json').name\")"
+                  echo "::set-env name=PKG_TAGS::$(node -p -e \"require(`./package.json').version\")"
+                  echo "::set-env name=PKG_NAME::$(node -p -e \"require(`./package.json').name\")"
 
             - name: NPM Login
               run: |
