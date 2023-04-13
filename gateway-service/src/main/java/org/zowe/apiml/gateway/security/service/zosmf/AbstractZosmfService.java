@@ -77,30 +77,38 @@ public abstract class AbstractZosmfService {
      */
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-        final char[] password;
-        if (authentication.getCredentials() instanceof LoginRequest) {
-            LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
-            password = loginRequest.getPassword();
-        } else {
-            password = readPassword(authentication.getCredentials());
-        }
-
-        final byte[] userByteArray = user.getBytes(StandardCharsets.UTF_8);
-        final byte[] credentials = new byte[userByteArray.length + 1 + password.length];
-
-        int j = 0;
-        for (byte b : userByteArray) {
-            credentials[j++] = b;
-        }
-        credentials[j++] = (byte) ':';
+        char[] password = null;
+        byte[] credentials = null;
+        boolean cleanup = false;
         try {
+            if (authentication.getCredentials() instanceof LoginRequest) {
+                LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+                password = loginRequest.getPassword();
+            } else {
+                password = readPassword(authentication.getCredentials());
+                cleanup = !(authentication.getCredentials() instanceof char[]);
+            }
+
+            final byte[] userByteArray = user.getBytes(StandardCharsets.UTF_8);
+            credentials = new byte[userByteArray.length + 1 + password.length];
+
+            int j = 0;
+            for (byte b : userByteArray) {
+                credentials[j++] = b;
+            }
+            credentials[j++] = (byte) ':';
             for (char c : password) {
                 credentials[j++] = (byte) c;
             }
 
             return "Basic " + Base64.getEncoder().encodeToString(credentials);
         } finally {
-            Arrays.fill(credentials, (byte) 0);
+            if (credentials != null) {
+                Arrays.fill(credentials, (byte) 0);
+            }
+            if (cleanup) {
+                Arrays.fill(password, (char) 0);
+            }
         }
     }
 

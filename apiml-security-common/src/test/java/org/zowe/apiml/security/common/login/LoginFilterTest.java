@@ -104,7 +104,7 @@ class LoginFilterTest {
         doAnswer(invocation -> {
             UsernamePasswordAuthenticationToken authentication;
             if (newPassword == null) {
-                authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));;
+                authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD));
             } else {
                  authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD, NEW_PASSWORD));
             }

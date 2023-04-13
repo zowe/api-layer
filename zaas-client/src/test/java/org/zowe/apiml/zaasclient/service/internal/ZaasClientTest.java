@@ -11,6 +11,7 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,6 +23,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,8 +31,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
 import static org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE;
 
@@ -188,6 +189,78 @@ class ZaasClientTest {
         DefaultZaasClientConfiguration configuration = new DefaultZaasClientConfiguration();
         ConfigProperties properties = configuration.getConfigProperties();
         assertNotNull(properties);
+    }
+
+    @Nested
+    class DeprecatedMethods {
+
+        private ConfigProperties configProperties = new ConfigProperties();
+
+        {
+            configProperties.setHttpOnly(true);
+        }
+
+        @Test
+        void whenCallDeprecatedLogin_thenTheNewMethodIsCalledAndTempMemoryErased() throws ZaasClientException, ZaasConfigurationException {
+            ZaasClientImpl zaasClient = spy(new ZaasClientImpl(configProperties));
+            AtomicReference<char[]> passwordHolder = new AtomicReference<>();
+            doAnswer(invocation -> {
+                assertEquals("userId", invocation.getArgument(0));
+                passwordHolder.set(invocation.getArgument(1));
+                assertEquals("password", String.valueOf(passwordHolder.get()));
+                return null;
+            }).when(zaasClient).login(any(), (char[]) any());
+
+            zaasClient.login("userId", "password");
+
+            assertArrayEquals(new char[passwordHolder.get().length], passwordHolder.get());
+        }
+
+        @Test
+        void whenCallDeprecatedLoginWithNulls_thenItWorks() throws ZaasClientException, ZaasConfigurationException {
+            ZaasClientImpl zaasClient = spy(new ZaasClientImpl(configProperties));
+            doAnswer(invocation -> {
+                assertNull(invocation.getArgument(0));
+                assertNull(invocation.getArgument(1));
+                return null;
+            }).when(zaasClient).login(any(), (char[]) any());
+
+            zaasClient.login(null, (String) null);
+        }
+
+        @Test
+        void whenCallDeprecatedLoginToChangePassword_thenTheNewMethodIsCalledAndTempMemoryErased() throws ZaasClientException, ZaasConfigurationException {
+            ZaasClientImpl zaasClient = spy(new ZaasClientImpl(configProperties));
+            AtomicReference<char[]> passwordHolder = new AtomicReference<>();
+            AtomicReference<char[]> newPasswordHolder = new AtomicReference<>();
+            doAnswer(invocation -> {
+                assertEquals("userId", invocation.getArgument(0));
+                passwordHolder.set(invocation.getArgument(1));
+                newPasswordHolder.set(invocation.getArgument(2));
+                assertEquals("password", String.valueOf(passwordHolder.get()));
+                assertEquals("newPassword", String.valueOf(newPasswordHolder.get()));
+                return null;
+            }).when(zaasClient).login(any(), any(), (char[]) any());
+
+            zaasClient.login("userId", "password", "newPassword");
+
+            assertArrayEquals(new char[passwordHolder.get().length], passwordHolder.get());
+            assertArrayEquals(new char[newPasswordHolder.get().length], newPasswordHolder.get());
+        }
+
+        @Test
+        void whenCallDeprecatedLoginToChangePasswordWithNulls_thenItWorks() throws ZaasClientException, ZaasConfigurationException {
+            ZaasClientImpl zaasClient = spy(new ZaasClientImpl(configProperties));
+            doAnswer(invocation -> {
+                assertNull(invocation.getArgument(0));
+                assertNull(invocation.getArgument(1));
+                assertNull(invocation.getArgument(2));
+                return null;
+            }).when(zaasClient).login(any(), any(), (char[]) any());
+
+            zaasClient.login(null, null, (String) null);
+        }
+
     }
 
 }

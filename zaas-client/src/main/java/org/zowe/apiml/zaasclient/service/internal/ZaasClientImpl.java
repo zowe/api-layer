@@ -19,6 +19,7 @@ import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class ZaasClientImpl implements ZaasClient {
@@ -72,12 +73,30 @@ public class ZaasClientImpl implements ZaasClient {
 
     @Override
     public String login(String userId, String password, String newPassword) throws ZaasClientException {
-        return login(userId, password.toCharArray(), newPassword.toCharArray());
+        char[] passwordChars = password == null ? null : password.toCharArray();
+        char[] newPasswordChars = newPassword == null ? null : newPassword.toCharArray();
+        try {
+            return login(userId, passwordChars, newPasswordChars);
+        } finally {
+            if (passwordChars != null) {
+                Arrays.fill(passwordChars, (char) 0);
+            }
+            if (newPasswordChars != null) {
+                Arrays.fill(newPasswordChars, (char) 0);
+            }
+        }
     }
 
     @Override
     public String login(String userId, String password) throws ZaasClientException {
-        return login(userId, password.toCharArray());
+        char[] passwordChars = password == null ? null : password.toCharArray();
+        try {
+            return login(userId, passwordChars);
+        } finally {
+            if (passwordChars != null) {
+                Arrays.fill(passwordChars, (char) 0);
+            }
+        }
     }
 
     @Override
