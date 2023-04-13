@@ -1,14 +1,9 @@
 name: zowe CLI Deploy Component
 
 on:
-#    workflow_run:
-#        workflows: [ "zowe-cli-plugin-deployment" ]
-#        types: [ completed ]
-    push:
-        branches: [ v2.x.x ]
-    pull_request:
-        branches: [ v2.x.x ]
-    workflow_dispatch:
+    workflow_run:
+        workflows: [ "zowe-cli-plugin-deployment" ]
+        types: [ completed ]
 
 jobs:
     deploy:

@@ -7,10 +7,9 @@ on:
         branches: [ v2.x.x ]
     workflow_dispatch:
 
-
 jobs:
     release:
-  #      if: github.event_name == 'push' && github.ref_protected
+        if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
         timeout-minutes: 40
 

@@ -44,9 +44,7 @@ async function getPackageInfo(pkg, opts="", prop="version") {
     if (cmdOutput.length === 0) {
         throw new Error(`Property not found: ${prop}`);
     }
-    core.info(`viewArgs: ${viewArgs}`)
-    core.info(`cmdOutput: ${cmdOutput}`)
-    return cmdOutput;
+       return cmdOutput;
 }
 
 exports.execAndGetStderr = execAndGetStderr;
