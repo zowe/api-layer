@@ -39,6 +39,7 @@ jobs:
                   cd zowe-plugin-deploy-components
                   echo "::set-env name=PKG_TAGS::$(node -p -e \"require(`./package.json').version\")"
                   echo "::set-env name=PKG_NAME::$(node -p -e \"require(`./package.json').name\")"
+                  echo "package names are $PKG_TAGS $PKG_NAME"
 
             - name: NPM Login
               run: |
@@ -53,7 +54,7 @@ jobs:
               id: deploy
               run: |
                   cd zowe-plugin-deploy-components
-                  node scripts/deploy-components.js ${{ PKG_NAME }} ${{ PKG_TAGS }}
+                  node scripts/deploy-components.js  $PKG_NAME  $PKG_TAGS
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
  #                 PKG_NAME: ${{ PKG_NAME }}
