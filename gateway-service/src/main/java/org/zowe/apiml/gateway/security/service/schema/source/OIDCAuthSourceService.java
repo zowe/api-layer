@@ -75,6 +75,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
             }
             logger.log(MessageType.DEBUG, "Invalid auth source type provided.");
         }
+        logger.log(MessageType.DEBUG, "Authentication source is invalid.");
         return false;
     }
 
@@ -106,7 +107,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         logger.log(MessageType.DEBUG, "Parsing OIDC token.");
         QueryResponse response = authenticationService.parseJwtToken(token);
 
-        AuthSource.Origin origin = AuthSource.Origin.valueByIssuer(response.getSource().name());
+        AuthSource.Origin origin = AuthSource.Origin.valueByTokenSource(response.getSource());
         return new ParsedTokenAuthSource(mappedUser, response.getCreation(), response.getExpiration(), origin);
     }
 
@@ -129,7 +130,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
 
     public AuthSource.Origin getTokenOrigin(String zosmfToken) {
         QueryResponse response = authenticationService.parseJwtToken(zosmfToken);
-        return AuthSource.Origin.valueByIssuer(response.getSource().name());
+        return AuthSource.Origin.valueByTokenSource(response.getSource());
     }
 
 }
