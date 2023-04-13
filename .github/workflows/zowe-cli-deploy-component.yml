@@ -37,9 +37,9 @@ jobs:
             - name: Set env variables
               run: |
                   cd zowe-plugin-deploy-components
-                  echo "::set-env name=PKG_TAGS::$(node -p -e \"require('./package.json').version\")"
-                  echo "::set-env name=PKG_NAME::$(node -p -e \"require('./package.json').name\")"
-#                  echo "package names are $PKG_TAGS $PKG_NAME"
+                  echo "::set-env name=PKG_TAGS::$(node -p "require('./package.json').version")"
+                  echo "::set-env name=PKG_NAME::$(node -p "require('./package.json').name")"
+                  echo "package names are $PKG_TAGS $PKG_NAME"
 #                  pkgName=$(node -p "require('jsonfile').readFileSync('$pkgDir/package.json').name")
 
             - name: NPM Login
