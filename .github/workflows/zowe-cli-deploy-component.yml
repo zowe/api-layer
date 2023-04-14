@@ -1,15 +1,11 @@
 name: zowe CLI Deploy Component
 
 on:
-#    workflow_run:
-#        workflows: [ "zowe-cli-plugin-deployment" ]
-#        types: [ completed ]
-#
-        push:
-            branches: [ v2.x.x ]
-        pull_request:
-            branches: [ v2.x.x ]
-        workflow_dispatch:
+    workflow_run:
+        workflows: [ "zowe-cli-plugin-deployment" ]
+        branches: [ v2.x.x ]
+        types:
+            - completed
 
 jobs:
     deploy:
@@ -17,7 +13,6 @@ jobs:
 
         env:
             PKG_NAME: id-federation-for-zowe-cli
-  #          PKG_TAGS: latest
 
         steps:
             - name: Checkout
@@ -38,8 +33,6 @@ jobs:
               run: |
                   cd zowe-plugin-deploy-components
                   echo "PKG_TAGS='echo $(node -p "require('./package.json').version")'" >> $GITHUB_ENV
-                  echo "updated the env variables  ${{ env.PKG_NAME }} ${{ env.PKG_TAGS }}"
-##                  PKG_TAGS: {$(echo $(node -p "require('./package.json').version"))}
 
             - name: NPM Login
               run: |
