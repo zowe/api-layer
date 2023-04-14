@@ -33,7 +33,7 @@ import org.zowe.apiml.zaasclient.service.ZaasClient;
 @Import(DefaultZaasClientConfiguration.class)
 public class ZaasClientTestController {
 
-    private ZaasClient zaasClient;
+    private final ZaasClient zaasClient;
 
     public ZaasClientTestController(ZaasClient zaasClient) {
         this.zaasClient = zaasClient;
@@ -78,7 +78,7 @@ public class ZaasClientTestController {
 @NoArgsConstructor
 class LoginRequest {
     private String username;
-    private String password;
+    private char[] password;
 
 }
 

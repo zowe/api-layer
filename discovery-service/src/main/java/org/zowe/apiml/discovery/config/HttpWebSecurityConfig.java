@@ -10,19 +10,31 @@
 package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.SpringSecurityMessageSource;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Main class configuring Spring security for Discovery Service
@@ -43,14 +55,51 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private String eurekaUserid;
 
     @Value("${apiml.discovery.password:password}")
-    private String eurekaPassword;
+    private char[] eurekaPassword;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser(eurekaUserid).password("{noop}" + eurekaPassword).roles("EUREKA");
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
+        // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
+        auth.authenticationProvider(new AuthenticationProvider() {
+            private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                if (
+                    StringUtils.equals(eurekaUserid, String.valueOf(authentication.getPrincipal())) &&
+                        authentication.getCredentials() != null
+                ) {
+                    char[] credentials;
+                    if (authentication.getCredentials() instanceof char[]) {
+                        credentials = (char[]) authentication.getCredentials();
+                    } else {
+                        credentials = String.valueOf(authentication.getCredentials()).toCharArray();
+                    }
+
+                    if (Arrays.equals(eurekaPassword, credentials)) {
+                        UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
+                            authentication.getPrincipal(),
+                            authentication.getCredentials(),
+                            Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
+                        );
+                        result.setDetails(authentication.getDetails());
+
+                        return result;
+                    }
+                }
+
+                throw new BadCredentialsException(this.messages
+                    .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+            }
+
+            @Override
+            public boolean supports(Class<?> authentication) {
+                return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
+            }
+        });
     }
 
     private final HandlerInitializer handlerInitializer;

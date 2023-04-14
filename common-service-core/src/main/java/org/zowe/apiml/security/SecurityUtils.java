@@ -30,7 +30,7 @@ import java.util.*;
 @UtilityClass
 public class SecurityUtils {
 
-    private ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
+    private final ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
 
     public static final String SAFKEYRING = "safkeyring";
 
@@ -241,4 +241,18 @@ public class SecurityUtils {
         }
         return kp;
     }
+
+    public static char[] readPassword(Object value) {
+        if (value == null) return new char[0];
+
+        if (value instanceof char[]) {
+            return (char[]) value;
+        }
+        if (!(value instanceof String)) {
+            value = value.toString();
+        }
+
+        return ((String) value).toCharArray();
+    }
+
 }

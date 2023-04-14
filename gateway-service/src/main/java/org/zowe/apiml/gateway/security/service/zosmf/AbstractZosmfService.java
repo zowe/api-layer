@@ -27,11 +27,11 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.EurekaUtils;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.function.Supplier;
+
+import static org.zowe.apiml.security.SecurityUtils.readPassword;
 
 @Slf4j
 public abstract class AbstractZosmfService {
@@ -76,15 +76,40 @@ public abstract class AbstractZosmfService {
      */
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-        final String password;
-        if (authentication.getCredentials() instanceof LoginRequest) {
-            LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
-            password = loginRequest.getPassword();
-        } else {
-            password = (String) authentication.getCredentials();
+        char[] password = null;
+        boolean cleanup = false;
+        byte[] credentials = null;
+        try {
+            if (authentication.getCredentials() instanceof LoginRequest) {
+                LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+                password = loginRequest.getPassword();
+            } else {
+                password = readPassword(authentication.getCredentials());
+                cleanup = !(authentication.getCredentials() instanceof char[]);
+            }
+
+            final byte[] userByteArray = user.getBytes(StandardCharsets.UTF_8);
+            credentials = new byte[userByteArray.length + 1 + password.length];
+
+            int j = 0;
+            for (byte b : userByteArray) {
+                credentials[j++] = b;
+            }
+            credentials[j++] = (byte) ':';
+
+            for (char c : password) {
+                credentials[j++] = (byte) c;
+            }
+
+            return "Basic " + Base64.getEncoder().encodeToString(credentials);
+        } finally {
+            if (cleanup) {
+                Arrays.fill(password, (char) 0);
+            }
+            if (credentials != null) {
+                Arrays.fill(credentials, (byte) 0);
+            }
         }
-        final String credentials = user + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }
 
     /**

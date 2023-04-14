@@ -9,14 +9,17 @@
  */
 package org.zowe.apiml.caching.service.redis.config;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.config.GeneralConfig;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 
 @Data
@@ -27,11 +30,11 @@ import java.util.List;
 public class RedisConfig {
     private static final int DEFAULT_PORT = 6379;
     private static final String DEFAULT_USER = "default";
-    private static final String DEFAULT_PASSWORD = "";
+    private static final char[] DEFAULT_PASSWORD = "".toCharArray();
 
     private static final String AUTHENTICATION_SEPARATOR = "@";
     private static final String PORT_SEPARATOR = ":";
-    private static final String CREDENTIALS_SEPARATOR = ":";
+    private static final char CREDENTIALS_SEPARATOR = ':';
 
     private Integer timeout = 60;
     private String masterNodeUri;
@@ -40,7 +43,7 @@ public class RedisConfig {
     private String host;
     private Integer port = DEFAULT_PORT;
     private String username = DEFAULT_USER;
-    private String password = DEFAULT_PASSWORD;
+    private char[] password = DEFAULT_PASSWORD;
     private Sentinel sentinel;
     private SslConfig ssl;
 
@@ -71,7 +74,7 @@ public class RedisConfig {
         public static class SentinelNode {
             private String host;
             private Integer port;
-            private String password;
+            private char[] password;
 
             public SentinelNode(String nodeUri) {
                 NodeUriCredentials credentials = parseCredentialsFromUri(nodeUri);
@@ -111,13 +114,22 @@ public class RedisConfig {
 
         String credentials = nodeUri.substring(0, nodeUri.indexOf(AUTHENTICATION_SEPARATOR));
 
-        if (credentials.contains(CREDENTIALS_SEPARATOR)) {
-            // password and username provided
-            String[] splitCredentials = credentials.split(CREDENTIALS_SEPARATOR);
-            return new NodeUriCredentials(splitCredentials[0], splitCredentials[1]);
-        } else {
-            // only password provided
-            return new NodeUriCredentials(DEFAULT_USER, credentials);
+        char[] credentialsChars = null;
+        try {
+            credentialsChars = credentials.toCharArray();
+            int index = ArrayUtils.indexOf(credentialsChars, CREDENTIALS_SEPARATOR);
+            if (index >= 0) {
+                return new NodeUriCredentials(credentials.substring(0, index), Arrays.copyOfRange(credentialsChars, index + 1, credentialsChars.length));
+            } else {
+                NodeUriCredentials output = new NodeUriCredentials(DEFAULT_USER, credentialsChars);
+                credentialsChars = null; // do not clean up it
+
+                return output;
+            }
+        } finally {
+            if (credentialsChars != null) {
+                Arrays.fill(credentialsChars, (char) 0);
+            }
         }
     }
 
@@ -150,13 +162,9 @@ public class RedisConfig {
     }
 
     @Data
+    @AllArgsConstructor
     private static class NodeUriCredentials {
         private String username;
-        private String password;
-
-        public NodeUriCredentials(String username, String password) {
-            this.username = username;
-            this.password = password;
-        }
+        private char[] password;
     }
 }

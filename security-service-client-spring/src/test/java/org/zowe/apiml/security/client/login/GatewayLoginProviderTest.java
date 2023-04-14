@@ -28,8 +28,8 @@ import static org.mockito.Mockito.when;
 class GatewayLoginProviderTest {
 
     private static final String USER = "USER";
-    private static final String VALID_PASSWORD = "PASS";
-    private static final String INVALID_PASSWORD = "WORD";
+    private static final char[] VALID_PASSWORD = "PASS".toCharArray();
+    private static final char[] INVALID_PASSWORD = "WORD".toCharArray();
     private static final String VALID_TOKEN = "VALID_TOKEN";
 
     private final GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);

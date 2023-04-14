@@ -21,7 +21,7 @@ class RedisConfigTest {
     private static final int PORT = 1234;
     private static final String HOST = "host";
     private static final String USER = "user";
-    private static final String PASSWORD = "pass";
+    private static final char[] PASSWORD = "pass".toCharArray();
 
     private RedisConfig underTest;
 
@@ -51,22 +51,22 @@ class RedisConfigTest {
         class WhenParseMasterUriCredentials {
             @Test
             void givenUsernameAndPassword_thenUseBoth() {
-                String uri = String.format("%s:%s@%s", USER, PASSWORD, HOST);
+                String uri = String.format("%s:%s@%s", USER, new String(PASSWORD), HOST);
                 underTest.setMasterNodeUri(uri);
                 underTest.init();
 
                 assertEquals(USER, underTest.getUsername());
-                assertEquals(PASSWORD, underTest.getPassword());
+                assertArrayEquals(PASSWORD, underTest.getPassword());
             }
 
             @Test
             void givenOnlyPassword_thenUseGivenPasswordAndDefaultUsername() {
-                String uri = String.format("%s@%s", PASSWORD, HOST);
+                String uri = String.format("%s@%s", new String(PASSWORD), HOST);
                 underTest.setMasterNodeUri(uri);
                 underTest.init();
 
                 assertEquals("default", underTest.getUsername());
-                assertEquals(PASSWORD, underTest.getPassword());
+                assertArrayEquals(PASSWORD, underTest.getPassword());
             }
 
             @Test
@@ -75,7 +75,7 @@ class RedisConfigTest {
                 underTest.init();
 
                 assertEquals("default", underTest.getUsername());
-                assertEquals("", underTest.getPassword());
+                assertArrayEquals(new char[0], underTest.getPassword());
             }
         }
 
@@ -83,15 +83,15 @@ class RedisConfigTest {
         class WhenParseSentinelUriCredentials {
             @Test
             void givenPassword_thenSetPassword() {
-                String uri = String.format("%s@%s", PASSWORD, HOST);
+                String uri = String.format("%s@%s", new String(PASSWORD), HOST);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
-                assertEquals(PASSWORD, node.getPassword());
+                assertArrayEquals(PASSWORD, node.getPassword());
             }
 
             @Test
             void givenNoPassword_thenNoPassword() {
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(HOST);
-                assertEquals("", node.getPassword());
+                assertArrayEquals(new char[0], node.getPassword());
             }
         }
 
@@ -116,14 +116,14 @@ class RedisConfigTest {
 
             @Test
             void givenUsernameAndPasswordAndNoPort() {
-                String uri = String.format("%s:%s@%s", USER, PASSWORD, HOST);
+                String uri = String.format("%s:%s@%s", USER, new String(PASSWORD), HOST);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
                 assertEquals(HOST, node.getHost());
             }
 
             @Test
             void givenUsernameAndPasswordAndPort() {
-                String uri = String.format("%s:%s@%s:%d", USER, PASSWORD, HOST, PORT);
+                String uri = String.format("%s:%s@%s:%d", USER, new String(PASSWORD), HOST, PORT);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
                 assertEquals(HOST, node.getHost());
             }

@@ -52,8 +52,8 @@ import static org.zowe.apiml.security.common.config.AuthConfigurationProperties.
 class ZosmfAuthenticationProviderTest {
 
     private static final String USERNAME = "user";
-    private static final String PASSWORD = "password";
-    private static final String NEW_PASSWORD = "newPassword";
+    private static final char[] PASSWORD = "password".toCharArray();
+    private static final char[] NEW_PASSWORD = "newPassword".toCharArray();
     private static final String SERVICE_ID = "service";
     private static final String HOST = "localhost";
     private static final int PORT = 0;

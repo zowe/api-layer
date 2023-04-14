@@ -9,7 +9,8 @@
  */
 package org.zowe.apiml.zaasclient.service.internal;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -19,9 +20,10 @@ import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Objects;
 
-@Slf4j
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class ZaasClientImpl implements ZaasClient {
     private final TokenService tokens;
     private final PassTicketService passTickets;
@@ -48,10 +50,9 @@ public class ZaasClientImpl implements ZaasClient {
         }
     }
 
-    private CloseableClientProvider getTokenProviderWithoutCert (
+    private CloseableClientProvider getTokenProviderWithoutCert(
         ConfigProperties configProperties,
-        CloseableClientProvider defaultCloseableClientProvider) throws ZaasConfigurationException
-    {
+        CloseableClientProvider defaultCloseableClientProvider) throws ZaasConfigurationException {
         if (configProperties.isHttpOnly()) {
             return defaultCloseableClientProvider;
         }
@@ -66,22 +67,45 @@ public class ZaasClientImpl implements ZaasClient {
         }
     }
 
-    ZaasClientImpl(TokenService tokens, PassTicketService passTickets) {
-        this.tokens = tokens;
-        this.passTickets = passTickets;
+    @Override
+    public String login(String userId, String password, String newPassword) throws ZaasClientException {
+        char[] pass = password == null ? null : password.toCharArray();
+        char[] newPass = newPassword == null ? null : newPassword.toCharArray();
+        try {
+            return login(userId, pass, newPass);
+        } finally {
+            if (pass != null) {
+                Arrays.fill(pass, (char) 0);
+            }
+            if (newPass != null) {
+                Arrays.fill(newPass, (char) 0);
+            }
+        }
     }
 
     @Override
-    public String login(String userId, String password, String newPassword) throws ZaasClientException {
-        if (userId == null || password == null || newPassword == null || userId.isEmpty() || password.isEmpty() || newPassword.isEmpty()) {
+    public String login(String userId, String password) throws ZaasClientException {
+        char[] pass = password == null ? null : password.toCharArray();
+        try {
+            return login(userId, pass);
+        } finally {
+            if (pass != null) {
+                Arrays.fill(pass, (char) 0);
+            }
+        }
+    }
+
+    @Override
+    public String login(String userId, char[] password, char[] newPassword) throws ZaasClientException {
+        if (userId == null || password == null || newPassword == null || userId.isEmpty() || password.length == 0 || newPassword.length == 0) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
         return tokens.login(userId, password, newPassword);
     }
 
     @Override
-    public String login(String userId, String password) throws ZaasClientException {
-        if (userId == null || password == null || userId.isEmpty() || password.isEmpty()) {
+    public String login(String userId, char[] password) throws ZaasClientException {
+        if (userId == null || password == null || userId.isEmpty() || password.length == 0) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
         return tokens.login(userId, password);
@@ -108,7 +132,8 @@ public class ZaasClientImpl implements ZaasClient {
 
     @Override
     @SuppressWarnings("squid:S2147")
-    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
+    public String passTicket(String jwtToken, String applicationId) throws
+        ZaasClientException, ZaasConfigurationException {
         if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
             throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
         }

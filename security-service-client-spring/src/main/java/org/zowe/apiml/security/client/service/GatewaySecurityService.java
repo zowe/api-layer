@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.security.client.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -20,6 +18,7 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.Optional;
@@ -45,16 +44,12 @@ public class GatewaySecurityService {
      * @param password Password
      * @return Valid JWT token for the supplied credentials
      */
-    public Optional<String> login(String username, String password) {
+    public Optional<String> login(String username, char[] password) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode loginRequest = mapper.createObjectNode();
-        loginRequest.put("username", username);
-        loginRequest.put("password", password);
-
+        LoginRequest loginRequest = new LoginRequest(username, password);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -70,6 +65,9 @@ public class GatewaySecurityService {
             ErrorType errorType = getErrorType(e);
             responseHandler.handleBadResponse(e, errorType,
                 "Cannot access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
+        } finally {
+            // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
+            loginRequest.evictSensitiveData();
         }
         return Optional.empty();
     }

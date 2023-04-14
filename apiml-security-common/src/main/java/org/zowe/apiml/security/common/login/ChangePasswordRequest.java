@@ -22,13 +22,14 @@ public class ChangePasswordRequest {
     @JsonProperty("userID")
     private String username;
     @JsonProperty("oldPwd")
-    private String password;
+    private char[] password;
     @JsonProperty("newPwd")
-    private String newPassword;
+    private char[] newPassword;
 
     public ChangePasswordRequest(LoginRequest loginRequest) {
         this.username = loginRequest.getUsername();
         this.password = loginRequest.getPassword();
         this.newPassword = loginRequest.getNewPassword();
     }
+
 }

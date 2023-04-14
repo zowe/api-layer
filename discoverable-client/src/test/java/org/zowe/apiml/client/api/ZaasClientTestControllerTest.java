@@ -49,8 +49,8 @@ class ZaasClientTestControllerTest {
 
     @Test
     void forwardLoginTest_successfulLogin() throws Exception {
-        LoginRequest loginRequest = new LoginRequest("username", "password");
-        when(zaasClient.login("username", "password")).thenReturn("token");
+        LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray());
+        when(zaasClient.login("username", "password".toCharArray())).thenReturn("token");
 
         this.mockMvc.perform(
             post("/api/v1/zaasClient/login")
@@ -61,8 +61,8 @@ class ZaasClientTestControllerTest {
 
     @Test
     void forwardLoginTest_invalidCredentials() throws Exception {
-        LoginRequest loginRequest = new LoginRequest("incorrectUser", "incorrectPass");
-        when(zaasClient.login("incorrectUser", "incorrectPass"))
+        LoginRequest loginRequest = new LoginRequest("incorrectUser", "incorrectPass".toCharArray());
+        when(zaasClient.login("incorrectUser", "incorrectPass".toCharArray()))
             .thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION));
 
         this.mockMvc.perform(
