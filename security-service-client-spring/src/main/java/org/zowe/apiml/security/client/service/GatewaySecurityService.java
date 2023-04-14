@@ -66,6 +66,7 @@ public class GatewaySecurityService {
             responseHandler.handleBadResponse(e, errorType,
                 "Cannot access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         } finally {
+            // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
             loginRequest.evictSensitiveData();
         }
         return Optional.empty();

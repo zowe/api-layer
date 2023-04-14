@@ -19,6 +19,7 @@ import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.zowe.apiml.security.SecurityUtils.readPassword;
@@ -40,24 +41,32 @@ public class GatewayLoginProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         String username = authentication.getPrincipal().toString();
-        char[] password;
-        if (authentication.getCredentials() instanceof LoginRequest) {
-            LoginRequest credentials = (LoginRequest) authentication.getCredentials();
-            password = credentials.getPassword();
-        } else {
-            password = readPassword(authentication.getCredentials());
+        char[] password = null;
+        boolean cleanup = false;
+        try {
+            if (authentication.getCredentials() instanceof LoginRequest) {
+                LoginRequest credentials = (LoginRequest) authentication.getCredentials();
+                password = credentials.getPassword();
+            } else {
+                password = readPassword(authentication.getCredentials());
+                cleanup = !(authentication.getCredentials() instanceof char[]);
+            }
+
+            Optional<String> token = gatewaySecurityService.login(username, password);
+
+            if (!token.isPresent()) {
+                throw new BadCredentialsException("Username or password are invalid.");
+            }
+
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(username, token.get());
+            tokenAuthentication.setAuthenticated(true);
+
+            return tokenAuthentication;
+        } finally {
+            if (cleanup) {
+                Arrays.fill(password, (char) 0);
+            }
         }
-
-        Optional<String> token = gatewaySecurityService.login(username, password);
-
-        if (!token.isPresent()) {
-            throw new BadCredentialsException("Username or password are invalid.");
-        }
-
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(username, token.get());
-        tokenAuthentication.setAuthenticated(true);
-
-        return tokenAuthentication;
     }
 
     @Override

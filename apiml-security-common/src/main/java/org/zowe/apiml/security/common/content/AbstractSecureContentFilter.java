@@ -71,8 +71,9 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
         Optional<AbstractAuthenticationToken> authenticationToken = extractContent(request);
 
         if (authenticationToken.isPresent()) {
+            Authentication authentication = null;
             try {
-                Authentication authentication = authenticationManager.authenticate(authenticationToken.get());
+                authentication = authenticationManager.authenticate(authenticationToken.get());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 filterChain.doFilter(request, response);
             } catch (AuthenticationException authenticationException) {
@@ -80,9 +81,9 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
             } catch (RuntimeException e) {
                 resourceAccessExceptionHandler.handleException(request, response, e);
             } finally {
-                Authentication authentication = authenticationToken.get();
+                // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
                 if (authentication != null) {
-                    Object credentials = authenticationToken.get().getCredentials();
+                    Object credentials = authentication.getCredentials();
                     if (credentials instanceof char[]) {
                         Arrays.fill((char[]) credentials, (char) 0);
                     }
