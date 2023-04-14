@@ -39,7 +39,7 @@ public class HttpSecurityUtils {
     private static String getCookie(URI loginUrl, String user, String password) throws IOException {
         HttpPost request = new HttpPost(loginUrl);
         HttpClient client = HttpClientUtils.client();
-        String credentials = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", user, password);
+        String credentials = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", user, new String(password));
         StringEntity payload = new StringEntity(credentials);
         request.setEntity(payload);
         request.setHeader("Content-type", "application/json");

@@ -25,7 +25,7 @@ public class SecurityRequests {
     private final String basePath;
 
     public Cookie validJwtToken() {
-        LoginRequest loginRequest = new LoginRequest("user", "user");
+        LoginRequest loginRequest = new LoginRequest("user", "user".toCharArray());
 
         return given()
             .contentType(JSON)

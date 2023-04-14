@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletRequest;
  * The implementations hide the actual methods used to obtain the information.
  */
 public interface ZaasClient {
+
     /**
-     * Tries to login a user and create a new password given the id, the password of the old user and the new password. Both passwords is expected in plain text.
+     * Tries to login a user and create a new password given the id, the password of the old user and the new password. Both passwords are expected in plain text.
      *
      * @param userId   Id of the user as the user is known to the authentication service.
      * @param password Current password of the user which is passed through to the authentication service.
@@ -30,7 +31,10 @@ public interface ZaasClient {
      * @return Valid JWT token obtained from the service
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *                             communication with service occurs, this exception with details is thrown.
+     *
+     * @deprecated recommended to switch to {@link #login(String, char[], char[])} to handle cleaning up of passwords in memory
      */
+    @Deprecated
     String login(String userId, String password, String newPassword) throws ZaasClientException;
 
     /**
@@ -41,8 +45,34 @@ public interface ZaasClient {
      * @return Valid JWT token obtained from the service
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *                             communication with service occurs, this exception with details is thrown.
+     *
+     * @deprecated recommended to switch to {@link #login(String, char[])} to handle cleaning up of passwords in memory
      */
+    @Deprecated
     String login(String userId, String password) throws ZaasClientException;
+
+    /**
+     * Tries to login a user and create a new password given the id, the password of the old user and the new password. Both passwords are expected in plain text.
+     *
+     * @param userId   Id of the user as the user is known to the authentication service.
+     * @param password Current password of the user which is passed through to the authentication service.
+     * @param newPassword New password that the user wants to set up.
+     * @return Valid JWT token obtained from the service
+     * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
+     *                             communication with service occurs, this exception with details is thrown.
+     */
+    String login(String userId, char[] password, char[] newPassword) throws ZaasClientException;
+
+    /**
+     * Tries to login a user given the id and the password of the user. The password is expected in plain text.
+     *
+     * @param userId   Id of the user as the user is known to the authentication service
+     * @param password Password of the user which is passed through to the authentication service.
+     * @return Valid JWT token obtained from the service
+     * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
+     *                             communication with service occurs, this exception with details is thrown.
+     */
+    String login(String userId, char[] password) throws ZaasClientException;
 
     /**
      * Tries to login a user given the information encoded in the format used by the Authorization HTTP header.
