@@ -88,6 +88,7 @@ public class GatewaySecurityService {
         } catch (IOException e) {
             responseHandler.handleException(e);
         } finally {
+            // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
             loginRequest.evictSensitiveData();
         }
         return Optional.empty();
