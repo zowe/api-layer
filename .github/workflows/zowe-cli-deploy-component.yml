@@ -33,7 +33,7 @@ jobs:
             - name: Install Dependencies
               run: |
                   cd zowe-cli-id-federation-plugin/zowe-plugin-deploy-components
-                  npm ci
+                  npm install
 
             - name: Set Environment variables
               run: |
