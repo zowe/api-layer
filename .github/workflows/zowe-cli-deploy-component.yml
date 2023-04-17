@@ -1,20 +1,13 @@
 name: zowe CLI Deploy Component
 
 on:
-#    workflow_run:
-#        workflows: [ "zowe-cli-plugin-deployment" ]
-#        branches: [ v2.x.x ]
-#        types:
-#            - completed
-    push:
-        branches: [ v2.x.x ]
-    pull_request:
-        branches: [ v2.x.x ]
-    workflow_dispatch:
+    workflow_run:
+        workflows: [ "zowe-cli-plugin-deployment" ]
+        types: [completed]
 
 jobs:
     deploy:
- #       if: github.event_name == 'push' && github.ref_protected
+        if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
 
         env:
