@@ -1,6 +1,11 @@
 name: zowe CLI Deploy Component
 
 on:
+#    workflow_run:
+#        workflows: [ "zowe-cli-plugin-deployment" ]
+#        branches: [ v2.x.x ]
+#        types:
+#            - completed
     push:
         branches: [ v2.x.x ]
     pull_request:
@@ -9,7 +14,7 @@ on:
 
 jobs:
     deploy:
-        if: github.event_name == 'push' && github.ref_protected
+ #       if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
 
         env:
@@ -27,17 +32,17 @@ jobs:
 
             - name: Install Dependencies
               run: |
-                  cd zowe-plugin-deploy-components
+                  cd zowe-cli-id-federation-plugin/zowe-plugin-deploy-components
                   npm ci
 
             - name: Set Environment variables
               run: |
-                  cd zowe-plugin-deploy-components
+                  cd zowe-cli-id-federation-plugin/zowe-plugin-deploy-components
                   echo "PKG_TAGS='echo $(node -p "require('./package.json').version")'" >> $GITHUB_ENV
 
             - name: NPM Login
               run: |
-                  cd zowe-plugin-deploy-components
+                  cd zowe-cli-id-federation-plugin/zowe-plugin-deploy-components
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
               env:
@@ -47,7 +52,7 @@ jobs:
             - name: Deploy Package
               id: deploy
               run: |
-                  cd zowe-plugin-deploy-components
+                  cd zowe-cli-id-federation-plugin/zowe-plugin-deploy-components
                   node scripts/deploy-components.js  ${{ env.PKG_NAME }}  ${{ env.PKG_TAGS }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
