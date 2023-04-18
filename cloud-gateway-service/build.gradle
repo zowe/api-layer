@@ -61,9 +61,9 @@ dependencies {
         exclude group: "org.bouncycastle", module: "bcprov-jdk15on"
         exclude group: "org.springframework", module: "spring-context"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-reactor-netty"
     }
-    implementation 'org.springframework.boot:spring-boot-starter-reactor-netty:2.7.7'
+    implementation 'io.projectreactor.netty:reactor-netty-core:1.1.6'
+    implementation 'io.projectreactor.netty:reactor-netty-http:1.1.6'
 
 
     implementation libraries.spring_context
