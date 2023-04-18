@@ -6,8 +6,8 @@ ext {
 
     springCloudCBVersion = '2.1.5'
     springCloudGatewayVersion = '3.1.4'
-    springSecurityVersion = '5.7.5!!'
-    springFrameworkVersion = '5.3.24!!'
+    springSecurityVersion = '5.7.8!!'
+    springFrameworkVersion = '5.3.27!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
