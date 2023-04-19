@@ -76,7 +76,7 @@ dependencies {
     annotationProcessor libraries.lombok
     annotationProcessor libraries.spring_boot_configuration_processor
 
-    implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
+    implementation group: 'io.swagger', name: 'swagger-models', version: swaggerCoreVersion
     implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.yaml", module: "snakeyaml"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
