@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -88,21 +90,25 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             return null;
         }
 
-        if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-            throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
-        }
-
-        UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
-
-        Authentication auth = null;
-
         try {
-            auth = this.getAuthenticationManager().authenticate(authentication);
-        } catch (RuntimeException ex) {
-            resourceAccessExceptionHandler.handleException(request, response, ex);
+            if (StringUtils.isBlank(loginRequest.getUsername()) || ArrayUtils.isEmpty(loginRequest.getPassword())) {
+                throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+            }
+
+            UsernamePasswordAuthenticationToken authentication
+                    = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+
+            Authentication auth = null;
+
+            try {
+                auth = this.getAuthenticationManager().authenticate(authentication);
+            } catch (RuntimeException ex) {
+                resourceAccessExceptionHandler.handleException(request, response, ex);
+            }
+            return auth;
+        } finally {
+            loginRequest.evictSensitiveData();
         }
-        return auth;
     }
 
 
@@ -153,10 +159,33 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @return the decoded credentials in {@link LoginRequest}
      */
     private static LoginRequest mapBase64Credentials(String base64Credentials) {
-        String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
-        int i = credentials.indexOf(':');
-        if (i > 0) {
-            return new LoginRequest(credentials.substring(0, i), credentials.substring(i + 1));
+        byte[] credentials = null;
+        try {
+            credentials = Base64.getDecoder().decode(base64Credentials);
+            int index = ArrayUtils.indexOf(credentials, (byte) ':');
+            if (index > 0) {
+                byte[] password = null;
+                char[] passwordChars;
+                try {
+                    password = Arrays.copyOfRange(credentials, index + 1, credentials.length);
+                    passwordChars = new char[password.length];
+                    for (int i = 0; i < password.length; i++) {
+                        passwordChars[i] = (char) password[i];
+                    }
+                    return new LoginRequest(
+                        new String(Arrays.copyOfRange(credentials, 0, index), StandardCharsets.UTF_8),
+                        passwordChars
+                    );
+                } finally {
+                    if (password != null) {
+                        Arrays.fill(password, (byte) 0);
+                    }
+                }
+            }
+        } finally {
+            if (credentials != null) {
+                Arrays.fill(credentials, (byte) 0);
+            }
         }
         throw new BadCredentialsException("Invalid basic authentication header");
     }

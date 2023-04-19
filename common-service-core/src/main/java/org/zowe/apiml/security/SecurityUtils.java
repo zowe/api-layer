@@ -264,4 +264,17 @@ public class SecurityUtils {
         }
         return kp;
     }
+
+    public static char[] readPassword(Object value) {
+        if (value == null) return new char[0];
+        if (value instanceof char[]) {
+            return (char[]) value;
+        }
+        if (!(value instanceof String)) {
+            value = value.toString();
+        }
+
+        return ((String) value).toCharArray();
+    }
+
 }

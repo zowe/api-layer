@@ -74,7 +74,7 @@ public class GatewayRequests {
         try {
             given()
                 .contentType(JSON)
-                .auth().basic(credentials.getUser(), credentials.getPassword())
+                .auth().basic(credentials.getUser(), new String(credentials.getPassword()))
             .when()
                 .post(getGatewayUriWithPath(Endpoints.SHUTDOWN))
             .then()

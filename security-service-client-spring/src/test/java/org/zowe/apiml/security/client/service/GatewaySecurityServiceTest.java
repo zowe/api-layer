@@ -40,8 +40,8 @@ import static org.mockito.Mockito.*;
 
 class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
-    private static final String PASSWORD = "pass";
-    private static final String NEW_PASSWORD = "newPass";
+    private static final char[] PASSWORD = "pass".toCharArray();
+    private static final char[] NEW_PASSWORD = "newPass".toCharArray();
     private static final String TOKEN = "token";
     private static final String GATEWAY_SCHEME = "https";
     private static final String GATEWAY_HOST = "localhost:10010";

@@ -24,6 +24,8 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import static org.zowe.apiml.security.SecurityUtils.readPassword;
+
 /**
  * Authentication provider for development purposes
  * <p>
@@ -55,11 +57,16 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
 
         try {
+            /*
+             * this implementation is just for testing purposes, therefore it is not necessary to use only array of
+             * characters. It is pretty complicated once tests use BCrypt
+             */
             String password;
             if (authentication.getCredentials() instanceof LoginRequest) {
-                password = ((LoginRequest) authentication.getCredentials()).getPassword();
+                LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+                password = new String(loginRequest.getPassword());
             } else {
-                password = (String) authentication.getCredentials();
+                password = new String(readPassword(authentication.getCredentials()));
             }
 
             authentication = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), password);
