@@ -75,13 +75,13 @@ public class QueryResponse implements EntryExpiration {
          * @return which system generated the JWT token
          */
         public static Source valueByIssuer(String issuer) {
-            if (StringUtils.equalsIgnoreCase(issuer, ZOSMF.name())) {
+            if (StringUtils.equalsIgnoreCase(issuer, ZOSMF.value)) {
                 return ZOSMF;
             }
-            if (StringUtils.equalsIgnoreCase(issuer, ZOWE.name())) {
+            if (StringUtils.equalsIgnoreCase(issuer, ZOWE.value)) {
                 return ZOWE;
             }
-            if (StringUtils.equalsIgnoreCase(issuer, ZOWE_PAT.name())) {
+            if (StringUtils.equalsIgnoreCase(issuer, ZOWE_PAT.value)) {
                 return ZOWE_PAT;
             }
             if (isValidURL(issuer)) {
