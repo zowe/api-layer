@@ -158,7 +158,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             void givenBasicAuth() {
                 verifyPassTicketHeaders(
                     given()
-                        .auth().preemptive().basic(USERNAME, PASSWORD)
+                        .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                         .when()
                         .get(requestUrl)
                         .then()
@@ -188,7 +188,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
                 verifyPassTicketHeaders(
                     given()
-                        .auth().preemptive().basic(USERNAME, PASSWORD)
+                        .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                         .cookie(cookie, token)
                         .when()
                         .get(requestUrl)

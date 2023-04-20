@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChangePasswordRequestTest {
-    public static final String NEW_PASS = "newPass";
-    public static final String PASS = "pass";
+    public static final char[] NEW_PASS = "newPass".toCharArray();
+    public static final char[] PASS = "pass".toCharArray();
     public static final String USERNAME = "user";
 
     @Nested
@@ -28,8 +28,8 @@ class ChangePasswordRequestTest {
         @Test
         void thenMapConstructor() {
             assertEquals(loginRequest.getUsername(), changePasswordRequest.getUsername());
-            assertEquals(loginRequest.getPassword(), changePasswordRequest.getPassword());
-            assertEquals(loginRequest.getNewPassword(), changePasswordRequest.getNewPassword());
+            assertArrayEquals(loginRequest.getPassword(), changePasswordRequest.getPassword());
+            assertArrayEquals(loginRequest.getNewPassword(), changePasswordRequest.getNewPassword());
         }
     }
 }

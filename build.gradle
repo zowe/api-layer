@@ -58,6 +58,13 @@ allprojects {
     sourceCompatibility = 1.8
     version = version
 
+    eclipse {
+        classpath {
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
+
     idea {
         module {
             //noinspection GroovyAssignabilityCheck

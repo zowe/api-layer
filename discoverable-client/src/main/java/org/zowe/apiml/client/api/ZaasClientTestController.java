@@ -79,7 +79,7 @@ public class ZaasClientTestController {
 @NoArgsConstructor
 class LoginRequest {
     private String username;
-    private String password;
+    private char[] password;
 
 }
 
