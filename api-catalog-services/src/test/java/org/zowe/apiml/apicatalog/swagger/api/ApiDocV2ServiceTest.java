@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.swagger.models.*;
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
@@ -33,6 +35,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -40,6 +43,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -331,6 +335,21 @@ class ApiDocV2ServiceTest {
 
             assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
         }
+
+        @Test
+        void givenInputFile_thenParseItCorrectly() throws IOException {
+            GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder().scheme("https").hostname("localhost").build();
+            GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
+
+            ApiDocV2Service apiDocV2Service = new ApiDocV2Service(gatewayClient);
+            String transformed = apiDocV2Service.transformApiDoc("serviceId", new ApiDocInfo(
+                mock(ApiInfo.class),
+                IOUtils.toString(new ClassPathResource("swagger/swagger2.json").getInputStream(), StandardCharsets.UTF_8),
+                mock(RoutedServices.class)
+            ));
+            assertNotNull(transformed);
+        }
+
     }
 
     private String convertSwaggerToJson(Swagger swagger) {

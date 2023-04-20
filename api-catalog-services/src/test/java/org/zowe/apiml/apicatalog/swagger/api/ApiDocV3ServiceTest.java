@@ -19,9 +19,11 @@ import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
@@ -33,12 +35,14 @@ import org.zowe.apiml.product.routing.RoutedServices;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class ApiDocV3ServiceTest {
 
@@ -212,6 +216,21 @@ class ApiDocV3ServiceTest {
             assertThat(actualContent, containsString("\"style\":\"form\""));
             assertThat(actualContent, not(containsString("\"style\":\"FORM\"")));
         }
+
+        @Test
+        void givenInputFile_thenParseItCorrectly() throws IOException {
+            GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder().scheme("https").hostname("localhost").build();
+            GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
+
+            ApiDocV3Service apiDocV3Service = new ApiDocV3Service(gatewayClient);
+            String transformed = apiDocV3Service.transformApiDoc("serviceId", new ApiDocInfo(
+                    mock(ApiInfo.class),
+                    IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8),
+                    mock(RoutedServices.class)
+            ));
+            assertNotNull(transformed);
+        }
+
     }
 
     private String convertOpenApiToJson(OpenAPI openApi) {
