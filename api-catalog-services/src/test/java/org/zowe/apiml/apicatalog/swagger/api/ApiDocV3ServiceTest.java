@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -217,18 +218,33 @@ class ApiDocV3ServiceTest {
             assertThat(actualContent, not(containsString("\"style\":\"FORM\"")));
         }
 
+        private void verifyOpenApi3(OpenAPI openAPI) {
+            assertEquals("Sample of OpenAPI v3", openAPI.getInfo().getTitle());
+            assertEquals("Main server", openAPI.getServers().get(0).getDescription());
+            assertEquals("receive", openAPI.getPaths().get("/service/api/v1/endpoint").getPost().getOperationId());
+            assertNotNull(openAPI.getPaths().get("/service/api/v1/endpoint").getPost().getResponses().get("204"));
+        }
+
         @Test
         void givenInputFile_thenParseItCorrectly() throws IOException {
             GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder().scheme("https").hostname("localhost").build();
             GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
-            ApiDocV3Service apiDocV3Service = new ApiDocV3Service(gatewayClient);
+            AtomicReference<OpenAPI> openApiHolder = new AtomicReference<>();
+            ApiDocV3Service apiDocV3Service = new ApiDocV3Service(gatewayClient) {
+                @Override
+                protected void updateExternalDoc(OpenAPI openAPI, ApiDocInfo apiDocInfo) {
+                    super.updateExternalDoc(openAPI, apiDocInfo);
+                    openApiHolder.set(openAPI);
+                }
+            };
             String transformed = apiDocV3Service.transformApiDoc("serviceId", new ApiDocInfo(
                     mock(ApiInfo.class),
                     IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8),
                     mock(RoutedServices.class)
             ));
             assertNotNull(transformed);
+            verifyOpenApi3(openApiHolder.get());
         }
 
     }

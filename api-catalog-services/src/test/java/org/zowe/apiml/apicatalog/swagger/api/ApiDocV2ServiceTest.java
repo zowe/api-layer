@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -336,18 +337,32 @@ class ApiDocV2ServiceTest {
             assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
         }
 
+        private void verifySwagger2(Swagger swagger) {
+            assertEquals("APIML test API", swagger.getInfo().getTitle());
+            assertEquals("Example of GET endpoint", swagger.getPaths().get("/api/v1/").getGet().getSummary());
+            assertEquals("exampleResponse200",  swagger.getDefinitions().entrySet().iterator().next().getKey());
+        }
+
         @Test
         void givenInputFile_thenParseItCorrectly() throws IOException {
             GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder().scheme("https").hostname("localhost").build();
             GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
-            ApiDocV2Service apiDocV2Service = new ApiDocV2Service(gatewayClient);
+            AtomicReference<Swagger> swaggerHolder = new AtomicReference<>();
+            ApiDocV2Service apiDocV2Service = new ApiDocV2Service(gatewayClient) {
+                @Override
+                protected void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
+                    super.updateExternalDoc(swagger, apiDocInfo);
+                    swaggerHolder.set(swagger);
+                }
+            };
             String transformed = apiDocV2Service.transformApiDoc("serviceId", new ApiDocInfo(
                 mock(ApiInfo.class),
                 IOUtils.toString(new ClassPathResource("swagger/swagger2.json").getInputStream(), StandardCharsets.UTF_8),
                 mock(RoutedServices.class)
             ));
             assertNotNull(transformed);
+            verifySwagger2(swaggerHolder.get());
         }
 
     }
