@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Sample of OpenAPI v3",
+    "description": "For testing purposes - parse the doc file",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:8081/service/api/v1",
+      "description": "Main server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "tagName",
+      "description": "First tag in the list"
+    }
+  ],
+  "paths": {
+    "/endpoint": {
+      "post": {
+        "tags": [
+          "Receive data"
+        ],
+        "summary": "This endpoint returns a data",
+        "operationId": "receive",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Response",
+                "exampleSetFlag": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful - data were returned"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Response": {
+        "title": "Response object",
+        "type": "object",
+        "properties": {
+          "output": {
+            "type": "string",
+            "description": "data",
+            "exampleSetFlag": false
+          }
+        },
+        "exampleSetFlag": false
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "extensions": {}
+  }
+}

@@ -1,9 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration name="spring-DiscoveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration default="false" name="spring-DiscoveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="api-layer.discovery-service.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.discovery.DiscoveryServiceApplication" />
     <option name="ACTIVE_PROFILES" value="https" />
     <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="CLASSPATH_FILE" />
     <additionalParameters>
       <param>
         <option name="enabled" value="true" />
