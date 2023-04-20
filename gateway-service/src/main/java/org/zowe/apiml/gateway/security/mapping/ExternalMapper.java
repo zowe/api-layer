@@ -42,7 +42,6 @@ public abstract class ExternalMapper {
 
     private final CloseableHttpClient httpClientProxy;
     private final TokenCreationService tokenCreationService;
-    private final Type mapperType;
     private final AuthConfigurationProperties authConfigurationProperties;
 
     protected static final ObjectMapper objectMapper = new ObjectMapper();
@@ -110,14 +109,17 @@ public abstract class ExternalMapper {
             // do not introduce braking change - if externalMapperUrl for x509 has been already configured
             // with the /x509/map at the end then make sure to remove the suffix before
             // the mapper URI is constructed properly with the mapperType suffix
-            String url = StringUtils.removeEndIgnoreCase(externalMapperUrl, mapperType.getUrlSuffix());
+            String url = StringUtils.removeEndIgnoreCase(externalMapperUrl, getMapperType().getUrlSuffix());
             url = StringUtils.removeEnd(url, "/");
             try {
-                return new URI(url + mapperType.getUrlSuffix());
+                return new URI(url + getMapperType().getUrlSuffix());
             } catch (URISyntaxException e) {
                 log.debug("Configuration error: Failed to construct the external identity mapper URL.", e);
             }
         }
         return null;
     }
+
+    protected abstract Type getMapperType();
+
 }

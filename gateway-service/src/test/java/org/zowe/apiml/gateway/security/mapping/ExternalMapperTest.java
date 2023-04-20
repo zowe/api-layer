@@ -40,14 +40,18 @@ class ExternalMapperTest {
 
     class TestExternalMapper extends ExternalMapper {
         public TestExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
-            super(httpClientProxy, tokenCreationService, Type.X509, authConfigurationProperties);
+            super(httpClientProxy, tokenCreationService, authConfigurationProperties);
+        }
+
+        @Override
+        protected Type getMapperType() {
+            return Type.X509;
         }
     }
 
     private TestExternalMapper mapper;
     private TokenCreationService tokenCreationService;
 
-    private CloseableHttpClient closeableHttpClient;
     private CloseableHttpResponse httpResponse;
     private StatusLine statusLine;
     private HttpEntity responseEntity;
@@ -56,7 +60,7 @@ class ExternalMapperTest {
 
     @BeforeEach
     void setup() throws IOException {
-        closeableHttpClient = mock(CloseableHttpClient.class);
+        CloseableHttpClient closeableHttpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
         statusLine = mock(StatusLine.class);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
