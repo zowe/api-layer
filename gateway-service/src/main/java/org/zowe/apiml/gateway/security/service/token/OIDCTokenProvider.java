@@ -84,9 +84,10 @@ public class OIDCTokenProvider implements OIDCProvider {
         }
 
         if (StringUtils.isBlank(issuer) || !isValidURL(issuer)) {
-            log.warn("The OIDC token does not contain issuer claim or it is not valid URI. Cannot proceed with validation.");
+            log.warn("The OIDC token does not contain issuer claim or the claim is not valid. Cannot proceed with token validation.");
             return null;
         }
+
         HttpPost post = new HttpPost(issuer + "/v1/introspect");
         List<NameValuePair> bodyParams = new ArrayList<>();
         bodyParams.add(new BasicNameValuePair("token", token));
