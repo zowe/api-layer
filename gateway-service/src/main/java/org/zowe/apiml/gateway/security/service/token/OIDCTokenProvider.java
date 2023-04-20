@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.token;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -57,8 +58,8 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
+    @NonNull
     private final CloseableHttpClient httpClient;
-
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -72,10 +73,16 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
     private OIDCTokenClaims introspect(String token, String issuer) {
-        if (StringUtils.isBlank(token) || !isEnabled) {
-            log.debug("Either you did not enable the OIDC auth or you did not provide a valid token.");
+        if (!isEnabled) {
+            log.debug("OIDC is not enabled.");
             return null;
         }
+
+        if (StringUtils.isBlank(token)) {
+            log.debug("Provided token is invalid.");
+            return null;
+        }
+
         if (StringUtils.isBlank(issuer) || !isValidURL(issuer)) {
             log.warn("The OIDC token does not contain issuer claim or it is not valid URI. Cannot proceed with validation.");
             return null;
