@@ -2,6 +2,20 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.8.9 (2.8.2)`
+
+* Feature:  IDF distributed ID mapping for ACF2 security manager (#2847) ([1bb8281](https://github.com/zowe/api-layer/commit/1bb8281)), closes [#2847](https://github.com/zowe/api-layer/issues/2847)
+* Feature:  IDF distributed ID mapping for TSS security manager (#2846) ([e49b663](https://github.com/zowe/api-layer/commit/e49b663)), closes [#2846](https://github.com/zowe/api-layer/issues/2846)
+* Feature:  Implements Zowe CLI Identity Federation plugin - RACF part (#2811) ([2870a21](https://github.com/zowe/api-layer/commit/2870a21)), closes [#2811](https://github.com/zowe/api-layer/issues/2811)
+* Feature:  Unique authentication cookie name for multi instance deployment (#2812) ([6654271](https://github.com/zowe/api-layer/commit/6654271)), closes [#2812](https://github.com/zowe/api-layer/issues/2812)
+
+
+* Bugfix:  mitigate storing password in the memory (#2858) ([b1596eb](https://github.com/zowe/api-layer/commit/b1596eb)), closes [#2858](https://github.com/zowe/api-layer/issues/2858)
+* Bugfix:  mitigate storing password in the memory (#2867) ([3356b7c](https://github.com/zowe/api-layer/commit/3356b7c)), closes [#2867](https://github.com/zowe/api-layer/issues/2867)
+* Bugfix:  read response from http client (#2854) ([137be23](https://github.com/zowe/api-layer/commit/137be23)), closes [#2854](https://github.com/zowe/api-layer/issues/2854)
+* Bugfix:  passticket generation and limit eureka replication peers threads (#2845) ([42b491e](https://github.com/zowe/api-layer/commit/42b491e)), closes [#2845](https://github.com/zowe/api-layer/issues/2845)
+* Bugfix:  refactor SSL configuration (#2832) ([33f4882](https://github.com/zowe/api-layer/commit/33f4882)), closes [#2832](https://github.com/zowe/api-layer/issues/2832)
+
 ## `2.7.0 (2023-03-10)`
 
 * Feature:  Support of other keyring types (#2799) ([952bf2b](https://github.com/zowe/api-layer/commit/952bf2b)), closes [#2799](https://github.com/zowe/api-layer/issues/2799)
