@@ -101,5 +101,12 @@ public class UrlUtils {
         String hostname = baseUrl.getHost();
         return UrlUtils.getHostIPAddress(hostname);
     }
-
+    public static boolean isValidURL(String url) {
+        try {
+            new URL(url).toURI();
+            return true;
+        } catch (MalformedURLException | URISyntaxException e) {
+            return false;
+        }
+    }
 }

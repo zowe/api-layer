@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.cache.EntryExpiration;
+import org.zowe.apiml.util.UrlUtils;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -84,19 +85,10 @@ public class QueryResponse implements EntryExpiration {
             if (StringUtils.equalsIgnoreCase(issuer, ZOWE_PAT.value)) {
                 return ZOWE_PAT;
             }
-            if (isValidURL(issuer)) {
+            if (UrlUtils.isValidURL(issuer)) {
                 return OIDC;
             }
             throw new TokenNotValidException("Unknown token issued by: " + issuer);
-        }
-
-        private static boolean isValidURL(String url) {
-            try {
-                new URL(url).toURI();
-                return true;
-            } catch (MalformedURLException | URISyntaxException e) {
-                return false;
-            }
         }
     }
 
