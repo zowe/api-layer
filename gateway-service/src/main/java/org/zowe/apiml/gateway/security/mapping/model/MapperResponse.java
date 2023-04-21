@@ -24,7 +24,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 @AllArgsConstructor
 public class MapperResponse {
 
-    private static final String OIDC_FAILED_MESSAGE_KEY = "org.zowe.apiml.common.OIDCMappingFailed";
+    private static final String OIDC_FAILED_MESSAGE_KEY = "org.zowe.apiml.security.common.OIDCMappingFailed";
 
     @JsonProperty("userid")
     private String userId;
@@ -60,7 +60,7 @@ public class MapperResponse {
             }
             if (racfRs == 48) {
                 apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
-                    "There is no distributed identity filter mapping the supplied distributed identity to" +
+                    "There is no distributed identity filter mapping of the supplied distributed identity to" +
                         " a SAF user ID, or the IDIDMAP SAF general resource class is not active or not RACLISTed.");
 
                 return false;

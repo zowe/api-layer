@@ -54,7 +54,7 @@ public abstract class ExternalMapper {
 
     MapperResponse callExternalMapper(@NotNull HttpEntity payload) {
         if (StringUtils.isBlank(externalMapperUser)) {
-            log.debug("Configuration error: External identity mapper user is not set.");
+            log.warn("Configuration error: External identity mapper user is not set.");
             return null;
         }
         try {
@@ -104,7 +104,7 @@ public abstract class ExternalMapper {
 
     private URI getMapperURI() {
         if (StringUtils.isBlank(externalMapperUrl)) {
-            log.debug("Configuration error: External identity mapper URL is not set.");
+            log.warn("Configuration error: External identity mapper URL is not set.");
         } else {
             // do not introduce braking change - if externalMapperUrl for x509 has been already configured
             // with the /x509/map at the end then make sure to remove the suffix before
@@ -114,7 +114,7 @@ public abstract class ExternalMapper {
             try {
                 return new URI(url + getMapperType().getUrlSuffix());
             } catch (URISyntaxException e) {
-                log.debug("Configuration error: Failed to construct the external identity mapper URL.", e);
+                log.warn("Configuration error: Failed to construct the external identity mapper URL.", e);
             }
         }
         return null;

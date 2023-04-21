@@ -77,7 +77,9 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
                     ((OIDCAuthSource) authSource).setDistributedId(tokenClaims.getUserId());
                     return true;
                 }
+                logger.log(MessageType.DEBUG, "OIDC token is not valid or the validation failed.");
             }
+            logger.log(MessageType.DEBUG, "Invalid auth source type provided.");
         }
         return false;
     }

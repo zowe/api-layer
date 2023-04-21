@@ -59,11 +59,11 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             }
 
         } catch (UnsupportedEncodingException e) {
-            apimlLog.log("org.zowe.apiml.common.OIDCMappingError",
+            apimlLog.log("org.zowe.apiml.security.common.OIDCMappingError",
                 "Unable to encode payload for identity mapping request",
                 e.getMessage());
         } catch (JsonProcessingException e) {
-            apimlLog.log("org.zowe.apiml.common.OIDCMappingError",
+            apimlLog.log("org.zowe.apiml.security.common.OIDCMappingError",
                 "Unable to generate JSON payload for identity mapping request",
                 e.getMessage());
         }

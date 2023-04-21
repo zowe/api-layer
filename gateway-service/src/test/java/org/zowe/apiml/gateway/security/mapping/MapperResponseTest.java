@@ -10,10 +10,11 @@
 
 package org.zowe.apiml.gateway.security.mapping;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MapperResponseTest {
 
@@ -23,10 +24,42 @@ class MapperResponseTest {
     private static final int RACFRC = 3;
     private static final int RACFREASON = 4;
 
-    @Test
-    void testMapperResponseToString() {
-        MapperResponse response = new MapperResponse(USER, RC, SAFRC, RACFRC, RACFREASON);
-        String expected = "User: ZOSUSER, rc=1, safRc=2, racfRc=3, racfRs=4";
-        assertEquals(expected, response.toString());
+
+    @Nested
+    class GivenAnyMapperResponse {
+        @Test
+        void thenDisplayToString() {
+            MapperResponse response = new MapperResponse(USER, RC, SAFRC, RACFRC, RACFREASON);
+            String expected = "User: ZOSUSER, rc=1, safRc=2, racfRc=3, racfRs=4";
+            assertEquals(expected, response.toString());
+        }
+    }
+
+    @Nested
+    class GivenValidatingResponse {
+
+        @Test
+        void whenExpectedValues_thenResponseIsValid() {
+            MapperResponse response = new MapperResponse("user", 0, 0, 0, 0);
+            assertTrue(response.isOIDCResultValid());
+        }
+
+        @Test
+        void whenWrongMapperInput_thenResponseIsInvalid() {
+            MapperResponse response = new MapperResponse("", 8, 8, 8, 44);
+            assertFalse(response.isOIDCResultValid());
+        }
+
+        @Test
+        void whenMappingNotExist_thenResponseIsInvalid() {
+            MapperResponse response = new MapperResponse("", 8, 8, 8, 48);
+            assertFalse(response.isOIDCResultValid());
+        }
+
+        @Test
+        void whenUnexpectedResponse_thenResponseIsInvalid() {
+            MapperResponse response = new MapperResponse(USER, RC, SAFRC, RACFRC, RACFREASON);
+            assertFalse(response.isOIDCResultValid());
+        }
     }
 }
