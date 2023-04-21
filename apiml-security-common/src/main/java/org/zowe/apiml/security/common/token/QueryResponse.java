@@ -18,9 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.cache.EntryExpiration;
 import org.zowe.apiml.util.UrlUtils;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
