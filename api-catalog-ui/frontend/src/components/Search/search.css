@@ -9,6 +9,8 @@
 .filtering-container .search-bar {
     height: 50px;
     width: 422px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @media only screen and (max-width: 530px) {

@@ -121,10 +121,10 @@ export default class Dashboard extends Component {
                     <div className="apis">
                         <div id="grid-container">
                             <div className="filtering-container">
+                                <h4 className="api-heading">Available API services</h4>
                                 <Shield title="Search Bar is broken !">
                                     <SearchCriteria placeholder="Search for APIs" doSearch={this.handleSearch} />
                                 </Shield>
-                                <h2 className="api-heading">Available API services</h2>
                             </div>
                             {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles && hasSearchCriteria && (
