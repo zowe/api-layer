@@ -6,6 +6,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 * Feature: A unique authentication cookie name has been added for multi-instance deployment (#2812) ([6654271](https://github.com/zowe/api-layer/commit/6654271)), closes [#2812](https://github.com/zowe/api-layer/issues/2812)
 
+* Bugfix: Parsing OpenAPI v2 Swagger files by API Catalog (#2876) ([cc45774](https://github.com/zowe/api-layer/commit/cc45774)), closes [#2876](https://github.com/zowe/api-layer/pull/2876)
 * Bugfix: Mitigate storing password in memory for V2 (#2858) ([b1596eb](https://github.com/zowe/api-layer/commit/b1596eb)), closes [#2858](https://github.com/zowe/api-layer/issues/2858)
 * Bugfix: Mitigate storing password in memory for V1 (#2867) ([3356b7c](https://github.com/zowe/api-layer/commit/3356b7c)), closes [#2867](https://github.com/zowe/api-layer/issues/2867)
 * Bugfix: Read response from http client to prevent exahusting connection pool (#2854) ([137be23](https://github.com/zowe/api-layer/commit/137be23)), closes [#2854](https://github.com/zowe/api-layer/issues/2854)
