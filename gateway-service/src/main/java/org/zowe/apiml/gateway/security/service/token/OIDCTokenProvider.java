@@ -47,6 +47,9 @@ import java.util.List;
 @Slf4j
 public class OIDCTokenProvider implements OIDCProvider {
 
+    @Value("${apiml.security.oidc.introspectEndpoint:/introspect")
+    private String introspectEndpoint;
+
     @Value("${apiml.security.oidc.clientId:}")
     private String clientId;
 
@@ -88,7 +91,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             return null;
         }
 
-        HttpPost post = new HttpPost(issuer + "/v1/introspect");
+        HttpPost post = new HttpPost(issuer + introspectEndpoint);
         List<NameValuePair> bodyParams = new ArrayList<>();
         bodyParams.add(new BasicNameValuePair("token", token));
         bodyParams.add(new BasicNameValuePair("token_type_hint", "access_token"));

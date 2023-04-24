@@ -101,6 +101,7 @@ jobs:
                 env:
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    APIML_SECURITY_OIDC_INTROSPECTENDPOINT: /v1/introspect
                     APIML_SECURITY_OIDC_ENABLED: true
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}

@@ -10,6 +10,7 @@ apiml:
             enabled: true
             clientId:
             clientSecret:
+            introspectEndpoint:
             registry:
         auth:
             zosmf:

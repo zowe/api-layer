@@ -73,6 +73,7 @@ apiml:
             enabled: false
             clientId:
             clientSecret:
+            introspectEndpoint:
             registry:
         auth:
             jwt:
