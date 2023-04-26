@@ -50,12 +50,12 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             return null;
         }
 
-        if (registry.isEmpty()){
+        if (registry.isEmpty()) {
             log.warn("Missing registry name configuration. Cannot complete identity mapping request.");
             return null;
         }
         final String distributedId = ((OIDCAuthSource) authSource).getDistributedId();
-        if (distributedId.isEmpty()){
+        if (distributedId.isEmpty()) {
             log.warn("Authentication source is missing the distributed ID. Cannot complete identity mapping request.");
             return null;
         }
