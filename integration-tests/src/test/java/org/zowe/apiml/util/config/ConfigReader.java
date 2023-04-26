@@ -122,6 +122,9 @@ public class ConfigReader {
                     configuration.getCloudGatewayConfiguration().setHost(System.getProperty("cloud-gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
                     configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
 
+                    configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
+                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
+
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
 
