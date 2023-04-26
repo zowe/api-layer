@@ -32,11 +32,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.security.common.token.OIDCProvider;
+import org.zowe.apiml.util.UrlUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -86,7 +84,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             return null;
         }
 
-        if (StringUtils.isBlank(issuer) || !isValidURL(issuer)) {
+        if (StringUtils.isBlank(issuer) || !UrlUtils.isValidUrl(issuer)) {
             log.warn("The OIDC token does not contain issuer claim or the claim is not valid. Cannot proceed with token validation.");
             return null;
         }
@@ -120,15 +118,6 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.error("Failed to validate the OIDC access token. ", e);
         }
         return null;
-    }
-
-    private static boolean isValidURL(String url) {
-        try {
-            new URL(url).toURI();
-            return true;
-        } catch (MalformedURLException | URISyntaxException e) {
-            return false;
-        }
     }
 
 }
