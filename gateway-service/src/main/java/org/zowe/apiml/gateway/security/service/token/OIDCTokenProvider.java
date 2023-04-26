@@ -47,7 +47,7 @@ import java.util.List;
 @Slf4j
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.security.oidc.introspectEndpoint:/introspect")
+    @Value("${apiml.security.oidc.introspectEndpoint:/introspect}")
     private String introspectEndpoint;
 
     @Value("${apiml.security.oidc.clientId:}")
