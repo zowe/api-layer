@@ -25,6 +25,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,11 +100,13 @@ public class OIDCTokenProvider implements OIDCProvider {
         try {
             CloseableHttpResponse response = httpClient.execute(post);
             final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
-            if (statusCode == HttpStatus.SC_OK) {
-                HttpEntity responseEntity = response.getEntity();
-                if (responseEntity != null) {
-                    return mapper.readValue(responseEntity.getContent(), OIDCTokenClaims.class);
-                }
+            final HttpEntity responseEntity = response.getEntity();
+            String responseBody = "";
+            if (responseEntity != null) {
+                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            }
+            if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
+                return mapper.readValue(responseBody, OIDCTokenClaims.class);
             } else {
                 log.error("Failed to validate the OIDC access token. Unexpected response: {}", statusCode);
                 return null;
