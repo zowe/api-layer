@@ -69,7 +69,7 @@ public abstract class ExternalMapper {
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
             httpPost.setHeader(new BasicHeader("Cookie", authConfigurationProperties.getCookieProperties().getCookieName() + "=" + jwtToken));
             log.debug("Executing request against external identity mapper API: {}", httpPost);
-            if (mapperType.equals(Type.OIDC)) {
+            if (getMapperType().equals(Type.OIDC)) {
                 httpPost.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
             }
             HttpResponse httpResponse = httpClientProxy.execute(httpPost);
