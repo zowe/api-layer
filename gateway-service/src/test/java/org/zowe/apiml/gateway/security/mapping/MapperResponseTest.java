@@ -61,5 +61,11 @@ class MapperResponseTest {
             MapperResponse response = new MapperResponse(USER, RC, SAFRC, RACFRC, RACFREASON);
             assertFalse(response.isOIDCResultValid());
         }
+
+        @Test
+        void whenNotAuthorized_thenResponseIsInvalid() {
+            MapperResponse response = new MapperResponse("", 8, 8, 8, 20);
+            assertFalse(response.isOIDCResultValid());
+        }
     }
 }
