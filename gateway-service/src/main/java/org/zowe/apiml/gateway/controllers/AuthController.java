@@ -25,6 +25,7 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -69,6 +70,8 @@ public class AuthController {
     private final MessageService messageService;
 
     private final AccessTokenProvider tokenProvider;
+
+    @Nullable
     private final OIDCProvider oidcProvider;
     private final WebFingerProvider webFingerProvider;
 

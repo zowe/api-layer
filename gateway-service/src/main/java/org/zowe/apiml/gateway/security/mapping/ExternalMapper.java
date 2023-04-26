@@ -47,9 +47,9 @@ public abstract class ExternalMapper {
     protected static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${apiml.security.x509.externalMapperUrl:}")
-    private String externalMapperUrl;
+    protected String externalMapperUrl;
     @Value("${apiml.security.x509.externalMapperUser:}")
-    private String externalMapperUser;
+    protected String externalMapperUser;
 
     MapperResponse callExternalMapper(@NotNull HttpEntity payload) {
         if (StringUtils.isBlank(externalMapperUser)) {

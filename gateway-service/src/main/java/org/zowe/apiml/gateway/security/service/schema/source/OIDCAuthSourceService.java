@@ -14,6 +14,7 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
@@ -31,6 +32,7 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCAuthSourceService extends TokenAuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
@@ -53,7 +55,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<String> getToken(RequestContext context) {
-        // TODO we should store the OIDC (including the PAT) in the apiml cookie in next future
         return authenticationService.getOIDCTokenFromRequest(context.getRequest());
     }
 

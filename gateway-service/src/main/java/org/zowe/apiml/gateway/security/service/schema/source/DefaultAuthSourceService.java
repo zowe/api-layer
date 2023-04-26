@@ -18,6 +18,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.AuthSourceType;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
@@ -60,7 +61,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
                                     PATAuthSourceService patAuthSourceService,
                                     @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled,
-                                    OIDCAuthSourceService oidcAuthSourceService,
+                                    @Nullable OIDCAuthSourceService oidcAuthSourceService,
                                     @Value("${apiml.security.oidc.enabled:false}") boolean isOIDCEnabled) {
         this.isPATEnabled = isPATEnabled;
         this.isOIDCEnabled = isOIDCEnabled;

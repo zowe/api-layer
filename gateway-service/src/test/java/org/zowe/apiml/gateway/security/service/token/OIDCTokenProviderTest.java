@@ -20,7 +20,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 
 import java.io.IOException;
@@ -36,7 +35,6 @@ class OIDCTokenProviderTest {
 
     private OIDCTokenProvider oidcTokenProvider;
     private CloseableHttpClient httpClient;
-    private CloseableHttpResponse response;
 
     private StatusLine responseStatusLine;
     private BasicHttpEntity responseEntity;
@@ -64,7 +62,7 @@ class OIDCTokenProviderTest {
     @BeforeEach
     void setup() throws CachingServiceClientException, IOException {
         httpClient = mock(CloseableHttpClient.class);
-        response = mock(CloseableHttpResponse.class);
+        CloseableHttpResponse response = mock(CloseableHttpResponse.class);
         responseStatusLine = mock(StatusLine.class);
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
@@ -73,7 +71,6 @@ class OIDCTokenProviderTest {
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
         oidcTokenProvider = new OIDCTokenProvider(httpClient);
-        ReflectionTestUtils.setField(oidcTokenProvider, "isEnabled", true);
     }
 
     @Nested
@@ -132,11 +129,7 @@ class OIDCTokenProviderTest {
         void whenIssuerIsNotURL_thenReturnInvalid() {
             assertFalse(oidcTokenProvider.isValid(TOKEN, "not valid url"));
         }
-        @Test
-        void whenProviderDisabled_thenReturnInvalid() {
-            ReflectionTestUtils.setField(oidcTokenProvider, "isEnabled", false);
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
-        }
+
     }
 
 }
