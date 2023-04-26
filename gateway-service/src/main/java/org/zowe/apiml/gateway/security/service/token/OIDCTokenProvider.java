@@ -75,7 +75,7 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     private OIDCTokenClaims introspect(String token, String issuer) {
         if (StringUtils.isBlank(token)) {
-            log.debug("Provided token is invalid.");
+            log.debug("No token has been provided.");
             return null;
         }
 

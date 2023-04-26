@@ -46,7 +46,6 @@ public abstract class ExternalMapper {
 
     protected static final ObjectMapper objectMapper = new ObjectMapper();
 
-    //TODO: shouldn't we rename it (remove X509) (without breaking change)
     @Value("${apiml.security.x509.externalMapperUrl:}")
     private String externalMapperUrl;
     @Value("${apiml.security.x509.externalMapperUser:}")

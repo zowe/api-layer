@@ -34,7 +34,7 @@ import java.io.UnsupportedEncodingException;
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
-    @Value("${apiml.security.oidc.registry}")
+    @Value("${apiml.security.oidc.registry:}")
     private String registry;
 
     @InjectApimlLogger
@@ -50,7 +50,16 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
             return null;
         }
 
-        OIDCRequest oidcRequest = new OIDCRequest(((OIDCAuthSource) authSource).getDistributedId(), registry);
+        if (registry.isEmpty()){
+            log.warn("Missing registry name configuration. Cannot complete identity mapping request.");
+            return null;
+        }
+        final String distributedId = ((OIDCAuthSource) authSource).getDistributedId();
+        if (distributedId.isEmpty()){
+            log.warn("Authentication source is missing the distributed ID. Cannot complete identity mapping request.");
+            return null;
+        }
+        OIDCRequest oidcRequest = new OIDCRequest(distributedId, registry);
         try {
             StringEntity payload = new StringEntity(objectMapper.writeValueAsString(oidcRequest));
             MapperResponse mapperResponse = callExternalMapper(payload);
