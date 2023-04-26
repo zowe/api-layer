@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.mapping.model.OIDCRequest;
@@ -30,6 +31,7 @@ import java.io.UnsupportedEncodingException;
 
 @Slf4j
 @Component("oidcMapper")
+@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
     @Value("${apiml.security.oidc.registry}")

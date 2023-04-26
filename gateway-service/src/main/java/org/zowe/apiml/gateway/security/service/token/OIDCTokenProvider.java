@@ -28,6 +28,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 @Slf4j
+@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
     @Value("${apiml.security.oidc.introspectEndpoint:/introspect}")
@@ -53,9 +55,6 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Value("${apiml.security.oidc.clientSecret:}")
     private String clientSecret;
-
-    @Value("${apiml.security.oidc.enabled:false}")
-    private boolean isEnabled;
 
     @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
@@ -74,11 +73,6 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
     private OIDCTokenClaims introspect(String token, String issuer) {
-        if (!isEnabled) {
-            log.debug("OIDC is not enabled.");
-            return null;
-        }
-
         if (StringUtils.isBlank(token)) {
             log.debug("Provided token is invalid.");
             return null;
