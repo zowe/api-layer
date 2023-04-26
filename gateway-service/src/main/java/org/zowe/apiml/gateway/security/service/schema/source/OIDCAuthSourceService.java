@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,24 +30,16 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class OIDCAuthSourceService extends TokenAuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
+    @Qualifier("oidcMapper")
     private final AuthenticationMapper mapper;
     private final AuthenticationService authenticationService;
     private final OIDCProvider oidcProvider;
     private final TokenCreationService tokenService;
-
-    public OIDCAuthSourceService(@Qualifier("oidcMapper") AuthenticationMapper mapper,
-                                 AuthenticationService authenticationService,
-                                 OIDCProvider oidcProvider,
-                                 TokenCreationService tokenService) {
-        this.mapper = mapper;
-        this.authenticationService = authenticationService;
-        this.oidcProvider = oidcProvider;
-        this.tokenService = tokenService;
-    }
 
     @Override
     protected ApimlLogger getLogger() {
