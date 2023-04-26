@@ -55,8 +55,8 @@ public class MapperResponse {
             switch (racfRs) {
                 case 20:
                     apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
-                        "Not authorized to use this service. Make sure that the Zowe user has READ access to" +
-                            " the IRR.IDIDMAP.QUERY resource in the FACILITY class.");
+                        "Not authorized to use this service. Make sure that user '" + userId + "' has READ" +
+                            " access to the IRR.IDIDMAP.QUERY resource in the FACILITY class.");
                     return false;
                 case 44:
                     apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
