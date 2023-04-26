@@ -10,8 +10,9 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import java.util.function.Function;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,8 +28,9 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.Optional;
-import java.util.function.Function;
+import com.netflix.zuul.context.RequestContext;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
