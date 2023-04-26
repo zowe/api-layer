@@ -82,7 +82,7 @@ public class QueryResponse implements EntryExpiration {
             if (StringUtils.equalsIgnoreCase(issuer, ZOWE_PAT.value)) {
                 return ZOWE_PAT;
             }
-            if (UrlUtils.isValidURL(issuer)) {
+            if (UrlUtils.isValidUrl(issuer)) {
                 return OIDC;
             }
             throw new TokenNotValidException("Unknown token issued by: " + issuer);

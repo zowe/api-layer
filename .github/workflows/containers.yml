@@ -116,7 +116,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runOauth2Tests --info -Denvironment.config=-docker -Denvironment.offPlatform=true -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }}
+                    ./gradlew :integration-tests:runOidcTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }}
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   uses: ./.github/actions/teardown
