@@ -30,11 +30,12 @@ apiml:
     security:
         personalAccessToken:
             enabled: true
-        oAuth:
+        oidc:
             enabled: false
             clientId:
             clientSecret:
-            validationUrl:
+            introspectEndpoint:
+            registry:
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5

@@ -69,11 +69,12 @@ apiml:
         jwtInitializerTimeout: 5
         personalAccessToken:
             enabled: false
-        oAuth:
+        oidc:
             enabled: false
             clientId:
             clientSecret:
-            validationUrl:
+            introspectEndpoint:
+            registry:
         auth:
             jwt:
                 customAuthHeader:

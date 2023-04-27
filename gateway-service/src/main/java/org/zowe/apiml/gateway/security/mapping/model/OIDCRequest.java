@@ -8,9 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.security.common.token;
+package org.zowe.apiml.gateway.security.mapping.model;
 
-public interface OIDCProvider {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    boolean isValid(String token, String issuer);
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class OIDCRequest {
+
+    private String dn;
+    private String registry;
+
 }

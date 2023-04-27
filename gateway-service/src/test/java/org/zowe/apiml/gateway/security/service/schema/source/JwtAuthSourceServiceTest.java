@@ -168,7 +168,7 @@ class JwtAuthSourceServiceTest {
 
         @Test
         void thenParseCorrectly() {
-            when(authenticationService.parseJwtToken(anyString())).thenReturn(new QueryResponse("domain", "user", new Date(111), new Date(222), Collections.emptyList(), Source.ZOSMF));
+            when(authenticationService.parseJwtToken(anyString())).thenReturn(new QueryResponse("domain", "user", new Date(111), new Date(222), "issuer", Collections.emptyList(), Source.ZOSMF));
 
             Parsed parsedSource = serviceUnderTest.parse(authSource);
 

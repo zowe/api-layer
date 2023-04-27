@@ -40,8 +40,8 @@ class ApimlAccessTokenProviderTest {
     private static String SCOPED_TOKEN;
     private static String TOKEN_WITHOUT_SCOPES;
     Date issued = new Date(System.currentTimeMillis() - 100000L);
-    QueryResponse queryResponseTokenWithScopes = new QueryResponse(null, "user", issued, new Date(), Arrays.asList("gateway", "discovery"), QueryResponse.Source.ZOWE_PAT);
-    QueryResponse queryResponseWithoutScopes = new QueryResponse(null, "user", issued, new Date(), Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
+    QueryResponse queryResponseTokenWithScopes = new QueryResponse(null, "user", issued, new Date(), "issuer", Arrays.asList("gateway", "discovery"), QueryResponse.Source.ZOWE_PAT);
+    QueryResponse queryResponseWithoutScopes = new QueryResponse(null, "user", issued, new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
 
     @BeforeEach
     void setup() throws CachingServiceClientException {
@@ -67,7 +67,7 @@ class ApimlAccessTokenProviderTest {
         String token = "token";
 
         Date issued = new Date(System.currentTimeMillis());
-        when(as.parseJwtWithSignature(token)).thenReturn(new QueryResponse(null, "user", issued, issued, Collections.emptyList(), null));
+        when(as.parseJwtWithSignature(token)).thenReturn(new QueryResponse(null, "user", issued, issued, "issuer", Collections.emptyList(), null));
         accessTokenProvider.invalidateToken(token);
         verify(cachingServiceClient, times(1)).appendList(anyString(), any());
 
@@ -154,7 +154,7 @@ class ApimlAccessTokenProviderTest {
     void givenTokenWithScopeMatchingRule_returnInvalidated() {
         String serviceId = accessTokenProvider.getHash("service");
         Date issued = new Date(System.currentTimeMillis() - 100000L);
-        when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(new QueryResponse(null, "user", issued, issued, Collections.singletonList("service"), null));
+        when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(new QueryResponse(null, "user", issued, issued, "issuer", Collections.singletonList("service"), null));
         Map<String, String> invalidScopes = new HashMap<>();
         invalidScopes.put(serviceId, String.valueOf(System.currentTimeMillis()));
         Map<String, Map<String, String>> cacheMap = new HashMap<>();

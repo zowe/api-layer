@@ -31,13 +31,13 @@ import java.security.cert.X509Certificate;
  */
 
 @Slf4j
-@Component
+@Component("x509Mapper")
 @ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
 )
 public class X509ExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
     public X509ExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService, AuthConfigurationProperties authConfigurationProperties) {
-        super(httpClientProxy, tokenCreationService, Type.X509, authConfigurationProperties);
+        super(httpClientProxy, tokenCreationService, authConfigurationProperties);
     }
 
     /**
@@ -61,5 +61,10 @@ public class X509ExternalMapper extends ExternalMapper implements Authentication
             }
         }
         return null;
+    }
+
+    @Override
+    protected Type getMapperType() {
+        return Type.X509;
     }
 }

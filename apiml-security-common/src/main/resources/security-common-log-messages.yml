@@ -143,6 +143,21 @@ messages:
       text: "Body in the revoke request is not valid."
       reason: "The request body is not valid"
       action: "Use a valid body in the request. Format of a message: {userId: string, (optional)timestamp: long} or {serviceId: string, (optional)timestamp: long}."
+
+    # OIDC access token messages
+    - key: org.zowe.apiml.security.common.OIDCMappingError
+      number: ZWEAT608
+      type: ERROR
+      text: "Error mapping between distributed and mainframe identity. Reason: %s %s"
+      reason: "Unexpected error occurred when mapping between distributed and mainframe identity "
+      action: "Contact Broadcom support."
+
+    - key: org.zowe.apiml.security.common.OIDCMappingFailed
+      number: ZWEAT609
+      type: WARNING
+      text: "Mapping between distributed and mainframe identity failed. Reason: %s"
+      reason: "Mapping between distributed and mainframe identity failed."
+
     # Service specific messages
     # 700-999
 

@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -33,11 +34,13 @@ import java.util.Optional;
  * This implementation relies on concrete implementation of {@link AuthenticationMapper} for validation and parsing of
  * the client certificate.
  */
+
 @RequiredArgsConstructor
 public class X509AuthSourceService implements AuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
+    @Qualifier("x509Mapper")
     private final AuthenticationMapper mapper;
     private final TokenCreationService tokenService;
     private final AuthenticationService authenticationService;
