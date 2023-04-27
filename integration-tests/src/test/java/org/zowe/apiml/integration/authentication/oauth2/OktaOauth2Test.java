@@ -26,10 +26,8 @@ import org.zowe.apiml.util.requests.Endpoints;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
-import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
