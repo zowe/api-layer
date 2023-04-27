@@ -28,7 +28,6 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
-import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("OktaOauth2Test")
@@ -40,14 +39,16 @@ public class OktaOauth2Test {
     public static final URI SAF_IDT_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
     public static final URI ZOSMF_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/request");
 
+    private final String validToken = SecurityUtils.validOktaAccessToken();
+    private final String expiredToken = SecurityUtils.expiredOktaAccessToken();
+
     @Nested
     class GivenValidOktaToken {
-        private final String token = SecurityUtils.validOktaAccessToken();
 
         @Test
         void thenValidateReturns200() {
             ValidateRequestModel requestBody = new ValidateRequestModel();
-            requestBody.setToken(token);
+            requestBody.setToken(validToken);
             RestAssured.useRelaxedHTTPSValidation();
             given()
                 .contentType(ContentType.JSON)
@@ -60,12 +61,11 @@ public class OktaOauth2Test {
 
     @Nested
     class GivenExpiredOktaToken {
-        private final String token = SecurityUtils.expiredOktaAccessToken();
 
         @Test
         void thenValidateReturns401() {
             ValidateRequestModel requestBody = new ValidateRequestModel();
-            requestBody.setToken(token);
+            requestBody.setToken(expiredToken);
             RestAssured.useRelaxedHTTPSValidation();
             given()
                 .contentType(ContentType.JSON)
@@ -80,7 +80,7 @@ public class OktaOauth2Test {
             RestAssured.useRelaxedHTTPSValidation();
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, expiredToken))
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
@@ -92,7 +92,6 @@ public class OktaOauth2Test {
 
     @Nested
     class WhenTestingZoweJwtScheme {
-        private final String token = SecurityUtils.validOktaAccessToken();
 
         @Test
         void givenTokenInHeader_thenReturnInfo() {
@@ -100,19 +99,18 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
                 .when()
                 .get(ZOWE_JWT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
                 .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull());
+                .body("headers", hasKey("cookie"))
+                .body("cookies", hasKey("apimlAuthenticationToken"));
         }
     }
 
     @Nested
     class WhenTestingZosmfScheme {
-        private final String token = SecurityUtils.validOktaAccessToken();
 
         @Test
         void givenTokenInHeader_thenReturnInfo() {
@@ -120,19 +118,18 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
                 .when()
                 .get(ZOSMF_REQUEST_ENDPOINT)
                 .then().statusCode(200)
                 .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull());
+                .body("headers", hasKey("cookie"))
+                .body("cookies", hasKey("jwtToken"));
         }
     }
 
     @Nested
     class WhenTestingSafIdtScheme {
-        private final String token = SecurityUtils.validOktaAccessToken();
 
         @Test
         void givenTokenInHeader_thenReturnInfo() {
@@ -140,19 +137,17 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
                 .when()
                 .get(SAF_IDT_REQUEST_ENDPOINT)
                 .then().statusCode(200)
                 .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull());
+                .body("headers", hasKey("x-saf-token"));
         }
     }
 
     @Nested
-    class GivenOktaTokenRequest {
-        private final String token = SecurityUtils.validOktaAccessToken();
+    class WhenTestingPassticketScheme {
 
         @Test
         void givenTokenInHeader_thenReturnInfo() {
@@ -160,13 +155,13 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, token))
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
                 .when()
                 .get(PASS_TICKET_REQUEST_ENDPOINT)
                 .then().statusCode(200)
                 .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers.cookie", isNotNull())
-                .body("cookies.apimlAuthenticationToken", isNotNull());
+                .body("headers", hasKey("authorization"))
+                .body("headers.authorization", startsWith("Basic"));
         }
     }
 

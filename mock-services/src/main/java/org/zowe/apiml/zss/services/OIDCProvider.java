@@ -18,6 +18,6 @@ import org.zowe.apiml.zss.model.OIDCRequest;
 public class OIDCProvider {
 
     public MapperResponse mapUserIdentity(OIDCRequest oidcRequest) {
-        return new MapperResponse("user", 0, 0, 0, 0);
+        return new MapperResponse("USER", 0, 0, 0, 0);
     }
 }
