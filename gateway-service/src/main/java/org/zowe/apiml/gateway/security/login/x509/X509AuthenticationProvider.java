@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -33,6 +34,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
 
+    @Qualifier("x509Mapper")
     private final AuthenticationMapper x509AuthenticationMapper;
     private final TokenCreationService tokenCreationService;
 

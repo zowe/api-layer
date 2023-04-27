@@ -35,7 +35,7 @@ class GatewayTokenProviderTest {
 
     @Test
     void shouldAuthenticateValidToken() {
-        when(gatewaySecurityService.query(VALID_TOKEN)).thenReturn(new QueryResponse(DOMAIN, USER, new Date(), new Date(), Collections.emptyList(), QueryResponse.Source.ZOWE));
+        when(gatewaySecurityService.query(VALID_TOKEN)).thenReturn(new QueryResponse(DOMAIN, USER, new Date(), new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE));
         TokenAuthentication tokenAuthentication = new TokenAuthentication(VALID_TOKEN);
 
         Authentication processedAuthentication = gatewayTokenProvider.authenticate(tokenAuthentication);

@@ -11,13 +11,11 @@
 package org.zowe.apiml.util;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 
 import java.net.*;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-@Slf4j
 @UtilityClass
 public class UrlUtils {
 
@@ -28,7 +26,7 @@ public class UrlUtils {
      * @param string input parameter
      * @return input without removed trailing slashes.
      */
-    public static String trimSlashes(String string) {
+    public String trimSlashes(String string) {
         return string.replaceAll("((^/)|(/$))", "");
     }
 
@@ -38,7 +36,7 @@ public class UrlUtils {
      * @param url - input url to be encoded by the hard coded character substitution
      * @return An url string with any non alpha-numeric characters substituted by '-'
      */
-    public static String getEncodedUrl(String url) {
+    public String getEncodedUrl(String url) {
         if (url != null) {
             return url.replaceAll("\\W", "-");
         } else {
@@ -55,7 +53,7 @@ public class UrlUtils {
      * @param uri an URI string to trim slashes from
      * @return the trimmed URI string
      */
-    public static String removeFirstAndLastSlash(String uri) {
+    public String removeFirstAndLastSlash(String uri) {
         return StringUtils.removeFirstAndLastOccurrence(uri, "/");
     }
 
@@ -65,7 +63,7 @@ public class UrlUtils {
      * @param uri An URI to prepend a '/' to.
      * @return the modified URI string
      */
-    public static String addFirstSlash(String uri) {
+    public String addFirstSlash(String uri) {
         return StringUtils.prependSubstring(uri, "/");
     }
 
@@ -74,7 +72,7 @@ public class UrlUtils {
      * @param uri an URI string to trim last slash from
      * @return the modified URI
      */
-    public static String removeLastSlash(String uri) {
+    public String removeLastSlash(String uri) {
         return StringUtils.removeLastOccurrence(uri, "/");
     }
 
@@ -84,7 +82,7 @@ public class UrlUtils {
      * @param fqdn a Fully Qualified Domain Name to resolve as IP address
      * @return the resolved IP address or 'null'
      */
-    public static String getHostIPAddress(String fqdn) throws UnknownHostException {
+    public String getHostIPAddress(String fqdn) throws UnknownHostException {
         return InetAddress.getByName(fqdn).getHostAddress();
     }
 
@@ -95,11 +93,24 @@ public class UrlUtils {
      * @throws MalformedURLException if urlString parameter is not valid URL
      * @throws UnknownHostException if host name part of the URL is not resolvable
      */
-    public static String getIpAddressFromUrl(String urlString) throws MalformedURLException, UnknownHostException {
+    public String getIpAddressFromUrl(String urlString) throws MalformedURLException, UnknownHostException {
         URL baseUrl = new URL(urlString);
 
         String hostname = baseUrl.getHost();
         return UrlUtils.getHostIPAddress(hostname);
     }
 
+    /**
+     *
+     * @param urlString is a string representing a URL
+     * @return true if provided string is actually valid URL format. False otherwise
+     */
+    public boolean isValidUrl(String urlString) {
+        try {
+            new URL(urlString).toURI();
+            return true;
+        } catch (MalformedURLException | URISyntaxException e) {
+            return false;
+        }
+    }
 }

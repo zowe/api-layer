@@ -67,6 +67,7 @@ public class ConfigReader {
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
+                        IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -80,7 +81,8 @@ public class ConfigReader {
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
-                            null);
+                            null,
+                            idpConfiguration);
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
@@ -119,6 +121,9 @@ public class ConfigReader {
                     configuration.getCloudGatewayConfiguration().setScheme(System.getProperty("cloud-gateway.scheme", configuration.getCloudGatewayConfiguration().getScheme()));
                     configuration.getCloudGatewayConfiguration().setHost(System.getProperty("cloud-gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
                     configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
+
+                    configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
+                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);

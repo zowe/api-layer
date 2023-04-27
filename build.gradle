@@ -163,8 +163,8 @@ task runCloudGatewayServiceRoutingTest(dependsOn: [":integration-tests:runCloudG
     group "Integration tests"
 }
 
-task runOauth2Tests(dependsOn: [":integration-tests:runOauth2Tests"]) {
-    description "Run tests verifying integration with oauth2 provider(okta)"
+task runOidcTests(dependsOn: [":integration-tests:runOidcTests"]) {
+    description "Run tests verifying integration with oidc provider(okta)"
     group "Integration tests"
 }
 
