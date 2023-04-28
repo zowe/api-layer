@@ -121,17 +121,33 @@ export default class Dashboard extends Component {
                     <div className="apis">
                         <div id="grid-container">
                             <div className="filtering-container">
+                                <h3 id="api-heading-id" className="api-heading">
+                                    API Developer Experience
+                                </h3>
+                                <div>
+                                    <hr id="separator" />
+                                </div>
                                 <h4 className="api-heading">Available API services</h4>
                                 <Shield title="Search Bar is broken !">
-                                    <SearchCriteria placeholder="Search for APIs" doSearch={this.handleSearch} />
+                                    <SearchCriteria placeholder="Search..." doSearch={this.handleSearch} />
                                 </Shield>
                             </div>
+                            <div id="info-headers-div">
+                                <h3 className="info-headers">Swagger</h3>
+                                <h3 className="info-headers">Use Cases</h3>
+                                <h3 className="info-headers">Tutorials</h3>
+                                <h3 className="info-headers">Videos</h3>
+                            </div>
+                            <hr id="separator2" />
                             {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles && hasSearchCriteria && (
                                 <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
                                     No tiles found matching search criteria
                                 </Typography>
                             )}
+                        </div>
+                        <div id="bottom-info-div">
+                            <h3 className="info-headers">Swagger</h3>
                         </div>
                     </div>
                 )}

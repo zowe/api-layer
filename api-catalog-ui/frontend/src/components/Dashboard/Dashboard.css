@@ -21,7 +21,29 @@ a {
 
 .api-heading {
     color: #58606e ;
-    text-align: left;
+    text-align: center;
+    font-weight: 440;
+    margin-top: auto;
+}
+
+#api-heading-id {
+    /*disabled for Zowe Catalog*/
+    display: none;
+}
+
+.info-headers {
+    display: inline-flex;
+    font-size: 12px;
+    margin-left: 39px;
+}
+
+#info-headers-div {
+    margin-top: -22px;
+    margin-left: 740px;
+    margin-bottom: -15px;
+    float: right;
+    /*disabled for Zowe Catalog*/
+    display: none;
 }
 
 .filtering-container {
@@ -144,4 +166,21 @@ a {
 
 .MuiButton-root, .MuiButton-label, #onboard-wizard-button.MuiButton-label {
     text-transform: capitalize;
+}
+
+#separator {
+    /*disabled for Zowe Catalog*/
+    display: none;
+    background-color: #1d5bbf;
+    height: 5px;
+    width: 120px;
+}
+
+#separator2 {
+    background-color: #1d5bbf;
+    margin-bottom: auto;
+    margin-top: auto;
+    height: 2px;
+    width: 1096px;
+    display: block;
 }
