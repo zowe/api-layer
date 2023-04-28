@@ -5,7 +5,7 @@ The Plug-in is designed to work with the ESMs: IBM RACF, Broadcom ACF/2, and Bro
 
 ## How the Plug-in works
 
-the IDF Plug-in for Zowe CLI can help facilitate the mapping of an external identity from a distributed identity provider to mainframe users administered by the system ESM.
+The IDF Plug-in for Zowe CLI can help facilitate the mapping of an external identity from a distributed identity provider to mainframe users administered by the system ESM.
 
 ## Prerequisites
 
