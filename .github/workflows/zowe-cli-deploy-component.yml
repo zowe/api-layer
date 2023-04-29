@@ -1,14 +1,16 @@
 name: zowe CLI Deploy Component
 
 on:
-    workflow_run:
-        workflows: ["zowe-cli-plugin-deployment"]
-        types: [completed]
+    push:
+        branches: [ v2.x.x ]
+    pull_request:
+        branches: [ v2.x.x ]
+    workflow_dispatch:
 
 jobs:
     deploy:
         runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
+  ##      if: github.event.workflow_run.conclusion == 'success'
 
         env:
             PKG_NAME: id-federation-for-zowe-cli
