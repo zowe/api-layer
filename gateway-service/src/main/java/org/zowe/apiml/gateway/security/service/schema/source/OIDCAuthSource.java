@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Implementation of OIDC token source of authentication.
@@ -27,7 +28,7 @@ public class OIDCAuthSource implements AuthSource {
     private final String source;
 
     @Override
-    public Object getRawSource() {
+    public String getRawSource() {
         return source;
     }
 
@@ -35,4 +36,7 @@ public class OIDCAuthSource implements AuthSource {
     public AuthSource.AuthSourceType getType() {
         return type;
     }
+
+    @Setter
+    private String distributedId;
 }

@@ -348,6 +348,7 @@ public class AuthenticationService {
             claims.getSubject(),
             claims.getIssuedAt(),
             claims.getExpiration(),
+            claims.getIssuer(),
             scopes,
             QueryResponse.Source.valueByIssuer(claims.getIssuer())
         );
@@ -396,11 +397,20 @@ public class AuthenticationService {
     public Optional<String> getPATFromRequest(@NonNull HttpServletRequest request) {
         Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNamePAT());
         return fromCookie.isPresent() ?
-            fromCookie : getPATFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
+            fromCookie : getAccessTokenFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
     }
 
-    private Optional<String> getPATFromHeader(String header) {
+    private Optional<String> getAccessTokenFromHeader(String header) {
         return header != null ? Optional.of(header) : Optional.empty();
+    }
+
+    /**
+     * Extract the OIDC token from the request.
+     * @param request http request
+     * @return the OIDC token from different supported sources: header.
+     */
+    public Optional<String> getOIDCTokenFromRequest(@NonNull HttpServletRequest request) {
+        return getAccessTokenFromHeader(request.getHeader(ApimlConstants.OIDC_HEADER_NAME));
     }
 
     private Optional<String> getTokenFromCookie(HttpServletRequest request, String cookieName) {
