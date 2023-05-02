@@ -60,6 +60,7 @@ public class Endpoints {
 
     public final static String REQUEST_INFO_ENDPOINT = "/dcpassticket/api/v1/request";
     public final static String SAF_IDT_REQUEST = "/dcsafidt/api/v1/request";
+    public final static String ZOSMF_REQUEST = "/dczosmf/api/v1/request";
     public final static String ZOWE_JWT_REQUEST = "/zowejwt/api/v1/request";
 
     public final static String DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
