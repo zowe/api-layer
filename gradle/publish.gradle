@@ -34,7 +34,7 @@ ext.servicesToPublish = [
     'cloud-gateway-package'
 ]
 
-ext.sdksToPublish = ext.enablers + ext.javaLibraries
+ext.sdksToPublish = ext.enablers + ext.javaLibraries// TODO: how to publish platform itself, ie. "+ [ 'platform' ]"
 ext.projectsToPublish = ext.servicesToPublish + ext.sdksToPublish
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {

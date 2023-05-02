@@ -2,12 +2,12 @@ plugins {
     id 'java'
 }
 dependencies {
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation libraries.junitJupiter
     testImplementation libraries.mockito_core
-    testImplementation 'org.mockito:mockito-inline:2.13.0'
+    testImplementation libraries.mockito_inline
 
-    implementation 'info.picocli:picocli:4.6.1'
-    annotationProcessor 'info.picocli:picocli-codegen:4.6.1'
+    implementation libraries.picocli
+    annotationProcessor libraries.picocliCodegen
 }
 
 compileJava {

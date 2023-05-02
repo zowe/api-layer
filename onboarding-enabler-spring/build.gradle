@@ -10,8 +10,6 @@ buildscript {
     }
 }
 
-apply plugin: 'io.spring.dependency-management'
-
 publish {
     outputs.upToDateWhen { false }
     doLast {
