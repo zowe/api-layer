@@ -112,8 +112,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_AUTHENTICATION_SCHEME: zosmf
 
         steps:
             -   uses: actions/checkout@v3
