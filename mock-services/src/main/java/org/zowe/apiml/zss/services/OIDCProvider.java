@@ -28,7 +28,7 @@ public class OIDCProvider {
     public MapperResponse mapUserIdentity(OIDCRequest oidcRequest) {
         String username = userMapping.get(oidcRequest.getDn());
         if (username == null) {
-            return new MapperResponse(null, 8, 8, 8, 48);
+            return new MapperResponse("", 8, 8, 8, 48);
         }
         return new MapperResponse(username, 0, 0, 0, 0);
     }
