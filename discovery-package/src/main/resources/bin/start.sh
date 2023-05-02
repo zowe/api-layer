@@ -105,7 +105,7 @@ fi
 # setting the cookieName based on the instances
 
 if [ "${ZWE_components_gateway_apiml_security_auth_uniqueCookie}" = "true"]; then
-    cookieName="apimlAuthenticationToken."${ZWE_zowe_cookieIdentifier}
+    cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
 fi
 
 DISCOVERY_LOADER_PATH=${COMMON_LIB}
