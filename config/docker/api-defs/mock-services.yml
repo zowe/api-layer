@@ -40,3 +40,6 @@ catalogUiTiles:
     zosmf:
         title: zOSMF
         description: zOSMF
+    zss:
+        title: ZSS
+        description: ZSS
