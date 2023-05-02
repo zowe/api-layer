@@ -10,14 +10,26 @@
 
 package org.zowe.apiml.zss.services;
 
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.zss.model.MapperResponse;
 import org.zowe.apiml.zss.model.OIDCRequest;
 
+import java.util.Map;
+
 @Service
+@ConfigurationProperties(prefix = "zss")
+@Setter
 public class OIDCProvider {
 
+    private Map<String, String> userMapping;
+
     public MapperResponse mapUserIdentity(OIDCRequest oidcRequest) {
-        return new MapperResponse("USER", 0, 0, 0, 0);
+        String username = userMapping.get(oidcRequest.getDn());
+        if (username == null) {
+            return new MapperResponse(null, 8, 8, 8, 48);
+        }
+        return new MapperResponse(username, 0, 0, 0, 0);
     }
 }
