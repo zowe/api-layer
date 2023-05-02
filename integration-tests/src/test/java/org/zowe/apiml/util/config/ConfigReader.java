@@ -67,7 +67,7 @@ public class ConfigReader {
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
-                        IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user");
+                        IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user", "alt_user", "alt_user");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -123,7 +123,9 @@ public class ConfigReader {
                     configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
 
                     configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
-                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
+                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));                    configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
+                    configuration.getIdpConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getIdpConfiguration().getAlternateUser()));
+                    configuration.getIdpConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getIdpConfiguration().getAlternatePassword()));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);

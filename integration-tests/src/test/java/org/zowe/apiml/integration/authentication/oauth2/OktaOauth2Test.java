@@ -14,9 +14,13 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.integration.authentication.pat.ValidateRequestModel;
 import org.zowe.apiml.util.SecurityUtils;
@@ -24,6 +28,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.requests.Endpoints;
 
 import java.net.URI;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
@@ -34,22 +39,36 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 public class OktaOauth2Test {
 
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
-    public static final URI PASS_TICKET_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
-    public static final URI ZOWE_JWT_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
-    public static final URI SAF_IDT_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
-    public static final URI ZOSMF_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(ZOSMF_REQUEST);
+    private static final String VALID_TOKEN_WITH_MAPPING = SecurityUtils.validOktaAccessToken(true);
+    private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
+    private static final String EXPIRED_TOKEN = SecurityUtils.expiredOktaAccessToken();
 
-    private final String validToken = SecurityUtils.validOktaAccessToken();
-    private final String expiredToken = SecurityUtils.expiredOktaAccessToken();
+    private static Stream<Arguments> validTokens() {
+        return Stream.of(
+            Arguments.of(VALID_TOKEN_WITH_MAPPING),
+            Arguments.of(VALID_TOKEN_NO_MAPPING)
+        );
+    }
+
+    private static Stream<Arguments> invalidTokens() {
+        return Stream.of(
+            Arguments.of(EXPIRED_TOKEN),
+            Arguments.of("invalid_token")
+        );
+    }
+
+    @BeforeAll
+    static void init() {
+        RestAssured.useRelaxedHTTPSValidation();
+    }
 
     @Nested
     class GivenValidOktaToken {
-
-        @Test
-        void thenValidateReturns200() {
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#validTokens")
+        void thenValidateReturns200(String validToken) {
             ValidateRequestModel requestBody = new ValidateRequestModel();
             requestBody.setToken(validToken);
-            RestAssured.useRelaxedHTTPSValidation();
             given()
                 .contentType(ContentType.JSON)
                 .body(requestBody)
@@ -57,16 +76,135 @@ public class OktaOauth2Test {
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(HttpStatus.SC_OK);
         }
+
+        @Nested
+        class WhenTestingZoweJwtScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
+
+            @Test
+            void whenUserHasMapping_thenApimlTokenCreated() {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", not(hasKey("x-zowe-auth-failure")))
+                    .body("headers", hasKey("cookie"))
+                    .body("cookies", hasKey("apimlAuthenticationToken"));
+            }
+
+            @Test
+            void whenUserHasNoMapping_thenZoweAuthFailure() {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("cookie")));
+            }
+        }
+
+        @Nested
+        class WhenTestingZosmfScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOSMF_REQUEST);
+
+            @Test
+            void whenUserHasMapping_thenJwtTokenCreated() {
+                 given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", not(hasKey("x-zowe-auth-failure")))
+                    .body("headers", hasKey("cookie"))
+                    .body("cookies", hasKey("jwtToken"));
+            }
+
+            @Test
+            void whenUserHasNoMapping_thenZoweAuthFailure() {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("cookie")));
+            }
+        }
+
+        @Nested
+        class WhenTestingSafIdtScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
+
+            @Test
+            void whenUserHasMapping_thenSafTokenCreated() {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", not(hasKey("x-zowe-auth-failure")))
+                    .body("headers", hasKey("x-saf-token"));
+            }
+
+            @Test
+            void whenUserHasNoMapping_thenZoweAuthFailure() {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("x-saf-token")));
+            }
+        }
+
+        @Nested
+        class WhenTestingPassticketScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
+
+            @Test
+            void whenUserHasMapping_thenBasicAuthCreated() {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", not(hasKey("x-zowe-auth-failure")))
+                    .body("headers", hasKey("authorization"))
+                    .body("headers.authorization", startsWith("Basic"));
+            }
+
+            @Test
+            void whenUserNoHasMapping_thenZoweAuthFailure() {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("authorization")));
+            }
+        }
     }
 
     @Nested
-    class GivenExpiredOktaToken {
+    class GivenInvalidOktaToken {
 
-        @Test
-        void thenValidateReturns401() {
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+        void thenValidateReturns401(String invalidToken) {
             ValidateRequestModel requestBody = new ValidateRequestModel();
-            requestBody.setToken(expiredToken);
-            RestAssured.useRelaxedHTTPSValidation();
+            requestBody.setToken(invalidToken);
             given()
                 .contentType(ContentType.JSON)
                 .body(requestBody)
@@ -75,112 +213,76 @@ public class OktaOauth2Test {
                 .then().statusCode(HttpStatus.SC_UNAUTHORIZED);
         }
 
-        @Test
-        void whenPassingToHeader_thenAddFailureHeader() {
-            RestAssured.useRelaxedHTTPSValidation();
-            given()
-                .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, expiredToken))
-                .when()
-                .get(ZOWE_JWT_REQUEST_ENDPOINT)
-                .then().statusCode(200)
-                .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers.x-zowe-auth-failure", is("ZWEAG103E The token has expired"))
-                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG103E The token has expired"));
+        @Nested
+        class WhenTestingZoweJwtScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("cookie")));
+            }
+        }
+
+        @Nested
+        class WhenTestingZosmfScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOSMF_REQUEST);
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("cookie")));
+            }
+        }
+
+        @Nested
+        class WhenTestingSafIdtScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("x-saf-token")));
+            }
+        }
+
+        @Nested
+        class WhenTestingPassticketScheme {
+            private final URI DC_url = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("authorization")));
+            }
         }
     }
-
-    @Nested
-    class WhenTestingZoweJwtScheme {
-
-        @Test
-        void givenTokenInHeader_thenReturnInfo() {
-            RestAssured.useRelaxedHTTPSValidation();
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
-                .when()
-                .get(ZOWE_JWT_REQUEST_ENDPOINT)
-                .then().statusCode(200)
-                .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers", hasKey("cookie"))
-                .body("cookies", hasKey("apimlAuthenticationToken"));
-        }
-    }
-
-    @Nested
-    class WhenTestingZosmfScheme {
-
-        @Test
-        void givenTokenInHeader_thenReturnInfo() {
-            RestAssured.useRelaxedHTTPSValidation();
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
-                .when()
-                .get(ZOSMF_REQUEST_ENDPOINT)
-                .then().statusCode(200)
-                .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers", hasKey("cookie"))
-                .body("cookies", hasKey("jwtToken"));
-        }
-    }
-
-    @Nested
-    class WhenTestingSafIdtScheme {
-
-        @Test
-        void givenTokenInHeader_thenReturnInfo() {
-            RestAssured.useRelaxedHTTPSValidation();
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
-                .when()
-                .get(SAF_IDT_REQUEST_ENDPOINT)
-                .then().statusCode(200)
-                .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers", hasKey("x-saf-token"));
-        }
-    }
-
-    @Nested
-    class WhenTestingPassticketScheme {
-
-        @Test
-        void givenTokenInHeader_thenReturnInfo() {
-            RestAssured.useRelaxedHTTPSValidation();
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, validToken))
-                .when()
-                .get(PASS_TICKET_REQUEST_ENDPOINT)
-                .then().statusCode(200)
-                .body("headers", not(hasKey("x-zowe-auth-failure")))
-                .body("headers", hasKey("authorization"))
-                .body("headers.authorization", startsWith("Basic"));
-        }
-    }
-
-    @Nested
-    class WhenProvidingInvalidToken {
-        @Test
-        void givenTokenInHeader_thenAddFailureHeader() {
-            RestAssured.useRelaxedHTTPSValidation();
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, "invalidToken"))
-                .when()
-                .get(ZOWE_JWT_REQUEST_ENDPOINT)
-                .then().statusCode(200)
-                .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers.x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
-                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG102E Token is not valid"));
-        }
-    }
-
 }

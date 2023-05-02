@@ -21,4 +21,6 @@ public class IDPConfiguration {
     private String host;
     private String user;
     private String password;
+    private String alternateUser;
+    private String alternatePassword;
 }
