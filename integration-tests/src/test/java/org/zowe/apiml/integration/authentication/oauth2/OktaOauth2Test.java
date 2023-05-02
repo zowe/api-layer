@@ -37,7 +37,7 @@ public class OktaOauth2Test {
     public static final URI PASS_TICKET_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     public static final URI ZOWE_JWT_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
     public static final URI SAF_IDT_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
-    public static final URI ZOSMF_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/request");
+    public static final URI ZOSMF_REQUEST_ENDPOINT = HttpRequestUtils.getUriFromGateway(ZOSMF_REQUEST);
 
     private final String validToken = SecurityUtils.validOktaAccessToken();
     private final String expiredToken = SecurityUtils.expiredOktaAccessToken();
