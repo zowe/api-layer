@@ -1,7 +1,7 @@
 name: zowe CLI Deploy Component
 
 on:
-    workflow_run:
+  #  workflow_run:
         on:
             push:
                 branches: [ v2.x.x ]
