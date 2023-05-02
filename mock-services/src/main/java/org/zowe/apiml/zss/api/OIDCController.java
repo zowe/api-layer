@@ -33,7 +33,7 @@ public class OIDCController {
      * @return Appropriate response code consistent with the one returned by the real SAF.
      * - 201 - Valid mapper response that will get validated afterwards by the OIDC Auth Source.
      */
-    @PostMapping(value = "/zss/api/v1/certificate/dn")
+    @PostMapping(value = "/certificate/dn")
     public ResponseEntity<MapperResponse> mockDistributedIdentityMapping(
         @RequestBody OIDCRequest oidcRequest) {
         MapperResponse mapperResponse = provider.mapUserIdentity(oidcRequest);
