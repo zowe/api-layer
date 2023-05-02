@@ -123,7 +123,7 @@ public class ConfigReader {
                     configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
 
                     configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
-                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));                    configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
+                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
                     configuration.getIdpConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getIdpConfiguration().getAlternateUser()));
                     configuration.getIdpConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getIdpConfiguration().getAlternatePassword()));
 
