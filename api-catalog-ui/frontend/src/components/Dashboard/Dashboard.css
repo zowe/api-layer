@@ -45,6 +45,59 @@ a {
     /*disabled for Zowe Catalog*/
     display: none;
 }
+#bottom-info-div {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 74%;
+    margin: auto;
+    /*disabled for Zowe Catalog*/
+    display: none;
+}
+
+.footer-links {
+    font-size: 18px;
+    width: 119px;
+    flex-direction: column;
+    line-height: 25px;
+}
+
+.footer-container {
+    position: relative;
+    color: black;
+}
+
+#footer-menu-separator {
+    width: 2px;
+    height: 202px;
+    background-color: #1d5bbf;
+}
+
+.links {
+    color: #000000;
+    font-size: 14px;
+}
+
+.MuiContainer-root.MuiContainer-maxWidthLg {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: auto;
+}
+
+.info-headers-footer {
+    display: flex;
+    width: 46px;
+    flex-direction: column;
+}
+
+#col-1 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
 
 .filtering-container {
     grid-row: 1;
