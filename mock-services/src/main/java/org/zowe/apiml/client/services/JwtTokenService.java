@@ -31,6 +31,7 @@ import java.util.*;
 public class JwtTokenService {
 
     public static final String JWT_TOKEN = "jwtToken=";
+    public static final String LTPA_TOKEN = "LtpaToken2=";
     private Set<String> invalidatedTokens = new HashSet<>();
 
     private int expirationSeconds;
@@ -71,6 +72,11 @@ public class JwtTokenService {
     public void invalidateJwtToken(String token) {
         invalidatedTokens.add(token);
     }
+
+    public boolean containsToken(String token) {
+        return invalidatedTokens.contains(token);
+    }
+
 
     public static JWKSet getKeySet() throws NoSuchAlgorithmException, InvalidKeySpecException {
         ArrayList<JWK> keys = new ArrayList<>();
@@ -184,8 +190,8 @@ public class JwtTokenService {
     }
 
     private Optional<String> getTokenFromTheMiddle(Map<String, String> headers) {
-        return headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("LtpaToken2="))
-            .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf(JWT_TOKEN) + JWT_TOKEN.length())).findFirst();
+        return headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith(LTPA_TOKEN))
+            .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf(LTPA_TOKEN) + LTPA_TOKEN.length())).findFirst();
     }
 
 }

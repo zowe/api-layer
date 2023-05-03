@@ -197,6 +197,14 @@ public class FunctionalApar implements Apar {
         return cookie == null || !cookie.contains(LTPA_TOKEN_NAME);
     }
 
+    protected boolean validLtpaCookie(Map<String, String> headers) {
+        if(noLtpaCookie(headers)){
+            return false;
+        }
+        String token = jwtTokenService.extractToken(headers);
+        return !jwtTokenService.containsToken(token);
+    }
+
     protected boolean isValidJwtCookie(Map<String, String> headers) {
         String cookie = getAuthCookie(headers);
         if (cookie == null || !cookie.contains(JWT_TOKEN_NAME)) {
