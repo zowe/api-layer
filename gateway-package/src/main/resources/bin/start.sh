@@ -45,6 +45,7 @@
 # - ZWE_configs_apiml_security_oidc_enabled
 # - ZWE_configs_apiml_security_oidc_clientId
 # - ZWE_configs_apiml_security_oidc_clientSecret
+# - ZWE_configs_apiml_security_oidc_introspectEndpoint
 # - ZWE_configs_apiml_security_oidc_registry
 # - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
 # - ZWE_configs_apiml_service_corsEnabled
@@ -247,6 +248,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.oidc.enabled=${ZWE_configs_apiml_security_oidc_enabled:-false} \
     -Dapiml.security.oidc.clientId=${ZWE_configs_apiml_security_oidc_clientId:-} \
     -Dapiml.security.oidc.clientSecret=${ZWE_configs_apiml_security_oidc_clientSecret:-} \
+    -Dapiml.security.oidc.introspectEndpoint=${ZWE_configs_apiml_security_oidc_introspectEndpoint:-/v1/introspect} \
     -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
