@@ -33,7 +33,7 @@ describe('>>> Footer component tests', () => {
         const footer = enzyme.shallow(<Footer />);
         const copyright = footer.find('p').text();
         expect(copyright).toBe(
-            'Copyright © 2019 Broadcom. All Rights Reserved. The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.'
+            'Copyright © 2023 Broadcom. All Rights Reserved. The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.'
         );
     });
 });
