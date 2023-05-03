@@ -11,11 +11,12 @@ apiml:
             fileLocation: config/local/webfinger.yml
         personalAccessToken:
             enabled: false
-        oAuth:
+        oidc:
             enabled: false
             clientId:
             clientSecret:
-            validationUrl:
+            introspectEndpoint:
+            registry:
         auth:
             jwt:
                 customAuthHeader:

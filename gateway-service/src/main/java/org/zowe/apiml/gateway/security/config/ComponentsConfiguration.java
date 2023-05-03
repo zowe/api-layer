@@ -74,7 +74,7 @@ public class ComponentsConfiguration {
      */
     @Bean
     @Qualifier("x509MFAuthSourceService")
-    public X509AuthSourceService getX509MFAuthSourceService(AuthenticationMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
+    public X509AuthSourceService getX509MFAuthSourceService(@Qualifier("x509Mapper") AuthenticationMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
         return new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
     }
 

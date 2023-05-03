@@ -6,8 +6,8 @@ ext {
 
     springCloudCBVersion = '2.1.5'
     springCloudGatewayVersion = '3.1.4'
-    springSecurityVersion = '5.7.5!!'
-    springFrameworkVersion = '5.3.24!!'
+    springSecurityVersion = '5.7.8!!'
+    springFrameworkVersion = '5.3.27!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
@@ -69,10 +69,10 @@ ext {
     springFoxVersion = '2.9.2'
     springDocVersion = '1.6.9'
     spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
-    swagger3CoreVersion = '2.0.0'
-    swagger3ParserVersion = '2.1.9'
-    swaggerCoreVersion = '1.5.24'
-    swaggerInflector = '2.0.8'
+    swagger3CoreVersion = '2.2.8'
+    swagger3ParserVersion = '2.1.12'
+    swaggerCoreVersion = '1.6.10'
+    swaggerInflector = '2.0.9'
     swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
     tomcatVersion = '9.0.69'

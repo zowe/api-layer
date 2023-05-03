@@ -403,7 +403,7 @@ task runCloudGatewayServiceRoutingTest(type: Test) {
     }
 }
 
-task runOauth2Tests(type: Test) {
+task runOidcTests(type: Test) {
     group "integration tests"
     description "Run tests verifying integration with oauth2 provider(okta)"
 

@@ -1,0 +1,120 @@
+{
+    "name": "id-federation-for-zowe-cli",
+  "version": "latest",
+  "description": "An Identity Federation plugin for Zowe CLI",
+  "homepage": "https://github.com/zowe/api-layer/zowe-cli-id-federation-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/zowe/api-layer/issues"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zowe/api-layer.git"
+  },
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "@types/jest": "29.4.3",
+    "@types/node": "18.15.3 ",
+    "@typescript-eslint/eslint-plugin": "5.55.0",
+    "@typescript-eslint/parser": "5.55.0",
+    "@zowe/cli": "7.11.1",
+    "@zowe/cli-test-utils": "7.11.1",
+    "@zowe/imperative": "5.9.1",
+    "eslint": "8.36.0",
+    "eslint-plugin-jest": "27.2.1",
+    "eslint-plugin-license-header": "0.6.0",
+    "eslint-plugin-unused-imports": "2.0.0",
+    "husky": "8.0.3",
+    "jest": "29.5.0",
+    "jest-cli": "29.5.0",
+    "jest-environment-node": "29.5.0",
+    "jest-environment-node-debug": "2.0.0",
+    "jest-html-reporter": "3.7.0",
+    "jest-junit": "15.0.0",
+    "jest-stare": "2.5.0",
+    "madge": "6.0.0",
+    "ts-jest": "29.0.5",
+    "ts-node": "10.9.1",
+    "typedoc": "0.23.27",
+    "typescript": "4.9.5",
+      "@actions/core": "^1.10.0",
+      "@actions/exec": "^1.1.0",
+      "@actions/github": "^5.0.3",
+      "adm-zip": "^0.5.10",
+      "csv2md": "^1.1.0",
+      "delay": "^5.0.0",
+      "env-cmd": "^10.1.0",
+      "flat": "^5.0.2",
+      "glob": "^7.2.0",
+      "js-yaml": "^4.1.0",
+      "jsonfile": "^6.1.0",
+      "moment": "^2.29.4",
+      "node-fetch": "^2.6.7",
+      "parse-lcov": "^1.0.4",
+      "shebang-regex": "^2.0.0",
+      "strip-comments": "^2.0.1",
+      "xml-js": "^1.6.11"
+  },
+    "overrides": {
+        "yargs-parser": "~13.1.2"
+    },
+  "peerDependencies": {
+    "@zowe/imperative": "5.9.1"
+  },
+  "jest": {
+    "modulePathIgnorePatterns": [
+      "__tests__/__snapshots__/"
+    ],
+    "testResultsProcessor": "jest-stare",
+    "transform": {
+      "\\.ts$": "ts-jest"
+    },
+    "testRegex": "(test|spec)\\.ts$",
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/__tests__/__results__"
+    ],
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!**/__tests__/**",
+      "!**/index.ts",
+      "!**/main.ts"
+    ],
+    "collectCoverage": false,
+    "coverageReporters": [
+      "json",
+      "lcov",
+      "text",
+      "cobertura"
+    ],
+    "coverageDirectory": "<rootDir>/__tests__/__results__/unit/coverage"
+  },
+  "jest-stare": {
+    "resultDir": "__tests__/__results__/jest-stare",
+    "additionalResultsProcessors": [
+      "jest-junit",
+      "jest-html-reporter"
+    ],
+    "coverageLink": "../unit/coverage/lcov-report/index.html"
+  },
+  "jest-junit": {
+    "output": "__tests__/__results__/junit.xml"
+  },
+  "jest-html-reporter": {
+    "pageTitle": "Zowe CLI ID Federation Plugin Test Results",
+    "outputPath": "__tests__/__results__/results.html",
+    "includeFailureMsg": true
+  },
+  "author": "Zowe",
+  "license": "EPL-2.0 or Apache-2.0"
+}

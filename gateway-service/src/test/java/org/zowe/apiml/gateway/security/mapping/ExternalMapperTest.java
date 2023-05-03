@@ -19,6 +19,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
@@ -30,21 +34,24 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ExternalMapperTest {
 
     class TestExternalMapper extends ExternalMapper {
         public TestExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
-            super(httpClientProxy, tokenCreationService, Type.X509, authConfigurationProperties);
+            super(httpClientProxy, tokenCreationService, authConfigurationProperties);
+        }
+
+        @Override
+        protected Type getMapperType() {
+            return Type.X509;
         }
     }
 
     private TestExternalMapper mapper;
     private TokenCreationService tokenCreationService;
 
-    private CloseableHttpClient closeableHttpClient;
     private CloseableHttpResponse httpResponse;
     private StatusLine statusLine;
     private HttpEntity responseEntity;
@@ -53,7 +60,7 @@ class ExternalMapperTest {
 
     @BeforeEach
     void setup() throws IOException {
-        closeableHttpClient = mock(CloseableHttpClient.class);
+        CloseableHttpClient closeableHttpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
         statusLine = mock(StatusLine.class);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -90,7 +97,7 @@ class ExternalMapperTest {
                 assertEquals(0, response.getRc());
                 assertEquals(0, response.getSafRc());
                 assertEquals(0, response.getRacfRc());
-                assertEquals(0, response.getReasonCode());
+                assertEquals(0, response.getRacfRs());
             }
         }
 
@@ -112,7 +119,7 @@ class ExternalMapperTest {
                 assertEquals(0, response.getRc());
                 assertEquals(8, response.getSafRc());
                 assertEquals(8, response.getRacfRc());
-                assertEquals(48, response.getReasonCode());
+                assertEquals(48, response.getRacfRs());
             }
         }
     }
@@ -191,17 +198,29 @@ class ExternalMapperTest {
     }
 
     @Nested
-    class GivenInvalidMapperUrl {
-        @BeforeEach
-        void setup() {
-            ReflectionTestUtils.setField(mapper,"externalMapperUrl","%");
-        }
+    class GivenInvalidMapperSetup {
 
-        @Test
-        void thenResponseIsNull() {
+        @ParameterizedTest
+        @ValueSource(strings = {"%", "https:\\\\"})
+        @NullSource
+        @EmptySource
+        void whenMapperUrlInvalid_thenResponseIsNull(String url) {
+            ReflectionTestUtils.setField(mapper,"externalMapperUrl",url);
             HttpEntity payload = new BasicHttpEntity();
             MapperResponse response = mapper.callExternalMapper(payload);
             assertNull(response);
+            verify(tokenCreationService, times(0)).createJwtTokenWithoutCredentials(anyString());
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void whenMapperUserInvalid_thenResponseIsNull(String user) {
+            ReflectionTestUtils.setField(mapper,"externalMapperUser",user);
+            HttpEntity payload = new BasicHttpEntity();
+            MapperResponse response = mapper.callExternalMapper(payload);
+            assertNull(response);
+            verify(tokenCreationService, times(0)).createJwtTokenWithoutCredentials(anyString());
         }
     }
 }

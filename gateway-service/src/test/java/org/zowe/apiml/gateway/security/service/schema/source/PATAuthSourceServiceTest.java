@@ -82,7 +82,7 @@ class PATAuthSourceServiceTest {
 
         @Test
         void givenToken_thenReturnPATOrigin() {
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.ZOWE_PAT);
+            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE_PAT);
             when(authenticationService.parseJwtToken(token)).thenReturn(response);
             AuthSource.Origin origin = patAuthSourceService.getTokenOrigin(token);
             assertEquals(AuthSource.Origin.valueByIssuer(QueryResponse.Source.ZOWE_PAT.name()), origin);
@@ -109,7 +109,7 @@ class PATAuthSourceServiceTest {
         @Test
         void givenPATAuthSource_thenReturnCorrectUserInfo() {
             PATAuthSource authSource = new PATAuthSource(token);
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.ZOWE_PAT);
+            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE_PAT);
             when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
             AuthSource.Parsed parsedSource = patAuthSourceService.parse(authSource);
             assertEquals(response.getUserId(), parsedSource.getUserId());
@@ -126,7 +126,7 @@ class PATAuthSourceServiceTest {
         void givenValidAuthSource_thenReturnLTPAToken() {
             String ltpa = "ltpa";
             PATAuthSource authSource = new PATAuthSource(token);
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.ZOWE);
+            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE);
             when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
             when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
             when(authenticationService.parseJwtToken(token)).thenReturn(response);
@@ -138,7 +138,7 @@ class PATAuthSourceServiceTest {
         @Test
         void givenValidAuthSource_thenReturnJWT() {
             PATAuthSource authSource = new PATAuthSource(token);
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), null, QueryResponse.Source.ZOWE_PAT);
+            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE_PAT);
             when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
             when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
             String jwt = patAuthSourceService.getJWT(authSource);
