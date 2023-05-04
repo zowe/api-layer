@@ -54,7 +54,7 @@ public class FunctionalApar implements Apar {
         Map<String, String> headers = (Map<String, String>) parameters[4];
         ResponseEntity<?> result = null;
         String token = jwtTokenService.extractToken(headers);
-
+        String ltpaToken = jwtTokenService.extractLtpaToken(headers);
         if (calledService.equals("authentication")) {
             switch (calledMethod) {
                 case "create":
@@ -71,6 +71,9 @@ public class FunctionalApar implements Apar {
                     break;
                 case "delete":
                     result = handleAuthenticationDelete(headers);
+                    if (ltpaToken != null) {
+                        jwtTokenService.invalidateJwtToken(ltpaToken);
+                    }
                     jwtTokenService.invalidateJwtToken(token);
                     break;
                 default:
@@ -198,10 +201,10 @@ public class FunctionalApar implements Apar {
     }
 
     protected boolean validLtpaCookie(Map<String, String> headers) {
-        if(noLtpaCookie(headers)){
+        if (noLtpaCookie(headers)) {
             return false;
         }
-        String token = jwtTokenService.extractToken(headers);
+        String token = jwtTokenService.extractLtpaToken(headers);
         return !jwtTokenService.containsToken(token);
     }
 

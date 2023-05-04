@@ -184,6 +184,14 @@ public class JwtTokenService {
                 .orElse(""));
     }
 
+    public String extractLtpaToken(Map<String, String> headers) {
+        if (headers == null) {
+            return "";
+        }
+        return getLtpaToken(headers)
+            .orElse("");
+    }
+
     private Optional<String> getTokenFromTheStart(Map<String, String> headers) {
         return headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith(JWT_TOKEN))
             .map(Map.Entry::getValue).map(s -> s.replaceFirst(JWT_TOKEN, "")).findFirst();
@@ -191,7 +199,11 @@ public class JwtTokenService {
 
     private Optional<String> getTokenFromTheMiddle(Map<String, String> headers) {
         return headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith(LTPA_TOKEN))
-            .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf(LTPA_TOKEN) + LTPA_TOKEN.length())).findFirst();
+            .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf(JWT_TOKEN) + JWT_TOKEN.length())).findFirst();
     }
 
+    private Optional<String> getLtpaToken(Map<String, String> headers) {
+        return headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith(LTPA_TOKEN))
+            .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf(LTPA_TOKEN) + LTPA_TOKEN.length())).findFirst();
+    }
 }
