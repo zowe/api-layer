@@ -22,6 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.integration.authentication.oauth2.model.ZssResponse;
 import org.zowe.apiml.integration.authentication.pat.ValidateRequestModel;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -31,7 +32,8 @@ import java.net.URI;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.hasKey;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
@@ -284,5 +286,104 @@ public class OktaOauth2Test {
                     .body("headers", not(hasKey("authorization")));
             }
         }
+    }
+
+    @Nested
+    class GivenMappingOrZssErrors {
+
+        private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOSMF_REQUEST);
+        @Test
+        void testEmptyDistuinguishedNameError() {
+            setZssResponse(200, ZssResponse.ZssError.MAPPING_EMPTY_INPUT);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .when()
+                .get(DC_url)
+                .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
+                .body("headers", not(hasKey("authorization")));
+        }
+
+        @Test
+        void testUserIsNotAuthorizedToQueryMapping() {
+            setZssResponse(200, ZssResponse.ZssError.MAPPING_NOT_AUTHORIZED);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .when()
+                .get(DC_url)
+                .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
+                .body("headers", not(hasKey("authorization")));
+        }
+
+        @Test
+        void testOtherMappingError() {
+            setZssResponse(200, ZssResponse.ZssError.MAPPING_OTHER);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .when()
+                .get(DC_url)
+                .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
+                .body("headers", not(hasKey("authorization")));
+        }
+
+        @Test
+        void testZssReturns401() {
+            setZssResponse(401, ZssResponse.ZssError.MAPPING_OTHER);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .when()
+                .get(DC_url)
+                .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
+                .body("headers", not(hasKey("authorization")));
+        }
+        @Test
+        void testZssReturns404() {
+            setZssResponse(404, ZssResponse.ZssError.MAPPING_OTHER);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .when()
+                .get(DC_url)
+                .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
+                .body("headers", not(hasKey("authorization")));
+        }
+
+        @Test
+        void testZssReturns500() {
+            setZssResponse(500, ZssResponse.ZssError.MAPPING_OTHER);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .when()
+                .get(DC_url)
+                .then().statusCode(200)
+                .body("headers", hasKey("x-zowe-auth-failure"))
+                .body("headers", not(hasKey("authorization")));
+        }
+    }
+
+    private void setZssResponse(int statusCode, ZssResponse.ZssError zssError) {
+        final URI mockZssUrl = HttpRequestUtils.getUriFromGateway("/zss/api/v1/certificate/dn/mock-response");
+        ZssResponse requestBody = new ZssResponse(statusCode, zssError);
+        given()
+            .contentType(ContentType.JSON)
+            .body(requestBody)
+            .when()
+            .post(mockZssUrl)
+            .then().statusCode(HttpStatus.SC_CREATED);
     }
 }
