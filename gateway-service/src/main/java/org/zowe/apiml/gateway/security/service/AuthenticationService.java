@@ -160,22 +160,22 @@ public class AuthenticationService {
 
         // invalidate token in z/OSMF
         final QueryResponse queryResponse = parseJwtToken(jwtToken);
-        switch (queryResponse.getSource()) {
-            case ZOWE:
-                final String ltpaToken = getLtpaToken(jwtToken);
-                if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
-                break;
-            case ZOSMF:
-                try {
+        try {
+            switch (queryResponse.getSource()) {
+                case ZOWE:
+                    final String ltpaToken = getLtpaToken(jwtToken);
+                    if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
+                    break;
+                case ZOSMF:
                     zosmfService.invalidate(JWT, jwtToken);
-                } catch (BadCredentialsException e) {
-                    if (!isInvalidatedOnAnotherInstance) {
-                        throw e;
-                    }
-                }
-                break;
-            default:
-                throw new TokenFormatNotValidException("Unknown token type.");
+                    break;
+                default:
+                    throw new TokenFormatNotValidException("Unknown token type.");
+            }
+        } catch (BadCredentialsException e) {
+            if (!isInvalidatedOnAnotherInstance) {
+                throw e;
+            }
         }
 
         return Boolean.TRUE;
@@ -406,6 +406,7 @@ public class AuthenticationService {
 
     /**
      * Extract the OIDC token from the request.
+     *
      * @param request http request
      * @return the OIDC token from different supported sources: header.
      */
