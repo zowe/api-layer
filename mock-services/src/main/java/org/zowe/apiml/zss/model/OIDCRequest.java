@@ -8,19 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.util.config;
+package org.zowe.apiml.zss.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class IDPConfiguration {
-    private String host;
-    private String user;
-    private String password;
-    private String alternateUser;
-    private String alternatePassword;
+@AllArgsConstructor
+public class OIDCRequest {
+
+    private String dn;
+    private String registry;
+
 }

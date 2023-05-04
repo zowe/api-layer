@@ -77,7 +77,7 @@ public class PATAuthSourceService extends TokenAuthSourceService {
             String jwt = (String) authSource.getRawSource();
             QueryResponse response = authenticationService.parseJwtWithSignature(jwt);
 
-            AuthSource.Origin origin = AuthSource.Origin.valueByIssuer(response.getSource().name());
+            AuthSource.Origin origin = AuthSource.Origin.valueByTokenSource(response.getSource());
             return new ParsedTokenAuthSource(response.getUserId(), response.getCreation(), response.getExpiration(), origin);
         }
         return null;
@@ -101,6 +101,6 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     public AuthSource.Origin getTokenOrigin(String zosmfToken) {
         QueryResponse response = authenticationService.parseJwtToken(zosmfToken);
-        return AuthSource.Origin.valueByIssuer(response.getSource().name());
+        return AuthSource.Origin.valueByTokenSource(response.getSource());
     }
 }

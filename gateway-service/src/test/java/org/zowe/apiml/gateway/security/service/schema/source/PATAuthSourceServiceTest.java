@@ -85,7 +85,7 @@ class PATAuthSourceServiceTest {
             QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE_PAT);
             when(authenticationService.parseJwtToken(token)).thenReturn(response);
             AuthSource.Origin origin = patAuthSourceService.getTokenOrigin(token);
-            assertEquals(AuthSource.Origin.valueByIssuer(QueryResponse.Source.ZOWE_PAT.name()), origin);
+            assertEquals(AuthSource.Origin.valueByTokenSource(QueryResponse.Source.ZOWE_PAT), origin);
         }
     }
 

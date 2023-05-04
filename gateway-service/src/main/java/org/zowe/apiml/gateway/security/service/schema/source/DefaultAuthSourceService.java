@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +35,6 @@ import java.util.Optional;
  * @Qualifier("x509MFAuthSourceService") {@link X509AuthSourceService} is responsible for processing of the authentication source based on client certificate.
  * The key for the map is {@link AuthSourceType}.
  */
-@Slf4j
 @Service
 @Primary
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
