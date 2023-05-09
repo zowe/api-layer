@@ -12,7 +12,7 @@ package org.zowe.apiml.integration.authentication.oauth2;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -32,9 +32,9 @@ import java.net.URI;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
+import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("OktaOauth2Test")
@@ -87,25 +87,59 @@ public class OktaOauth2Test {
             void whenUserHasMapping_thenApimlTokenCreated() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", not(hasKey("x-zowe-auth-failure")))
                     .body("headers", hasKey("cookie"))
-                    .body("cookies", hasKey("apimlAuthenticationToken"));
+                    .body("cookies", hasKey("apimlAuthenticationToken"))
+                    .body("cookies.apimlAuthenticationToken", not(is(VALID_TOKEN_WITH_MAPPING)));
             }
 
             @Test
             void whenUserHasNoMapping_thenZoweAuthFailure() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_NO_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
                     .body("headers", not(hasKey("cookie")));
+            }
+
+            @Nested
+            class WhenTokenInApimlCookie {
+
+                @Test
+                void whenUserHasMapping_thenApimlTokenCreated() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_WITH_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", not(hasKey("x-zowe-auth-failure")))
+                        .body("headers", hasKey("cookie"))
+                        .body("cookies", hasKey("apimlAuthenticationToken"))
+                        .body("cookies.apimlAuthenticationToken", not(is(VALID_TOKEN_WITH_MAPPING)));
+                }
+
+                @Test
+                void whenUserHasNoMapping_thenZoweAuthFailure() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_NO_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", hasKey("x-zowe-auth-failure"))
+                        .body("cookies", hasKey("apimlAuthenticationToken"))
+                        .body("cookies.apimlAuthenticationToken", is(VALID_TOKEN_NO_MAPPING));
+                }
             }
         }
 
@@ -117,7 +151,8 @@ public class OktaOauth2Test {
             void whenUserHasMapping_thenJwtTokenCreated() {
                  given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                     .header(HttpHeaders.AUTHORIZATION,
+                         ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
@@ -130,12 +165,43 @@ public class OktaOauth2Test {
             void whenUserHasNoMapping_thenZoweAuthFailure() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_NO_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
                     .body("headers", not(hasKey("cookie")));
+            }
+
+            @Nested
+            class WhenTokenInApimlCookie {
+
+                @Test
+                void whenUserHasMapping_thenJwtTokenCreated() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_WITH_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", not(hasKey("x-zowe-auth-failure")))
+                        .body("headers", hasKey("cookie"))
+                        .body("cookies", hasKey("jwtToken"));
+                }
+
+                @Test
+                void whenUserHasNoMapping_thenZoweAuthFailure() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_NO_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", hasKey("x-zowe-auth-failure"))
+                        .body("headers", hasKey("cookie"))
+                        .body("cookies", not(hasKey("jwtToken")));
+                }
             }
         }
 
@@ -147,7 +213,8 @@ public class OktaOauth2Test {
             void whenUserHasMapping_thenSafTokenCreated() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
@@ -159,12 +226,41 @@ public class OktaOauth2Test {
             void whenUserHasNoMapping_thenZoweAuthFailure() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_NO_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
                     .body("headers", not(hasKey("x-saf-token")));
+            }
+
+            @Nested
+            class WhenTokenInApimlCookie {
+
+                @Test
+                void whenUserHasMapping_thenSafTokenCreated() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_WITH_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", not(hasKey("x-zowe-auth-failure")))
+                        .body("headers", hasKey("x-saf-token"));
+                }
+
+                @Test
+                void whenUserHasNoMapping_thenZoweAuthFailure() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_NO_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", hasKey("x-zowe-auth-failure"))
+                        .body("headers", not(hasKey("x-saf-token")));
+                }
             }
         }
 
@@ -176,7 +272,8 @@ public class OktaOauth2Test {
             void whenUserHasMapping_thenBasicAuthCreated() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
@@ -186,15 +283,46 @@ public class OktaOauth2Test {
             }
 
             @Test
-            void whenUserNoHasMapping_thenZoweAuthFailure() {
+            void whenUserHasNoMapping_thenZoweAuthFailure() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_NO_MAPPING))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_NO_MAPPING)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
-                    .body("headers", not(hasKey("authorization")));
+                    .body("headers", hasKey("authorization"))
+                    .body("headers.authorization", not(startsWith("Basic")));
+            }
+
+            @Nested
+            class WhenTokenInApimlCookie {
+
+                @Test
+                void whenUserHasMapping_thenBasicAuthCreated() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_WITH_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", not(hasKey("x-zowe-auth-failure")))
+                        .body("headers", hasKey("authorization"))
+                        .body("headers.authorization", startsWith("Basic"));
+                }
+
+                @Test
+                void whenUserNoHasMapping_thenZoweAuthFailure() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .cookie(GATEWAY_TOKEN_COOKIE_NAME, VALID_TOKEN_NO_MAPPING)
+                        .when()
+                        .get(DC_url)
+                        .then().statusCode(200)
+                        .body("headers", hasKey("x-zowe-auth-failure"))
+                        .body("headers", not(hasKey("authorization")));
+                }
             }
         }
     }
@@ -221,15 +349,30 @@ public class OktaOauth2Test {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
-            void thenZoweAuthFailure(String invalidToken) {
+            void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + invalidToken)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
                     .body("headers", not(hasKey("cookie")));
+            }
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, invalidToken)
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("cookies", hasKey("apimlAuthenticationToken"))
+                    .body("cookies.apimlAuthenticationToken", is(invalidToken));
             }
         }
 
@@ -239,15 +382,30 @@ public class OktaOauth2Test {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
-            void thenZoweAuthFailure(String invalidToken) {
+            void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + invalidToken)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
                     .body("headers", not(hasKey("cookie")));
+            }
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, invalidToken)
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", hasKey("cookie"))
+                    .body("cookies", not(hasKey("jwtToken")));
             }
         }
 
@@ -257,10 +415,24 @@ public class OktaOauth2Test {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
-            void thenZoweAuthFailure(String invalidToken) {
+            void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + invalidToken)
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", not(hasKey("x-saf-token")));
+            }
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, invalidToken)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
@@ -275,10 +447,25 @@ public class OktaOauth2Test {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
-            void thenZoweAuthFailure(String invalidToken) {
+            void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
-                    .header(new Header(ApimlConstants.OIDC_HEADER_NAME, invalidToken))
+                    .header(HttpHeaders.AUTHORIZATION,
+                        ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + invalidToken)
+                    .when()
+                    .get(DC_url)
+                    .then().statusCode(200)
+                    .body("headers", hasKey("x-zowe-auth-failure"))
+                    .body("headers", hasKey("authorization"))
+                    .body("headers.authorization", not(startsWith("Basic")));
+            }
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
+                given()
+                    .contentType(ContentType.JSON)
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, invalidToken)
                     .when()
                     .get(DC_url)
                     .then().statusCode(200)
@@ -298,12 +485,13 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .header(HttpHeaders.AUTHORIZATION,
+                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                 .when()
                 .get(DC_url)
                 .then().statusCode(200)
                 .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("authorization")));
+                .body("headers", not(hasKey("cookie")));
         }
 
         @Test
@@ -312,12 +500,13 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .header(HttpHeaders.AUTHORIZATION,
+                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                 .when()
                 .get(DC_url)
                 .then().statusCode(200)
                 .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("authorization")));
+                .body("headers", not(hasKey("cookie")));
         }
 
         @Test
@@ -326,12 +515,13 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .header(HttpHeaders.AUTHORIZATION,
+                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                 .when()
                 .get(DC_url)
                 .then().statusCode(200)
                 .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("authorization")));
+                .body("headers", not(hasKey("cookie")));
         }
 
         @Test
@@ -340,12 +530,13 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .header(HttpHeaders.AUTHORIZATION,
+                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                 .when()
                 .get(DC_url)
                 .then().statusCode(200)
                 .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("authorization")));
+                .body("headers", not(hasKey("cookie")));
         }
         @Test
         void testZssReturns404() {
@@ -353,12 +544,13 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .header(HttpHeaders.AUTHORIZATION,
+                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                 .when()
                 .get(DC_url)
                 .then().statusCode(200)
                 .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("authorization")));
+                .body("headers", not(hasKey("cookie")));
         }
 
         @Test
@@ -367,12 +559,13 @@ public class OktaOauth2Test {
 
             given()
                 .contentType(ContentType.JSON)
-                .header(new Header(ApimlConstants.OIDC_HEADER_NAME, VALID_TOKEN_WITH_MAPPING))
+                .header(HttpHeaders.AUTHORIZATION,
+                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
                 .when()
                 .get(DC_url)
                 .then().statusCode(200)
                 .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("authorization")));
+                .body("headers", not(hasKey("cookie")));
         }
     }
 
