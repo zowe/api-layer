@@ -51,6 +51,7 @@ public class SafIdtSchemeTest {
     private static Stream<Arguments> accessTokens() {
 
         return Stream.of(
+            Arguments.of(pat, COOKIE_NAME),
             Arguments.of(pat, PAT_COOKIE_AUTH_NAME),
             Arguments.of(jwt, COOKIE_NAME)
         );
