@@ -74,6 +74,8 @@ public class SecurityUtils {
     public final static String OKTA_CLIENT_ID = System.getProperty("okta.client.id");
     public final static String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
     public final static String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
+    public final static String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
+    public final static String OKTA_ALT_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternatePassword();
 
     public final static String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
@@ -169,22 +171,16 @@ public class SecurityUtils {
         return token;
     }
 
-    public static String validOktaAccessToken() {
+    public static String validOktaAccessToken(boolean userHasMappingDefined) {
         assertNotNull(OKTA_HOSTNAME, "OKTA host name is not set.");
         assertNotNull(OKTA_CLIENT_ID, "OKTA client id is not set.");
 
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("username", OKTA_USER);
-        requestBody.put("password", OKTA_PASSWORD);
-        String sessionToken = given()
-            .contentType(JSON)
-            .body(requestBody.toString())
-            .when()
-            .post(OKTA_HOSTNAME + "/api/v1/authn")
-            .then()
-            .statusCode(200)
-            .extract().path("sessionToken");
-
+        String sessionToken;
+        if (userHasMappingDefined) {
+            sessionToken = getOktaSession(OKTA_USER, OKTA_PASSWORD);
+        } else {
+            sessionToken = getOktaSession(OKTA_ALT_USER, OKTA_ALT_PASSWORD);
+        }
         assertNotNull(sessionToken, "Failed to get session token from Okta authentication.");
 
         // retrieve the access token from Okta using session token
@@ -211,6 +207,23 @@ public class SecurityUtils {
         String accessToken = StringUtils.substringBetween(body, "name=\"access_token\" value=\"", "\"/>");
         assertNotNull(accessToken, "Failed to locate access token in the Okta /authorize response.");
         return accessToken;
+    }
+
+    private static String getOktaSession(String username, String password) {
+        assertNotNull(username, "OKTA username is not set.");
+        assertNotNull(password, "OKTA password is not set.");
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("username", username);
+        requestBody.put("password", password);
+
+        return given()
+            .contentType(JSON)
+            .body(requestBody.toString())
+            .when()
+            .post(OKTA_HOSTNAME + "/api/v1/authn")
+            .then()
+            .statusCode(200)
+            .extract().path("sessionToken");
     }
 
     public static String expiredOktaAccessToken() {

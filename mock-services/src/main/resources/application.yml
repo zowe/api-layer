@@ -37,6 +37,9 @@ zosmf:
     jwtKeyStorePath: keystore/localhost/localhost.keystore.p12
     timeout: 60
 
+zss:
+    userMapping:
+            "[zoweson@zowe.com]": USER
 
 ---
 spring:

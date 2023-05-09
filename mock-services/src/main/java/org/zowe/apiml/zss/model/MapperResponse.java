@@ -8,19 +8,26 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.util.config;
+package org.zowe.apiml.zss.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class IDPConfiguration {
-    private String host;
-    private String user;
-    private String password;
-    private String alternateUser;
-    private String alternatePassword;
+@AllArgsConstructor
+public class MapperResponse {
+
+    @JsonProperty("userid")
+    private String userId;
+    @JsonProperty("returnCode")
+    private int rc;
+    @JsonProperty("safReturnCode")
+    private int safRc;
+    @JsonProperty("racfReturnCode")
+    private int racfRc;
+    @JsonProperty("racfReasonCode")
+    private int racfRs;
 }
