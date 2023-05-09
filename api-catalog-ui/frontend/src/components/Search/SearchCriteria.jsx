@@ -53,11 +53,10 @@ export default class SearchCriteria extends Component {
         const icon = criteria.length === 0 ? iconSearch : iconClear;
         return (
             <TextField
-                disableUnderline="true"
                 className="search-bar"
                 data-testid="search-bar"
                 InputProps={{
-                    endAdornment: <InputAdornment>{icon}</InputAdornment>,
+                    endAdornment: <InputAdornment id="search-input">{icon}</InputAdornment>,
                 }}
                 placeholder={placeholder}
                 value={criteria}

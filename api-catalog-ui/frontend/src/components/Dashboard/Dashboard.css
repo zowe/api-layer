@@ -109,6 +109,32 @@ a {
     grid-template-rows: auto auto;
 }
 
+.filtering-container {
+    float: left;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:before {
+    border-bottom: none;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:after {
+    border: none;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:hover:not(.Mui-disabled):before {
+    border-bottom: none;
+}
+
+#search {
+    height: 50px;
+    width: 422px;
+    margin-top: -20px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #FFFFFF;
+    border: 1px solid #C9C8C5;
+}
+
 .no-tiles-container {
     margin-left: 2rem;
     text-align: left;

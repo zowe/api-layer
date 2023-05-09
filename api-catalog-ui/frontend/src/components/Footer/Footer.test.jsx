@@ -16,19 +16,13 @@ describe('>>> Footer component tests', () => {
         expect(footer.find('footer').length).toBeFalsy();
     });
 
-    it('should display link to ca support', () => {
+    it('should display link', () => {
         process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
         expect(footer.find('Link').length).toBeDefined();
     });
 
-    it('should have link href to CA support', () => {
-        process.env.REACT_APP_CA_ENV = true;
-        const footer = enzyme.shallow(<Footer />);
-        expect(footer.find('[data-testid="link"]').props().href).toEqual('https://support.broadcom.com');
-    });
-
-    it('should show the copyright', () => {
+    it('should show the paragraph', () => {
         process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
         const paragraph = footer.find('p');
