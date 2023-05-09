@@ -149,27 +149,17 @@ export default class Dashboard extends Component {
                         <div id="bottom-info-div">
                             <Container>
                                 <h4 className="footer-links">Capabilities</h4>
-                                <Link className="links">AIOps</Link>
-                                <Link className="links">Security</Link>
-                                <Link className="links">DevOps</Link>
-                                <Link className="links">Infrastructure</Link>
+                                <Link className="links" />
                             </Container>
                             <vl id="footer-menu-separator" />
                             <Container>
                                 <h4>Resources</h4>
                                 <Link className="links">Blog</Link>
-                                <Link className="links">Content Library</Link>
-                                <Link className="links">Events</Link>
-                                <Link className="links">Mainframe Software Community</Link>
-                                <Link className="links">Mainframe Education Community</Link>
                             </Container>
                             <vl id="footer-menu-separator" />
                             <Container>
-                                <h4>Broadcom Mainframe</h4>
-                                <Link className="links">Why Broadcom for Mainframe</Link>
-                                <Link className="links">Education & Training</Link>
-                                <Link className="links">Vitality Program</Link>
-                                <Link className="links">Talk to an Expert</Link>
+                                <h4>Just a placeholder</h4>
+                                <Link className="links" />
                             </Container>
                         </div>
                     </div>
