@@ -586,26 +586,4 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     }
 
-    @Nested
-    class GivenOIDCTokenInTheRequestTest {
-
-        @Test
-        void givenTokenIsPresent_thenGetFromHeader() {
-            String token = "oidcToken";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            request.addHeader(ApimlConstants.OIDC_HEADER_NAME, token);
-            Optional<String> result = authService.getOIDCTokenFromRequest(request);
-            assertTrue(result.isPresent());
-            assertEquals(token, result.get());
-        }
-
-        @Test
-        void givenNoTokenInRequest_thenReturnEmptyResult() {
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            Optional<String> result = authService.getOIDCTokenFromRequest(request);
-            assertFalse(result.isPresent());
-        }
-
-    }
-
 }

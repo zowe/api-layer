@@ -404,16 +404,6 @@ public class AuthenticationService {
         return header != null ? Optional.of(header) : Optional.empty();
     }
 
-    /**
-     * Extract the OIDC token from the request.
-     *
-     * @param request http request
-     * @return the OIDC token from different supported sources: header.
-     */
-    public Optional<String> getOIDCTokenFromRequest(@NonNull HttpServletRequest request) {
-        return getAccessTokenFromHeader(request.getHeader(ApimlConstants.OIDC_HEADER_NAME));
-    }
-
     private Optional<String> getTokenFromCookie(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return Optional.empty();

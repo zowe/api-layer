@@ -78,7 +78,7 @@ class OIDCAuthSourceServiceTest {
         void givenTokenInRequestContext_thenReturnTheToken() {
             HttpServletRequest request = new MockHttpServletRequest();
             when(context.getRequest()).thenReturn(request);
-            when(authenticationService.getOIDCTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
             assertEquals(TOKEN, service.getToken(context).get());
         }
 

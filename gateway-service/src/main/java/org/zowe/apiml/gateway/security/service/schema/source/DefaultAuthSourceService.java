@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,10 +22,13 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.AuthSourceType;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
+import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 
 /**
  * Main implementation of AuthSourceService, supports four types of authentication source - JWT token, client certificate, personal access token and OIDC token.
@@ -42,6 +46,7 @@ import java.util.Optional;
 public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
+    private final boolean isX509Enabled;
     private final boolean isPATEnabled;
     private final boolean isOIDCEnabled;
 
@@ -57,14 +62,18 @@ public class DefaultAuthSourceService implements AuthSourceService {
      */
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
+                                    @Value("${apiml.security.x509.enabled:false}") boolean isX509Enabled,
                                     PATAuthSourceService patAuthSourceService,
                                     @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled,
                                     @Nullable OIDCAuthSourceService oidcAuthSourceService,
                                     @Value("${apiml.security.oidc.enabled:false}") boolean isOIDCEnabled) {
+        this.isX509Enabled = isX509Enabled;
         this.isPATEnabled = isPATEnabled;
         this.isOIDCEnabled = isOIDCEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
-        map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
+        if (isX509Enabled) {
+            map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
+        }
         if (isPATEnabled) {
             map.put(AuthSourceType.PAT, patAuthSourceService);
         }
@@ -88,17 +97,51 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest() {
         AuthSourceService service = getService(AuthSourceType.JWT);
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
+        authSource = verifyTokenOrigin(authSource);
         if (!authSource.isPresent() && isPATEnabled) {
+            // get PAT token from PAT specific cookie or header
             service = getService(AuthSourceType.PAT);
             authSource = service.getAuthSourceFromRequest();
         }
-        if (!authSource.isPresent() && isOIDCEnabled) {
-            service = getService(AuthSourceType.OIDC);
-            authSource = service.getAuthSourceFromRequest();
-        }
-        if (!authSource.isPresent()) {
+        if (!authSource.isPresent() && isX509Enabled) {
             service = getService(AuthSourceType.CLIENT_CERT);
             authSource = service.getAuthSourceFromRequest();
+        }
+        return authSource;
+    }
+
+    private Optional<AuthSource> verifyTokenOrigin(Optional<AuthSource> authSource) {
+        if (authSource.isPresent()) {
+            AuthSourceType currentType = authSource.get().getType();
+            String token = (String) authSource.get().getRawSource();
+            Claims claims = getJwtClaims(token);
+            QueryResponse.Source source = QueryResponse.Source.valueByIssuer(claims.getIssuer());
+            switch (source) {
+                case ZOWE:
+                case ZOSMF:
+                    if (currentType != AuthSourceType.JWT) {
+                        authSource = Optional.of(new JwtAuthSource(token));
+                    }
+                    break;
+                case ZOWE_PAT:
+                    if (isPATEnabled) {
+                        if ((currentType != AuthSourceType.PAT)) {
+                            authSource = Optional.of(new PATAuthSource(token));
+                        }
+                    } else {
+                        authSource = Optional.empty();
+                    }
+                    break;
+                case OIDC:
+                    if (isOIDCEnabled) {
+                        if (currentType != AuthSourceType.OIDC) {
+                            authSource = Optional.of(new OIDCAuthSource(token));
+                        }
+                    } else {
+                        authSource = Optional.empty();
+                    }
+                    break;
+            }
         }
         return authSource;
     }

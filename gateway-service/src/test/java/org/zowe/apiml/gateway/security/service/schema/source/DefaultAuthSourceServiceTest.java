@@ -10,9 +10,14 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.gateway.security.service.JwtUtils;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
@@ -42,7 +47,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         x509MFAuthSourceService = mock(X509AuthSourceService.class);
         patAuthSourceService = mock(PATAuthSourceService.class);
         oidcAuthSourceService = mock(OIDCAuthSourceService.class);
-        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService, true, oidcAuthSourceService, true);
+        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, true, patAuthSourceService, true, oidcAuthSourceService, true);
         x509Certificate = mock(X509Certificate.class);
     }
 
@@ -55,8 +60,14 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         @Test
         void thenJwtAuthSourceIsPresent() {
             when(jwtAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(jwtAuthSource));
+            final Claims tokenClaims = new DefaultClaims();
+            tokenClaims.setIssuer("zOSMF");
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource;
+            try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {
+                jwtUtilsMock.when(() -> JwtUtils.getJwtClaims("token")).thenReturn(tokenClaims);
+                authSource = serviceUnderTest.getAuthSourceFromRequest();
+            }
 
             verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
             verifyNoInteractions(x509MFAuthSourceService);
@@ -149,8 +160,14 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         @Test
         void thenJwtAuthSourceIsPresent() {
             when(jwtAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(jwtAuthSource));
+            final Claims tokenClaims = new DefaultClaims();
+            tokenClaims.setIssuer("zOSMF");
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource;
+            try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {
+                jwtUtilsMock.when(() -> JwtUtils.getJwtClaims("token")).thenReturn(tokenClaims);
+                authSource = serviceUnderTest.getAuthSourceFromRequest();
+            }
 
             verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
             verifyNoInteractions(x509MFAuthSourceService);
