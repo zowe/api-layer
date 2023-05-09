@@ -156,7 +156,10 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     private void closeWebSocket(WebSocketSession webSocketSession, CloseStatus closeStatus, String reason) throws IOException {
         if (webSocketSession.isOpen()) {
+            log.debug(String.format("WebSocket session %s is open, requesting close with reason %s", webSocketSession.getId(), reason));
             webSocketSession.close(closeStatus.withReason(reason));
+        } else {
+            log.debug(String.format("WebSocket session %s is already closed, new reason is %s", webSocketSession.getId(), reason));
         }
     }
 
@@ -178,8 +181,6 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
         routedSessions.put(webSocketSession.getId(), session);
-
-
     }
 
     @Override

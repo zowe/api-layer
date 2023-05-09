@@ -38,4 +38,9 @@ public class WebSocketProxyClientHandler extends AbstractWebSocketHandler {
         log.debug("afterConnectionClosed(session={},status={})", session, status);
         webSocketServerSession.close(status);
     }
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        log.warn(String.format("WebSocket transport error in session %s", session.getId()), exception);
+    }
 }
