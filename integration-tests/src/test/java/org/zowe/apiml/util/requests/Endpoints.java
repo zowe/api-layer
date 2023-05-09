@@ -56,10 +56,12 @@ public class Endpoints {
     public final static String X509_ENDPOINT = "/discoverableclient/api/v1/x509";
     public final static String MEDIATION_CLIENT = "/discoverableclient/api/v1/apiMediationClient";
 
-    public final static String REQUEST_INFO_ENDPOINT = "/dcpassticket/api/v1/request";
     public final static String PASSTICKET_TEST_ENDPOINT = "/dcpassticket/api/v1/passticketTest";
 
+    public final static String REQUEST_INFO_ENDPOINT = "/dcpassticket/api/v1/request";
     public final static String SAF_IDT_REQUEST = "/dcsafidt/api/v1/request";
+    public final static String ZOSMF_REQUEST = "/dczosmf/api/v1/request";
+    public final static String ZOWE_JWT_REQUEST = "/zowejwt/api/v1/request";
 
     public final static String DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
     public final static String DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";

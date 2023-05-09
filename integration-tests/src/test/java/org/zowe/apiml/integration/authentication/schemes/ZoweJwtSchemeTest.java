@@ -34,6 +34,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.requests.Endpoints.ZOWE_JWT_REQUEST;
 
 @zOSMFAuthTest
 @DiscoverableClientDependentTest
@@ -44,7 +45,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
     @BeforeAll
     static void init() throws Exception {
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-        URL = HttpRequestUtils.getUriFromGateway("/zowejwt/api/v1/request");
+        URL = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
     }
 
     @Test

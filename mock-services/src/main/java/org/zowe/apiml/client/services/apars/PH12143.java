@@ -50,7 +50,7 @@ public class PH12143 extends FunctionalApar {
         if (noAuthentication(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        if (isUnauthorized(headers)) {
+        if (isValidJwtCookie(headers) || isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

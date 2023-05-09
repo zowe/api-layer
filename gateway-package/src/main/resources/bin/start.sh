@@ -42,6 +42,11 @@
 # - ZWE_configs_apiml_security_x509_externalMapperUrl
 # - ZWE_configs_apiml_security_x509_externalMapperUser
 # - ZWE_configs_apiml_security_zosmf_applid
+# - ZWE_configs_apiml_security_oidc_enabled
+# - ZWE_configs_apiml_security_oidc_clientId
+# - ZWE_configs_apiml_security_oidc_clientSecret
+# - ZWE_configs_apiml_security_oidc_introspectEndpoint
+# - ZWE_configs_apiml_security_oidc_registry
 # - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
 # - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
@@ -240,6 +245,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.authorization.resourceClass=${ZWE_configs_apiml_security_authorization_resourceClass:-ZOWE} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-APIML.} \
     -Dapiml.security.zosmf.applid=${ZWE_configs_apiml_security_zosmf_applid:-IZUDFLT} \
+    -Dapiml.security.oidc.enabled=${ZWE_configs_apiml_security_oidc_enabled:-false} \
+    -Dapiml.security.oidc.clientId=${ZWE_configs_apiml_security_oidc_clientId:-} \
+    -Dapiml.security.oidc.clientSecret=${ZWE_configs_apiml_security_oidc_clientSecret:-} \
+    -Dapiml.security.oidc.introspectEndpoint=${ZWE_configs_apiml_security_oidc_introspectEndpoint:-/v1/introspect} \
+    -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \

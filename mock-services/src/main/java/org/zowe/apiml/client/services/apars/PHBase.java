@@ -58,6 +58,14 @@ public class PHBase extends FunctionalApar {
     }
 
     @Override
+    protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
+        if (!validLtpaCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
     protected ResponseEntity<?> handleFiles(Map<String, String> headers) {
         String authorization = headers.get(AUTHORIZATION_HEADER);
 
