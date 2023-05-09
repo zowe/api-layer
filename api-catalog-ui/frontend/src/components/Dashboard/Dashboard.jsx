@@ -120,7 +120,7 @@ export default class Dashboard extends Component {
                 {!fetchTilesError && (
                     <div className="apis">
                         <div id="grid-container">
-                            <div className="filtering-container">
+                            <div className="api-heading-container">
                                 <h3 id="api-heading-id" className="api-heading">
                                     API Developer Experience
                                 </h3>

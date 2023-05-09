@@ -127,10 +127,10 @@ describe('>>> Detail page test', () => {
             .should('exist')
             .click();
 
-        cy.get('#root > div > div.content > div:nth-child(2) > div.apis > div > div.filtering-container > div > div > input').should('exist');
+        cy.get('#search > div > div > input').should('exist');
         cy.contains('Available API services').should('exist');
 
-        cy.get('#root > div > div.content > div:nth-child(2) > div.apis > div > div.filtering-container > div > div > input')
+        cy.get('#search > div > div > input')
             .as('search')
             .type('API Mediation Layer API');
 

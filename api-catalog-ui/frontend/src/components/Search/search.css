@@ -3,7 +3,7 @@
     float: right;
 }
 
-.filtering-container {
+.api-heading-container {
     float: left;
 }
 
@@ -36,7 +36,7 @@ svg.MuiSvgIcon-root.clear-text-search {
     margin-top: 10px;
 }
 
-.filtering-container .search-bar {
+.api-heading-container .search-bar {
     height: 50px;
     width: 422px;
     font-style: italic;
@@ -60,13 +60,13 @@ svg.MuiSvgIcon-root.clear-text-search {
 }
 
 @media only screen and (max-width: 530px) {
-    .filtering-container .search-bar {
+    .api-heading-container .search-bar {
         width: 360px;
     }
 }
 
 @media only screen and (max-width: 390px) {
-    .filtering-container .search-bar {
+    .api-heading-container .search-bar {
         width: 320px;
     }
 }
