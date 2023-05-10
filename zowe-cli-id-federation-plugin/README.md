@@ -9,7 +9,7 @@ The IDF Plug-in for Zowe CLI can help facilitate the mapping of an external iden
 
 ## Prerequisites
 
-Before you work with the Zowe CLI sample plug-in, [install Zowe CLI globally.](https://docs.zowe.org/active-development/user-guide/cli-installcli.html)
+Before you work with the Zowe CLI sample plug-in, [install Zowe CLI globally.](https://docs.zowe.org/stable/user-guide/cli-installcli.html)
 
 ## Run the Automated Tests
 
