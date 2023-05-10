@@ -69,14 +69,6 @@ export default class Tile extends Component {
         history.push(tileRoute);
     };
 
-    // not a great way to avoid overlapping text in a card block
-    shortenDescription = (description) => {
-        if (description.length > 180) {
-            return `${description.substring(0, 177)}...`;
-        }
-        return description;
-    };
-
     render() {
         const { tile } = this.props;
 
@@ -94,7 +86,6 @@ export default class Tile extends Component {
                         {tile.title}
                     </Typography>
                     <br />
-                    {this.shortenDescription(tile.description)}
                     <Typography id="tileLabel" className="grid-tile-status">
                         {this.getTileStatus(tile)}
                         {this.getTileStatusText(tile)}
