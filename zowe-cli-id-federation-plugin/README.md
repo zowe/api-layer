@@ -25,4 +25,5 @@ This process assumes that you already installed Zowe CLI on your PC in the previ
 1. `cd` to `zowe-cli-id-federation-plugin` folder.
 2. `npm run installPlugin`
 3. `zowe idf --help`
-   You should see help text displayed if the installation was successful.
+
+You should see help text displayed if the installation was successful.
