@@ -1,21 +1,21 @@
 dependencies {
-    annotationProcessor libraries.lombok
+    annotationProcessor libs.lombok
 
-    implementation libraries.http_client
-    implementation libraries.jackson_annotations
-    implementation libraries.jackson_databind
-    implementation libraries.slf4j_api
-    implementation libraries.jaxb_api
-    implementation libraries.javax_servlet_api
-    implementation libraries.spring_context
-    implementation libraries.apache_commons_codec
+    implementation libs.http.client
+    implementation libs.jackson.annotations
+    implementation libs.jackson.databind
+    implementation libs.slf4j.api
+    implementation libs.jaxb.api
+    implementation libs.javax.servlet.api
+    implementation libs.spring.context
+    implementation libs.apache.commons.codec
 
-    compileOnly libraries.lombok
+    compileOnly libs.lombok
 
-    testImplementation libraries.http_client
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
-    testImplementation libraries.junitJupiter
-    testImplementation libraries.jjwt_full
-    testImplementation libraries.logback_classic
+    testImplementation libs.http.client
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
+    testImplementation libs.junitJupiter
+    testImplementation libs.jjwt.full
+    testImplementation libs.logback.classic
 }

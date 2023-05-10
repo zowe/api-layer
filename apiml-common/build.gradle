@@ -2,50 +2,50 @@ dependencies {
     implementation project(':apiml-utility')
     implementation project(':apiml-tomcat-common')
     api project(':common-service-core')
-    implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
-    implementation(libraries.spring_cloud_starter_eureka){
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.cloud.commons
+    implementation libs.spring.cloud.starter.bootstrap
+    implementation(libs.spring.cloud.starter.eureka){
         exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
         exclude group: "com.google.code.gson", module: "gson"
         exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
         exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
     }
-    implementation libraries.woodstox
-    implementation libraries.spring_boot_starter_aop
-    implementation libraries.bcpkix
-    implementation(libraries.spring_boot_starter_web) {
+    implementation libs.woodstox
+    implementation libs.spring.boot.starter.aop
+    implementation libs.bcpkix
+    implementation(libs.spring.boot.starter.web) {
         exclude group: "org.yaml", module: "snakeyaml"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
     }
-    implementation libraries.spring_web
-    implementation libraries.spring_webmvc
-    implementation libraries.tomcat_embed_core
-    implementation libraries.tomcat_embed_el
-    implementation libraries.tomcat_embed_websocket
-    implementation libraries.snakeyaml
-    implementation libraries.spring_boot_starter_validation
-    implementation libraries.jackson_databind
-    implementation libraries.jackson_core
-    implementation libraries.apache_commons_lang3
-    implementation libraries.http_client
-    implementation libraries.http_core
-    implementation libraries.janino
-    implementation libraries.xstream
-    implementation libraries.jetty_util
+    implementation libs.spring.web
+    implementation libs.spring.webmvc
+    implementation libs.tomcat.embed.core
+    implementation libs.tomcat.embed.el
+    implementation libs.tomcat.embed.websocket
+    implementation libs.snakeyaml
+    implementation libs.spring.boot.starter.validation
+    implementation libs.jackson.databind
+    implementation libs.jackson.core
+    implementation libs.apache.commons.lang3
+    implementation libs.http.client
+    implementation libs.http.core
+    implementation libs.janino
+    implementation libs.xstream
+    implementation libs.jetty.util
 
-    implementation libraries.spring_security_crypto
+    implementation libs.spring.security.crypto
 
-    compileOnly libraries.spring_boot_configuration_processor
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.spring.boot.configuration.processor
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testImplementation libraries.javax_servlet_api
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
+    testImplementation libs.javax.servlet.api
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
 
-    testCompileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    testCompileOnly libs.lombok
+    annotationProcessor libs.lombok
 }

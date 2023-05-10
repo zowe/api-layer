@@ -1,7 +1,7 @@
 
 plugins {
-    id "io.micronaut.application" version '3.5.1'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    alias(libs.plugins.micronaut.application)
+    alias(libs.plugins.shadow)
 }
 
 application {
@@ -18,7 +18,7 @@ group "org.zowe.apiml"
 
 
 micronaut {
-    version = "3.5.1"
+    version = libs.versions.micronautVersion.get()
     runtime "netty"
     testRuntime "junit5"
     processing {
@@ -31,7 +31,7 @@ dependencies {
     implementation project(':onboarding-enabler-java')
     implementation project(':onboarding-enabler-micronaut')
     testImplementation ("io.micronaut:micronaut-http-client")
-    testCompileOnly libraries.javax_inject
+    testCompileOnly libs.javax.inject
  }
 
 

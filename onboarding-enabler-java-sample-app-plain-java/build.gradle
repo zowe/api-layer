@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':onboarding-enabler-java')
-    implementation ("javax.servlet:javax.servlet-api:4.0.1")
+    implementation libs.javax.servlet.api
 }
 
 jar {

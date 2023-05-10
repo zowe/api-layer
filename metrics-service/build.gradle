@@ -1,14 +1,13 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath("org.eclipse.jgit:org.eclipse.jgit") {
-            version {
-                strictly '5.13.0.202109080827-r'
-            }
-        }
+        classpath libs.spring.boot.gradle.plugin
+        classpath libs.jgit
     }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
 }
 
 normalization {
@@ -19,7 +18,6 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
@@ -56,64 +54,64 @@ dependencies {
     implementation project(':onboarding-enabler-spring')
     implementation(project(':security-service-client-spring'))
 
-    implementation libraries.snakeyaml
-    implementation libraries.jackson_annotations
-    implementation libraries.jackson_core
-    implementation libraries.jackson_databind
-    implementation libraries.jackson_mapper_asl
-    implementation libraries.jetty_client
-    implementation libraries.jetty_http
-    implementation libraries.jetty_io
-    implementation libraries.jetty_util
-    implementation libraries.spring_doc
-    implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_boot_starter_aop
-    implementation(libraries.spring_cloud_starter_eureka){
+    implementation libs.snakeyaml
+    implementation libs.jackson.annotations
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.jackson.mapper.asl
+    implementation libs.jetty.client
+    implementation libs.jetty.http
+    implementation libs.jetty.io
+    implementation libs.jetty.util
+    implementation libs.spring.doc
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.aop
+    implementation(libs.spring.cloud.starter.eureka){
         exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
         exclude group: "com.google.code.gson", module: "gson"
         exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
         exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
     }
-    implementation libraries.woodstox
-    implementation libraries.gson
-    implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
-    implementation libraries.spring_cloud_starter_turbine
-    implementation libraries.spring_security_web
-    implementation libraries.spring_security_config
-    implementation libraries.spring_security_core
-    implementation libraries.spring_security_crypto
-    implementation libraries.tomcat_annotations_api
-    implementation libraries.tomcat_embed_core
-    implementation libraries.tomcat_embed_el
-    implementation libraries.tomcat_embed_websocket
-    implementation libraries.gson
-    implementation libraries.xstream
-    implementation libraries.commons_io
-    implementation libraries.guava
-    implementation libraries.spring_aop
-    implementation libraries.spring_beans
-    implementation libraries.spring_context
-    implementation libraries.spring_context_support
-    implementation libraries.spring_core
-    implementation libraries.spring_expression
-    implementation libraries.spring_messaging
-    implementation libraries.spring_web
-    implementation libraries.spring_webflux
-    implementation libraries.spring_webmvc
-    implementation libraries.spring_websocket
-    implementation libraries.logback_core
-    implementation libraries.logback_classic
-    implementation libraries.bcpkix
+    implementation libs.woodstox
+    implementation libs.gson
+    implementation libs.spring.cloud.commons
+    implementation libs.spring.cloud.starter.bootstrap
+    implementation libs.spring.cloud.starter.turbine
+    implementation libs.spring.security.web
+    implementation libs.spring.security.config
+    implementation libs.spring.security.core
+    implementation libs.spring.security.crypto
+    implementation libs.tomcat.annotations.api
+    implementation libs.tomcat.embed.core
+    implementation libs.tomcat.embed.el
+    implementation libs.tomcat.embed.websocket
+    implementation libs.gson
+    implementation libs.xstream
+    implementation libs.commons.io
+    implementation libs.guava
+    implementation libs.spring.aop
+    implementation libs.spring.beans
+    implementation libs.spring.context
+    implementation libs.spring.context.support
+    implementation libs.spring.core
+    implementation libs.spring.expression
+    implementation libs.spring.messaging
+    implementation libs.spring.web
+    implementation libs.spring.webflux
+    implementation libs.spring.webmvc
+    implementation libs.spring.websocket
+    implementation libs.logback.core
+    implementation libs.logback.classic
+    implementation libs.bcpkix
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testCompileOnly libraries.lombok
-    testAnnotationProcessor libraries.lombok
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
-    testImplementation libraries.rest_assured
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
+    testImplementation libs.rest.assured
 }
 
 def uiModule = "${project(':metrics-service-ui').projectDir}"

@@ -1,14 +1,13 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath("org.eclipse.jgit:org.eclipse.jgit") {
-            version {
-                strictly '5.13.0.202109080827-r'
-            }
-        }
+        classpath libs.spring.boot.gradle.plugin
+        classpath libs.jgit
     }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
 }
 
 normalization {
@@ -19,7 +18,6 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'com.gorylenko.gradle-git-properties'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
@@ -51,51 +49,51 @@ gitProperties {
 }
 
 dependencies {
-    implementation libraries.jjwt
-    implementation libraries.jjwt_impl
-    implementation libraries.jjwt_jackson
-    implementation libraries.apache_commons_lang3
-    implementation libraries.nimbusJoseJwt
-    implementation libraries.jackson_databind
+    implementation libs.jjwt
+    implementation libs.jjwt.impl
+    implementation libs.jjwt.jackson
+    implementation libs.apache.commons.lang3
+    implementation libs.nimbusJoseJwt
+    implementation libs.jackson.databind
 
-    implementation libraries.spring_boot_starter
-    implementation libraries.spring_boot_starter_actuator
-    implementation(libraries.spring_boot_starter_web) {
+    implementation libs.spring.boot.starter
+    implementation libs.spring.boot.starter.actuator
+    implementation(libs.spring.boot.starter.web) {
         exclude group: "org.yaml", module: "snakeyaml"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
     }
-    implementation libraries.jackson_core
-    implementation libraries.jackson_databind
-    implementation libraries.snakeyaml
-    implementation libraries.spring_boot_starter_websocket
-    implementation libraries.tomcat_annotations_api
-    implementation libraries.tomcat_embed_el
-    implementation libraries.tomcat_embed_core
-    implementation libraries.tomcat_embed_websocket
-    implementation libraries.logback_classic
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.snakeyaml
+    implementation libs.spring.boot.starter.websocket
+    implementation libs.tomcat.annotations.api
+    implementation libs.tomcat.embed.el
+    implementation libs.tomcat.embed.core
+    implementation libs.tomcat.embed.websocket
+    implementation libs.logback.classic
 
-    implementation libraries.spring_aop
-    implementation libraries.spring_beans
-    implementation libraries.spring_context
-    implementation libraries.spring_core
-    implementation libraries.spring_expression
-    implementation libraries.spring_web
-    implementation libraries.spring_websocket
-    implementation libraries.spring_messaging
-    implementation libraries.spring_webmvc
+    implementation libs.spring.aop
+    implementation libs.spring.beans
+    implementation libs.spring.context
+    implementation libs.spring.core
+    implementation libs.spring.expression
+    implementation libs.spring.web
+    implementation libs.spring.websocket
+    implementation libs.spring.messaging
+    implementation libs.spring.webmvc
 
-    implementation libraries.bootstrap
-    implementation libraries.jquery
+    implementation libs.bootstrap
+    implementation libs.jquery
 
-    implementation libraries.gson
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    implementation libs.gson
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.jjwt
-    testImplementation libraries.jjwt_impl
-    testImplementation libraries.jjwt_jackson
-    testImplementation libraries.json_smart
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.jjwt
+    testImplementation libs.jjwt.impl
+    testImplementation libs.jjwt.jackson
+    testImplementation libs.json.smart
 
 }
 

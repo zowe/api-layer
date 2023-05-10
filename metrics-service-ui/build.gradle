@@ -3,7 +3,7 @@ import java.util.stream.Collectors
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("com.github.node-gradle:gradle-node-plugin:${gradleNodeVersion}")
+        classpath libs.gradle.node.plugin
     }
 }
 
@@ -11,8 +11,8 @@ apply plugin: 'com.github.node-gradle.node'
 
 node {
     download = true
-    version = projectNodeVersion
-    npmVersion = projectNpmVersion
+    version = libs.versions.projectNodeVersion.get()
+    npmVersion = libs.versions.projectNpmVersion.get()
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "ci"
     workDir = file("${project.projectDir}/tools/nodejs")

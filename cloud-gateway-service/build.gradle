@@ -1,14 +1,13 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath("org.eclipse.jgit:org.eclipse.jgit") {
-            version {
-                strictly '5.13.0.202109080827-r'
-            }
-        }
+        classpath libs.spring.boot.gradle.plugin
+        classpath libs.jgit
     }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
 }
 
 normalization {
@@ -19,7 +18,6 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'com.gorylenko.gradle-git-properties'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
@@ -30,8 +28,8 @@ def componentName = "cloud-gateway-service"
 setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.cloudgatewayservice.CloudGatewayServiceApplication'
 
-ext['netty.version'] = libraries.nettyVersion
-ext['reactor-bom.version'] = '2020.0.26'
+ext['netty.version'] = libs.versions.nettyVersion.get()
+ext['reactor-bom.version'] = libs.versions.reactorBomVersion.get()
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
@@ -55,32 +53,32 @@ gitProperties {
 
 dependencies {
     implementation project(':common-service-core')
-    implementation libraries.spring_cloud_starter_gateway
-    implementation libraries.netty_reactor_core
-    implementation libraries.netty_reactor_http
+    implementation libs.spring.cloud.starter.gateway
+    implementation libs.netty.reactor.core
+    implementation libs.netty.reactor.http
 
-    implementation libraries.spring_eureka_client_v3
-    implementation libraries.spring_boot_starter_security
+    implementation libs.spring.eureka.client.v3
+    implementation libs.spring.boot.starter.security
 
-    implementation libraries.jackson_databind
-    implementation libraries.spring_boot_starter_actuator
+    implementation libs.jackson.databind
+    implementation libs.spring.boot.starter.actuator
 
-    implementation libraries.spring_cloud_circuit_breaker
-    implementation libraries.spring_security_config
-    implementation libraries.spring_security_core
-    implementation libraries.spring_security_web
-    implementation libraries.spring_aop
-    implementation libraries.spring_expression
-    implementation libraries.bcpkix
+    implementation libs.spring.cloud.circuit.breaker
+    implementation libs.spring.security.config
+    implementation libs.spring.security.core
+    implementation libs.spring.security.web
+    implementation libs.spring.aop
+    implementation libs.spring.expression
+    implementation libs.bcpkix
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
-    annotationProcessor libraries.spring_boot_configuration_processor
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    annotationProcessor libs.spring.boot.configuration.processor
 
-    testCompileOnly libraries.lombok
-    testAnnotationProcessor libraries.lombok
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.rest_assured
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.rest.assured
 }
 
 bootJar {
@@ -115,5 +113,5 @@ publishing {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '7.2'
+    gradleVersion = libs.versions.gradle.get()
 }

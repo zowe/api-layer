@@ -32,7 +32,7 @@ configure(jacocoProjects) {
     apply plugin: 'idea'
     apply plugin: 'jacoco'
     jacoco {
-        toolVersion = '0.8.4'
+        toolVersion = libs.versions.jacoco.get()
     }
 
     jacocoTestReport {

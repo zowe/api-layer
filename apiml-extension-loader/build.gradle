@@ -1,19 +1,16 @@
 dependencies {
     implementation project(':common-service-core')
-    compileOnly libraries.spring_boot_starter_web
+    compileOnly libs.spring.boot.starter.web
 
-    implementation libraries.apache_commons_lang3
-    implementation(libraries.jackson_dataformat_yaml) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
-    implementation libraries.snakeyaml
+    implementation libs.apache.commons.lang3
+    implementation libs.jackson.dataformat.yaml
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.guava
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.guava
 
-    testCompileOnly libraries.lombok
-    testAnnotationProcessor libraries.lombok
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }

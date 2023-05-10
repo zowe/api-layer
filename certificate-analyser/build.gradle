@@ -2,12 +2,13 @@ plugins {
     id 'java'
 }
 dependencies {
-    testImplementation libraries.junitJupiter
-    testImplementation libraries.mockito_core
-    testImplementation libraries.mockito_inline
+    testImplementation libs.junitJupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.inline
+    testImplementation libs.hamcrest
 
-    implementation libraries.picocli
-    annotationProcessor libraries.picocliCodegen
+    implementation libs.picocli
+    annotationProcessor libs.picocliCodegen
 }
 
 compileJava {
@@ -20,6 +21,7 @@ jar {
             'Main-Class': 'org.zowe.apiml.Analyser'
         )
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }

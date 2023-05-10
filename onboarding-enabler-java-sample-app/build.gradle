@@ -4,13 +4,16 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-tomcat-plugin:2.7.0'
+        classpath libs.gradle.tomcat.plugin
     }
+}
+
+plugins {
+    alias(libs.plugins.gradle.tomcat)
 }
 
 apply plugin: 'java'
 apply plugin: 'war'
-apply plugin: 'com.bmuschko.tomcat'
 
 repositories {
     mavenCentral()
@@ -19,31 +22,30 @@ repositories {
 dependencies {
     implementation project(':onboarding-enabler-java')
 
-    implementation 'io.swagger.core.v3:swagger-jaxrs2:2.0.0'
+    implementation libs.swagger.jaxrs2
 
-    compileOnly libraries.javax_servlet_api
-    implementation(libraries.jackson_dataformat_yaml) {
+    compileOnly libs.javax.servlet.api
+    implementation(libs.jackson.dataformat.yaml) {
         exclude group: "org.yaml", module: "snakeyaml"
     }
-    implementation libraries.snakeyaml
+    implementation libs.snakeyaml
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    implementation libraries.jersey_server
-    implementation libraries.jersey_hk2
-    implementation libraries.jersey_container_servlet_core
-    implementation libraries.jersey_media_json_jackson
+    implementation libs.jersey.server
+    implementation libs.jersey.hk2
+    implementation libs.jersey.container.servlet.core
+    implementation libs.jersey.media.json.jackson
 
-    testImplementation libraries.jersey_test_provider_jdk_http
-    testImplementation libraries.spring4Test
-    testImplementation libraries.mockito_core
-    testImplementation libraries.json_path
+    testImplementation libs.jersey.test.provider.jdk.http
+    testImplementation libs.spring4Test
+    testImplementation libs.mockito.core
+    testImplementation libs.json.path
 
-    def tomcatVersion = '9.0.1'
-    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
-        "org.apache.tomcat.embed:tomcat-embed-logging-juli:9.0.0.M6",
-        "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+    tomcat libs.tomcat.embed.core.get(),
+            libs.tomcat.embed.logging.juli.get(),
+            libs.tomcat.embed.jasper.get()
 }
 
 tomcat {

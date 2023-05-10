@@ -32,15 +32,14 @@ buildscript {
     repositories mavenRepositories
 
     dependencies {
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.4.0.2513'
-        classpath 'net.researchgate:gradle-release:2.8.1'
-        classpath 'gradle.plugin.org.cadixdev.gradle:licenser:0.6.1'
-        classpath 'org.owasp:dependency-check-gradle:7.1.1'
-        classpath 'gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:3.2.1'
+        classpath libs.gradle.sonar.plugin
+        classpath libs.gradle.release
+        classpath libs.gradle.licencer
+        classpath libs.gradle.dependency.check
+        classpath libs.gradle.jib.plugin
     }
 }
 
-apply from: 'gradle/versions.gradle'
 apply from: 'gradle/license.gradle'
 apply from: 'gradle/publish.gradle'
 apply from: 'gradle/sonar.gradle'
@@ -98,14 +97,14 @@ configure(subprojects.findAll {it.name != 'platform'}) {
     dependencies {
         api(platform(project(":platform")))
 
-        testImplementation libraries.junitJupiter
-        testImplementation libraries.mockito_jupiter
+        testImplementation libs.junitJupiter
+        testImplementation libs.mockito.jupiter
 
-        testImplementation  libraries.junit_platform_launcher
+        testImplementation libs.junit.platform.launcher
 
         //For Idea
-        testImplementation  libraries.junit_platform_commons
-        testImplementation  libraries.junit_platform_engine
+        testImplementation libs.junit.platform.commons
+        testImplementation libs.junit.platform.engine
     }
 }
 

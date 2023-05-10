@@ -16,224 +16,73 @@ javaPlatform {
  * to use in other module use api(platform(project(":platform")))
  */
 dependencies {
-    api(platform(libraries.spring_boot_dependencies))
+    api(platform(libs.spring.boot.dependencies))
 
-    api(libraries.spring_boot_configuration_processor)
-    api(libraries.spring_boot_starter)
-    api(libraries.spring_boot_starter_actuator)
-    api(libraries.spring_boot_starter_security)
-    api(libraries.spring_boot_starter_validation)
-    api(libraries.spring_boot_starter_web)
-    api(libraries.spring_boot_starter_websocket)
-    api(libraries.spring_boot_starter_test)
-    api(libraries.spring_boot_starter_aop)
-    api(libraries.spring_boot_starter_thymeleaf)
-    api(libraries.spring_boot_starter_cache)
-    api(libraries.spring_boot_starter_webflux)
-    api(libraries.spring_cloud_hystrix_dashboard)
-    api(libraries.spring_cloud_starter_bootstrap)
-    api(libraries.spring_cloud_starter_zuul)
-    api(libraries.spring_cloud_starter_eureka)
-    api(libraries.spring_eureka_client_v3)
-    api(libraries.spring_cloud_starter_eureka_server)
-    api(libraries.spring_cloud_starter_ribbon)
-    api(libraries.spring_cloud_starter_hystrix)
-    api(libraries.spring_cloud_starter_turbine)
-    api(libraries.spring_cloud_starter_gateway)
-    api(libraries.spring_cloud_commons)
-    api(libraries.spring_cloud_circuit_breaker)
     constraints {
-        api(libraries.spring_security_config) {
+        api(libs.spring.security.config) {
             because 'older versions are vulnerable to CVE-2023-20862'
         }
-        api(libraries.spring_security_core) {
+        api(libs.spring.security.core) {
             because 'older versions are vulnerable to CVE-2023-20862'
         }
-        api(libraries.spring_security_crypto) {
+        api(libs.spring.security.crypto) {
             because 'older versions are vulnerable to CVE-2023-20862'
         }
-        api(libraries.spring_security_web) {
+        api(libs.spring.security.web) {
             because 'older versions are vulnerable to CVE-2023-20862'
         }
-    }
-    api(libraries.spring_retry)
-    api(libraries.spring_web_test_client)
-    constraints {
-        api(libraries.spring_aop) {
+
+        api(libs.spring.aop) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_beans) {
+        api(libs.spring.beans) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_context) {
+        api(libs.spring.context) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_context_support) {
+        api(libs.spring.context.support) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_core) {
+        api(libs.spring.core) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_expression) {
+        api(libs.spring.expression) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_messaging) {
+        api(libs.spring.messaging) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_web) {
+        api(libs.spring.web) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_webmvc) {
+        api(libs.spring.webmvc) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_webflux) {
+        api(libs.spring.webflux) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-        api(libraries.spring_websocket) {
+        api(libs.spring.websocket) {
             because 'older versions are vulnerable to CVE-2023-20863'
         }
-    }
-    api(libraries.amazon_aws_core)
-    api(libraries.apache_commons_codec)
-    api(libraries.apache_commons_lang3)
-    api(libraries.apache_commons_text)
-    api(libraries.commons_fileupload)
-    api(libraries.apache_velocity)
-    api(libraries.awaitility)
-    api(libraries.bcprov)
-    api(libraries.bcpkix)
-    api(libraries.bootstrap)
-    constraints {
-        api(libraries.commons_io) {
+
+        api(libs.commons.io) {
             because 'older versions are vulnerable to CVE-2021-29425'
         }
-    }
-    api(libraries.eh_cache)
-    api(libraries.eureka_client)
-    api(libraries.findbugs)
-    api(libraries.gson)
-    api(libraries.guava)
-    api(libraries.hamcrest)
-    api(libraries.http_client)
-    api(libraries.http_core)
-    api(libraries.infinispan_core)
-    api(libraries.infinispan_lock)
-    api(libraries.infinispan_jboss_marshalling)
-    api(libraries.jackson_annotations)
-    api(libraries.jackson_core)
-    api(libraries.jackson_databind)
-    api(libraries.jackson_dataformat_yaml)
-    api(libraries.jackson_mapper_asl)
-    api(libraries.janino)
-    api(libraries.javax_annotation)
-    api(libraries.javax_inject)
-    api(libraries.javax_servlet_api)
-    api(libraries.jaxb_api)
-    api(libraries.jetty_client)
-    api(libraries.jetty_http)
-    api(libraries.jetty_io)
-    api(libraries.jetty_util)
-    api(libraries.jetty_websocket_api)
-    api(libraries.jetty_websocket_client)
-    api(libraries.jetty_websocket_common)
-    api(libraries.jettison)
-    api(libraries.json_smart)
-    api(libraries.jjwt)
-    api(libraries.jjwt_full)
-    api(libraries.jjwt_impl)
-    api(libraries.jjwt_jackson)
-    api(libraries.json)
-    api(libraries.json_path)
-    api(libraries.json_unit)
-    api(libraries.json_unit_fluent)
-    api(libraries.jsoup)
-    api(libraries.jsr305)
-    api(libraries.junitJupiter)
-    api(libraries.junit_platform_launcher)
-    api(libraries.junit_platform_commons)
-    api(libraries.junit_platform_engine)
-    api(libraries.jquery)
-    api(libraries.lettuce)
-    api(libraries.logback_classic)
-    api(libraries.logback_core)
-    api('ch.qos.logback:logback-classic') {
-        version {
-            strictly '[1.2, 1.4['
-            prefer logbackVersion
+
+        api(libs.logback.classic) {
+            because "Newer version requires JDK 11"
         }
-        because "Newer version requires JDK 11"
-    }
-    api('ch.qos.logback:logback-core') {
-        version {
-            strictly '[1.2, 1.4['
-            prefer logbackVersion
+        api(libs.logback.core) {
+            because "Newer version requires JDK 11"
         }
-        because "Newer version requires JDK 11"
-    }
-    api(libraries.lombok)
-    api(libraries.mockito_core)
-    api(libraries.mockito_jupiter)
-    api(libraries.netflix_servo)
-    api(libraries.netty)
-    api(libraries.netty_bom)
-    api(libraries.netty_buffer)
-    api(libraries.netty_codec)
-    api(libraries.netty_codec_dns)
-    api(libraries.netty_codec_haproxy)
-    api(libraries.netty_codec_http)
-    api(libraries.netty_codec_http2)
-    api(libraries.netty_codec_memcache)
-    api(libraries.netty_codec_mqtt)
-    api(libraries.netty_codec_redis)
-    api(libraries.netty_codec_socks)
-    api(libraries.netty_codec_smtp)
-    api(libraries.netty_codec_stomp)
-    api(libraries.netty_codec_xml)
-    api(libraries.netty_common)
-    api(libraries.netty_handler)
-    api(libraries.netty_handler_proxy)
-    api(libraries.netty_reactor_core)
-    api(libraries.netty_reactor_http)
-    api(libraries.netty_resolver)
-    api(libraries.netty_resolver_dns)
-    api(libraries.netty_resolver_dns_native_macos)
-    api(libraries.netty_transport)
-    api(libraries.netty_transport_native_epoll)
-    api(libraries.netty_transport_native_kqueue)
-    api(libraries.netty_transport_native_unix_common)
-    api(libraries.netty_transport_rxtx)
-    api(libraries.netty_transport_sctp)
-    api(libraries.netty_transport_udt)
-    api(libraries.nimbusJoseJwt)
-    api(libraries.openapidiff)
-    api(libraries.picocli)
-    api(libraries.picocliCodegen)
-    api(libraries.reactorTest)
-    api(libraries.rest_assured)
-    api(libraries.rest_assured_json_path)
-    api(libraries.rest_assured_xml_path)
-    api(libraries.slf4j_api)
-    api(libraries.snakeyaml)
-    api(libraries.spring4Mvc)
-    api(libraries.spring4Test)
-    api(libraries.springFox)
-    api(libraries.spring_doc)
-    api(libraries.spring_mock_mvc)
-    api(libraries.swagger_core)
-    api(libraries.swagger3_core)
-    api(libraries.swagger3_parser)
-    api(libraries.swagger_inflector)
-    api(libraries.thymeleafSpring)
-    api(libraries.thymeleaf)
-    api(libraries.tomcat_annotations_api)
-    api(libraries.tomcat_coyote)
-    api(libraries.tomcat_embed_core)
-    api(libraries.tomcat_embed_el)
-    api(libraries.tomcat_embed_websocket)
-    api(libraries.woodstox)
-    constraints {
-        api(libraries.xstream) {
+
+        api(libs.xstream) {
             because 'older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966'
+        }
+
+        api(libs.reactor) {
+            because 'version 3.5.x has a confict with spring-security-config:5.7.8'
         }
     }
 

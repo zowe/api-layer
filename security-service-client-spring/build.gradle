@@ -1,35 +1,35 @@
 dependencies {
     implementation project(':apiml-security-common')
 
-    implementation (libraries.spring_boot_starter_web){
+    implementation (libs.spring.boot.starter.web){
         exclude group: "org.yaml", module: "snakeyaml"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
     }
-    implementation libraries.spring_web
-    implementation libraries.spring_webmvc
-    implementation libraries.tomcat_embed_el
-    implementation libraries.snakeyaml
-    implementation libraries.spring_security_web
-    implementation libraries.spring_security_config
-    implementation libraries.apache_commons_lang3
-    implementation (libraries.eureka_client) {
+    implementation libs.spring.web
+    implementation libs.spring.webmvc
+    implementation libs.tomcat.embed.el
+    implementation libs.snakeyaml
+    implementation libs.spring.security.web
+    implementation libs.spring.security.config
+    implementation libs.apache.commons.lang3
+    implementation (libs.eureka.client) {
         exclude group: "com.thoughtworks.xstream", module: "xstream"
         exclude group: "org.codehaus.jettison", module: "jettison"
     }
-    implementation libraries.xstream
-    implementation libraries.jettison
-    implementation libraries.jackson_core
+    implementation libs.xstream
+    implementation libs.jettison
+    implementation libs.jackson.core
 
-    compileOnly libraries.javax_servlet_api
+    compileOnly libs.javax.servlet.api
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
     testImplementation project(':apiml-security-common')
-    testImplementation libraries.mockito_core
-    testImplementation libraries.spring_mock_mvc
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.spring_security_config
-    testImplementation libraries.jackson_databind
-    testImplementation libraries.json_smart
+    testImplementation libs.mockito.core
+    testImplementation libs.spring.mock.mvc
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.security.config
+    testImplementation libs.jackson.databind
+    testImplementation libs.json.smart
 }

@@ -5,12 +5,12 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.adarshr:gradle-test-logger-plugin:1.4.0'
+        classpath libs.gradle.test.logger
     }
 }
 
 plugins {
-    id "com.adarshr.test-logger" version "3.0.0"
+    alias(libs.plugins.test.logger)
     id "java-test-fixtures"
 }
 
@@ -19,48 +19,48 @@ repositories {
 }
 
 dependencies {
-    testImplementation libraries.http_client
-    testImplementation libraries.eureka_client
-    testImplementation libraries.jackson_dataformat_yaml
-    testImplementation libraries.json_path
-    testImplementation libraries.spring_boot_starter_websocket
-    testImplementation libraries.spring_boot_starter_actuator
-    testImplementation libraries.spring_boot_starter_webflux
-    testImplementation libraries.spring_web_test_client
-    testImplementation libraries.json
-    testImplementation libraries.jjwt
-    testImplementation libraries.reactorTest
+    testImplementation libs.http.client
+    testImplementation libs.eureka.client
+    testImplementation libs.jackson.dataformat.yaml
+    testImplementation libs.json.path
+    testImplementation libs.spring.boot.starter.websocket
+    testImplementation libs.spring.boot.starter.actuator
+    testImplementation libs.spring.boot.starter.webflux
+    testImplementation libs.spring.web.test.client
+    testImplementation libs.json
+    testImplementation libs.jjwt
+    testImplementation libs.reactorTest
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
 
-    testImplementation libraries.hamcrest
-    testImplementation libraries.rest_assured
-    testImplementation libraries.awaitility
-    testImplementation libraries.logback_classic
-    testCompileOnly libraries.lombok
-    testAnnotationProcessor libraries.lombok
-    testImplementation libraries.jsoup
-    testImplementation libraries.rest_assured
-    testImplementation libraries.jackson_annotations
-    testImplementation libraries.jackson_core
-    testImplementation libraries.jackson_databind
-    testImplementation libraries.jackson_dataformat_yaml
-    testImplementation libraries.javax_servlet_api
-    testImplementation libraries.nimbusJoseJwt
-    runtimeOnly libraries.jjwt_impl
-    runtimeOnly libraries.jjwt_jackson
+    testImplementation libs.hamcrest
+    testImplementation libs.rest.assured
+    testImplementation libs.awaitility
+    testImplementation libs.logback.classic
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+    testImplementation libs.jsoup
+    testImplementation libs.rest.assured
+    testImplementation libs.jackson.annotations
+    testImplementation libs.jackson.core
+    testImplementation libs.jackson.databind
+    testImplementation libs.jackson.dataformat.yaml
+    testImplementation libs.javax.servlet.api
+    testImplementation libs.nimbusJoseJwt
+    runtimeOnly libs.jjwt.impl
+    runtimeOnly libs.jjwt.jackson
 
     testFixturesImplementation(project(':apiml-security-common'))
-    testFixturesImplementation libraries.spring_core
-    testFixturesImplementation libraries.slf4j_api
-    testFixturesImplementation libraries.rest_assured
-    testFixturesImplementation libraries.lombok
-    testFixturesImplementation libraries.http_client
+    testFixturesImplementation libs.spring.core
+    testFixturesImplementation libs.slf4j.api
+    testFixturesImplementation libs.rest.assured
+    testFixturesImplementation libs.lombok
+    testFixturesImplementation libs.http.client
 
-    testFixturesAnnotationProcessor libraries.lombok
+    testFixturesAnnotationProcessor libs.lombok
 
     constraints {
-        runtimeOnly(libraries.jackson_core) {
+        runtimeOnly(libs.jackson.core) {
             because 'jjwt brings older version of jackson core having 2 in the classpath results in error when running integration tests locally'
         }
     }
