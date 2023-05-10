@@ -2,7 +2,7 @@
     "name": "id-federation-for-zowe-cli",
   "version": "latest",
   "description": "An Identity Federation plugin for Zowe CLI",
-  "homepage": "https://github.com/zowe/api-layer/zowe-cli-id-federation-plugin#readme",
+  "homepage": "https://github.com/zowe/api-layer/tree/v2.x.x/zowe-cli-id-federation-plugin#readme",
   "bugs": {
     "url": "https://github.com/zowe/api-layer/issues"
   },
