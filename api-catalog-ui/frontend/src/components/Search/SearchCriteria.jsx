@@ -46,7 +46,7 @@ export default class SearchCriteria extends Component {
     render() {
         const { criteria } = this.state;
         const { placeholder } = this.props;
-        const iconSearch = <SearchIcon />;
+        const iconSearch = <SearchIcon id="search-icon" />;
         const iconClear = (
             <ClearIcon data-testid="clear-button" className="clear-text-search" onClick={this.clearSearch} />
         );
@@ -56,7 +56,7 @@ export default class SearchCriteria extends Component {
                 className="search-bar"
                 data-testid="search-bar"
                 InputProps={{
-                    endAdornment: <InputAdornment position="end">{icon}</InputAdornment>,
+                    endAdornment: <InputAdornment id="search-input">{icon}</InputAdornment>,
                 }}
                 placeholder={placeholder}
                 value={criteria}
