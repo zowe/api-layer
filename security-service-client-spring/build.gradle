@@ -1,23 +1,14 @@
 dependencies {
     implementation project(':apiml-security-common')
 
-    implementation (libs.spring.boot.starter.web){
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
+    implementation libs.spring.boot.starter.web
     implementation libs.spring.web
     implementation libs.spring.webmvc
     implementation libs.tomcat.embed.el
-    implementation libs.snakeyaml
     implementation libs.spring.security.web
     implementation libs.spring.security.config
     implementation libs.apache.commons.lang3
-    implementation (libs.eureka.client) {
-        exclude group: "com.thoughtworks.xstream", module: "xstream"
-        exclude group: "org.codehaus.jettison", module: "jettison"
-    }
-    implementation libs.xstream
-    implementation libs.jettison
+    implementation libs.eureka.client
     implementation libs.jackson.core
 
     compileOnly libs.javax.servlet.api

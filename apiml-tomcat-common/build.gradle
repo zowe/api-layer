@@ -1,10 +1,6 @@
 dependencies {
-    implementation(libs.spring.boot.starter.web) {
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
+    implementation libs.spring.boot.starter.web
     implementation libs.tomcat.embed.el
-    implementation libs.snakeyaml
     implementation libs.zowe.attls
 
     implementation libs.spring.aop

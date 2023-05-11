@@ -56,34 +56,17 @@ dependencies {
     implementation libs.spring.boot.starter
     implementation libs.spring.boot.starter.actuator
     implementation libs.snakeyaml
-    implementation (libs.spring.boot.starter.webflux) {
-        exclude group: "io.netty", module: "netty-codec-http"
-        exclude group: "io.netty", module: "netty-codec-http2"
-        exclude group: "io.netty", module: "netty-handler-proxy"
-        exclude group: "io.netty", module: "netty-resolver-dns-native-macos"
-        exclude group: "io.netty", module: "netty-transport-native-epoll"
-    }
-    implementation libs.netty.codec.http
-    implementation libs.netty.codec.http2
-    implementation libs.netty.handler.proxy
-    implementation libs.netty.resolver.dns.native.macos
-    implementation libs.netty.transport.native.epoll
+    implementation libs.spring.boot.starter.webflux
 
-    implementation (libs.spring.boot.starter.websocket){
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-web"
-    }
-    implementation (libs.spring.boot.starter.validation){
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
+    implementation libs.spring.boot.starter.websocket
+    implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.aop
     implementation libs.zowe.attls
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.hystrix
-    implementation (libs.spring.cloud.hystrix.dashboard){
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-web"
-    }
+    implementation libs.spring.cloud.hystrix.dashboard
     implementation libs.spring.security.web
     implementation libs.spring.security.config
     implementation libs.spring.security.core

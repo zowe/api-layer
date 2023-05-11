@@ -55,34 +55,19 @@ dependencies {
     implementation project(':apiml-tomcat-common')
     implementation project(':apiml-security-common')
     implementation project(':security-service-client-spring')
-    implementation(libs.spring.boot.starter.web) {
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
-    implementation libs.snakeyaml
+    implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.websocket
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.hystrix
-    implementation(libs.spring.cloud.starter.eureka.server)  {
-        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
-        exclude group: "javax.servlet", module: "servlet-api"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "com.amazonaws", module: "ws-java-sdk-core"
-    }
-    implementation libs.woodstox
-    implementation libs.amazon.aws.core
+    implementation libs.spring.cloud.starter.eureka.server
     implementation libs.apache.commons.lang3
-    implementation libs.gson
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind
-    implementation(libs.jackson.dataformat.yaml) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
-    implementation libs.snakeyaml
+    implementation libs.jackson.dataformat.yaml
     implementation libs.jetty.client
     implementation libs.jetty.http
     implementation libs.jetty.io

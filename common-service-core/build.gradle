@@ -1,19 +1,13 @@
 dependencies {
-    implementation libs.gson
-    implementation(libs.eureka.client) {
-        exclude group: "javax.servlet", module: "servlet-api"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "org.codehaus.jettison", module: "jettison"
-    }
-    implementation libs.jettison
+    implementation libs.eureka.client
     implementation libs.netflix.servo
 
-    implementation(libs.http.client)
-    implementation(libs.http.core)
-    implementation(libs.jackson.annotations)
-    implementation(libs.jackson.databind)
-    implementation(libs.slf4j.api)
-    implementation(libs.snakeyaml)
+    implementation libs.http.client
+    implementation libs.http.core
+    implementation libs.jackson.annotations
+    implementation libs.jackson.databind
+    implementation libs.slf4j.api
+    implementation libs.snakeyaml
 
     implementation libs.apache.commons.codec
     implementation libs.apache.commons.lang3
@@ -24,36 +18,26 @@ dependencies {
 
     implementation libs.jsr305
 
-    implementation(libs.javax.servlet.api)
+    implementation libs.javax.servlet.api
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    implementation(libs.eh.cache)
-    implementation(libs.spring.boot.starter.cache){
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.springframework", module: "spring-core"
-        exclude group: "org.springframework", module: "spring-context"
-        exclude group: "org.springframework", module: "spring-context-support"
-    }
-    testImplementation(libs.spring.boot.starter.cache) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
+    compileOnly libs.eh.cache
+    implementation libs.spring.boot.starter.cache
+    testImplementation libs.spring.boot.starter.cache
     implementation libs.spring.web
-    implementation libs.snakeyaml
-    testImplementation libs.snakeyaml
-    testImplementation(libs.spring.boot.starter.test)
+    testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
-    testImplementation(libs.eh.cache)
-    testImplementation(libs.jackson.core)
-    testImplementation(libs.jackson.databind)
-    testImplementation(libs.javax.servlet.api)
-    testImplementation(libs.json.unit.fluent)
-    testImplementation(libs.json.unit)
-    testImplementation(libs.hamcrest)
-    testImplementation(libs.logback.classic)
-    testImplementation(libs.tomcat.embed.core)
-    testImplementation(libs.mockito.core)
+    testImplementation libs.jackson.core
+    testImplementation libs.jackson.databind
+    testImplementation libs.javax.servlet.api
+    testImplementation libs.json.unit.fluent
+    testImplementation libs.json.unit
+    testImplementation libs.hamcrest
+    testImplementation libs.logback.classic
+    testImplementation libs.tomcat.embed.core
+    testImplementation libs.mockito.core
     implementation libs.spring.context
     implementation libs.spring.context.support
     implementation libs.spring.core

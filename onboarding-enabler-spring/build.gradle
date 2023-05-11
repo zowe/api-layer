@@ -16,18 +16,9 @@ publish {
 dependencies {
     implementation project(':onboarding-enabler-java')
 
-    implementation (libs.spring.boot.starter.web){
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
-    }
+    implementation libs.spring.boot.starter.web
     implementation libs.jackson.core
     implementation libs.jackson.databind
-    implementation libs.snakeyaml
-    implementation libs.tomcat.embed.el
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.websocket
 
     implementation libs.spring.aop
     implementation libs.spring.beans
@@ -41,12 +32,7 @@ dependencies {
     annotationProcessor libs.lombok
 
     compileOnly libs.javax.inject
-    implementation (libs.eureka.client){
-        exclude group: "com.thoughtworks.xstream", module: "xstream"
-        exclude group: "org.codehaus.jettison", module: "jettison"
-    }
-    implementation libs.xstream
-    implementation libs.jettison
+    implementation libs.eureka.client
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart

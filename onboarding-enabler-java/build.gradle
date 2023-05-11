@@ -4,18 +4,8 @@ dependencies {
     implementation libs.jaxb.api
     implementation libs.javax.annotation
     implementation libs.jackson.annotations
-    implementation(libs.jackson.dataformat.yaml) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
-    implementation libs.snakeyaml
-    implementation(libs.eureka.client) {
-        exclude group: "com.thoughtworks.xstream", module: "xstream"
-        exclude group: "javax.servlet", module: "servlet-api"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "org.codehaus.jettison", module: "jettison"
-    }
-    implementation libs.xstream
-    implementation libs.jettison
+    implementation libs.jackson.dataformat.yaml
+    implementation libs.eureka.client
 
     implementation libs.snakeyaml
     compileOnly libs.lombok

@@ -25,10 +25,7 @@ dependencies {
     implementation libs.swagger.jaxrs2
 
     compileOnly libs.javax.servlet.api
-    implementation(libs.jackson.dataformat.yaml) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
-    implementation libs.snakeyaml
+    implementation libs.jackson.dataformat.yaml
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

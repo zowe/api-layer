@@ -66,14 +66,7 @@ dependencies {
     implementation libs.spring.doc
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.aop
-    implementation(libs.spring.cloud.starter.eureka){
-        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
-    }
-    implementation libs.woodstox
-    implementation libs.gson
+    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.turbine
@@ -102,7 +95,6 @@ dependencies {
     implementation libs.spring.websocket
     implementation libs.logback.core
     implementation libs.logback.classic
-    implementation libs.bcpkix
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

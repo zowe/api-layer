@@ -57,21 +57,14 @@ dependencies {
     implementation project(':apiml-security-common')
     implementation project(':apiml-tomcat-common')
     implementation project(':apiml-extension-loader')
-    implementation libs.snakeyaml
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.actuator
-    implementation(libs.spring.boot.starter.web) {
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
+    implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.websocket
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.boot.starter.aop
-    implementation (libs.spring.cloud.starter.hystrix){
-        exclude group: "org.bouncycastle", module: "bcprov-jdk15on"
-    }
-    implementation libs.bcprov
+    implementation libs.spring.cloud.starter.hystrix
     implementation libs.spring.security.web
     implementation libs.spring.security.config
     implementation libs.spring.security.core
@@ -79,9 +72,7 @@ dependencies {
     implementation libs.xstream
     implementation libs.json.smart
 
-    implementation(libs.swagger3.parser) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
+    implementation libs.swagger3.parser
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind
@@ -90,15 +81,7 @@ dependencies {
     implementation libs.tomcat.embed.core
     implementation libs.tomcat.embed.el
     implementation libs.tomcat.embed.websocket
-    implementation(libs.spring.cloud.starter.eureka){
-        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
-    }
-    implementation libs.woodstox
-    implementation libs.bcpkix
-    implementation libs.gson
+    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.zuul

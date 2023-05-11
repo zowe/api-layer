@@ -18,6 +18,20 @@ javaPlatform {
 dependencies {
     api(platform(libs.spring.boot.dependencies))
 
+    api libs.jackson.annotations
+    api libs.jackson.core
+    api libs.jackson.databind
+    api libs.jackson.dataformat.yaml
+
+    api libs.woodstox
+    api libs.guava
+    api libs.amazon.aws.core
+
+    api libs.spring.cloud.starter.eureka
+    api libs.spring.cloud.starter.eureka.server
+    api libs.spring.eureka.client.v3
+    api libs.spring.cloud.commons
+
     constraints {
         api(libs.spring.security.config) {
             because 'older versions are vulnerable to CVE-2023-20862'
@@ -87,3 +101,4 @@ dependencies {
     }
 
 }
+

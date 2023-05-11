@@ -69,24 +69,13 @@ dependencies {
     annotationProcessor libs.spring.boot.configuration.processor
 
     implementation libs.swagger.models
-    implementation(libs.spring.boot.starter.web) {
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
+    implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.websocket
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.configuration.processor
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
-    implementation(libs.spring.cloud.starter.eureka) {
-        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
-    }
-    implementation libs.woodstox
-    implementation libs.spring.boot.starter.aop
-    implementation libs.bcpkix
-    implementation libs.gson
+    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.cloud.starter.hystrix
     implementation libs.spring.retry
     implementation libs.jackson.annotations
@@ -95,9 +84,7 @@ dependencies {
     implementation libs.apache.commons.lang3
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.apache.velocity
-    implementation(libs.openapidiff) {
-        exclude group: "io.swagger.parser.v3", module: "swagger-parser-v3"
-    }
+    implementation libs.openapidiff
     implementation libs.http.client
     implementation libs.jetty.client
     implementation libs.jetty.http
