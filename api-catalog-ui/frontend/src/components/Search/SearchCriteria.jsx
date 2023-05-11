@@ -12,7 +12,7 @@ import { debounce } from 'lodash';
 import { InputAdornment, TextField } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import ClearIcon from '@material-ui/icons/Clear';
-import './search.css';
+// import './search.css';
 
 export default class SearchCriteria extends Component {
     // eslint-disable-next-line react/sort-comp

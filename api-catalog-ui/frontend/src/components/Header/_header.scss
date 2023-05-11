@@ -1,0 +1,22 @@
+.header {
+  padding: var( --spaceSmallest) var( --spaceSmall );
+
+  &, > * {
+    display: flex;
+    flex-direction: row;
+    // align-items: center;
+  }
+  .app-icon-container img {
+    height: 40px;
+  }
+  .right-icons {
+    margin-left: auto;
+  }
+  .product-name {
+    align-items: center;
+
+    > a + a {
+      margin-left: var( --spaceSmall);
+    }
+  }
+}

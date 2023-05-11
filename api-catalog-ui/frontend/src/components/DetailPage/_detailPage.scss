@@ -1,0 +1,183 @@
+body .detail-content {
+  .swagger-ui {
+    padding: var(--spaceMedium) var(--spaceSmall);
+    display: block;
+
+    > div:first-child,
+    .auth-wrapper > button,
+    .loading-container,
+    .loading-container .loading,
+    .checkbox input[type=checkbox],
+    table thead tr td,
+    table thead tr th,
+    .Resizer.vertical.disabled,
+    #operations-apimlHidden-get_apimlHidden,
+    #operations-tag-apimlNoTransformation,
+    #operations-tag-apimlHidden,
+    div.info > hgroup.main > a,
+    svg.svg-assets {
+      display: none;
+    }
+
+    .wrapper,
+    .scheme-container {
+      margin-top: var( --spaceLargest );
+
+      &.information-container, &.filter {
+        margin-top: var( --spaceSmall );
+      }
+      .servers-title {
+        display: block;
+        margin-bottom: var( --spaceSmaller );
+      }
+      label {
+        & + span {
+          margin-left: var( --spaceSmall );
+          color: var( --text20 );
+        }
+      }
+      .opblock-summary {
+        display: flex;
+        width: 100%;
+        margin-bottom: var( --spaceSmall );
+
+        .opblock-summary-control {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          border-radius: var( --borderRadius1 );
+          padding: var( --spaceSmallest );
+          cursor: pointer;
+
+          &, & + button.authorization__btn {
+            border: 1px solid var( --surface15 );
+          }
+          & + button.authorization__btn {
+            border-left: none;
+            border-top-right-radius: var( --borderRadius1 );
+            border-bottom-right-radius: var( --borderRadius1 );
+          }
+          &:not(:only-child) {
+            border-right: none;
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+          }
+
+          &[aria-label*='post'],
+          &[aria-label*='post'] + button {
+            background: var( --success05 );
+            border-color: var( --success10 );
+
+            .opblock-summary-method {
+              background: var( --success10 );
+            }
+          }
+          &[aria-label*='get'],
+          &[aria-label*='get'] + button {
+            background: var( --info05 );
+            border-color: var( --info10 );
+
+            .opblock-summary-method {
+              background: var( --info10 );
+            }
+          }
+          &[aria-label*='delete'],
+          &[aria-label*='delete'] + button {
+            background: var( --critical05 );
+            border-color: var( --critical10 );
+
+            .opblock-summary-method {
+              background: var( --critical10 );
+            }
+          }
+          &[aria-label*='put'],
+          &[aria-label*='put'] + button {
+            background: var( --warn05 );
+            border-color: var( --warn10 );
+
+            .opblock-summary-method {
+              background: var( --warn10 );
+            }
+          }
+
+          .opblock-summary-method {
+            padding: var( --spaceSmall ) var( --spaceLarge );
+            border-radius: var( --borderRadius1 );
+          }
+
+          > *:not(:first-child) {
+            margin-left: var( --spaceLargest );
+
+            &.arrow {
+              margin-right: var( --spaceSmaller );
+            }
+            &.opblock-summary-description {
+              margin-left: auto;
+            }
+          }
+        }//end summary-control
+      }//end summary
+
+      .opblock-tag {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        width: 100%;
+        font-size: var( --fontSmall );
+
+        > * {
+          &:not(:first-child) {
+            margin-left: var( --spaceSmall );
+          }
+          &:last-child {
+            margin-left: auto;
+          }
+        }
+      }//end opblock-tag
+
+      .info {
+        pre {
+          font-family: var( --fontFamily00 );
+        }
+        h2.title {
+          @extend .MuiTypography-h4;
+          margin-top: 0px;
+        }
+        .version {
+          &:before {
+            content: "API Version:";
+          }
+        }
+      }//end info
+    }//end .wrapper, .scheme-container 
+  }//end swagger-ui
+
+  .header {
+    padding: var( --spaceMedium ) var( --spaceSmall );
+    display: flex;
+    flex-direction: column;
+    background: var( --surface05 );
+
+    > h4 {
+      margin-top: 0px;
+    }
+    .MuiLink-root {
+      margin-bottom: var( --spaceMedium );
+    }
+    .apiInfo-item {
+      flex-direction: column;
+    }
+    h6 {
+      display: flex;
+
+      label {
+        flex: 1;
+        max-width: 130px;
+      }
+      span {
+        flex: 1;
+        font-weight: var( --fontWeightNormal );
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+.tabs-swagger {
+  display: flex;
+  flex-direction: column;
+
+  .tabs-container {
+    background-color: var( --surface15 );
+    border-bottom: 1px solid var( --divider00 );
+
+    &:not(:first-child) {
+      margin-top: var( --spaceMedium );
+    }
+    .nav-tab {
+      display: inline-block;
+      padding: var( --spaceSmall );
+      color: var( --text15 );
+      font-weight: bold;
+      text-decoration: none;
+      font-size: var( --fontSmall );
+      position: relative;
+    
+      &.active {
+        background-color: var( --surface05 );
+        cursor: default;
+        
+        &::before {
+          content: "";
+          height: 3px;
+          position: absolute;
+          left: 0px;
+          bottom: -2px;
+          width: 100%;
+          background: var( --surface05 );
+        }
+      }
+      h6 {
+        margin-bottom: 0px;
+      }
+    }
+  }//end tabs-container
+}

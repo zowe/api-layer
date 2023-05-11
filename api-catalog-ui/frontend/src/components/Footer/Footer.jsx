@@ -10,7 +10,7 @@
 import { Component } from 'react';
 import { Link } from '@material-ui/core';
 
-import './footer.css';
+// import './footer.css';
 
 export default class Footer extends Component {
     render() {

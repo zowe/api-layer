@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import './Spinner.css';
+// import './Spinner.css';
 
 export default class Spinner extends Component {
     render() {

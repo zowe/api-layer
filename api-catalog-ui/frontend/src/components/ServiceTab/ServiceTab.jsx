@@ -10,9 +10,9 @@
 import { Link, Typography, Tooltip } from '@material-ui/core';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import '../Swagger/Swagger.css';
+// import '../Swagger/Swagger.css';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
-import './ServiceTab.css';
+// import './ServiceTab.css';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 
 export default class ServiceTab extends Component {

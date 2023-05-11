@@ -14,8 +14,8 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ErrorIcon from '@material-ui/icons/Error';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
-import './DetailPage.css';
-import './ReactRouterTabs.css';
+// import './DetailPage.css';
+// import './ReactRouterTabs.css';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
@@ -72,7 +72,7 @@ export default class DetailPage extends Component {
             fetchTilesStart(tileID);
         }
         return (
-            <div className="detail-page">
+            <div className="main-content detail-content">
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
@@ -107,16 +107,16 @@ export default class DetailPage extends Component {
                         <div className="detailed-description-container">
                             <div className="title-api-container">
                                 {tiles !== undefined && tiles.length === 1 && (
-                                    <div id="title" className="text-block-11">
+                                    <h2 id="title" className="text-block-11">
                                         {tiles[0].title}
-                                    </div>
+                                    </h2>
                                 )}
                             </div>
                             <div className="paragraph-description-container">
                                 {tiles !== undefined && tiles.length > 0 && (
-                                    <div id="description" className="text-block-12">
+                                    <h4 id="description" className="text-block-12">
                                         {tiles[0].description}
-                                    </div>
+                                    </h4>
                                 )}
                             </div>
                         </div>
@@ -154,10 +154,6 @@ export default class DetailPage extends Component {
                                                                             <Typography
                                                                                 id="serviceIdTabs"
                                                                                 variant="subtitle2"
-                                                                                style={{
-                                                                                    color: 'black',
-                                                                                    marginBottom: '12px',
-                                                                                }}
                                                                             >
                                                                                 {serviceId}
                                                                             </Typography>
