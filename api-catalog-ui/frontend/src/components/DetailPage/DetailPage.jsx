@@ -21,6 +21,9 @@ import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
+import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
+import Shield from '../ErrorBoundary/Shield/Shield';
+import SearchCriteria from '../Search/SearchCriteria';
 
 export default class DetailPage extends Component {
     componentDidMount() {
@@ -47,6 +50,7 @@ export default class DetailPage extends Component {
     };
 
     render() {
+        const allContainers = ['gateway', 'catalog', 'zosmf'];
         const {
             tiles,
             isLoading,
@@ -122,6 +126,11 @@ export default class DetailPage extends Component {
                         </div>
                     </div>
                 )}
+                <div className="nav-bar">
+                    <Shield>
+                        <ServicesNavigationBarContainer allContainers={allContainers} />
+                    </Shield>
+                </div>
                 <div className="content-description-container">
                     {tiles !== undefined && tiles.length === 1 && (
                         <Suspense>

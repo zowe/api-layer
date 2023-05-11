@@ -1,6 +1,7 @@
 .serviceTab {
     background: #fff;
     overflow-x: hidden;
+    /*margin-left: 20%;*/
 }
 
 .serviceTab .header {

@@ -51,6 +51,7 @@
 }
 
 .api-description-container {
+    margin-left: 285px;
     padding: 2.2rem;
 }
 
@@ -133,3 +134,15 @@ div.content-description-container > div > div:nth-child(2) > div {
     font-weight: bold;
 }
 
+.nav-bar {
+    padding: 10px 5px 10px 20px;
+    /*align-items: flex-start;*/
+    gap: 6px;
+    flex: 1 0 0;
+    width: 320px;
+    height: 51px;
+    /*align-items: center;*/
+    display: table-column;
+    float: left;
+    position: relative;
+}

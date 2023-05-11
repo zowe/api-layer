@@ -127,13 +127,12 @@ export default class Dashboard extends Component {
                                 <div>
                                     <hr id="separator" />
                                 </div>
-                                <h4 className="api-heading">Available API services</h4>
                             </div>
                             <div id="search">
                                 <Shield title="Search Bar is broken !">
                                     <SearchCriteria
                                         id="search-input"
-                                        placeholder="Search..."
+                                        placeholder="Search for APIs..."
                                         doSearch={this.handleSearch}
                                     />
                                 </Shield>

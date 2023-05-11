@@ -1,0 +1,40 @@
+/*#sidebar-menu {*/
+/*    position: relative;*/
+/*    background: red;*/
+/*}*/
+
+.sidebar{
+    display: inline-flex;
+    height: 850px;
+    padding: 10px 0px;
+    flex-direction: column;
+    align-items: center;
+    width: 250px;
+    min-width: 250px;
+    padding: 20px 20px;
+    margin: 20px auto 0 auto;
+    box-shadow: 0 0 6px hsl(210 14% 90%);
+}
+
+.link{
+    display: flex;
+    align-items: cover;
+    cursor: pointer;
+    border-radius: 30px;
+}
+.link:hover{
+    background-color: #e8f5fe;
+    color: #50b7f5;
+    transition: color 100ms ease-out;
+}
+.link > h2{
+    font-weight: 700;
+    font-size: 20px;
+    margin-right: 20px;
+}
+
+#search-input {
+    font-style: italic;
+    margin-top: 7px;
+    margin-left: 40px;
+}
