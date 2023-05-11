@@ -1,16 +1,14 @@
 name: zowe CLI Deploy Component
 
 on:
-    push:
-        branches: [ apiml/fix-idf-plugin ]
-#    workflow_run:
-#        workflows: ["zowe-cli-plugin-deployment"]
-#        types: [completed]
+    workflow_run:
+        workflows: ["zowe-cli-plugin-deployment"]
+        types: [completed]
 
 jobs:
     deploy:
         runs-on: ubuntu-latest
-#        if: github.event.workflow_run.conclusion == 'success'
+        if: github.event.workflow_run.conclusion == 'success'
 
         env:
             PKG_NAME: id-federation-for-zowe-cli
