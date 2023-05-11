@@ -1,6 +1,7 @@
 :root {
   //font family
   --fontFamily00: "Roboto", "Helvetica", "Arial", sans-serif;
+  --fontFamilyMono: "Source Code Pro", monospace;
   //bg colors
   --surface00: radial-gradient(80.11% 93.49% at 6.75% 9.06%, rgba(209, 224, 246, 0.39) 0%, rgba(209, 224, 246, 0) 100%), radial-gradient(52.93% 49.13% at 91.84% 90.56%, rgba(209, 224, 246, 0.455) 0%, rgba(209, 224, 246, 0) 100%), #FFFFFF;
 
@@ -10,6 +11,9 @@
   --surface20: rgba(245, 246, 250, 0.9);
   --surface25: rgba(233, 236, 247, 0.9);
   --surface35: #E0E9EB;
+
+  --surface100: #000;
+  --surface105: #333840;
 
   --success05:rgba(80, 227, 194, 0.10);
   --success10:#50E3C2;
@@ -47,6 +51,10 @@
   --link20: #0040F0;
   --link20Hover: #0030B3;
   --link20Visited: #5200FF;
+
+  --text100: #fff;
+
+  --textCode: #9012fe;
 
   //action/icon colors
   --control00: #0040F0;

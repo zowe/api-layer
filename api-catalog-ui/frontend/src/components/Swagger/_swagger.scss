@@ -1,0 +1,172 @@
+body {
+  .opblock {
+    margin-bottom: var( --spaceSmall );
+  }
+  .opblock-summary {
+    display: flex;
+    width: 100%;
+    margin-bottom: var( --spaceTiny );
+
+    .opblock-summary-control {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      border-radius: var( --borderRadius1 );
+      padding: var( --spaceSmallest );
+      cursor: pointer;
+
+      &, & + button.authorization__btn {
+        border: 1px solid var( --surface15 );
+      }
+      & + button.authorization__btn {
+        border-left: none;
+        border-top-right-radius: var( --borderRadius1 );
+        border-bottom-right-radius: var( --borderRadius1 );
+      }
+      &:not(:only-child) {
+        border-right: none;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+      }
+
+      &[aria-label*='post'],
+      &[aria-label*='post'] + button {
+        background: var( --success05 );
+        border-color: var( --success10 );
+
+        .opblock-summary-method {
+          background: var( --success10 );
+        }
+      }
+      &[aria-label*='get'],
+      &[aria-label*='get'] + button {
+        background: var( --info05 );
+        border-color: var( --info10 );
+
+        .opblock-summary-method {
+          background: var( --info10 );
+        }
+      }
+      &[aria-label*='delete'],
+      &[aria-label*='delete'] + button {
+        background: var( --critical05 );
+        border-color: var( --critical10 );
+
+        .opblock-summary-method {
+          background: var( --critical10 );
+        }
+      }
+      &[aria-label*='put'],
+      &[aria-label*='put'] + button {
+        background: var( --warn05 );
+        border-color: var( --warn10 );
+
+        .opblock-summary-method {
+          background: var( --warn10 );
+        }
+      }
+
+      .opblock-summary-method {
+        padding: var( --spaceSmall ) var( --spaceLarge );
+        border-radius: var( --borderRadius1 );
+      }
+
+      > *:not(:first-child) {
+        margin-left: var( --spaceLargest );
+
+        &.arrow {
+          margin-right: var( --spaceSmaller );
+        }
+        &.opblock-summary-description {
+          margin-left: auto;
+        }
+      }
+    }//end summary-control
+  }//end summary
+
+  .opblock-tag {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+    font-size: var( --fontSmall );
+
+    > * {
+      &:not(:first-child) {
+        margin-left: var( --spaceSmall );
+      }
+      &:last-child {
+        margin-left: auto;
+      }
+    }
+  }//end opblock-tag
+
+  .opblock-body {
+    background: var( --surface15 );
+    border: 1px solid var( --divider00 );
+    padding: var( --spaceSmall);
+    border-radius: var( --borderRadius1 );
+    margin-bottom: var( --spaceMedium );
+
+    .opblock-section-header,
+    .parameters-col_name {
+      display: flex;
+    }
+    .parameters-container {
+      margin: var( --spaceSmaller ) 0px var( --spaceMedium );
+    }
+    .parameters-col_description {
+      text-align: right;
+    }
+    .col_header {
+      margin-bottom: var( --spaceMedium );
+    }
+    .prop-format {
+      margin-left: var( --spaceMedium );
+    }
+    .parameters-col_name {
+      justify-content: space-between;
+
+      > * {
+        
+        &:first-child {
+          flex: 100%;
+        }
+        &:not(:first-child) {
+          margin-left: var( --spaceMedium );
+          flex: 1;
+        }
+      }
+    }
+    .opblock-section-header {
+      align-items: center;
+
+      > * {
+        margin-right: var( --spaceSmaller );
+      }
+    }
+    table {
+      width: 100%;
+
+      td {
+        vertical-align: top;
+      }
+    }
+
+    select {
+      min-width: 230px
+    }
+    pre {
+      font-size: var( --fontSmaller );
+      padding: var( --spaceSmall );
+      white-space: pre-wrap;
+      border-radius: var( --borderRadius1 );
+      background: var( --surface105 );
+      font-family: var( --fontFamilyMono );
+
+      &, & span {
+        color: var( --text100 );
+      }
+    }
+  }//end opblock-body
+}

@@ -102,7 +102,7 @@ export default class ServiceTab extends Component {
                             this.setState({ selectedVersion: version });
                         }}
                     >
-                        <Typography style={{ marginBottom: '12px' }} data-testid="version" className="version-text">
+                        <Typography data-testid="version" className="version-text">
                             {version}
                         </Typography>
                     </span>
@@ -150,23 +150,16 @@ export default class ServiceTab extends Component {
         return (
             <>
                 {currentService === null && (
-                    <Typography variant="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
-                        <br />
-                        <br />
+                    <Typography variant="h3">
                         <p style={{ marginLeft: '122px' }}>This tile does not contain service "{serviceId}"</p>
                     </Typography>
                 )}
                 <Shield title={message}>
                     <div className="serviceTab">
                         <div className="header">
-                            <Typography
-                                data-testid="service"
-                                variant="subtitle2"
-                                style={{ color: 'black', fontSize: '20px', fontWeight: 'bold' }}
-                            >
+                            <Typography data-testid="service" variant="h4">
                                 {selectedService.title}
                             </Typography>
-                            <br />
                             {hasHomepage && (
                                 <>
                                     {selectedService.status === 'UP' && (
@@ -194,39 +187,35 @@ export default class ServiceTab extends Component {
                                     )}
                                 </>
                             )}
-                            <br />
-                            <br />
                             <div className="apiInfo-item">
                                 <Tooltip
                                     key={basePath}
                                     title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
                                     placement="bottom"
                                 >
-                                    <Typography data-testid="base-path" variant="subtitle2" style={{ color: 'black' }}>
+                                    <Typography data-testid="base-path" variant="subtitle2">
                                         {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                         <label htmlFor="apiBasePath">API Base Path:</label>
                                         <span id="apiBasePath">{basePath}</span>
                                     </Typography>
                                 </Tooltip>
-                                <br />
                                 <Tooltip
                                     key={selectedService.serviceId}
                                     title="The identifier for this service"
                                     placement="bottom"
                                 >
-                                    <Typography data-testid="service-id" variant="subtitle2" style={{ color: 'black' }}>
+                                    <Typography data-testid="service-id" variant="subtitle2">
                                         {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                         <label htmlFor="serviceId">Service ID:</label>
                                         <span id="serviceId">{selectedService.serviceId}</span>
                                     </Typography>
                                 </Tooltip>
-                                <br />
                                 <Tooltip
                                     key={selectedService.ssoAllInstances}
                                     title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
                                     placement="bottom"
                                 >
-                                    <Typography data-testid="sso" variant="subtitle2" style={{ color: 'black' }}>
+                                    <Typography data-testid="sso" variant="subtitle2">
                                         {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                         <label htmlFor="sso">SSO:</label>
                                         <span id="sso">{sso}</span>
@@ -241,7 +230,6 @@ export default class ServiceTab extends Component {
                             >
                                 {selectedService.description}
                             </Typography>
-                            <br />
                         </div>
                         <div className="tabs-container" style={{ width: '100%' }}>
                             {apiVersions}

@@ -24,6 +24,28 @@ body {
   .MuiTypography-colorPrimary {
     color: var( --control00 );
   }
+  ul {
+    padding: 0px;
+
+    li {
+      list-style: none;
+    }
+    &.tab {
+      display: flex;
+
+      li:not(:first-child) {
+        margin-left: var( --spaceSmaller );
+      }
+    }
+  }//end ul
+  
+  small {
+    margin: var( --spaceSmaller) 0;
+    display: block;
+  }
+  p {
+    margin: 0px;
+  }
 
   .content {
     &, .main-content {

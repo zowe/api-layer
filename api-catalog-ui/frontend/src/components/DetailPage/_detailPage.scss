@@ -36,106 +36,49 @@ body .detail-content {
           color: var( --text20 );
         }
       }
-      .opblock-summary {
-        display: flex;
-        width: 100%;
-        margin-bottom: var( --spaceSmall );
-
-        .opblock-summary-control {
+      .models {
+        .models-control,
+        .model-box,
+        .model-box-control {
           width: 100%;
-          display: flex;
-          align-items: center;
-          border-radius: var( --borderRadius1 );
-          padding: var( --spaceSmallest );
           cursor: pointer;
-
-          &, & + button.authorization__btn {
-            border: 1px solid var( --surface15 );
-          }
-          & + button.authorization__btn {
-            border-left: none;
-            border-top-right-radius: var( --borderRadius1 );
-            border-bottom-right-radius: var( --borderRadius1 );
-          }
-          &:not(:only-child) {
-            border-right: none;
-            border-top-right-radius: 0px;
-            border-bottom-right-radius: 0px;
-          }
-
-          &[aria-label*='post'],
-          &[aria-label*='post'] + button {
-            background: var( --success05 );
-            border-color: var( --success10 );
-
-            .opblock-summary-method {
-              background: var( --success10 );
-            }
-          }
-          &[aria-label*='get'],
-          &[aria-label*='get'] + button {
-            background: var( --info05 );
-            border-color: var( --info10 );
-
-            .opblock-summary-method {
-              background: var( --info10 );
-            }
-          }
-          &[aria-label*='delete'],
-          &[aria-label*='delete'] + button {
-            background: var( --critical05 );
-            border-color: var( --critical10 );
-
-            .opblock-summary-method {
-              background: var( --critical10 );
-            }
-          }
-          &[aria-label*='put'],
-          &[aria-label*='put'] + button {
-            background: var( --warn05 );
-            border-color: var( --warn10 );
-
-            .opblock-summary-method {
-              background: var( --warn10 );
-            }
-          }
-
-          .opblock-summary-method {
-            padding: var( --spaceSmall ) var( --spaceLarge );
-            border-radius: var( --borderRadius1 );
-          }
-
-          > *:not(:first-child) {
-            margin-left: var( --spaceLargest );
-
-            &.arrow {
-              margin-right: var( --spaceSmaller );
-            }
-            &.opblock-summary-description {
-              margin-left: auto;
-            }
-          }
-        }//end summary-control
-      }//end summary
-
-      .opblock-tag {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        width: 100%;
-        font-size: var( --fontSmall );
-
-        > * {
-          &:not(:first-child) {
-            margin-left: var( --spaceSmall );
-          }
-          &:last-child {
-            margin-left: auto;
+        }
+        .models-control,
+        .model-box-control {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .model-container {
+          margin-bottom: var( --spaceSmallest );
+        }
+        .pointer {
+          display: flex;
+          justify-content: space-between;
+        }
+        .model-toggle {
+          width: 20px;
+          height: 20px;
+          display: block;
+          
+          &:after {
+            width: 20px;
+            height: 20px;
+            content: "";
+            background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'/%3E%3C/svg%3E") 50% no-repeat;
+            background-size: 100%;
           }
         }
-      }//end opblock-tag
+      }
 
       .info {
+        code {
+          padding: var( --spaceSmallest);
+          border-radius: var( --borderRadius1 );
+          background: var( --surface105 );
+          font-family: var( --fontFamilyMono );
+          color: var( --textCode );
+        }
         pre {
           font-family: var( --fontFamily00 );
         }
