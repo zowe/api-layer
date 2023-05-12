@@ -39,14 +39,12 @@ Use "zowe idf map --help" to view command description, usage, and options.
 exports[`id-federation map command integration tests should fail when options are not passed 2`] = `""`;
 
 exports[`id-federation map command integration tests should print the successful creation message from old school profile and other sources 1`] = `
-"directory name/Users/sj895092/code/restapi/api-layer/zowe-cli-id-federation-plugin/__tests__/__results__/data/5ed3abc2-db05-4954-aa91-e9a9dfd237a7_map_command/plugins/installed/lib/node_modules/@zowe/id-federation-for-zowe-cli/lib/api
-'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
+"'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
 "
 `;
 
 exports[`id-federation map command integration tests should print the successful creation message with passed args for ACF2 1`] = `
-"directory name/Users/sj895092/code/restapi/api-layer/zowe-cli-id-federation-plugin/__tests__/__results__/data/5ed3abc2-db05-4954-aa91-e9a9dfd237a7_map_command/plugins/installed/lib/node_modules/@zowe/id-federation-for-zowe-cli/lib/api
-'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
+"'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
 "
 `;
 
