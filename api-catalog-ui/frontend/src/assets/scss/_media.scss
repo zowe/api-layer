@@ -1,0 +1,10 @@
+@media screen and (max-width: 768px) {
+  body {
+    .content .main-content {
+      width: calc(100vw - calc(#{var( --contentPadding )} * 2));
+    }
+    .filtering-container {
+      width: 100%;
+    }
+  }
+}

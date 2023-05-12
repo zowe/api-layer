@@ -4,9 +4,10 @@ body {
   padding: 0;
   font-family: var( --fontFamily00 );
   color: var( --text10 );
+  height: 100%;
+  min-height: 100vh;
 
-  h1, h2, h3, h4, .MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3, .MuiTypography-h4 {
-    // font-weight: var( --fontWeightLight );
+  h1, h2, h3, h4, h5, h6, .MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3, .MuiTypography-h4, .MuiTypography-h5, .MuiTypography-h6 {
     margin: var( --spaceMedium ) 0;
   }
   h1, .MuiTypography-h1 {
@@ -18,7 +19,8 @@ body {
   h3, .MuiTypography-h3 {
     font-size: var( --fontLarger );
   }
-  h4, .MuiTypography-h4 {
+  h4, .MuiTypography-h4,
+  h5, .MuiTypography-h5 {
     font-size: var( --fontMedium );
   }
   .MuiTypography-colorPrimary {
@@ -61,7 +63,7 @@ body {
     }
 
     .main-content {
-      padding: 0 var(--spaceSmall ) var(--spaceSmall );
+      padding: 0 var( --contentPadding ) var( --contentPadding );
       width: 70vw;
       margin: 0 auto;
     }
@@ -142,10 +144,12 @@ body {
     background: var( --surface15 ) url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCI+ICAgIDxwYXRoIGQ9Ik0xMy40MTggNy44NTljLjI3MS0uMjY4LjcwOS0uMjY4Ljk3OCAwIC4yNy4yNjguMjcyLjcwMSAwIC45NjlsLTMuOTA4IDMuODNjLS4yNy4yNjgtLjcwNy4yNjgtLjk3OSAwbC0zLjkwOC0zLjgzYy0uMjctLjI2Ny0uMjctLjcwMSAwLS45NjkuMjcxLS4yNjguNzA5LS4yNjguOTc4IDBMMTAgMTFsMy40MTgtMy4xNDF6Ii8+PC9zdmc+) right 10px center no-repeat;
     background-size: 20px;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .25);
-    font-family: Titillium Web, sans-serif;
     color: var( --text20 );
     -webkit-appearance: none;
     -moz-appearance: none;
-    appearance: none
+    appearance: none;
+    max-width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 }

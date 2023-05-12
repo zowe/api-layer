@@ -1,0 +1,40 @@
+body {
+  .Toastify__toast-container {
+    color: var( --text20 ); 
+  }
+  .Toastify__toast-icon {
+    margin-right: var( --spaceSmall );
+  }
+  .Toastify__toast-body {
+    display: flex;
+    align-items: center;
+  }
+  .Toastify__toast {
+    background: var( --surface10 );
+    border: 1px solid var( --divider20 );
+    border-left: 4px solid var( --divider20 );
+    border-radius: var( --borderRadius1 );
+
+    &.Toastify__toast--info {
+      border-color: var( --info10 ); 
+
+      .Toastify__toast-icon svg {
+        fill: var( --info10 );
+      }
+    }
+    &.Toastify__toast--warning {
+      border-color: var( --warn10 ); 
+
+      .Toastify__toast-icon svg {
+        fill: var( --warn10 );
+      }
+    }
+    &.Toastify__toast--success {
+      border-color: var( --success10 ); 
+
+      .Toastify__toast-icon svg {
+        fill: var( --success10 );
+      }
+    }
+  }
+}

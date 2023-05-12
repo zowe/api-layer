@@ -36,40 +36,6 @@ body .detail-content {
           color: var( --text20 );
         }
       }
-      .models {
-        .models-control,
-        .model-box,
-        .model-box-control {
-          width: 100%;
-          cursor: pointer;
-        }
-        .models-control,
-        .model-box-control {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .model-container {
-          margin-bottom: var( --spaceSmallest );
-        }
-        .pointer {
-          display: flex;
-          justify-content: space-between;
-        }
-        .model-toggle {
-          width: 20px;
-          height: 20px;
-          display: block;
-          
-          &:after {
-            width: 20px;
-            height: 20px;
-            content: "";
-            background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'/%3E%3C/svg%3E") 50% no-repeat;
-            background-size: 100%;
-          }
-        }
-      }
 
       .info {
         code {

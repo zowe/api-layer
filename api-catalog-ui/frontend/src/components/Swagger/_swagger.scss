@@ -90,6 +90,7 @@ body {
     cursor: pointer;
     width: 100%;
     font-size: var( --fontSmall );
+    padding: var( --spaceSmaller ) 0;
 
     > * {
       &:not(:first-child) {
@@ -113,7 +114,7 @@ body {
       display: flex;
     }
     .parameters-container {
-      margin: var( --spaceSmaller ) 0px var( --spaceMedium );
+      margin: var( --spaceSmaller ) 0px var( --spaceSmaller );
     }
     .parameters-col_description {
       text-align: right;
@@ -150,6 +151,10 @@ body {
 
       td {
         vertical-align: top;
+
+        > *:not(:last-child) {
+          margin-bottom: var( --spaceSmaller );
+        }
       }
     }
 
