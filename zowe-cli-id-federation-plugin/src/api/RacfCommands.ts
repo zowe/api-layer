@@ -20,8 +20,8 @@ export class RacfCommands extends Commands{
         identities: IIdentity[],
         response: IHandlerResponseApi
     ) {
-        const racfTemplate = fs.readFileSync('src/api/templates/racf.jcl').toString();
-        const racfRefreshCommand = fs.readFileSync('src/api/templates/racf_refresh.jcl').toString();
+        const racfTemplate = fs.readFileSync(`${__dirname}/templates/racf.jcl`).toString();
+        const racfRefreshCommand = fs.readFileSync(`${__dirname}/templates/racf_refresh.jcl`).toString();
         super(registry,identities,racfTemplate,racfRefreshCommand,response);
     }
 }
