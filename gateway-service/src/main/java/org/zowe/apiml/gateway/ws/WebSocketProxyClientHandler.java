@@ -51,8 +51,7 @@ public class WebSocketProxyClientHandler extends AbstractWebSocketHandler {
             webSocketServerSession.close(CloseStatus.NORMAL);
         } else if (exception instanceof CloseException) {
             webSocketServerSession.close(new CloseStatus(((CloseException) exception).getStatusCode(), exception.getMessage()));
-        } else {
-            webSocketServerSession.close(new CloseStatus(CloseStatus.SERVER_ERROR.getCode(), exception.getMessage()));
         }
+        super.handleTransportError(session, exception);
     }
 }
