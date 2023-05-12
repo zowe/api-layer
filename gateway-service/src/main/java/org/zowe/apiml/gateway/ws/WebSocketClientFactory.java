@@ -59,6 +59,7 @@ public class WebSocketClientFactory {
             log.debug("Closing Jetty WebSocket client");
             client.stop();
         }
+
     }
 
 }
