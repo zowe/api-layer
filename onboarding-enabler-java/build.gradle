@@ -12,7 +12,7 @@ dependencies {
     annotationProcessor libs.lombok
 
     compileOnly libs.javax.servlet.api
-    compileOnly libs.javax.inject
+    compileOnly libs.jakarta.inject
 
     testImplementation libs.mockito.core
     testImplementation libs.spring4Mvc
@@ -25,5 +25,5 @@ dependencies {
     testImplementation libs.javax.servlet.api
     testImplementation libs.hamcrest
 
-    testImplementation libs.javax.inject
+    testImplementation libs.jakarta.inject
 }

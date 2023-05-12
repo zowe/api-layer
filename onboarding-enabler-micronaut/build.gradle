@@ -28,7 +28,7 @@ dependencies {
     implementation libs.netty.bom
 
     runtimeOnly libs.logback.classic
-    compileOnly libs.javax.inject
+    compileOnly libs.jakarta.inject
 }
 
 

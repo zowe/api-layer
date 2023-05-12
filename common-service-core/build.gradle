@@ -24,6 +24,8 @@ dependencies {
     annotationProcessor libs.lombok
 
     compileOnly libs.eh.cache
+    testImplementation libs.eh.cache
+
     implementation libs.spring.boot.starter.cache
     testImplementation libs.spring.boot.starter.cache
     implementation libs.spring.web

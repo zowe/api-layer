@@ -30,8 +30,8 @@ micronaut {
 dependencies {
     implementation project(':onboarding-enabler-java')
     implementation project(':onboarding-enabler-micronaut')
-    testImplementation ("io.micronaut:micronaut-http-client")
-    testCompileOnly libs.javax.inject
+    testImplementation libs.micronaut.http.client
+    testCompileOnly libs.jakarta.inject
  }
 
 

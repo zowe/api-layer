@@ -7,15 +7,17 @@ dependencyResolutionManagement {
 
             version('springBootVersion', '2.7.11')
             version('springCloudVersion', '2.2.10.RELEASE')
-            version('springCloudCommonsVersion') {
+            /*version('springCloudCommonsVersion') {
                 // conflict with the version 3 (missing class OnNoRibbonDefaultCondition)
                 strictly '[2.2.0,3.0.0['
                 prefer '2.2.9.RELEASE'
-            }
-            version('springCloudVersion3', '3.1.4')
+            }*/
+            version('springCloudCommonsVersion', '3.1.6')
+            version('springCloudVersion3', '3.1.6')
+            //version('springCloudVersion3', '3.0.6')
 
-            version('springCloudCBVersion', '2.1.5')
-            version('springCloudGatewayVersion', '3.1.4')
+            version('springCloudCBVersion', '2.1.7')
+            version('springCloudGatewayVersion', '3.1.7')
             version('springSecurityVersion') {
                 // older versions are vulnerable to CVE-2023-20862
                 strictly '[5.7.8,6.0.0['
@@ -24,73 +26,78 @@ dependencyResolutionManagement {
             version('springFrameworkVersion') {
                 // older versions are vulnerable to CVE-2023-20863
                 strictly '[5.3.27,6.0.0['
+                prefer '5.3.27'
             }
-            version('springRetryVersion', '1.2.4.RELEASE')
-            version('springWebTestClientVersion', '4.4.0')
+            version('springRetryVersion', '1.2.5.RELEASE')
+            version('springWebTestClientVersion', '4.5.1')
 
-            version('awsJavaSdkVersion', '1.12.313')
+            version('awsJavaSdkVersion', '1.12.466')
             version('attlsVersion', '1.21.3')
             version('awaitilityVersion', '4.0.3')
             version('bouncyCastleVersion', '1.70')
             version('bootstrapVersion', '4.3.1')
             version('commonsCodecVersion', '1.15')
-            version('commonsLang3Version', '3.7')
+            version('commonsLang3Version', '3.12.0')
             version('commonsTextVersion', '1.10.0')
             version('commonsIoVersion') {
                 // older versions are vulnerable to CVE-2021-29425
                 strictly '[2.7,2.8.0['
+                prefer '2.7'
             }
             version('commonsFileUploadVersion', '1.5')
             version('ehCacheVersion', '2.10.9.2')
-            version('eurekaClientVersion', '1.10.17')
+            version('eurekaVersion', '1.10.18')
             version('findBugsVersion', '3.0.2')
             version('gradleGitPropertiesVersion', '2.2.4') // Used in classpath dependencies
             version('gradleNodeVersion', '3.0.1') // Used in classpath dependencies
-            version('gsonVersion', '2.9.0')
-            version('guavaVersion', '31.0.1-jre')
+            version('gsonVersion', '2.9.1')
+            version('guavaVersion', '31.1-jre')
             version('hamcrestVersion', '1.3')
-            version('httpClientVersion', '4.5.13')
-            version('httpCoreVersion', '4.4.14')
-            version('infinispanVersion', '13.0.2.Final')
-            version('jacksonCoreVersion', '2.14.2')
-            version('jacksonDatabindVersion', '2.14.2')
-            version('jacksonDataformatYamlVersion', '2.14.2')
+            version('httpClientVersion', '4.5.14')
+            version('httpCoreVersion', '4.4.16')
+            version('hystrixVersion', '1.5.18')
+            version('infinispanVersion', '13.0.15.Final')
+            version('jacksonCoreVersion', '2.14.3')
+            version('jacksonDatabindVersion', '2.14.3')
+            version('jacksonDataformatYamlVersion', '2.14.3')
             version('jacksonMapperAslVersion', '1.9.16-TALEND')
-            version('janinoVersion', '3.1.6')
+            version('janinoVersion', '3.1.9')
             version('javaxAnnotationVersion', '1.3.2')
-            version('javaxInjectVersion', '1')
+            version('jakartaInjectVersion', '1.0.5')
             version('javaxServletApiVersion', '4.0.1')
             version('jaxbApiVersion', '2.3.1')
-            version('jerseyVersion', '2.26')
-            version('jettyWebSocketClientVersion', '9.4.48.v20220622')
+            version('jerseyVersion', '2.39.1')
+            version('jettyWebSocketClientVersion', '9.4.51.v20230217')
             version('jettisonVersion', '1.5.4')
             version('jjwtVersion', '0.11.5')
             version('jjwtFullVersion', '0.9.1')
-            version('jsonPathVersion', '2.6.0')
+            version('jodaVersion', '2.10.14')
+            version('jsonPathVersion', '2.7.0')
             version('jsonSmartVersion', '2.4.10')
-            version('jsonUnitVersion', '1.25.1')
-            version('jsonVersion', '20180813')
-            version('jsoupVersion', '1.8.3')
+            version('jsonUnitVersion', '1.31.1')
+            version('jsonVersion', '20230227')
+            version('jsoupVersion', '1.16.1')
             version('jsr305Version', '3.0.2')
-            version('junitJupiterVersion', '5.7.2')
-            version('junitPlatformVersion', '1.8.2')
-            version('jqueryVersion', '3.6.3')
-            version('lettuceVersion', '6.0.8.RELEASE')
+            version('junitJupiterVersion', '5.9.3')
+            version('junitPlatformVersion', '1.9.3')
+            version('jqueryVersion', '3.6.4')
+            version('lettuceVersion', '6.1.10.RELEASE')
             version('logbackVersion') {
                 // 1.3+ versions doesn't contain Slf4J package
                 // 1.4+ versions requires JDK 11
                 strictly '[1.2, 1.3['
                 prefer '1.2.12'
             }
-            version('lombokVersion', '1.18.20')
-            version('mockitoCoreVersion', '3.9.0')
-            version('mockitoInlineVersion', '2.13.0')
+            version('lombokVersion', '1.18.26')
+            version('mockitoCoreVersion', '4.9.0')
+            version('mockitoInlineVersion', '4.5.1')
+            version('netflixCommonsUtilVersion', '0.3.0')
             version('netflixServoVersion', '0.13.2')
-            version('nettyVersion', '4.1.91.Final')
-            version('nettyReactorVersion', '1.1.6')
-            version('nimbusJoseJwtVersion', '9.23')
-            version('openApiDiffVersion', '2.0.0-beta.10')
-            version('picocliVersion', '4.6.1')
+            version('nettyVersion', '4.1.92.Final')
+            version('nettyReactorVersion', '1.1.7')
+            version('nimbusJoseJwtVersion', '9.31')
+            version('openApiDiffVersion', '2.0.1')
+            version('picocliVersion', '4.7.3')
             
             version('reactorVersion') {
                 // because of conflict with spring-security-config:5.7.8
@@ -98,45 +105,50 @@ dependencyResolutionManagement {
                 strictly '[3.4.0, 3.5.0['
                 prefer '3.4.29'
             }
-            version('restAssuredVersion', '4.4.0')
-            version('slf4jVersion', '1.7.31')
-            version('snakeyamlVersion', '1.33')
+            version('restAssuredVersion', '4.5.1')
+            version('slf4jVersion', '1.7.36')
+            version('snakeyamlVersion', '2.0')
             version('springFoxVersion', '2.9.2')
-            version('springDocVersion', '1.6.9')
-            version('spring4Version', '4.3.7.RELEASE') // Used within PJE in tests
-            version('swagger3CoreVersion', '2.2.8')
-            version('swagger3ParserVersion', '2.1.12')
+            version('springDocVersion') {
+                // version 1.7+ has a conflict with Jackson databind (displaying of examples)
+                strictly '[1.6.15, 1.7.0['
+                prefer '1.6.15'
+            }
+            version('spring4Version', '5.3.27') // Used within PJE in tests
+            version('swagger3CoreVersion', '2.2.9')
+            version('swagger3ParserVersion', '2.1.13')
             version('swaggerCoreVersion', '1.6.10')
             version('swaggerInflector', '2.0.9')
-            version('swaggerJerseyJaxrsVersion', '1.5.10')
-            version('swaggerJaxrs2Version', '2.0.0')
+            version('swaggerJaxrs2Version', '2.2.9')
             version('thymeleafVersion', '3.0.15.RELEASE')
-            version('tomcatVersion', '9.0.69')
+            version('tomcatVersion', '9.0.74')
             version('velocityVersion', '2.3')
-            version('woodstoxVersion', '6.4.0')
+            version('woodstoxVersion', '6.5.1')
             version('xstreamVersion') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
                 strictly '[1.4.20,2.0['
+                prefer '1.4.20'
             }
             version('jgitVersion') {
-                strictly '5.13.0.202109080827-r'
+                strictly '5.13.1.202206130422-r'
             }
             version('gradleNodeVersion', '3.5.0')
             version('sonarGradlePluginVersion', '3.4.0.2513')
             version('gradleReleaseVersion', '2.8.1')
             version('gradleLicencerVersion', '0.6.1')
-            version('gradleDependencyCheckVersion', '7.1.1')
+            version('gradleDependencyCheckVersion', '8.2.1')
             version('gradleJibPluginVersion', '3.2.1')
-            version('taskTreeVersion', '2.1.0')
-            version('reactorBomVersion', '2020.0.26')
-            version('gradleTestLoggerVersion', '1.4.0')
-            version('testLoggerVersion', '3.0.0')
-            version('micronautVersion', '3.5.1')
-            version('shadowVersion', '7.1.2')
+            version('taskTreeVersion', '2.1.1')
+            version('reactorBomVersion', '2022.0.7')
+            version('gradleTestLoggerVersion', '3.2.0')
+            version('testLoggerVersion', '3.2.0')
+            version('micronautVersion', '3.8.9')
+            version('micronautPluginVersion', '3.7.9')
+            version('shadowVersion', '8.1.1')
             version('gradleTomcatPluginVersion', '2.7.0')
-            version('checkstyle', '8.12')
-            version('jacoco', '0.8.4')
-            version('gradle', '7.2')
+            version('checkstyle', '9.3')
+            version('jacoco', '0.8.10')
+            version('gradle', '8.1.1')
 
             library('zowe_attls', 'org.zowe.apiml.sdk', 'attls').versionRef('attlsVersion')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBootVersion')
@@ -154,6 +166,7 @@ dependencyResolutionManagement {
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBootVersion')
 
             library('spring_cloud_hystrix_dashboard', 'org.springframework.cloud', 'spring-cloud-starter-netflix-hystrix-dashboard').versionRef('springCloudVersion')
+            library('spring_cloud_loadbalancer', 'org.springframework.cloud', 'spring-cloud-starter-loadbalancer').versionRef('springCloudVersion3')
             library('spring_cloud_starter_bootstrap', 'org.springframework.cloud', 'spring-cloud-starter-bootstrap').versionRef('springCloudVersion3')
             library('spring_cloud_starter_zuul', 'org.springframework.cloud', 'spring-cloud-starter-netflix-zuul').versionRef('springCloudVersion')
             library('spring_cloud_starter_eureka', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudVersion')
@@ -185,7 +198,11 @@ dependencyResolutionManagement {
             library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFrameworkVersion')
             library('spring_websocket', 'org.springframework', 'spring-websocket').versionRef('springFrameworkVersion')
 
+            library('amazon_aws_autoscaling', 'com.amazonaws', 'aws-java-sdk-autoscaling').versionRef('awsJavaSdkVersion')
             library('amazon_aws_core', 'com.amazonaws', 'aws-java-sdk-core').versionRef('awsJavaSdkVersion')
+            library('amazon_aws_ec2', 'com.amazonaws', 'aws-java-sdk-ec2').versionRef('awsJavaSdkVersion')
+            library('amazon_aws_route', 'com.amazonaws', 'aws-java-sdk-route53').versionRef('awsJavaSdkVersion')
+            library('amazon_aws_sts', 'com.amazonaws', 'aws-java-sdk-sts').versionRef('awsJavaSdkVersion')
             library('apache_commons_codec', 'commons-codec', 'commons-codec').versionRef('commonsCodecVersion')
             library('apache_commons_lang3', 'org.apache.commons', 'commons-lang3').versionRef('commonsLang3Version')
             library('apache_commons_text', 'org.apache.commons', 'commons-text').versionRef('commonsTextVersion')
@@ -198,13 +215,15 @@ dependencyResolutionManagement {
             library('bootstrap', 'org.webjars', 'bootstrap').versionRef('bootstrapVersion')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIoVersion')
             library('eh_cache', 'net.sf.ehcache', 'ehcache').versionRef('ehCacheVersion')
-            library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eurekaClientVersion')
+            library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eurekaVersion')
+            library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eurekaVersion')
             library('findbugs', 'com.google.code.findbugs', 'jsr305').versionRef('findBugsVersion')
             library('gson', 'com.google.code.gson', 'gson').versionRef('gsonVersion')
             library('guava', 'com.google.guava', 'guava').versionRef('guavaVersion')
             library('hamcrest', 'org.hamcrest', 'hamcrest-all').versionRef('hamcrestVersion')
             library('http_client', 'org.apache.httpcomponents', 'httpclient').versionRef('httpClientVersion')
             library('http_core', 'org.apache.httpcomponents', 'httpcore').versionRef('httpCoreVersion')
+            library('hystrix_core', 'com.netflix.hystrix', 'hystrix-core').versionRef('hystrixVersion')
             library('infinispan_core', 'org.infinispan', 'infinispan-core').versionRef('infinispanVersion')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispanVersion')
             library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispanVersion')
@@ -215,7 +234,7 @@ dependencyResolutionManagement {
             library('jackson_mapper_asl', 'org.codehaus.jackson', 'jackson-mapper-asl').versionRef('jacksonMapperAslVersion')
             library('janino', 'org.codehaus.janino', 'janino').versionRef('janinoVersion')
             library('javax_annotation', 'javax.annotation', 'javax.annotation-api').versionRef('javaxAnnotationVersion')
-            library('javax_inject', 'javax.inject', 'javax.inject').versionRef('javaxInjectVersion')
+            library('jakarta_inject', 'jakarta.inject', 'jakarta.inject-api').versionRef('jakartaInjectVersion')
             library('javax_servlet_api', 'javax.servlet', 'javax.servlet-api').versionRef('javaxServletApiVersion')
             library('jaxb_api', 'javax.xml.bind', 'jaxb-api').versionRef('jaxbApiVersion')
             library('jetty_client', 'org.eclipse.jetty', 'jetty-client').versionRef('jettyWebSocketClientVersion')
@@ -231,6 +250,7 @@ dependencyResolutionManagement {
             library('jjwt_full', 'io.jsonwebtoken', 'jjwt').versionRef('jjwtFullVersion')
             library('jjwt_impl', 'io.jsonwebtoken', 'jjwt-impl').versionRef('jjwtVersion')
             library('jjwt_jackson', 'io.jsonwebtoken', 'jjwt-jackson').versionRef('jjwtVersion')
+            library('joda', 'joda-time', 'joda-time').versionRef('jodaVersion')
             library('json', 'org.json', 'json').versionRef('jsonVersion')
             library('json_path', 'com.jayway.jsonpath', 'json-path').versionRef('jsonPathVersion')
             library('json_unit', 'net.javacrumbs.json-unit', 'json-unit').versionRef('jsonUnitVersion')
@@ -249,6 +269,7 @@ dependencyResolutionManagement {
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCoreVersion')
             library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCoreVersion')
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInlineVersion')
+            library('netflix_commons_util', 'com.netflix.netflix-commons', 'netflix-commons-util').versionRef('netflixCommonsUtilVersion')
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServoVersion')
             library('netty', 'io.netty', 'netty-all').versionRef('nettyVersion')
             library('netty_bom', 'io.netty', 'netty-bom').versionRef('nettyVersion')
@@ -333,15 +354,16 @@ dependencyResolutionManagement {
             library('gradle_jib_plugin', 'gradle.plugin.com.google.cloud.tools', 'jib-gradle-plugin').versionRef('gradleJibPluginVersion')
             library('gradle_test_logger', 'com.adarshr', 'gradle-test-logger-plugin').versionRef('gradleTestLoggerVersion')
             library('gradle_tomcat_plugin', 'com.bmuschko', 'gradle-tomcat-plugin').versionRef('gradleTomcatPluginVersion')
+            library('micronaut_http_client', 'io.micronaut', 'micronaut-http-client').versionRef('micronautVersion')
 
             plugin('gradle_git_properties', 'com.gorylenko.gradle-git-properties').versionRef('gradleGitPropertiesVersion')
             plugin('gradle_node', 'com.github.node-gradle.node').versionRef('gradleNodeVersion')
             plugin('task_tree', 'com.dorongold.task-tree').versionRef('taskTreeVersion')
             plugin('test_logger', 'com.adarshr.test-logger').versionRef('testLoggerVersion')
-            plugin('micronaut_application', 'io.micronaut.application').versionRef('micronautVersion')
+            plugin('micronaut_application', 'io.micronaut.application').versionRef('micronautPluginVersion')
             plugin('shadow', 'com.github.johnrengelman.shadow').versionRef('shadowVersion')
             plugin('gradle_tomcat', 'com.bmuschko.tomcat').versionRef('gradleTomcatPluginVersion')
-            plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautVersion')
+            plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPluginVersion')
         }
     }
 }

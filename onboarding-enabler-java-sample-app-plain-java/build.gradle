@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(':onboarding-enabler-java')
+    api project(':onboarding-enabler-java')
     implementation libs.javax.servlet.api
 }
 
@@ -14,3 +14,7 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
+
+jar.dependsOn(project(':onboarding-enabler-java').jar)
+jar.dependsOn(project(':common-service-core').jar)
+jar.dependsOn(project(':apiml-utility').jar)

@@ -62,6 +62,7 @@ dependencies {
 
     implementation libs.jackson.databind
     implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.web
 
     implementation libs.spring.cloud.circuit.breaker
     implementation libs.spring.security.config

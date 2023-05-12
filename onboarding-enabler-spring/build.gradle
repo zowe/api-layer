@@ -14,7 +14,7 @@ publish {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-java')
+    api project(':onboarding-enabler-java')
 
     implementation libs.spring.boot.starter.web
     implementation libs.jackson.core
@@ -27,11 +27,12 @@ dependencies {
     implementation libs.spring.expression
     implementation libs.spring.web
     implementation libs.spring.webmvc
+    implementation libs.spring.cloud.commons
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    compileOnly libs.javax.inject
+    compileOnly libs.jakarta.inject
     implementation libs.eureka.client
 
     testImplementation libs.spring.boot.starter.test

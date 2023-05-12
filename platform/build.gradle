@@ -18,19 +18,52 @@ javaPlatform {
 dependencies {
     api(platform(libs.spring.boot.dependencies))
 
+    api(platform(libs.netty.bom))
+
+    api libs.netty.reactor.core
+    api libs.netty.reactor.http
+
     api libs.jackson.annotations
     api libs.jackson.core
     api libs.jackson.databind
     api libs.jackson.dataformat.yaml
 
+    api libs.joda
     api libs.woodstox
     api libs.guava
-    api libs.amazon.aws.core
+    api libs.snakeyaml
+    api libs.hystrix.core
+    api libs.netflix.commons.util
 
+    api libs.jersey.server
+
+    api libs.amazon.aws.autoscaling
+    api libs.amazon.aws.core
+    api libs.amazon.aws.ec2
+    api libs.amazon.aws.route
+    api libs.amazon.aws.sts
+
+    api libs.eureka.client
+    api libs.eureka.core
     api libs.spring.cloud.starter.eureka
     api libs.spring.cloud.starter.eureka.server
     api libs.spring.eureka.client.v3
     api libs.spring.cloud.commons
+
+    api libs.swagger3.core
+    api libs.swagger3.parser
+    api libs.swagger.jaxrs2
+
+    api libs.bcprov
+    api libs.bcpkix
+
+    api libs.netflix.servo
+
+    api libs.junitJupiter
+    api libs.junit.platform.commons
+
+    api libs.mockito.core
+    api libs.mockito.jupiter
 
     constraints {
         api(libs.spring.security.config) {

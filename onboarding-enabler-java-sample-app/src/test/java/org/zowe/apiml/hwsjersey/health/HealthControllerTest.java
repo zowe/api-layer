@@ -12,15 +12,15 @@ package org.zowe.apiml.hwsjersey.health;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.eurekaservice.model.Health;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // WARN: JerseyTest does not support Junit 5
 public class HealthControllerTest extends JerseyTest {
@@ -35,7 +35,7 @@ public class HealthControllerTest extends JerseyTest {
         Response response = target("application/info").request().get();
         assertEquals(200, response.getStatus());
         HashMap infoAttributes = response.readEntity(HashMap.class);
-        assertTrue("InfoAttributes map is not empty", infoAttributes.isEmpty());
+        assertTrue(infoAttributes.isEmpty(), () -> "InfoAttributes map is not empty");
     }
 
     @Test
@@ -46,7 +46,7 @@ public class HealthControllerTest extends JerseyTest {
         Health actualHealthStatus = response.readEntity(Health.class);
         Health expectedHealthStatus = new Health("UP");
 
-        assertEquals("Expected health status is not UP", expectedHealthStatus.getStatus(), actualHealthStatus.getStatus());
+        assertEquals(expectedHealthStatus.getStatus(), actualHealthStatus.getStatus(), "Expected health status is not UP");
     }
 
 }
