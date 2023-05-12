@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -185,6 +186,16 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        // if the browser closes the session, close the GWs client one as well.
+        Optional.ofNullable(routedSessions.get(session.getId()))
+            .map(routedSession -> routedSession.getWebSocketClientSession())
+            .ifPresent(clientSession -> {
+                try {
+                    clientSession.close(status);
+                } catch (IOException e) {
+                    log.debug("Error closing WebSocket connection: {}", e.getMessage());
+                }
+            });
         routedSessions.remove(session.getId());
     }
 

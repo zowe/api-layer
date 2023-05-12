@@ -33,7 +33,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -59,16 +59,6 @@ class WebSocketProxyServerHandlerTest {
         ReflectionTestUtils.setField(underTest, "meAsProxy", underTest);
     }
 
-
-    private ServiceInstance validServiceInstance() {
-        ServiceInstance validService = mock(ServiceInstance.class);
-        when(validService.getHost()).thenReturn("gatewayHost");
-        when(validService.isSecure()).thenReturn(true);
-        when(validService.getPort()).thenReturn(1443);
-
-        return validService;
-    }
-
     @Nested
     class WhenTheConnectionIsEstablished {
         WebSocketSession establishedSession;
@@ -87,7 +77,6 @@ class WebSocketProxyServerHandlerTest {
                 RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
                 when(routesForSpecificValidService.findServiceByGatewayUrl("ws/v1"))
                     .thenReturn(new RoutedService("ws-v1", "ws/v1", "/valid-service/ws/v1"));
-                ServiceInstance foundService = validServiceInstance();
 
                 underTest.addRoutedServices(serviceId, routesForSpecificValidService);
             }
@@ -223,8 +212,21 @@ class WebSocketProxyServerHandlerTest {
         void whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() {
             CloseStatus normalClose = CloseStatus.NORMAL;
 
+            assertThat(routedSessions.entrySet(), not(empty()));
+
             underTest.afterConnectionClosed(establishedSession, normalClose);
 
+            assertThat(routedSessions.entrySet(), hasSize(0));
+        }
+
+        @Test
+        void whenTheConnectionIsClosed_thenClientSessionIsAlsoClosed() throws IOException {
+            CloseStatus normalClose = CloseStatus.NORMAL;
+            WebSocketSession clientSession = mock(WebSocketSession.class);
+            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(clientSession);
+
+            underTest.afterConnectionClosed(establishedSession, normalClose);
+            verify(clientSession, times(1)).close(normalClose);
             assertThat(routedSessions.entrySet(), hasSize(0));
         }
 
@@ -282,7 +284,7 @@ class WebSocketProxyServerHandlerTest {
     class WhenGettingSubProtocols {
         @Test
         void thenReturnThem() {
-            ArrayList protocol = new ArrayList();
+            ArrayList<String> protocol = new ArrayList<>();
             protocol.add("protocol");
             ReflectionTestUtils.setField(underTest, "subProtocols", protocol);
             List<String> subProtocols = underTest.getSubProtocols();
