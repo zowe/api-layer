@@ -47,7 +47,7 @@ async function deploy(pkgName, pkgTag) {
         await utils.execAndGetStderr("curl", ["-fs", "-o", fullPkgName, tgzUrl]);
         await utils.execAndGetStderr("bash", ["scripts/repackage_tar.sh", fullPkgName, TARGET_REGISTRY, pkgVersion]);
         pkgTag = pkgTag !== pkgVersion ? pkgTag : TEMP_NPM_TAG;
-        await utils.execAndGetStderr("npm", ["publish", fullPkgName, "--access", "public", "--tag", pkgTag]);
+        await utils.execAndGetStderr("npm", ["publish", fullPkgName, "--access", "public", "--tag", "latest"]);
     }
 
     core.info("Waiting for published version to appear on NPM registry");

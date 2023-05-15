@@ -1,7 +1,7 @@
 # Zowe CLI Identity Federation Plug-in
 
 The IDF Plug-in for Zowe CLI lets you extend Zowe CLI to make it easier to map mainframe users with an identity provided by an external identity provider.
-The Plug-in is designed to work with the ESMs: IBM RACF, Broadcom ACF/2, and Broadcom Top Secret.
+The Plug-in is designed to work with the ESMs: IBM RACF, Broadcom ACF2, and Broadcom Top Secret.
 
 ## How the Plug-in works
 
@@ -9,7 +9,7 @@ The IDF Plug-in for Zowe CLI can help facilitate the mapping of an external iden
 
 ## Prerequisites
 
-Before you work with the Zowe CLI sample plug-in, [install Zowe CLI globally.](https://docs.zowe.org/active-development/user-guide/cli-installcli.html)
+Before you work with the Zowe CLI sample plug-in, [install Zowe CLI globally.](https://docs.zowe.org/stable/user-guide/cli-installcli.html)
 
 ## Run the Automated Tests
 
@@ -25,4 +25,5 @@ This process assumes that you already installed Zowe CLI on your PC in the previ
 1. `cd` to `zowe-cli-id-federation-plugin` folder.
 2. `npm run installPlugin`
 3. `zowe idf --help`
-   You should see help text displayed if the installation was successful.
+
+You should see help text displayed if the installation was successful.
