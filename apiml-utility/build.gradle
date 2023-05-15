@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(':common-service-core'))
+    api project(':common-service-core')
 
     implementation libs.jackson.databind
     implementation libs.apache.commons.lang3

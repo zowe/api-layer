@@ -49,10 +49,10 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':apiml-utility')
-    implementation project(':common-service-core')
-    implementation project(':apiml-tomcat-common')
-    implementation project(':onboarding-enabler-spring')
+    api project(':apiml-utility')
+    api project(':common-service-core')
+    api project(':apiml-tomcat-common')
+    api project(':onboarding-enabler-spring')
 
 
     implementation libs.zowe.attls

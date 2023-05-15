@@ -1,6 +1,6 @@
 dependencies {
-    implementation project(':apiml-utility')
-    implementation project(':apiml-tomcat-common')
+    api project(':apiml-utility')
+    api project(':apiml-tomcat-common')
     api project(':common-service-core')
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.cloud.commons

@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(':apiml-security-common')
+    api project(':apiml-security-common')
 
     implementation libs.spring.boot.starter.web
     implementation libs.spring.web

@@ -60,9 +60,9 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':apiml-tomcat-common')
-    implementation project(':apiml-security-common')
-    implementation project(':security-service-client-spring')
+    api project(':apiml-tomcat-common')
+    api project(':apiml-security-common')
+    api project(':security-service-client-spring')
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

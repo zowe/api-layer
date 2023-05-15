@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(':common-service-core')
+    api project(':common-service-core')
     compileOnly libs.spring.boot.starter.web
 
     implementation libs.apache.commons.lang3

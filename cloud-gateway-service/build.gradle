@@ -51,9 +51,18 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
+configurations.all {
+    exclude group: "org.springframework", module: "spring-webmvc"
+    exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
+}
+
 dependencies {
-    implementation project(':common-service-core')
+    api project(':common-service-core')
+    implementation libs.eh.cache
     implementation libs.spring.cloud.starter.gateway
+
     implementation libs.netty.reactor.core
     implementation libs.netty.reactor.http
 
@@ -62,7 +71,6 @@ dependencies {
 
     implementation libs.jackson.databind
     implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.web
 
     implementation libs.spring.cloud.circuit.breaker
     implementation libs.spring.security.config

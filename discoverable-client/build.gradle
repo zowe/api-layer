@@ -49,9 +49,9 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-java')
+    api project(':onboarding-enabler-java')
     api project(':onboarding-enabler-spring')
-    implementation project(':zaas-client')
+    api project(':zaas-client')
     implementation libs.spring.doc
     implementation libs.spring.boot.starter
     implementation libs.spring.boot.starter.actuator

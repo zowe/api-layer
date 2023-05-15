@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-java')
+    api project(':onboarding-enabler-java')
 
     implementation libs.swagger.jaxrs2
 

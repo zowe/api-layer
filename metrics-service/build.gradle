@@ -50,9 +50,9 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':apiml-security-common')
-    implementation project(':onboarding-enabler-spring')
-    implementation(project(':security-service-client-spring'))
+    api project(':apiml-security-common')
+    api project(':onboarding-enabler-spring')
+    api project(':security-service-client-spring')
 
     implementation libs.snakeyaml
     implementation libs.jackson.annotations

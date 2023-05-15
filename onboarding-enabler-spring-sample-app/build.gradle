@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(':onboarding-enabler-spring'))
+    api project(':onboarding-enabler-spring')
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc
 
