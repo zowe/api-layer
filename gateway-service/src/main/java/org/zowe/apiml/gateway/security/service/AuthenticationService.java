@@ -38,6 +38,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.controllers.AuthController;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -352,6 +353,17 @@ public class AuthenticationService {
             scopes,
             QueryResponse.Source.valueByIssuer(claims.getIssuer())
         );
+    }
+
+    /**
+     * This method resolves the token origin directly by decoding token claims.
+     * @param jwtToken the JWT token
+     * @return AuthSource.Origin value based on the iss token claim.
+     */
+    public AuthSource.Origin getTokenOrigin(String jwtToken) {
+        Claims claims = getJwtClaims(jwtToken);
+        QueryResponse.Source source = QueryResponse.Source.valueByIssuer(claims.getIssuer());
+        return AuthSource.Origin.valueByTokenSource(source);
     }
 
     /**
