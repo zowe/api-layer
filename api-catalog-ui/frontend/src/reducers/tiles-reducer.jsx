@@ -14,11 +14,13 @@ import {
     FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
+    STORE_ORIGINAL_TILES,
 } from '../constants/catalog-tile-constants';
 
 const tilesReducerDefaultState = {
     tile: {},
     tiles: [],
+    originalTiles: [],
     id: '',
     error: null,
 };
@@ -26,11 +28,13 @@ const tilesReducerDefaultState = {
 const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
     switch (action.type) {
         case FETCH_TILES_SUCCESS:
-            return { ...state, tiles: [...action.payload], error: null };
+            return { ...state, originalTiles: state.originalTiles, tiles: [...action.payload], error: null };
+        case STORE_ORIGINAL_TILES:
+            return { ...state, originalTiles: action.payload, error: null };
         case FETCH_TILES_FAILED:
-            return { tiles: state.tiles, id: '', error: action.payload };
+            return { tiles: state.tiles, originalTiles: state.originalTiles, id: '', error: action.payload };
         case FETCH_TILES_REQUEST:
-            return { tiles: [], id: action.payload, error: null };
+            return { tiles: [], originalTiles: state.originalTiles, id: action.payload, error: null };
         case FETCH_TILES_RETRY:
             return state;
         case FETCH_TILES_STOP:

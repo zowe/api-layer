@@ -15,6 +15,7 @@ import {
     FETCH_TILES_REQUEST,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
+    STORE_ORIGINAL_TILES,
 } from '../constants/catalog-tile-constants';
 
 const fetchRetryToastId = 9998;
@@ -34,6 +35,13 @@ export function fetchTilesSuccess(tiles) {
     return {
         type: FETCH_TILES_SUCCESS,
         payload: tiles,
+    };
+}
+
+export function storeOriginalTiles(originalTiles) {
+    return {
+        type: STORE_ORIGINAL_TILES,
+        payload: originalTiles,
     };
 }
 

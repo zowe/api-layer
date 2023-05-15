@@ -23,9 +23,15 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import SearchCriteria from '../Search/SearchCriteria';
 
 export default class DetailPage extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            allTiles: [],
+        };
+    }
+
     componentDidMount() {
         const { fetchTilesStart, match } = this.props;
         fetchTilesStart(match.params.tileID);
@@ -50,7 +56,6 @@ export default class DetailPage extends Component {
     };
 
     render() {
-        const allContainers = ['gateway', 'catalog', 'zosmf'];
         const {
             tiles,
             isLoading,
@@ -58,6 +63,7 @@ export default class DetailPage extends Component {
             fetchTilesStop,
             fetchTilesError,
             selectedTile,
+            originalTiles,
             match,
             match: {
                 params: { tileID },
@@ -65,6 +71,11 @@ export default class DetailPage extends Component {
             fetchTilesStart,
             history,
         } = this.props;
+        const { allTiles } = this.state;
+        // eslint-disable-next-line no-console
+        console.log('diego');
+        // eslint-disable-next-line no-console
+        console.log(originalTiles);
         const iconBack = <ChevronLeftIcon />;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
@@ -128,7 +139,7 @@ export default class DetailPage extends Component {
                 )}
                 <div className="nav-bar">
                     <Shield>
-                        <ServicesNavigationBarContainer allContainers={allContainers} />
+                        <ServicesNavigationBarContainer originalTiles={originalTiles} />
                     </Shield>
                 </div>
                 <div className="content-description-container">

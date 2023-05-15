@@ -24,6 +24,7 @@ const mapStateToProps = (state) => ({
     tile: state.tilesReducer.tile,
     tiles: state.tilesReducer.tiles,
     fetchTilesError: state.tilesReducer.error,
+    originalTiles: state.tilesReducer.originalTiles,
     selectedTile: state.selectedServiceReducer.selectedTile,
     selectedServiceId: state.selectedServiceReducer.selectedService.serviceId,
     isLoading: loadingSelector(state),

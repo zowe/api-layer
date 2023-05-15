@@ -15,10 +15,29 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 
 export default class ServicesNavigationBar extends Component {
+    componentDidMount() {
+        // const { storeOriginalTiles } = this.props;
+        // storeOriginalTiles();
+    }
+
     render() {
-        const { allContainers } = this.props;
+        const { originalTiles } = this.props;
         // eslint-disable-next-line no-console
-        console.log(allContainers);
+        console.log('originalTiles');
+        // eslint-disable-next-line no-console
+        console.log(originalTiles);
+        const services = [];
+        originalTiles.forEach((tile) => {
+            // eslint-disable-next-line no-console
+            console.log(tile);
+            tile.services.forEach((service) => {
+                services.push(service.serviceId);
+            });
+        });
+        // eslint-disable-next-line no-console
+        console.log(this.state);
+        // eslint-disable-next-line no-console
+        console.log(this.props);
         return (
             <div className="sidebar">
                 <Shield title="Search Bar is broken !">
@@ -27,7 +46,7 @@ export default class ServicesNavigationBar extends Component {
                 <Typography id="serviceIdTabs" variant="h5">
                     Product APIs
                 </Typography>
-                {allContainers.map((itemType) => (
+                {services.map((itemType) => (
                     <SidebarLink text={itemType} />
                 ))}
             </div>

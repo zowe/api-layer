@@ -14,6 +14,7 @@ import {
     fetchTilesStart,
     fetchTilesSuccess,
     fetchTilesStop,
+    storeOriginalTiles,
 } from '../../actions/catalog-tile-actions';
 import { clearService } from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
@@ -28,25 +29,27 @@ const mapStateToProps = (state) => ({
     searchCriteria: state.filtersReducer.text,
     tiles: getVisibleTiles(state.tilesReducer.tiles, state.filtersReducer.text),
     fetchTilesError: state.tilesReducer.error,
+    originalTiles: state.tilesReducer.originalTiles,
     isLoading: loadingSelector(state),
     refreshedStaticApisError: state.refreshStaticApisReducer.error,
     refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
     authentication: state.authenticationReducer,
 });
 
-const mapDispatchToProps = {
-    clearService,
-    fetchTilesStart,
-    fetchTilesSuccess,
-    fetchTilesFailed,
-    fetchTilesStop,
-    filterText,
-    clear,
-    refreshedStaticApi,
-    clearError,
-    wizardToggleDisplay,
-    selectEnabler,
-    closeAlert: () => userActions.closeAlert(),
-};
+const mapDispatchToProps = (dispatch) => ({
+    clearService: () => dispatch(clearService()),
+    fetchTilesStart: () => dispatch(fetchTilesStart()),
+    fetchTilesSuccess: () => dispatch(fetchTilesSuccess()),
+    fetchTilesFailed: () => dispatch(fetchTilesFailed()),
+    fetchTilesStop: () => dispatch(fetchTilesStop()),
+    filterText: () => dispatch(filterText()),
+    clear: () => dispatch(clear()),
+    refreshedStaticApi: () => dispatch(refreshedStaticApi()),
+    clearError: () => dispatch(clearError()),
+    wizardToggleDisplay: () => dispatch(wizardToggleDisplay()),
+    selectEnabler: () => dispatch(selectEnabler()),
+    closeAlert: () => dispatch(userActions.closeAlert()),
+    storeOriginalTiles: (tiles) => dispatch(storeOriginalTiles(tiles)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
