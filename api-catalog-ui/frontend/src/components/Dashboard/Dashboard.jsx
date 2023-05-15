@@ -24,19 +24,14 @@ import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 
 export default class Dashboard extends Component {
     componentDidMount() {
-        const { fetchTilesStart, clearService, tiles, storeOriginalTiles } = this.props;
+        const { fetchTilesStart, clearService } = this.props;
         clearService();
         fetchTilesStart();
-        storeOriginalTiles(tiles);
     }
 
-    // shouldComponentUpdate(nextProps, nextState, nextContext) {
-    //     const { fetchTilesStart, clearService, tiles, storeOriginalTiles } = this.props;
-    //     storeOriginalTiles(tiles);
-    // }
-
     componentWillUnmount() {
-        const { fetchTilesStop, clear } = this.props;
+        const { fetchTilesStop, clear, storeOriginalTiles, tiles } = this.props;
+        storeOriginalTiles(tiles);
         clear();
         fetchTilesStop();
     }
@@ -70,15 +65,9 @@ export default class Dashboard extends Component {
             fetchTilesError,
             fetchTilesStop,
             refreshedStaticApisError,
-            originalTiles,
             clearError,
             authentication,
         } = this.props;
-        // eslint-disable-next-line no-console
-        console.log('andre');
-        // eslint-disable-next-line no-console
-        console.log(originalTiles);
-        // storeOriginalTiles(tiles);
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;

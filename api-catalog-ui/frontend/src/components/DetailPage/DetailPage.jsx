@@ -71,11 +71,6 @@ export default class DetailPage extends Component {
             fetchTilesStart,
             history,
         } = this.props;
-        const { allTiles } = this.state;
-        // eslint-disable-next-line no-console
-        console.log('diego');
-        // eslint-disable-next-line no-console
-        console.log(originalTiles);
         const iconBack = <ChevronLeftIcon />;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
