@@ -41,7 +41,7 @@ export class Mapper {
     }
 
     async createJcl(commands: string[]): Promise<string> {
-        const jclTemplate = fs.readFileSync('src/api/templates/job.jcl').toString();
+        const jclTemplate = fs.readFileSync(`${__dirname}/templates/job.jcl`).toString();
         const account = await getAccount();
         const jclWriter = new JclWriter(1, 2);
         commands.forEach(c => jclWriter.add(c));

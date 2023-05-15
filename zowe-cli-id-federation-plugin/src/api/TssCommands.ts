@@ -20,7 +20,7 @@ export class TssCommands extends Commands{
         identities: IIdentity[],
         response: IHandlerResponseApi
     ) {
-        const tssTemplate = fs.readFileSync('src/api/templates/tss.jcl').toString();
+        const tssTemplate = fs.readFileSync(`${__dirname}/templates/tss.jcl`).toString();
         super(registry,identities,tssTemplate,null,response);
     }
 }
