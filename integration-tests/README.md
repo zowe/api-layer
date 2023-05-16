@@ -1,4 +1,14 @@
+<!-- omit in toc -->
 # Integration Tests
+
+- [Introduction](#introduction)
+- [The tests take care of the services.](#the-tests-take-care-of-the-services)
+- [Local run of services and then integration tests](#local-run-of-services-and-then-integration-tests)
+- [The services run elsewhere.](#the-services-run-elsewhere)
+- [Manual testing of Discovery Service in HTTP mode](#manual-testing-of-discovery-service-in-http-mode)
+- [Running all tests (including slow)](#running-all-tests-including-slow)
+- [Running a Specific Test](#running-a-specific-test)
+- [Running specific tests to test Zowe RC](#running-specific-tests-to-test-zowe-rc)
 
 ## Introduction
 
@@ -6,14 +16,13 @@ Integration tests are meant to test a functionality that requires multiple runni
 
 The Integration tests can be run against specific setup and instance or they can start the services itself. Either way the test suite detects when services are started up and are ready to begin testing.
 
-## The tests take care of the services. 
+## The tests take care of the services
 
-In this setup the integration test suite starts and stops the service. It is aimed at all runs for testing the integrations off-platform. 
+In this setup the integration test suite starts and stops the service. It is aimed at all runs for testing the integrations off-platform.
 
 **Follow these steps:**
 
-Perform a Localhost Quick start when you need to run the tests on your local machine. The setup won't work on the Windows machines as we use production shell scripts in this setup. In case of Window consult [Local run of services and then integration tests
-](#Local run of services and then integration tests) 
+Perform a Localhost Quick start when you need to run the tests on your local machine. The setup won't work on the Windows machines as we use production shell scripts in this setup. In case of Window consult [Local run of services and then integration tests](#local-run-of-services-and-then-integration-tests)
 
 1. Run the following shell script:
 
@@ -29,7 +38,7 @@ Perform a Localhost Quick start when you need to run the tests on your local mac
 
 ## Local run of services and then integration tests
 
-In this case you are using either Windows machine or want to start services yourselves for any reason. 
+In this case you are using either Windows machine or want to start services yourselves for any reason.
 
 **Follow these steps:**
 
@@ -57,16 +66,19 @@ In this case you are using either Windows machine or want to start services your
    ./gradlew runCITests -Denvironment.offPlatform=true
    ```
 
-## The services run elsewhere. 
+## The services run elsewhere.
 
-In this case the services are running somewhere, and the integration tests verify that the services work well. 
+In this case the services are running somewhere, and the integration tests verify that the services work well.
 
 **Follow these steps:**
 
 1. Run the following shell script:
 
     ```sh
-   ./gradlew runAllIntegrationTests -Dcredentials.user=${MF_USERID} -Dcredentials.password=${MF_PASSWORD} -Denvironment.offPlatform=true
+   ./gradlew runAllIntegrationTests \
+        -Dcredentials.user=${MF_USERID} \
+        -Dcredentials.password=${MF_PASSWORD} \
+        -Denvironment.offPlatform=true
     ```
 
 ## Manual testing of Discovery Service in HTTP mode
