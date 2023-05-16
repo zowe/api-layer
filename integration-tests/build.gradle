@@ -58,12 +58,6 @@ dependencies {
     testFixturesImplementation libs.http.client
 
     testFixturesAnnotationProcessor libs.lombok
-
-    constraints {
-        runtimeOnly(libs.jackson.core) {
-            because 'jjwt brings older version of jackson core having 2 in the classpath results in error when running integration tests locally'
-        }
-    }
 }
 
 jar {

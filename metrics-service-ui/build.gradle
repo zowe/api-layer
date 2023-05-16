@@ -84,7 +84,9 @@ task npmBuild(type: NpmTask) {
     description = "Executes npm build"
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(fileTree('frontend').matching {
+        include '**/.env*'
+    }).withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
@@ -98,6 +100,7 @@ npmBuild.dependsOn npmInstall
 npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
 
+npmBuild.dependsOn npmTest
 
 jar {
     enabled false

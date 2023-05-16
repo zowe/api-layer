@@ -30,6 +30,7 @@ micronaut {
 dependencies {
     api project(':onboarding-enabler-java')
     api project(':onboarding-enabler-micronaut')
+    testImplementation libs.javax.inject
     testImplementation libs.micronaut.http.client
     testCompileOnly libs.jakarta.inject
  }

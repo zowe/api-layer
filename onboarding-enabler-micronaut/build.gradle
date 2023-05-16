@@ -26,6 +26,7 @@ dependencies {
     implementation("io.micronaut:micronaut-http-client")
     // https://mvnrepository.com/artifact/io.netty/netty-bom
     implementation libs.netty.bom
+    implementation libs.javax.inject
 
     runtimeOnly libs.logback.classic
 }

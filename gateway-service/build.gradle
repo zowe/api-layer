@@ -65,6 +65,7 @@ dependencies {
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.cloud.starter.hystrix
+    implementation libs.spring.cloud.starter.eureka.server
     implementation libs.spring.security.web
     implementation libs.spring.security.config
     implementation libs.spring.security.core
