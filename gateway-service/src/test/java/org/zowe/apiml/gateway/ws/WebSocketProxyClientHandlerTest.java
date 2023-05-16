@@ -66,7 +66,7 @@ public class WebSocketProxyClientHandlerTest {
             @Test
             void andCloseException_thenForwardError() throws Exception {
                 webSocketProxyClientHandler.handleTransportError(mock(WebSocketSession.class), new CloseException(CloseStatus.PROTOCOL_ERROR.getCode(), new Exception("message")));
-                verify(serverSession, times(1)).close(eq(new CloseStatus(1002, "java.lang.Exception: message")));
+                verify(serverSession, times(1)).close(new CloseStatus(1002, "java.lang.Exception: message"));
             }
 
         }
