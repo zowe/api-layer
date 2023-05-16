@@ -40,7 +40,6 @@ zosmf:
 zss:
     userMapping:
             "[zoweson@zowe.com]": USER
-#            "[pw623414@broadcom.net]": USER
 
 ---
 spring:
