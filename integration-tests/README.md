@@ -36,6 +36,8 @@ Perform a Localhost Quick start when you need to run the tests on your local mac
     ./gradlew runCITests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD> -Ddiscovery.host=<DS_HOST> -Ddiscovery.port=<DS_PORT>  -Dgateway.host=<GW_HOST> -Dgateway.port=<GW_PORT> -Dgateway.scheme=https
     ```
 
+*Note:* As mentioned above, this alternative uses the production start.sh scripts to startup the services. Make sure the desired Java version is the default in the PATH.
+
 ## Local run of services and then integration tests
 
 In this case you are using either Windows machine or want to start services yourselves for any reason.
@@ -66,7 +68,7 @@ In this case you are using either Windows machine or want to start services your
    ./gradlew runCITests -Denvironment.offPlatform=true
    ```
 
-## The services run elsewhere.
+## The services run elsewhere
 
 In this case the services are running somewhere, and the integration tests verify that the services work well.
 
