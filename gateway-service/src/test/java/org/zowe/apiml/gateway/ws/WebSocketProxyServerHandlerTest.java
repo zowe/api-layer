@@ -284,7 +284,7 @@ class WebSocketProxyServerHandlerTest {
     class WhenGettingSubProtocols {
         @Test
         void thenReturnThem() {
-            ArrayList<String> protocol = new ArrayList<>();
+            List<String> protocol = new ArrayList<>();
             protocol.add("protocol");
             ReflectionTestUtils.setField(underTest, "subProtocols", protocol);
             List<String> subProtocols = underTest.getSubProtocols();
