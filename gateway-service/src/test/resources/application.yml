@@ -36,6 +36,8 @@ apiml:
             clientSecret:
             introspectEndpoint:
             registry:
+            identityMapperUrl: http://localhost:8542/certificate/dn
+            identityMapperUser: validUserForMap
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5
