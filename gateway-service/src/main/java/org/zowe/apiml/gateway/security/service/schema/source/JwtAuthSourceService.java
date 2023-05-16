@@ -51,7 +51,14 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<String> getToken(RequestContext context) {
-        return authenticationService.getJwtTokenFromRequest(context.getRequest());
+        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        if (tokenOptional.isPresent()) {
+            AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());
+            if (Origin.ZOSMF == origin || Origin.ZOWE == origin) {
+                return tokenOptional;
+            }
+        }
+        return Optional.empty();
     }
 
     /**

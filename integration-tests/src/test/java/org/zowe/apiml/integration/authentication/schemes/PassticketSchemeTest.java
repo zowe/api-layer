@@ -81,6 +81,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     private static Stream<Arguments> accessTokens() {
         return Stream.of(
             Arguments.of(jwt, COOKIE_NAME, new Header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)),
+            Arguments.of(pat, COOKIE_NAME, new Header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)),
             Arguments.of(pat, PAT_COOKIE_AUTH_NAME, new Header(ApimlConstants.PAT_HEADER_NAME, pat))
         );
     }
