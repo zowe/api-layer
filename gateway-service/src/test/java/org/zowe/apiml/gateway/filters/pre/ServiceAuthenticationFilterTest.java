@@ -196,6 +196,10 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     @ParameterizedTest
     @MethodSource("provideAuthSources")
     void givenExpiredJwt_thenCallThrought(AuthSource authSource) {
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
+
         AuthenticationCommand cmd = createValidationCommand(authSource);
         doThrow(new TokenExpireException("Token is expired.")).when(authSourceService).isValid(any());
 

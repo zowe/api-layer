@@ -14,14 +14,17 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.SecurityUtils;
@@ -476,6 +480,41 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     }
 
+    @Nested
+    class GivenTokenOriginTest {
+
+        private static final String TOKEN = "some_token";
+
+        @Test
+        void thenReturnCorrectOrigin() {
+            final Claims tokenClaims = new DefaultClaims();
+            tokenClaims.setIssuer("APIML_PAT");
+
+            AuthSource.Origin originResult;
+            try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {
+                jwtUtilsMock.when(() -> JwtUtils.getJwtClaims(TOKEN)).thenReturn(tokenClaims);
+                originResult = authService.getTokenOrigin(TOKEN);
+            }
+            assertEquals(AuthSource.Origin.ZOWE_PAT, originResult);
+        }
+
+        @Test
+        void whenTokenIsExpired_thenThrowException() {
+            try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {
+                jwtUtilsMock.when(() -> JwtUtils.getJwtClaims(TOKEN)).thenThrow(new TokenExpireException("token is expired"));
+                assertThrows(TokenExpireException.class, () -> authService.getTokenOrigin(TOKEN));
+            }
+        }
+
+        @Test
+        void whenTokenIsNotValid_thenThrowException() {
+            try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {
+                jwtUtilsMock.when(() -> JwtUtils.getJwtClaims(TOKEN)).thenThrow(new TokenNotValidException("token is not valid"));
+                assertThrows(TokenNotValidException.class, () -> authService.getTokenOrigin(TOKEN));
+            }
+        }
+    }
+
     void stubJWTSecurityForSignAndVerify() {
         stubJWTSecurityForSign();
         when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
@@ -582,28 +621,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
             verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "b");
-        }
-
-    }
-
-    @Nested
-    class GivenOIDCTokenInTheRequestTest {
-
-        @Test
-        void givenTokenIsPresent_thenGetFromHeader() {
-            String token = "oidcToken";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            request.addHeader(ApimlConstants.OIDC_HEADER_NAME, token);
-            Optional<String> result = authService.getOIDCTokenFromRequest(request);
-            assertTrue(result.isPresent());
-            assertEquals(token, result.get());
-        }
-
-        @Test
-        void givenNoTokenInRequest_thenReturnEmptyResult() {
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            Optional<String> result = authService.getOIDCTokenFromRequest(request);
-            assertFalse(result.isPresent());
         }
 
     }

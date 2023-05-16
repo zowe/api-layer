@@ -190,6 +190,7 @@ ext {
         logback_core                       : "ch.qos.logback:logback-core:${logbackVersion}",
         lombok                             : "org.projectlombok:lombok:${lombokVersion}",
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
+        mockito_inline                     : "org.mockito:mockito-inline:${mockitoCoreVersion}",
         mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
         netty                              : "io.netty:netty-all:${nettyVersion}",
