@@ -25,13 +25,6 @@ import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNav
 import Shield from '../ErrorBoundary/Shield/Shield';
 
 export default class DetailPage extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            allTiles: [],
-        };
-    }
-
     componentDidMount() {
         const { fetchTilesStart, match } = this.props;
         fetchTilesStart(match.params.tileID);
@@ -134,7 +127,7 @@ export default class DetailPage extends Component {
                 )}
                 <div className="nav-bar">
                     <Shield>
-                        <ServicesNavigationBarContainer originalTiles={originalTiles} />
+                        <ServicesNavigationBarContainer originalTiles={originalTiles} match={match} />
                     </Shield>
                 </div>
                 <div className="content-description-container">

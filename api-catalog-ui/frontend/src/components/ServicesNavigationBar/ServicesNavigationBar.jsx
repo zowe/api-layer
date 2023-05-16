@@ -15,29 +15,35 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 
 export default class ServicesNavigationBar extends Component {
-    componentDidMount() {
-        // const { storeOriginalTiles } = this.props;
-        // storeOriginalTiles();
-    }
-
-    render() {
+    getServices() {
         const { originalTiles } = this.props;
-        // eslint-disable-next-line no-console
-        console.log('originalTiles');
-        // eslint-disable-next-line no-console
-        console.log(originalTiles);
         const services = [];
         originalTiles.forEach((tile) => {
-            // eslint-disable-next-line no-console
-            console.log(tile);
             tile.services.forEach((service) => {
-                services.push(service.serviceId);
+                services.push(service.title);
             });
         });
+        return services;
+    }
+
+    handleSearch = (value) => {
         // eslint-disable-next-line no-console
-        console.log(this.state);
-        // eslint-disable-next-line no-console
-        console.log(this.props);
+        console.log(value);
+        const { filterText } = this.props;
+        filterText(value);
+    };
+
+    render() {
+        const { match } = this.props;
+
+        const { originalTiles } = this.props;
+        const services2 = [];
+        originalTiles.forEach((tile) => {
+            tile.services.forEach((service) => {
+                services2.push(service.serviceId);
+            });
+        });
+        const services = this.getServices();
         return (
             <div className="sidebar">
                 <Shield title="Search Bar is broken !">
@@ -47,7 +53,7 @@ export default class ServicesNavigationBar extends Component {
                     Product APIs
                 </Typography>
                 {services.map((itemType) => (
-                    <SidebarLink text={itemType} />
+                    <SidebarLink text={itemType} match={match} services={services2} />
                 ))}
             </div>
         );

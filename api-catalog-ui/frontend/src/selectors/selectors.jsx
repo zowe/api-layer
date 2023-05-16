@@ -31,3 +31,28 @@ export const getVisibleTiles = (tiles, searchCriteria) => {
         })
         .sort((tile1, tile2) => tile1.title.localeCompare(tile2.title));
 };
+
+// eslint-disable-next-line
+export const getFilteredServices = (tiles, searchCriteria) => {
+    if (tiles === undefined || tiles === null || tiles.length <= 0) {
+        return [];
+    }
+    // eslint-disable-next-line no-console
+    console.log(tiles);
+    return tiles.filter((tile) =>
+        tile.services
+            .filter((service) => {
+                // eslint-disable-next-line no-console
+                console.log(service);
+                // eslint-disable-next-line no-console
+                console.log(searchCriteria);
+                if (searchCriteria === undefined || searchCriteria === null || searchCriteria.length === 0) {
+                    return true;
+                }
+                // eslint-disable-next-line no-console
+                console.log('no skip');
+                return service.title.toLowerCase().includes(searchCriteria.toLowerCase());
+            })
+            .sort((service1, service2) => service1.title.localeCompare(service2.title))
+    );
+};

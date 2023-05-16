@@ -7,9 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Box, Tab, Tabs } from '@material-ui/core';
+import { Box, Tab, Tabs, Typography } from '@material-ui/core';
+import { NavTab } from 'react-router-tabs';
 
-function SidebarLink({ text }) {
+function SidebarLink({ text, match, services, servicesTitle }) {
     const handleChange = (_event, value) => {};
     return (
         <div className="link">
@@ -18,6 +19,19 @@ function SidebarLink({ text }) {
                     <Tab label={text} />
                 </Tabs>
             </Box>
+            {/* TODO use navbar rather */}
+            {/* <NavTab sx={{ borderBottom: 1, borderColor: 'divider' }}> */}
+            {/*    <Tabs variant="scrollable" scrollButtons="auto" value={servicesTitle} onChange={handleChange}> */}
+            {/*        <Tab label={servicesTitle} /> */}
+            {/*    </Tabs> */}
+            {/* </NavTab> */}
+            {/* {services.map((serviceId) => ( */}
+            {/*    <NavTab sx={{ borderBottom: 1, borderColor: 'divider' }} to={`${match.url}/${serviceId}`}> */}
+            {/*        <Tabs variant="scrollable" scrollButtons="auto" value={serviceId} onChange={handleChange}> */}
+            {/*            <Tab label={servicesTitle} /> */}
+            {/*        </Tabs> */}
+            {/*    </NavTab> */}
+            {/* ))} */}
         </div>
     );
 }
