@@ -9,8 +9,16 @@
  */
 import { connect } from 'react-redux';
 import ServicesNavigationBar from './ServicesNavigationBar';
+import { getFilteredServices } from '../../selectors/selectors';
+import { clear, filterText } from '../../actions/filter-actions';
 
-const mapStateToProps = () => ({});
-const mapDispatchToProps = {};
+const mapStateToProps = (state) => ({
+    searchCriteria: state.filtersReducer.text,
+    originalTiles: getFilteredServices(state.tilesReducer.originalTiles, state.filtersReducer.text),
+});
+const mapDispatchToProps = {
+    filterText,
+    clear,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(ServicesNavigationBar);

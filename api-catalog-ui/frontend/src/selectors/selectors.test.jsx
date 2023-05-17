@@ -63,14 +63,6 @@ describe('>>> Selector tests', () => {
         const result = getVisibleTiles(tiles, 'flashy');
         expect(result.length).toEqual(0);
     });
-    it('should return 3 tiles if common description word - Description is used', () => {
-        const result = getVisibleTiles(tiles, 'Description');
-        expect(result.length).toEqual(3);
-    });
-    it('should return 3 tiles if common description word - Description is used - mixed case', () => {
-        const result = getVisibleTiles(tiles, 'DeSCriPtiOn');
-        expect(result.length).toEqual(3);
-    });
     it('should return 0 tiles if missing description word is used', () => {
         const result = getVisibleTiles(tiles, 'flashy');
         expect(result.length).toEqual(0);

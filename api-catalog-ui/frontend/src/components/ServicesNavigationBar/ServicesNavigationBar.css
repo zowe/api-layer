@@ -3,7 +3,7 @@
 /*    background: red;*/
 /*}*/
 
-.sidebar{
+.sidebar {
     display: inline-flex;
     height: 850px;
     padding: 10px 0px;
@@ -31,10 +31,4 @@
     font-weight: 700;
     font-size: 20px;
     margin-right: 20px;
-}
-
-#search-input {
-    font-style: italic;
-    margin-top: 7px;
-    margin-left: 40px;
 }

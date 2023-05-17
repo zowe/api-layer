@@ -14,36 +14,38 @@ import SidebarLink from './NavigationBarLink';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 
-export default class ServicesNavigationBar extends Component {
-    getServices() {
-        const { originalTiles } = this.props;
-        const services = [];
-        originalTiles.forEach((tile) => {
-            tile.services.forEach((service) => {
-                services.push(service.title);
-            });
+function getServices(originalTiles, tiles, services) {
+    originalTiles.forEach((tile) => {
+        tile.services.forEach((service) => {
+            tiles.push(service.title);
         });
-        return services;
+    });
+    originalTiles.forEach((tile) => {
+        tile.services.forEach((service) => {
+            services.push(service.serviceId);
+        });
+    });
+}
+
+export default class ServicesNavigationBar extends Component {
+    componentWillUnmount() {
+        const { clear } = this.props;
+        clear();
     }
 
     handleSearch = (value) => {
-        // eslint-disable-next-line no-console
-        console.log(value);
         const { filterText } = this.props;
         filterText(value);
     };
 
     render() {
         const { match } = this.props;
-
-        const { originalTiles } = this.props;
-        const services2 = [];
-        originalTiles.forEach((tile) => {
-            tile.services.forEach((service) => {
-                services2.push(service.serviceId);
-            });
-        });
-        const services = this.getServices();
+        const { originalTiles, searchCriteria } = this.props;
+        const tiles = [];
+        const services = [];
+        getServices(originalTiles, tiles, services);
+        const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+        const hasServices = services && services.length > 0;
         return (
             <div className="sidebar">
                 <Shield title="Search Bar is broken !">
@@ -52,9 +54,14 @@ export default class ServicesNavigationBar extends Component {
                 <Typography id="serviceIdTabs" variant="h5">
                     Product APIs
                 </Typography>
-                {services.map((itemType) => (
-                    <SidebarLink text={itemType} match={match} services={services2} />
+                {tiles.map((itemType) => (
+                    <SidebarLink text={itemType} match={match} services={services} />
                 ))}
+                {!hasServices && hasSearchCriteria && (
+                    <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
+                        No services found matching search criteria
+                    </Typography>
+                )}
             </div>
         );
     }

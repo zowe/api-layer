@@ -36,20 +36,20 @@ const mapStateToProps = (state) => ({
     authentication: state.authenticationReducer,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-    clearService: () => dispatch(clearService()),
-    fetchTilesStart: () => dispatch(fetchTilesStart()),
-    fetchTilesSuccess: () => dispatch(fetchTilesSuccess()),
-    fetchTilesFailed: () => dispatch(fetchTilesFailed()),
-    fetchTilesStop: () => dispatch(fetchTilesStop()),
-    filterText: () => dispatch(filterText()),
-    clear: () => dispatch(clear()),
-    refreshedStaticApi: () => dispatch(refreshedStaticApi()),
-    clearError: () => dispatch(clearError()),
-    wizardToggleDisplay: () => dispatch(wizardToggleDisplay()),
-    selectEnabler: () => dispatch(selectEnabler()),
-    closeAlert: () => dispatch(userActions.closeAlert()),
-    storeOriginalTiles: (tiles) => dispatch(storeOriginalTiles(tiles)),
-});
+const mapDispatchToProps = {
+    clearService,
+    fetchTilesStart,
+    fetchTilesSuccess,
+    fetchTilesFailed,
+    fetchTilesStop,
+    filterText,
+    clear,
+    refreshedStaticApi,
+    clearError,
+    wizardToggleDisplay,
+    selectEnabler,
+    closeAlert: () => userActions.closeAlert(),
+    storeOriginalTiles: (tiles) => storeOriginalTiles(tiles),
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

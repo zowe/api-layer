@@ -50,7 +50,7 @@ svg.MuiSvgIcon-root.clear-text-search {
 #search-input {
     font-style: italic;
     margin-top: 7px;
-    margin-left: 40px;
+    /*margin-left: 40px;*/
 }
 
 #search-icon {
