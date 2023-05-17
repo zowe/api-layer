@@ -44,7 +44,12 @@ import static org.mockito.Mockito.*;
  * The output to be tested is the Zosmf token.
  */
 @AcceptanceTest
-@TestPropertySource(properties = {"apiml.security.auth.provider=zosmf", "spring.profiles.active=debug", "apiml.security.x509.externalMapperUrl="})
+@TestPropertySource(properties = {
+    "apiml.security.auth.provider=zosmf",
+    "spring.profiles.active=debug",
+    "apiml.security.x509.enabled=true",
+    "apiml.security.x509.externalMapperUrl="
+})
 class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;

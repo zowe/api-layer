@@ -23,7 +23,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -39,13 +38,8 @@ import static org.mockito.Mockito.*;
 class ExternalMapperTest {
 
     class TestExternalMapper extends ExternalMapper {
-        public TestExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
-            super(httpClientProxy, tokenCreationService, authConfigurationProperties);
-        }
-
-        @Override
-        protected Type getMapperType() {
-            return Type.X509;
+        public TestExternalMapper(String mapperUrl, String mapperUser, CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
+            super(mapperUrl, mapperUser, httpClientProxy, tokenCreationService, authConfigurationProperties);
         }
     }
 
@@ -56,11 +50,12 @@ class ExternalMapperTest {
     private StatusLine statusLine;
     private HttpEntity responseEntity;
     private AuthConfigurationProperties authConfigurationProperties;
+    private CloseableHttpClient closeableHttpClient;
 
 
     @BeforeEach
     void setup() throws IOException {
-        CloseableHttpClient closeableHttpClient = mock(CloseableHttpClient.class);
+        closeableHttpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
         statusLine = mock(StatusLine.class);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -72,9 +67,7 @@ class ExternalMapperTest {
         when(httpResponse.getEntity()).thenReturn(responseEntity);
         authConfigurationProperties = new AuthConfigurationProperties();
 
-        mapper = new TestExternalMapper(closeableHttpClient, tokenCreationService);
-        ReflectionTestUtils.setField(mapper,"externalMapperUrl","http://localhost/test");
-        ReflectionTestUtils.setField(mapper,"externalMapperUser","mapper_user");
+        mapper = new TestExternalMapper("http://localhost/test", "mapper_user", closeableHttpClient, tokenCreationService);
     }
 
     @Nested
@@ -205,7 +198,7 @@ class ExternalMapperTest {
         @NullSource
         @EmptySource
         void whenMapperUrlInvalid_thenResponseIsNull(String url) {
-            ReflectionTestUtils.setField(mapper,"externalMapperUrl",url);
+            mapper = new TestExternalMapper(url, "mapper_user", closeableHttpClient, tokenCreationService);
             HttpEntity payload = new BasicHttpEntity();
             MapperResponse response = mapper.callExternalMapper(payload);
             assertNull(response);
@@ -216,7 +209,7 @@ class ExternalMapperTest {
         @NullSource
         @EmptySource
         void whenMapperUserInvalid_thenResponseIsNull(String user) {
-            ReflectionTestUtils.setField(mapper,"externalMapperUser",user);
+            mapper = new TestExternalMapper("http://localhost/test", user, closeableHttpClient, tokenCreationService);
             HttpEntity payload = new BasicHttpEntity();
             MapperResponse response = mapper.callExternalMapper(payload);
             assertNull(response);
