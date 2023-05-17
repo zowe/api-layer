@@ -76,10 +76,8 @@ class OIDCExternalMapperTest {
     void setup() {
         authSource = new OIDCAuthSource("OIDC_access_token");
         authSource.setDistributedId("distributed_ID");
-        oidcExternalMapper = new OIDCExternalMapper(httpClient, tokenCreationService, authConfigurationProperties);
+        oidcExternalMapper = new OIDCExternalMapper("https://domain.com/mapper", "mapper_user", httpClient, tokenCreationService, authConfigurationProperties);
         oidcExternalMapper.registry = "test_registry";
-        oidcExternalMapper.externalMapperUser = "mapper_user";
-        oidcExternalMapper.externalMapperUrl = "https://domain.com/mapper";
 
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream(SUCCESS_MAPPER_RESPONSE, StandardCharsets.UTF_8));
