@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -66,28 +65,24 @@ public interface AuthSource extends Serializable {
         OIDC;
 
         /**
-         * Find the origin of the authentication source object
+         * Find the origin of the authentication source object by JWT token source
          *
-         * @param issuer issuer
-         * @return which system generated the authentication source
+         * @param source The source of JWT token
+         * @return which system generated the authentication token
          */
-        public static Origin valueByIssuer(String issuer) {
-            if (StringUtils.equalsIgnoreCase(issuer, QueryResponse.Source.ZOSMF.name())) {
-                return ZOSMF;
+        public static Origin valueByTokenSource(QueryResponse.Source source) {
+            switch (source) {
+                case ZOSMF:
+                    return ZOSMF;
+                case ZOWE:
+                    return ZOWE;
+                case ZOWE_PAT:
+                    return ZOWE_PAT;
+                case OIDC:
+                    return OIDC;
+                default:
+                    throw new TokenNotValidException("Unknown authentication source type : " + source.name());
             }
-            if (StringUtils.equalsIgnoreCase(issuer, QueryResponse.Source.ZOWE.name())) {
-                return ZOWE;
-            }
-            if (StringUtils.equalsIgnoreCase(issuer, QueryResponse.Source.ZOWE_PAT.name())) {
-                return ZOWE_PAT;
-            }
-            if (StringUtils.equalsIgnoreCase(issuer, "X509")) {
-                return X509;
-            }
-            if (StringUtils.equalsIgnoreCase(issuer, "OIDC")) {
-                return OIDC;
-            }
-            throw new TokenNotValidException("Unknown authentication source type : " + issuer);
         }
     }
 

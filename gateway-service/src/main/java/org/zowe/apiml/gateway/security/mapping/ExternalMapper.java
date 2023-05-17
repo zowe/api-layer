@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.security.mapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +21,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -40,32 +40,30 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public abstract class ExternalMapper {
 
+    private final String mapperUrl;
+    private final String mapperUser;
     private final CloseableHttpClient httpClientProxy;
     private final TokenCreationService tokenCreationService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
     protected static final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${apiml.security.x509.externalMapperUrl:}")
-    protected String externalMapperUrl;
-    @Value("${apiml.security.x509.externalMapperUser:}")
-    protected String externalMapperUser;
-
     MapperResponse callExternalMapper(@NotNull HttpEntity payload) {
-        if (StringUtils.isBlank(externalMapperUser)) {
+        if (StringUtils.isBlank(mapperUrl)) {
+            log.warn("Configuration error: External identity mapper URL is not set.");
+            return null;
+        }
+        if (StringUtils.isBlank(mapperUser)) {
             log.warn("Configuration error: External identity mapper user is not set.");
             return null;
         }
         try {
-            URI mapperUri = getMapperURI();
-            if (mapperUri == null) {
-                return null;
-            }
-            HttpPost httpPost = new HttpPost(mapperUri);
+            HttpPost httpPost = new HttpPost(new URI(mapperUrl));
             httpPost.setEntity(payload);
 
-            String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
+            String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(mapperUser);
             httpPost.setHeader(new BasicHeader("Cookie", authConfigurationProperties.getCookieProperties().getCookieName() + "=" + jwtToken));
+            httpPost.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
             log.debug("Executing request against external identity mapper API: {}", httpPost);
 
             HttpResponse httpResponse = httpClientProxy.execute(httpPost);
@@ -76,7 +74,7 @@ public abstract class ExternalMapper {
                 response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             }
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                log.warn("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
                 return null;
             }
             log.debug("External identity mapper API returned: {}", response);
@@ -84,41 +82,12 @@ public abstract class ExternalMapper {
                 return objectMapper.readValue(response, MapperResponse.class);
             }
         } catch (IOException e) {
-            log.debug("Error occurred while communicating with external identity mapper", e);
+            log.warn("Error occurred while communicating with external identity mapper", e);
+        } catch (URISyntaxException e) {
+            log.warn("Configuration error: Failed to construct the external identity mapper URI.", e);
         }
+
         return null;
     }
-
-    enum Type {
-        X509("/x509/map"),
-        OIDC("/dn");
-
-        @Getter
-        private final String urlSuffix;
-
-        Type(String urlSuffix) {
-            this.urlSuffix = urlSuffix;
-        }
-    }
-
-    private URI getMapperURI() {
-        if (StringUtils.isBlank(externalMapperUrl)) {
-            log.warn("Configuration error: External identity mapper URL is not set.");
-        } else {
-            // do not introduce braking change - if externalMapperUrl for x509 has been already configured
-            // with the /x509/map at the end then make sure to remove the suffix before
-            // the mapper URI is constructed properly with the mapperType suffix
-            String url = StringUtils.removeEndIgnoreCase(externalMapperUrl, getMapperType().getUrlSuffix());
-            url = StringUtils.removeEnd(url, "/");
-            try {
-                return new URI(url + getMapperType().getUrlSuffix());
-            } catch (URISyntaxException e) {
-                log.warn("Configuration error: Failed to construct the external identity mapper URL.", e);
-            }
-        }
-        return null;
-    }
-
-    protected abstract Type getMapperType();
 
 }

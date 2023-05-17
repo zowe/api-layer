@@ -65,6 +65,7 @@ task npmTest(type: NpmTask) {
     description = "Typescript unit, system and integration tests"
 
     inputs.dir('src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir('src/api/templates').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('__tests__/__results__')

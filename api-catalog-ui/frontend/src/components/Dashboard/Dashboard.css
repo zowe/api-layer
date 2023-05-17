@@ -11,16 +11,91 @@ a {
     width : 100%;
     height: 100%;
     justify-items: center;
-    justify-content: start;
     padding: 0 3rem 3rem 36px;
     display: grid;
     grid-gap: 20px;
-    grid-template-columns: repeat(auto-fill, 422px);
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .api-heading {
     color: #58606e ;
-    text-align: left;
+    text-align: center;
+    font-weight: 440;
+    margin-top: auto;
+}
+
+#api-heading-id {
+    /*disabled for Zowe Catalog*/
+    display: none;
+}
+
+.info-headers {
+    display: inline-flex;
+    font-size: 12px;
+    margin-left: 39px;
+}
+
+#info-headers-div {
+    margin-top: -22px;
+    margin-left: 740px;
+    margin-bottom: -15px;
+    float: right;
+    /*disabled for Zowe Catalog*/
+    display: none;
+}
+#bottom-info-div {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 74%;
+    margin: auto;
+    /*disabled for Zowe Catalog*/
+    display: none;
+}
+
+.footer-links {
+    font-size: 18px;
+    width: 119px;
+    flex-direction: column;
+    line-height: 25px;
+}
+
+.footer-container {
+    position: relative;
+    color: black;
+}
+
+#footer-menu-separator {
+    width: 2px;
+    height: 202px;
+    background-color: #1d5bbf;
+}
+
+.links {
+    color: #000000;
+    font-size: 14px;
+}
+
+.MuiContainer-root.MuiContainer-maxWidthLg {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: auto;
+}
+
+.info-headers-footer {
+    display: flex;
+    width: 46px;
+    flex-direction: column;
+}
+
+#col-1 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
 }
 
 .filtering-container {
@@ -32,6 +107,32 @@ a {
     float: left;
     grid-template-columns: 422px;
     grid-template-rows: auto auto;
+}
+
+.filtering-container {
+    float: left;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:before {
+    border-bottom: none;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:after {
+    border: none;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:hover:not(.Mui-disabled):before {
+    border-bottom: none;
+}
+
+#search {
+    height: 50px;
+    width: 422px;
+    margin-top: -20px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #FFFFFF;
+    border: 1px solid #C9C8C5;
 }
 
 .no-tiles-container {
@@ -143,4 +244,21 @@ a {
 
 .MuiButton-root, .MuiButton-label, #onboard-wizard-button.MuiButton-label {
     text-transform: capitalize;
+}
+
+#separator {
+    /*disabled for Zowe Catalog*/
+    display: none;
+    background-color: #1d5bbf;
+    height: 5px;
+    width: 120px;
+}
+
+#separator2 {
+    background-color: #1d5bbf;
+    margin-bottom: auto;
+    margin-top: auto;
+    height: 2px;
+    width: 1096px;
+    display: block;
 }

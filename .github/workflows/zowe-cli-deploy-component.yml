@@ -30,8 +30,8 @@ jobs:
 
             - name: Set Environment variables
               run: |
-                  cd zowe-cli-id-federation-plugin/zowe-plugin-deploy-components
-                  echo "PKG_TAGS='echo $(node -p "require('./package.json').version")'" >> $GITHUB_ENV
+                  cd zowe-cli-id-federation-plugin
+                  echo "PKG_TAGS=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
 
             - name: NPM Login
               run: |

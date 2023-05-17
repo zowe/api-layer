@@ -17,6 +17,8 @@ apiml:
             clientSecret:
             introspectEndpoint:
             registry:
+            identityMapperUrl:
+            identityMapperUser:
         auth:
             jwt:
                 customAuthHeader:

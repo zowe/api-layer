@@ -16,24 +16,16 @@ describe('>>> Footer component tests', () => {
         expect(footer.find('footer').length).toBeFalsy();
     });
 
-    it('should display link to ca support', () => {
+    it('should display link', () => {
         process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
         expect(footer.find('Link').length).toBeDefined();
     });
 
-    it('should have link href to CA support', () => {
+    it('should show the paragraph', () => {
         process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
-        expect(footer.find('[data-testid="link"]').props().href).toEqual('https://support.broadcom.com');
-    });
-
-    it('should show the copyright', () => {
-        process.env.REACT_APP_CA_ENV = true;
-        const footer = enzyme.shallow(<Footer />);
-        const copyright = footer.find('p').text();
-        expect(copyright).toBe(
-            'Copyright © 2019 Broadcom. All Rights Reserved. The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.'
-        );
+        const paragraph = footer.find('p');
+        expect(paragraph).toExist();
     });
 });

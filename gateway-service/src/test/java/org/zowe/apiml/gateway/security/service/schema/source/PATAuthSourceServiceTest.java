@@ -20,14 +20,16 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 class PATAuthSourceServiceTest {
@@ -62,11 +64,23 @@ class PATAuthSourceServiceTest {
     @Nested
     class GivenValidTokenTest {
         @Test
-        void givenTokenInRequestContext_thenReturnTheToken() {
+        void givenPatTokenInRequestContext_thenReturnTheToken() {
             HttpServletRequest request = new MockHttpServletRequest();
             when(context.getRequest()).thenReturn(request);
             when(authenticationService.getPATFromRequest(request)).thenReturn(Optional.of(token));
-            assertEquals(token, patAuthSourceService.getToken(context).get());
+            when(authenticationService.getTokenOrigin(token)).thenReturn(AuthSource.Origin.ZOWE_PAT);
+            Optional<String> tokenResult = patAuthSourceService.getToken(context);
+            assertTrue(tokenResult.isPresent());
+            assertEquals(token, tokenResult.get());
+        }
+
+        @Test
+        void givenZoweTokenInRequestContext_thenReturnEmpty() {
+            HttpServletRequest request = new MockHttpServletRequest();
+            when(context.getRequest()).thenReturn(request);
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
+            when(authenticationService.getTokenOrigin(token)).thenReturn(AuthSource.Origin.ZOWE);
+            assertFalse(patAuthSourceService.getToken(context).isPresent());
         }
 
         @Test
@@ -80,13 +94,6 @@ class PATAuthSourceServiceTest {
             assertTrue(patAuthSourceService.isValid(authSource));
         }
 
-        @Test
-        void givenToken_thenReturnPATOrigin() {
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE_PAT);
-            when(authenticationService.parseJwtToken(token)).thenReturn(response);
-            AuthSource.Origin origin = patAuthSourceService.getTokenOrigin(token);
-            assertEquals(AuthSource.Origin.valueByIssuer(QueryResponse.Source.ZOWE_PAT.name()), origin);
-        }
     }
 
     @Nested
@@ -99,6 +106,30 @@ class PATAuthSourceServiceTest {
             PATAuthSource authSource = new PATAuthSource(token);
             PATAuthSourceService patAuthSourceService = new PATAuthSourceService(authenticationService, tokenProvider, tokenCreationService);
             assertFalse(patAuthSourceService.isValid(authSource));
+        }
+
+        @Test
+        void whenTokenIsExpired_thenThrow() {
+            HttpServletRequest request = new MockHttpServletRequest();
+            when(context.getRequest()).thenReturn(request);
+            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(token));
+            when(authenticationService.getTokenOrigin(token)).thenThrow(new TokenExpireException("token expired"));
+            PATAuthSourceService patAuthSourceService = new PATAuthSourceService(authenticationService, tokenProvider, tokenCreationService);
+
+            assertThrows(TokenExpireException.class, () -> patAuthSourceService.getToken(context));
+            verify(authenticationService, times(1)).getTokenOrigin(token);
+        }
+
+        @Test
+        void whenTokenIsNotValid_thenThrow() {
+            HttpServletRequest request = new MockHttpServletRequest();
+            when(context.getRequest()).thenReturn(request);
+            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(token));
+            when(authenticationService.getTokenOrigin(token)).thenThrow(new TokenNotValidException("token not valid"));
+            PATAuthSourceService patAuthSourceService = new PATAuthSourceService(authenticationService, tokenProvider, tokenCreationService);
+
+            assertThrows(TokenNotValidException.class, () -> patAuthSourceService.getToken(context));
+            verify(authenticationService, times(1)).getTokenOrigin(token);
         }
 
     }
@@ -129,7 +160,7 @@ class PATAuthSourceServiceTest {
             QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE);
             when(authenticationService.parseJwtWithSignature(token)).thenReturn(response);
             when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(token);
-            when(authenticationService.parseJwtToken(token)).thenReturn(response);
+            when(authenticationService.getTokenOrigin(token)).thenReturn(AuthSource.Origin.ZOWE);
             when(authenticationService.getLtpaToken(token)).thenReturn(ltpa);
             String ltpaResult = patAuthSourceService.getLtpaToken(authSource);
             assertEquals(ltpa, ltpaResult);
