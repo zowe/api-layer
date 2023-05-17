@@ -2,18 +2,13 @@ plugins {
     id 'java'
 }
 
-configurations {
-    implementationJar
-    implementation.extendsFrom(implementationJar)
-}
-
 dependencies {
     testImplementation libs.junitJupiter
     testImplementation libs.mockito.core
     testImplementation libs.mockito.inline
     testImplementation libs.hamcrest
 
-    implementationJar libs.picocli
+    implementation libs.picocli
     annotationProcessor libs.picocliCodegen
 }
 
@@ -29,6 +24,6 @@ jar {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
-        configurations.implementationJar.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
