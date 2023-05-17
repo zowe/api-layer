@@ -31,7 +31,7 @@ public class AuthenticationController {
     @DeleteMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> logout(HttpServletResponse response,
                                     @RequestHeader Map<String, String> headers) {
-        if(headers.get("cookie") == null) {
+        if (headers.get("cookie") == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         return authentication.process(AUTHENTICATION_SERVICE, "delete", response, headers);
