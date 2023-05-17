@@ -13,7 +13,6 @@ package org.zowe.apiml.product.web;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.config.Registry;
@@ -168,7 +167,7 @@ public class HttpConfig {
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-            optionalArgs.setEurekaJerseyClient(new LazyEurekaJerseyClient());
+            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
@@ -299,33 +298,5 @@ public class HttpConfig {
         return eurekaJerseyClientBuilder.build();
     }
 
-    /**
-     * This class resolves circular dependency. In the postConstruct method is created Jersey client
-     * which requires bean httpConfig (still not fully created). This implementation od delegator postpone
-     * the bean creation.
-     */
-    class LazyEurekaJerseyClient implements EurekaJerseyClient {
-
-        private EurekaJerseyClient instance;
-
-        @Override
-        public ApacheHttpClient4 getClient() {
-            if (instance == null) {
-                synchronized (this) {
-                    if (instance == null) {
-                        instance = eurekaJerseyClient();
-                    }
-                }
-            }
-            return instance.getClient();
-        }
-
-        @Override
-        public synchronized void destroyResources() {
-            if (instance != null) {
-                instance.destroyResources();
-            }
-        }
-    }
 
 }
