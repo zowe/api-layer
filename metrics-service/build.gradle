@@ -66,7 +66,6 @@ dependencies {
     implementation libs.spring.doc
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.aop
-    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.turbine

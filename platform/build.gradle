@@ -47,10 +47,10 @@ dependencies {
 
         api libs.eureka.client
         api libs.eureka.core
-        api libs.spring.cloud.starter.eureka
         api libs.spring.cloud.starter.eureka.server
         api libs.spring.eureka.client.v3
         api libs.spring.cloud.commons
+        api libs.spring.cloud.loadbalancer
 
         api libs.swagger3.core
         api libs.swagger3.parser

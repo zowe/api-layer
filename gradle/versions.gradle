@@ -98,7 +98,8 @@ dependencyResolutionManagement {
             version('nimbusJoseJwtVersion', '9.31')
             version('openApiDiffVersion', '2.0.1')
             version('picocliVersion', '4.7.3')
-            
+
+            version('ribbonVersion', '2.3.0')
             version('reactorVersion') {
                 // because of conflict with spring-security-config:5.7.8
                 // removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
@@ -169,9 +170,9 @@ dependencyResolutionManagement {
             library('spring_cloud_loadbalancer', 'org.springframework.cloud', 'spring-cloud-starter-loadbalancer').versionRef('springCloudVersion3')
             library('spring_cloud_starter_bootstrap', 'org.springframework.cloud', 'spring-cloud-starter-bootstrap').versionRef('springCloudVersion3')
             library('spring_cloud_starter_zuul', 'org.springframework.cloud', 'spring-cloud-starter-netflix-zuul').versionRef('springCloudVersion')
-            library('spring_cloud_starter_eureka', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudVersion')
+            library('spring_cloud_starter_eureka', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudVersion3')
             library('spring_eureka_client_v3', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudVersion3')
-            library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudVersion')
+            library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudVersion3')
             library('spring_cloud_starter_ribbon', 'org.springframework.cloud', 'spring-cloud-starter-netflix-ribbon').versionRef('springCloudVersion')
             library('spring_cloud_starter_hystrix', 'org.springframework.cloud', 'spring-cloud-starter-netflix-hystrix').versionRef('springCloudVersion')
             library('spring_cloud_starter_turbine', 'org.springframework.cloud', 'spring-cloud-starter-netflix-turbine').versionRef('springCloudVersion')
@@ -311,6 +312,7 @@ dependencyResolutionManagement {
             library('rest_assured', 'io.rest-assured', 'rest-assured').versionRef('restAssuredVersion')
             library('rest_assured_json_path', 'io.rest-assured', 'json-path').versionRef('restAssuredVersion')
             library('rest_assured_xml_path', 'io.rest-assured', 'xml-path').versionRef('restAssuredVersion')
+            library('ribbon-eureka', 'com.netflix.ribbon', 'ribbon-eureka').versionRef('ribbonVersion')
             library('slf4j_api', 'org.slf4j', 'slf4j-api').versionRef('slf4jVersion')
             library('snakeyaml', 'org.yaml', 'snakeyaml').versionRef('snakeyamlVersion')
             library('spring4Mvc', 'org.springframework', 'spring-webmvc').versionRef('spring4Version')
