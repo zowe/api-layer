@@ -7,15 +7,8 @@ dependencyResolutionManagement {
 
             version('springBootVersion', '2.7.11')
             version('springCloudVersion', '2.2.10.RELEASE')
-            /*version('springCloudCommonsVersion') {
-                // conflict with the version 3 (missing class OnNoRibbonDefaultCondition)
-                strictly '[2.2.0,3.0.0['
-                prefer '2.2.9.RELEASE'
-            }*/
             version('springCloudCommonsVersion', '3.1.6')
             version('springCloudVersion3', '3.1.6')
-            //version('springCloudVersion3', '3.0.6')
-
             version('springCloudCBVersion', '2.1.7')
             version('springCloudGatewayVersion', '3.1.7')
             version('springSecurityVersion') {

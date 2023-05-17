@@ -72,7 +72,6 @@ dependencies {
     implementation libs.spring.retry
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.cloud.commons
-    //implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.hystrix
     implementation libs.lettuce
     implementation libs.spring.security.web
