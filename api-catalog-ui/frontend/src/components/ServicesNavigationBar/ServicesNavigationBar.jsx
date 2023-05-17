@@ -14,19 +14,6 @@ import SidebarLink from './NavigationBarLink';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 
-function getServices(originalTiles, tiles, services) {
-    originalTiles.forEach((tile) => {
-        tile.services.forEach((service) => {
-            tiles.push(service.title);
-        });
-    });
-    originalTiles.forEach((tile) => {
-        tile.services.forEach((service) => {
-            services.push(service.serviceId);
-        });
-    });
-}
-
 export default class ServicesNavigationBar extends Component {
     componentWillUnmount() {
         const { clear } = this.props;
@@ -41,11 +28,8 @@ export default class ServicesNavigationBar extends Component {
     render() {
         const { match } = this.props;
         const { originalTiles, searchCriteria } = this.props;
-        const tiles = [];
-        const services = [];
-        getServices(originalTiles, tiles, services);
+        const hasTiles = originalTiles && originalTiles.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
-        const hasServices = services && services.length > 0;
         return (
             <div className="sidebar">
                 <Shield title="Search Bar is broken !">
@@ -54,10 +38,12 @@ export default class ServicesNavigationBar extends Component {
                 <Typography id="serviceIdTabs" variant="h5">
                     Product APIs
                 </Typography>
-                {tiles.map((itemType) => (
-                    <SidebarLink text={itemType} match={match} services={services} />
-                ))}
-                {!hasServices && hasSearchCriteria && (
+                {originalTiles.map((tile) =>
+                    tile.services.map((service) => (
+                        <SidebarLink text={service.title} match={match} services={service.serviceId} />
+                    ))
+                )}
+                {!hasTiles && hasSearchCriteria && (
                     <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
                         No services found matching search criteria
                     </Typography>
