@@ -180,6 +180,7 @@ dependencyResolutionManagement {
 
             library('spring_retry', 'org.springframework.retry', 'spring-retry').versionRef('springRetryVersion')
             library('spring_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('springWebTestClientVersion')
+            library('spring_bom', 'org.springframework', 'spring-framework-bom').versionRef('springFrameworkVersion')
             library('spring_aop', 'org.springframework', 'spring-aop').versionRef('springFrameworkVersion')
             library('spring_beans', 'org.springframework', 'spring-beans').versionRef('springFrameworkVersion')
             library('spring_context', 'org.springframework', 'spring-context').versionRef('springFrameworkVersion')
