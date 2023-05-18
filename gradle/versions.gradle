@@ -60,6 +60,7 @@ dependencyResolutionManagement {
             version('javaxServletApiVersion', '4.0.1')
             version('jaxbApiVersion', '2.3.1')
             version('jerseyVersion', '2.39.1')
+            version('jerseySunVersion', '1.19.4')
             version('jettyWebSocketClientVersion', '9.4.51.v20230217')
             version('jettisonVersion', '1.5.4')
             version('jjwtVersion', '0.11.5')
@@ -337,6 +338,10 @@ dependencyResolutionManagement {
             library('jersey_media_json_jackson', 'org.glassfish.jersey.media', 'jersey-media-json-jackson').versionRef('jerseyVersion')
             library('jersey_server', 'org.glassfish.jersey.core', 'jersey-server').versionRef('jerseyVersion')
             library('jersey_test_provider_jdk_http', 'org.glassfish.jersey.test-framework.providers', 'jersey-test-framework-provider-jdk-http').versionRef('jerseyVersion')
+
+            library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySunVersion')
+            library('jersey_client', 'com.sun.jersey', 'jersey-client').versionRef('jerseySunVersion')
+            library('jersey_core', 'com.sun.jersey', 'jersey-core').versionRef('jerseySunVersion')
 
             library('swagger_jaxrs2', 'io.swagger.core.v3', 'swagger-jaxrs2').versionRef('swaggerJaxrs2Version')
 

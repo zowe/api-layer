@@ -39,6 +39,9 @@ dependencies {
         api libs.netflix.commons.util
 
         api libs.jersey.server
+        api libs.jersey.client4
+        api libs.jersey.client
+        api libs.jersey.core
 
         api libs.amazon.aws.autoscaling
         api libs.amazon.aws.core
