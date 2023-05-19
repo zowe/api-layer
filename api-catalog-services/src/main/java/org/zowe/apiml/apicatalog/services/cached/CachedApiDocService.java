@@ -107,8 +107,8 @@ public class CachedApiDocService {
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY), apiDoc);
                 return apiDoc;
             }
-        } catch (Exception e) {
-            log.debug("Exception updating default API doc in cache for '{}'.", serviceId, e);
+        } catch (Throwable t) {
+            log.debug("Exception updating default API doc in cache for '{}'.", serviceId, t);
         }
 
         // if no DS is available try to use cached data

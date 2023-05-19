@@ -12,6 +12,7 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
         net.sf.ehcache: WARN
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -77,14 +78,16 @@ eureka:
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
     server:
+        max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,shutdown,hystrix.stream
+                include: health,info,shutdown,hystrixstream
     health:
         defaults:
             enabled: false
@@ -107,8 +110,8 @@ server:
     ssl:
         enabled: true
         clientAuth: want
-        protocol: TLSv1.2
-        enabled-protocols: TLSv1.2,TLSv1.3
+        protocol: TLS
+        enabled-protocols: TLSv1.2+TLSv1.3
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
         keyStoreType: PKCS12
         trustStoreType: PKCS12
@@ -140,10 +143,11 @@ spring:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers,shutdown,hystrix.stream
+                include: health,info,loggers,shutdown,hystrixstream
     endpoint:
         shutdown:
             enabled: true
@@ -167,6 +171,7 @@ spring:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:

@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -25,6 +26,7 @@ import java.nio.file.FileAlreadyExistsException;
 /**
  * This class creates responses for exceptional behavior of the StaticDefinitionController
  */
+@Slf4j
 @ControllerAdvice(assignableTypes = {StaticDefinitionController.class})
 @RequiredArgsConstructor
 public class StaticDefinitionControllerExceptionHandler {
@@ -38,6 +40,7 @@ public class StaticDefinitionControllerExceptionHandler {
      */
     @ExceptionHandler(IOException.class)
     public ResponseEntity<ApiMessageView> handleIOException(IOException exception) {
+        log.error("Cannot write the static definition file because: {}", exception.getMessage());
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed",
             exception);
 

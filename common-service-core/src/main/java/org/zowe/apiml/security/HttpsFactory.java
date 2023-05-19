@@ -16,10 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.UserTokenHandler;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,11 +33,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -53,28 +49,17 @@ public class HttpsFactory {
 
     public HttpsFactory(HttpsConfig httpsConfig) {
         this.config = httpsConfig;
-        this.secureSslContext = null;
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
 
-    public CloseableHttpClient createSecureHttpClient() {
-        Registry<ConnectionSocketFactory> socketFactoryRegistry;
-        RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
-            .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
-        UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
+    public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
 
-        socketFactoryRegistryBuilder.register("https", createSslSocketFactory());
-        socketFactoryRegistry = socketFactoryRegistryBuilder.build();
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectTimeout(config.getRequestConnectionTimeout()).build();
-        ApimlPoolingHttpClientConnectionManager connectionManager =
-            new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, config.getTimeToLive());
-        connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
-        connectionManager.closeIdleConnections(config.getIdleConnTimeoutSeconds(), TimeUnit.SECONDS);
-        connectionManager.setMaxTotal(config.getMaxTotalConnections());
+        UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
-        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(createHostnameVerifier())
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(getHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
@@ -83,18 +68,11 @@ public class HttpsFactory {
 
     public ConnectionSocketFactory createSslSocketFactory() {
         if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
-            return createSecureSslSocketFactory();
+            return getSSLConnectionSocketFactory();
         } else {
             apimlLog.log("org.zowe.apiml.common.ignoringSsl");
             return createIgnoringSslSocketFactory();
         }
-    }
-
-    /**
-     * Method is only for testing purpose. It is stored only in case of empty keystore (not if keystore is provided).
-     */
-    KeyStore getUsedStore() {
-        return usedKeyStore;
     }
 
     private ConnectionSocketFactory createIgnoringSslSocketFactory() {
@@ -122,7 +100,7 @@ public class HttpsFactory {
         if (StringUtils.isNotEmpty(config.getTrustStore())) {
             sslContextBuilder.setKeyStoreType(config.getTrustStoreType()).setProtocol(config.getProtocol());
 
-            if (!config.getTrustStore().startsWith(SecurityUtils.SAFKEYRING)) {
+            if (!SecurityUtils.isKeyring(config.getTrustStore())) {
                 if (config.getTrustStorePassword() == null) {
                     apimlLog.log("org.zowe.apiml.common.truststorePasswordNotDefined");
                     throw new HttpsConfigError("server.ssl.trustStorePassword configuration parameter is not defined",
@@ -134,8 +112,10 @@ public class HttpsFactory {
 
                 sslContextBuilder.loadTrustMaterial(trustStoreFile, config.getTrustStorePassword());
             } else {
-                log.info("Loading trust store key ring: " + config.getTrustStore());
-                sslContextBuilder.loadTrustMaterial(keyRingUrl(config.getTrustStore()), config.getTrustStorePassword());
+                log.info("Original truststore keyring URL from configuration: " + config.getTrustStore());
+                URL keyRingUrl = SecurityUtils.keyRingUrl(config.getTrustStore());
+                log.info("Loading trusted certificates from keyring: " + keyRingUrl);
+                sslContextBuilder.loadTrustMaterial(keyRingUrl, config.getTrustStorePassword());
             }
         } else {
             if (config.isTrustStoreRequired()) {
@@ -149,22 +129,18 @@ public class HttpsFactory {
         }
     }
 
-    private URL keyRingUrl(String uri) throws MalformedURLException {
-        return SecurityUtils.keyRingUrl(uri, config.getTrustStore());
-    }
-
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
         KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
         if (StringUtils.isNotEmpty(config.getKeyStore())) {
             sslContextBuilder.setKeyStoreType(config.getKeyStoreType()).setProtocol(config.getProtocol());
 
-            if (!config.getKeyStore().startsWith(SecurityUtils.SAFKEYRING)) {
+            if (!SecurityUtils.isKeyring(config.getKeyStore())) {
                 loadKeystoreMaterial(sslContextBuilder);
             } else {
                 loadKeyringMaterial(sslContextBuilder);
             }
         } else {
-            log.info("No key store is defined");
+            log.info("No keystore is defined and empty will be used.");
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
             usedKeyStore = emptyKeystore;
@@ -184,7 +160,7 @@ public class HttpsFactory {
             throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
                 ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
         }
-        log.info("Loading key store file: " + config.getKeyStore());
+        log.info("Loading keystore file: " + config.getKeyStore());
         File keyStoreFile = new File(config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(
             keyStoreFile, config.getKeyStorePassword(), config.getKeyPassword(),
@@ -198,30 +174,28 @@ public class HttpsFactory {
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-        log.info("Loading trust key ring: " + config.getKeyStore());
-        sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()), config.getKeyStorePassword(),
+        log.info("Original keyring URL from configuration: " + config.getKeyStore());
+        URL keyRingUrl = SecurityUtils.keyRingUrl(config.getKeyStore());
+        log.info("Loading keyring from updated URL: " + keyRingUrl);
+        sslContextBuilder.loadKeyMaterial(keyRingUrl, config.getKeyStorePassword(),
             config.getKeyPassword(), getPrivateKeyStrategy());
     }
 
     private synchronized SSLContext createSecureSslContext() {
-        if (secureSslContext == null) {
-            log.debug("Protocol: {}", config.getProtocol());
-            SSLContextBuilder sslContextBuilder = SSLContexts.custom();
-            try {
-                loadTrustMaterial(sslContextBuilder);
-                loadKeyMaterial(sslContextBuilder);
-                secureSslContext = sslContextBuilder.build();
-                validateSslConfig();
-                return secureSslContext;
-            } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                | UnrecoverableKeyException | KeyManagementException e) {
-                log.error("error", e);
-                apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
-                throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                    ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
-            }
-        } else {
+        log.debug("Protocol: {}", config.getProtocol());
+        SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+        try {
+            loadTrustMaterial(sslContextBuilder);
+            loadKeyMaterial(sslContextBuilder);
+            secureSslContext = sslContextBuilder.build();
+            validateSslConfig();
             return secureSslContext;
+        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
+                 | UnrecoverableKeyException | KeyManagementException e) {
+            log.error("error", e);
+            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
         }
     }
 
@@ -235,15 +209,15 @@ public class HttpsFactory {
         }
     }
 
-    private ConnectionSocketFactory createSecureSslSocketFactory() {
-
+    private ConnectionSocketFactory getSSLConnectionSocketFactory() {
         return new SSLConnectionSocketFactory(
             createSecureSslContext(),
-            createHostnameVerifier()
+            config.getEnabledProtocols(), null,
+            getHostnameVerifier()
         );
     }
 
-    public SSLContext createSslContext() {
+    public SSLContext getSslContext() {
         if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
             return createSecureSslContext();
         } else {
@@ -260,18 +234,18 @@ public class HttpsFactory {
     }
 
     public void setSystemSslProperties() {
-        setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.replaceFourSlashes(config.getKeyStore()));
+        setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.formatKeyringUrl(config.getKeyStore()));
         setSystemProperty("javax.net.ssl.keyStorePassword",
             config.getKeyStorePassword() == null ? null : String.valueOf(config.getKeyStorePassword()));
         setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
 
-        setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.replaceFourSlashes(config.getTrustStore()));
+        setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.formatKeyringUrl(config.getTrustStore()));
         setSystemProperty("javax.net.ssl.trustStorePassword",
             config.getTrustStorePassword() == null ? null : String.valueOf(config.getTrustStorePassword()));
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
     }
 
-    public HostnameVerifier createHostnameVerifier() {
+    public HostnameVerifier getHostnameVerifier() {
         if (config.isVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
@@ -297,9 +271,9 @@ public class HttpsFactory {
             if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
                 setSystemSslProperties();
             }
-            builder.withCustomSSL(createSslContext());
+            builder.withCustomSSL(getSslContext());
 
-            builder.withHostnameVerifier(createHostnameVerifier());
+            builder.withHostnameVerifier(getHostnameVerifier());
         }
         return builder;
     }

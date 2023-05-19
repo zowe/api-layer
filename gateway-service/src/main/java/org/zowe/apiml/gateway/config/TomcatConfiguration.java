@@ -13,14 +13,17 @@ package org.zowe.apiml.gateway.config;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.security.SecurityUtils;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 /**
  * Configuration of Tomcat
@@ -60,14 +63,23 @@ public class TomcatConfiguration {
     private String address;
 
     @Bean
-    public ServletWebServerFactory servletContainer() throws UnknownHostException {
+    public ServletWebServerFactory servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) throws UnknownHostException {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        tomcat.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         if (enableInternalPort) {
             tomcat.addAdditionalTomcatConnectors(createSslConnector());
         }
         return tomcat;
+    }
+
+    private String getStorePath(String path) {
+        if (SecurityUtils.isKeyring(path)) {
+            return path;
+        } else {
+            return new File(path).getAbsolutePath();
+        }
     }
 
     private Connector createSslConnector() throws UnknownHostException {
@@ -84,13 +96,11 @@ public class TomcatConfiguration {
             protocol.setCiphers(ciphers);
             protocol.setClientAuth(clientAuth);
             protocol.setAddress(InetAddress.getByName(address));
-            File keyStore = new File(keyStorePath);
-            File trustStore = new File(trustStorePath);
 
-            protocol.setKeystoreFile(keyStore.getAbsolutePath());
+            protocol.setKeystoreFile(getStorePath(keyStorePath));
             protocol.setKeystorePass(keyStorePassword);
             protocol.setKeystoreType(keyStoreType);
-            protocol.setTruststoreFile(trustStore.getAbsolutePath());
+            protocol.setTruststoreFile(getStorePath(trustStorePath));
             protocol.setTruststorePass(trustStorePassword);
             protocol.setTruststoreType(trustStoreType);
             protocol.setKeyAlias(keyAlias);

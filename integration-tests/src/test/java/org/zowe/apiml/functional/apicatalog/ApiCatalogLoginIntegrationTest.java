@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.security.SecurityUtils.readPassword;
 
 @GeneralAuthenticationTest
 class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
@@ -36,7 +37,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String PASSWORD = new String(readPassword(ConfigReader.environmentConfiguration().getCredentials().getPassword()));
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
@@ -50,7 +51,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     //@formatter:off
     @Test
     void doLoginWithValidBodyLoginRequest() {
-        LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
+        LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD.toCharArray());
 
         given()
             .contentType(JSON)
@@ -67,7 +68,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     void doLoginWithInvalidCredentialsInLoginRequest() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 
-        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD.toCharArray());
 
         given()
             .contentType(JSON)

@@ -10,17 +10,19 @@
 
 package org.zowe.apiml.security.common.content;
 
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.constants.ApimlConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -68,20 +70,37 @@ public class BasicContentFilter extends AbstractSecureContentFilter {
      * @return the decoded credentials
      */
     private UsernamePasswordAuthenticationToken mapBase64Credentials(String base64Credentials) {
-        String principal = null;
-        String credentials = null;
-
+        byte[] credentials = null;
         try {
-            String decodedCredentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
-            int i = decodedCredentials.indexOf(':');
-            if (i >= 0) {
-                principal = decodedCredentials.substring(0, i);
-                credentials = decodedCredentials.substring(i + 1);
+            credentials = Base64.getDecoder().decode(base64Credentials);
+            int index = ArrayUtils.indexOf(credentials, (byte) ':');
+            if (index >= 0) {
+                byte[] password = null;
+                char[] passwordChars;
+                try {
+                    password = Arrays.copyOfRange(credentials, index + 1, credentials.length);
+                    passwordChars = new char[password.length];
+                    for (int i = 0; i < password.length; i++) {
+                        passwordChars[i] = (char) password[i];
+                    }
+                    return new UsernamePasswordAuthenticationToken(
+                            new String(Arrays.copyOfRange(credentials, 0, index), StandardCharsets.UTF_8),
+                            passwordChars
+                    );
+                } finally {
+                    if (password != null) {
+                        Arrays.fill(password, (byte) 0);
+                    }
+                }
             }
         } catch (Exception e) {
             log.debug("Conversion problem with the credentials {}", base64Credentials);
+        } finally {
+            if (credentials != null) {
+                Arrays.fill(credentials, (byte) 0);
+            }
         }
 
-        return new UsernamePasswordAuthenticationToken(principal, credentials);
+        return new UsernamePasswordAuthenticationToken(null, null);
     }
 }

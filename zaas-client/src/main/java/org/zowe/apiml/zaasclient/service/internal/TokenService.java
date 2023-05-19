@@ -30,7 +30,7 @@ interface TokenService {
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *                             communication with service occurs, this exception with details is thrown.
      */
-    String login(String userId, String password, String newPassword) throws ZaasClientException;
+    String login(String userId, char[] password, char[] newPassword) throws ZaasClientException;
 
     /**
      * Tries to login a user given the id and the password of the user. The password is expected in plain text.
@@ -41,7 +41,7 @@ interface TokenService {
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *                             communication with service occurs, this exception with details is thrown.
      */
-    String login(String userId, String password) throws ZaasClientException;
+    String login(String userId, char[] password) throws ZaasClientException;
 
     /**
      * Tries to login a user given the information encoded in the format used by the Authorization HTTP header.

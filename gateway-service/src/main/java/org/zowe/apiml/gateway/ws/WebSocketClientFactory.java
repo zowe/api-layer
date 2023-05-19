@@ -10,14 +10,19 @@
 
 package org.zowe.apiml.gateway.ws;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.annotation.PreDestroy;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
-import javax.annotation.PreDestroy;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Factory for provisioning web socket client
@@ -25,16 +30,22 @@ import javax.annotation.PreDestroy;
  * Manages the client lifecycle
  */
 @Component
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE) // for testing purposes
 @Slf4j
 public class WebSocketClientFactory {
 
     private final JettyWebSocketClient client;
 
-    public WebSocketClientFactory(SslContextFactory.Client jettyClientSslContextFactory) {
-
+    @Autowired
+    public WebSocketClientFactory(
+        SslContextFactory.Client jettyClientSslContextFactory,
+        @Value("${server.webSocket.maxIdleTimeout:3600000}") int maxIdleWebSocketTimeout
+        ) {
         log.debug("Creating Jetty WebSocket client, with SslFactory: {}",
             jettyClientSslContextFactory);
-        client = new JettyWebSocketClient(new WebSocketClient(new HttpClient(jettyClientSslContextFactory)));
+        WebSocketClient wsClient = new WebSocketClient(new HttpClient(jettyClientSslContextFactory));
+        wsClient.setMaxIdleTimeout(maxIdleWebSocketTimeout);
+        client = new JettyWebSocketClient(wsClient);
         client.start();
     }
 
@@ -43,11 +54,12 @@ public class WebSocketClientFactory {
     }
 
     @PreDestroy
-    private void closeClient() {
+    void closeClient() {
         if (client.isRunning()) {
             log.debug("Closing Jetty WebSocket client");
-            closeClient();
+            client.stop();
         }
+
     }
 
 }

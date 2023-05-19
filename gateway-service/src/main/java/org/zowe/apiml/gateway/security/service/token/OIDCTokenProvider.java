@@ -10,72 +10,111 @@
 
 package org.zowe.apiml.gateway.security.service.token;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.schema.OIDCAuthException;
 import org.zowe.apiml.security.common.token.OIDCProvider;
+import org.zowe.apiml.util.UrlUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
+@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.security.oAuth.clientId:}")
+    @Value("${apiml.security.oidc.introspectEndpoint:/introspect}")
+    private String introspectEndpoint;
+
+    @Value("${apiml.security.oidc.clientId:}")
     private String clientId;
 
-    @Value("${apiml.security.oAuth.clientSecret:}")
+    @Value("${apiml.security.oidc.clientSecret:}")
     private String clientSecret;
 
-    @Value("${apiml.security.oAuth.validationUrl:}")
-    private String validationUrl;
+    @Autowired
+    @Qualifier("secureHttpClientWithoutKeystore")
+    @NonNull
+    private final CloseableHttpClient httpClient;
 
-    @Value("${apiml.security.oAuth.enabled:false}")
-    private boolean isEnabled;
-
-    private final RestTemplate restTemplate;
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public boolean isValid(String token) {
-        if (token == null || token.isEmpty() || !isEnabled) {
-            log.debug("Either you did not enable the OIDC auth or you did not provide a valid token.");
-            throw new OIDCAuthException("A failure occurred when validating.");
-        }
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            String credentials = clientId + ":" + clientSecret;
-            byte[] base64encoded = Base64.getEncoder().encode(credentials.getBytes());
-            headers.add("authorization", "Basic " + new String(base64encoded));
-            headers.add("content-type", "application/x-www-form-urlencoded");
-            ObjectMapper mapper = new JsonMapper();
-            ResponseEntity<String> tokenInfoResponse = restTemplate.exchange(validationUrl + token, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
-            if (tokenInfoResponse.getStatusCode().is2xxSuccessful() &&
-                tokenInfoResponse.getBody() != null &&
-                !tokenInfoResponse.getBody().isEmpty()) {   //NOSONAR tests return null
-                JsonNode json = mapper.readTree(tokenInfoResponse.getBody());
-                return json.get("active").asBoolean();
-            }
-        } catch (RestClientException e) {
-            log.debug("The OIDC token validation request with URL {} failed.", validationUrl, e);
-            return false;
-        } catch (JsonProcessingException e) {
-            log.debug("Not able to parse the token response json.", e);
-            return false;
+    public boolean isValid(String token, String issuer) {
+        OIDCTokenClaims claims = introspect(token, issuer);
+        if (claims != null) {
+            return claims.getActive();
         }
         return false;
+    }
+
+    private OIDCTokenClaims introspect(String token, String issuer) {
+        if (StringUtils.isBlank(token)) {
+            log.debug("No token has been provided.");
+            return null;
+        }
+
+        if (StringUtils.isBlank(issuer) || !UrlUtils.isValidUrl(issuer)) {
+            log.warn("The OIDC token does not contain issuer claim or the claim is not valid. Cannot proceed with token validation.");
+            return null;
+        }
+
+        HttpPost post = new HttpPost(issuer + introspectEndpoint);
+        List<NameValuePair> bodyParams = new ArrayList<>();
+        bodyParams.add(new BasicNameValuePair("token", token));
+        bodyParams.add(new BasicNameValuePair("token_type_hint", "access_token"));
+        post.setEntity(new UrlEncodedFormEntity(bodyParams, StandardCharsets.UTF_8));
+
+        String credentials = clientId + ":" + clientSecret;
+        byte[] base64encoded = Base64.getEncoder().encode(credentials.getBytes());
+        final String headerValue = "Basic " + new String(base64encoded);
+        post.setHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, headerValue));
+        post.setHeader(new BasicHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE));
+        post.setHeader(new BasicHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE));
+
+        try {
+            CloseableHttpResponse response = httpClient.execute(post);
+            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+            final HttpEntity responseEntity = response.getEntity();
+            String responseBody = "";
+            if (responseEntity != null) {
+                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            }
+            if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
+                return mapper.readValue(responseBody, OIDCTokenClaims.class);
+            } else {
+                log.error("Failed to validate the OIDC access token. Unexpected response: {}", statusCode);
+                return null;
+            }
+        } catch (IOException e) {
+            log.error("Failed to validate the OIDC access token. ", e);
+        }
+        return null;
     }
 
 }

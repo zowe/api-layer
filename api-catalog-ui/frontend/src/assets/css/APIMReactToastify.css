@@ -74,6 +74,7 @@
   .Toastify__toast--error {
     background: #e74c3c; }
   .Toastify__toast-body {
+      font-size: 85%;
     margin: auto 0;
     -ms-flex: 1;
         flex: 1; }

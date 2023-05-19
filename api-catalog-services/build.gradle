@@ -28,6 +28,15 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6304
 def debugPort = 5124
 def componentName = "api-catalog-services"
+if (project.hasProperty('zowe.jib.image.suffix')) { // Prefix for the component name (for the standalone catalog container)
+    componentName += '-' + project.getProperty('zowe.jib.image.suffix')
+}
+if (project.hasProperty('zowe.jib.image.javaAgentPort')) {
+    javaAgentPort = project.getProperty('zowe.jib.image.javaAgentPort')
+}
+if (project.hasProperty('zowe.jib.image.debugPort')) {
+    debugPort = project.getProperty('zowe.jib.image.debugPort')
+}
 
 setJib(componentName, javaAgentPort, debugPort)
 
@@ -67,7 +76,7 @@ dependencies {
     annotationProcessor libraries.lombok
     annotationProcessor libraries.spring_boot_configuration_processor
 
-    implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
+    implementation group: 'io.swagger', name: 'swagger-models', version: swaggerCoreVersion
     implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.yaml", module: "snakeyaml"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
@@ -137,7 +146,10 @@ dependencies {
     implementation(libraries.swagger3_parser) {
         exclude group: "org.yaml", module: "snakeyaml"
     }
-    implementation libraries.swagger_inflector
+    implementation(libraries.swagger_inflector){
+        exclude group: "commons-fileupload", module: "commons-fileupload"
+    }
+    implementation libraries.commons_fileupload
 
     testImplementation libraries.rest_assured
     testImplementation libraries.spring_mock_mvc

@@ -13,8 +13,11 @@ package org.zowe.apiml.security;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,6 +50,13 @@ class SecurityUtilsTest {
             HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).build();
             Key secretKey = SecurityUtils.loadKey(httpsConfig);
             assertNotNull(secretKey);
+        }
+
+        @Test
+        void givenWrongKeystore_thenReturnNull() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyStore(null).build();
+            Key secretKey = SecurityUtils.loadKey(httpsConfig);
+            assertNull(secretKey);
         }
 
         @Test
@@ -98,12 +108,6 @@ class SecurityUtilsTest {
     }
 
     @Test
-    void testReplaceFourSlashes() {
-        String newUrl = SecurityUtils.replaceFourSlashes("safkeyring:////userId/keyRing");
-        assertEquals("safkeyring://userId/keyRing", newUrl);
-    }
-
-    @Test
     void testGenerateKeyPair() {
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         assertNotNull(keyPair);
@@ -140,6 +144,53 @@ class SecurityUtilsTest {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
         Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         assertFalse(certificatesBase64.isEmpty());
+    }
+
+    @Nested
+    class GivenKeyringUrl {
+        @Test
+        void thenThrowException() {
+            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:////userId/keyRing"));
+        }
+
+        @Test
+        void givenWrongFormat_thenThrowException() {
+            assertThrows(MalformedURLException.class, () -> SecurityUtils.keyRingUrl("safkeyring:/userId/keyRing"));
+        }
+    }
+
+    @Nested
+    class WhenKeyringUrl {
+
+        @CsvSource({
+            ",false",
+            "safkeyring://userid/ringid,true",
+            "safkeyring:////userid/ring/id,false",
+            "safkeyring:////userid//ringid,false",
+            "safkeyring://///userid//ringid,false",
+            "safkeyring:////id,false",
+            "safkeyringjce:////userid/ringid,true",
+            "keystore.p12,false"
+        })
+        @ParameterizedTest(name = "isKeyring({0}) should return {1}")
+        void isKeyringReturnsTrueIfItIsValid(String url, boolean validity) {
+            assertEquals(validity, SecurityUtils.isKeyring(url));
+        }
+
+        @CsvSource({
+            ",",
+            "safkeyring://userid/ringid,safkeyring://userid/ringid",
+            "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
+            "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
+            "safkeyring:////id,safkeyring:////id",
+            "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
+            "keystore.p12,keystore.p12"
+        })
+        @ParameterizedTest(name = "formatKeyringUrl({0}) should return {1}")
+        void formatKeyringUrlFixTheFormatIfPossible(String input, String expectedOutput) {
+            assertEquals(expectedOutput, SecurityUtils.formatKeyringUrl(input));
+        }
+
     }
 
 }

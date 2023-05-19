@@ -58,17 +58,15 @@
         "jest-watch-typeahead": "0.6.5",
         "mini-css-extract-plugin": "2.4.7",
         "nodemon": "2.0.18",
-        "npm-force-resolutions": "0.0.10",
         "react-scripts": "5.0.1",
         "prettier": "2.3.0"
     },
-    "resolutions": {
+    "overrides": {
         "nth-check": "2.0.1",
         "jsdom": "16.5.0",
         "got": "12.1.0"
     },
     "scripts": {
-        "preinstall": "npm-force-resolutions",
         "lint": "eslint \"src/**/*.{js,jsx}\"",
         "build": "react-scripts build",
         "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --silent",
@@ -84,8 +82,8 @@
         "includeFailureMsg": true
     },
     "engines": {
-        "npm": "=8.1.0",
-        "node": "=14.19.3"
+        "npm": "=9.3.1",
+        "node": "=18.14.0"
     },
     "browserslist": [
         ">0.2%",

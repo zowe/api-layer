@@ -42,6 +42,13 @@
 # - ZWE_configs_apiml_security_x509_externalMapperUrl
 # - ZWE_configs_apiml_security_x509_externalMapperUser
 # - ZWE_configs_apiml_security_zosmf_applid
+# - ZWE_configs_apiml_security_oidc_enabled
+# - ZWE_configs_apiml_security_oidc_clientId
+# - ZWE_configs_apiml_security_oidc_clientSecret
+# - ZWE_configs_apiml_security_oidc_introspectEndpoint
+# - ZWE_configs_apiml_security_oidc_registry
+# - ZWE_configs_apiml_security_oidc_identityMapperUrl
+# - ZWE_configs_apiml_security_oidc_identityMapperUser
 # - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
 # - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
@@ -94,6 +101,12 @@ export LOG_LEVEL=
 if [ "${ZWE_configs_debug}" = "true" ]
 then
   export LOG_LEVEL="debug"
+fi
+
+# setting the cookieName based on the instances
+
+if [  "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
+    cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
 fi
 
 # FIXME: APIML_DIAG_MODE_ENABLED is not officially mentioned. We can still use it behind the scene,
@@ -165,20 +178,8 @@ key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_pas
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
 
-# Workaround for Java desiring safkeyring://// instead of just ://
-# We can handle both cases of user input by just adding extra "//" if we detect its missing.
-ensure_keyring_slashes() {
-  keyring_string="${1}"
-  only_two_slashes=$(echo "${keyring_string}" | grep "^safkeyring://[^//]")
-  if [ -n "${only_two_slashes}" ]; then
-    keyring_string=$(echo "${keyring_string}" | sed "s#safkeyring://#safkeyring:////#")
-  fi
-  # else, unmodified, perhaps its even p12
-  echo $keyring_string
-}
-
-keystore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}")
-truststore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}")
+keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
+truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
 # NOTE: these are moved from below
 #    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
@@ -200,7 +201,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
-    -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/ \
+    -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_PARAMETER_HA_INSTANCE:-localhost} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.gateway.timeoutMillis=${ZWE_configs_apiml_gateway_timeoutMillis:-600000} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
@@ -208,14 +209,18 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.auth.zosmf.serviceId=${ZWE_configs_apiml_security_auth_zosmf_serviceId:-zosmf} \
     -Dapiml.security.auth.provider=${ZWE_configs_apiml_security_auth_provider:-zosmf} \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.auth.passticket.customUserHeader=${ZWE_configs_apiml_security_auth_passticket_customUserHeader:-} \
     -Dapiml.security.auth.passticket.customAuthHeader=${ZWE_configs_apiml_security_auth_passticket_customAuthHeader:-} \
     -Dapiml.security.personalAccessToken.enabled=${ZWE_configs_apiml_security_personalAccessToken_enabled:-false} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_configs_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dserver.address=0.0.0.0 \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
+    -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
+    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
@@ -232,7 +237,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-auto} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
-    -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate"} \
+    -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/x509/map"} \
     -Dapiml.security.x509.externalMapperUser=${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-} \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_configs_apiml_security_authorization_endpoint_enabled:-false} \
@@ -243,9 +248,17 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.authorization.resourceClass=${ZWE_configs_apiml_security_authorization_resourceClass:-ZOWE} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-APIML.} \
     -Dapiml.security.zosmf.applid=${ZWE_configs_apiml_security_zosmf_applid:-IZUDFLT} \
+    -Dapiml.security.oidc.enabled=${ZWE_configs_apiml_security_oidc_enabled:-false} \
+    -Dapiml.security.oidc.clientId=${ZWE_configs_apiml_security_oidc_clientId:-} \
+    -Dapiml.security.oidc.clientSecret=${ZWE_configs_apiml_security_oidc_clientSecret:-} \
+    -Dapiml.security.oidc.introspectEndpoint=${ZWE_configs_apiml_security_oidc_introspectEndpoint:-/v1/introspect} \
+    -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-} \
+    -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/dn"} \
+    -Dapiml.security.oidc.identityMapperUser=${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -jar ${JAR_FILE} &
 
 pid=$!

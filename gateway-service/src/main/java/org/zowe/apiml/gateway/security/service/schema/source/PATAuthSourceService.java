@@ -51,7 +51,18 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<String> getToken(RequestContext context) {
-        return authenticationService.getPATFromRequest(context.getRequest());
+        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        if (!tokenOptional.isPresent()) {
+            // try to get token also from PAT specific cookie or header
+            tokenOptional = authenticationService.getPATFromRequest(context.getRequest());
+        }
+        if (tokenOptional.isPresent()) {
+            AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());
+            if (AuthSource.Origin.ZOWE_PAT == origin) {
+                return tokenOptional;
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -77,7 +88,7 @@ public class PATAuthSourceService extends TokenAuthSourceService {
             String jwt = (String) authSource.getRawSource();
             QueryResponse response = authenticationService.parseJwtWithSignature(jwt);
 
-            AuthSource.Origin origin = AuthSource.Origin.valueByIssuer(response.getSource().name());
+            AuthSource.Origin origin = AuthSource.Origin.valueByTokenSource(response.getSource());
             return new ParsedTokenAuthSource(response.getUserId(), response.getCreation(), response.getExpiration(), origin);
         }
         return null;
@@ -86,7 +97,7 @@ public class PATAuthSourceService extends TokenAuthSourceService {
     @Override
     public String getLtpaToken(AuthSource authSource) {
         String zosmfToken = getJWT(authSource);
-        AuthSource.Origin origin = getTokenOrigin(zosmfToken);
+        AuthSource.Origin origin = authenticationService.getTokenOrigin(zosmfToken);
         if (AuthSource.Origin.ZOWE.equals(origin)) {
             zosmfToken = authenticationService.getLtpaToken(zosmfToken);
         }
@@ -99,8 +110,4 @@ public class PATAuthSourceService extends TokenAuthSourceService {
         return tokenService.createJwtTokenWithoutCredentials(parsed.getUserId());
     }
 
-    public AuthSource.Origin getTokenOrigin(String zosmfToken) {
-        QueryResponse response = authenticationService.parseJwtToken(zosmfToken);
-        return AuthSource.Origin.valueByIssuer(response.getSource().name());
-    }
 }

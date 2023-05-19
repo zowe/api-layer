@@ -117,21 +117,8 @@ key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_pas
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
 
-
-# Workaround for Java desiring safkeyring://// instead of just ://
-# We can handle both cases of user input by just adding extra "//" if we detect its missing.
-ensure_keyring_slashes() {
-  keyring_string="${1}"
-  only_two_slashes=$(echo "${keyring_string}" | grep "^safkeyring://[^//]")
-  if [ -n "${only_two_slashes}" ]; then
-    keyring_string=$(echo "${keyring_string}" | sed "s#safkeyring://#safkeyring:////#")
-  fi
-  # else, unmodified, perhaps its even p12
-  echo $keyring_string
-}
-
-keystore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}")
-truststore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}")
+keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
+truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
 # NOTE: these are moved from below
 #   -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
@@ -152,6 +139,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+  -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
   -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-reject} \
   -Dcaching.storage.size=${ZWE_configs_storage_size:-10000} \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
@@ -163,6 +151,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
+  -Dserver.ssl.protocol=${ZWE_components_gateway_server_ssl_protocol:-"TLSv1.2"}  \
   -Dserver.ssl.keyStore="${keystore_location}" \
   -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
   -Dserver.ssl.keyStorePassword="${keystore_pass}" \
@@ -172,6 +161,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
   -Dserver.ssl.trustStorePassword="${truststore_pass}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
   -Djava.library.path=${LIBPATH} \
   -jar "${JAR_FILE}" &
 pid=$!

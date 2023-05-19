@@ -58,6 +58,12 @@ dependencies {
     testFixturesImplementation libraries.http_client
 
     testFixturesAnnotationProcessor libraries.lombok
+
+    constraints {
+        runtimeOnly(libraries.jackson_core) {
+            because 'jjwt brings older version of jackson core having 2 in the classpath results in error when running integration tests locally'
+        }
+    }
 }
 
 jar {
@@ -397,7 +403,7 @@ task runCloudGatewayServiceRoutingTest(type: Test) {
     }
 }
 
-task runOauth2Tests(type: Test) {
+task runOidcTests(type: Test) {
     group "integration tests"
     description "Run tests verifying integration with oauth2 provider(okta)"
 

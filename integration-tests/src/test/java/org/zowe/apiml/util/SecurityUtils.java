@@ -19,10 +19,13 @@ import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
+import io.restassured.response.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -41,9 +44,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -54,6 +55,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 public class SecurityUtils {
@@ -67,6 +69,13 @@ public class SecurityUtils {
 
     public final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+
+    public final static String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
+    public final static String OKTA_CLIENT_ID = System.getProperty("okta.client.id");
+    public final static String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
+    public final static String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
+    public final static String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
+    public final static String OKTA_ALT_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternatePassword();
 
     public final static String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
@@ -103,7 +112,7 @@ public class SecurityUtils {
     }
 
     public static String gatewayToken(URI gatewayLoginEndpoint, String username, String password) {
-        LoginRequest loginRequest = new LoginRequest(username, password);
+        LoginRequest loginRequest = new LoginRequest(username, password.toCharArray());
 
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -160,6 +169,65 @@ public class SecurityUtils {
 
         RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         return token;
+    }
+
+    public static String validOktaAccessToken(boolean userHasMappingDefined) {
+        assertNotNull(OKTA_HOSTNAME, "OKTA host name is not set.");
+        assertNotNull(OKTA_CLIENT_ID, "OKTA client id is not set.");
+
+        String sessionToken;
+        if (userHasMappingDefined) {
+            sessionToken = getOktaSession(OKTA_USER, OKTA_PASSWORD);
+        } else {
+            sessionToken = getOktaSession(OKTA_ALT_USER, OKTA_ALT_PASSWORD);
+        }
+        assertNotNull(sessionToken, "Failed to get session token from Okta authentication.");
+
+        // retrieve the access token from Okta using session token
+        Map<String, String> queryParams = new HashMap<>();
+        queryParams.put("client_id", OKTA_CLIENT_ID);
+        queryParams.put("redirect_uri", "https://localhost:10010/login/oauth2/code/okta");
+        queryParams.put("response_type", "token");
+        queryParams.put("response_mode", "form_post");
+        queryParams.put("sessionToken", sessionToken);
+        queryParams.put("scope", "openid");
+        queryParams.put("state", "TEST");
+        queryParams.put("nonce", "TEST");
+        Response authResponse = given()
+            .queryParams(queryParams)
+            .when()
+            .get(OKTA_HOSTNAME + "/oauth2/default/v1/authorize")
+            .then()
+            .statusCode(200)
+            .extract().response();
+
+        // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+
+        String body = authResponse.getBody().asString();
+        String accessToken = StringUtils.substringBetween(body, "name=\"access_token\" value=\"", "\"/>");
+        assertNotNull(accessToken, "Failed to locate access token in the Okta /authorize response.");
+        return accessToken;
+    }
+
+    private static String getOktaSession(String username, String password) {
+        assertNotNull(username, "OKTA username is not set.");
+        assertNotNull(password, "OKTA password is not set.");
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("username", username);
+        requestBody.put("password", password);
+
+        return given()
+            .contentType(JSON)
+            .body(requestBody.toString())
+            .when()
+            .post(OKTA_HOSTNAME + "/api/v1/authn")
+            .then()
+            .statusCode(200)
+            .extract().path("sessionToken");
+    }
+
+    public static String expiredOktaAccessToken() {
+        return "eyJraWQiOiJGTUM5UndncFVJMUt0V25QWkdmVmFKYzZUZGlTTElZU29jeWs4aHlEbE44IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULkVzZ051RGxkcm5FN0VDYlhnNUhEdUY4MW9BV3k1UDF4WUZLT1psTmVJcmMiLCJpc3MiOiJodHRwczovL2Rldi05NTcyNzY4Ni5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE2Njc5MTc5MjcsImV4cCI6MTY2NzkyMTUyNywiY2lkIjoiMG9hNmE0OG1uaVhBcUVNcng1ZDciLCJ1aWQiOiIwMHU3NmVvZjB6bnNNYkY3NDVkNyIsInNjcCI6WyJvcGVuaWQiXSwiYXV0aF90aW1lIjoxNjY3OTE3ODg2LCJzdWIiOiJpdF90ZXN0QGFjbWUuY29tIiwiZ3JvdXBzIjpbIkV2ZXJ5b25lIl19.KiPa0c1U5IClozwZI5aDRSwjoi-hYtIkQZWpizGF8PPsgzvfMaivUzMoPi5GfEUZF6Bjlg_fQFUK7kJQ8NWjL6gY_5QQMfONw0U9dzQy2HLHb5gU55IKt6mBIutBSPk2FmCTd4SaPmllMb6nAyhIZf0DI7xuAXqRgt5JnasnmCKSIM3HJMlTeXDzHQ5BvMr7tVHWmwQ-8W3nef5nsKi2Sw05rds9RgkcckGUzhA2tMeF_rVTitufeG7h2oXYICtv60wfK6YSnmE78aoHf5NQD5517gnGrRxGMM6UAn3SV4GKOll6OlGDzpz87mq-AR2tigkDfVcOtJA9mkxFFv7HSg";
     }
 
     public static void logoutOnGateway(String url, String jwtToken) {

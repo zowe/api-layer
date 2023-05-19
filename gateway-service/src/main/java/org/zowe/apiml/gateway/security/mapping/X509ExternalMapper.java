@@ -14,12 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -30,13 +32,17 @@ import java.security.cert.X509Certificate;
  */
 
 @Slf4j
-@Component
+@Component("x509Mapper")
 @ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
 )
 public class X509ExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
-    public X509ExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService) {
-        super(httpClientProxy, tokenCreationService, Type.X509);
+    public X509ExternalMapper(@Value("${apiml.security.x509.externalMapperUrl:}") String mapperUrl,
+                              @Value("${apiml.security.x509.externalMapperUser:}") String mapperUser,
+                              CloseableHttpClient httpClientProxy,
+                              TokenCreationService tokenCreationService,
+                              AuthConfigurationProperties authConfigurationProperties) {
+        super(mapperUrl, mapperUser, httpClientProxy, tokenCreationService, authConfigurationProperties);
     }
 
     /**
@@ -61,4 +67,5 @@ public class X509ExternalMapper extends ExternalMapper implements Authentication
         }
         return null;
     }
+
 }

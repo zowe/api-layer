@@ -1,0 +1,74 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Example of Swagger for testing",
+    "version": "1.0",
+    "title": "APIML test API"
+  },
+  "basePath": "/api/v1",
+  "tags": [
+    {
+      "name": "firstTag"
+    }
+  ],
+  "securityDefinitions": {
+    "BasicAuth": {
+      "type": "basic"
+    },
+    "BearerAuth": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization"
+    }
+  },
+  "security": [
+    {
+      "BasicAuth": []
+    },
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "List"
+        ],
+        "summary": "Example of GET endpoint",
+        "description": "Only for testing",
+        "operationId": "getData",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/exampleResponse200"
+            }
+          },
+          "500": {
+            "description": "Unexpected internal error. Contact your support"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "exampleResponse200": {
+      "type": "object",
+      "required": [
+        "action"
+      ],
+      "properties": {
+        "output": {
+          "type": "string",
+          "description": "Contains the sample response test",
+          "example": "success"
+        }
+      }
+    }
+  }
+}

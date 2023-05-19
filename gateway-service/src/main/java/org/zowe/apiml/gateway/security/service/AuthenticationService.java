@@ -38,6 +38,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.controllers.AuthController;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -160,22 +161,22 @@ public class AuthenticationService {
 
         // invalidate token in z/OSMF
         final QueryResponse queryResponse = parseJwtToken(jwtToken);
-        switch (queryResponse.getSource()) {
-            case ZOWE:
-                final String ltpaToken = getLtpaToken(jwtToken);
-                if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
-                break;
-            case ZOSMF:
-                try {
+        try {
+            switch (queryResponse.getSource()) {
+                case ZOWE:
+                    final String ltpaToken = getLtpaToken(jwtToken);
+                    if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
+                    break;
+                case ZOSMF:
                     zosmfService.invalidate(JWT, jwtToken);
-                } catch (BadCredentialsException e) {
-                    if (!isInvalidatedOnAnotherInstance) {
-                        throw e;
-                    }
-                }
-                break;
-            default:
-                throw new TokenFormatNotValidException("Unknown token type.");
+                    break;
+                default:
+                    throw new TokenFormatNotValidException("Unknown token type.");
+            }
+        } catch (BadCredentialsException e) {
+            if (!isInvalidatedOnAnotherInstance) {
+                throw e;
+            }
         }
 
         return Boolean.TRUE;
@@ -348,9 +349,21 @@ public class AuthenticationService {
             claims.getSubject(),
             claims.getIssuedAt(),
             claims.getExpiration(),
+            claims.getIssuer(),
             scopes,
             QueryResponse.Source.valueByIssuer(claims.getIssuer())
         );
+    }
+
+    /**
+     * This method resolves the token origin directly by decoding token claims.
+     * @param jwtToken the JWT token
+     * @return AuthSource.Origin value based on the iss token claim.
+     */
+    public AuthSource.Origin getTokenOrigin(String jwtToken) {
+        Claims claims = getJwtClaims(jwtToken);
+        QueryResponse.Source source = QueryResponse.Source.valueByIssuer(claims.getIssuer());
+        return AuthSource.Origin.valueByTokenSource(source);
     }
 
     /**
@@ -396,10 +409,10 @@ public class AuthenticationService {
     public Optional<String> getPATFromRequest(@NonNull HttpServletRequest request) {
         Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNamePAT());
         return fromCookie.isPresent() ?
-            fromCookie : getPATFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
+            fromCookie : getAccessTokenFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
     }
 
-    private Optional<String> getPATFromHeader(String header) {
+    private Optional<String> getAccessTokenFromHeader(String header) {
         return header != null ? Optional.of(header) : Optional.empty();
     }
 

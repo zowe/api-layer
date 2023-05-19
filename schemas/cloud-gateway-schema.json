@@ -8,8 +8,8 @@
             "properties": {
                 "components": {
                     "type": "object",
+                    "additionalProperties": true,
                     "properties": {
-                        "additionalProperties": true,
                         "discovery-service": {
                             "allOf": [
                                 {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},

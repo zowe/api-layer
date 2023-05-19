@@ -89,6 +89,12 @@ fi
 #   export APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
 # fi
 
+# setting the cookieName based on the instances
+
+if [  "${ZWE_components_gateway_apiml_security_auth_uniqueCookie}" = "true" ]; then
+    cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
+fi
+
 # how to verifyCertificates
 verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
@@ -123,21 +129,8 @@ key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_pas
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
 
-
-# Workaround for Java desiring safkeyring://// instead of just ://
-# We can handle both cases of user input by just adding extra "//" if we detect its missing.
-ensure_keyring_slashes() {
-  keyring_string="${1}"
-  only_two_slashes=$(echo "${keyring_string}" | grep "^safkeyring://[^//]")
-  if [ -n "${only_two_slashes}" ]; then
-    keyring_string=$(echo "${keyring_string}" | sed "s#safkeyring://#safkeyring:////#")
-  fi
-  # else, unmodified, perhaps its even p12
-  echo $keyring_string
-}
-
-keystore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}")
-truststore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}")
+keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
+truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
 # NOTE: these are moved from below
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
@@ -163,10 +156,13 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_components_gateway_apiml_security_authorization_endpoint_enabled:-false} \
     -Dapiml.security.authorization.endpoint.url=${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port}/zss/api/v1/saf-auth"} \
     -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.catalog.hide.serviceInfo=${ZWE_configs_apiml_catalog_hide_serviceInfo:-false} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
+    -Dserver.ssl.protocol=${ZWE_components_gateway_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
@@ -178,6 +174,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

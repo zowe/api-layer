@@ -174,8 +174,10 @@ dependencies {
     compileOnly libraries.javax_inject
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
+    annotationProcessor libraries.spring_boot_configuration_processor
 
     testImplementation libraries.mockito_core
+    testImplementation libraries.mockito_inline
     testImplementation libraries.spring_mock_mvc
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.json_smart

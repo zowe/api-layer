@@ -10,13 +10,7 @@
 
 package org.zowe.apiml.tomcat;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsFactory;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Service;
@@ -30,15 +24,18 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
 public class TomcatServerFactory {
@@ -56,7 +53,7 @@ public class TomcatServerFactory {
 
             @Override
             protected void service(HttpServletRequest request, HttpServletResponse response)
-                    throws ServletException, IOException {
+                throws ServletException, IOException {
                 response.setCharacterEncoding("UTF-8");
                 response.setContentType("text/plain");
                 try (Writer writer = response.getWriter()) {
@@ -79,20 +76,22 @@ public class TomcatServerFactory {
         httpsConnector.setPort(0);
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("clientAuth",
-            Boolean.toString(httpsConfig.isClientAuth() && httpsConfig.isVerifySslCertificatesOfServices()));
-        httpsConnector.setAttribute("keystoreFile", httpsConfig.getKeyStore());
-        httpsConnector.setAttribute("keystorePass",
+        httpsConnector.setProperty("clientAuth",
+            Boolean.toString(Boolean.parseBoolean(httpsConfig.getClientAuth()) && httpsConfig.isVerifySslCertificatesOfServices()));
+        httpsConnector.setProperty("keystoreFile", httpsConfig.getKeyStore());
+        httpsConnector.setProperty("ciphers",String.join(",",httpsConfig.getCipherSuite()));
+        httpsConnector.setProperty("enabled-protocols",String.join("+",httpsConfig.getEnabledProtocols()));
+        httpsConnector.setProperty("keystorePass",
             httpsConfig.getKeyStorePassword() == null ? null : String.valueOf(httpsConfig.getKeyStorePassword())
         );
-        if (httpsConfig.isClientAuth()) {
-            httpsConnector.setAttribute("truststoreFile", httpsConfig.getTrustStore());
-            httpsConnector.setAttribute("truststorePass",
+        if (Boolean.parseBoolean(httpsConfig.getClientAuth()) || "want".equals(httpsConfig.getClientAuth())) {
+            httpsConnector.setProperty("truststoreFile", httpsConfig.getTrustStore());
+            httpsConnector.setProperty("truststorePass",
                 httpsConfig.getTrustStorePassword() == null ? null : String.valueOf(httpsConfig.getTrustStorePassword())
             );
         }
-        httpsConnector.setAttribute("sslProtocol", httpsConfig.getProtocol());
-        httpsConnector.setAttribute("SSLEnabled", true);
+        httpsConnector.setProperty("sslProtocol", httpsConfig.getProtocol());
+        httpsConnector.setProperty("SSLEnabled", "true");
         return httpsConnector;
     }
 
@@ -113,15 +112,16 @@ public class TomcatServerFactory {
         log.debug("Cwd: {}", System.getProperty("user.dir"));
 
         HttpsConfig httpsConfig = HttpsConfig.builder()
-                .keyStore(new File("keystore/localhost/localhost.keystore.p12").getCanonicalPath())
-                .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD)
-                .trustStore(new File("keystore/localhost/localhost.truststore.p12").getCanonicalPath())
-                .trustStorePassword(STORE_PASSWORD).protocol("TLSv1.2").build();
+            .keyStore(new File("keystore/localhost/localhost.keystore.p12").getCanonicalPath())
+            .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD)
+            .trustStore(new File("keystore/localhost/localhost.truststore.p12").getCanonicalPath())
+            .trustStorePassword(STORE_PASSWORD).protocol("TLSv1.2").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
 
         Tomcat tomcat = new TomcatServerFactory().startTomcat(httpsConfig);
         try {
-            HttpClient client = httpsFactory.createSecureHttpClient();
+
+            HttpClient client = httpsFactory.createSecureHttpClient(null);
 
             int port = getLocalPort(tomcat);
             HttpGet get = new HttpGet(String.format("https://localhost:%d", port));

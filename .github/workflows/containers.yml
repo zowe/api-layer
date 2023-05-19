@@ -18,17 +18,17 @@ jobs:
     PublishJibContainers:
         runs-on: ubuntu-latest
         timeout-minutes: 15
-
         steps:
             -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
-
             -   uses: ./.github/actions/setup
-
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+            -   name: Standalone Catalog
+                run: >
+                    ./gradlew :api-catalog-services:jib -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6305 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/teardown
 
@@ -39,6 +39,10 @@ jobs:
         timeout-minutes: 15
 
         services:
+            api-catalog-services-2:
+                image: ghcr.io/balhar-jakub/api-catalog-services-standalone:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -95,14 +99,20 @@ jobs:
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SECURITY_OAUTH_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
-                    APIML_SECURITY_OAUTH_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
-                    APIML_SECURITY_OAUTH_ENABLED: true
-                    APIML_SECURITY_OAUTH_VALIDATIONURL: https://dev-95727686.okta.com:443/oauth2/default/v1/introspect?token=
+                    APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
+                    APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    APIML_SECURITY_OIDC_INTROSPECTENDPOINT: /v1/introspect
+                    APIML_SECURITY_OIDC_ENABLED: true
+                    APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
+                    APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
+                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+
         steps:
             -   uses: actions/checkout@v3
                 with:
@@ -112,7 +122,9 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runOauth2Tests --info -Denvironment.config=-docker -Denvironment.offPlatform=true -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Dokta.client.password=${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    ./gradlew :integration-tests:runOidcTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }}
+                    -Doidc.test.user=${{ secrets.OIDC_TEST_USER }} -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
+                    -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }} -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   uses: ./.github/actions/teardown

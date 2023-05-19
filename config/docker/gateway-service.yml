@@ -6,11 +6,14 @@ apiml:
         allowTokenRefresh: true
         personalAccessToken:
             enabled: true
-        oAuth:
-            enabled: false
+        oidc:
+            enabled: true
             clientId:
             clientSecret:
-            validationUrl:
+            introspectEndpoint:
+            registry:
+            identityMapperUrl:
+            identityMapperUser:
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id

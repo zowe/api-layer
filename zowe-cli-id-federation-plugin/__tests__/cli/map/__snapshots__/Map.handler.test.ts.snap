@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`map handler unit tests should accept options and return successful message 1`] = `" 'idf_RACF.jcl' was created. Review and submit this JCL."`;
+
+exports[`map handler unit tests throw an error when file does not exist 1`] = `"The input CSV file does not exist."`;

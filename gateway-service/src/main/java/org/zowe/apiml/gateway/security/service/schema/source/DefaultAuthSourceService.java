@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +17,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.AuthSourceType;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Main implementation of AuthSourceService, supports two types of authentication source - JWT token and client certificate.
+ * Main implementation of AuthSourceService, supports four types of authentication source - JWT token, client certificate, personal access token and OIDC token.
  * <p>
  * Service keeps a map of the specific implementations of {@link AuthSourceService} which are responsible to perform operations defined by an interface
  * for a particular authentication source. {@link JwtAuthSourceService} is responsible for processing of the authentication source based on JWT token;
@@ -35,7 +35,6 @@ import java.util.Optional;
  * @Qualifier("x509MFAuthSourceService") {@link X509AuthSourceService} is responsible for processing of the authentication source based on client certificate.
  * The key for the map is {@link AuthSourceType}.
  */
-@Slf4j
 @Service
 @Primary
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -44,22 +43,33 @@ public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
     private final boolean isPATEnabled;
+    private final boolean isOIDCEnabled;
 
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
      *
      * @param jwtAuthSourceService  {@link JwtAuthSourceService} service which process authentication source of type JWT
      * @param x509AuthSourceService {@link X509AuthSourceService} service which process authentication source of type client certificate
+     * @param patAuthSourceService {@link PATAuthSourceService} service which process authentication source of type personal access token
+     * @param isPATEnabled true if PAT is enabled as auth source
+     * @param oidcAuthSourceService {@link OIDCAuthSourceService} service which process authentication source of type OIDC access token
+     * @param isOIDCEnabled true if OIDC is enabled as auth source
      */
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
                                     PATAuthSourceService patAuthSourceService,
-                                    @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled) {
+                                    @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled,
+                                    @Nullable OIDCAuthSourceService oidcAuthSourceService,
+                                    @Value("${apiml.security.oidc.enabled:false}") boolean isOIDCEnabled) {
         this.isPATEnabled = isPATEnabled;
+        this.isOIDCEnabled = isOIDCEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
         map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
         if (isPATEnabled) {
             map.put(AuthSourceType.PAT, patAuthSourceService);
+        }
+        if (isOIDCEnabled) {
+            map.put(AuthSourceType.OIDC, oidcAuthSourceService);
         }
     }
 
@@ -80,6 +90,10 @@ public class DefaultAuthSourceService implements AuthSourceService {
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
         if (!authSource.isPresent() && isPATEnabled) {
             service = getService(AuthSourceType.PAT);
+            authSource = service.getAuthSourceFromRequest();
+        }
+        if (!authSource.isPresent() && isOIDCEnabled) {
+            service = getService(AuthSourceType.OIDC);
             authSource = service.getAuthSourceFromRequest();
         }
         if (!authSource.isPresent()) {

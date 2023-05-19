@@ -1,0 +1,16 @@
+{
+    "profiles": {
+        "my_idf": {
+            "type": "id-federation",
+            "properties": {
+                "esm": "RACF",
+                "system": "TST1",
+                "registry": "ldap://12.34.56.78:910"
+            }
+        }
+    },
+    "defaults": {
+        "id-federation": "my_idf"
+    },
+    "autoStore": true
+}

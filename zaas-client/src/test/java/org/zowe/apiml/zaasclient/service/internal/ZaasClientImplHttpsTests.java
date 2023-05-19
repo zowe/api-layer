@@ -72,9 +72,9 @@ class ZaasClientImplHttpsTests {
     private String invalidToken;
 
     private static final String VALID_USER = "user";
-    private static final String VALID_PASSWORD = "user";
+    private static final char[] VALID_PASSWORD = "user".toCharArray();
     private static final String INVALID_USER = "use";
-    private static final String INVALID_PASSWORD = "uer";
+    private static final char[] INVALID_PASSWORD = "uer".toCharArray();
     private static final String EMPTY_STRING = "";
 
     @BeforeEach
@@ -106,8 +106,8 @@ class ZaasClientImplHttpsTests {
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         String baseUrl = "/gateway/api/v1/auth";
-        tokenService = new ZaasJwtService(zaasHttpsClientProvider, baseUrl);
-        passTicketService = new PassTicketServiceImpl(zaasHttpsClientProvider, baseUrl);
+        tokenService = new ZaasJwtService(zaasHttpsClientProvider, baseUrl, configProperties);
+        passTicketService = new PassTicketServiceImpl(zaasHttpsClientProvider, baseUrl, configProperties);
     }
 
     private String getToken(long now, long expiration, Key jwtSecretKey) {
@@ -160,8 +160,8 @@ class ZaasClientImplHttpsTests {
         return configProperties;
     }
 
-    private static String getAuthHeader(String userName, String password) {
-        String auth = userName + ":" + password;
+    private static String getAuthHeader(String userName, char[] password) {
+        String auth = userName + ":" + new String(password);
         byte[] encodedAuth = Base64.encodeBase64(
             auth.getBytes(StandardCharsets.ISO_8859_1));
         return "Basic " + new String(encodedAuth);
@@ -230,7 +230,7 @@ class ZaasClientImplHttpsTests {
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
     void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(int statusCode,
-                                                                                        String username, String password,
+                                                                                        String username, char[] password,
                                                                                         ZaasClientErrorCodes expectedCode) {
         prepareResponse(statusCode);
 

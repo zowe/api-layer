@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.IOException;
 
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.mock;
 class SafResourceAccessConfigTest {
 
     private static final RestTemplate restTemplate = mock(RestTemplate.class);
+    private static final AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
 
     private static final SafResourceAccessVerifying ENDPOINT_PROVIDER = mock(SafResourceAccessVerifying.class);
     private static final SafResourceAccessVerifying NATIVE_PROVIDER = mock(SafResourceAccessVerifying.class);
@@ -35,7 +37,7 @@ class SafResourceAccessConfigTest {
         SafResourceAccessConfig output = new SafResourceAccessConfigMock(endpointAvailable, nativeAvailable, dummyAvailable);
         ReflectionTestUtils.setField(output, "provider", provider);
         ReflectionTestUtils.setField(output, "endpointEnabled", endpointEnabled);
-        return output.safResourceAccessVerifying(restTemplate);
+        return output.safResourceAccessVerifying(restTemplate,authConfigurationProperties);
     }
 
     @Test
@@ -109,7 +111,7 @@ class SafResourceAccessConfigTest {
         private final boolean dummyAvailable;
 
         @Override
-        protected SafResourceAccessVerifying createEndpoint(RestTemplate restTemplate) {
+        protected SafResourceAccessVerifying createEndpoint(RestTemplate restTemplate, AuthConfigurationProperties authConfigurationProperties) {
             if (!endpointAvailable) return null;
             return ENDPOINT_PROVIDER;
         }

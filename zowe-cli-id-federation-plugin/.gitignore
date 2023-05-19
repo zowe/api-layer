@@ -1,0 +1,14 @@
+node_modules
+lib
+.vscode
+.idea
+results
+__results__
+__tests__/__results__
+/__tests__/__resources__/properties/**
+!/__tests__/__resources__/properties/custom_properties.yaml
+*.iml
+npm-shrinkwrap.json
+package-lock.json
+/tools
+junit.xml

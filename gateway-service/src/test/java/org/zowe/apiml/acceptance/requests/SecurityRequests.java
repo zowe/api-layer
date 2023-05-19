@@ -18,14 +18,14 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.constants.ApimlConstants.COOKIE_AUTH_NAME;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 public class SecurityRequests {
     private final String basePath;
 
     public Cookie validJwtToken() {
-        LoginRequest loginRequest = new LoginRequest("user", "user");
+        LoginRequest loginRequest = new LoginRequest("user", "user".toCharArray());
 
         return given()
             .contentType(JSON)

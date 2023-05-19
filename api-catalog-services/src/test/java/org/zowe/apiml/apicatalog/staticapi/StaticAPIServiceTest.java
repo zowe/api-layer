@@ -67,6 +67,7 @@ class StaticAPIServiceTest {
 
     private final String[] discoveryLocations = {DISCOVERY_LOCATION, DISCOVERY_LOCATION_2};
     private static final String BODY = "This is body";
+
     @Nested
     class WhenRefreshEndpointPresentsResponseTest {
 
@@ -74,7 +75,7 @@ class StaticAPIServiceTest {
         class GivenSingleUrlTest {
 
             @BeforeEach
-            void setup()throws IOException {
+            void setup() throws IOException {
 
                 when(okResponse.getStatusLine()).thenReturn(okStatusLine);
                 when(okStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
@@ -110,7 +111,7 @@ class StaticAPIServiceTest {
             @Nested
             class WhenOneSucceedsTest {
                 @BeforeEach
-                void setup()throws IOException {
+                void setup() throws IOException {
 
                     when(okResponse.getStatusLine()).thenReturn(okStatusLine);
                     when(okStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
@@ -118,6 +119,7 @@ class StaticAPIServiceTest {
                     when(okResponse.getEntity()).thenReturn(entity);
                     when(entity.getContent()).thenReturn(new ByteArrayInputStream(BODY.getBytes()));
                 }
+
                 @Test
                 void whenFirstSucceeds_thenReturnResponseFromFirst() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
@@ -138,6 +140,7 @@ class StaticAPIServiceTest {
                     assertEquals(expectedResponse, actualResponse);
                 }
             }
+
             @Nested
             class WhenBothFailsTest {
                 @Test
@@ -146,7 +149,7 @@ class StaticAPIServiceTest {
                     when(notFoundResponse.getStatusLine()).thenReturn(notFoundStatusLine);
                     when(notFoundStatusLine.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     when(notFoundResponse.getEntity()).thenReturn(entity);
-                    when(entity.getContent()).thenReturn(new ByteArrayInputStream(BODY.getBytes()));
+                    when(entity.getContent()).thenAnswer(invocation -> new ByteArrayInputStream(BODY.getBytes()));
                     mockRestTemplateExchange(DISCOVERY_LOCATION_3);
 
                     StaticAPIResponse actualResponse = staticAPIService.refresh();
@@ -156,7 +159,6 @@ class StaticAPIServiceTest {
             }
         }
     }
-
 
 
     @Test
@@ -172,14 +174,14 @@ class StaticAPIServiceTest {
         HttpPost post = new HttpPost(discoveryUrl.replace("/eureka", "") + REFRESH_ENDPOINT);
 
         when(httpClient.execute(any())).thenAnswer((invocation) -> {
-           HttpPost httpRequest = (HttpPost) invocation.getArguments()[0];
-           URI uri = httpRequest.getURI();
-           int i = uri.compareTo(post.getURI());
-           if (i == 0) {
-               return okResponse;
-           } else {
-               return notFoundResponse;
-           }
-       });
+            HttpPost httpRequest = (HttpPost) invocation.getArguments()[0];
+            URI uri = httpRequest.getURI();
+            int i = uri.compareTo(post.getURI());
+            if (i == 0) {
+                return okResponse;
+            } else {
+                return notFoundResponse;
+            }
+        });
     }
 }

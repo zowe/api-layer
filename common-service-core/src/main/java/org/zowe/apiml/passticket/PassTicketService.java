@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class PassTicketService {
 
-    private IRRPassTicket irrPassTicket;
+    private final IRRPassTicket irrPassTicket;
 
     public PassTicketService() {
         this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
@@ -40,11 +40,13 @@ public class PassTicketService {
                 IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
     }
 
-    public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
+    // IRRPassTicket is not thread-safe, must be synchronized
+    public synchronized void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
         irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
     }
 
-    public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
+    // IRRPassTicket is not thread-safe, must be synchronized
+    public synchronized String generate(String userId, String applId) throws IRRPassTicketGenerationException {
         return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
     }
 
@@ -118,8 +120,8 @@ public class PassTicketService {
         @Value
         private static class UserApp {
 
-            private final String userId;
-            private final String applId;
+            String userId;
+            String applId;
 
         }
     }

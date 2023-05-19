@@ -1,0 +1,60 @@
+name: zowe-cli-plugin-deployment
+
+on:
+    push:
+        branches: [ v2.x.x ]
+    pull_request:
+        branches: [ v2.x.x ]
+    workflow_dispatch:
+
+jobs:
+    release:
+        if: github.event_name == 'push' && github.ref_protected
+        runs-on: ubuntu-latest
+        timeout-minutes: 40
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+                  ref: ${{ github.ref }}
+
+            - name: Use Node.js LTS
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 'lts/*'
+
+            - name: Install Dependencies
+              run: |
+                 cd zowe-cli-id-federation-plugin
+                 npm ci
+
+            - name: Update Dependencies
+              uses: zowe-actions/octorelease-script@master
+              with:
+                  working-dir: zowe-cli-id-federation-plugin
+                  script: npmUpdate
+
+              env:
+                  GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
+                  GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
+
+            - name: Build Source
+              run: |
+                  cd zowe-cli-id-federation-plugin
+                  npm run build
+                  npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
+
+            - uses: zowe-actions/octorelease@master
+              with:
+                working-dir: zowe-cli-id-federation-plugin
+              env:
+                  GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
+                  GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
+                  GIT_CREDENTIALS: x-access-token:${{ secrets.ZOWE_ROBOT_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  NPM_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  NPM_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  NPM_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}

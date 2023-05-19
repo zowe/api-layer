@@ -10,61 +10,57 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.security.common.token.QueryResponse;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-
 class AuthSourceTest {
     @Nested
-    class GivenCorrectIssuer {
+    class GivenCorrectTokenSource {
         @Nested
-        class WhenIssuerIsZosmf {
+        class WhenSourceIsZosmf {
             @Test
             void thenOriginIsZosmf() {
-                assertEquals(AuthSource.Origin.ZOSMF, AuthSource.Origin.valueByIssuer("zosmf"));
-                assertEquals(AuthSource.Origin.ZOSMF, AuthSource.Origin.valueByIssuer("zOSMF"));
+                assertEquals(AuthSource.Origin.ZOSMF, AuthSource.Origin.valueByTokenSource(QueryResponse.Source.ZOSMF));
             }
         }
 
         @Nested
-        class WhenIssuerIsZowe {
+        class WhenSourceIsZowe {
             @Test
             void thenOriginIsZowe() {
-                assertEquals(AuthSource.Origin.ZOWE, AuthSource.Origin.valueByIssuer("Zowe"));
-                assertEquals(AuthSource.Origin.ZOWE, AuthSource.Origin.valueByIssuer("ZOWE"));
+                assertEquals(AuthSource.Origin.ZOWE, AuthSource.Origin.valueByTokenSource(QueryResponse.Source.ZOWE));
             }
         }
 
         @Nested
-        class WhenIssuerIsClientCertificate {
+        class WhenSourceIsPAT {
             @Test
             void thenOriginIsX509() {
-                assertEquals(AuthSource.Origin.X509, AuthSource.Origin.valueByIssuer("x509"));
-                assertEquals(AuthSource.Origin.X509, AuthSource.Origin.valueByIssuer("X509"));
+                assertEquals(AuthSource.Origin.ZOWE_PAT, AuthSource.Origin.valueByTokenSource(QueryResponse.Source.ZOWE_PAT));
+            }
+        }
+
+        @Nested
+        class WhenSourceIsOidc {
+            @Test
+            void thenOriginIsX509() {
+                assertEquals(AuthSource.Origin.OIDC, AuthSource.Origin.valueByTokenSource(QueryResponse.Source.OIDC));
             }
         }
     }
 
     @Nested
-    class GivenIncorrectIssuer {
-        @Nested
-        class WhenUnknownIssuer {
-            @Test
-            void thenThrowException() {
-                Exception tnve = assertThrows(TokenNotValidException.class, () -> AuthSource.Origin.valueByIssuer("unknown"));
-                assertEquals("Unknown authentication source type : unknown", tnve.getMessage());
-            }
-        }
+    class GivenUnsupportedSource {
 
         @Nested
-        class WhenNullIssuer {
+        class WhenNullSource {
             @Test
             void thenThrowException() {
-                Exception tnve = assertThrows(TokenNotValidException.class, () -> AuthSource.Origin.valueByIssuer(null));
-                assertEquals("Unknown authentication source type : null", tnve.getMessage());
+                assertThrows(NullPointerException.class, () -> AuthSource.Origin.valueByTokenSource(null));
             }
         }
     }

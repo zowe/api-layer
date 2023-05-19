@@ -102,6 +102,12 @@ then
     QUICK_START=-Xquickstart
 fi
 
+# setting the cookieName based on the instances
+
+if [ "${ZWE_components_gateway_apiml_security_auth_uniqueCookie}" = "true"]; then
+    cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
+fi
+
 DISCOVERY_LOADER_PATH=${COMMON_LIB}
 
 if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
@@ -125,20 +131,8 @@ key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_pas
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
 
-# Workaround for Java desiring safkeyring://// instead of just ://
-# We can handle both cases of user input by just adding extra "//" if we detect its missing.
-ensure_keyring_slashes() {
-  keyring_string="${1}"
-  only_two_slashes=$(echo "${keyring_string}" | grep "^safkeyring://[^//]")
-  if [ -n "${only_two_slashes}" ]; then
-    keyring_string=$(echo "${keyring_string}" | sed "s#safkeyring://#safkeyring:////#")
-  fi
-  # else, unmodified, perhaps its even p12
-  echo $keyring_string
-}
-
-keystore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}")
-truststore_location=$(ensure_keyring_slashes "${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}")
+keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
+truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 #echo "keystore='$keystore_location' truststore='$truststore_location'"
 
 # NOTE: these are moved from below
@@ -163,7 +157,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUI
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
     -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true} \
+    -Dserver.ssl.protocol=${ZWE_components_gateway_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
@@ -174,6 +171,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUI
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${DISCOVERY_LOADER_PATH} \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djava.library.path=${LIBPATH} \
     -jar "${JAR_FILE}" &
 pid=$!

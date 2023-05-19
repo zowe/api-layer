@@ -24,7 +24,7 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 @Slf4j
 public class ConfigReader {
 
-    private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+    private static final String PASSWORD = "password";
     private static String configurationFile;
 
     static {
@@ -55,18 +55,19 @@ public class ConfigReader {
 
                         TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
                             .keyAlias("localhost")
-                            .keyPassword(PASSWORD)
+                            .keyPassword(PASSWORD.toCharArray())
                             .keyStoreType("PKCS12")
                             .keyStore("../keystore/localhost/localhost.keystore.p12")
-                            .keyStorePassword(PASSWORD)
+                            .keyStorePassword(PASSWORD.toCharArray())
                             .trustStoreType("PKCS12")
                             .trustStore("../keystore/localhost/localhost.truststore.p12")
-                            .trustStorePassword(PASSWORD)
+                            .trustStorePassword(PASSWORD.toCharArray())
                             .build();
 
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
+                        IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user", "alt_user", "alt_user");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -74,16 +75,18 @@ public class ConfigReader {
                             discoveryServiceConfiguration,
                             discoverableClientConfiguration,
                             new ApiCatalogServiceConfiguration(),
+                            new ApiCatalogServiceConfiguration(),
                             new CachingServiceConfiguration(),
                             new CloudGatewayConfiguration(),
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
-                            null);
+                            null,
+                            idpConfiguration);
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
-                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", configuration.getCredentials().getPassword()));
+                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", new String(configuration.getCredentials().getPassword())));
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));
@@ -118,6 +121,11 @@ public class ConfigReader {
                     configuration.getCloudGatewayConfiguration().setScheme(System.getProperty("cloud-gateway.scheme", configuration.getCloudGatewayConfiguration().getScheme()));
                     configuration.getCloudGatewayConfiguration().setHost(System.getProperty("cloud-gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
                     configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
+
+                    configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
+                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
+                    configuration.getIdpConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getIdpConfiguration().getAlternateUser()));
+                    configuration.getIdpConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getIdpConfiguration().getAlternatePassword()));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);

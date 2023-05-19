@@ -17,10 +17,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UrlUtilsTest {
 
@@ -77,7 +74,7 @@ class UrlUtilsTest {
         assertEquals("/blah", UrlUtils.removeLastSlash(hasSlashes));
     }
 
-    
+
     @ParameterizedTest
     @ValueSource(strings = {"Does-Not-Exist", "httpp://www.google.com", "http://www.google.co"})
     void testGetHostIPAddress_UnknownHost(String fqdn) throws UnknownHostException {
@@ -96,5 +93,17 @@ class UrlUtilsTest {
         String fqdn = "https://www.google.com";
         String ipAddress = UrlUtils.getIpAddressFromUrl(fqdn);
         assertNotNull(ipAddress);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"http://www.google.com", "https://localhost/domain", "http://128.12.13.14"})
+    void testIsValidUrl_True(String urlString) {
+        assertTrue(UrlUtils.isValidUrl(urlString));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"google.com", "httpsx://localhost/domain", "http://\\128.12.13.14"})
+    void testIsValidUrl_False(String urlString) {
+        assertFalse(UrlUtils.isValidUrl(urlString));
     }
 }

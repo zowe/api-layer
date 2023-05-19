@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
-import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -20,9 +19,9 @@ import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Objects;
 
-@Slf4j
 public class ZaasClientImpl implements ZaasClient {
     private final TokenService tokens;
     private final PassTicketService passTickets;
@@ -37,8 +36,8 @@ public class ZaasClientImpl implements ZaasClient {
 
         String baseUrl = String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
             configProperties.getApimlBaseUrl());
-        tokens = new ZaasJwtService(httpClientProviderWithoutCert, baseUrl);
-        passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl);
+        tokens = new ZaasJwtService(httpClientProviderWithoutCert, baseUrl, configProperties);
+        passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl, configProperties);
     }
 
     private CloseableClientProvider getTokenProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
@@ -74,15 +73,43 @@ public class ZaasClientImpl implements ZaasClient {
 
     @Override
     public String login(String userId, String password, String newPassword) throws ZaasClientException {
-        if (userId == null || password == null || newPassword == null || userId.isEmpty() || password.isEmpty() || newPassword.isEmpty()) {
+        char[] passwordChars = password == null ? null : password.toCharArray();
+        char[] newPasswordChars = newPassword == null ? null : newPassword.toCharArray();
+        try {
+            return login(userId, passwordChars, newPasswordChars);
+        } finally {
+            if (passwordChars != null) {
+                Arrays.fill(passwordChars, (char) 0);
+            }
+            if (newPasswordChars != null) {
+                Arrays.fill(newPasswordChars, (char) 0);
+            }
+        }
+    }
+
+    @Override
+    public String login(String userId, String password) throws ZaasClientException {
+        char[] passwordChars = password == null ? null : password.toCharArray();
+        try {
+            return login(userId, passwordChars);
+        } finally {
+            if (passwordChars != null) {
+                Arrays.fill(passwordChars, (char) 0);
+            }
+        }
+    }
+
+    @Override
+    public String login(String userId, char[] password, char[] newPassword) throws ZaasClientException {
+        if (userId == null || password == null || newPassword == null || userId.isEmpty() || password.length == 0 || newPassword.length == 0) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
         return tokens.login(userId, password, newPassword);
     }
 
     @Override
-    public String login(String userId, String password) throws ZaasClientException {
-        if (userId == null || password == null || userId.isEmpty() || password.isEmpty()) {
+    public String login(String userId, char[] password) throws ZaasClientException {
+        if (userId == null || password == null || userId.isEmpty() || password.length == 0) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
         return tokens.login(userId, password);

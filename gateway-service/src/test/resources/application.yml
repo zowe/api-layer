@@ -30,18 +30,21 @@ apiml:
     security:
         personalAccessToken:
             enabled: true
-        oAuth:
+        oidc:
             enabled: false
             clientId:
             clientSecret:
-            validationUrl:
+            introspectEndpoint:
+            registry:
+            identityMapperUrl: http://localhost:8542/certificate/dn
+            identityMapperUser: validUserForMap
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5
         ssl:
             verifySslCertificatesOfServices: true
         x509:
-            externalMapperUrl: http://localhost:8542/certificate
+            externalMapperUrl: http://localhost:8542/certificate/x509/map
             externalMapperUser: validUserForMap
         auth:
             provider: dummy

@@ -68,8 +68,10 @@ public class ZosmfScheme implements IAuthenticationScheme {
         String cookieValue = null;
         AuthSource.Parsed parsedAuthSource;
         try {
-            // client cert needs to be translated to JWT in advance, so we can determine what is the source of it
-            if (AuthSource.AuthSourceType.CLIENT_CERT.equals(authSource.getType()) || AuthSource.AuthSourceType.PAT.equals(authSource.getType())) {
+            // client cert, PAT or OIDC tokens need to be translated to JWT in advance, so we can determine what is the source of it
+            if (AuthSource.AuthSourceType.CLIENT_CERT.equals(authSource.getType()) ||
+                AuthSource.AuthSourceType.PAT.equals(authSource.getType()) ||
+                AuthSource.AuthSourceType.OIDC.equals(authSource.getType())) {
                 authSource = new JwtAuthSource(authSourceService.getJWT(authSource));
             }
             parsedAuthSource = authSourceService.parse(authSource);

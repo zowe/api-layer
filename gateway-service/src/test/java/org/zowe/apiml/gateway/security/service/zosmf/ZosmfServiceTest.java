@@ -210,7 +210,7 @@ class ZosmfServiceTest {
                     new HttpEntity<>(null, requestHeaders),
                     String.class
                 );
-                when(loginRequest.getPassword()).thenReturn("password");
+                when(loginRequest.getPassword()).thenReturn("password".toCharArray());
                 when(authentication.getPrincipal()).thenReturn("principal");
                 doReturn(responseMock).when(zosmfService).issueAuthenticationRequest(authentication, eq(any()), any());
 
@@ -227,7 +227,7 @@ class ZosmfServiceTest {
         class WhenChangingPassword {
             @Test
             void thenChangePasswordWithSuccess() {
-                LoginRequest loginRequest = new LoginRequest("username", "password", "newPassword");
+                LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
                 Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
                 ZosmfService zosmfService = getZosmfServiceSpy();
                 when(authentication.getCredentials()).thenReturn(loginRequest);
@@ -298,7 +298,7 @@ class ZosmfServiceTest {
                     String.class
                 );
 
-                Authentication authentication = new UsernamePasswordAuthenticationToken("user", new LoginRequest("user","pass"));
+                Authentication authentication = new UsernamePasswordAuthenticationToken("user", new LoginRequest("user","pass".toCharArray()));
                 ZosmfService.AuthenticationResponse response = zosmfService.authenticate(authentication);
 
                 assertNotNull(response);

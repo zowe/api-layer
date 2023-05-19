@@ -33,7 +33,7 @@ describe('>>> Dashboard test', () => {
 
         cy.get('.header').should('exist');
 
-        cy.get('#grid-container > div.filtering-container > div > div > input').should('exist');
+        cy.get('#search > div > div > input').should('exist');
         cy.contains('Available API services').should('exist');
         cy.get('#refresh-api-button')
             .should('exist')
@@ -42,7 +42,7 @@ describe('>>> Dashboard test', () => {
         cy.get('.Toastify > div> div')
             .should('have.length', 1)
             .should('contain', 'The refresh of static APIs was successful!');
-        cy.get('#grid-container > div.filtering-container > div > div > input')
+        cy.get('#search > div > div > input')
             .as('search')
             .type('API Mediation Layer API');
 
@@ -56,7 +56,7 @@ describe('>>> Dashboard test', () => {
 
         cy.get('.grid-tile').should('have.length.gte', 1);
 
-        cy.get('#grid-container > div.filtering-container > div > div > input')
+        cy.get('#search > div > div > input')
             .as('search')
             .type('Oh freddled gruntbuggly, Thy micturations are to me, (with big yawning)');
 
@@ -68,7 +68,7 @@ describe('>>> Dashboard test', () => {
 
         cy.get('@search').clear();
 
-        cy.get('#grid-container > div.filtering-container > div > div > input')
+        cy.get('#search > div > div > input')
             .as('search')
             .type('API Mediation Layer API');
 
