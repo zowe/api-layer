@@ -12,7 +12,10 @@ package org.zowe.apiml.gateway.ribbon;
 
 import com.netflix.client.ClientException;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.retry.*;
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryContext;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.zowe.apiml.gateway.ribbon.http.RequestAbortException;
 
 /**
@@ -29,6 +32,19 @@ public class AbortingRetryListener implements RetryListener {
         // do nothing
     }
 
+    /**
+     * This detects behaviour of new Eureka. It tries to make first attempt without set instance. It is set in the error
+     * handeling.
+     * @param context Retry context
+     * @return true if handler was called after the first attempt without any server
+     */
+    private boolean isFirstAttemptWithoutServer(RetryContext context) {
+        if (context instanceof LoadBalancedRetryContext) {
+            return context.getRetryCount() == 1 && ((LoadBalancedRetryContext) context).getServiceInstance() != null;
+        }
+        return false;
+    }
+
     @Override
     public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
         // Exception from retry logic
@@ -36,7 +52,10 @@ public class AbortingRetryListener implements RetryListener {
             context.setExhaustedOnly();
         }
         // Exception from load balancer having no servers
-        if (throwable instanceof ClientException && StringUtils.startsWith(throwable.getMessage(), "Load balancer does not have available server for client")) {
+        if (
+            !isFirstAttemptWithoutServer(context) &&
+            (throwable instanceof ClientException && StringUtils.startsWith(throwable.getMessage(), "Load balancer does not have available server for client"))
+        ) {
             context.setExhaustedOnly();
         }
     }
