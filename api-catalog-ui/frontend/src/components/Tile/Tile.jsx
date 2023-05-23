@@ -53,9 +53,9 @@ export default class Tile extends Component {
         const status = this.getStatusFromServiceTotals(tile);
         switch (status) {
             case 'UP':
-                return 'All services are running';
+                return 'The service is running';
             case 'DOWN':
-                return 'No services are running';
+                return 'The service is not running';
             case 'WARNING':
                 return this.getStatusTextFromServiceTotals(tile);
             default:
