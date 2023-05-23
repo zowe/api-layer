@@ -7,7 +7,7 @@
 .serviceTab .header {
     margin: 20px 0 0 55px;
     background: #fff;
-    height: 100vw;
+    height: auto;
     display: block;
 }
 

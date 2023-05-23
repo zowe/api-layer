@@ -45,20 +45,23 @@ export default class ServiceTab extends Component {
 
         const {
             match: {
-                params: { tileID, serviceId },
+                params: { serviceId },
             },
-            tiles,
             selectedService,
             selectedTile,
             selectService,
+            currentTileId,
+            originalTiles,
         } = this.props;
-        tiles[0].services.forEach((service) => {
-            if (service.serviceId === serviceId) {
-                if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
-                    selectService(service, tileID);
+        originalTiles.forEach((tile) => {
+            tile.services.forEach((service) => {
+                if (service.serviceId === serviceId) {
+                    if (service.serviceId !== selectedService.serviceId || selectedTile !== currentTileId) {
+                        selectService(service, currentTileId);
+                    }
+                    currentService = service;
                 }
-                currentService = service;
-            }
+            });
         });
 
         return currentService;

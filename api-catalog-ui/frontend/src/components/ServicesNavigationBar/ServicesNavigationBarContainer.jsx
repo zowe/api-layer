@@ -11,14 +11,18 @@ import { connect } from 'react-redux';
 import ServicesNavigationBar from './ServicesNavigationBar';
 import { getFilteredServices } from '../../selectors/selectors';
 import { clear, filterText } from '../../actions/filter-actions';
+import { fetchTilesStart, storeCurrentTileId } from '../../actions/catalog-tile-actions';
 
 const mapStateToProps = (state) => ({
     searchCriteria: state.filtersReducer.text,
     originalTiles: getFilteredServices(state.tilesReducer.originalTiles, state.filtersReducer.text),
+    currentTileId: state.tilesReducer.currentTileId,
 });
-const mapDispatchToProps = {
-    filterText,
-    clear,
-};
+const mapDispatchToProps = (dispatch) => ({
+    fetchTilesStart: (id) => dispatch(fetchTilesStart(id)),
+    filterText: (text) => dispatch(filterText(text)),
+    clear: () => dispatch(clear()),
+    storeCurrentTileId: (id) => dispatch(storeCurrentTileId(id)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ServicesNavigationBar);

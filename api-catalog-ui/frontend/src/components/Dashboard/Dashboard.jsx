@@ -67,6 +67,7 @@ export default class Dashboard extends Component {
             refreshedStaticApisError,
             clearError,
             authentication,
+            storeCurrentTileId,
         } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
@@ -145,7 +146,18 @@ export default class Dashboard extends Component {
                                 <h3 className="info-headers">Videos</h3>
                             </div>
                             <hr id="separator2" />
-                            {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
+                            {hasTiles &&
+                                tiles.map((tile) =>
+                                    tile.services.map((service) => (
+                                        <Tile
+                                            storeCurrentTileId={storeCurrentTileId}
+                                            service={service}
+                                            key={tile.id}
+                                            tile={tile}
+                                            history={history}
+                                        />
+                                    ))
+                                )}
                             {!hasTiles && hasSearchCriteria && (
                                 <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
                                     No tiles found matching search criteria

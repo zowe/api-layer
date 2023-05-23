@@ -15,6 +15,7 @@ import {
     fetchTilesSuccess,
     fetchTilesStop,
     storeOriginalTiles,
+    storeCurrentTileId,
 } from '../../actions/catalog-tile-actions';
 import { clearService } from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
@@ -34,6 +35,7 @@ const mapStateToProps = (state) => ({
     refreshedStaticApisError: state.refreshStaticApisReducer.error,
     refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
     authentication: state.authenticationReducer,
+    currentTileId: state.tilesReducer.currentTileId,
 });
 
 const mapDispatchToProps = {
@@ -50,6 +52,7 @@ const mapDispatchToProps = {
     selectEnabler,
     closeAlert: () => userActions.closeAlert(),
     storeOriginalTiles: (tiles) => storeOriginalTiles(tiles),
+    storeCurrentTileId: (id) => storeCurrentTileId(id),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

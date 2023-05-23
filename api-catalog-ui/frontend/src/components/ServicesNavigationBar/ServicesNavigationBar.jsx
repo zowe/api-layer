@@ -26,8 +26,7 @@ export default class ServicesNavigationBar extends Component {
     };
 
     render() {
-        const { match } = this.props;
-        const { originalTiles, searchCriteria } = this.props;
+        const { match, originalTiles, searchCriteria, fetchTilesStart, storeCurrentTileId } = this.props;
         const hasTiles = originalTiles && originalTiles.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         return (
@@ -40,7 +39,14 @@ export default class ServicesNavigationBar extends Component {
                 </Typography>
                 {originalTiles.map((tile) =>
                     tile.services.map((service) => (
-                        <SidebarLink text={service.title} match={match} services={service.serviceId} />
+                        <SidebarLink
+                            storeCurrentTileId={storeCurrentTileId}
+                            fetchTilesStart={fetchTilesStart}
+                            tileId={tile.id}
+                            text={service.title}
+                            match={match}
+                            services={service.serviceId}
+                        />
                     ))
                 )}
                 {!hasTiles && hasSearchCriteria && (

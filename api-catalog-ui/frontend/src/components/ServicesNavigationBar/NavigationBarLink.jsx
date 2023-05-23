@@ -10,12 +10,15 @@
 import { Tab, Tabs } from '@material-ui/core';
 import { NavTab } from 'react-router-tabs';
 
-function SidebarLink({ text, match, services }) {
-    const handleChange = (_event, value) => {};
+function SidebarLink({ storeCurrentTileId, fetchTilesStart, tileId, text, match, services }) {
+    const handleChange = () => {
+        storeCurrentTileId(tileId);
+        fetchTilesStart(tileId);
+    };
     return (
         <div className="link">
             <NavTab sx={{ borderBottom: 1, borderColor: 'divider' }} to={`${match.url}/${services}`}>
-                <Tabs variant="scrollable" scrollButtons="auto" onChange={handleChange}>
+                <Tabs variant="scrollable" to={`${match.url}/${services}`} scrollButtons="auto" onChange={handleChange}>
                     <Tab label={text} />
                 </Tabs>
             </NavTab>
