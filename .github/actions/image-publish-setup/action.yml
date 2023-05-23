@@ -27,6 +27,6 @@ runs:
             shell: bash
             run: |
                 version=$(cat gradle.properties | awk '/version=/' | awk -F= '{print$2;}')
-                echo "::set-output name=version::$version"
+                echo "version=$version" >> $GITHUB_OUTPUT
 
         -   uses: zowe-actions/shared-actions/prepare-workflow@main
