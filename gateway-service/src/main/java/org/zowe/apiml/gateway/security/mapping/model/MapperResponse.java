@@ -44,7 +44,7 @@ public class MapperResponse {
 
     public boolean isOIDCResultValid() {
         // https://www.ibm.com/docs/en/zos/2.5.0?topic=user-return-reason-codes
-        if (rc == 0 || safRc == 0 || racfRc == 0 || racfRs == 0) {
+        if (rc == 0 && safRc == 0 && racfRc == 0 && racfRs == 0) {
             return true;
         }
 
