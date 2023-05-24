@@ -70,7 +70,7 @@ class OIDCTokenProviderTest {
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
         oidcTokenProvider = new OIDCTokenProvider(httpClient);
-        oidcTokenProvider.introspectEndpoint = "https://acme.com/introspect";
+        oidcTokenProvider.introspectUrl = "https://acme.com/introspect";
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
     }
