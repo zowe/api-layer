@@ -48,8 +48,8 @@ import java.util.List;
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.security.oidc.introspectEndpoint:}")
-    String introspectEndpoint;
+    @Value("${apiml.security.oidc.introspectUrl:}")
+    String introspectUrl;
 
     @Value("${apiml.security.oidc.clientId:}")
     String clientId;
@@ -78,15 +78,15 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.debug("No token has been provided.");
             return null;
         }
-        if (StringUtils.isBlank(introspectEndpoint) || !UrlUtils.isValidUrl(introspectEndpoint)) {
-            log.warn("Missing or invalid introspectEndpoint configuration. Cannot proceed with token validation.");
+        if (StringUtils.isBlank(introspectUrl) || !UrlUtils.isValidUrl(introspectUrl)) {
+            log.warn("Missing or invalid introspectUrl configuration. Cannot proceed with token validation.");
             return null;
         }
         if (StringUtils.isBlank(clientId) || StringUtils.isBlank(clientSecret)) {
             log.warn("Missing clientId or clientSecret configuration. Cannot proceed with token validation.");
             return null;
         }
-        HttpPost post = new HttpPost(introspectEndpoint);
+        HttpPost post = new HttpPost(introspectUrl);
         List<NameValuePair> bodyParams = new ArrayList<>();
         bodyParams.add(new BasicNameValuePair("token", token));
         bodyParams.add(new BasicNameValuePair("token_type_hint", "access_token"));
