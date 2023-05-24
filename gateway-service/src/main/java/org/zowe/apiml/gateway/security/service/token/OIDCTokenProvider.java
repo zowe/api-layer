@@ -48,14 +48,14 @@ import java.util.List;
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.security.oidc.introspectEndpoint:/introspect}")
-    private String introspectEndpoint;
+    @Value("${apiml.security.oidc.introspectEndpoint:}")
+    String introspectEndpoint;
 
     @Value("${apiml.security.oidc.clientId:}")
-    private String clientId;
+    String clientId;
 
     @Value("${apiml.security.oidc.clientSecret:}")
-    private String clientSecret;
+    String clientSecret;
 
     @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
@@ -65,26 +65,28 @@ public class OIDCTokenProvider implements OIDCProvider {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public boolean isValid(String token, String issuer) {
-        OIDCTokenClaims claims = introspect(token, issuer);
+    public boolean isValid(String token) {
+        OIDCTokenClaims claims = introspect(token);
         if (claims != null) {
             return claims.getActive();
         }
         return false;
     }
 
-    private OIDCTokenClaims introspect(String token, String issuer) {
+    private OIDCTokenClaims introspect(String token) {
         if (StringUtils.isBlank(token)) {
             log.debug("No token has been provided.");
             return null;
         }
-
-        if (StringUtils.isBlank(issuer) || !UrlUtils.isValidUrl(issuer)) {
-            log.warn("The OIDC token does not contain issuer claim or the claim is not valid. Cannot proceed with token validation.");
+        if (StringUtils.isBlank(introspectEndpoint) || !UrlUtils.isValidUrl(introspectEndpoint)) {
+            log.warn("Missing or invalid introspectEndpoint configuration. Cannot proceed with token validation.");
             return null;
         }
-
-        HttpPost post = new HttpPost(issuer + introspectEndpoint);
+        if (StringUtils.isBlank(clientId) || StringUtils.isBlank(clientSecret)) {
+            log.warn("Missing clientId or clientSecret configuration. Cannot proceed with token validation.");
+            return null;
+        }
+        HttpPost post = new HttpPost(introspectEndpoint);
         List<NameValuePair> bodyParams = new ArrayList<>();
         bodyParams.add(new BasicNameValuePair("token", token));
         bodyParams.add(new BasicNameValuePair("token_type_hint", "access_token"));

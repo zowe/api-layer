@@ -57,7 +57,6 @@ class OIDCTokenProviderTest {
         "}";
 
     private static final String TOKEN = "token";
-    private static final String ISSUER = "https://issuer.com";
 
     @BeforeEach
     void setup() throws CachingServiceClientException, IOException {
@@ -71,6 +70,9 @@ class OIDCTokenProviderTest {
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
         oidcTokenProvider = new OIDCTokenProvider(httpClient);
+        oidcTokenProvider.introspectEndpoint = "https://acme.com/introspect";
+        oidcTokenProvider.clientId = "client_id";
+        oidcTokenProvider.clientSecret = "client_secret";
     }
 
     @Nested
@@ -78,56 +80,56 @@ class OIDCTokenProviderTest {
         @Test
         void tokenIsActive_thenReturnValid() {
             responseEntity.setContent(IOUtils.toInputStream(BODY, StandardCharsets.UTF_8));
-            assertTrue(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertTrue(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void tokenIsExpired_thenReturnInvalid() {
             responseEntity.setContent(IOUtils.toInputStream(NOT_VALID_BODY, StandardCharsets.UTF_8));
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenClientThrowsException_thenReturnInvalid() throws IOException {
             ClientProtocolException exception = new ClientProtocolException("http error");
             when(httpClient.execute(any())).thenThrow(exception);
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenResponseIsNotValidJson_thenReturnInvalid() {
             responseEntity.setContent(IOUtils.toInputStream("{notValid}", StandardCharsets.UTF_8));
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenResponseStatusIsNotOk_thenReturnInvalid() {
             when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenTokenIsNull_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(null, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(null));
         }
 
         @Test
         void whenTokenIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid("", ISSUER));
+            assertFalse(oidcTokenProvider.isValid(""));
         }
 
         @Test
         void whenIssuerIsNull_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(TOKEN, null));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenIssuerIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ""));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
         @Test
         void whenIssuerIsNotURL_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(TOKEN, "not valid url"));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
     }
