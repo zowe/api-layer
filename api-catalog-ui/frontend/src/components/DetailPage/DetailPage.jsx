@@ -8,10 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component, Suspense } from 'react';
-import { NavTab } from 'react-router-tabs';
-import { IconButton, Typography, Tooltip } from '@material-ui/core';
+import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ErrorIcon from '@material-ui/icons/Error';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
 import './DetailPage.css';
@@ -92,40 +90,12 @@ export default class DetailPage extends Component {
                         {error}
                     </div>
                 )}
-                {!isLoading && !fetchTilesError && (
-                    <div className="api-description-container">
-                        <IconButton
-                            id="go-back-button"
-                            data-testid="go-back-button"
-                            color="primary"
-                            onClick={this.handleGoBack}
-                            size="medium"
-                        >
-                            {iconBack}
-                            Back
-                        </IconButton>
-                        <div className="detailed-description-container">
-                            <div className="title-api-container">
-                                {tiles !== undefined && tiles.length === 1 && (
-                                    <div id="title" className="text-block-11">
-                                        {tiles[0].title}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="paragraph-description-container">
-                                {tiles !== undefined && tiles.length > 0 && (
-                                    <div id="description" className="text-block-12">
-                                        {tiles[0].description}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
                 <div className="nav-bar">
-                    <Shield>
-                        <ServicesNavigationBarContainer originalTiles={originalTiles} match={match} />
-                    </Shield>
+                    {originalTiles !== undefined && originalTiles.length > 0 && (
+                        <Shield>
+                            <ServicesNavigationBarContainer originalTiles={originalTiles} match={match} />
+                        </Shield>
+                    )}
                 </div>
                 <div className="content-description-container">
                     {tiles !== undefined && tiles.length === 1 && (
@@ -143,8 +113,40 @@ export default class DetailPage extends Component {
                                         exact
                                         path={`${match.path}/:serviceId`}
                                         render={() => (
-                                            <div className="tabs-swagger">
-                                                <ServiceTabContainer />
+                                            <div>
+                                                {!isLoading && !fetchTilesError && (
+                                                    <div className="api-description-container">
+                                                        <IconButton
+                                                            id="go-back-button"
+                                                            data-testid="go-back-button"
+                                                            color="primary"
+                                                            onClick={this.handleGoBack}
+                                                            size="medium"
+                                                        >
+                                                            {iconBack}
+                                                            Back
+                                                        </IconButton>
+                                                        <div className="detailed-description-container">
+                                                            <div className="title-api-container">
+                                                                {tiles !== undefined && tiles.length === 1 && (
+                                                                    <div id="title" className="text-block-11">
+                                                                        {tiles[0].title}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="paragraph-description-container">
+                                                                {tiles !== undefined && tiles.length > 0 && (
+                                                                    <div id="description" className="text-block-12">
+                                                                        {tiles[0].description}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className="tabs-swagger">
+                                                    <ServiceTabContainer />
+                                                </div>
                                             </div>
                                         )}
                                     />

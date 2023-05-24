@@ -1,34 +1,48 @@
-/*#sidebar-menu {*/
-/*    position: relative;*/
-/*    background: red;*/
-/*}*/
-
-.sidebar {
-    display: inline-flex;
-    height: 850px;
-    padding: 10px 0px;
-    flex-direction: column;
-    align-items: center;
-    width: 250px;
-    min-width: 250px;
-    padding: 20px 20px;
-    margin: 20px auto 0 auto;
-    box-shadow: 0 0 6px hsl(210 14% 90%);
-}
-
-.link{
+.nav-tabs {
+    width: auto;
+    border: 3px solid #F7F9FA;
+    overflow-y: auto;
     display: flex;
     align-items: cover;
     cursor: pointer;
-    border-radius: 30px;
 }
-.link:hover{
-    background-color: #e8f5fe;
+
+.nav-tabs:hover {
+    background-color: #EFEFEF;
     color: #50b7f5;
     transition: color 100ms ease-out;
 }
-.link > h2{
-    font-weight: 700;
-    font-size: 20px;
-    margin-right: 20px;
+
+.tabs {
+    height: 100%;
+    display: flex;
+    padding: 10px 5px 10px 20px;
+    align-items: center;
+    gap: 10px;
+    width: auto;
+}
+
+#search2 {
+    height: 47px;
+    background: #FFFFFF;
+    border: 1px solid #C9C8C5;
+    margin-right: 15px;
+    margin-bottom: 9px;
+}
+
+#search2 > div > div > input {
+    margin-left: 13px;
+    margin-top: 6px;
+}
+
+#search2> div> div> div> #search-icon {
+    margin-top: 7px;
+}
+
+#search2> div> div> div> #clear-text-search {
+    margin-top: 7px;
+}
+
+#serviceIdTabs {
+    margin-bottom: 10px;
 }

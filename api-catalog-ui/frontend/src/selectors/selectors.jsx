@@ -49,20 +49,22 @@ export const getFilteredServices = (tiles, searchCriteria) => {
 
     const filteredTiles = JSON.parse(JSON.stringify(tiles));
 
-    return filteredTiles.filter((tile) => {
-        const filteredServices = tile.services.filter((service) => {
-            if (!searchCriteria || searchCriteria.length === 0) {
-                return true;
+    return filteredTiles
+        .filter((tile) => {
+            const filteredServices = tile.services.filter((service) => {
+                if (!searchCriteria || searchCriteria.length === 0) {
+                    return true;
+                }
+                return service.title.toLowerCase().includes(searchCriteria.toLowerCase());
+            });
+
+            if (filteredServices.length === 0) {
+                return false;
             }
-            return service.title.toLowerCase().includes(searchCriteria.toLowerCase());
-        });
 
-        if (filteredServices.length === 0) {
-            return false;
-        }
+            tile.services = filteredServices.sort((service1, service2) => service1.title.localeCompare(service2.title));
 
-        tile.services = filteredServices.sort((service1, service2) => service1.title.localeCompare(service2.title));
-
-        return tile.title.toLowerCase().includes(searchCriteria.toLowerCase()) || filteredServices.length > 0;
-    });
+            return tile.title.toLowerCase().includes(searchCriteria.toLowerCase()) || filteredServices.length > 0;
+        })
+        .sort((tile1, tile2) => tile1.title.localeCompare(tile2.title));
 };

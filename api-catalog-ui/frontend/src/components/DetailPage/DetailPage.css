@@ -51,7 +51,7 @@
 }
 
 .api-description-container {
-    margin-left: 285px;
+    margin-left: 388px;
     padding: 2.2rem;
 }
 
@@ -130,19 +130,22 @@ div.content-description-container > div > div:nth-child(2) > div {
 
 #serviceIdTabs {
     color: black;
-    font-size: 14px;
+    font-size: 24px;
     font-weight: bold;
 }
 
 .nav-bar {
+    min-height: 84vh;
+    flex-direction: column;
+    align-items: center;
+    min-width: 368px;
+    box-shadow: 0 0 6px hsl(210 14% 90%);
     padding: 10px 5px 10px 20px;
-    /*align-items: flex-start;*/
-    gap: 6px;
     flex: 1 0 0;
-    width: 320px;
-    height: 51px;
-    /*align-items: center;*/
+    width: auto;
+    height: auto;
     display: table-column;
     float: left;
     position: relative;
+    background: white;
 }

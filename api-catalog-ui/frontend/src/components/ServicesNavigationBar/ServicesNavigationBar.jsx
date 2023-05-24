@@ -10,9 +10,10 @@
 
 import { Component } from 'react';
 import { Typography } from '@material-ui/core';
-import SidebarLink from './NavigationBarLink';
+import SideBarLinks from './SideBarLinks';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
+import './ServicesNavigationBar.css';
 
 export default class ServicesNavigationBar extends Component {
     componentWillUnmount() {
@@ -30,23 +31,27 @@ export default class ServicesNavigationBar extends Component {
         const hasTiles = originalTiles && originalTiles.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         return (
-            <div className="sidebar">
-                <Shield title="Search Bar is broken !">
-                    <SearchCriteria id="search-input" placeholder="Search for APIs..." doSearch={this.handleSearch} />
-                </Shield>
+            <div>
+                <div id="search2">
+                    <Shield title="Search Bar is broken !">
+                        <SearchCriteria placeholder="Search for APIs..." doSearch={this.handleSearch} />
+                    </Shield>
+                </div>
                 <Typography id="serviceIdTabs" variant="h5">
                     Product APIs
                 </Typography>
                 {originalTiles.map((tile) =>
                     tile.services.map((service) => (
-                        <SidebarLink
-                            storeCurrentTileId={storeCurrentTileId}
-                            fetchTilesStart={fetchTilesStart}
-                            tileId={tile.id}
-                            text={service.title}
-                            match={match}
-                            services={service.serviceId}
-                        />
+                        <div className="nav-tabs">
+                            <SideBarLinks
+                                storeCurrentTileId={storeCurrentTileId}
+                                fetchTilesStart={fetchTilesStart}
+                                tileId={tile.id}
+                                text={service.title}
+                                match={match}
+                                services={service.serviceId}
+                            />
+                        </div>
                     ))
                 )}
                 {!hasTiles && hasSearchCriteria && (
