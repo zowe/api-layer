@@ -1,14 +1,16 @@
 name: Publish to NPM
 
 on:
-    workflow_run:
-        workflows: "This workflow is to trigger on demand NPM publishing of the idf plugin"
-        default: "latest"
-        required: true
+    workflow_dispatch:
+     inputs:
+        pkg-tags:
+         description: "This workflow is to trigger on demand NPM publishing of the idf plugin"
+         default: "latest"
+         required: true
 
 jobs:
     publish:
-        uses: zowe/zowe-cli-standalone-package/.github/workflows/zowe-cli-deploy-component.yaml
+        uses: zowe/zowe-cli-standalone-package/.github/workflows/zowe-cli-deploy-component.yaml@master
         secrets:
             NPM_PUBLIC_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
         with:
