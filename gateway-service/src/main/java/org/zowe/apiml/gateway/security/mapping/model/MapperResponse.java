@@ -22,7 +22,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 @AllArgsConstructor
 public class MapperResponse {
 
-    private static final String OIDC_FAILED_MESSAGE_KEY = "org.zowe.apiml.security.common.OIDCMappingFailed";
+    public static final String OIDC_FAILED_MESSAGE_KEY = "org.zowe.apiml.security.common.OIDCMappingFailed";
 
     @JsonProperty("userid")
     private String userId;
@@ -43,7 +43,6 @@ public class MapperResponse {
     }
 
     public boolean isOIDCResultValid() {
-        // Some codes may be 4 and the result is still valid. But deny unless we know it for sure
         // https://www.ibm.com/docs/en/zos/2.5.0?topic=user-return-reason-codes
         if (rc == 0 || safRc == 0 || racfRc == 0 || racfRs == 0) {
             return true;
@@ -51,6 +50,11 @@ public class MapperResponse {
 
         if (rc == 8 && safRc == 8 && racfRc == 8) {
             switch (racfRs) {
+                case 4:
+                    apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
+                        "A parameter list error occurred. Make sure LU01316 PTF was applied when using" +
+                            " the ACF2 security manager. Otherwise, contact Zowe support.");
+                    return false;
                 case 20:
                     apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
                         "Not authorized to use this service. Make sure that user '" + userId + "' has READ" +

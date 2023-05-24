@@ -29,6 +29,8 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.UnsupportedEncodingException;
 
+import static org.zowe.apiml.gateway.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
+
 @Slf4j
 @Component("oidcMapper")
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
@@ -55,12 +57,16 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
         }
 
         if (StringUtils.isEmpty(registry)) {
-            log.warn("Missing registry name configuration. Cannot complete identity mapping request.");
+            apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
+                "Missing registry name configuration. Make sure that " +
+                    "'components.gateway.apiml.security.oidc.registry' is correctly set in 'zowe.yaml'.");
             return null;
         }
         final String distributedId = ((OIDCAuthSource) authSource).getDistributedId();
         if (StringUtils.isEmpty(distributedId)) {
-            log.warn("Authentication source is missing the distributed ID. Cannot complete identity mapping request.");
+            apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
+                "OIDC token is missing the distributed ID. Make sure your distributed identity provider is" +
+                    " properly configured.");
             return null;
         }
         OIDCRequest oidcRequest = new OIDCRequest(distributedId, registry);
