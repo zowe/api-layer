@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.MapPropertySource;
 import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
-import org.zowe.apiml.gateway.ribbon.AbortingRetryListener;
 import org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer;
 import org.zowe.apiml.gateway.ribbon.ApimlRetryableClient;
 import org.zowe.apiml.gateway.ribbon.ApimlRibbonRetryFactory;
@@ -51,8 +50,7 @@ public class RibbonTestConfiguration {
 
     @Bean
     public ApimlRibbonRetryFactory apimlRibbonRetryFactory(SpringClientFactory springClientFactory) {
-        AbortingRetryListener retryListener = new AbortingRetryListener();
-        return new ApimlRibbonRetryFactory(springClientFactory, retryListener);
+        return new ApimlRibbonRetryFactory(springClientFactory);
     }
 
     @Bean

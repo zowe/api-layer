@@ -53,9 +53,8 @@ public class GatewayRibbonConfig {
     private boolean approximateZoneFromHostname = false;
 
     @Bean
-    public ApimlRibbonRetryFactory apimlRibbonRetryFactory(SpringClientFactory springClientFactory/*, ServiceInstanceChooser serviceInstanceChooser*/) {
-        AbortingRetryListener retryListener = new AbortingRetryListener(/*serviceInstanceChooser*/);
-        return new ApimlRibbonRetryFactory(springClientFactory, retryListener);
+    public ApimlRibbonRetryFactory apimlRibbonRetryFactory(SpringClientFactory springClientFactory) {
+        return new ApimlRibbonRetryFactory(springClientFactory);
     }
 
     @Bean

@@ -10,24 +10,36 @@
 
 package org.zowe.apiml.gateway.ribbon;
 
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
+import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.retry.RetryListener;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Allows adding RetryListeners to Ribbon Retry
  */
 public class ApimlRibbonRetryFactory extends RibbonLoadBalancedRetryFactory {
 
-    private final RetryListener[] listeners;
+    private final AtomicReference<ServiceInstanceChooser> serviceInstanceChooser = new AtomicReference<>();
 
-    public ApimlRibbonRetryFactory(SpringClientFactory clientFactory, RetryListener... listeners) {
+    public ApimlRibbonRetryFactory(SpringClientFactory clientFactory) {
         super(clientFactory);
-        this.listeners = listeners;
+    }
+
+    @Override
+    public LoadBalancedRetryPolicy createRetryPolicy(String service, ServiceInstanceChooser serviceInstanceChooser) {
+        this.serviceInstanceChooser.set(serviceInstanceChooser);
+        return super.createRetryPolicy(service, serviceInstanceChooser);
     }
 
     @Override
     public RetryListener[] createRetryListeners(String service) {
-        return listeners;
+        return new RetryListener[] {
+            new InitializingRetryListener(this.serviceInstanceChooser.get()),
+            new AbortingRetryListener()
+        };
     }
 }
