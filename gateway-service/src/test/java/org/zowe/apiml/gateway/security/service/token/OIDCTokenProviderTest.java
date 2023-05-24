@@ -108,6 +108,10 @@ class OIDCTokenProviderTest {
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
+    }
+
+    @Nested
+    class GivenEmptyTokenProvided {
         @Test
         void whenTokenIsNull_thenReturnInvalid() {
             assertFalse(oidcTokenProvider.isValid(null));
@@ -117,21 +121,47 @@ class OIDCTokenProviderTest {
         void whenTokenIsEmpty_thenReturnInvalid() {
             assertFalse(oidcTokenProvider.isValid(""));
         }
-
+    }
+    @Nested
+    class GivenInvalidConfiguration {
         @Test
-        void whenIssuerIsNull_thenReturnInvalid() {
+        void whenIntrospectUrlIsNull_thenReturnInvalid() {
+            oidcTokenProvider.introspectUrl = null;
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
+        }
+        @Test
+        void whenIntrospectUrlIsEmpty_thenReturnInvalid() {
+            oidcTokenProvider.introspectUrl = "";
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
-        void whenIssuerIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
-        @Test
-        void whenIssuerIsNotURL_thenReturnInvalid() {
+        void whenIntrospectUrlIsInvalid_thenReturnInvalid() {
+            oidcTokenProvider.introspectUrl = "{not_an_URL}";
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
+        @Test
+        void whenClientIdIsNull_thenReturnInvalid() {
+            oidcTokenProvider.clientId = null;
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
+        }
+        @Test
+        void whenClientIdIsEmpty_thenReturnInvalid() {
+            oidcTokenProvider.clientId = "";
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
+        }
+
+        @Test
+        void whenClientSecretIsNull_thenReturnInvalid() {
+            oidcTokenProvider.clientSecret = null;
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
+        }
+        @Test
+        void whenClientSecretIsEmpty_thenReturnInvalid() {
+            oidcTokenProvider.clientSecret = "";
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
+        }
     }
 
 }
