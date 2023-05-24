@@ -1,4 +1,4 @@
-name: Publish to NPM
+name: idf plugin Publish to NPM
 
 on:
     workflow_dispatch:
