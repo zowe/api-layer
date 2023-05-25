@@ -38,7 +38,6 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -238,7 +237,7 @@ public class AuthController {
      *
      * @return The key actually used to verify the JWT tokens.
      */
-    @GetMapping(path = {PUBLIC_KEYS_PATH})
+    @GetMapping(path = PUBLIC_KEYS_PATH)
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
@@ -281,8 +280,7 @@ public class AuthController {
     @HystrixCommand
     public ResponseEntity<String> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
-        QueryResponse tokenClaims = authenticationService.parseJwtToken(token);
-        if (oidcProvider != null && oidcProvider.isValid(token, tokenClaims.getIssuer())) {
+        if (oidcProvider != null && oidcProvider.isValid(token)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
