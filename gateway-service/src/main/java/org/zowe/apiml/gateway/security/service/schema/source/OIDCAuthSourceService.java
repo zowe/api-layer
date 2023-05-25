@@ -10,9 +10,8 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import java.util.Optional;
-import java.util.function.Function;
-
+import com.netflix.zuul.context.RequestContext;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,9 +27,8 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import com.netflix.zuul.context.RequestContext;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +55,14 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<String> getToken(RequestContext context) {
-        return authenticationService.getOIDCTokenFromRequest(context.getRequest());
+        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        if (tokenOptional.isPresent()) {
+            AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());
+            if (AuthSource.Origin.OIDC == origin) {
+                return tokenOptional;
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -66,10 +71,10 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         if (authSource instanceof OIDCAuthSource) {
             String token = ((OIDCAuthSource) authSource).getRawSource();
             if (StringUtils.isNotBlank(token)) {
-                QueryResponse tokenClaims = authenticationService.parseJwtToken(token);
                 logger.log(MessageType.DEBUG, "Validating OIDC token.");
-                if (oidcProvider.isValid(token, tokenClaims.getIssuer())) {
+                if (oidcProvider.isValid(token)) {
                     logger.log(MessageType.DEBUG, "OIDC token is valid, set the distributed id to the auth source.");
+                    QueryResponse tokenClaims = authenticationService.parseJwtToken(token);
                     ((OIDCAuthSource) authSource).setDistributedId(tokenClaims.getUserId());
                     return true;
                 }
@@ -117,7 +122,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     @Override
     public String getLtpaToken(AuthSource authSource) {
         String zosmfToken = getJWT(authSource);
-        AuthSource.Origin origin = getTokenOrigin(zosmfToken);
+        AuthSource.Origin origin = authenticationService.getTokenOrigin(zosmfToken);
         if (AuthSource.Origin.ZOWE.equals(origin)) {
             zosmfToken = authenticationService.getLtpaToken(zosmfToken);
         }
@@ -128,11 +133,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     public String getJWT(AuthSource authSource) {
         AuthSource.Parsed parsed = parse(authSource);
         return tokenService.createJwtTokenWithoutCredentials(parsed.getUserId());
-    }
-
-    public AuthSource.Origin getTokenOrigin(String zosmfToken) {
-        QueryResponse response = authenticationService.parseJwtToken(zosmfToken);
-        return AuthSource.Origin.valueByTokenSource(response.getSource());
     }
 
 }

@@ -15,8 +15,10 @@ apiml:
             enabled: false
             clientId:
             clientSecret:
-            introspectEndpoint:
+            introspectUrl:
             registry:
+            identityMapperUrl:
+            identityMapperUser:
         auth:
             jwt:
                 customAuthHeader:

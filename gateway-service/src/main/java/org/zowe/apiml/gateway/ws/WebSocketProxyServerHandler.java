@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -156,7 +157,10 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     private void closeWebSocket(WebSocketSession webSocketSession, CloseStatus closeStatus, String reason) throws IOException {
         if (webSocketSession.isOpen()) {
+            log.debug("WebSocket session {} is open, requesting close with reason {}", webSocketSession.getId(), reason);
             webSocketSession.close(closeStatus.withReason(reason));
+        } else {
+            log.debug("WebSocket session {} is already closed, new reason is {}", webSocketSession.getId(), reason);
         }
     }
 
@@ -178,12 +182,20 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
         routedSessions.put(webSocketSession.getId(), session);
-
-
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        // if the browser closes the session, close the GWs client one as well.
+        Optional.ofNullable(routedSessions.get(session.getId()))
+            .map(WebSocketRoutedSession::getWebSocketClientSession)
+            .ifPresent(clientSession -> {
+                try {
+                    clientSession.close(status);
+                } catch (IOException e) {
+                    log.debug("Error closing WebSocket client connection {}: {}", clientSession.getId(), e.getMessage());
+                }
+            });
         routedSessions.remove(session.getId());
     }
 

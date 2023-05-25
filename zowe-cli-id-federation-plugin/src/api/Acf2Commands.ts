@@ -20,8 +20,8 @@ export class Acf2Commands extends Commands{
         identities: IIdentity[],
         response: IHandlerResponseApi
     ) {
-        const acf2Template = fs.readFileSync('src/api/templates/acf2.jcl').toString();
-        const acf2RefreshCommand = fs.readFileSync('src/api/templates/acf2_refresh.jcl').toString();
+        const acf2Template = fs.readFileSync(`${__dirname}/templates/acf2.jcl`).toString();
+        const acf2RefreshCommand = fs.readFileSync(`${__dirname}/templates/acf2_refresh.jcl`).toString();
         super(registry,identities,acf2Template,acf2RefreshCommand,response);
     }
 
