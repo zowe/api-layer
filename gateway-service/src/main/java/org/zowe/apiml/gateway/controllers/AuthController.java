@@ -10,21 +10,17 @@
 
 package org.zowe.apiml.gateway.controllers;
 
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.security.PublicKey;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
@@ -32,14 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
@@ -52,18 +41,14 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.security.PublicKey;
+import java.util.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * Controller offer method to control security. It can contains method for user and also method for calling services
@@ -241,12 +226,7 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public Map<String, Object> getCurrentPublicKeys() {
-        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
-
-        if (keys.isEmpty()) {
-            Optional<JWK> key = jwtSecurity.getJwkPublicKey();
-            key.ifPresent(keys::add);
-        }
+        final List<JWK> keys = getCurrentKey();
         return new JWKSet(keys).toJSONObject(true);
     }
 
@@ -258,10 +238,28 @@ public class AuthController {
      *
      * @return The key actually used to verify the JWT tokens.
      */
-    @GetMapping(path = PUBLIC_KEYS_PATH)
+    @GetMapping(path = {PUBLIC_KEYS_PATH})
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
+        List<JWK> publicKeys = getCurrentKey();
+        if (publicKeys.isEmpty()) {
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (publicKeys.size() != 1) {
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        try {
+            PublicKey key = publicKeys.get(0)
+                .toRSAKey()
+                .toPublicKey();
+            return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
+        } catch (IOException | JOSEException ex) {
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private List<JWK> getCurrentKey() {
         JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 
         JWKSet currentKey = new JWKSet();
@@ -274,22 +272,9 @@ public class AuthController {
                 break;
             case UNKNOWN:
                 //return 500 as we just don't know yet.
-                return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                return Collections.emptyList();
         }
-
-        List<JWK> publicKeys = currentKey.getKeys();
-        if (publicKeys.size() != 1) {
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        try {
-            PublicKey key = publicKeys.get(0)
-                .toRSAKey()
-                .toPublicKey();
-            return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
-        } catch (IOException | JOSEException ex) {
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return currentKey.getKeys();
     }
 
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
