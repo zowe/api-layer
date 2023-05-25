@@ -83,7 +83,9 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
                 throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidAuthentication");
             }
         } catch (TokenExpireException tee) {
-            cmd = null;
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
+            sendErrorMessage(error, context);
+            return null;
         } catch (TokenNotValidException notValidException) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
             sendErrorMessage(error, context);

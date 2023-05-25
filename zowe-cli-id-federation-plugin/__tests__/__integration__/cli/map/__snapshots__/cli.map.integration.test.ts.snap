@@ -85,7 +85,7 @@ exports[`id-federation map command integration tests should print the successful
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok) -
   IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Name)
-
+ 
  F ACF2,REBUILD(USR),CLASS(P),DIVISION(IDMAP)
  END
 /*
@@ -133,7 +133,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaame ok')) REGISTRY(NAME('ldap://12.34.56.78:910')) -
   WITHLABEL('Name')
-
+ 
  SETROPTS RACLIST(IDIDMAP) REFRESH
 /*
 "

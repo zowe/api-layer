@@ -16,6 +16,7 @@ import org.junit.platform.commons.util.StringUtils;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -42,7 +43,13 @@ public class RunningService {
         stop();
 
         ArrayList<String> shellCommand = new ArrayList<>();
-        shellCommand.add("java");
+
+        // If JAVA_HOME is defined in environment variable, use it, otherwise assume in PATH
+        String path = Optional.ofNullable(System.getenv("JAVA_HOME"))
+                                .map(javaHome -> javaHome + "/bin/")
+                                .orElse("");
+
+        shellCommand.add(path + "java");
         parametersBefore
             .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
 

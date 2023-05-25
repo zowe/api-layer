@@ -40,8 +40,12 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
-    public OIDCExternalMapper(CloseableHttpClient httpClientProxy, TokenCreationService tokenCreationService, AuthConfigurationProperties authConfigurationProperties) {
-        super(httpClientProxy, tokenCreationService, authConfigurationProperties);
+    public OIDCExternalMapper(@Value("${apiml.security.oidc.identityMapperUrl:}") String mapperUrl,
+                              @Value("${apiml.security.oidc.identityMapperUser:}") String mapperUser,
+                              CloseableHttpClient httpClientProxy,
+                              TokenCreationService tokenCreationService,
+                              AuthConfigurationProperties authConfigurationProperties) {
+        super(mapperUrl, mapperUser, httpClientProxy, tokenCreationService, authConfigurationProperties);
     }
 
     public String mapToMainframeUserId(AuthSource authSource) {
@@ -82,8 +86,4 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
         return null;
     }
 
-    @Override
-    protected Type getMapperType() {
-        return Type.OIDC;
-    }
 }

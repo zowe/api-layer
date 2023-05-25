@@ -12,6 +12,8 @@ apiml:
             clientSecret:
             introspectEndpoint:
             registry:
+            identityMapperUrl:
+            identityMapperUser:
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
