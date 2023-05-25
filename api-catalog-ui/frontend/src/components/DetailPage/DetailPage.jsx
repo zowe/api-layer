@@ -38,13 +38,6 @@ export default class DetailPage extends Component {
         const { history } = this.props;
         history.push('/dashboard');
     };
-    //
-    // setTitle = (title, status) => {
-    //     if (status === 'DOWN') {
-    //         return `${title} - This service is not running`;
-    //     }
-    //     return title;
-    // };
 
     render() {
         const {
