@@ -20,6 +20,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 
 import java.io.IOException;
@@ -124,42 +128,29 @@ class OIDCTokenProviderTest {
     }
     @Nested
     class GivenInvalidConfiguration {
-        @Test
-        void whenIntrospectUrlIsNull_thenReturnInvalid() {
-            oidcTokenProvider.introspectUrl = null;
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
-        @Test
-        void whenIntrospectUrlIsEmpty_thenReturnInvalid() {
-            oidcTokenProvider.introspectUrl = "";
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        @ValueSource(strings = {"not_an_URL", "https//\\:"})
+        void whenInvalidIntrospectUrl_thenReturnInvalid(String url) {
+            oidcTokenProvider.introspectUrl = url;
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
-        @Test
-        void whenIntrospectUrlIsInvalid_thenReturnInvalid() {
-            oidcTokenProvider.introspectUrl = "{not_an_URL}";
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void whenInvalidClientId_thenReturnInvalid(String id) {
+            oidcTokenProvider.clientId = id;
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
-        @Test
-        void whenClientIdIsNull_thenReturnInvalid() {
-            oidcTokenProvider.clientId = null;
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
-        @Test
-        void whenClientIdIsEmpty_thenReturnInvalid() {
-            oidcTokenProvider.clientId = "";
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
-
-        @Test
-        void whenClientSecretIsNull_thenReturnInvalid() {
-            oidcTokenProvider.clientSecret = null;
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
-        @Test
-        void whenClientSecretIsEmpty_thenReturnInvalid() {
-            oidcTokenProvider.clientSecret = "";
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void whenInvalidClientSecret_thenReturnInvalid(String secret) {
+            oidcTokenProvider.clientSecret = secret;
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
     }
