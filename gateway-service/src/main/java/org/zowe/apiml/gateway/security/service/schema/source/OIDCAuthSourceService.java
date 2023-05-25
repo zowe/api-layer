@@ -71,10 +71,10 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         if (authSource instanceof OIDCAuthSource) {
             String token = ((OIDCAuthSource) authSource).getRawSource();
             if (StringUtils.isNotBlank(token)) {
-                QueryResponse tokenClaims = authenticationService.parseJwtToken(token);
                 logger.log(MessageType.DEBUG, "Validating OIDC token.");
-                if (oidcProvider.isValid(token, tokenClaims.getIssuer())) {
+                if (oidcProvider.isValid(token)) {
                     logger.log(MessageType.DEBUG, "OIDC token is valid, set the distributed id to the auth source.");
+                    QueryResponse tokenClaims = authenticationService.parseJwtToken(token);
                     ((OIDCAuthSource) authSource).setDistributedId(tokenClaims.getUserId());
                     return true;
                 }

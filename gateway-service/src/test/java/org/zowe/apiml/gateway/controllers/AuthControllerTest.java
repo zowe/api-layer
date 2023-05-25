@@ -39,14 +39,12 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
@@ -349,17 +347,12 @@ class AuthControllerTest {
     class GivenValidateOIDCTokenRequest {
 
         private static final String TOKEN = "token";
-        private static final String ISSUER = "issuer";
-        @BeforeEach
-        void setup() {
-            QueryResponse tokenResponse = new QueryResponse("domain", "user", new Date(), new Date(), ISSUER, Collections.emptyList(), QueryResponse.Source.OIDC);
-            when(authenticationService.parseJwtToken(TOKEN)).thenReturn(tokenResponse);
-        }
+
         @Nested
         class WhenValidateToken {
             @Test
             void validateOIDCToken() throws Exception {
-                when(oidcProvider.isValid(TOKEN, ISSUER)).thenReturn(true);
+                when(oidcProvider.isValid(TOKEN)).thenReturn(true);
                 mockMvc.perform(post("/gateway/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
@@ -368,7 +361,7 @@ class AuthControllerTest {
 
             @Test
             void return401() throws Exception {
-                when(oidcProvider.isValid(TOKEN, ISSUER)).thenReturn(false);
+                when(oidcProvider.isValid(TOKEN)).thenReturn(false);
                 mockMvc.perform(post("/gateway/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
