@@ -11,7 +11,6 @@
 package org.zowe.apiml.client.api;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.model.LoginBody;
@@ -31,9 +30,6 @@ public class AuthenticationController {
     @DeleteMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> logout(HttpServletResponse response,
                                     @RequestHeader Map<String, String> headers) {
-        if(headers.get("cookie") == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
         return authentication.process(AUTHENTICATION_SERVICE, "delete", response, headers);
     }
 
