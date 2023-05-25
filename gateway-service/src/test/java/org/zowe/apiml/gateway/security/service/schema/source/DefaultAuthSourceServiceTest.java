@@ -21,8 +21,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -42,7 +41,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         x509MFAuthSourceService = mock(X509AuthSourceService.class);
         patAuthSourceService = mock(PATAuthSourceService.class);
         oidcAuthSourceService = mock(OIDCAuthSourceService.class);
-        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, patAuthSourceService, true, oidcAuthSourceService, true);
+        serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, true, patAuthSourceService, true, oidcAuthSourceService, true);
         x509Certificate = mock(X509Certificate.class);
     }
 
@@ -60,10 +59,12 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
             verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
             verifyNoInteractions(x509MFAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
 
             assertTrue(authSource.isPresent());
             assertTrue(authSource.get() instanceof JwtAuthSource);
-            Assertions.assertEquals(jwtAuthSource, authSource.get());
+            assertEquals(jwtAuthSource, authSource.get());
         }
 
         @Test
@@ -73,6 +74,8 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             assertTrue(serviceUnderTest.isValid(jwtAuthSource));
             verify(jwtAuthSourceService, times(1)).isValid(jwtAuthSource);
             verifyNoInteractions(x509MFAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
         }
 
         @Test
@@ -82,7 +85,9 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             AuthSource.Parsed parsedAuthSource = serviceUnderTest.parse(jwtAuthSource);
             verify(jwtAuthSourceService, times(1)).parse(jwtAuthSource);
             verifyNoInteractions(x509MFAuthSourceService);
-            Assertions.assertEquals(expectedParsedSource, parsedAuthSource);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
+            assertEquals(expectedParsedSource, parsedAuthSource);
         }
 
         @Test
@@ -92,6 +97,8 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             Assertions.assertNotNull(serviceUnderTest.getLtpaToken(jwtAuthSource));
             verify(jwtAuthSourceService, times(1)).getLtpaToken(jwtAuthSource);
             verifyNoInteractions(x509MFAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
         }
     }
 
@@ -118,7 +125,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
             assertTrue(authSource.isPresent());
             assertTrue(authSource.get() instanceof X509AuthSource);
-            Assertions.assertEquals(x509AuthSource, authSource.get());
+            assertEquals(x509AuthSource, authSource.get());
         }
 
         @Test
@@ -128,6 +135,8 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             assertTrue(serviceUnderTest.isValid(x509AuthSource));
             verify(x509MFAuthSourceService, times(1)).isValid(x509AuthSource);
             verifyNoInteractions(jwtAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
         }
 
         @Test
@@ -137,7 +146,26 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             AuthSource.Parsed parsedAuthSource = serviceUnderTest.parse(x509AuthSource);
             verify(x509MFAuthSourceService, times(1)).parse(x509AuthSource);
             verifyNoInteractions(jwtAuthSourceService);
-            Assertions.assertEquals(expectedParsedSource, parsedAuthSource);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
+            assertEquals(expectedParsedSource, parsedAuthSource);
+        }
+
+        @Nested
+        class WhenX509IsDisabled {
+
+            @BeforeEach
+            void init() {
+                serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, false, patAuthSourceService, true, oidcAuthSourceService, true);
+            }
+
+            @Test
+            void thenAuthSourceIsEmpty() {
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+                verifyNoInteractions(x509MFAuthSourceService);
+                assertFalse(authSource.isPresent());
+            }
         }
     }
 
@@ -157,7 +185,156 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
             assertTrue(authSource.isPresent());
             assertTrue(authSource.get() instanceof JwtAuthSource);
-            Assertions.assertEquals(jwtAuthSource, authSource.get());
+            assertEquals(jwtAuthSource, authSource.get());
+        }
+    }
+
+    @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class WhenPersonalAccessTokenInRequest {
+        private final PATAuthSource patAuthSource = new PATAuthSource("token");
+        private final Parsed expectedParsedSource = new ParsedTokenAuthSource("user", new Date(111), new Date(222), Origin.ZOWE_PAT);
+
+        @Test
+        void thenJwtAuthSourceIsPresent() {
+            when(patAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(patAuthSource));
+
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+            verify(patAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verifyNoInteractions(oidcAuthSourceService);
+            verifyNoInteractions(x509MFAuthSourceService);
+            assertTrue(authSource.isPresent());
+            assertTrue(authSource.get() instanceof PATAuthSource);
+            assertEquals(patAuthSource, authSource.get());
+        }
+
+        @Test
+        void thenAuthSourceIsValid() {
+            when(patAuthSourceService.isValid(any())).thenReturn(true);
+
+            assertTrue(serviceUnderTest.isValid(patAuthSource));
+
+            verify(patAuthSourceService, times(1)).isValid(patAuthSource);
+            verifyNoInteractions(jwtAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
+            verifyNoInteractions(x509MFAuthSourceService);
+        }
+
+        @Test
+        void thenAuthSourceIsParsed() {
+            when(patAuthSourceService.parse(any())).thenReturn(expectedParsedSource);
+
+            AuthSource.Parsed parsedAuthSource = serviceUnderTest.parse(patAuthSource);
+
+            verify(patAuthSourceService, times(1)).parse(patAuthSource);
+            verifyNoInteractions(jwtAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
+            verifyNoInteractions(x509MFAuthSourceService);
+            assertEquals(expectedParsedSource, parsedAuthSource);
+        }
+
+        @Test
+        void thenLtpaTokenGenerated() {
+            when(patAuthSourceService.getLtpaToken(any())).thenReturn("ltpa");
+
+            assertNotNull(serviceUnderTest.getLtpaToken(patAuthSource));
+
+            verify(patAuthSourceService, times(1)).getLtpaToken(patAuthSource);
+            verifyNoInteractions(jwtAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
+            verifyNoInteractions(x509MFAuthSourceService);
+        }
+
+        @Nested
+        class WhenPATIsDisabled {
+
+            @BeforeEach
+            void init() {
+                serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, true, patAuthSourceService, false, oidcAuthSourceService, true);
+            }
+
+            @Test
+            void thenAuthSourceIsEmpty() {
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+                verifyNoInteractions(patAuthSourceService);
+                assertFalse(authSource.isPresent());
+            }
+        }
+    }
+
+    @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class WhenOIDCTokenInRequest {
+        private final OIDCAuthSource oidcAuthSource = new OIDCAuthSource("token");
+        private final Parsed expectedParsedSource = new ParsedTokenAuthSource("user", new Date(111), new Date(222), Origin.OIDC);
+
+        @Test
+        void thenJwtAuthSourceIsPresent() {
+            when(oidcAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(oidcAuthSource));
+
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+            verify(oidcAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verifyNoInteractions(x509MFAuthSourceService);
+            assertTrue(authSource.isPresent());
+            assertTrue(authSource.get() instanceof OIDCAuthSource);
+            assertEquals(oidcAuthSource, authSource.get());
+        }
+
+        @Test
+        void thenAuthSourceIsValid() {
+            when(oidcAuthSourceService.isValid(any())).thenReturn(true);
+
+            assertTrue(serviceUnderTest.isValid(oidcAuthSource));
+
+            verify(oidcAuthSourceService, times(1)).isValid(oidcAuthSource);
+            verifyNoInteractions(jwtAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(x509MFAuthSourceService);
+        }
+
+        @Test
+        void thenAuthSourceIsParsed() {
+            when(oidcAuthSourceService.parse(any())).thenReturn(expectedParsedSource);
+
+            AuthSource.Parsed parsedAuthSource = serviceUnderTest.parse(oidcAuthSource);
+
+            verify(oidcAuthSourceService, times(1)).parse(oidcAuthSource);
+            verifyNoInteractions(jwtAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(x509MFAuthSourceService);
+            assertEquals(expectedParsedSource, parsedAuthSource);
+        }
+
+        @Test
+        void thenLtpaTokenGenerated() {
+            when(oidcAuthSourceService.getLtpaToken(any())).thenReturn("ltpa");
+
+            assertNotNull(serviceUnderTest.getLtpaToken(oidcAuthSource));
+
+            verify(oidcAuthSourceService, times(1)).getLtpaToken(oidcAuthSource);
+            verifyNoInteractions(jwtAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(x509MFAuthSourceService);
+        }
+
+        @Nested
+        class WhenOIDCIsDisabled {
+
+            @BeforeEach
+            void init() {
+                serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, true, patAuthSourceService, true, oidcAuthSourceService, false);
+            }
+
+            @Test
+            void thenAuthSourceIsEmpty() {
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+
+                verifyNoInteractions(oidcAuthSourceService);
+                assertFalse(authSource.isPresent());
+            }
         }
     }
 
@@ -165,15 +342,18 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenNoAuthenticationInRequest {
         @Test
-        void thenX509AuthSourceIsPresent() {
+        void thenNoAuthSourceIsPresent() {
             when(jwtAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
             when(x509MFAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
             when(patAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
+            when(oidcAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
 
             Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
 
             verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
             verify(x509MFAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(patAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(oidcAuthSourceService, times(1)).getAuthSourceFromRequest();
 
             assertFalse(authSource.isPresent());
         }
@@ -189,6 +369,8 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             Assertions.assertThrows(IllegalArgumentException.class, () -> serviceUnderTest.isValid(dummyAuthSource));
             verifyNoInteractions(jwtAuthSourceService);
             verifyNoInteractions(x509MFAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
         }
 
         @Test
@@ -196,6 +378,8 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
             Assertions.assertThrows(IllegalArgumentException.class, () -> serviceUnderTest.parse(dummyAuthSource));
             verifyNoInteractions(jwtAuthSourceService);
             verifyNoInteractions(x509MFAuthSourceService);
+            verifyNoInteractions(patAuthSourceService);
+            verifyNoInteractions(oidcAuthSourceService);
         }
     }
 
