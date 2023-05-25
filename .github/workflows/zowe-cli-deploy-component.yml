@@ -3,6 +3,7 @@ name: idf plugin Publish to NPM
 on:
      pull_request:
         branches: [ v2.x.x ]
+
 #     workflow_dispatch:
 #      inputs:
 #         pkg-tags:
@@ -17,4 +18,4 @@ jobs:
             NPM_PUBLIC_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
         with:
             pkg-name: 'id-federation-for-zowe-cli'
-            pkg-tags: ${{ github.event.inputs.pkg-tags }}
+            pkg-tags: 'latest'
