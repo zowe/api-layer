@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip } from '@material-ui/core';
+import { Link, Typography, Tooltip, Menu, MenuItem } from '@material-ui/core';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
@@ -56,7 +56,10 @@ export default class ServiceTab extends Component {
         originalTiles.forEach((tile) => {
             tile.services.forEach((service) => {
                 if (service.serviceId === serviceId) {
-                    if (service.serviceId !== selectedService.serviceId || selectedTile !== currentTileId) {
+                    if (
+                        (currentTileId && service.serviceId !== selectedService.serviceId) ||
+                        selectedTile !== currentTileId
+                    ) {
                         selectService(service, currentTileId);
                     }
                     currentService = service;

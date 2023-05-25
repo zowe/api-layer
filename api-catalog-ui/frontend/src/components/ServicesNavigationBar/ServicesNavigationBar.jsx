@@ -44,9 +44,7 @@ export default class ServicesNavigationBar extends Component {
                     tile.services.map((service) => (
                         <div className="nav-tabs">
                             <SideBarLinks
-                                storeCurrentTileId={storeCurrentTileId}
-                                fetchTilesStart={fetchTilesStart}
-                                tileId={tile.id}
+                                key={service.serviceId}
                                 text={service.title}
                                 match={match}
                                 services={service.serviceId}

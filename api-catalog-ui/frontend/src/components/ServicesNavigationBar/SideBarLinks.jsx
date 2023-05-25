@@ -11,14 +11,18 @@ import { Tab, Tabs } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import './ServicesNavigationBar.css';
 
-function SideBarLinks({ storeCurrentTileId, fetchTilesStart, tileId, text, match, services }) {
-    const handleChange = () => {
-        storeCurrentTileId(tileId);
-        fetchTilesStart(tileId);
-    };
+function SideBarLinks({ text, match, services }) {
     return (
-        <Tabs allowScrollButtonsMobile variant="scrollable" scrollButtons="auto" onChange={handleChange}>
-            <Tab className="tabs" component={RouterLink} to={`${match.url}/${services}`} label={text} />
+        <Tabs
+            TabIndicatorProps={{
+                style: { background: 'transparent' },
+            }}
+            value={text}
+            allowScrollButtonsMobile
+            variant="scrollable"
+            scrollButtons="auto"
+        >
+            <Tab value={text} className="tabs" component={RouterLink} to={`${match.url}/${services}`} label={text} />
         </Tabs>
     );
 }

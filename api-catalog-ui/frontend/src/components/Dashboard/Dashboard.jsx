@@ -32,9 +32,9 @@ export default class Dashboard extends Component {
 
     componentWillUnmount() {
         const { fetchTilesStop, clear, storeOriginalTiles, tiles } = this.props;
-        storeOriginalTiles(tiles);
         clear();
         fetchTilesStop();
+        storeOriginalTiles(tiles);
     }
 
     handleSearch = (value) => {
@@ -104,7 +104,7 @@ export default class Dashboard extends Component {
                     onClose={this.handleClose}
                 >
                     <Alert onClose={this.handleClose} severity="success" sx={{ width: '100%' }}>
-                        Your mainframe password was sucessfully changed.
+                        Your mainframe password was successfully changed.
                     </Alert>
                 </Snackbar>
                 <ConfirmDialogContainer />
@@ -153,7 +153,7 @@ export default class Dashboard extends Component {
                                         <Tile
                                             storeCurrentTileId={storeCurrentTileId}
                                             service={service}
-                                            key={tile.id}
+                                            key={service}
                                             tile={tile}
                                             history={history}
                                         />

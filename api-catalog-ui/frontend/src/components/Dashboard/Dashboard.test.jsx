@@ -225,6 +225,6 @@ describe('>>> Dashboard component tests', () => {
                 authentication={{ showUpdatePassSuccess: true }}
             />
         );
-        expect(screen.getByText('Your mainframe password was sucessfully changed.')).toBeInTheDocument();
+        expect(screen.getByText('Your mainframe password was successfully changed.')).toBeInTheDocument();
     });
 });
