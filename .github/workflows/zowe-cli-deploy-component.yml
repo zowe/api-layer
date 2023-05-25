@@ -1,12 +1,14 @@
 name: idf plugin Publish to NPM
 
 on:
-    workflow_dispatch:
-     inputs:
-        pkg-tags:
-         description: "This workflow is to trigger on demand NPM publishing of the idf plugin"
-         default: "latest"
-         required: true
+     pull_request:
+        branches: [ v2.x.x ]
+#     workflow_dispatch:
+#      inputs:
+#         pkg-tags:
+#          description: "This workflow is to trigger on demand NPM publishing of the idf plugin"
+#          default: "latest"
+#          required: true
 
 jobs:
     publish:
