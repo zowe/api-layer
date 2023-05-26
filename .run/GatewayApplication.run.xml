@@ -1,14 +1,5 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-    <module name="api-layer.gateway-service.main" />
-    <extension name="coverage">
-      <pattern>
-        <option name="PATTERN" value="org.zowe.apiml.gateway.*" />
-        <option name="ENABLED" value="true" />
-      </pattern>
-    </extension>
-    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
-    <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
     <additionalParameters>
       <param>
         <option name="enabled" value="true" />
@@ -16,6 +7,17 @@
         <option name="value" value="file:./config/local/gateway-service.yml" />
       </param>
     </additionalParameters>
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8 (2)" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <module name="api-layer.gateway-service.main" />
+    <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.zowe.apiml.gateway.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

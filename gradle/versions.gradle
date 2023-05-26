@@ -22,7 +22,7 @@ dependencyResolutionManagement {
                 prefer '5.3.27'
             }
             version('springRetryVersion', '1.2.5.RELEASE')
-            version('springWebTestClientVersion', '4.5.1')
+            version('springWebTestClientVersion', '5.3.0')
 
             version('awsJavaSdkVersion', '1.12.466')
             version('attlsVersion', '1.21.3')
@@ -100,7 +100,7 @@ dependencyResolutionManagement {
                 strictly '[3.4.0, 3.5.0['
                 prefer '3.4.29'
             }
-            version('restAssuredVersion', '4.5.1')
+            version('restAssuredVersion', '5.3.0')
             version('slf4jVersion', '1.7.36')
             version('snakeyamlVersion', '2.0')
             version('springFoxVersion', '2.9.2')
@@ -162,6 +162,7 @@ dependencyResolutionManagement {
 
             library('spring_cloud_hystrix_dashboard', 'org.springframework.cloud', 'spring-cloud-starter-netflix-hystrix-dashboard').versionRef('springCloudVersion')
             library('spring_cloud_loadbalancer', 'org.springframework.cloud', 'spring-cloud-starter-loadbalancer').versionRef('springCloudVersion3')
+            library('spring_cloud_starter', 'org.springframework.cloud', 'spring-cloud-starter').versionRef('springCloudVersion3')
             library('spring_cloud_starter_bootstrap', 'org.springframework.cloud', 'spring-cloud-starter-bootstrap').versionRef('springCloudVersion3')
             library('spring_cloud_starter_zuul', 'org.springframework.cloud', 'spring-cloud-starter-netflix-zuul').versionRef('springCloudVersion')
             library('spring_cloud_starter_eureka', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudVersion3')

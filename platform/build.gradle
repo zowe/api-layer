@@ -52,6 +52,7 @@ dependencies {
         api libs.eureka.client
         api libs.eureka.core
         api libs.spring.bom
+        api libs.spring.cloud.starter
         api libs.spring.cloud.starter.eureka.server
         api libs.spring.eureka.client.v3
         api libs.spring.cloud.commons
