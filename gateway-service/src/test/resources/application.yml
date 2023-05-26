@@ -142,6 +142,8 @@ ribbon:
     retryableStatusCodes: 503
     OkToRetryOnAllOperations: false
     GZipPayload: false # this stops Gateway from deflating gzip responses from services
+    client:
+        name: testClient
 
 http:
     connection:
