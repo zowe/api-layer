@@ -51,6 +51,8 @@ public class MapperResponse {
         if (rc == 8 && safRc == 8 && racfRc == 8) {
             switch (racfRs) {
                 case 4:
+                    // ACF2 contains the following bug https://support.broadcom.com/web/ecx/solutiondetails?aparNo=LU01316&os=z%2FOS
+                    // that returns this return codes
                     apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
                         "A parameter list error occurred. Make sure LU01316 PTF was applied when using" +
                             " the ACF2 security manager. Otherwise, contact Zowe support.");
