@@ -27,6 +27,7 @@ dependencies {
     testImplementation libs.spring.boot.starter.actuator
     testImplementation libs.spring.boot.starter.webflux
     testImplementation libs.spring.web.test.client
+    testImplementation libs.spring4Test
     testImplementation libs.json
     testImplementation libs.jjwt
     testImplementation libs.reactorTest

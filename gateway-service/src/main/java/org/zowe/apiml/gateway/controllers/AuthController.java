@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -221,7 +222,7 @@ public class AuthController {
      *
      * @return List of keys composed of zOSMF and Gateway ones
      */
-    @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
+    @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @HystrixCommand
     public Map<String, Object> getAllPublicKeys() {
@@ -237,7 +238,7 @@ public class AuthController {
      *
      * @return The key actually used to verify the JWT tokens.
      */
-    @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
+    @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @HystrixCommand
     public Map<String, Object> getCurrentPublicKeys() {
@@ -258,7 +259,7 @@ public class AuthController {
      *
      * @return The key actually used to verify the JWT tokens.
      */
-    @GetMapping(path = PUBLIC_KEYS_PATH)
+    @GetMapping(path = PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
@@ -308,7 +309,7 @@ public class AuthController {
      *
      * @return List of link's relation type and the target URI for provided clientID
      */
-    @GetMapping(path = OIDC_WEBFINGER_PATH)
+    @GetMapping(path = OIDC_WEBFINGER_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> getWebFinger(@RequestParam(name = "resource") String clientId) throws JsonProcessingException {
