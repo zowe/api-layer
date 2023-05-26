@@ -177,8 +177,10 @@ public class HttpConfig {
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
 
         } catch (HttpsConfigError e) {
+            log.error("Invalid configuration of HTTPs: {}", e.getMessage());
             System.exit(1); // NOSONAR
         } catch (Exception e) {
+            log.error("Cannot construct configuration of HTTPs: {}", e.getMessage());
             apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
