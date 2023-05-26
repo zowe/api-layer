@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.gateway.ribbon;
 
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
 import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
@@ -32,7 +35,7 @@ public class ApimlRibbonRetryFactory extends RibbonLoadBalancedRetryFactory {
     @Override
     public LoadBalancedRetryPolicy createRetryPolicy(String service, ServiceInstanceChooser serviceInstanceChooser) {
         this.serviceInstanceChooser.set(serviceInstanceChooser);
-        return super.createRetryPolicy(service, serviceInstanceChooser);
+        return new LoadBalancedRetryPolicyFix(super.createRetryPolicy(service, serviceInstanceChooser));
     }
 
     @Override
@@ -42,4 +45,22 @@ public class ApimlRibbonRetryFactory extends RibbonLoadBalancedRetryFactory {
             new AbortingRetryListener()
         };
     }
+
+    @RequiredArgsConstructor
+    private static class LoadBalancedRetryPolicyFix implements LoadBalancedRetryPolicy {
+
+        @Delegate(excludes = CanRetryNextServer.class)
+        private final LoadBalancedRetryPolicy original;
+
+        @Override
+        public boolean canRetryNextServer(LoadBalancedRetryContext context) {
+            return original.canRetryNextServer(context) || context.getRetryCount() == 0;
+        }
+
+        interface CanRetryNextServer {
+            boolean canRetryNextServer(LoadBalancedRetryContext context);
+        }
+
+    }
+
 }
