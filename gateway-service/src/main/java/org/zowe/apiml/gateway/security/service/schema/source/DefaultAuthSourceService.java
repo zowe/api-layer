@@ -42,6 +42,7 @@ import java.util.Optional;
 public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
+    private final boolean isX509Enabled;
     private final boolean isPATEnabled;
     private final boolean isOIDCEnabled;
 
@@ -57,14 +58,18 @@ public class DefaultAuthSourceService implements AuthSourceService {
      */
     public DefaultAuthSourceService(@Autowired JwtAuthSourceService jwtAuthSourceService,
                                     @Autowired @Qualifier("x509MFAuthSourceService") X509AuthSourceService x509AuthSourceService,
+                                    @Value("${apiml.security.x509.enabled:false}") boolean isX509Enabled,
                                     PATAuthSourceService patAuthSourceService,
                                     @Value("${apiml.security.personalAccessToken.enabled:false}") boolean isPATEnabled,
                                     @Nullable OIDCAuthSourceService oidcAuthSourceService,
                                     @Value("${apiml.security.oidc.enabled:false}") boolean isOIDCEnabled) {
+        this.isX509Enabled = isX509Enabled;
         this.isPATEnabled = isPATEnabled;
         this.isOIDCEnabled = isOIDCEnabled;
         map.put(AuthSourceType.JWT, jwtAuthSourceService);
-        map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
+        if (isX509Enabled) {
+            map.put(AuthSourceType.CLIENT_CERT, x509AuthSourceService);
+        }
         if (isPATEnabled) {
             map.put(AuthSourceType.PAT, patAuthSourceService);
         }
@@ -96,7 +101,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
             service = getService(AuthSourceType.OIDC);
             authSource = service.getAuthSourceFromRequest();
         }
-        if (!authSource.isPresent()) {
+        if (!authSource.isPresent() && isX509Enabled) {
             service = getService(AuthSourceType.CLIENT_CERT);
             authSource = service.getAuthSourceFromRequest();
         }
