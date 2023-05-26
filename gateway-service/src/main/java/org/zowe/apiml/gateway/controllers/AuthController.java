@@ -243,9 +243,11 @@ public class AuthController {
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
         List<JWK> publicKeys = getCurrentKey();
         if (publicKeys.isEmpty()) {
+            log.debug("JWT setup was not yet initialized so there is no public key for response.");
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (publicKeys.size() != 1) {
+            log.error("There are incorrect number of public keys returned from JWT producer: {}. Number of entries: {}", jwtSecurity.actualJwtProducer(), publicKeys.size());
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         try {
@@ -262,7 +264,7 @@ public class AuthController {
     private List<JWK> getCurrentKey() {
         JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 
-        JWKSet currentKey = new JWKSet();
+        JWKSet currentKey;
         switch (producer) {
             case ZOSMF:
                 currentKey = zosmfService.getPublicKeys();
@@ -270,7 +272,7 @@ public class AuthController {
             case APIML:
                 currentKey = jwtSecurity.getPublicKeyInSet();
                 break;
-            case UNKNOWN:
+            default:
                 //return 500 as we just don't know yet.
                 return Collections.emptyList();
         }
