@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip, Menu, MenuItem } from '@material-ui/core';
+import { Link, Typography, Tooltip } from '@material-ui/core';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
@@ -51,22 +51,18 @@ export default class ServiceTab extends Component {
             selectedTile,
             selectService,
             currentTileId,
-            originalTiles,
+            tiles,
         } = this.props;
-        originalTiles.forEach((tile) => {
-            tile.services.forEach((service) => {
+        if (tiles && tiles.length > 0) {
+            tiles[0].services.forEach((service) => {
                 if (service.serviceId === serviceId) {
-                    if (
-                        (currentTileId && service.serviceId !== selectedService.serviceId) ||
-                        selectedTile !== currentTileId
-                    ) {
+                    if (service.serviceId !== selectedService.serviceId || selectedTile !== currentTileId) {
                         selectService(service, currentTileId);
                     }
                     currentService = service;
                 }
             });
-        });
-
+        }
         return currentService;
     }
 
@@ -138,10 +134,10 @@ export default class ServiceTab extends Component {
             match: {
                 params: { serviceId },
             },
-            tiles,
+            originalTiles,
             selectedService,
         } = this.props;
-        if (tiles === null || tiles === undefined || tiles.length === 0) {
+        if (originalTiles === null || originalTiles === undefined || originalTiles.length === 0) {
             throw new Error('No tile is selected.');
         }
 

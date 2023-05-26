@@ -25,7 +25,9 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 export default class DetailPage extends Component {
     componentDidMount() {
         const { fetchTilesStart, currentTileId } = this.props;
-        fetchTilesStart(currentTileId);
+        if (currentTileId) {
+            fetchTilesStart(currentTileId);
+        }
     }
 
     componentWillUnmount() {

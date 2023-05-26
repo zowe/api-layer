@@ -33,12 +33,12 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
             return {
                 ...state,
                 currentTileId: state.currentTileId,
-                originalTiles: state.originalTiles,
+                originalTiles: [...state.originalTiles],
                 tiles: [...action.payload],
                 error: null,
             };
         case STORE_ORIGINAL_TILES:
-            return { ...state, originalTiles: action.payload, error: null };
+            return { ...state, originalTiles: [...action.payload], error: null };
         case STORE_CURRENT_TILEID:
             return { ...state, currentTileId: action.payload, error: null };
         case FETCH_TILES_FAILED:
