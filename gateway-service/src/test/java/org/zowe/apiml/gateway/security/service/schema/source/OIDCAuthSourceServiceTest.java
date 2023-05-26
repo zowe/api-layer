@@ -181,15 +181,15 @@ class OIDCAuthSourceServiceTest {
 
         @Test
         void whenIsInvalid_thenReturnTokenInvalid() {
-            OIDCAuthSource authSource = mockValidAuthSource();
-            when(provider.isValid(TOKEN, ISSUER)).thenReturn(false);
+            OIDCAuthSource authSource = new OIDCAuthSource(TOKEN);
+            when(provider.isValid(TOKEN)).thenReturn(false);
             assertFalse(service.isValid(authSource));
         }
 
         @Test
         void whenParse_thenReturnNull() {
-            OIDCAuthSource authSource = mockValidAuthSource();
-            when(provider.isValid(TOKEN, ISSUER)).thenReturn(false);
+            OIDCAuthSource authSource = new OIDCAuthSource(TOKEN);
+            when(provider.isValid(TOKEN)).thenReturn(false);
             AuthSource.Parsed parsedSource = service.parse(authSource);
 
             verify(mapper, times(0)).mapToMainframeUserId(authSource);
@@ -222,7 +222,7 @@ class OIDCAuthSourceServiceTest {
     private OIDCAuthSource mockValidAuthSource() {
         QueryResponse tokenResponse = new QueryResponse("domain", DISTRIB_USER, new Date(), new Date(), ISSUER, Collections.emptyList(), QueryResponse.Source.OIDC);
         when(authenticationService.parseJwtToken(TOKEN)).thenReturn(tokenResponse);
-        when(provider.isValid(TOKEN, ISSUER)).thenReturn(true);
+        when(provider.isValid(TOKEN)).thenReturn(true);
         return new OIDCAuthSource(TOKEN);
     }
 }

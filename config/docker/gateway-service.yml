@@ -10,7 +10,7 @@ apiml:
             enabled: true
             clientId:
             clientSecret:
-            introspectEndpoint:
+            introspectUrl:
             registry:
             identityMapperUrl:
             identityMapperUser:
