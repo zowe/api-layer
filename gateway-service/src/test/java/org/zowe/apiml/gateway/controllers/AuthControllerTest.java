@@ -39,14 +39,13 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
@@ -82,7 +81,7 @@ class AuthControllerTest {
 
     private MessageService messageService;
 
-    private JWK jwk1, jwk2, jwk3;
+    private JWK jwk1, jwk2;
     private JSONObject body;
 
     @BeforeEach
@@ -96,7 +95,6 @@ class AuthControllerTest {
 
         jwk1 = getJwk(1);
         jwk2 = getJwk(2);
-        jwk3 = getJwk(3);
     }
 
     @Test
@@ -131,19 +129,20 @@ class AuthControllerTest {
             "}");
     }
 
-    private void initPublicKeys(boolean zosmfKeys) {
+    private void initPublicKeys() {
         JWKSet zosmf = mock(JWKSet.class);
         when(zosmf.getKeys()).thenReturn(
-            zosmfKeys ? Arrays.asList(jwk1, jwk2) : Collections.emptyList()
+            Arrays.asList(jwk1)
         );
         when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(jwk3));
+        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(Arrays.asList(jwk2)));
+        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(jwk2));
     }
 
     @Test
     void testGetAllPublicKeys() throws Exception {
-        initPublicKeys(true);
-        JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2, jwk3));
+        initPublicKeys();
+        JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
         this.mockMvc.perform(get("/gateway/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
@@ -153,26 +152,29 @@ class AuthControllerTest {
     class WhenGettingActiveKey {
         @Test
         void useZoweJwt() throws Exception {
-            initPublicKeys(false);
-            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+            initPublicKeys();
+            when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk2));
             mockMvc.perform(get("/gateway/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
                 .andExpect(content().json(jwkSet.toString()));
         }
 
         @Test
-        void useBoth() throws Exception {
-            initPublicKeys(true);
-            JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
+        void returnEmptyWhenUnknown() throws Exception {
+            initPublicKeys();
+            when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
+            JWKSet jwkSet = new JWKSet(Collections.emptyList());
             mockMvc.perform(get("/gateway/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
                 .andExpect(content().json(jwkSet.toString()));
         }
 
         @Test
-        void missingZosmf() throws Exception {
-            initPublicKeys(false);
-            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+        void useZosmf() throws Exception {
+            initPublicKeys();
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk1));
+            when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
             mockMvc.perform(get("/gateway/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
                 .andExpect(content().json(jwkSet.toString()));
@@ -203,8 +205,9 @@ class AuthControllerTest {
 
             @Test
             void whenZosmfReturnsIncorrectAmountOfKeys_returnInternalServerError() throws Exception {
+                List<JWK> jwkList = Arrays.asList(mock(JWK.class), mock(JWK.class));
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
-                when(zosmfService.getPublicKeys()).thenReturn(new JWKSet());
+                when(zosmfService.getPublicKeys()).thenReturn(new JWKSet(jwkList));
 
                 mockMvc.perform(get("/gateway/auth/keys/public"))
                     .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
@@ -349,17 +352,12 @@ class AuthControllerTest {
     class GivenValidateOIDCTokenRequest {
 
         private static final String TOKEN = "token";
-        private static final String ISSUER = "issuer";
-        @BeforeEach
-        void setup() {
-            QueryResponse tokenResponse = new QueryResponse("domain", "user", new Date(), new Date(), ISSUER, Collections.emptyList(), QueryResponse.Source.OIDC);
-            when(authenticationService.parseJwtToken(TOKEN)).thenReturn(tokenResponse);
-        }
+
         @Nested
         class WhenValidateToken {
             @Test
             void validateOIDCToken() throws Exception {
-                when(oidcProvider.isValid(TOKEN, ISSUER)).thenReturn(true);
+                when(oidcProvider.isValid(TOKEN)).thenReturn(true);
                 mockMvc.perform(post("/gateway/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
@@ -368,7 +366,7 @@ class AuthControllerTest {
 
             @Test
             void return401() throws Exception {
-                when(oidcProvider.isValid(TOKEN, ISSUER)).thenReturn(false);
+                when(oidcProvider.isValid(TOKEN)).thenReturn(false);
                 mockMvc.perform(post("/gateway/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
