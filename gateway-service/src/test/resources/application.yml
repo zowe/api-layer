@@ -82,6 +82,7 @@ spring:
             config: classpath:ehcache.xml
     main:
         allow-bean-definition-overriding: true
+        allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
 
 server:
