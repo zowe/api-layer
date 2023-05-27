@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip } from '@material-ui/core';
+import { Link, Typography, Tooltip, MenuItem, Select } from '@material-ui/core';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
@@ -96,18 +96,18 @@ export default class ServiceTab extends Component {
                 }
                 return (
                     // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
-                    <span
-                        className="nav-tab"
-                        key={version}
-                        style={tabStyle}
+
+                    <MenuItem
                         onClick={() => {
                             this.setState({ selectedVersion: version });
                         }}
+                        value="version"
+                        style={tabStyle}
+                        data-testid="version"
+                        className="version-text"
                     >
-                        <Typography style={{ marginBottom: '12px' }} data-testid="version" className="version-text">
-                            {version}
-                        </Typography>
-                    </span>
+                        {version}
+                    </MenuItem>
                 );
             });
             if (apiVersions.length >= 2) {
@@ -121,7 +121,7 @@ export default class ServiceTab extends Component {
                         style={selectedVersion === 'diff' ? { backgroundColor: '#fff' } : {}}
                         key="diff"
                     >
-                        <Typography className="version-text">Compare</Typography>
+                        <Typography className="version-text">Compare API versions</Typography>
                     </span>
                 );
             }
@@ -245,8 +245,25 @@ export default class ServiceTab extends Component {
                             </Typography>
                             <br />
                         </div>
+                        <Typography
+                            data-testid="swagger-label"
+                            size="medium"
+                            variant="outlined"
+                            style={{ marginTop: '15px', color: 'black' }}
+                        >
+                            Swagger
+                        </Typography>
+                        <Typography
+                            data-testid="version-label"
+                            variant="subtitle2"
+                            style={{ marginTop: '15px', color: 'black' }}
+                        >
+                            Version
+                        </Typography>
                         <div className="tabs-container" style={{ width: '100%' }}>
-                            {apiVersions}
+                            <Select label="versionSelect1" value="version">
+                                {apiVersions}
+                            </Select>
                         </div>
                         {selectedVersion !== 'diff' ? (
                             <SwaggerContainer selectedVersion={selectedVersion} />

@@ -55,3 +55,7 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     font-size: 14px;
     font-weight: bold;
 }
+
+#root > div > div.content > div.detail-page > div.content-description-container > div > div.tabs-swagger > div > div.tabs-container > div > div {
+    width: auto;
+}
