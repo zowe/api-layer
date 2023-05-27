@@ -59,3 +59,31 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
 #root > div > div.content > div.detail-page > div.content-description-container > div > div.tabs-swagger > div > div.tabs-container > div > div {
     width: auto;
 }
+
+#swagger-label {
+    color: black;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+    margin-top: 20px;
+}
+
+#version-label {
+    margin-top: 15px;
+    color: black;
+}
+
+#version-menu {
+    margin-left: 55px;
+    border-radius: 3px;
+    border: 1px solid var(--borders-c-9-c-8-c-5, #C9C8C5);
+    background: var(--white-ffffff, #FFF);
+    width: auto;
+}
+
+#compare-button {
+    text-align: center;
+    /* Data Small/Regular */
+    font-size: 12px;
+    line-height: 14px;
+    letter-spacing: 0.24px;
+}

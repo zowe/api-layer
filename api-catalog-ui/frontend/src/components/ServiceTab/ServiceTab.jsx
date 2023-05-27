@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip, MenuItem, Select } from '@material-ui/core';
+import { Link, Typography, Tooltip, MenuItem, Select, Button } from '@material-ui/core';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
@@ -81,7 +81,7 @@ export default class ServiceTab extends Component {
         const { selectedVersion } = this.state;
         const { currentService } = this;
 
-        if (currentService && currentService.apiVersions) {
+        if (currentService && 'apiVersions' in currentService && currentService.apiVersions) {
             apiVersions = currentService.apiVersions.map((version) => {
                 // Pre select default version or if only one version exists select that
                 let tabStyle = {};
@@ -95,8 +95,6 @@ export default class ServiceTab extends Component {
                     tabStyle = { backgroundColor: '#fff' };
                 }
                 return (
-                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
-
                     <MenuItem
                         onClick={() => {
                             this.setState({ selectedVersion: version });
@@ -104,27 +102,11 @@ export default class ServiceTab extends Component {
                         value="version"
                         style={tabStyle}
                         data-testid="version"
-                        className="version-text"
                     >
                         {version}
                     </MenuItem>
                 );
             });
-            if (apiVersions.length >= 2) {
-                apiVersions.push(
-                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
-                    <span
-                        className="nav-tab"
-                        onClick={() => {
-                            this.setState({ selectedVersion: 'diff' });
-                        }}
-                        style={selectedVersion === 'diff' ? { backgroundColor: '#fff' } : {}}
-                        key="diff"
-                    >
-                        <Typography className="version-text">Compare API versions</Typography>
-                    </span>
-                );
-            }
         }
         return apiVersions;
     }
@@ -244,26 +226,29 @@ export default class ServiceTab extends Component {
                                 {selectedService.description}
                             </Typography>
                             <br />
+                            <br />
+                            <Typography id="swagger-label" size="medium" variant="outlined">
+                                Swagger
+                            </Typography>
+                            <Typography id="version-label" variant="subtitle2">
+                                Version
+                            </Typography>
                         </div>
-                        <Typography
-                            data-testid="swagger-label"
-                            size="medium"
-                            variant="outlined"
-                            style={{ marginTop: '15px', color: 'black' }}
-                        >
-                            Swagger
-                        </Typography>
-                        <Typography
-                            data-testid="version-label"
-                            variant="subtitle2"
-                            style={{ marginTop: '15px', color: 'black' }}
-                        >
-                            Version
-                        </Typography>
-                        <div className="tabs-container" style={{ width: '100%' }}>
-                            <Select label="versionSelect1" value="version">
+                        <div>
+                            <Select id="version-menu" label="versionSelect1" value="version">
                                 {apiVersions}
                             </Select>
+                            {/* TODO: fix apiVersions null bug */}
+                            <Button
+                                id="compare-button"
+                                disabled={apiVersions.length < 2}
+                                onClick={() => {
+                                    this.setState({ selectedVersion: 'diff' });
+                                }}
+                                key="diff"
+                            >
+                                <Typography className="version-text">Compare API versions</Typography>
+                            </Button>
                         </div>
                         {selectedVersion !== 'diff' ? (
                             <SwaggerContainer selectedVersion={selectedVersion} />
