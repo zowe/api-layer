@@ -122,7 +122,6 @@ export default class ServiceTab extends Component {
         if (originalTiles === null || originalTiles === undefined || originalTiles.length === 0) {
             throw new Error('No tile is selected.');
         }
-
         const { selectedVersion } = this.state;
         const { basePath } = this;
         const { currentService } = this;
@@ -238,7 +237,6 @@ export default class ServiceTab extends Component {
                             <Select id="version-menu" label="versionSelect1" value="version">
                                 {apiVersions}
                             </Select>
-                            {/* TODO: fix apiVersions null bug */}
                             <Button
                                 id="compare-button"
                                 disabled={apiVersions.length < 2}
@@ -250,14 +248,16 @@ export default class ServiceTab extends Component {
                                 <Typography className="version-text">Compare API versions</Typography>
                             </Button>
                         </div>
-                        {selectedVersion !== 'diff' ? (
-                            <SwaggerContainer selectedVersion={selectedVersion} />
-                        ) : (
-                            <ServiceVersionDiffContainer
-                                serviceId={selectedService.serviceId}
-                                versions={currentService.apiVersions}
-                            />
-                        )}
+                        {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
+                        {selectedVersion === 'diff' &&
+                            currentService &&
+                            'apiVersions' in currentService &&
+                            currentService.apiVersions && (
+                                <ServiceVersionDiffContainer
+                                    serviceId={selectedService.serviceId}
+                                    versions={currentService.apiVersions}
+                                />
+                            )}
                     </div>
                 </Shield>
             </>
