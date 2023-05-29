@@ -148,7 +148,7 @@ public class JwtSecurity {
         if (!providers.isZosfmUsed()) {
             return JwtProducer.APIML;
         } else {
-            if (providers.isZosmfConfigurationSetToLtpa()) {
+            if (!providers.zosmfSupportsJwt() || providers.isZosmfConfigurationSetToLtpa()) {
                 return JwtProducer.APIML;
             } else if (providers.isZosmfAvailableAndOnline()) {
                 return JwtProducer.ZOSMF;
