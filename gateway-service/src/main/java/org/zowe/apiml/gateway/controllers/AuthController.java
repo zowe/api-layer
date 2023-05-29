@@ -45,10 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.PublicKey;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.apache.http.HttpStatus.*;
 
@@ -228,12 +225,7 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public Map<String, Object> getCurrentPublicKeys() {
-        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
-
-        if (keys.isEmpty()) {
-            Optional<JWK> key = jwtSecurity.getJwkPublicKey();
-            key.ifPresent(keys::add);
-        }
+        final List<JWK> keys = getCurrentKey();
         return new JWKSet(keys).toJSONObject(true);
     }
 
@@ -249,9 +241,30 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
+        List<JWK> publicKeys = getCurrentKey();
+        if (publicKeys.isEmpty()) {
+            log.debug("JWT setup was not yet initialized so there is no public key for response.");
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (publicKeys.size() != 1) {
+            log.error("There are incorrect number of public keys returned from JWT producer: {}. Number of entries: {}", jwtSecurity.actualJwtProducer(), publicKeys.size());
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        try {
+            PublicKey key = publicKeys.get(0)
+                .toRSAKey()
+                .toPublicKey();
+            return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
+        } catch (IOException | JOSEException ex) {
+            log.error("It was not possible to get public key for JWK, exception message: {}", ex.getMessage());
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private List<JWK> getCurrentKey() {
         JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 
-        JWKSet currentKey = new JWKSet();
+        JWKSet currentKey;
         switch (producer) {
             case ZOSMF:
                 currentKey = zosmfService.getPublicKeys();
@@ -259,24 +272,11 @@ public class AuthController {
             case APIML:
                 currentKey = jwtSecurity.getPublicKeyInSet();
                 break;
-            case UNKNOWN:
+            default:
                 //return 500 as we just don't know yet.
-                return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                return Collections.emptyList();
         }
-
-        List<JWK> publicKeys = currentKey.getKeys();
-        if (publicKeys.size() != 1) {
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        try {
-            PublicKey key = publicKeys.get(0)
-                .toRSAKey()
-                .toPublicKey();
-            return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
-        } catch (IOException | JOSEException ex) {
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return currentKey.getKeys();
     }
 
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
