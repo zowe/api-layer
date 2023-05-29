@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component, Suspense } from 'react';
-import { IconButton, Typography } from '@material-ui/core';
+import { Container, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
@@ -136,6 +136,15 @@ export default class DetailPage extends Component {
                                                                     </div>
                                                                 )}
                                                             </div>
+                                                        </div>
+                                                        <div id="right-resources-menu">
+                                                            <Typography variant="subtitle1">On this page</Typography>
+                                                            <Container>
+                                                                <Link className="links">Swagger</Link>
+                                                                <Link className="links">Use cases</Link>
+                                                                <Link className="links">Tutorials</Link>
+                                                                <Link className="links">Videos</Link>
+                                                            </Container>
                                                         </div>
                                                     </div>
                                                 )}

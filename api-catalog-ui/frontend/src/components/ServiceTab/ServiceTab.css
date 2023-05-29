@@ -1,7 +1,7 @@
 .serviceTab {
     background: #fff;
     overflow-x: hidden;
-    /*margin-left: 20%;*/
+    margin-left: 86px;
 }
 
 .serviceTab .header {
@@ -12,8 +12,7 @@
 }
 
 div.content-description-container > div > div:nth-child(2) > div {
-    width: 100vw;
-    height: auto;
+    width: 75%;
 }
 
 .serviceTab .header>h2 {
