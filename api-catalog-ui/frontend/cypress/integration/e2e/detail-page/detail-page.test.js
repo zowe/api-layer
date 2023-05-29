@@ -50,14 +50,16 @@ describe('>>> Detail page test', () => {
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
-        cy.get('#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option')
+        cy.get(
+            '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option'
+        )
             .should('exist')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1`);
 
         cy.get('.tabs-container')
             .should('exist')
             .should('have.length', 2)
-            .within($el => {
+            .within(($el) => {
                 cy.get('a').should('contain', 'apicatalog');
             });
 
@@ -94,7 +96,7 @@ describe('>>> Detail page test', () => {
         cy.get('.tabs-container')
             .should('exist')
             .should('have.length', 2)
-            .within($el => {
+            .within(($el) => {
                 cy.get('a').should('contain', 'gateway');
             });
 
@@ -123,19 +125,13 @@ describe('>>> Detail page test', () => {
 
         cy.url().should('contain', '/tile/apimediationlayer');
 
-        cy.get('#go-back-button')
-            .should('exist')
-            .click();
+        cy.get('#go-back-button').should('exist').click();
 
         cy.get('#search > div > div > input').should('exist');
         cy.contains('Available API services').should('exist');
 
-        cy.get('#search > div > div > input')
-            .as('search')
-            .type('API Mediation Layer API');
+        cy.get('#search > div > div > input').as('search').type('API Mediation Layer API');
 
-        cy.get('.grid-tile')
-            .should('have.length', 1)
-            .should('contain', 'API Mediation Layer API');
+        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
     });
 });
