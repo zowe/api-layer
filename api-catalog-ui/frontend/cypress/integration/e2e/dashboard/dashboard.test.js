@@ -1,4 +1,12 @@
-/* eslint-disable no-undef */
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 /* eslint-disable spaced-comment */
 /// <reference types="Cypress" />
 
@@ -18,7 +26,6 @@ function login() {
 }
 
 describe('>>> Dashboard test', () => {
-
     it('dashboard test', () => {
         login();
 
@@ -35,24 +42,16 @@ describe('>>> Dashboard test', () => {
 
         cy.get('#search > div > div > input').should('exist');
         cy.contains('Available API services').should('exist');
-        cy.get('#refresh-api-button')
-            .should('exist')
-            .click();
+        cy.get('#refresh-api-button').should('exist').click();
         cy.get('.Toastify').should('have.length.gte', 1);
         cy.get('.Toastify > div> div')
             .should('have.length', 1)
             .should('contain', 'The refresh of static APIs was successful!');
-        cy.get('#search > div > div > input')
-            .as('search')
-            .type('API Mediation Layer API');
+        cy.get('#search > div > div > input').as('search').type('API Mediation Layer API');
 
-        cy.get('.grid-tile')
-            .should('have.length', 1)
-            .should('contain', 'API Mediation Layer API');
+        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
 
-        cy.get('@search')
-            .clear()
-            .should('be.empty');
+        cy.get('@search').clear().should('be.empty');
 
         cy.get('.grid-tile').should('have.length.gte', 1);
 
@@ -62,15 +61,11 @@ describe('>>> Dashboard test', () => {
 
         cy.get('.grid-tile').should('have.length', 0);
 
-        cy.get('#search_no_results')
-            .should('exist')
-            .should('have.text', 'No tiles found matching search criteria');
+        cy.get('#search_no_results').should('exist').should('have.text', 'No tiles found matching search criteria');
 
         cy.get('@search').clear();
 
-        cy.get('#search > div > div > input')
-            .as('search')
-            .type('API Mediation Layer API');
+        cy.get('#search > div > div > input').as('search').type('API Mediation Layer API');
 
         cy.get('.grid-tile').should('have.length', 1);
 
