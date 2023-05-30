@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.security.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -23,13 +22,15 @@ import org.zowe.apiml.gateway.security.mapping.model.OIDCRequest;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSource;
+import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.UnsupportedEncodingException;
 
-@Slf4j
+import static org.zowe.apiml.gateway.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
+
 @Component("oidcMapper")
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCExternalMapper extends ExternalMapper implements AuthenticationMapper {
@@ -50,17 +51,21 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
 
     public String mapToMainframeUserId(AuthSource authSource) {
         if (!(authSource instanceof OIDCAuthSource)) {
-            log.debug("The used authentication source type is {} and not OIDC", authSource.getType());
+            apimlLog.log(MessageType.DEBUG,"The used authentication source type is {} and not OIDC", authSource.getType());
             return null;
         }
 
         if (StringUtils.isEmpty(registry)) {
-            log.warn("Missing registry name configuration. Cannot complete identity mapping request.");
+            apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
+                "Missing registry name configuration. Make sure that " +
+                    "'components.gateway.apiml.security.oidc.registry' is correctly set in 'zowe.yaml'.");
             return null;
         }
         final String distributedId = ((OIDCAuthSource) authSource).getDistributedId();
         if (StringUtils.isEmpty(distributedId)) {
-            log.warn("Authentication source is missing the distributed ID. Cannot complete identity mapping request.");
+            apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
+                "OIDC token is missing the distributed ID. Make sure your distributed identity provider is" +
+                    " properly configured.");
             return null;
         }
         OIDCRequest oidcRequest = new OIDCRequest(distributedId, registry);
