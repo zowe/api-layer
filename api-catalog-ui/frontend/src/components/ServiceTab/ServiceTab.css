@@ -12,7 +12,8 @@
 }
 
 div.content-description-container > div > div:nth-child(2) > div {
-    width: 75%;
+    /*change width via templating mechanism to create space for the right menu (width 75%) */
+    width: 86%;
 }
 
 .serviceTab .header>h2 {

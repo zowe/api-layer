@@ -11,17 +11,18 @@
 import {
     FETCH_TILES_FAILED,
     FETCH_TILES_REQUEST,
+    FETCH_NEW_TILES_REQUEST,
     FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
+    FETCH_NEW_TILES_SUCCESS,
     STORE_CURRENT_TILEID,
-    STORE_ORIGINAL_TILES,
 } from '../constants/catalog-tile-constants';
 
 const tilesReducerDefaultState = {
     tile: {},
     tiles: [],
-    originalTiles: [],
+    services: [],
     id: '',
     currentTileId: '',
     error: null,
@@ -33,27 +34,41 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
             return {
                 ...state,
                 currentTileId: state.currentTileId,
-                originalTiles: [...state.originalTiles],
+                services: [...state.services],
                 tiles: [...action.payload],
                 error: null,
             };
-        case STORE_ORIGINAL_TILES:
-            return { ...state, originalTiles: [...action.payload], error: null };
+        case FETCH_NEW_TILES_SUCCESS:
+            return {
+                ...state,
+                currentTileId: state.currentTileId,
+                tiles: [...state.tiles],
+                services: [...action.payload],
+                error: null,
+            };
         case STORE_CURRENT_TILEID:
             return { ...state, currentTileId: action.payload, error: null };
         case FETCH_TILES_FAILED:
             return {
                 tiles: state.tiles,
+                services: state.services,
                 currentTileId: state.currentTileId,
-                originalTiles: state.originalTiles,
                 id: '',
                 error: action.payload,
             };
         case FETCH_TILES_REQUEST:
             return {
                 tiles: [],
+                services: state.services,
                 currentTileId: state.currentTileId,
-                originalTiles: state.originalTiles,
+                id: action.payload,
+                error: null,
+            };
+        case FETCH_NEW_TILES_REQUEST:
+            return {
+                services: [],
+                tiles: state.tiles,
+                currentTileId: state.currentTileId,
                 id: action.payload,
                 error: null,
             };

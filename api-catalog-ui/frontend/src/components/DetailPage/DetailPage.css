@@ -67,7 +67,7 @@
 }
 
 #go-back-button {
-    margin-left: 59px;
+    margin-left: 65px;
     font-size: 13px;
     font-weight: bold;
     width: fit-content;
@@ -91,7 +91,7 @@
     font-size: 28px;
     font-weight: 700;
     line-height: 1.0;
-    margin-left: 59px;
+    margin-left: 65px;
 }
 
 #description {
@@ -154,8 +154,10 @@ div.content-description-container > div > div:nth-child(2) > div {
 }
 
 .paragraph-description-container {
-    width: 80%;
-    margin-left: 59px;
+    /*change width via templating mechanism to create space for the right menu (width 80%) */
+    width: 92%;
+    /*width: 80%;*/
+    margin-left: 65px;
 }
 
 /*disabled for Zowe Catalog*/

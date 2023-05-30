@@ -24,17 +24,15 @@ import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 
 export default class Dashboard extends Component {
     componentDidMount() {
-        const { fetchTilesStart, clearService, tiles, storeOriginalTiles } = this.props;
+        const { fetchTilesStart, clearService } = this.props;
         clearService();
         fetchTilesStart();
-        storeOriginalTiles(tiles);
     }
 
     componentWillUnmount() {
-        const { fetchTilesStop, clear, storeOriginalTiles, tiles } = this.props;
+        const { fetchTilesStop, clear } = this.props;
         clear();
         fetchTilesStop();
-        storeOriginalTiles(tiles);
     }
 
     handleSearch = (value) => {

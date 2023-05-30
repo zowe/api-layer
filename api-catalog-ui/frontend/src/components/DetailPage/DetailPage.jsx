@@ -24,7 +24,8 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 
 export default class DetailPage extends Component {
     componentDidMount() {
-        const { fetchTilesStart, currentTileId } = this.props;
+        const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
+        fetchNewTiles();
         if (currentTileId) {
             fetchTilesStart(currentTileId);
         }
@@ -49,11 +50,12 @@ export default class DetailPage extends Component {
             fetchTilesStop,
             fetchTilesError,
             selectedTile,
-            originalTiles,
+            services,
             match,
             fetchTilesStart,
             history,
             currentTileId,
+            fetchNewTiles,
         } = this.props;
         const iconBack = <ChevronLeftIcon />;
         let error = null;
@@ -63,6 +65,7 @@ export default class DetailPage extends Component {
         } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== currentTileId) {
             clearService();
             fetchTilesStop();
+            fetchNewTiles();
             fetchTilesStart(currentTileId);
         }
         return (
@@ -86,9 +89,9 @@ export default class DetailPage extends Component {
                     </div>
                 )}
                 <div className="nav-bar">
-                    {originalTiles !== undefined && originalTiles.length > 0 && (
+                    {services !== undefined && services.length > 0 && (
                         <Shield>
-                            <ServicesNavigationBarContainer originalTiles={originalTiles} match={match} />
+                            <ServicesNavigationBarContainer services={services} match={match} />
                         </Shield>
                     )}
                 </div>
@@ -149,7 +152,7 @@ export default class DetailPage extends Component {
                                                     </div>
                                                 )}
                                                 <div className="tabs-swagger">
-                                                    <ServiceTabContainer />
+                                                    <ServiceTabContainer tiles={tiles} />
                                                 </div>
                                             </div>
                                         )}

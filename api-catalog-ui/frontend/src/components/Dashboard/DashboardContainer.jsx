@@ -14,7 +14,6 @@ import {
     fetchTilesStart,
     fetchTilesSuccess,
     fetchTilesStop,
-    storeOriginalTiles,
     storeCurrentTileId,
 } from '../../actions/catalog-tile-actions';
 import { clearService } from '../../actions/selected-service-actions';
@@ -30,7 +29,7 @@ const mapStateToProps = (state) => ({
     searchCriteria: state.filtersReducer.text,
     tiles: getFilteredServices(state.tilesReducer.tiles, state.filtersReducer.text),
     fetchTilesError: state.tilesReducer.error,
-    originalTiles: state.tilesReducer.originalTiles,
+    services: state.tilesReducer.services,
     isLoading: loadingSelector(state),
     refreshedStaticApisError: state.refreshStaticApisReducer.error,
     refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
@@ -51,7 +50,6 @@ const mapDispatchToProps = {
     wizardToggleDisplay,
     selectEnabler,
     closeAlert: () => userActions.closeAlert(),
-    storeOriginalTiles: (tiles) => storeOriginalTiles(tiles),
     storeCurrentTileId: (id) => storeCurrentTileId(id),
 };
 

@@ -14,8 +14,6 @@ import { selectService } from '../../actions/selected-service-actions';
 import ServiceTab from './ServiceTab';
 
 const mapStateToProps = (state) => ({
-    tiles: state.tilesReducer.tiles,
-    originalTiles: state.tilesReducer.originalTiles,
     selectedService: state.selectedServiceReducer.selectedService,
     selectedTile: state.selectedServiceReducer.selectedTile,
     currentTileId: state.tilesReducer.currentTileId,

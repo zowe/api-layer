@@ -39,6 +39,7 @@ export function getDiff(serviceId, oldVersion, newVersion) {
             .then((response) => response.text())
             .then((text) => dispatch(receive(text)))
             .catch((e) => {
+                // TODO handle better the catch
                 // eslint-disable-next-line no-console
                 console.log(e);
             });

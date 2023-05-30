@@ -13,8 +13,13 @@ import { of, throwError, timer } from 'rxjs';
 import { ofType } from 'redux-observable';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
-import { FETCH_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
-import { fetchTilesFailed, fetchTilesRetry, fetchTilesSuccess } from '../actions/catalog-tile-actions';
+import { FETCH_TILES_REQUEST, FETCH_NEW_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
+import {
+    fetchTilesFailed,
+    fetchTilesRetry,
+    fetchTilesSuccess,
+    fetchNewTilesSuccess,
+} from '../actions/catalog-tile-actions';
 import { userActions } from '../actions/user-actions';
 import getBaseUrl from '../helpers/urls';
 
@@ -129,6 +134,49 @@ export const fetchTilesPollingEpic = (action$, _store, { ajax, scheduler }) =>
                                 );
                             }
                             return fetchTilesSuccess(response);
+                        }),
+                        retryWhen(retryMechanism(scheduler)())
+                    )
+                ),
+                takeUntil(action$.pipe(ofType(FETCH_TILES_STOP))),
+                catchError((error) => {
+                    if (error.status === 401 || error.status === 403) {
+                        return of(userActions.authenticationFailure(error));
+                    }
+                    return of(fetchTilesFailed(error));
+                })
+            )
+        )
+    );
+
+export const fetchTilesPollingEpic2 = (action$, _store, { ajax, scheduler }) =>
+    action$.pipe(
+        ofType(FETCH_NEW_TILES_REQUEST),
+        debounceTime(debounce, scheduler),
+        mergeMap((action) =>
+            timer(0, updatePeriod, scheduler).pipe(
+                exhaustMap(() =>
+                    ajax({
+                        url: getUrl(action),
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': checkOrigin(),
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    }).pipe(
+                        map((ajaxResponse) => {
+                            const { response } = ajaxResponse;
+                            if (response === null || response.length === 0) {
+                                // noinspection JSValidateTypes
+                                return fetchTilesFailed(
+                                    action.payload.length > 0
+                                        ? new Error(`Could not retrieve details for Tile with ID: ${action.payload}`)
+                                        : new Error(`Could not retrieve any Tiles`)
+                                );
+                            }
+                            return fetchNewTilesSuccess(response);
                         }),
                         retryWhen(retryMechanism(scheduler)())
                     )

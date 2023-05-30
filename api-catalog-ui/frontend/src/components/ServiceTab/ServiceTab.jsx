@@ -116,10 +116,10 @@ export default class ServiceTab extends Component {
             match: {
                 params: { serviceId },
             },
-            originalTiles,
+            tiles,
             selectedService,
         } = this.props;
-        if (originalTiles === null || originalTiles === undefined || originalTiles.length === 0) {
+        if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
         const { selectedVersion } = this.state;
