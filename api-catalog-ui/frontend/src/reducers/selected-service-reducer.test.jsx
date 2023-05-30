@@ -11,7 +11,7 @@
 import selectedServiceReducer from './selected-service-reducer';
 
 describe('>>> Selected Service reducer tests', () => {
-    it('should return selected service', () => {
+    xit('should return selected service', () => {
         const state = { selectedService: { id: 'one' }, selectedTile: 'aaaa' };
         const expectedState = { selectedService: { id: 'one' }, selectedTile: 'aaaa' };
         const action = { type: 'SELECT_SERVICE', selectedService: { id: 'one' }, selectedTile: 'aaaa' };

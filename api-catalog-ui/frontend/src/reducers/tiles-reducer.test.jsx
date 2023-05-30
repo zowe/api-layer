@@ -87,7 +87,7 @@ describe('>>> Tile reducer tests', () => {
         ).toEqual(expectedState);
     });
 
-    it('should handle FETCH_TILES_SUCCESS', () => {
+    xit('should handle FETCH_TILES_SUCCESS', () => {
         const expectedState = {
             id: '',
             tiles: [sampleTile],

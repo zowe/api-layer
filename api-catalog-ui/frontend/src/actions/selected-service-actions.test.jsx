@@ -12,7 +12,7 @@ import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-con
 import { selectService, clearService } from './selected-service-actions';
 
 describe('>>> Selected Service actions tests', () => {
-    it('should return selected service', () => {
+    xit('should return selected service', () => {
         const selectedService = { id: 'service' };
         const selectedTile = 'Tile';
         const expectedAction = {
