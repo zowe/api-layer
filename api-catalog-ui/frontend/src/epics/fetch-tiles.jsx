@@ -106,6 +106,13 @@ export const retryMechanism =
             })
         );
 
+/**
+ * Epic used to schedule call to fetch tiles from the containers endpoint
+ * @param action$ redux action
+ * @param _store redux store
+ * @param ajax ajax call
+ * @param scheduler scheduler
+ */
 export const fetchTilesPollingEpic = (action$, _store, { ajax, scheduler }) =>
     action$.pipe(
         ofType(FETCH_TILES_REQUEST),
@@ -149,6 +156,14 @@ export const fetchTilesPollingEpic = (action$, _store, { ajax, scheduler }) =>
         )
     );
 
+/**
+ * Epic used to schedule call to fetch tiles from the containers endpoint. This is required to dynamically
+ * populate the navigation side bar in the detail page and refresh it based on the scheduled period
+ * @param action$ redux action
+ * @param _store redux store
+ * @param ajax ajax call
+ * @param scheduler scheduler
+ */
 export const fetchTilesPollingEpic2 = (action$, _store, { ajax, scheduler }) =>
     action$.pipe(
         ofType(FETCH_NEW_TILES_REQUEST),

@@ -20,7 +20,9 @@ export default class ServiceTab extends Component {
         super(props);
         this.state = {
             selectedVersion: null,
+            isDialogOpen: false,
         };
+        this.handleDialogClose = this.handleDialogClose.bind(this);
     }
 
     get basePath() {
@@ -111,6 +113,14 @@ export default class ServiceTab extends Component {
         return apiVersions;
     }
 
+    handleDialogOpen = () => {
+        this.setState({ isDialogOpen: true, selectedVersion: 'diff' });
+    };
+
+    handleDialogClose = () => {
+        this.setState({ isDialogOpen: false });
+    };
+
     render() {
         const {
             match: {
@@ -122,14 +132,13 @@ export default class ServiceTab extends Component {
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
-        const { selectedVersion } = this.state;
+        const { selectedVersion, isDialogOpen } = this.state;
         const { basePath } = this;
         const { currentService } = this;
         const { hasHomepage } = this;
         const { apiVersions } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
-
         return (
             <>
                 {currentService === null && (
@@ -240,9 +249,7 @@ export default class ServiceTab extends Component {
                             <Button
                                 id="compare-button"
                                 disabled={apiVersions.length < 2}
-                                onClick={() => {
-                                    this.setState({ selectedVersion: 'diff' });
-                                }}
+                                onClick={this.handleDialogOpen}
                                 key="diff"
                             >
                                 <Typography className="version-text">Compare API versions</Typography>
@@ -250,12 +257,15 @@ export default class ServiceTab extends Component {
                         </div>
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
                         {selectedVersion === 'diff' &&
+                            isDialogOpen &&
                             currentService &&
                             'apiVersions' in currentService &&
                             currentService.apiVersions && (
                                 <ServiceVersionDiffContainer
+                                    handleDialog={this.handleDialogClose}
                                     serviceId={selectedService.serviceId}
                                     versions={currentService.apiVersions}
+                                    isDialogOpen={isDialogOpen}
                                 />
                             )}
                     </div>

@@ -8,7 +8,19 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import { IconButton, InputLabel, Select, Typography, FormControl, MenuItem } from '@material-ui/core';
+import {
+    IconButton,
+    InputLabel,
+    Select,
+    Typography,
+    FormControl,
+    MenuItem,
+    DialogContent,
+    DialogTitle,
+    Dialog,
+    DialogActions,
+} from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
 import './ServiceVersionDiff.css';
 
 export default class ServiceVersionDiff extends Component {
@@ -18,6 +30,7 @@ export default class ServiceVersionDiff extends Component {
         this.state = {
             selectedVersion1: version1 ? { text: version1 } : undefined,
             selectedVersion2: version2 ? { text: version2 } : undefined,
+            open: props.isDialogOpen,
         };
 
         this.handleVersion1Change = this.handleVersion1Change.bind(this);
@@ -33,61 +46,71 @@ export default class ServiceVersionDiff extends Component {
     };
 
     render() {
-        const { serviceId, versions, getDiff, diffText } = this.props;
-        const { selectedVersion1, selectedVersion2 } = this.state;
+        const { serviceId, versions, getDiff, diffText, handleDialog } = this.props;
+        const { selectedVersion1, selectedVersion2, open } = this.state;
         const selectorStyle = {
             width: '140px',
         };
+        const closeIcon = <CloseIcon />;
         return (
             <div className="api-diff-container">
-                <div className="api-diff-form">
-                    <Typography data-testid="compare-label">Compare</Typography>
-                    <FormControl className="formField">
-                        <InputLabel shrink>Version</InputLabel>
-                        <Select
-                            data-testid="select-1"
-                            label="versionSelect1"
-                            value={selectedVersion1}
-                            onChange={this.handleVersion1Change}
-                            sx={selectorStyle}
-                        >
-                            {versions.map((version) => (
-                                <MenuItem data-testid="menu-items-1" value={version}>
-                                    {version}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <Typography data-testid="label-with">with</Typography>
-                    <FormControl className="formField">
-                        <InputLabel shrink>Version</InputLabel>
-                        <Select
-                            data-testid="select-2"
-                            label="versionSelect2"
-                            value={selectedVersion2}
-                            onChange={this.handleVersion2Change}
-                            sx={selectorStyle}
-                        >
-                            {versions.map((version) => (
-                                <MenuItem data-testid="menu-items-2" value={version}>
-                                    {version}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <IconButton
-                        disabled={!selectedVersion1 || !selectedVersion2}
-                        id="diff-button"
-                        data-testid="diff-button"
-                        onClick={() => {
-                            getDiff(serviceId, selectedVersion1, selectedVersion2);
-                        }}
-                    >
-                        Go
-                    </IconButton>
-                </div>
-                {/* eslint-disable-next-line react/no-danger */}
-                <div className="api-diff-content" dangerouslySetInnerHTML={{ __html: diffText }} />
+                <Dialog open={open} fullWidth maxWidth="md">
+                    <DialogActions>
+                        <IconButton id="close-dialog" variant="outlined" onClick={handleDialog}>
+                            {closeIcon}
+                        </IconButton>
+                    </DialogActions>
+                    <DialogTitle id="dialog-title">Compare API versions</DialogTitle>
+                    <DialogContent>
+                        <div className="api-diff-form">
+                            <Typography data-testid="compare-label">Compare</Typography>
+                            <FormControl className="formField">
+                                <InputLabel shrink>Version</InputLabel>
+                                <Select
+                                    data-testid="select-1"
+                                    label="versionSelect1"
+                                    value={selectedVersion1}
+                                    onChange={this.handleVersion1Change}
+                                    sx={selectorStyle}
+                                >
+                                    {versions.map((version) => (
+                                        <MenuItem data-testid="menu-items-1" value={version}>
+                                            {version}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <Typography data-testid="label-with">with</Typography>
+                            <FormControl className="formField">
+                                <InputLabel shrink>Version</InputLabel>
+                                <Select
+                                    data-testid="select-2"
+                                    label="versionSelect2"
+                                    value={selectedVersion2}
+                                    onChange={this.handleVersion2Change}
+                                    sx={selectorStyle}
+                                >
+                                    {versions.map((version) => (
+                                        <MenuItem data-testid="menu-items-2" value={version}>
+                                            {version}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <IconButton
+                                disabled={!selectedVersion1 || !selectedVersion2}
+                                id="diff-button"
+                                data-testid="diff-button"
+                                onClick={() => {
+                                    getDiff(serviceId, selectedVersion1, selectedVersion2);
+                                }}
+                            >
+                                Show
+                            </IconButton>
+                        </div>
+                        <div className="api-diff-content" dangerouslySetInnerHTML={{ __html: diffText }} />
+                    </DialogContent>
+                </Dialog>
             </div>
         );
     }
