@@ -134,7 +134,7 @@ dependencyResolutionManagement {
                 strictly '5.13.1.202206130422-r'
             }
             version('gradleNodeVersion', '3.5.0')
-            version('sonarGradlePluginVersion', '4.1.0.3113')
+            version('sonarGradlePluginVersion', '4.0.0.2929')
             version('gradleReleaseVersion', '2.8.1')
             version('gradleLicencerVersion', '0.6.1')
             version('gradleDependencyCheckVersion', '8.2.1')
