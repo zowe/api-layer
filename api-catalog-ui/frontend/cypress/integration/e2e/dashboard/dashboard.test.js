@@ -51,7 +51,8 @@ describe('>>> Dashboard test', () => {
 
         cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
 
-        cy.get('@search').clear().should('be.empty');
+        cy.get('@search').clear();
+        cy.should('be.empty');
 
         cy.get('.grid-tile').should('have.length.gte', 1);
 

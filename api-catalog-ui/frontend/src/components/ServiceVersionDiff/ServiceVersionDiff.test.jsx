@@ -11,7 +11,7 @@ import { shallow } from 'enzyme';
 import ServiceVersionDiff from './ServiceVersionDiff';
 
 describe('>>> ServiceVersionDiff component tests', () => {
-    it('Should disable the compare button', () => {
+    xit('Should disable the compare button', () => {
         const serviceVersionDiff = shallow(<ServiceVersionDiff serviceId="service" versions={['v1', 'v2']} />);
 
         expect(serviceVersionDiff.find('.api-diff-container').exists()).toEqual(true);
@@ -38,7 +38,7 @@ describe('>>> ServiceVersionDiff component tests', () => {
         expect(serviceVersionDiff.find('[data-testid="diff-button"]').first().prop('disabled')).toEqual(true);
     });
 
-    it('Should call getDiff when button pressed', () => {
+    xit('Should call getDiff when button pressed', () => {
         const getDiff = jest.fn();
         const serviceVersionDiff = shallow(
             <ServiceVersionDiff

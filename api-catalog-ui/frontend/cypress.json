@@ -7,7 +7,7 @@
         "password": "validPassword"
     },
     "reporter": "junit",
-    "defaultCommandTimeout": 60000,
+    "defaultCommandTimeout": 10000,
     "reporterOptions": {
         "mochaFile": "test-results/e2e/output-[hash].xml"
     },
