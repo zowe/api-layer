@@ -45,7 +45,7 @@ const tiles = {
 };
 
 describe('>>> ServiceTab component tests', () => {
-    xit('should display service tab information', () => {
+    it('should display service tab information', () => {
         const selectService = jest.fn();
         const serviceTab = shallow(
             <ServiceTab
