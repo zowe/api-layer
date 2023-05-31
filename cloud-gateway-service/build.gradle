@@ -28,8 +28,8 @@ def componentName = "cloud-gateway-service"
 setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.cloudgatewayservice.CloudGatewayServiceApplication'
 
-ext['netty.version'] = libs.versions.nettyVersion.get()
-ext['reactor-bom.version'] = libs.versions.reactorBomVersion.get()
+ext['netty.version'] = libs.versions.netty.get()
+ext['reactor-bom.version'] = libs.versions.reactorBom.get()
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display

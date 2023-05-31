@@ -17,12 +17,12 @@ apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 
 bootJar {
-    archiveBaseName.set("enabler-springboot-${libs.versions.springBootVersion.get()}-sample")
+    archiveBaseName.set("enabler-springboot-${libs.versions.springBoot.get()}-sample")
     launchScript()
 }
 
 jar {
-    archiveBaseName.set("enabler-springboot-${libs.versions.springBootVersion.get()}-sample")
+    archiveBaseName.set("enabler-springboot-${libs.versions.springBoot.get()}-sample")
     archiveFileName = archiveBaseName.get() + ".jar"
 }
 

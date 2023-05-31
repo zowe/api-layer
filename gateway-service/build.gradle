@@ -29,7 +29,7 @@ def componentName = "gateway-service"
 setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
 
-ext['netty.version'] = libs.versions.nettyVersion.get()
+ext['netty.version'] = libs.versions.netty.get()
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
