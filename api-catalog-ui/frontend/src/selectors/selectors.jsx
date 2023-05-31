@@ -16,27 +16,6 @@ export const createLoadingSelector = (actions) => (state) =>
 
 // eslint-disable-next-line
 /**
- * Filters the services in the dashboard page based on the search criteria
- * @param tiles
- * @param searchCriteria
- * @returns tiles the filtered tiles that matches the criteria
- */
-export const getVisibleTiles = (tiles, searchCriteria) => {
-    if (tiles === undefined || tiles === null || tiles.length <= 0) {
-        return [];
-    }
-    return tiles
-        .filter((tile) => {
-            if (searchCriteria === undefined || searchCriteria === null || searchCriteria.length === 0) {
-                return true;
-            }
-            return tile.title.toLowerCase().includes(searchCriteria.toLowerCase());
-        })
-        .sort((tile1, tile2) => tile1.title.localeCompare(tile2.title));
-};
-
-// eslint-disable-next-line
-/**
  * Filters the services in the navigation bar based on the search criteria
  * @param tiles
  * @param searchCriteria
@@ -64,6 +43,9 @@ export const getFilteredServices = (tiles, searchCriteria) => {
 
             tile.services = filteredServices.sort((service1, service2) => service1.title.localeCompare(service2.title));
 
+            if (!searchCriteria || searchCriteria.length === 0) {
+                return true;
+            }
             return tile.title.toLowerCase().includes(searchCriteria.toLowerCase()) || filteredServices.length > 0;
         })
         .sort((tile1, tile2) => tile1.title.localeCompare(tile2.title));
