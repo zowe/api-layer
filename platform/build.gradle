@@ -22,9 +22,15 @@ dependencies {
 
     // enforce version throughout all modules
     constraints {
+        // to define preferred version (the minimal version constraints)
         libs.getCommons().owner.config.libraries.values().forEach { x ->
-            api x.getGroup().toString() + ":" + x.getName().toString() + ":" + x.getVersion().toString()
+            def version = x.getVersion().getPreferredVersion()
+            if (version.isEmpty()) version = x.getVersion().toString()
+            api x.getGroup().toString() + ":" + x.getName().toString() + ":" + version
         }
+
+        // to define strict version (including the maximum version)
+        api libs.reactor
     }
 
 }

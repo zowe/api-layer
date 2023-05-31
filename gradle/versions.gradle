@@ -26,11 +26,14 @@ dependencyResolutionManagement {
 
             version('awsJavaSdkVersion', '1.12.466')
             version('attlsVersion', '1.21.3')
+            version('archaiusVersion', '0.7.7')
             version('awaitilityVersion', '4.0.3')
             version('bouncyCastleVersion', '1.70')
             version('bootstrapVersion', '4.3.1')
             version('commonsCodecVersion', '1.15')
+            version('commonsConfigurationVersion', '1.10')
             version('commonsLang3Version', '3.12.0')
+            version('commonsLoggingVersion', '1.1.3')
             version('commonsTextVersion', '1.10.0')
             version('commonsIoVersion') {
                 // older versions are vulnerable to CVE-2021-29425
@@ -41,6 +44,7 @@ dependencyResolutionManagement {
             version('ehCacheVersion', '2.10.9.2')
             version('eurekaVersion', '1.10.18')
             version('findBugsVersion', '3.0.2')
+            version('githubClassgraphVersion', '4.8.154')
             version('gradleGitPropertiesVersion', '2.2.4') // Used in classpath dependencies
             version('gradleNodeVersion', '3.0.1') // Used in classpath dependencies
             version('gsonVersion', '2.9.1')
@@ -55,6 +59,7 @@ dependencyResolutionManagement {
             version('jacksonDataformatYamlVersion', '2.14.3')
             version('jacksonMapperAslVersion', '1.9.16-TALEND')
             version('janinoVersion', '3.1.9')
+            version('javassistVersion', '3.29.2-GA')
             version('javaxAnnotationVersion', '1.3.2')
             version('jakartaInjectVersion', '1.0.5')
             version('javaxServletApiVersion', '4.0.1')
@@ -76,6 +81,7 @@ dependencyResolutionManagement {
             version('junitPlatformVersion', '1.9.3')
             version('jqueryVersion', '3.6.4')
             version('lettuceVersion', '6.1.10.RELEASE')
+            version('log4jVersion', '2.19.0')
             version('logbackVersion') {
                 // 1.3+ versions doesn't contain Slf4J package
                 // 1.4+ versions requires JDK 11
@@ -195,13 +201,16 @@ dependencyResolutionManagement {
             library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFrameworkVersion')
             library('spring_websocket', 'org.springframework', 'spring-websocket').versionRef('springFrameworkVersion')
 
+            library('archaius', 'com.netflix.archaius', 'archaius-core').versionRef('archaiusVersion')
             library('amazon_aws_autoscaling', 'com.amazonaws', 'aws-java-sdk-autoscaling').versionRef('awsJavaSdkVersion')
             library('amazon_aws_core', 'com.amazonaws', 'aws-java-sdk-core').versionRef('awsJavaSdkVersion')
             library('amazon_aws_ec2', 'com.amazonaws', 'aws-java-sdk-ec2').versionRef('awsJavaSdkVersion')
             library('amazon_aws_route', 'com.amazonaws', 'aws-java-sdk-route53').versionRef('awsJavaSdkVersion')
             library('amazon_aws_sts', 'com.amazonaws', 'aws-java-sdk-sts').versionRef('awsJavaSdkVersion')
             library('apache_commons_codec', 'commons-codec', 'commons-codec').versionRef('commonsCodecVersion')
+            library('apache_commons_configuration', 'commons-configuration', 'commons-configuration').versionRef('commonsConfigurationVersion')
             library('apache_commons_lang3', 'org.apache.commons', 'commons-lang3').versionRef('commonsLang3Version')
+            library('apache_commons_logging', 'commons-logging', 'commons-logging').versionRef('commonsLoggingVersion')
             library('apache_commons_text', 'org.apache.commons', 'commons-text').versionRef('commonsTextVersion')
             library('commons_fileupload', 'commons-fileupload', 'commons-fileupload').versionRef('commonsFileUploadVersion')
 
@@ -230,6 +239,7 @@ dependencyResolutionManagement {
             library('jackson_dataformat_yaml', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-yaml').versionRef('jacksonDataformatYamlVersion')
             library('jackson_mapper_asl', 'org.codehaus.jackson', 'jackson-mapper-asl').versionRef('jacksonMapperAslVersion')
             library('janino', 'org.codehaus.janino', 'janino').versionRef('janinoVersion')
+            library('javassist', 'org.javassist', 'javassist').versionRef('javassistVersion')
             library('javax_annotation', 'javax.annotation', 'javax.annotation-api').versionRef('javaxAnnotationVersion')
             library('javax_inject', 'javax.inject', 'javax.inject').version('1')
             library('jakarta_inject', 'jakarta.inject', 'jakarta.inject-api').versionRef('jakartaInjectVersion')
@@ -261,6 +271,8 @@ dependencyResolutionManagement {
             library('junit_platform_engine', 'org.junit.platform', 'junit-platform-engine').versionRef('junitPlatformVersion')
             library('jquery', 'org.webjars', 'jquery').versionRef('jqueryVersion')
             library('lettuce', 'io.lettuce', 'lettuce-core').versionRef('lettuceVersion')
+            library('log4j_api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4jVersion')
+            library('log4j_to_slf4j', 'org.apache.logging.log4j', 'log4j-to-slf4j').versionRef('log4jVersion')
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logbackVersion')
             library('logback_core', 'ch.qos.logback', 'logback-core').versionRef('logbackVersion')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombokVersion')
@@ -349,6 +361,7 @@ dependencyResolutionManagement {
             library('spring_boot_gradle_plugin', 'org.springframework.boot', 'spring-boot-gradle-plugin').versionRef('springBootVersion')
             library('gradle_git_properties', 'gradle.plugin.com.gorylenko.gradle-git-properties', 'gradle-git-properties').versionRef('gradleGitPropertiesVersion')
             library('jgit', 'org.eclipse.jgit', 'org.eclipse.jgit').versionRef('jgitVersion')
+            library('github_classpath', 'io.github.classgraph', 'classgraph').versionRef('githubClassgraphVersion')
             library('gradle_node_plugin', 'com.github.node-gradle', 'gradle-node-plugin').versionRef('gradleNodeVersion')
             library('gradle_sonar_plugin', 'org.sonarsource.scanner.gradle', 'sonarqube-gradle-plugin').versionRef('sonarGradlePluginVersion')
             library('gradle_release', 'net.researchgate', 'gradle-release').versionRef('gradleReleaseVersion')
