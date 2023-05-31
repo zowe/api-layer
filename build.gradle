@@ -92,7 +92,8 @@ allprojects {
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
-    sourceCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 
     test {
         useJUnitPlatform()
