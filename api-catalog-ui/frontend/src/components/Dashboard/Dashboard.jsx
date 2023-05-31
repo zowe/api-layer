@@ -159,7 +159,7 @@ export default class Dashboard extends Component {
                                 )}
                             {!hasTiles && hasSearchCriteria && (
                                 <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
-                                    No tiles found matching search criteria
+                                    No services found matching search criteria
                                 </Typography>
                             )}
                         </div>

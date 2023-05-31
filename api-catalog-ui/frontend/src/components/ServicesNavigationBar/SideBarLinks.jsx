@@ -27,6 +27,7 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
             allowScrollButtonsMobile
             variant="scrollable"
             scrollButtons="auto"
+            visibleScrollbar="true"
         >
             <Tab
                 onClick={() => handleTabClick(services)}
@@ -35,6 +36,7 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
                 component={RouterLink}
                 to={`${match.url}/${services}`}
                 label={text}
+                wrapped="false"
             />
         </Tabs>
     );

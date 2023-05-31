@@ -73,7 +73,7 @@ describe('>>> Dashboard component tests', () => {
             />
         );
         expect(dashboard.find('#search_no_results').children().text()).toEqual(
-            'No tiles found matching search criteria'
+            'No services found matching search criteria'
         );
     });
 
