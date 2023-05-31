@@ -107,6 +107,7 @@ dependencyResolutionManagement {
                 prefer '3.4.29'
             }
             version('restAssuredVersion', '5.3.0')
+            version('rhinoVersion', '1.7.14')
             version('slf4jVersion', '1.7.36')
             version('snakeyamlVersion', '2.0')
             version('springFoxVersion', '2.9.2')
@@ -122,7 +123,7 @@ dependencyResolutionManagement {
             version('swaggerInflector', '2.0.9')
             version('swaggerJaxrs2Version', '2.2.9')
             version('thymeleafVersion', '3.0.15.RELEASE')
-            version('tomcatVersion', '9.0.74')
+            version('tomcatVersion', '9.0.75')
             version('velocityVersion', '2.3')
             version('woodstoxVersion', '6.5.1')
             version('xstreamVersion') {
@@ -317,6 +318,7 @@ dependencyResolutionManagement {
             library('picocliCodegen', 'info.picocli', 'picocli-codegen').versionRef('picocliVersion')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactorVersion')
             library('reactorTest', 'io.projectreactor', 'reactor-test').versionRef('reactorVersion')
+            library('rhino', 'org.mozilla', 'rhino').versionRef('rhinoVersion')
             library('rest_assured', 'io.rest-assured', 'rest-assured').versionRef('restAssuredVersion')
             library('rest_assured_json_path', 'io.rest-assured', 'json-path').versionRef('restAssuredVersion')
             library('rest_assured_xml_path', 'io.rest-assured', 'xml-path').versionRef('restAssuredVersion')
