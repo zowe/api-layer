@@ -150,6 +150,7 @@ dependencies {
         exclude group: "commons-fileupload", module: "commons-fileupload"
     }
     implementation libraries.commons_fileupload
+    implementation libraries.rhino
 
     testImplementation libraries.rest_assured
     testImplementation libraries.spring_mock_mvc
