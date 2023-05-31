@@ -135,7 +135,7 @@ configure(subprojects.findAll { it.name in servicesToPublish }) {
 
 ext.publishTasksList = projectsToPublish.collect {
     ":" + it + ":publish"
-}
+} + ":platform:publish"
 
 //noinspection GroovyAssignabilityCheck
 task publishSdkArtifacts {
@@ -146,5 +146,4 @@ task publishSdkArtifacts {
     group 'Zowe Publishing'
     description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
     dependsOn publishTasksList
-    dependsOn ":platform:publish"
 }
