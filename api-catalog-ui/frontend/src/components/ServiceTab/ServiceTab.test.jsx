@@ -78,7 +78,7 @@ describe('>>> ServiceTab component tests', () => {
         expect(serviceTab.find('[data-testid="version"]').at(1).prop('children')).toEqual('org.zowe v2');
     });
 
-    xit('should change selected version when clicking v2 api version', () => {
+    it('should change selected version when clicking v2 api version', () => {
         const selectService = jest.fn();
         const serviceTab = shallow(
             <ServiceTab
@@ -90,14 +90,16 @@ describe('>>> ServiceTab component tests', () => {
         );
         serviceTab.setState({ selectedVersion: 'org.zowe v1' });
 
-        let tabContainer = serviceTab.find('div').at(3);
-        expect(tabContainer.find('span').first().prop('style').backgroundColor).toEqual('#fff');
-        expect(tabContainer.find('span').at(1).prop('style').backgroundColor).toEqual(undefined);
+        let dropDownMenu = serviceTab.find('version-menu');
+        // eslint-disable-next-line no-console
+        console.log(dropDownMenu.debug());
+        expect(dropDownMenu.prop('style').backgroundColor).toEqual('#fff');
+        expect(dropDownMenu.find('span').at(1).prop('style').backgroundColor).toEqual(undefined);
 
-        tabContainer.find('span').at(1).simulate('click');
+        dropDownMenu.find('span').at(1).simulate('click');
 
-        tabContainer = serviceTab.find('div').at(3);
-        expect(tabContainer.find('span').at(1).prop('style').backgroundColor).toEqual('#fff');
-        expect(tabContainer.find('span').first().prop('style').backgroundColor).toEqual(undefined);
+        dropDownMenu = serviceTab.find('div').at(3);
+        expect(dropDownMenu.find('span').at(1).prop('style').backgroundColor).toEqual('#fff');
+        expect(dropDownMenu.find('span').first().prop('style').backgroundColor).toEqual(undefined);
     });
 });

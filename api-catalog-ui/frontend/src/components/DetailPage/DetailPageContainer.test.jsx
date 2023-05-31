@@ -65,7 +65,7 @@ describe('DetailPage Container', () => {
         );
     });
 
-    xit('should render the container', () => {
+    it('should render the container', () => {
         expect(container).not.toBeNull();
     });
 });

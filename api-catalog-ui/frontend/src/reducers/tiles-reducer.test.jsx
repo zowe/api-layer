@@ -87,10 +87,11 @@ describe('>>> Tile reducer tests', () => {
         ).toEqual(expectedState);
     });
 
-    xit('should handle FETCH_TILES_SUCCESS', () => {
+    it('should handle FETCH_TILES_SUCCESS', () => {
         const expectedState = {
             id: '',
             tiles: [sampleTile],
+            services: [sampleTile],
             error: null,
         };
 
@@ -99,6 +100,7 @@ describe('>>> Tile reducer tests', () => {
                 {
                     id: '',
                     tiles: [sampleTile],
+                    services: [sampleTile],
                     error: null,
                 },
                 {
