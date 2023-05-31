@@ -35,3 +35,33 @@ dependencies {
 
 }
 
+publishing {
+    repositories.maven {
+        credentials {
+            username project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
+            password project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
+        }
+        if (rootProject.version.endsWith("-SNAPSHOT")) {
+            setUrl(artifactoryPublishingMavenSnapshotRepo)
+        } else {
+            setUrl(artifactoryPublishingMavenRepo)
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                licenses {
+                    license {
+                        name = 'Eclipse Public License, v2.0'
+                        url = 'https://www.eclipse.org/legal/epl-2.0/'
+                    }
+                }
+            }
+
+            groupId 'org.zowe.apiml'
+            version rootProject.version
+            artifactId "${project.artifactId}"
+        }
+    }
+}

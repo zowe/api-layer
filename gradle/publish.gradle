@@ -37,41 +37,6 @@ ext.servicesToPublish = [
 ext.sdksToPublish = ext.enablers + ext.javaLibraries
 ext.projectsToPublish = ext.servicesToPublish + ext.sdksToPublish
 
-project(":platform") {
-   publishing {
-       repositories.maven {
-           credentials {
-               username project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
-               password project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
-           }
-           if (rootProject.version.endsWith("-SNAPSHOT")) {
-               setUrl(artifactoryPublishingMavenSnapshotRepo)
-           } else {
-               setUrl(artifactoryPublishingMavenRepo)
-           }
-       }
-
-       publications {
-           mavenJava(MavenPublication) {
-               pom {
-                   licenses {
-                       license {
-                           name = 'Eclipse Public License, v2.0'
-                           url = 'https://www.eclipse.org/legal/epl-2.0/'
-                       }
-                   }
-               }
-
-               groupId 'org.zowe.apiml'
-               version rootProject.version
-               artifactId "${project.artifactId}"
-
-               from components.java
-           }
-       }
-   }
-}
-
 configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: 'maven-publish'
     apply plugin: 'java'
@@ -181,5 +146,5 @@ task publishSdkArtifacts {
     group 'Zowe Publishing'
     description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
     dependsOn publishTasksList
-    dependsOn ":project:publish"
+    dependsOn ":platform:publish"
 }
