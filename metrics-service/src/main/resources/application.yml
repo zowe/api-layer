@@ -128,6 +128,11 @@ management:
             exposure:
                 include: health, info, turbine.stream
 
+turbine:
+    aggregator:
+        clusterConfig: APICATALOG,CACHINGSERVICE,GATEWAY,DISCOVERY # uppercase serviceId
+    appConfig: apicatalog,cachingservice,gateway,discovery # lowercase serviceId
+
 ---
 spring:
     profiles: debug
