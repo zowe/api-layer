@@ -33,6 +33,17 @@ const sampleTile = {
             status: 'UP',
             secured: false,
             homePageUrl: '/ui/v1/apicatalog',
+            sso: true,
+        },
+        {
+            serviceId: 'apicatalog2',
+            title: 'API Catalog',
+            description:
+                'API ML Microservice to locate and display API documentation for API ML discovered microservices',
+            status: 'UP',
+            secured: false,
+            homePageUrl: '/ui/v1/apicatalog',
+            sso: false,
         },
     ],
     totalServices: 1,
@@ -52,14 +63,14 @@ describe('>>> Tile component tests', () => {
         resetSampleTile();
     });
 
-    xit('should display API Mediation Layer API tile with correct title', () => {
-        const instance = shallow(<Tile tile={sampleTile} />);
+    it('should display API Mediation Layer API tile with correct title', () => {
+        const instance = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
         expect(instance.find('API Mediation Layer API')).not.toBeNull();
     });
 
-    xit('method getTileStatus() should return correct values', () => {
+    it('method getTileStatus() should return correct values', () => {
         resetSampleTile();
-        const wrapper = shallow(<Tile tile={sampleTile} />);
+        const wrapper = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
         const instance = wrapper.instance();
         expect(instance.getTileStatus(null).props.id).toBe('unknown');
         expect(instance.getTileStatus(undefined).props.id).toBe('unknown');
@@ -73,16 +84,16 @@ describe('>>> Tile component tests', () => {
         expect(instance.getTileStatus(sampleTile).props.id).toBe('unknown');
     });
 
-    xit('method getTileStatusText() should return correct values', () => {
+    it('method getTileStatusText() should return correct values', () => {
         resetSampleTile();
-        const wrapper = shallow(<Tile tile={sampleTile} />);
+        const wrapper = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
         const instance = wrapper.instance();
-        expect(instance.getTileStatusText(sampleTile)).toBe('All services are running');
+        expect(instance.getTileStatusText(sampleTile)).toBe('The service is running');
         sampleTile.totalServices = 2;
         expect(instance.getTileStatusText(sampleTile)).toBe('1 of 2 services are running');
         resetSampleTile();
         sampleTile.status = 'DOWN';
-        expect(instance.getTileStatusText(sampleTile)).toBe('No services are running');
+        expect(instance.getTileStatusText(sampleTile)).toBe('The service is not running');
         resetSampleTile();
         sampleTile.status = 'WARNING';
         sampleTile.totalServices = 2;
@@ -93,25 +104,34 @@ describe('>>> Tile component tests', () => {
         expect(instance.getTileStatusText()).toBe('Status unknown');
     });
 
-    xit('should handle tile click', () => {
+    it('should handle tile click', () => {
         const historyMock = { push: jest.fn() };
-        const wrapper = shallow(<Tile tile={sampleTile} history={historyMock} match={match} />);
+        const storeCurrentTileId = jest.fn();
+        const wrapper = shallow(
+            <Tile
+                tile={sampleTile}
+                storeCurrentTileId={storeCurrentTileId}
+                service={sampleTile.services[0]}
+                history={historyMock}
+                match={match}
+            />
+        );
         wrapper.find('[data-testid="tile"]').simulate('click');
-        expect(historyMock.push.mock.calls[0]).toEqual([`/tile/${sampleTile.id}`]);
+        expect(historyMock.push.mock.calls[0]).toEqual([`/service/${sampleTile.id}`]);
     });
 
-    xit('should show sso if it is set', () => {
+    it('should show sso if it is set', () => {
         const container = document.createElement('div');
         act(() => {
-            render(<Tile tile={sampleTile} />, container);
+            render(<Tile tile={sampleTile} service={sampleTile.services[0]} />, container);
         });
 
         expect(container.textContent).toEqual(expect.stringContaining('SSO'));
     });
 
-    xit('should mssing sso if it is not set', () => {
+    it('should mssing sso if it is not set', () => {
         sampleTile.sso = false;
-        const wrapper = shallow(<Tile tile={sampleTile} />);
+        const wrapper = shallow(<Tile tile={sampleTile} service={sampleTile.services[1]} />);
         expect(wrapper.text().includes('SSO')).toBe(false);
     });
 });
