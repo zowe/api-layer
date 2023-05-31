@@ -123,6 +123,12 @@ project(":onboarding-enabler-spring-sample-app") {
     }
 }
 
+project(":platform") {
+    sonar {
+        skipProject = true
+    }
+}
+
 // Packaging project; sonar does not apply
 project(":api-catalog-package") {
     sonar {
