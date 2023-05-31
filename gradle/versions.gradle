@@ -5,7 +5,7 @@ dependencyResolutionManagement {
             version('projectNodeVersion', '18.14.0')
             version('projectNpmVersion', '9.3.1')
 
-            version('springBootVersion', '2.7.11')
+            version('springBootVersion', '2.7.12')
             version('springCloudVersion', '2.2.10.RELEASE')
             version('springCloudCommonsVersion', '3.1.6')
             version('springCloudVersion3', '3.1.6')
@@ -125,7 +125,8 @@ dependencyResolutionManagement {
             version('thymeleafVersion', '3.0.15.RELEASE')
             version('tomcatVersion', '9.0.75')
             version('velocityVersion', '2.3')
-            version('woodstoxVersion', '6.5.1')
+            version('woodstoxCoreVersion', '6.5.1')
+            version('woodstoxStax2Version', '4.2.1')
             version('xstreamVersion') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
                 strictly '[1.4.20,2.0['
@@ -344,7 +345,8 @@ dependencyResolutionManagement {
             library('tomcat_embed_jasper', 'org.apache.tomcat.embed', 'tomcat-embed-jasper').versionRef('tomcatVersion')
             library('tomcat_embed_logging-juli', 'org.apache.tomcat.embed', 'tomcat-embed-logging-juli').versionRef('tomcatVersion')
             library('tomcat_embed_websocket', 'org.apache.tomcat.embed', 'tomcat-embed-websocket').versionRef('tomcatVersion')
-            library('woodstox', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxVersion')
+            library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCoreVersion')
+            library('woodstox_stax2', 'org.codehaus.woodstox', 'stax2-api').versionRef('woodstoxStax2Version')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstreamVersion')
 
             // Sample apps only
