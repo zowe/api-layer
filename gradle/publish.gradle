@@ -181,4 +181,5 @@ task publishSdkArtifacts {
     group 'Zowe Publishing'
     description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
     dependsOn publishTasksList
+    dependsOn ":project:publish"
 }
