@@ -101,7 +101,7 @@ export default class ServiceTab extends Component {
                         onClick={() => {
                             this.setState({ selectedVersion: version });
                         }}
-                        value="version"
+                        value={version}
                         style={tabStyle}
                         data-testid="version"
                     >
@@ -139,6 +139,8 @@ export default class ServiceTab extends Component {
         const { apiVersions } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
+        // eslint-disable-next-line no-console
+        console.log(selectedService);
         return (
             <>
                 {currentService === null && (
@@ -243,9 +245,17 @@ export default class ServiceTab extends Component {
                             </Typography>
                         </div>
                         <div>
-                            <Select id="version-menu" label="versionSelect1" value="version">
-                                {apiVersions}
-                            </Select>
+                            {currentService && 'apiVersions' in currentService && currentService.apiVersions && (
+                                <Select
+                                    displayEmpty
+                                    id="version-menu"
+                                    // label="versionSelect1"
+                                    value={currentService.apiVersions[0]}
+                                    // SelectDisplayProps={}
+                                >
+                                    {apiVersions}
+                                </Select>
+                            )}
                             <Button
                                 id="compare-button"
                                 disabled={apiVersions.length < 2}
