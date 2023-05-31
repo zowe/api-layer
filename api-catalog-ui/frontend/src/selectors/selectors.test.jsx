@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { getVisibleTiles } from './selectors';
+import { getFilteredServices } from './selectors';
 
 const tiles = [
     {
@@ -18,7 +18,16 @@ const tiles = [
         status: 'UP',
         description:
             'DescriptionCommon Lorem ipsum faucibus molestie phasellus platea praesent est blandit pellentesque',
-        services: [],
+        services: [
+            {
+                version: '1.0.0',
+                id: 'suspendisse',
+                title: 'Title Lorem ipsum hac conubia ante mi aptent venenatis.',
+                status: 'UP',
+                description:
+                    'DescriptionCommon Lorem ipsum faucibus molestie phasellus platea praesent est blandit pellentesque',
+            },
+        ],
         totalServices: 0,
         activeServices: 0,
         lastUpdatedTimestamp: '2018-08-22T08:32:03.110+0000',
@@ -30,7 +39,24 @@ const tiles = [
         title: 'TitleLorem ipsum hac conubia ante mi aptent venenatis.',
         status: 'UP',
         description: 'Description Aenean facilisis venenatis quam aenean dictumst sapien mollis ultricies erat semper.',
-        services: [],
+        services: [
+            {
+                version: '1.0.0',
+                id: 'ullamcorper',
+                title: 'TitleLorem ipsum hac conubia ante mi aptent venenatis.',
+                status: 'UP',
+                description:
+                    'Description Aenean facilisis venenatis quam aenean dictumst sapien mollis ultricies erat semper.',
+            },
+            {
+                version: '1.0.0',
+                id: 'ullamcorper2',
+                title: 'TitleLorem ipsum hac conubia ante mi aptent venenatis.',
+                status: 'UP',
+                description:
+                    'Description Aenean facilisis venenatis quam aenean dictumst sapien mollis ultricies erat semper.',
+            },
+        ],
         totalServices: 0,
         activeServices: 0,
         lastUpdatedTimestamp: '2018-08-22T08:32:03.110+0000',
@@ -42,7 +68,16 @@ const tiles = [
         title: 'Title Lorem ipsum hac conubia ante mi aptent venenatis.',
         status: 'UP',
         description: 'Description euismod, morbi potenti condimentum suscipit sapien.',
-        services: [],
+        services: [
+            {
+                version: '1.0.0',
+                id: 'habitasse',
+                title: 'TitleLorem ipsum hac conubia ante mi aptent venenatis.',
+                status: 'UP',
+                description:
+                    'Description Aenean facilisis venenatis quam aenean dictumst sapien mollis ultricies erat semper.',
+            },
+        ],
         totalServices: 0,
         activeServices: 0,
         lastUpdatedTimestamp: '2018-08-22T08:32:03.110+0000',
@@ -52,35 +87,35 @@ const tiles = [
 
 describe('>>> Selector tests', () => {
     it('should return 3 tiles if common title word - Title is used', () => {
-        const result = getVisibleTiles(tiles, 'Title');
+        const result = getFilteredServices(tiles, 'Title');
         expect(result.length).toEqual(3);
     });
     it('should return 3 tiles if common title word - Title is used - mixed case', () => {
-        const result = getVisibleTiles(tiles, 'tiTlE');
+        const result = getFilteredServices(tiles, 'tiTlE');
         expect(result.length).toEqual(3);
     });
     it('should return 0 tiles if missing title word is used', () => {
-        const result = getVisibleTiles(tiles, 'flashy');
+        const result = getFilteredServices(tiles, 'flashy');
         expect(result.length).toEqual(0);
     });
     it('should return 0 tiles if missing description word is used', () => {
-        const result = getVisibleTiles(tiles, 'flashy');
+        const result = getFilteredServices(tiles, 'flashy');
         expect(result.length).toEqual(0);
     });
     it('should return 3 tiles if criteria is empty', () => {
-        let result = getVisibleTiles(tiles, undefined);
+        let result = getFilteredServices(tiles, undefined);
         expect(result.length).toEqual(3);
-        result = getVisibleTiles(tiles, null);
+        result = getFilteredServices(tiles, null);
         expect(result.length).toEqual(3);
-        result = getVisibleTiles(tiles, '');
+        result = getFilteredServices(tiles, '');
         expect(result.length).toEqual(3);
     });
     it('should return 0 tiles if tiles is empty', () => {
-        let result = getVisibleTiles([], 'asdsd');
+        let result = getFilteredServices([], 'asdsd');
         expect(result.length).toEqual(0);
-        result = getVisibleTiles([], 'a');
+        result = getFilteredServices([], 'a');
         expect(result.length).toEqual(0);
-        result = getVisibleTiles([], '');
+        result = getFilteredServices([], '');
         expect(result.length).toEqual(0);
     });
 });
