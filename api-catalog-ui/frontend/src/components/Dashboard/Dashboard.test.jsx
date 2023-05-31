@@ -42,7 +42,7 @@ const ajaxError = {
 };
 
 describe('>>> Dashboard component tests', () => {
-    xit('should have "Refresh Static APIs" button', () => {
+    it('should have "Refresh Static APIs" button', () => {
         const wrapper = shallow(
             <Dashboard
                 tiles={null}
@@ -58,7 +58,7 @@ describe('>>> Dashboard component tests', () => {
         expect(button.length).toEqual(1);
     });
 
-    xit('should display no results if search fails', () => {
+    it('should display no results if search fails', () => {
         const dashboard = shallow(
             <Dashboard
                 tiles={[]}
@@ -77,7 +77,7 @@ describe('>>> Dashboard component tests', () => {
         );
     });
 
-    xit('should display error if error comms failure', () => {
+    it('should display error if error comms failure', () => {
         const dashboard = shallow(
             <Dashboard
                 tiles={[]}
@@ -96,7 +96,7 @@ describe('>>> Dashboard component tests', () => {
         );
     });
 
-    xit('should stop epic on unmount', () => {
+    it('should stop epic on unmount', () => {
         const fetchTilesStop = jest.fn();
         const clear = jest.fn();
         const wrapper = shallow(
@@ -116,7 +116,7 @@ describe('>>> Dashboard component tests', () => {
         expect(clear).toHaveBeenCalled();
     });
 
-    xit('should trigger filterText on handleSearch', () => {
+    it('should trigger filterText on handleSearch', () => {
         const filterText = jest.fn();
         const wrapper = shallow(
             <Dashboard
@@ -135,7 +135,7 @@ describe('>>> Dashboard component tests', () => {
         expect(filterText).toHaveBeenCalled();
     });
 
-    xit('should refresh static APIs on button click', () => {
+    it('should refresh static APIs on button click', () => {
         const refreshedStaticApi = jest.fn();
         const wrapper = shallow(
             <Dashboard
@@ -155,7 +155,7 @@ describe('>>> Dashboard component tests', () => {
         expect(refreshedStaticApi).toHaveBeenCalled();
     });
 
-    xit('should toggle display on button click', () => {
+    it('should toggle display on button click', () => {
         const wizardToggleDisplay = jest.fn();
         const wrapper = shallow(
             <Dashboard
@@ -174,7 +174,7 @@ describe('>>> Dashboard component tests', () => {
         expect(wizardToggleDisplay).toHaveBeenCalled();
     });
 
-    xit('should create tile', () => {
+    it('should create tile', () => {
         const dashboardTile = {
             version: '1.0.0',
             id: 'apicatalog',
@@ -213,7 +213,7 @@ describe('>>> Dashboard component tests', () => {
         expect(tile.length).toEqual(1);
     });
 
-    xit('should display successful password change', () => {
+    it('should display successful password change', () => {
         render(
             <Dashboard
                 tiles={null}
