@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Component } from 'react';
+import React, { Component } from 'react';
 import {
     IconButton,
     InputLabel,
@@ -19,6 +19,7 @@ import {
     DialogTitle,
     Dialog,
     DialogActions,
+    Divider,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import './ServiceVersionDiff.css';
@@ -61,6 +62,7 @@ export default class ServiceVersionDiff extends Component {
                         </IconButton>
                     </DialogActions>
                     <DialogTitle id="dialog-title">Compare API versions</DialogTitle>
+                    <Divider />
                     <DialogContent>
                         <div className="api-diff-form">
                             <Typography data-testid="compare-label">Compare</Typography>
