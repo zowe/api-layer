@@ -38,13 +38,14 @@ describe('Dashboard Container', () => {
     let store;
     let container;
     beforeEach(() => {
-        const tiles = [{ title: 'test', id: '2', description: 'test' }];
+        const tiles = [{ title: 'test', id: '2', description: 'test', services: [{ title: 'test' }] }];
         store = mockStore({
             filtersReducer: {
                 text: 'test',
             },
             tilesReducer: {
                 tiles,
+                services: tiles,
                 error: null,
             },
             refreshStaticApisReducer: {
@@ -65,7 +66,7 @@ describe('Dashboard Container', () => {
         );
     });
 
-    xit('should render the container', () => {
+    it('should render the container', () => {
         expect(container).not.toBeNull();
     });
 });
