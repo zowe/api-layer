@@ -9,10 +9,9 @@
  */
 /// <reference types="Cypress" />
 
-const PATH_TO_VERSION_SELECTORS =
-    '.detail-page > div.content-description-container > div > div.tabs-swagger > div.serviceTab > div.api-diff-container > div.api-diff-form > div:nth-child(2) > div > div';
-const PATH_TO_VERSION_SELECTORS2 =
-    '.detail-page > div.content-description-container > div > div.tabs-swagger > div.serviceTab > div.api-diff-container > div.api-diff-form > div:nth-child(4) > div > div';
+// api-diff-form is now a floating window.
+const PATH_TO_VERSION_SELECTORS = '.api-diff-form > div:nth-child(2) > div > div';
+const PATH_TO_VERSION_SELECTORS2 = '.api-diff-form > div:nth-child(4) > div > div';
 const PATH_TO_VERSION_SELECTOR_ITEMS =
     '#menu- > div.MuiPaper-root.MuiMenu-paper.MuiPopover-paper.MuiPaper-elevation8.MuiPaper-rounded > ul> li';
 const PATH_TO_VERSION_SELECTOR_ITEMS2 =
@@ -86,8 +85,11 @@ describe('>>> Service version compare Test', () => {
 
     it('Should display diff when versions set', () => {
         cy.get('.api-diff-container').should('not.exist');
-        cy.get('.nav-tab').eq(4).should('contain.text', 'Compare');
-        cy.get('.nav-tab').eq(4).click();
+        cy.get(
+            '#root > div > div.content > div.detail-page > div.content-description-container > div > div.tabs-swagger > div.serviceTab > div:nth-child(2) > button > span > p'
+        )
+            .should('contain.text', 'Compare')
+            .click();
 
         cy.get(PATH_TO_VERSION_SELECTORS).click();
         cy.get(PATH_TO_VERSION_SELECTOR_ITEMS).should('exist');
