@@ -95,6 +95,45 @@ export default class DetailPage extends Component {
                         </Shield>
                     )}
                 </div>
+                {!isLoading && !fetchTilesError && (
+                    <div className="api-description-container">
+                        <IconButton
+                            id="go-back-button"
+                            data-testid="go-back-button"
+                            color="primary"
+                            onClick={this.handleGoBack}
+                            size="medium"
+                        >
+                            {iconBack}
+                            Back
+                        </IconButton>
+                        <div className="detailed-description-container">
+                            <div className="title-api-container">
+                                {tiles !== undefined && tiles.length === 1 && (
+                                    <div id="title" className="text-block-11">
+                                        {tiles[0].title}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="paragraph-description-container">
+                                {tiles !== undefined && tiles.length > 0 && (
+                                    <div id="description" className="text-block-12">
+                                        {tiles[0].description}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div id="right-resources-menu">
+                            <Typography variant="subtitle1">On this page</Typography>
+                            <Container>
+                                <Link className="links">Swagger</Link>
+                                <Link className="links">Use cases</Link>
+                                <Link className="links">Tutorials</Link>
+                                <Link className="links">Videos</Link>
+                            </Container>
+                        </div>
+                    </div>
+                )}
                 <div className="content-description-container">
                     {tiles !== undefined && tiles.length === 1 && (
                         <Suspense>
@@ -111,49 +150,8 @@ export default class DetailPage extends Component {
                                         exact
                                         path={`${match.path}/:serviceId`}
                                         render={() => (
-                                            <div>
-                                                {!isLoading && !fetchTilesError && (
-                                                    <div className="api-description-container">
-                                                        <IconButton
-                                                            id="go-back-button"
-                                                            data-testid="go-back-button"
-                                                            color="primary"
-                                                            onClick={this.handleGoBack}
-                                                            size="medium"
-                                                        >
-                                                            {iconBack}
-                                                            Back
-                                                        </IconButton>
-                                                        <div className="detailed-description-container">
-                                                            <div className="title-api-container">
-                                                                {tiles !== undefined && tiles.length === 1 && (
-                                                                    <div id="title" className="text-block-11">
-                                                                        {tiles[0].title}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="paragraph-description-container">
-                                                                {tiles !== undefined && tiles.length > 0 && (
-                                                                    <div id="description" className="text-block-12">
-                                                                        {tiles[0].description}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div id="right-resources-menu">
-                                                            <Typography variant="subtitle1">On this page</Typography>
-                                                            <Container>
-                                                                <Link className="links">Swagger</Link>
-                                                                <Link className="links">Use cases</Link>
-                                                                <Link className="links">Tutorials</Link>
-                                                                <Link className="links">Videos</Link>
-                                                            </Container>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                <div className="tabs-swagger">
-                                                    <ServiceTabContainer tiles={tiles} />
-                                                </div>
+                                            <div className="tabs-swagger">
+                                                <ServiceTabContainer tiles={tiles} />
                                             </div>
                                         )}
                                     />

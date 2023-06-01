@@ -34,9 +34,7 @@ const tile = {
 };
 
 const match = {
-    params: {
-        serviceID: 'cademoapps',
-    },
+    path: '/service',
 };
 
 describe('>>> Detailed Page component tests', () => {
@@ -85,7 +83,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStop).toHaveBeenCalled();
     });
 
-    xit('should handle a back button click', () => {
+    it('should handle a back button click', () => {
         const historyMock = { push: jest.fn() };
         const wrapper = shallow(
             <DetailPage
@@ -119,7 +117,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(spinner.props().isLoading).toEqual(true);
     });
 
-    xit('should display tile title', () => {
+    it('should display tile title', () => {
         const historyMock = { push: jest.fn() };
         const isLoading = false;
         const wrapper = shallow(
@@ -139,7 +137,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(title.props().children).toEqual(tile.title);
     });
 
-    xit('should display tile description', () => {
+    it('should display tile description', () => {
         const historyMock = { push: jest.fn() };
         const isLoading = false;
         const wrapper = shallow(

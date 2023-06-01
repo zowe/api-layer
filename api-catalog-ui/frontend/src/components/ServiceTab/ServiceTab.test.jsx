@@ -90,16 +90,12 @@ describe('>>> ServiceTab component tests', () => {
         );
         serviceTab.setState({ selectedVersion: 'org.zowe v1' });
 
-        let dropDownMenu = serviceTab.find('version-menu');
-        // eslint-disable-next-line no-console
-        console.log(dropDownMenu.debug());
-        expect(dropDownMenu.prop('style').backgroundColor).toEqual('#fff');
-        expect(dropDownMenu.find('span').at(1).prop('style').backgroundColor).toEqual(undefined);
+        const dropDownMenu = serviceTab.find('[data-testid="version-menu"]').first();
+        dropDownMenu.simulate('click');
 
-        dropDownMenu.find('span').at(1).simulate('click');
-
-        dropDownMenu = serviceTab.find('div').at(3);
-        expect(dropDownMenu.find('span').at(1).prop('style').backgroundColor).toEqual('#fff');
-        expect(dropDownMenu.find('span').first().prop('style').backgroundColor).toEqual(undefined);
+        expect(dropDownMenu.children().first().text()).toEqual('org.zowe v1');
+        expect(dropDownMenu.children().at(1).text()).toEqual('org.zowe v2');
+        dropDownMenu.children().at(1).simulate('click');
+        expect(serviceTab.find('[data-testid="version-menu"]').first().text()).toBe('org.zowe v1org.zowe v2');
     });
 });

@@ -67,7 +67,8 @@
 }
 
 #go-back-button {
-    margin-left: 65px;
+    margin-left: 59px;
+    margin-top: 20px;
     font-size: 13px;
     font-weight: bold;
     width: fit-content;
@@ -91,7 +92,7 @@
     font-size: 28px;
     font-weight: 700;
     line-height: 1.0;
-    margin-left: 65px;
+    margin-left: 59px;
 }
 
 #description {
@@ -157,7 +158,7 @@ div.content-description-container > div > div:nth-child(2) > div {
     /*change width via templating mechanism to create space for the right menu (width 80%) */
     width: 92%;
     /*width: 80%;*/
-    margin-left: 65px;
+    margin-left: 59px;
 }
 
 /*disabled for Zowe Catalog*/
@@ -165,7 +166,11 @@ div.content-description-container > div > div:nth-child(2) > div {
     display: none;
     float: right;
     /*display: flex;*/
-    padding: 10px;
+    /*padding-left: 25px;*/
     flex-direction: column;
     align-items: flex-start;
+}
+
+.content-description-container {
+    margin-right: 92px;
 }
