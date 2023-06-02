@@ -54,21 +54,16 @@ The last section of this README describes how to import and trust the local CA c
 
 ### Client certificates:
 
-  * `keystore/client_cert/APIML_External_Certificate_Authority.cer`
-  * `keystore/client_cert/APIML_External_Certificate_Authority.key`  
+  * `keystore/client_cert/ca/apiml_ca.p12`
   API ML External Certificate authority - Certificate and private key of additional certificate authority that is trusted by apiml and can sign certificates that are used for authentication. Convenience export only.
-  
-  * `keystore/client_cert/APIMTST-cert.cer`
-  * `keystore/client_cert/APIMTST-PRIVATEKEY.key`
-  * `keystore/client_cert/UNKNOWNUSER-cert.cer`
-  * `keystore/client_cert/UNKNOWNUSER-PRIVATEKEY.key`
-  * `keystore/client_cert/USER-cert.cer`
-  * `keystore/client_cert/USER-PRIVATEKEY.key`  
-  Client certificates - used for testing of client certificate authentication functionality. APIMTST and UNKNOWNUSER respectively. Convenience export only.
-    
-  * `keystore/client_cert/client-certs.p12`  
+
+* `keystore/client_cert/client-certs.p12`  
+
+  Client certificates - used for testing of client certificate authentication functionality. APIMTST, USER and UNKNOWNUSER.
   Keystore containing all the above including private keys. Used for testing client certificate authentication functionality.
   
+
+
   * `keystore/client_cert/openssl.conf`  
   openssl Configuration for certificate generation
 
