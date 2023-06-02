@@ -118,7 +118,7 @@ export default class ServiceTab extends Component {
     };
 
     handleDialogClose = () => {
-        this.setState({ isDialogOpen: false });
+        this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
     render() {
