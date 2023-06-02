@@ -78,6 +78,8 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     border: 1px solid var(--borders-c-9-c-8-c-5, #C9C8C5);
     background: var(--white-ffffff, #FFF);
     width: auto;
+    padding-right: 44px;
+    padding-left: 22px;
 }
 
 #compare-button {
