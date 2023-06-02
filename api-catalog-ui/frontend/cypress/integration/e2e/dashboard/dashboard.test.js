@@ -53,7 +53,7 @@ describe('>>> Dashboard test', () => {
 
         cy.get('.grid-tile').should('have.length', 0);
 
-        cy.get('#search_no_results').should('exist').should('have.text', 'No tiles found matching search criteria');
+        cy.get('#search_no_results').should('exist').should('have.text', 'No services found matching search criteria');
 
         cy.get('@search').clear();
 
