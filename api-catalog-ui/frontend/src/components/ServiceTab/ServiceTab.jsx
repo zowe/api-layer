@@ -257,6 +257,11 @@ export default class ServiceTab extends Component {
                             <Button
                                 id="compare-button"
                                 disabled={apiVersions.length < 2}
+                                style={
+                                    apiVersions.length < 2
+                                        ? { backgroundColor: '#e4e4e4', color: '#c0c0c0', opacity: '0.5' }
+                                        : { backgroundColor: '#fff' }
+                                }
                                 onClick={this.handleDialogOpen}
                                 key="diff"
                             >
