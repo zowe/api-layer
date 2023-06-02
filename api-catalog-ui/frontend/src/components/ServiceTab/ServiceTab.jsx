@@ -244,7 +244,12 @@ export default class ServiceTab extends Component {
                         </div>
                         <div>
                             {currentService && 'apiVersions' in currentService && currentService.apiVersions && (
-                                <Select displayEmpty id="version-menu" data-testid="version-menu">
+                                <Select
+                                    displayEmpty
+                                    id="version-menu"
+                                    value={this.state.selectedVersion}
+                                    data-testid="version-menu"
+                                >
                                     {apiVersions}
                                 </Select>
                             )}

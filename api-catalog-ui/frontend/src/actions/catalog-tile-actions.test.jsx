@@ -53,4 +53,31 @@ describe('>>> Catalog tiles actions tests', () => {
 
         expect(actions.fetchTilesRetry()).toEqual(expectedAction);
     });
+
+    it('should create when start fetching new tiles', () => {
+        const expectedAction = {
+            type: constants.FETCH_NEW_TILES_REQUEST,
+            payload: '',
+        };
+
+        expect(actions.fetchNewTiles('')).toEqual(expectedAction);
+    });
+
+    it('should create when fetching new tiles is successful', () => {
+        const expectedAction = {
+            type: constants.FETCH_NEW_TILES_SUCCESS,
+            payload: [],
+        };
+
+        expect(actions.fetchNewTilesSuccess([])).toEqual(expectedAction);
+    });
+
+    it('should create when storing current tile ID', () => {
+        const expectedAction = {
+            type: constants.STORE_CURRENT_TILEID,
+            payload: 'id',
+        };
+
+        expect(actions.storeCurrentTileId('id')).toEqual(expectedAction);
+    });
 });
