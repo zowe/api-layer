@@ -106,6 +106,52 @@ export const retryMechanism =
             })
         );
 
+const createFetchTilesEpic =
+    (fetchActionType, fetchSuccessAction, fetchFailedAction, fetchStopAction, url, origin, retry) =>
+    (action$, _store, { ajax, scheduler }) =>
+        action$.pipe(
+            ofType(fetchActionType),
+            debounceTime(debounce, scheduler),
+            mergeMap((action) =>
+                timer(0, updatePeriod, scheduler).pipe(
+                    exhaustMap(() =>
+                        ajax({
+                            url: url(action),
+                            method: 'GET',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': origin(),
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        }).pipe(
+                            map((ajaxResponse) => {
+                                const { response } = ajaxResponse;
+                                if (response === null || response.length === 0) {
+                                    return fetchFailedAction(
+                                        action.payload.length > 0
+                                            ? new Error(
+                                                  `Could not retrieve details for Tile with ID: ${action.payload}`
+                                              )
+                                            : new Error(`Could not retrieve any Tiles`)
+                                    );
+                                }
+                                return fetchSuccessAction(response);
+                            }),
+                            retryWhen(retry(scheduler)())
+                        )
+                    ),
+                    takeUntil(action$.pipe(ofType(fetchStopAction))),
+                    catchError((error) => {
+                        if (error.status === 401 || error.status === 403) {
+                            return of(userActions.authenticationFailure(error));
+                        }
+                        return of(fetchFailedAction(error));
+                    })
+                )
+            )
+        );
+
 /**
  * Epic used to schedule call to fetch tiles from the containers endpoint
  * @param action$ redux action
@@ -113,48 +159,15 @@ export const retryMechanism =
  * @param ajax ajax call
  * @param scheduler scheduler
  */
-export const fetchTilesPollingEpic = (action$, _store, { ajax, scheduler }) =>
-    action$.pipe(
-        ofType(FETCH_TILES_REQUEST),
-        debounceTime(debounce, scheduler),
-        mergeMap((action) =>
-            timer(0, updatePeriod, scheduler).pipe(
-                exhaustMap(() =>
-                    ajax({
-                        url: getUrl(action),
-                        method: 'GET',
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': checkOrigin(),
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    }).pipe(
-                        map((ajaxResponse) => {
-                            const { response } = ajaxResponse;
-                            if (response === null || response.length === 0) {
-                                // noinspection JSValidateTypes
-                                return fetchTilesFailed(
-                                    action.payload.length > 0
-                                        ? new Error(`Could not retrieve details for Tile with ID: ${action.payload}`)
-                                        : new Error(`Could not retrieve any Tiles`)
-                                );
-                            }
-                            return fetchTilesSuccess(response);
-                        }),
-                        retryWhen(retryMechanism(scheduler)())
-                    )
-                ),
-                takeUntil(action$.pipe(ofType(FETCH_TILES_STOP))),
-                catchError((error) => {
-                    if (error.status === 401 || error.status === 403) {
-                        return of(userActions.authenticationFailure(error));
-                    }
-                    return of(fetchTilesFailed(error));
-                })
-            )
-        )
-    );
+export const fetchTilesPollingEpic = createFetchTilesEpic(
+    FETCH_TILES_REQUEST,
+    fetchTilesSuccess,
+    fetchTilesFailed,
+    FETCH_TILES_STOP,
+    getUrl,
+    checkOrigin,
+    retryMechanism
+);
 
 /**
  * Epic used to schedule call to fetch tiles from the containers endpoint. This is required to dynamically
@@ -164,45 +177,12 @@ export const fetchTilesPollingEpic = (action$, _store, { ajax, scheduler }) =>
  * @param ajax ajax call
  * @param scheduler scheduler
  */
-export const fetchTilesPollingEpic2 = (action$, _store, { ajax, scheduler }) =>
-    action$.pipe(
-        ofType(FETCH_NEW_TILES_REQUEST),
-        debounceTime(debounce, scheduler),
-        mergeMap((action) =>
-            timer(0, updatePeriod, scheduler).pipe(
-                exhaustMap(() =>
-                    ajax({
-                        url: getUrl(action),
-                        method: 'GET',
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': checkOrigin(),
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    }).pipe(
-                        map((ajaxResponse) => {
-                            const { response } = ajaxResponse;
-                            if (response === null || response.length === 0) {
-                                // noinspection JSValidateTypes
-                                return fetchTilesFailed(
-                                    action.payload.length > 0
-                                        ? new Error(`Could not retrieve details for Tile with ID: ${action.payload}`)
-                                        : new Error(`Could not retrieve any Tiles`)
-                                );
-                            }
-                            return fetchNewTilesSuccess(response);
-                        }),
-                        retryWhen(retryMechanism(scheduler)())
-                    )
-                ),
-                takeUntil(action$.pipe(ofType(FETCH_TILES_STOP))),
-                catchError((error) => {
-                    if (error.status === 401 || error.status === 403) {
-                        return of(userActions.authenticationFailure(error));
-                    }
-                    return of(fetchTilesFailed(error));
-                })
-            )
-        )
-    );
+export const fetchTilesPollingEpic2 = createFetchTilesEpic(
+    FETCH_NEW_TILES_REQUEST,
+    fetchNewTilesSuccess,
+    fetchTilesFailed,
+    FETCH_TILES_STOP,
+    getUrl,
+    checkOrigin,
+    retryMechanism
+);
