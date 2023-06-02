@@ -9,6 +9,7 @@
  */
 
 import getBaseUrl from '../helpers/urls';
+import { notifyError } from './wizard-fetch-actions';
 
 export const REQUEST_VERSION_DIFF = 'REQUEST_VERSION_DIFF';
 export const RECEIVE_VERSION_DIFF = 'RECEIVE_VERSION_DIFF';
@@ -39,9 +40,7 @@ export function getDiff(serviceId, oldVersion, newVersion) {
             .then((response) => response.text())
             .then((text) => dispatch(receive(text)))
             .catch((e) => {
-                // TODO handle better the catch
-                // eslint-disable-next-line no-console
-                console.log(e);
+                dispatch(notifyError(`Error while trying to get the difference between API versions: ${e}`));
             });
     };
 }

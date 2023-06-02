@@ -98,6 +98,7 @@ export default class ServiceTab extends Component {
                 }
                 return (
                     <MenuItem
+                        key={version}
                         onClick={() => {
                             this.setState({ selectedVersion: version });
                         }}

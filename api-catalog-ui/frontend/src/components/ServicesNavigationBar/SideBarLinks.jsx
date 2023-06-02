@@ -24,7 +24,6 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
                 style: { background: 'transparent' },
             }}
             value={text}
-            allowScrollButtonsMobile
             variant="scrollable"
             scrollButtons="auto"
             visibleScrollbar="true"
