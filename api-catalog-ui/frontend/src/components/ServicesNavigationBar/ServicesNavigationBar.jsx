@@ -34,7 +34,11 @@ export default class ServicesNavigationBar extends Component {
             <div>
                 <div id="search2">
                     <Shield title="Search Bar is broken !">
-                        <SearchCriteria placeholder="Search for APIs..." doSearch={this.handleSearch} />
+                        <SearchCriteria
+                            data-testid="search-bar"
+                            placeholder="Search for APIs..."
+                            doSearch={this.handleSearch}
+                        />
                     </Shield>
                 </div>
                 <Typography id="serviceIdTabs" variant="h5">
