@@ -110,6 +110,7 @@ export default class ServiceVersionDiff extends Component {
                                 Show
                             </IconButton>
                         </div>
+                        {/* eslint-disable-next-line react/no-danger */}
                         <div className="api-diff-content" dangerouslySetInnerHTML={{ __html: diffText }} />
                     </DialogContent>
                 </Dialog>
