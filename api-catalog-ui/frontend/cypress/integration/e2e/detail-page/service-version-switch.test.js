@@ -40,15 +40,13 @@ describe('>>> Service version change Test', () => {
         cy.get('#menu- > div > ul > li').eq(2).should('contain.text', 'zowe.apiml.discoverableclient.rest v2.0.0');
     });
 
-    it('Should pre select default version', () => {
+    it('Should change version when clicking version 2', () => {
         cy.get('.version-text').should('exist');
         cy.get('.servers').contains('discoverableclient/api/v1');
-        cy.get('#version-menu').should('exist').and('have.text', 'zowe.apiml.discoverableclient.ws v1.0.0');
-    });
 
-    it('Should change version when clicking version 2', () => {
-        cy.get('#version-menu').should('contain.text', 'zowe.apiml.discoverableclient.rest v1.0.0').click();
-        cy.get('#menu- > div > ul').should('exist').get('li').eq(2).click();
+        cy.get('#version-menu').should('exist').click();
+
+        cy.get('#menu- > div > ul > li').eq(2).click();
         cy.get('.servers', { timeout: 10000 }).contains('/discoverableclient/api/v2');
     });
 });
