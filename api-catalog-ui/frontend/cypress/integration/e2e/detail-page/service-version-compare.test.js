@@ -40,7 +40,7 @@ describe('>>> Service version compare Test', () => {
         // Location of the compare has changed, it's no longer a specific tab
         cy.get('.tabs-container').should('not.exist');
         cy.get('.nav-tabs').should('exist');
-        cy.get('.nav-tabs').should('have.length', 13);
+        cy.get('.nav-tabs').should('have.length', 12);
         cy.get('.version-text').should('exist');
         cy.get('.version-text').should('contain.text', 'Compare');
     });
