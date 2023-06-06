@@ -16,7 +16,7 @@ export const createLoadingSelector = (actions) => (state) =>
 
 // eslint-disable-next-line
 /**
- * Filters the services in the navigation bar based on the search criteria
+ * Filters the services in the dashboard and navigation bar based on the search criteria
  * @param tiles
  * @param searchCriteria
  * @returns services the filtered services that matches the criteria

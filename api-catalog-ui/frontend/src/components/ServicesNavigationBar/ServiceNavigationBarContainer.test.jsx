@@ -16,7 +16,7 @@ import ServicesNavigationBarContainer from './ServicesNavigationBarContainer';
 
 const mockStore = configureStore();
 
-describe('ServiceTab Container', () => {
+describe('ServiceNavigationBar Container', () => {
     let store;
     let container;
     beforeEach(() => {
