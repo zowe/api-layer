@@ -14,6 +14,26 @@ import _ from 'lodash';
 export const createLoadingSelector = (actions) => (state) =>
     _(actions).some((action) => _.get(state.loadingReducer, action));
 
+function filterService(searchCriteria, service) {
+    if (!searchCriteria || searchCriteria.length === 0) {
+        return true;
+    }
+    if (!service.title) {
+        return false;
+    }
+    return service.title.toLowerCase().includes(searchCriteria.toLowerCase());
+}
+
+function compareResult(searchCriteria, tile, filteredServices) {
+    if (!searchCriteria || searchCriteria.length === 0) {
+        return true;
+    }
+    if (!tile.title) {
+        return false;
+    }
+    return tile.title.toLowerCase().includes(searchCriteria.toLowerCase()) || filteredServices.length > 0;
+}
+
 // eslint-disable-next-line
 /**
  * Filters the services in the dashboard and navigation bar based on the search criteria
@@ -31,13 +51,7 @@ export const getFilteredServices = (tiles, searchCriteria) => {
     return filteredTiles
         .filter((tile) => {
             const filteredServices = tile.services.filter((service) => {
-                if (!searchCriteria || searchCriteria.length === 0) {
-                    return true;
-                }
-                if (!service.title) {
-                    return false;
-                }
-                return service.title.toLowerCase().includes(searchCriteria.toLowerCase());
+                return filterService(searchCriteria, service);
             });
 
             if (filteredServices.length === 0) {
@@ -45,14 +59,7 @@ export const getFilteredServices = (tiles, searchCriteria) => {
             }
 
             tile.services = filteredServices.sort((service1, service2) => service1.title.localeCompare(service2.title));
-
-            if (!searchCriteria || searchCriteria.length === 0) {
-                return true;
-            }
-            if (!tile.title) {
-                return false;
-            }
-            return tile.title.toLowerCase().includes(searchCriteria.toLowerCase()) || filteredServices.length > 0;
+            return compareResult(searchCriteria, tile, filteredServices);
         })
         .sort((tile1, tile2) => tile1.title.localeCompare(tile2.title));
 };
