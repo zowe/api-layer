@@ -3,7 +3,7 @@ import java.util.stream.Collectors
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("com.github.node-gradle:gradle-node-plugin:${gradleNodeVersion}")
+        classpath libs.gradle.node.plugin
     }
 }
 
@@ -11,8 +11,8 @@ apply plugin: 'com.github.node-gradle.node'
 
 node {
     download = true
-    version = projectNodeVersion
-    npmVersion = projectNpmVersion
+    version = libs.versions.projectNode.get()
+    npmVersion = libs.versions.projectNpm.get()
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "ci"
     workDir = file("${project.projectDir}/tools/nodejs")
@@ -84,7 +84,9 @@ task npmBuild(type: NpmTask) {
     description = "Executes npm build"
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(fileTree('frontend').matching {
+        include '**/.env*'
+    }).withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
@@ -98,6 +100,7 @@ npmBuild.dependsOn npmInstall
 npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
 
+npmBuild.dependsOn npmTest
 
 jar {
     enabled false

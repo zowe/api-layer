@@ -2,7 +2,7 @@ allprojects {
     apply plugin: 'checkstyle'
 
     checkstyle {
-        toolVersion = '8.12'
+        toolVersion = libs.versions.checkstyle.get()
         configFile = rootProject.file('codequality/checkstyle/checkstyle.xml')
         configProperties = [
             'configDir': rootProject.file('codequality/checkstyle'),
