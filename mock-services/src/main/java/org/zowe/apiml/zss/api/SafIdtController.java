@@ -12,6 +12,7 @@ package org.zowe.apiml.zss.api;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,7 +39,7 @@ public class SafIdtController {
      * - 400 - The required information wasn't provided
      * - 201 - Valid SAF IDT token.
      */
-    @PostMapping(value = "/zss/saf/authenticate")
+    @PostMapping(value = "/zss/saf/authenticate", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Token> authenticate(
         @RequestBody Authentication authentication
     ) {
@@ -68,7 +69,7 @@ public class SafIdtController {
      * - 400 - The required information wasn't provided
      * - 200 - The token is valid
      */
-    @PostMapping(value = "/zss/saf/verify")
+    @PostMapping(value = "/zss/saf/verify", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Token> verify(
         @RequestBody Token token
     ) {

@@ -1,16 +1,10 @@
 buildscript {
     repositories mavenRepositories
 
-    ext {
-        springBootVersion = rootProject.ext.springBootVersion
-    }
-
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath libs.spring.boot.gradle.plugin
     }
 }
-
-apply plugin: 'io.spring.dependency-management'
 
 publish {
     outputs.upToDateWhen { false }
@@ -20,46 +14,33 @@ publish {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-java')
+    api project(':onboarding-enabler-java')
 
-    implementation (libraries.spring_boot_starter_web){
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
-    }
-    implementation libraries.jackson_core
-    implementation libraries.jackson_databind
-    implementation libraries.snakeyaml
-    implementation libraries.tomcat_embed_el
-    implementation libraries.tomcat_embed_core
-    implementation libraries.tomcat_embed_websocket
+    implementation libs.spring.boot.starter.web
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
 
-    implementation libraries.spring_aop
-    implementation libraries.spring_beans
-    implementation libraries.spring_context
-    implementation libraries.spring_core
-    implementation libraries.spring_expression
-    implementation libraries.spring_web
-    implementation libraries.spring_webmvc
+    implementation libs.spring.aop
+    implementation libs.spring.beans
+    implementation libs.spring.context
+    implementation libs.spring.core
+    implementation libs.spring.expression
+    implementation libs.spring.web
+    implementation libs.spring.webmvc
+    implementation libs.spring.cloud.commons
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    compileOnly libraries.javax_inject
-    implementation (libraries.eureka_client){
-        exclude group: "com.thoughtworks.xstream", module: "xstream"
-        exclude group: "org.codehaus.jettison", module: "jettison"
-    }
-    implementation libraries.xstream
-    implementation libraries.jettison
+    compileOnly libs.jakarta.inject
+    implementation libs.eureka.client
 
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
-    testImplementation libraries.mockito_core
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
+    testImplementation libs.mockito.core
 
-    annotationProcessor libraries.spring_boot_configuration_processor
-    testImplementation libraries.gson
+    annotationProcessor libs.spring.boot.configuration.processor
+    testImplementation libs.gson
 }
 
 jar {

@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.ribbon;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
@@ -57,6 +59,10 @@ public class ApimlLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T
         }
 
         if (server instanceof DiscoveryEnabledServer) {
+            // hotfix: Eureka not fully set isSecure flag
+            boolean secured = ((DiscoveryEnabledServer) server).getInstanceInfo().isPortEnabled(InstanceInfo.PortType.SECURE);
+            getClientConfig().set(CommonClientConfigKey.IsSecure, secured);
+
             RequestContextUtils.setInstanceInfo(((DiscoveryEnabledServer) server).getInstanceInfo());
             RequestContextUtils.addDebugInfo("Load Balancer chooses: " + ((DiscoveryEnabledServer) server).getInstanceInfo());
         } else {

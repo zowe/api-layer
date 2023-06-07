@@ -28,8 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.*;
 
 import javax.annotation.PostConstruct;
@@ -117,9 +115,6 @@ public class HttpConfig {
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
-
     private Set<String> publicKeyCertificatesBase64;
 
     @Resource
@@ -177,9 +172,10 @@ public class HttpConfig {
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
 
         } catch (HttpsConfigError e) {
+            log.error("Invalid configuration of HTTPs: {}", e.getMessage());
             System.exit(1); // NOSONAR
         } catch (Exception e) {
-            apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
+            log.error("Cannot construct configuration of HTTPs: {}", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }

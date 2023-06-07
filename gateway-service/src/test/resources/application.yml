@@ -82,6 +82,7 @@ spring:
             config: classpath:ehcache.xml
     main:
         allow-bean-definition-overriding: true
+        allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
 
 server:
@@ -141,6 +142,8 @@ ribbon:
     retryableStatusCodes: 503
     OkToRetryOnAllOperations: false
     GZipPayload: false # this stops Gateway from deflating gzip responses from services
+    client:
+        name: testClient
 
 http:
     connection:

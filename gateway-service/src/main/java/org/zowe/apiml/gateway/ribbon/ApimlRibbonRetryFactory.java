@@ -10,24 +10,57 @@
 
 package org.zowe.apiml.gateway.ribbon;
 
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryContext;
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
+import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.retry.RetryListener;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Allows adding RetryListeners to Ribbon Retry
  */
 public class ApimlRibbonRetryFactory extends RibbonLoadBalancedRetryFactory {
 
-    private final RetryListener[] listeners;
+    private final AtomicReference<ServiceInstanceChooser> serviceInstanceChooser = new AtomicReference<>();
 
-    public ApimlRibbonRetryFactory(SpringClientFactory clientFactory, RetryListener... listeners) {
+    public ApimlRibbonRetryFactory(SpringClientFactory clientFactory) {
         super(clientFactory);
-        this.listeners = listeners;
+    }
+
+    @Override
+    public LoadBalancedRetryPolicy createRetryPolicy(String service, ServiceInstanceChooser serviceInstanceChooser) {
+        this.serviceInstanceChooser.set(serviceInstanceChooser);
+        return new LoadBalancedRetryPolicyFix(super.createRetryPolicy(service, serviceInstanceChooser));
     }
 
     @Override
     public RetryListener[] createRetryListeners(String service) {
-        return listeners;
+        return new RetryListener[] {
+            new InitializingRetryListener(this.serviceInstanceChooser.get()),
+            new AbortingRetryListener()
+        };
     }
+
+    @RequiredArgsConstructor
+    private static class LoadBalancedRetryPolicyFix implements LoadBalancedRetryPolicy {
+
+        @Delegate(excludes = CanRetryNextServer.class)
+        private final LoadBalancedRetryPolicy original;
+
+        @Override
+        public boolean canRetryNextServer(LoadBalancedRetryContext context) {
+            return original.canRetryNextServer(context) || context.getRetryCount() == 0;
+        }
+
+        interface CanRetryNextServer {
+            boolean canRetryNextServer(LoadBalancedRetryContext context);
+        }
+
+    }
+
 }

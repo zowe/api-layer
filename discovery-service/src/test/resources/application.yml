@@ -24,6 +24,8 @@ spring:
     output:
         ansi:
             enabled: detect
+    main:
+        allow-circular-references: true
 
 server:
     address: ${apiml.service.ipAddress}
