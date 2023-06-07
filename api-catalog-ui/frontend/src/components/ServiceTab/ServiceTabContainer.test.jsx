@@ -20,7 +20,14 @@ describe('ServiceTab Container', () => {
     let store;
     let container;
     beforeEach(() => {
-        const tiles = [{ title: 'test', id: '2', description: 'test', services: ['service1'] }];
+        const tiles = [
+            {
+                title: 'test',
+                id: '2',
+                description: 'test',
+                services: [{ id: 'service1', apiVersions: ['org.zowe v1', 'org.zowe v2'] }],
+            },
+        ];
         store = mockStore({
             tilesReducer: {
                 tiles,
@@ -42,7 +49,7 @@ describe('ServiceTab Container', () => {
         container = render(
             <Router history={history}>
                 <Provider store={store}>
-                    <ServiceTabContainer />
+                    <ServiceTabContainer tiles={tiles} />
                 </Provider>
             </Router>
         );

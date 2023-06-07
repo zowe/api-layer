@@ -51,6 +51,7 @@
 }
 
 .api-description-container {
+    margin-left: 388px;
     padding: 2.2rem;
 }
 
@@ -66,6 +67,8 @@
 }
 
 #go-back-button {
+    margin-left: 56px;
+    margin-top: 20px;
     font-size: 13px;
     font-weight: bold;
     width: fit-content;
@@ -89,6 +92,7 @@
     font-size: 28px;
     font-weight: 700;
     line-height: 1.0;
+    margin-left: 56px;
 }
 
 #description {
@@ -129,7 +133,43 @@ div.content-description-container > div > div:nth-child(2) > div {
 
 #serviceIdTabs {
     color: black;
-    font-size: 14px;
+    font-size: 24px;
     font-weight: bold;
 }
 
+.nav-bar {
+    min-height: 84vh;
+    flex-direction: column;
+    align-items: center;
+    min-width: 368px;
+    box-shadow: 0 0 6px hsl(210 14% 90%);
+    padding: 10px 5px 10px 20px;
+    flex: 1 0 0;
+    width: auto;
+    height: auto;
+    display: table-column;
+    float: left;
+    position: relative;
+    background: white;
+}
+
+.paragraph-description-container {
+    /*change width via templating mechanism to create space for the right menu (width 80%) */
+    width: auto;
+    /*width: 80%;*/
+    margin-left: 56px;
+}
+
+/*disabled for Zowe Catalog*/
+#right-resources-menu {
+    display: none;
+    float: right;
+    /*display: flex;*/
+    /*padding-left: 25px;*/
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.content-description-container {
+    margin-right: 92px;
+}

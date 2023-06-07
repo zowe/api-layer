@@ -1,7 +1,7 @@
 services:
     - serviceId: mockzosmf  # unique lowercase ID of the service
       catalogUiTileId: zosmf  # ID of the API Catalog UI tile (visual grouping of the services)
-      title: Statically Defined API Service  # Title of the service in the API catalog
+      title: Mock zOSMF  # Title of the service in the API catalog
       description: Mock ZOSMF service  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
           - https://mock-services:10013/  # scheme://hostname:port/contextPath
@@ -17,6 +17,7 @@ services:
             gatewayUrl: api
             version: 2.4.0
             documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
+            swaggerUrl: https://mock-services:10013/zosmf/api/docs
     - serviceId: zss  # unique lowercase ID of the service
       catalogUiTileId: zss  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Statically Defined ZSS  # Title of the service in the API catalog

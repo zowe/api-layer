@@ -11,11 +11,12 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import DetailPageContainer from './DetailPageContainer';
+import { Router } from 'react-router-dom';
+import ServicesNavigationBarContainer from './ServicesNavigationBarContainer';
 
 const mockStore = configureStore();
 
-describe('DetailPage Container', () => {
+describe('ServiceNavigationBar Container', () => {
     let store;
     let container;
     beforeEach(() => {
@@ -24,33 +25,18 @@ describe('DetailPage Container', () => {
                 title: 'test',
                 id: '2',
                 description: 'test',
-                services: [
-                    {
-                        serviceId: 'service',
-                    },
-                ],
+                services: [{ id: 'service1', apiVersions: ['org.zowe v1', 'org.zowe v2'] }],
             },
         ];
         store = mockStore({
-            selectedServiceReducer: {
-                selectedTile: 'tile',
-                selectedService: {
-                    serviceId: 'service',
-                },
-            },
             tilesReducer: {
-                tile: 'tile',
-                tiles,
-                error: null,
+                services: tiles.services,
+                currentTileId: 'id',
+            },
+            filtersReducer: {
+                text: 'test',
             },
         });
-        const match = {
-            path: 'path',
-            params: {
-                serviceID: 'id',
-            },
-        };
-
         const history = {
             location: {
                 pathname: {},
@@ -59,9 +45,11 @@ describe('DetailPage Container', () => {
             listen: jest.fn(),
         };
         container = render(
-            <Provider store={store}>
-                <DetailPageContainer match={match} history={history} />
-            </Provider>
+            <Router history={history}>
+                <Provider store={store}>
+                    <ServicesNavigationBarContainer services={tiles.services} />
+                </Provider>
+            </Router>
         );
     });
 

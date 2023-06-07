@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 describe('>>> Swagger Try Out and Code Snippets Test', () => {
     beforeEach(() => {
         cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
@@ -20,65 +21,74 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         cy.get('input[name="password"]').type(password);
 
         cy.get('@submitButton').click();
-
-        cy.contains('API Mediation Layer API').click();
-
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/tile/apimediationlayer/apicatalog`);
     });
 
-    it('Should contain try-out button', () => {
-        cy.get('.opblock-summary')
-            .eq(0)
-            .click();
-        cy.get('.try-out').should('exist');
-    });
+    [
+        {
+            tile: 'zOSMF',
+            id: 'mockzosmf',
+            selectOp: '#operations-pets-listPets', // Using swagger v2 pet store example for this
+            auth: false, // z/OSMF does not have integrated authentication in swagger
+        },
+        {
+            tile: 'API Gateway',
+            id: 'gateway',
+            selectOp: '#operations-Security-RefreshTokenUsingPOST',
+            auth: true,
+        },
+    ].forEach((test) => {
+        it('Should contain try-out button', () => {
+            cy.log(`Visiting ${test.tile}, ${test.id}`);
+            cy.contains(test.tile).click();
+            cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
+            cy.get('.opblock-summary').eq(0).click();
+            cy.get('.try-out').should('exist');
+        });
 
-    it('Should protect endpoint', () => {
-        cy.get('.authorization__btn').should('exist');
+        it('Should protect endpoint', () => {
+            if (test.auth) {
+                cy.log(`Visiting ${test.tile}, ${test.id}`);
+                cy.contains(test.tile).click();
+                cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
+                cy.get('.authorization__btn').should('exist');
 
-        cy.get('.authorization__btn')
-            .eq(0)
-            .click();
+                cy.get('.authorization__btn').eq(0).click();
 
-        cy.get('input[name=username]').type('non-valid');
-        cy.get('input[name=password]').type('non-valid');
+                cy.get('input[name=username]').type('non-valid');
+                cy.get('input[name=password]').type('non-valid');
 
-        cy.contains('Basic authorization')
-            .parent()
-            .parent()
-            .parent()
-            .submit();
+                cy.contains('LoginBasicAuth').parent().parent().parent().submit();
 
-        cy.get('.close-modal').click();
+                cy.get('.close-modal').click();
 
-        cy.get('.opblock-summary')
-            .eq(0)
-            .click();
+                cy.get('.opblock-summary').eq(0).click();
 
-        cy.get('.try-out').click();
+                cy.get('.try-out').click();
 
-        cy.get('button.execute').click();
+                cy.get('button.execute').click();
 
-        cy.get('table.live-responses-table')
-            .find('.response-col_status')
-            .should('contain', '401');
-    });
+                cy.get('table.live-responses-table').find('.response-col_status').should('contain', '401');
+            }
+        });
 
-    it('Should execute request and display basic code snippets', () => {
-        cy.get('.opblock-summary').eq(0).click();
-        cy.get('.try-out').should('exist');
-        cy.get('.try-out').click();
+        it('Should execute request and display basic code snippets', () => {
+            cy.log(`Visiting ${test.tile}, ${test.id}`);
+            cy.contains(test.tile).click();
+            cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
+            cy.get('.opblock-summary').eq(1).click();
+            cy.get('.try-out').should('exist');
+            cy.get('.try-out').click();
 
-        cy.get('button.execute').click();
-        // check the first tab of the code snippet panel. The order should be always the same
-        cy.get(
-            '#operations-API_Catalog-getAllAPIContainers > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div:nth-child(1)'
-        ).should('exist');
-        cy.get('div.curl-command > div:nth-child(1) > div:nth-child(1) > h4').should('contain', 'cURL (CMD)');
-        cy.get(
-            '#operations-API_Catalog-getAllAPIContainers > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div.curl-command > div:nth-child(3) > pre'
-        ).should('exist');
-        cy.get('div.curl-command > div:nth-child(1) > div:nth-child(2)').click();
-        cy.get('div.curl-command > div:nth-child(3) > pre').should('exist');
+            cy.get('button.execute').click();
+            cy.get(
+                `${test.selectOp} > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div:nth-child(1)`
+            ).should('exist');
+            cy.get('div.curl-command > div:nth-child(1) > div:nth-child(1) > h4').should('contain', 'cURL (CMD)');
+            cy.get(
+                `${test.selectOp} > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div.curl-command > div:nth-child(3) > pre`
+            ).should('exist');
+            cy.get('div.curl-command > div:nth-child(1) > div:nth-child(2)').click();
+            cy.get('div.curl-command > div:nth-child(3) > pre').should('exist');
+        });
     });
 });

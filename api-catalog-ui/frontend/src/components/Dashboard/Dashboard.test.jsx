@@ -73,7 +73,7 @@ describe('>>> Dashboard component tests', () => {
             />
         );
         expect(dashboard.find('#search_no_results').children().text()).toEqual(
-            'No tiles found matching search criteria'
+            'No services found matching search criteria'
         );
     });
 
@@ -225,6 +225,6 @@ describe('>>> Dashboard component tests', () => {
                 authentication={{ showUpdatePassSuccess: true }}
             />
         );
-        expect(screen.getByText('Your mainframe password was sucessfully changed.')).toBeInTheDocument();
+        expect(screen.getByText('Your mainframe password was successfully changed.')).toBeInTheDocument();
     });
 });
