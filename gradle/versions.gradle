@@ -1,77 +1,76 @@
 ext {
-    springBootVersion = '2.5.14'
+    springBootVersion = '2.7.12'
     springCloudVersion = '2.2.10.RELEASE'
-    springCloudCommonsVersion = '2.2.9.RELEASE!!'
-    springCloudVersion3 = '3.1.4'
-    springSecurityVersion = '5.7.5!!'
-    springFrameworkVersion = '5.3.26!!'
-    springRetryVersion = '1.2.4.RELEASE'
+    springCloudCommonsVersion = '2.2.9.RELEASE'
+    springCloudVersion3 = '3.1.6'
+    springSecurityVersion = '5.7.8'
+    springFrameworkVersion = '5.3.27'
+    springRetryVersion = '1.2.5.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
     attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
-    awsSdkVersion = '1.12.279'
-    bouncyCastleVersion = '1.69'
+    awsSdkVersion = '1.12.482'
+    bouncyCastleVersion = '1.70'
     bootstrapVersion = '4.3.1'
     commonsCodecVersion = '1.15'
-    commonsLang3Version = '3.7'
+    commonsLang3Version = '3.12.0'
     commonsTextVersion = '1.10.0'
-    commonsIoVersion = '2.7!!'
+    commonsIoVersion = '2.7'
     ehCacheVersion = '2.10.9.2'
-    eurekaVersion = '1.10.17'
+    eurekaVersion = '1.10.18'
     gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
     gradleNodeVersion = '3.0.1' // Used in classpath dependencies
-    gsonVersion = '2.9.0'
-    guavaVersion = '31.0.1-jre'
+    gsonVersion = '2.9.1'
+    guavaVersion = '31.1-jre'
     hamcrestVersion = '1.3'
-    httpClientVersion = '4.5.13'
-    httpCoreVersion = '4.4.14'
-    infinispanVersion = '13.0.2.Final'
-    jacksonCoreVersion = '2.14.0'
-    jacksonDatabindVersion = '2.14.0'
-    jacksonDataformatYamlVersion = '2.14.0'
+    httpClientVersion = '4.5.14'
+    httpCoreVersion = '4.4.16'
+    infinispanVersion = '13.0.17.Final'
+    jacksonCoreVersion = '2.14.3'
+    jacksonDatabindVersion = '2.14.3'
+    jacksonDataformatYamlVersion = '2.14.3'
     javaxAnnotationVersion = '1.3.2'
     javaxInjectVersion = '1'
     javaxServletApiVersion = '4.0.1'
     jaxbApiVersion = '2.3.1'
     jerseyVersion = '2.26'
-    jettyWebSocketClientVersion = '9.4.48.v20220622'
+    jettyWebSocketClientVersion = '9.4.51.v20230217'
     jettisonVersion = '1.5.4'
-    jjwtVersion = '0.11.2'
+    jjwtVersion = '0.11.5'
     jjwtFullVersion = '0.9.1'
     jsonPathVersion = '2.6.0'
-    jsonSmartVersion = '2.4.7!!'
+    jsonSmartVersion = '2.4.11'
     jsonUnitVersion = '1.25.1'
-    jsonVersion = '20180813'
+    jsonVersion = '20230227'
     jsoupVersion = '1.8.3'
     jsr305Version = '3.0.2'
-    junitJupiterVersion = '5.7.2'
-    junitPlatformVersion = '1.7.2'
-    jqueryVersion = '3.6.0!!'
-    lettuceVersion = '6.0.8.RELEASE'
-    logbackVersion = '1.2.9'
-    lombokVersion = '1.18.20'
-    mockitoCoreVersion = '3.9.0'
+    junitJupiterVersion = '5.8.2'
+    junitPlatformVersion = '1.8.2'
+    jqueryVersion = '3.6.4'
+    lettuceVersion = '6.0.6.RELEASE'
+    logbackVersion = '1.2.12'
+    lombokVersion = '1.18.28'
+    mockitoCoreVersion = '4.5.1'
     netflixServoVersion = '0.13.2'
-    nettyVersion = '4.1.90.Final'
+    nettyVersion = '4.1.93.Final'
     nimbusJoseJwtVersion = '8.21.1'
-    openApiDiffVersion = '2.0.0-beta.10'
-    reactorTestVersion = '3.4.9'
+    openApiDiffVersion = '2.0.1'
+    reactorTestVersion = '3.4.29'
     restAssuredVersion = '4.4.0'
-    slf4jVersion = '1.7.31'
-    snakeyamlVersion = '1.33'
+    slf4jVersion = '1.7.36'
+    snakeyamlVersion = '2.0'
     springFoxVersion = '2.9.2'
-    springDocVersion = '1.6.12'
-    spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
-    swagger3CoreVersion = '2.0.0'
-    swagger3ParserVersion = '2.0.17'
+    springDocVersion = '1.6.15'
+    spring4Version = '4.3.30.RELEASE' // Used within PJE in tests
+    swagger3CoreVersion = '2.0.10'
+    swagger3ParserVersion = '2.0.33'
     swaggerCoreVersion = '1.5.24'
-    swaggerJerseyJaxrsVersion = '1.5.10'
     thymeleafVersion = '3.0.15.RELEASE'
-    tomcatVersion = '9.0.73'
+    tomcatVersion = '9.0.75'
     velocityVersion = '2.3'
-    woodstoxVersion = '6.4.0'
-    xstreamVersion = '1.4.20!!'
+    woodstoxVersion = '6.5.0'
+    xstreamVersion = '1.4.20'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
@@ -210,7 +209,7 @@ ext {
         openapidiff                        : "org.openapitools.openapidiff:openapi-diff-core:${openApiDiffVersion}",
         reactorTest                        : "io.projectreactor:reactor-test:${reactorTestVersion}",
         rest_assured                       : "io.rest-assured:rest-assured:${restAssuredVersion}",
-        rest_assured_json_path              : "io.rest-assured:json-path:${restAssuredVersion}",
+        rest_assured_json_path             : "io.rest-assured:json-path:${restAssuredVersion}",
         rest_assured_xml_path              : "io.rest-assured:xml-path:${restAssuredVersion}",
         slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
         snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
@@ -228,7 +227,7 @@ ext {
         tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         tomcat_embed_websocket             : "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}",
-        tomcat_embed_el                    :"org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
+        tomcat_embed_el                    : "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
         woodstox                           : "com.fasterxml.woodstox:woodstox-core:${woodstoxVersion}",
         xstream                            : "com.thoughtworks.xstream:xstream:${xstreamVersion}",
 

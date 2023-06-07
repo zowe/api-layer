@@ -38,12 +38,12 @@ def getSpringBootApp() {
     project.sourceSets.main.java.dirs.findAll().forEach({folder -> searchSpringBootApp(folder, classes, folder)})
     switch (classes.size()) {
         case 0:
-            println("No Spring Boot application was found. Please fix project or update lite.gradle (see mainClassName = getSpringBootApp() in task liteJar)")
+            println("No Spring Boot application was found. Please fix project or update lite.gradle (see mainClass = getSpringBootApp() in task liteJar)")
             System.exit(-1)
         case 1:
             return classes.get(0)
         default:
-            println("Multiple Spring Boot application were found (" + classes + "). Please fix project or update lite.gradle (see mainClassName = getSpringBootApp() in task liteJar)")
+            println("Multiple Spring Boot application were found (" + classes + "). Please fix project or update lite.gradle (see mainClass = getSpringBootApp() in task liteJar)")
             System.exit(-1)
     }
 }

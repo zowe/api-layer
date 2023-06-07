@@ -49,7 +49,7 @@ gitProperties {
 
 dependencies {
 
-    implementation(project(':common-service-core')) {
+    api(project(':common-service-core')) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
     implementation libraries.javax_servlet_api
@@ -160,13 +160,13 @@ dependencies {
     }
     testImplementation libraries.spring_test
     testImplementation libraries.json_smart
-    testCompile libraries.hamcrest
+    testImplementation libraries.hamcrest
     testImplementation libraries.rest_assured
     testImplementation(testFixtures(project(":integration-tests")))
 }
 
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar.archiveFileName = "${bootJar.baseName}.jar"
 
 publishing {
     publications {

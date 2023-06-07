@@ -63,7 +63,7 @@
     },
     "overrides": {
         "nth-check": "2.0.1",
-        "jsdom": "16.5.0",
+        "jsdom": "16.6.0",
         "got": "12.1.0"
     },
     "scripts": {

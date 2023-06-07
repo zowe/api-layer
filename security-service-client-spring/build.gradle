@@ -1,5 +1,5 @@
 dependencies {
-    compile(project(':apiml-security-common'))
+    api(project(':apiml-security-common'))
     implementation libraries.spring_boot_starter_aop
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.springframework", module: "spring-web"
@@ -15,9 +15,9 @@ dependencies {
     }
     implementation libraries.snakeyaml
     implementation libraries.tomcat_embed_el
-    compile libraries.spring_security_web
-    compile libraries.spring_security_config
-    compile libraries.apache_commons_lang3
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.apache_commons_lang3
     implementation (libraries.eureka_client) {
         exclude group: "com.thoughtworks.xstream", module: "xstream"
         exclude group: "org.codehaus.jettison", module: "jettison"
@@ -30,11 +30,11 @@ dependencies {
     annotationProcessor libraries.lombok
 
 
-    testCompile libraries.mockito_core
-    testCompile libraries.spring_mock_mvc
-    testCompile(libraries.spring_boot_starter_test) {
+    testImplementation libraries.mockito_core
+    testImplementation libraries.spring_mock_mvc
+    testImplementation(libraries.spring_boot_starter_test) {
         exclude group: "org.springframework", module: "spring-test"
     }
-    testCompile libraries.spring_test
-    testCompile libraries.json_smart
+    testImplementation libraries.spring_test
+    testImplementation libraries.json_smart
 }

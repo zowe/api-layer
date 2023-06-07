@@ -51,6 +51,7 @@ spring:
             enabled: detect
     main:
         banner-mode: ${apiml.banner:"off"}
+        allow-circular-references: true
 
 server:
     address: ${apiml.service.ipAddress}

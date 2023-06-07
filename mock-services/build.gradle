@@ -48,9 +48,9 @@ gitProperties {
 }
 
 dependencies {
-    compile libraries.jjwt
-    compile libraries.jjwt_impl
-    compile libraries.jjwt_jackson
+    implementation libraries.jjwt
+    implementation libraries.jjwt_impl
+    implementation libraries.jjwt_jackson
     implementation libraries.apache_commons_lang3
     implementation libraries.nimbusJoseJwt
 
@@ -108,4 +108,4 @@ dependencies {
 }
 
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar.archiveFileName = "${bootJar.baseName}.jar"

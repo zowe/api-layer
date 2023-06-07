@@ -48,8 +48,8 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-spring')
-    implementation project(':zaas-client')
+    api project(':onboarding-enabler-spring')
+    api project(':zaas-client')
     implementation (libraries.spring_doc) {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
         exclude group: "org.yaml", module: "snakeyaml"
@@ -110,7 +110,7 @@ dependencies {
 }
 
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar.archiveFileName = "${bootJar.baseName}.jar"
 
 publishing {
     publications {

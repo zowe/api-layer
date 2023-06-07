@@ -1,10 +1,10 @@
 dependencies {
-    compile(project(':common-service-core'))
+    api(project(':common-service-core'))
 
-    compile libraries.apache_commons_lang3
-    compile libraries.http_client
-    compile libraries.http_core
-    compile libraries.jetty_websocket_client
+    implementation libraries.apache_commons_lang3
+    implementation libraries.http_client
+    implementation libraries.http_core
+    implementation libraries.jetty_websocket_client
 
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.springframework", module: "spring-web"
@@ -16,16 +16,15 @@ dependencies {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
-        exclude group: "org.yaml", module: "snakeyaml"
     }
-    implementation libraries.snakeyaml
     implementation libraries.spring_context
 
     compileOnly libraries.spring_boot_configuration_processor
+    implementation libraries.jsr305
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile libraries.javax_servlet_api
+    testImplementation libraries.javax_servlet_api
     testImplementation(libraries.spring_boot_starter_test) {
         exclude group: "org.springframework", module: "spring-test"
     }
