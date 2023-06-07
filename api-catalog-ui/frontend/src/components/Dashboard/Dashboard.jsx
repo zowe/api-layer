@@ -68,7 +68,11 @@ export default class Dashboard extends Component {
             authentication,
             storeCurrentTileId,
         } = this.props;
-        const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+        const hasSearchCriteria =
+            typeof searchCriteria !== 'undefined' &&
+            searchCriteria !== undefined &&
+            searchCriteria !== null &&
+            searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {

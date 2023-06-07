@@ -31,8 +31,8 @@ public class ApiDocController {
     @GetMapping(value = "/zosmf/api/docs", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> getApiDoc() {
         URL apidoc = getClass().getClassLoader().getResource("apidoc.json");
-        try (InputStream stream = apidoc.openStream()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try (InputStream stream = apidoc.openStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
             StringBuilder builder = new StringBuilder();
             reader.lines().forEach(builder::append);
             return ResponseEntity.ok(builder.toString());

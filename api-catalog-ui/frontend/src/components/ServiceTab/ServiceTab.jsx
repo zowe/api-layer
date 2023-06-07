@@ -25,6 +25,11 @@ export default class ServiceTab extends Component {
         this.handleDialogClose = this.handleDialogClose.bind(this);
     }
 
+    get containsVersion() {
+        const { currentService } = this;
+        return currentService && 'apiVersions' in currentService && currentService.apiVersions;
+    }
+
     get basePath() {
         const { selectedService } = this.props;
         const { selectedVersion } = this.state;
@@ -83,7 +88,7 @@ export default class ServiceTab extends Component {
         const { selectedVersion } = this.state;
         const { currentService } = this;
 
-        if (currentService && 'apiVersions' in currentService && currentService.apiVersions) {
+        if (this.containsVersion) {
             apiVersions = currentService.apiVersions.map((version) => {
                 // Pre select default version or if only one version exists select that
                 let tabStyle = {};
@@ -138,6 +143,7 @@ export default class ServiceTab extends Component {
         const { currentService } = this;
         const { hasHomepage } = this;
         const { apiVersions } = this;
+        const { containsVersion } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         return (
@@ -244,7 +250,7 @@ export default class ServiceTab extends Component {
                             </Typography>
                         </div>
                         <div>
-                            {currentService && 'apiVersions' in currentService && currentService.apiVersions && (
+                            {containsVersion && (
                                 <Select
                                     displayEmpty
                                     id="version-menu"
@@ -269,18 +275,14 @@ export default class ServiceTab extends Component {
                             </Button>
                         </div>
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
-                        {selectedVersion === 'diff' &&
-                            isDialogOpen &&
-                            currentService &&
-                            'apiVersions' in currentService &&
-                            currentService.apiVersions && (
-                                <ServiceVersionDiffContainer
-                                    handleDialog={this.handleDialogClose}
-                                    serviceId={selectedService.serviceId}
-                                    versions={currentService.apiVersions}
-                                    isDialogOpen={isDialogOpen}
-                                />
-                            )}
+                        {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
+                            <ServiceVersionDiffContainer
+                                handleDialog={this.handleDialogClose}
+                                serviceId={selectedService.serviceId}
+                                versions={currentService.apiVersions}
+                                isDialogOpen={isDialogOpen}
+                            />
+                        )}
                     </div>
                 </Shield>
             </>

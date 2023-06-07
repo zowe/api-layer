@@ -16,7 +16,6 @@ import { storeCurrentTileId } from '../../actions/catalog-tile-actions';
 const mapStateToProps = (state) => ({
     searchCriteria: state.filtersReducer.text,
     services: getFilteredServices(state.tilesReducer.services, state.filtersReducer.text),
-    currentTileId: state.tilesReducer.currentTileId,
 });
 const mapDispatchToProps = (dispatch) => ({
     filterText: (text) => dispatch(filterText(text)),

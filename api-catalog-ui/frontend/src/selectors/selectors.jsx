@@ -34,6 +34,9 @@ export const getFilteredServices = (tiles, searchCriteria) => {
                 if (!searchCriteria || searchCriteria.length === 0) {
                     return true;
                 }
+                if (!service.title) {
+                    return false;
+                }
                 return service.title.toLowerCase().includes(searchCriteria.toLowerCase());
             });
 
@@ -45,6 +48,9 @@ export const getFilteredServices = (tiles, searchCriteria) => {
 
             if (!searchCriteria || searchCriteria.length === 0) {
                 return true;
+            }
+            if (!tile.title) {
+                return false;
             }
             return tile.title.toLowerCase().includes(searchCriteria.toLowerCase()) || filteredServices.length > 0;
         })

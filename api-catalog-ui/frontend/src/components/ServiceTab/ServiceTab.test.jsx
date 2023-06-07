@@ -14,7 +14,6 @@ const params = {
     path: '/service/:serviceID/:serviceId',
     url: '/tile/apimediationlayer/gateway',
     params: {
-        serviceID: 'apimediationlayer',
         serviceId: 'gateway',
     },
 };
