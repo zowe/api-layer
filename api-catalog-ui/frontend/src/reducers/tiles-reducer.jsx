@@ -11,26 +11,67 @@
 import {
     FETCH_TILES_FAILED,
     FETCH_TILES_REQUEST,
+    FETCH_NEW_TILES_REQUEST,
     FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
+    FETCH_NEW_TILES_SUCCESS,
+    STORE_CURRENT_TILEID,
 } from '../constants/catalog-tile-constants';
 
 const tilesReducerDefaultState = {
     tile: {},
     tiles: [],
+    services: [],
     id: '',
+    currentTileId: '',
     error: null,
 };
 
 const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
     switch (action.type) {
         case FETCH_TILES_SUCCESS:
-            return { ...state, tiles: [...action.payload], error: null };
+            return {
+                ...state,
+                currentTileId: state.currentTileId,
+                services: [...state.services],
+                tiles: [...action.payload],
+                error: null,
+            };
+        case FETCH_NEW_TILES_SUCCESS:
+            return {
+                ...state,
+                currentTileId: state.currentTileId,
+                tiles: [...state.tiles],
+                services: [...action.payload],
+                error: null,
+            };
+        case STORE_CURRENT_TILEID:
+            return { ...state, currentTileId: action.payload, error: null };
         case FETCH_TILES_FAILED:
-            return { tiles: state.tiles, id: '', error: action.payload };
+            return {
+                tiles: state.tiles,
+                services: state.services,
+                currentTileId: state.currentTileId,
+                id: '',
+                error: action.payload,
+            };
         case FETCH_TILES_REQUEST:
-            return { tiles: [], id: action.payload, error: null };
+            return {
+                tiles: [],
+                services: state.services,
+                currentTileId: state.currentTileId,
+                id: action.payload,
+                error: null,
+            };
+        case FETCH_NEW_TILES_REQUEST:
+            return {
+                services: [],
+                tiles: state.tiles,
+                currentTileId: state.currentTileId,
+                id: action.payload,
+                error: null,
+            };
         case FETCH_TILES_RETRY:
             return state;
         case FETCH_TILES_STOP:
