@@ -50,9 +50,7 @@ export const getFilteredServices = (tiles, searchCriteria) => {
 
     return filteredTiles
         .filter((tile) => {
-            const filteredServices = tile.services.filter((service) => {
-                return filterService(searchCriteria, service);
-            });
+            const filteredServices = tile.services.filter((service) => filterService(searchCriteria, service));
 
             if (filteredServices.length === 0) {
                 return false;
