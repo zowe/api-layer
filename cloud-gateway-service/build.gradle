@@ -1,14 +1,13 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.7.3")
-        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath("org.eclipse.jgit:org.eclipse.jgit") {
-            version {
-                strictly '5.13.0.202109080827-r'
-            }
-        }
+        classpath libs.spring.boot.gradle.plugin
+        classpath libs.jgit
     }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
 }
 
 normalization {
@@ -19,8 +18,6 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'com.gorylenko.gradle-git-properties'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
@@ -31,8 +28,8 @@ def componentName = "cloud-gateway-service"
 setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.cloudgatewayservice.CloudGatewayServiceApplication'
 
-ext['netty.version'] = '4.1.86.Final'
-ext['reactor-bom.version'] = '2020.0.26'
+ext['netty.version'] = libs.versions.netty.get()
+ext['reactor-bom.version'] = libs.versions.reactorBom.get()
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
@@ -54,63 +51,43 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
+configurations.all {
+    exclude group: "org.springframework", module: "spring-webmvc"
+    exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
+}
+
 dependencies {
-    implementation project(':common-service-core')
-    implementation(libraries.spring_cloud_starter_gateway) {
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.bouncycastle", module: "bcprov-jdk15on"
-        exclude group: "org.springframework", module: "spring-context"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
-    implementation 'io.projectreactor.netty:reactor-netty-core:1.1.6'
-    implementation 'io.projectreactor.netty:reactor-netty-http:1.1.6'
+    api project(':common-service-core')
+    implementation libs.eh.cache
+    implementation libs.spring.cloud.starter.gateway
 
+    implementation libs.netty.reactor.core
+    implementation libs.netty.reactor.http
 
-    implementation libraries.spring_context
-    implementation libraries.bcprov
-    implementation libraries.snakeyaml
-    implementation(libraries.spring_eureka_client_v3) {
-        exclude group: "com.thoughtworks.xstream", module: "xstream"
-        exclude group: "com.google.guava", module: "guava"
-        exclude group: "org.codehaus.jettison", module: "jettison"
-        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
-        exclude group: "org.springframework", module: "spring-beans"
-        exclude group: "org.springframework", module: "spring-core"
-        exclude group: "org.springframework", module: "spring-web"
-    }
-    implementation 'org.springframework.boot:spring-boot-starter-security:2.7.7'
+    implementation libs.spring.eureka.client.v3
+    implementation libs.spring.boot.starter.security
 
-    implementation libraries.xstream
-    implementation libraries.woodstox
-    implementation libraries.jettison
-    implementation libraries.jackson_databind
-    implementation libraries.guava
-    implementation libraries.tomcat_embed_el
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.7'
+    implementation libs.jackson.databind
+    implementation libs.spring.boot.starter.actuator
 
-    implementation(libraries.spring_cloud_circuit_breaker) {
-        exclude group: "org.springframework.security", module: "spring-security-crypto"
-    }
-    implementation libraries.spring_security_crypto
-    implementation libraries.spring_security_config
-    implementation libraries.spring_security_core
-    implementation libraries.spring_security_web
-    implementation libraries.spring_beans
-    implementation libraries.spring_core
-    implementation libraries.spring_web
-    implementation libraries.spring_aop
-    implementation libraries.spring_expression
-    implementation libraries.bcpkix
+    implementation libs.spring.cloud.circuit.breaker
+    implementation libs.spring.security.config
+    implementation libs.spring.security.core
+    implementation libs.spring.security.web
+    implementation libs.spring.aop
+    implementation libs.spring.expression
+    implementation libs.bcpkix
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.7'
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    annotationProcessor libs.spring.boot.configuration.processor
 
-
-    testCompileOnly libraries.lombok
-    testAnnotationProcessor libraries.lombok
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.7'
-    testImplementation libraries.rest_assured
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.rest.assured
 }
 
 bootJar {
@@ -145,5 +122,5 @@ publishing {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '7.2'
+    gradleVersion = libs.versions.gradle.get()
 }

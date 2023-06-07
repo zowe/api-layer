@@ -47,6 +47,9 @@ class PageRedirectionFilterTest {
     private static final String NOT_IN_DS_SERVER_HOST = "hostC.test.com";
     private static final int NOT_IN_DS_SERVER_PORT = 7777;
 
+    private static final String INSTANCE_ID = SERVICE_ID + ":" + TARGET_SERVER_HOST + ":" + TARGET_SERVER_PORT;
+    private static final String OTHER_INSTANCE_ID = OTHER_SERVICE_ID + ":" + OTHER_SERVICE_SERVER_HOST + ":" + OTHER_SERVICE_SERVER_PORT;
+
     private PageRedirectionFilter filter = null;
     private DiscoveryClient discoveryClient = null;
     private MockHttpServletResponse response = null;
@@ -85,7 +88,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(INSTANCE_ID, SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(302);
@@ -114,7 +117,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(INSTANCE_ID, SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(304);
@@ -149,10 +152,10 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(OTHER_SERVICE_ID, otherRoutedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(INSTANCE_ID, SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
         when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
+                new DefaultServiceInstance(OTHER_INSTANCE_ID, OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
         when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
 
@@ -189,10 +192,10 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(OTHER_SERVICE_ID, otherRoutedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(INSTANCE_ID, SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
         when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
+                new DefaultServiceInstance(OTHER_INSTANCE_ID, OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
         when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
 
@@ -222,7 +225,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(INSTANCE_ID, SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(302);
@@ -252,7 +255,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(INSTANCE_ID, SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(302);
@@ -272,7 +275,7 @@ class PageRedirectionFilterTest {
         ctx.setResponse(response);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-                new DefaultServiceInstance(SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
+                new DefaultServiceInstance(INSTANCE_ID, SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
 
         ctx.addZuulResponseHeader(LOCATION, location);

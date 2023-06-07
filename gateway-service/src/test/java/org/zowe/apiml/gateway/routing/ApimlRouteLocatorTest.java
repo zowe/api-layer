@@ -84,7 +84,7 @@ class ApimlRouteLocatorTest {
 
             when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
             when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
-                Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
+                Collections.singletonList(new DefaultServiceInstance("localhost:service:80", "service", "localhost", 80, false, metadata)));
             when(serviceRouteMapper.apply("service")).thenReturn("service");
 
             Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
@@ -159,7 +159,7 @@ class ApimlRouteLocatorTest {
             expectedRoutesMap.put("/service/ws/v1/**", expectedRoute);
             when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
             when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
-                Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
+                Collections.singletonList(new DefaultServiceInstance("localhost:service:80", "service", "localhost", 80, false, metadata)));
             when(serviceRouteMapper.apply("service")).thenReturn("service");
 
             Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
@@ -185,7 +185,7 @@ class ApimlRouteLocatorTest {
             expectedRoutesMap.put("/prefix/prefix/service/**", expectedRoute);
             when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
             when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
-                Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
+                Collections.singletonList(new DefaultServiceInstance("localhost:service:80", "service", "localhost", 80, false, metadata)));
             when(serviceRouteMapper.apply("service")).thenReturn("service");
 
             Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
@@ -218,7 +218,7 @@ class ApimlRouteLocatorTest {
             expectedRoutesMap.put("/service/ws/v1/**", expectedRoute);
             when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
             when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
-                Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
+                Collections.singletonList(new DefaultServiceInstance("localhost:service:80", "service", "localhost", 80, false, metadata)));
             when(serviceRouteMapper.apply("service")).thenReturn("service");
 
             Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();

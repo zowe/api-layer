@@ -20,7 +20,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 public class ServiceInstancesUtils {
 
-    private ServiceInstancesUtils(){}
+    private ServiceInstancesUtils() {}
 
     public static List<ServiceInstance> getServiceInstancesFromDiscoveryClient(DiscoveryClient discoveryClient) {
         RequestContext context = RequestContext.getCurrentContext();

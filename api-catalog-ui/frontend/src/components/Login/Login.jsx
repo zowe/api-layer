@@ -81,7 +81,7 @@ function Login(props) {
             );
             invalidNewPassword = error.messageNumber === 'ZWEAT604E' || error.messageNumber === 'ZWEAT413E';
             isSuspended = error.messageNumber === 'ZWEAT414E';
-            invalidCredentials = filter[0].messageKey === 'ZWEAS120E';
+            invalidCredentials = filter[0]?.messageKey === 'ZWEAS120E';
             if (filter.length !== 0) {
                 if (invalidCredentials || filter[0].messageKey === 'ZWEAT412E') {
                     messageText = `${filter[0].messageText}`;
