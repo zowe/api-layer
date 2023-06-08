@@ -2,17 +2,14 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.9.1 (2023-06-06)`
+## `2.9.0 (2023-06-12)`
 
-* Feature:  Accept all tokens in the Bearer header or in the APIML cookie (#2908) ([7c393a6](https://github.com/zowe/api-layer/commit/7c393a6)), closes [#2908](https://github.com/zowe/api-layer/issues/2908)
-* Feature:  separate x509 and oidc mapper configuration (#2922) ([3809622](https://github.com/zowe/api-layer/commit/3809622)), closes [#2922](https://github.com/zowe/api-layer/issues/2922)
-* Feature:  websocket timeout and close server on error (#2914) ([020da87](https://github.com/zowe/api-layer/commit/020da87)), closes [#2914](https://github.com/zowe/api-layer/issues/2914)
+* Feature:  Accept personal access tokens as Bearer authentication and in the apimlAuthenticationToken cookie (#2908) ([7c393a6](https://github.com/zowe/api-layer/commit/7c393a6)), closes [#2908](https://github.com/zowe/api-layer/issues/2908)
+* Feature:  Accept OAuth2 access token as a new authentication source (#2922) ([3809622](https://github.com/zowe/api-layer/commit/3809622)), closes [#2835](https://github.com/zowe/api-layer/issues/2835)
+* Feature:  Configure maximum idle timeout for websocket connections (#2914) ([020da87](https://github.com/zowe/api-layer/commit/020da87)), closes [#2914](https://github.com/zowe/api-layer/issues/2914)
 
-
-* Bugfix:  Add check for x509 enabled flag (#2930) ([406f588](https://github.com/zowe/api-layer/commit/406f588)), closes [#2930](https://github.com/zowe/api-layer/issues/2930)
-* Bugfix:  return correct JWK when zOSMF is not available (#2936) ([030a34f](https://github.com/zowe/api-layer/commit/030a34f)), closes [#2936](https://github.com/zowe/api-layer/issues/2936)
-* Bugfix:  Validate OIDC token against known IDP's introspect endpoint  (#2934) ([59a077d](https://github.com/zowe/api-layer/commit/59a077d)), closes [#2934](https://github.com/zowe/api-layer/issues/2934)
-* Bugfix:  verify zOSMF JWT support remotely (#2938) ([94acee7](https://github.com/zowe/api-layer/commit/94acee7)), closes [#2938](https://github.com/zowe/api-layer/issues/2938)
+* Bugfix:  Ignore client certificate in request when x509 authentication is not enabled (#2930) ([406f588](https://github.com/zowe/api-layer/commit/406f588)), closes [#2930](https://github.com/zowe/api-layer/issues/2930)
+* Bugfix:  Return correct list of public keys when z/OSMF is not available (#2936) ([030a34f](https://github.com/zowe/api-layer/commit/030a34f)), closes [#2936](https://github.com/zowe/api-layer/issues/2936)
 
 ## `2.8.0 (2023-04-27)`
 
