@@ -40,6 +40,8 @@ spring:
                     lowerCaseServiceId: true
     application:
         name: cloudGateway
+    main:
+        allow-circular-references: true
 
 logging:
     level:

@@ -12,11 +12,14 @@ package org.zowe.apiml.acceptance.config.ribbon;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.*;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
@@ -26,15 +29,16 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.MapPropertySource;
 import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
-import org.zowe.apiml.gateway.ribbon.AbortingRetryListener;
 import org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer;
 import org.zowe.apiml.gateway.ribbon.ApimlRetryableClient;
 import org.zowe.apiml.gateway.ribbon.ApimlRibbonRetryFactory;
+import org.zowe.apiml.gateway.ribbon.DomainExtractingServerList;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.InstanceInfoExtractor;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerRuleAdapter;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingPredicatesRibbonConfig;
 
+import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,10 +53,12 @@ public class RibbonTestConfiguration {
     @RibbonClientName
     private String ribbonClientName = "client";
 
+    @Value("${ribbon.eureka.approximateZoneFromHostname:false}")
+    private boolean approximateZoneFromHostname = false;
+
     @Bean
     public ApimlRibbonRetryFactory apimlRibbonRetryFactory(SpringClientFactory springClientFactory) {
-        AbortingRetryListener retryListener = new AbortingRetryListener();
-        return new ApimlRibbonRetryFactory(springClientFactory, retryListener);
+        return new ApimlRibbonRetryFactory(springClientFactory);
     }
 
     @Bean
@@ -109,6 +115,19 @@ public class RibbonTestConfiguration {
     public ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory() {
         return new ConfigurableNamedContextFactory<>(LoadBalancingPredicatesRibbonConfig.class, "contextConfiguration",
             LoadBalancerConstants.INSTANCE_KEY + LoadBalancerConstants.SERVICEID_KEY);
+    }
+
+    @Bean
+    public ServerList<?> ribbonServerList(IClientConfig config,
+                                          Provider<EurekaClient> eurekaClientProvider) {
+        if (this.propertiesFactory.isSet(ServerList.class, ribbonClientName)) {
+            return this.propertiesFactory.get(ServerList.class, config, ribbonClientName);
+        }
+        DiscoveryEnabledNIWSServerList discoveryServerList = new DiscoveryEnabledNIWSServerList(
+                config, eurekaClientProvider);
+        DomainExtractingServerList serverList = new DomainExtractingServerList(
+                discoveryServerList, config, this.approximateZoneFromHostname);
+        return serverList;
     }
 
 }

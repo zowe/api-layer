@@ -66,8 +66,13 @@ export default class Dashboard extends Component {
             refreshedStaticApisError,
             clearError,
             authentication,
+            storeCurrentTileId,
         } = this.props;
-        const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+        const hasSearchCriteria =
+            typeof searchCriteria !== 'undefined' &&
+            searchCriteria !== undefined &&
+            searchCriteria !== null &&
+            searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
@@ -101,7 +106,7 @@ export default class Dashboard extends Component {
                     onClose={this.handleClose}
                 >
                     <Alert onClose={this.handleClose} severity="success" sx={{ width: '100%' }}>
-                        Your mainframe password was sucessfully changed.
+                        Your mainframe password was successfully changed.
                     </Alert>
                 </Snackbar>
                 <ConfirmDialogContainer />
@@ -127,13 +132,12 @@ export default class Dashboard extends Component {
                                 <div>
                                     <hr id="separator" />
                                 </div>
-                                <h4 className="api-heading">Available API services</h4>
                             </div>
                             <div id="search">
                                 <Shield title="Search Bar is broken !">
                                     <SearchCriteria
                                         id="search-input"
-                                        placeholder="Search..."
+                                        placeholder="Search for APIs..."
                                         doSearch={this.handleSearch}
                                     />
                                 </Shield>
@@ -145,10 +149,21 @@ export default class Dashboard extends Component {
                                 <h3 className="info-headers">Videos</h3>
                             </div>
                             <hr id="separator2" />
-                            {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
+                            {hasTiles &&
+                                tiles.map((tile) =>
+                                    tile.services.map((service) => (
+                                        <Tile
+                                            storeCurrentTileId={storeCurrentTileId}
+                                            service={service}
+                                            key={service}
+                                            tile={tile}
+                                            history={history}
+                                        />
+                                    ))
+                                )}
                             {!hasTiles && hasSearchCriteria && (
                                 <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
-                                    No tiles found matching search criteria
+                                    No services found matching search criteria
                                 </Typography>
                             )}
                         </div>

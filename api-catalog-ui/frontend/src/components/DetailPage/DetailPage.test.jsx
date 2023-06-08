@@ -34,14 +34,13 @@ const tile = {
 };
 
 const match = {
-    params: {
-        tileID: 'cademoapps',
-    },
+    path: '/service',
 };
 
 describe('>>> Detailed Page component tests', () => {
     it('should start epic on mount', () => {
         const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
         const history = {
             push: jest.fn(),
             pathname: jest.fn(),
@@ -49,7 +48,10 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
                 fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
                 fetchTilesStop={jest.fn()}
                 match={match}
                 history={history}
@@ -69,6 +71,7 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStart={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
                 match={match}
@@ -85,7 +88,10 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
                 fetchTilesStart={jest.fn()}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
                 history={historyMock}
                 match={match}
@@ -101,6 +107,7 @@ describe('>>> Detailed Page component tests', () => {
             <DetailPage
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
                 match={match}
                 isLoading={isLoading}
@@ -116,7 +123,10 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
                 fetchTilesStart={jest.fn()}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
                 history={historyMock}
                 match={match}
@@ -133,7 +143,10 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
                 fetchTilesStart={jest.fn()}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
                 history={historyMock}
                 match={match}
@@ -155,6 +168,7 @@ describe('>>> Detailed Page component tests', () => {
             <DetailPage
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
                 history={historyMock}
                 fetchTilesError={fetchTilesError}
@@ -176,6 +190,7 @@ describe('>>> Detailed Page component tests', () => {
             <DetailPage
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
                 history={historyMock}
                 fetchTilesError={fetchTilesError}
@@ -199,6 +214,7 @@ describe('>>> Detailed Page component tests', () => {
                 tiles={[tile]}
                 clearService={clearService}
                 fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
                 history={historyMock}
                 fetchTilesError={fetchTilesError}

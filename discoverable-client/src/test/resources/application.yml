@@ -26,6 +26,8 @@ spring:
     output:
         ansi:
             enabled: detect
+    main:
+        allow-circular-references: true
 
 apiml:
     enabled: true
