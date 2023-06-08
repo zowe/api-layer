@@ -8,10 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component, Suspense } from 'react';
-import { NavTab } from 'react-router-tabs';
-import { IconButton, Typography, Tooltip } from '@material-ui/core';
+import { Container, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ErrorIcon from '@material-ui/icons/Error';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
 import './DetailPage.css';
@@ -21,11 +19,16 @@ import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
+import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
+import Shield from '../ErrorBoundary/Shield/Shield';
 
 export default class DetailPage extends Component {
     componentDidMount() {
-        const { fetchTilesStart, match } = this.props;
-        fetchTilesStart(match.params.tileID);
+        const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
+        fetchNewTiles();
+        if (currentTileId) {
+            fetchTilesStart(currentTileId);
+        }
     }
 
     componentWillUnmount() {
@@ -39,13 +42,6 @@ export default class DetailPage extends Component {
         history.push('/dashboard');
     };
 
-    setTitle = (title, status) => {
-        if (status === 'DOWN') {
-            return `${title} - This service is not running`;
-        }
-        return title;
-    };
-
     render() {
         const {
             tiles,
@@ -54,22 +50,23 @@ export default class DetailPage extends Component {
             fetchTilesStop,
             fetchTilesError,
             selectedTile,
+            services,
             match,
-            match: {
-                params: { tileID },
-            },
             fetchTilesStart,
             history,
+            currentTileId,
+            fetchNewTiles,
         } = this.props;
         const iconBack = <ChevronLeftIcon />;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
-        } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== tileID) {
+        } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== currentTileId) {
             clearService();
             fetchTilesStop();
-            fetchTilesStart(tileID);
+            fetchNewTiles();
+            fetchTilesStart(currentTileId);
         }
         return (
             <div className="detail-page">
@@ -86,12 +83,18 @@ export default class DetailPage extends Component {
                         <br />
                         <br />
                         <Typography style={{ color: '#de1b1b' }} data-testid="detail-page-error" variant="subtitle2">
-                            Tile details for "{match.params.tileID}" could not be retrieved, the following error was
-                            returned:
+                            Tile details for "{currentTileId}" could not be retrieved, the following error was returned:
                         </Typography>
                         {error}
                     </div>
                 )}
+                <div className="nav-bar">
+                    {services !== undefined && services.length > 0 && (
+                        <Shield>
+                            <ServicesNavigationBarContainer services={services} match={match} />
+                        </Shield>
+                    )}
+                </div>
                 {!isLoading && !fetchTilesError && (
                     <div className="api-description-container">
                         <IconButton
@@ -120,6 +123,15 @@ export default class DetailPage extends Component {
                                 )}
                             </div>
                         </div>
+                        <div id="right-resources-menu">
+                            <Typography variant="subtitle1">On this page</Typography>
+                            <Container>
+                                <Link className="links">Swagger</Link>
+                                <Link className="links">Use cases</Link>
+                                <Link className="links">Tutorials</Link>
+                                <Link className="links">Videos</Link>
+                            </Container>
+                        </div>
                     </div>
                 )}
                 <div className="content-description-container">
@@ -139,46 +151,7 @@ export default class DetailPage extends Component {
                                         path={`${match.path}/:serviceId`}
                                         render={() => (
                                             <div className="tabs-swagger">
-                                                <div className="tabs-container">
-                                                    {tiles !== undefined &&
-                                                        tiles.length === 1 &&
-                                                        tiles[0].services.map(({ serviceId, title, status }) => (
-                                                            <Tooltip
-                                                                key={serviceId}
-                                                                title={this.setTitle(title, status)}
-                                                                placement="bottom"
-                                                            >
-                                                                <div id="service-tab">
-                                                                    {status === 'UP' && (
-                                                                        <NavTab to={`${match.url}/${serviceId}`}>
-                                                                            <Typography
-                                                                                id="serviceIdTabs"
-                                                                                variant="subtitle2"
-                                                                                style={{
-                                                                                    color: 'black',
-                                                                                    marginBottom: '12px',
-                                                                                }}
-                                                                            >
-                                                                                {serviceId}
-                                                                            </Typography>
-                                                                        </NavTab>
-                                                                    )}
-                                                                    {status === 'DOWN' && (
-                                                                        <NavTab to={`${match.url}/${serviceId}`}>
-                                                                            <Typography
-                                                                                variant="subtitle2"
-                                                                                style={{ color: '#de1b1b' }}
-                                                                            >
-                                                                                {serviceId}
-                                                                            </Typography>
-                                                                            <ErrorIcon style={{ color: '#de1b1b' }} />
-                                                                        </NavTab>
-                                                                    )}
-                                                                </div>
-                                                            </Tooltip>
-                                                        ))}
-                                                </div>
-                                                <ServiceTabContainer />
+                                                <ServiceTabContainer tiles={tiles} />
                                             </div>
                                         )}
                                     />

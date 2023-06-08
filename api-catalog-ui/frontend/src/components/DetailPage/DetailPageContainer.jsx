@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import {
     fetchTilesFailed,
     fetchTilesStart,
+    fetchNewTiles,
     fetchTilesStop,
     fetchTilesSuccess,
 } from '../../actions/catalog-tile-actions';
@@ -22,15 +23,18 @@ const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 
 const mapStateToProps = (state) => ({
     tile: state.tilesReducer.tile,
+    services: state.tilesReducer.services,
     tiles: state.tilesReducer.tiles,
     fetchTilesError: state.tilesReducer.error,
     selectedTile: state.selectedServiceReducer.selectedTile,
     selectedServiceId: state.selectedServiceReducer.selectedService.serviceId,
     isLoading: loadingSelector(state),
+    currentTileId: state.tilesReducer.currentTileId,
 });
 
 const mapDispatchToProps = (dispatch) => ({
     fetchTilesStart: (id) => dispatch(fetchTilesStart(id)),
+    fetchNewTiles: (id) => dispatch(fetchNewTiles(id)),
     fetchTilesSuccess: (tiles) => dispatch(fetchTilesSuccess(tiles)),
     fetchTilesFailed: (error) => dispatch(fetchTilesFailed(error)),
     fetchTilesStop: () => dispatch(fetchTilesStop()),

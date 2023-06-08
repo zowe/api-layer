@@ -1,62 +1,48 @@
 dependencies {
-    implementation libraries.gson
-    implementation(libraries.eureka_client) {
-        exclude group: "javax.servlet", module: "servlet-api"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "org.codehaus.jettison", module: "jettison"
-    }
-    implementation libraries.jettison
-    implementation libraries.netflix_servo
+    implementation libs.eureka.client
+    implementation libs.netflix.servo
 
-    implementation(libraries.http_client)
-    implementation(libraries.http_core)
-    implementation(libraries.jackson_annotations)
-    implementation(libraries.jackson_databind)
-    implementation(libraries.slf4j_api)
-    implementation(libraries.snakeyaml)
+    implementation libs.http.client
+    implementation libs.http.core
+    implementation libs.jackson.annotations
+    implementation libs.jackson.databind
+    implementation libs.slf4j.api
+    implementation libs.snakeyaml
 
-    implementation libraries.apache_commons_codec
-    implementation libraries.apache_commons_lang3
-    implementation libraries.apache_commons_text
-    implementation libraries.xstream
-    implementation libraries.logback_core
-    implementation libraries.logback_classic
+    implementation libs.apache.commons.codec
+    implementation libs.apache.commons.lang3
+    implementation libs.apache.commons.text
+    implementation libs.xstream
+    implementation libs.logback.core
+    implementation libs.logback.classic
 
-    implementation libraries.jsr305
+    implementation libs.jsr305
 
-    implementation(libraries.javax_servlet_api)
+    implementation libs.javax.servlet.api
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    implementation(libraries.eh_cache)
-    implementation(libraries.spring_boot_starter_cache){
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.springframework", module: "spring-core"
-        exclude group: "org.springframework", module: "spring-context"
-        exclude group: "org.springframework", module: "spring-context-support"
-    }
-    testImplementation(libraries.spring_boot_starter_cache) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
-    implementation libraries.spring_web
-    implementation libraries.snakeyaml
-    testImplementation libraries.snakeyaml
-    testImplementation(libraries.spring_boot_starter_test)
-    testImplementation libraries.json_smart
-    testImplementation(libraries.eh_cache)
-    testImplementation(libraries.jackson_core)
-    testImplementation(libraries.jackson_databind)
-    testImplementation(libraries.javax_servlet_api)
-    testImplementation(libraries.json_unit_fluent)
-    testImplementation(libraries.json_unit)
-    testImplementation(libraries.hamcrest)
-    testImplementation(libraries.logback_classic)
-    testImplementation(libraries.tomcat_embed_core)
-    testImplementation(libraries.mockito_core)
-    implementation libraries.spring_context
-    implementation libraries.spring_context_support
-    implementation libraries.spring_core
-    testCompileOnly libraries.lombok
-    testAnnotationProcessor libraries.lombok
+    compileOnly libs.eh.cache
+    testImplementation libs.eh.cache
+
+    implementation libs.spring.boot.starter.cache
+    testImplementation libs.spring.boot.starter.cache
+    implementation libs.spring.web
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
+    testImplementation libs.jackson.core
+    testImplementation libs.jackson.databind
+    testImplementation libs.javax.servlet.api
+    testImplementation libs.json.unit.fluent
+    testImplementation libs.json.unit
+    testImplementation libs.hamcrest
+    testImplementation libs.logback.classic
+    testImplementation libs.tomcat.embed.core
+    testImplementation libs.mockito.core
+    implementation libs.spring.context
+    implementation libs.spring.context.support
+    implementation libs.spring.core
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }

@@ -1,30 +1,26 @@
 dependencies {
-    implementation(libraries.spring_boot_starter_web) {
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
-    implementation libraries.tomcat_embed_el
-    implementation libraries.snakeyaml
-    implementation libraries.zowe_attls
+    implementation libs.spring.boot.starter.web
+    implementation libs.tomcat.embed.el
+    implementation libs.zowe.attls
 
-    implementation libraries.spring_aop
-    implementation libraries.spring_beans
-    implementation libraries.spring_context
-    implementation libraries.spring_core
-    implementation libraries.spring_expression
-    implementation libraries.spring_web
-    implementation libraries.spring_webmvc
-    implementation libraries.tomcat_embed_core
-    implementation libraries.tomcat_embed_websocket
-    implementation libraries.logback_classic
-    implementation libraries.jackson_core
-    implementation libraries.jackson_databind
+    implementation libs.spring.aop
+    implementation libs.spring.beans
+    implementation libs.spring.context
+    implementation libs.spring.core
+    implementation libs.spring.expression
+    implementation libs.spring.web
+    implementation libs.spring.webmvc
+    implementation libs.tomcat.embed.core
+    implementation libs.tomcat.embed.websocket
+    implementation libs.logback.classic
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testImplementation libraries.mockito_core
-    testImplementation libraries.mockito_jupiter
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.jupiter
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
 }

@@ -1,18 +1,19 @@
 .serviceTab {
     background: #fff;
     overflow-x: hidden;
+    margin-left: 86px;
 }
 
 .serviceTab .header {
     margin: 20px 0 0 55px;
     background: #fff;
-    height: 100vw;
+    height: auto;
     display: block;
 }
 
 div.content-description-container > div > div:nth-child(2) > div {
-    width: 100vw;
-    height: auto;
+    /*change width via templating mechanism to create space for the right menu (width 75%) */
+    width: 86%;
 }
 
 .serviceTab .header>h2 {
@@ -53,4 +54,48 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     color: black;
     font-size: 14px;
     font-weight: bold;
+}
+
+#root > div > div.content > div.detail-page > div.content-description-container > div > div.tabs-swagger > div > div.tabs-container > div > div {
+    width: auto;
+}
+
+#swagger-label {
+    color: black;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+    margin-top: 20px;
+}
+
+#version-label {
+    margin-top: 15px;
+    color: black;
+}
+
+#version-menu {
+    margin-left: 55px;
+    border-radius: 3px;
+    border: 1px solid var(--borders-c-9-c-8-c-5, #C9C8C5);
+    background: var(--white-ffffff, #FFF);
+    width: auto;
+    padding-right: 44px;
+    padding-left: 22px;
+}
+
+#compare-button {
+    text-align: center;
+    /* Data Small/Regular */
+    font-size: 12px;
+    line-height: 14px;
+    letter-spacing: 0.24px;
+    order-radius: 3px;
+    margin-left: 20px;
+    border: 1px solid var(--link-in-the-text, #0056B3)
+}
+
+#dialog-title > h2 {
+    margin-top: -45px;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 22px;
 }

@@ -135,7 +135,7 @@ configure(subprojects.findAll { it.name in servicesToPublish }) {
 
 ext.publishTasksList = projectsToPublish.collect {
     ":" + it + ":publish"
-}
+} + ":platform:publish"
 
 //noinspection GroovyAssignabilityCheck
 task publishSdkArtifacts {

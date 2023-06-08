@@ -15,6 +15,9 @@ import {
     FETCH_TILES_REQUEST,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
+    STORE_CURRENT_TILEID,
+    FETCH_NEW_TILES_SUCCESS,
+    FETCH_NEW_TILES_REQUEST,
 } from '../constants/catalog-tile-constants';
 
 const fetchRetryToastId = 9998;
@@ -34,6 +37,22 @@ export function fetchTilesSuccess(tiles) {
     return {
         type: FETCH_TILES_SUCCESS,
         payload: tiles,
+    };
+}
+
+export function fetchNewTilesSuccess(services) {
+    // dismiss the notification if it is displayed
+    toast.dismiss(fetchRetryToastId);
+    return {
+        type: FETCH_NEW_TILES_SUCCESS,
+        payload: services,
+    };
+}
+
+export function storeCurrentTileId(currentId) {
+    return {
+        type: STORE_CURRENT_TILEID,
+        payload: currentId,
     };
 }
 
@@ -63,6 +82,13 @@ export function fetchTilesStart(id) {
     toast.dismiss(fetchRetryToastId);
     return {
         type: FETCH_TILES_REQUEST,
+        payload: id,
+    };
+}
+
+export function fetchNewTiles(id) {
+    return {
+        type: FETCH_NEW_TILES_REQUEST,
         payload: id,
     };
 }

@@ -1,7 +1,7 @@
 services:
     - serviceId: mockzosmf  # unique lowercase ID of the service
       catalogUiTileId: zosmf  # ID of the API Catalog UI tile (visual grouping of the services)
-      title: Statically Defined API Service  # Title of the service in the API catalog
+      title: Mock zOSMF  # Title of the service in the API catalog
       description: Mock ZOSMF service  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
           - https://{MOCK_ZOSMF_HOST}:10013/  # scheme://hostname:port/contextPath

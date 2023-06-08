@@ -1,0 +1,44 @@
+.nav-tabs {
+    width: auto;
+    border: 3px solid #F7F9FA;
+    overflow-y: auto;
+    display: flex;
+    align-items: cover;
+    cursor: pointer;
+}
+
+.nav-tabs:hover {
+    background-color: #EFEFEF;
+    color: #50b7f5;
+    transition: color 100ms ease-out;
+}
+
+.tabs {
+    height: 100%;
+    display: flex;
+    padding: 10px 5px 10px 20px;
+    align-items: center;
+    gap: 10px;
+    width: auto;
+}
+
+#search2 {
+    height: 47px;
+    background: #FFFFFF;
+    border: 1px solid #C9C8C5;
+    margin-right: 15px;
+    margin-bottom: 9px;
+}
+
+#search2 > div > div > input {
+    margin-left: 13px;
+    margin-top: 6px;
+}
+
+#search2> div> div> div> #search-icon {
+    margin-top: 7px;
+}
+
+#serviceIdTabs {
+    margin-bottom: 10px;
+}
