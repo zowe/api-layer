@@ -34,7 +34,7 @@ dependencies {
 jar {
     enabled true
     baseName = "apiml-sample-extension"
-    archiveFileName = "${baseName}.jar"
+    archiveName = "${baseName}.jar"
 }
 
 publishing {

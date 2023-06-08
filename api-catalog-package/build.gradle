@@ -13,7 +13,7 @@ dependencies {
 }
 
 task packageApiCatalog(type: Zip) {
-    archiveFileName = artifactName + pullNo + ".zip"
+    archiveName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
     def resourceDir = 'src/main/resources/'
 

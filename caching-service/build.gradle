@@ -166,7 +166,7 @@ dependencies {
 }
 
 
-bootJar.archiveFileName = "${bootJar.baseName}.jar"
+bootJar.archiveName = "${bootJar.baseName}.jar"
 
 publishing {
     publications {
