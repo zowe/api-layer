@@ -1,6 +1,6 @@
-
 plugins {
-    alias(libs.plugins.micronaut.application)
+    alias(libs.plugins.micronaut.minimal.application)
+    alias(libs.plugins.micronaut.docker)
     alias(libs.plugins.shadow)
 }
 
@@ -13,9 +13,9 @@ shadowJar {
     archiveClassifier.set('')
     archiveVersion.set('1.0')
 }
+
 version "0.1"
 group "org.zowe.apiml"
-
 
 micronaut {
     version = libs.versions.micronaut.get()
@@ -35,14 +35,7 @@ dependencies {
     testCompileOnly libs.jakarta.inject
  }
 
-
-
 java {
     sourceCompatibility = JavaVersion.toVersion('1.8')
     targetCompatibility = JavaVersion.toVersion('1.8')
 }
-
-
-
-
-
