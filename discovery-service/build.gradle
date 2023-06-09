@@ -131,6 +131,7 @@ dependencies {
     implementation libraries.spring_websocket
     implementation libraries.logback_core
     implementation libraries.logback_classic
+    implementation libraries.apache_commons_lang3
 
 
     compileOnly libraries.lombok

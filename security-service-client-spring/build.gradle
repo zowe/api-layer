@@ -24,6 +24,7 @@ dependencies {
     }
     implementation libraries.xstream
     implementation libraries.jettison
+    implementation libraries.spring_boot_starter_validation
     compileOnly libraries.javax_servlet_api
 
     compileOnly libraries.lombok

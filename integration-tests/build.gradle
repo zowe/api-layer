@@ -51,6 +51,8 @@ dependencies {
     runtimeOnly libraries.jjwt_jackson
 
     testFixturesImplementation(project(':apiml-security-common'))
+    testFixturesImplementation libraries.spring_core
+    testFixturesImplementation libraries.slf4j_api
     testFixturesImplementation libraries.rest_assured
     testFixturesImplementation libraries.lombok
     testFixturesImplementation libraries.http_client
