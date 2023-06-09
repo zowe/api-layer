@@ -57,7 +57,7 @@ dependencies {
     testFixturesImplementation libraries.lombok
     testFixturesImplementation libraries.http_client
 
-    testFixturesImplementation libraries.lombok
+    testFixturesAnnotationProcessor libraries.lombok
 }
 
 jar {
