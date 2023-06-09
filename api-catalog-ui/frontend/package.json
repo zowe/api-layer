@@ -15,6 +15,7 @@
         "install": "0.12.2",
         "lodash": "4.17.21",
         "loglevel": "1.6.1",
+        "mineral-ui": "0.58.0",
         "mineral-ui-icons": "0.5.0",
         "ramda": "0.28.0",
         "react": "16.14.0",
@@ -35,7 +36,7 @@
         "redux-thunk": "2.3.0",
         "request-promise-native": "1.0.9",
         "rxjs": "6.3.3",
-        "swagger-ui-react": "3.52.5",
+        "swagger-ui-react": "4.16.1",
         "util": "0.12.4",
         "uuid": "3.3.2"
     },
