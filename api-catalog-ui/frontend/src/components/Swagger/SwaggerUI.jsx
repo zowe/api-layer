@@ -9,7 +9,7 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUiReact, { presets } from 'swagger-ui-react/swagger-ui';
+import SwaggerUiReact from 'swagger-ui-react';
 import './Swagger.css';
 import { Buffer } from 'buffer';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
@@ -100,7 +100,7 @@ export default class SwaggerUI extends Component {
                 SwaggerUiReact({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
-                    presets: [presets.apis],
+                    presets: [SwaggerUiReact.presets.apis],
                     plugins: [this.customPlugins],
                 });
             }
@@ -113,7 +113,7 @@ export default class SwaggerUI extends Component {
                 SwaggerUiReact({
                     dom_id: '#swaggerContainer',
                     url,
-                    presets: [presets.apis],
+                    presets: [SwaggerUiReact.presets.apis],
                     plugins: [this.customPlugins],
                     responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
