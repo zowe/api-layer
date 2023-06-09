@@ -31,6 +31,10 @@ class GatewayHealthIndicatorTest {
 
     private Providers providers;
 
+    private DefaultServiceInstance createDefaultServiceInstance(String serviceId, String host, int port, boolean secure) {
+        return new DefaultServiceInstance(serviceId + ":" + host + ":" + port, serviceId, host, port, secure);
+    }
+
     @BeforeEach
     void setUp() {
         providers = mock(Providers.class);
@@ -41,9 +45,9 @@ class GatewayHealthIndicatorTest {
         when(providers.isZosfmUsed()).thenReturn(false);
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
+            Collections.singletonList(createDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
+            Collections.singletonList(createDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
 
         GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
@@ -56,7 +60,7 @@ class GatewayHealthIndicatorTest {
         when(providers.isZosfmUsed()).thenReturn(false);
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
+            Collections.singletonList(createDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
         GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
@@ -72,7 +76,7 @@ class GatewayHealthIndicatorTest {
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
+            Collections.singletonList(createDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
         GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
@@ -88,9 +92,9 @@ class GatewayHealthIndicatorTest {
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
+            Collections.singletonList(createDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
+            Collections.singletonList(createDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
 
         GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
@@ -106,9 +110,9 @@ class GatewayHealthIndicatorTest {
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(customCatalogServiceId)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(customCatalogServiceId, "host", 10014, true)));
+            Collections.singletonList(createDefaultServiceInstance(customCatalogServiceId, "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
+            Collections.singletonList(createDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
 
         GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, customCatalogServiceId);
         Health.Builder builder = new Health.Builder();

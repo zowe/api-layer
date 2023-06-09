@@ -33,7 +33,7 @@ class ApiCatalogHealthIndicatorTest {
     void testStatusIsUpWhenGatewayIsAvailable() {
         when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
             Collections.singletonList(
-                new DefaultServiceInstance(CoreService.GATEWAY.getServiceId(), "host", 10010, true)));
+                new DefaultServiceInstance(CoreService.GATEWAY.getServiceId() + ":host:10010", CoreService.GATEWAY.getServiceId(), "host", 10010, true)));
 
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
