@@ -47,6 +47,7 @@ export default class SwaggerUI extends Component {
             this.retrieveSwagger();
         }
     }
+
     customPlugins = () => ({
         statePlugins: {
             spec: {
@@ -69,7 +70,7 @@ export default class SwaggerUI extends Component {
         },
         wrapComponents: {
             // prettier-ignore
-            // eslint-disable-next-line no-shadow
+            // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
             operations: (Original, { React }) => props => { // NOSONAR
                 const { selectedService, selectedVersion } = this.props;
                 return (
