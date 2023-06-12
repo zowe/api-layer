@@ -122,6 +122,9 @@
         "yaml": "1.10.2"
     },
     "jest": {
+        "transformIgnorePatterns": [
+            "/node_modules/?!(swagger-ui-react/swagger-ui-es-bundle-core.js)"
+        ],
         "collectCoverageFrom": [
             "src/App.{jsx,js}",
             "src/**/*.{jsx,js}",

@@ -9,9 +9,8 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUiReact from 'swagger-ui-react';
+import SwaggerUi from 'swagger-ui-react/swagger-ui-es-bundle-core';
 import './Swagger.css';
-import { Buffer } from 'buffer';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 
 function transformSwaggerToCurrentHost(swagger) {
@@ -48,7 +47,6 @@ export default class SwaggerUI extends Component {
             this.retrieveSwagger();
         }
     }
-
     customPlugins = () => ({
         statePlugins: {
             spec: {
@@ -71,7 +69,7 @@ export default class SwaggerUI extends Component {
         },
         wrapComponents: {
             // prettier-ignore
-            // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
+            // eslint-disable-next-line no-shadow
             operations: (Original, { React }) => props => { // NOSONAR
                 const { selectedService, selectedVersion } = this.props;
                 return (
@@ -85,7 +83,6 @@ export default class SwaggerUI extends Component {
     });
 
     retrieveSwagger = () => {
-        window.Buffer = window.Buffer || Buffer;
         const { selectedService, selectedVersion } = this.props;
         try {
             // If no version selected use the default apiDoc
@@ -97,11 +94,12 @@ export default class SwaggerUI extends Component {
             ) {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
-                SwaggerUiReact({
+                SwaggerUi({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
-                    presets: [SwaggerUiReact.presets.apis],
+                    presets: [SwaggerUi.presets.apis],
                     plugins: [this.customPlugins],
+                    filter: true,
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
@@ -110,11 +108,12 @@ export default class SwaggerUI extends Component {
                     process.env.REACT_APP_CATALOG_HOME +
                     process.env.REACT_APP_APIDOC_UPDATE
                 }/${selectedService.serviceId}/${selectedVersion}`;
-                SwaggerUiReact({
+                SwaggerUi({
                     dom_id: '#swaggerContainer',
                     url,
-                    presets: [SwaggerUiReact.presets.apis],
+                    presets: [SwaggerUi.presets.apis],
                     plugins: [this.customPlugins],
+                    filter: true,
                     responseInterceptor: (res) => {
                         // response.text field is used to render the swagger
                         const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
