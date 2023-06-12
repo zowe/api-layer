@@ -102,7 +102,9 @@ dependencies {
     }
     implementation libraries.gson
     implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_bootstrap) {
+        transitive false
+    }
     implementation libraries.spring_cloud_starter_zuul
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common

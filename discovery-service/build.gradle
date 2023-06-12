@@ -81,7 +81,9 @@ dependencies {
         exclude group: "org.springframework", module: "spring-core"
     }
     implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_bootstrap) {
+        transitive false
+    }
     implementation libraries.spring_cloud_starter_hystrix
     implementation(libraries.spring_cloud_starter_eureka_server)  {
         exclude group: "javax.servlet", module: "servlet-api"

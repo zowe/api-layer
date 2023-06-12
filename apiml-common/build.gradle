@@ -6,7 +6,9 @@ dependencies {
         exclude group: "org.springframework", module: "spring-core"
     }
     implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_bootstrap) {
+        transitive false
+    }
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
     }

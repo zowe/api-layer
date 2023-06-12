@@ -87,7 +87,9 @@ dependencies {
     implementation libraries.spring_boot_starter_security
     implementation libraries.zowe_attls
     implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_bootstrap) {
+        transitive false
+    }
     implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_cloud_hystrix_dashboard
     implementation libraries.spring_security_web
