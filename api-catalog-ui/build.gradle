@@ -9,7 +9,7 @@ node {
     version = projectNodeVersion
     npmVersion = projectNpmVersion
     distBaseUrl = "https://nodejs.org/dist"
-    npmInstallCommand = "ci"
+    npmInstallCommand = "install"
     workDir = file("${project.projectDir}/tools/nodejs")
     npmWorkDir = file("${project.projectDir}/tools/npm")
     yarnWorkDir = file("${project.projectDir}/tools/yarn")
