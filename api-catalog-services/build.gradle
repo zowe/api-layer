@@ -62,7 +62,7 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
+    implementation group: 'io.swagger', name: 'swagger-models', version: "${swaggerCoreVersion}"
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.springframework", module: "spring-web"
         exclude group: "org.springframework", module: "spring-webmvc"

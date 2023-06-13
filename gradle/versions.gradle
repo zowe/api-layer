@@ -64,9 +64,9 @@ ext {
     springFoxVersion = '2.9.2'
     springDocVersion = '1.6.15'
     spring4Version = '4.3.30.RELEASE' // Used within PJE in tests
-    swagger3CoreVersion = '2.0.10'
-    swagger3ParserVersion = '2.0.33'
-    swaggerCoreVersion = '1.5.24'
+    swagger3CoreVersion = '2.2.9'
+    swagger3ParserVersion = '2.1.13'
+    swaggerCoreVersion = '1.6.10'
     thymeleafVersion = '3.0.15.RELEASE'
     tomcatVersion = '9.0.75'
     velocityVersion = '2.3'
