@@ -9,7 +9,7 @@
  */
 import { Component } from 'react';
 import * as React from 'react';
-import SwaggerUi from 'swagger-ui-react/swagger-ui-es-bundle-core';
+import SwaggerUi from 'swagger-ui-react';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 
@@ -33,8 +33,16 @@ function transformSwaggerToCurrentHost(swagger) {
 }
 
 export default class SwaggerUI extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            swaggerReady: false,
+            swaggerProps: {},
+        };
+    }
+
     componentDidMount() {
-        this.retrieveSwagger();
+        this.setSwaggerState();
     }
 
     componentDidUpdate(prevProps) {
@@ -44,7 +52,7 @@ export default class SwaggerUI extends Component {
             selectedService.tileId !== prevProps.selectedService.tileId ||
             selectedVersion !== prevProps.selectedVersion
         ) {
-            this.retrieveSwagger();
+            this.setSwaggerState();
         }
     }
 
@@ -83,7 +91,7 @@ export default class SwaggerUI extends Component {
         },
     });
 
-    retrieveSwagger = () => {
+    setSwaggerState = () => {
         const { selectedService, selectedVersion } = this.props;
         try {
             // If no version selected use the default apiDoc
@@ -95,12 +103,15 @@ export default class SwaggerUI extends Component {
             ) {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
-                SwaggerUi({
-                    dom_id: '#swaggerContainer',
-                    spec: swagger,
-                    presets: [SwaggerUi.presets.apis],
-                    plugins: [this.customPlugins],
-                    filter: true,
+                this.setState({
+                    swaggerReady: true,
+                    swaggerProps: {
+                        dom_id: '#swaggerContainer',
+                        spec: swagger,
+                        presets: [SwaggerUi.presets.apis],
+                        plugins: [this.customPlugins],
+                        filter: true,
+                    },
                 });
             }
             if (selectedVersion !== null && selectedVersion !== undefined) {
@@ -109,17 +120,20 @@ export default class SwaggerUI extends Component {
                     process.env.REACT_APP_CATALOG_HOME +
                     process.env.REACT_APP_APIDOC_UPDATE
                 }/${selectedService.serviceId}/${selectedVersion}`;
-                SwaggerUi({
-                    dom_id: '#swaggerContainer',
-                    url,
-                    presets: [SwaggerUi.presets.apis],
-                    plugins: [this.customPlugins],
-                    filter: true,
-                    responseInterceptor: (res) => {
-                        // response.text field is used to render the swagger
-                        const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
-                        res.text = JSON.stringify(swagger);
-                        return res;
+                this.setState({
+                    swaggerReady: true,
+                    swaggerProps: {
+                        dom_id: '#swaggerContainer',
+                        url,
+                        presets: [SwaggerUi.presets.apis],
+                        plugins: [this.customPlugins],
+                        filter: true,
+                        responseInterceptor: (res) => {
+                            // response.text field is used to render the swagger
+                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
+                            res.text = JSON.stringify(swagger);
+                            return res;
+                        },
                     },
                 });
             }
@@ -130,6 +144,7 @@ export default class SwaggerUI extends Component {
 
     render() {
         const { selectedService } = this.props;
+        const { swaggerReady, swaggerProps } = this.state;
         let error = false;
         if (
             selectedService.apiDoc === undefined ||
@@ -148,7 +163,11 @@ export default class SwaggerUI extends Component {
                         </h4>
                     </div>
                 )}
-                {!error && <div id="swaggerContainer" data-testid="swagger" />}
+                {!error && swaggerReady && (
+                    <div id="swaggerContainer" data-testid="swagger">
+                        <SwaggerUi {...swaggerProps} />
+                    </div>
+                )}
             </div>
         );
     }

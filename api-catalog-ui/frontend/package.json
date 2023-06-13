@@ -36,7 +36,7 @@
         "redux-thunk": "2.3.0",
         "request-promise-native": "1.0.9",
         "rxjs": "6.3.3",
-        "swagger-ui-react": "4.16.1",
+        "swagger-ui-react": "4.19.1",
         "util": "0.12.4",
         "uuid": "3.3.2"
     },
