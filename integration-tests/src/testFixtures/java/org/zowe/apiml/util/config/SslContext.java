@@ -137,7 +137,7 @@ public class SslContext {
                 .create()
                 .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
                     providedConfigurer.getKeystorePassword(), providedConfigurer.getKeystorePassword(),
-                    (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apiml external certificate authority")
+                    (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "server")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
 
