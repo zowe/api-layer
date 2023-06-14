@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.staticapi;
 
 import org.junit.jupiter.api.Nested;

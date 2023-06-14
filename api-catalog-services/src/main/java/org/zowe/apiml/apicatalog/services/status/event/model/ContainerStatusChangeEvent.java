@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.services.status.event.model;
 
 import org.zowe.apiml.apicatalog.model.APIService;

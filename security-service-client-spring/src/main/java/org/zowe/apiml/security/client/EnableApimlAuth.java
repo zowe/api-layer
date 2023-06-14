@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.security.client;
 
 import org.zowe.apiml.security.client.config.SecurityServiceConfiguration;

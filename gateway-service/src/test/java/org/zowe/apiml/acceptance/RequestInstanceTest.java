@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.acceptance;
 
 import com.netflix.zuul.context.RequestContext;

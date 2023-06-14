@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.instance;
 
 import com.netflix.appinfo.InstanceInfo;

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.product.gateway;
 
 import org.springframework.context.ApplicationEvent;

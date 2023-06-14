@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.client.api;
 
 import org.springframework.web.bind.annotation.GetMapping;

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.acceptance.config;
 
 import org.apache.http.impl.client.CloseableHttpClient;

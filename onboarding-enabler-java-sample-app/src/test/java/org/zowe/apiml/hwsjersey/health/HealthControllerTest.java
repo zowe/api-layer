@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.hwsjersey.health;
 
 import org.glassfish.jersey.server.ResourceConfig;

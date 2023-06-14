@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.integration.authentication.services;
 
 import io.jsonwebtoken.Jwts;

@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.extern.slf4j.Slf4j;
