@@ -128,15 +128,16 @@ export default class Dashboard extends Component {
                             <div className="filtering-container">
                                 <h1 className="api-heading">API Catalogs</h1>
                                 <h3>Discover All Broadcom APIs in one place</h3>
-                            </div>
-                            <div id="search">
-                                <Shield title="Search Bar is broken !">
-                                    <SearchCriteria
-                                        id="search-input"
-                                        placeholder="Search for APIs..."
-                                        doSearch={this.handleSearch}
-                                    />
-                                </Shield>
+
+                                <div id="search">
+                                    <Shield title="Search Bar is broken !">
+                                        <SearchCriteria
+                                            id="search-input"
+                                            placeholder="Search for APIs..."
+                                            doSearch={this.handleSearch}
+                                        />
+                                    </Shield>
+                                </div>
                             </div>
                             {/* <div className="dashboard-grid-header">
                                 <div />

@@ -107,6 +107,9 @@ body {
           margin-right: var( --spaceSmallest );
         }
       }
+      &:hover {
+        color: var( --controlText15Hover );
+      }
     }
     &.MuiButton-outlined {
       padding: 0px var( --spaceSmall );
@@ -151,5 +154,13 @@ body {
     max-width: 100%;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+
+  .MuiTabs-flexContainerVertical button.MuiButtonBase-root {
+    border-radius: 0px;
+
+    &:not(.Mui-selected) {
+      border-color: transparent;
+    }
   }
 }
