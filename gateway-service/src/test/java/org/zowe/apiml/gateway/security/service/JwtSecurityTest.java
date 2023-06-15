@@ -132,7 +132,7 @@ class JwtSecurityTest {
             when(providers.isZosmfAvailableAndOnline())
                 .thenReturn(false)
                 .thenReturn(true);
-
+            when(providers.zosmfSupportsJwt()).thenReturn(true);
             underTest.loadAppropriateJwtKeyOrFail();
             verify(discoveryClient, times(1)).registerEventListener(any());
             assertFalse(underTest.getZosmfListener().isZosmfReady());
@@ -151,6 +151,7 @@ class JwtSecurityTest {
             when(providers.isZosmfAvailableAndOnline())
                 .thenReturn(false)
                 .thenReturn(true);
+            when(providers.zosmfSupportsJwt()).thenReturn(true);
 
             underTest.loadAppropriateJwtKeyOrFail();
             verify(discoveryClient, times(1)).registerEventListener(any());
@@ -171,7 +172,7 @@ class JwtSecurityTest {
                 .thenReturn(false)
                 .thenReturn(false)
                 .thenReturn(true);
-
+            when(providers.zosmfSupportsJwt()).thenReturn(true);
             underTest.loadAppropriateJwtKeyOrFail();
             verify(discoveryClient, times(1)).registerEventListener(any());
             assertFalse(underTest.getZosmfListener().isZosmfReady());

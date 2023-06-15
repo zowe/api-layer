@@ -73,8 +73,10 @@ apiml:
             enabled: false
             clientId:
             clientSecret:
-            introspectEndpoint:
+            introspectUrl:
             registry:
+            identityMapperUrl:
+            identityMapperUser:
         auth:
             jwt:
                 customAuthHeader:
@@ -115,6 +117,7 @@ spring:
             config: classpath:ehcache.xml
     main:
         banner-mode: ${apiml.banner:"off"}
+        allow-circular-references: true
 
 server:
     internal:

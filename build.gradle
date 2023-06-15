@@ -1,3 +1,5 @@
+apply plugin: 'java-library'
+
 import java.util.regex.Matcher
 
 //noinspection GroovyAssignabilityCheck
@@ -30,15 +32,14 @@ buildscript {
     repositories mavenRepositories
 
     dependencies {
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.4.0.2513'
-        classpath 'net.researchgate:gradle-release:2.8.1'
-        classpath 'gradle.plugin.org.cadixdev.gradle:licenser:0.6.1'
-        classpath 'org.owasp:dependency-check-gradle:7.1.1'
-        classpath 'gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:3.2.1'
+        classpath libs.gradle.sonar.plugin
+        classpath libs.gradle.release
+        classpath libs.gradle.licencer
+        classpath libs.gradle.dependency.check
+        classpath libs.gradle.jib.plugin
     }
 }
 
-apply from: 'gradle/versions.gradle'
 apply from: 'gradle/license.gradle'
 apply from: 'gradle/publish.gradle'
 apply from: 'gradle/sonar.gradle'
@@ -47,7 +48,6 @@ apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
 allprojects {
-    apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'org.cadixdev.licenser'
     apply plugin: 'org.owasp.dependencycheck'
@@ -55,7 +55,6 @@ allprojects {
 
     repositories mavenRepositories
 
-    sourceCompatibility = 1.8
     version = version
 
     eclipse {
@@ -78,6 +77,39 @@ allprojects {
 
     configurations.all {
         exclude group: "javax.servlet", module: "servlet-api"
+        exclude group: 'org.glassfish', module: 'jakarta.el'
+        exclude group: 'commons-httpclient', module: 'commons-httpclient'
+
+        resolutionStrategy.dependencySubstitution {
+            substitute(module('aopalliance:aopalliance:1.0')).using(module('org.glassfish.hk2.external:aopalliance-repackaged:3.0.3'))
+            // versions are clashing - Micronaut enabler requires both versions, Gradle as default selected newer one
+            //substitute(module('javax.inject:javax.inject:1')).using(module('jakarta.inject:jakarta.inject-api:1.0.5'))
+            substitute(module('javax.activation:javax.activation-api:1.0')).using(module('jakarta.activation:jakarta.activation-api:1.2.2'))
+        }
+    }
+}
+
+configure(subprojects.findAll {it.name != 'platform'}) {
+    apply plugin: 'java-library'
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    test {
+        useJUnitPlatform()
+    }
+
+    dependencies {
+        api(platform(project(":platform")))
+
+        testImplementation libs.junitJupiter
+        testImplementation libs.mockito.jupiter
+
+        testImplementation libs.junit.platform.launcher
+
+        //For Idea
+        testImplementation libs.junit.platform.commons
+        testImplementation libs.junit.platform.engine
     }
 }
 
@@ -89,26 +121,6 @@ subprojects {
 
     tasks.withType(Test) {
         maxParallelForks = 1
-    }
-
-    test {
-        useJUnitPlatform()
-    }
-
-   dependencies {
-       testImplementation libraries.junitJupiter
-       testImplementation libraries.mockito_jupiter
-
-       testImplementation  libraries.junit_platform_launcher
-
-       //For Idea
-       testImplementation  libraries.junit_platform_commons
-       testImplementation  libraries.junit_platform_engine
-   }
-
-    configurations.all {
-        exclude group: 'org.glassfish', module: 'jakarta.el'
-        exclude group: 'commons-httpclient', module: 'commons-httpclient'
     }
 }
 

@@ -71,7 +71,7 @@ class NewApimlRouteLocatorTest {
 
         when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
         when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
+            Collections.singletonList(new DefaultServiceInstance("localhost:service:80", "service", "localhost", 80, false, metadata)));
         //when
         Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
         //then

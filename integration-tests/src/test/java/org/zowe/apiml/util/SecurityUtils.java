@@ -288,7 +288,7 @@ public class SecurityUtils {
     public static void assertValidAuthToken(Cookie cookie, Optional<String> username) {
         assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1));
+        assertThat(cookie.getMaxAge(), is(-1L));
 
         int i = cookie.getValue().lastIndexOf('.');
         String untrustedJwtString = cookie.getValue().substring(0, i + 1);

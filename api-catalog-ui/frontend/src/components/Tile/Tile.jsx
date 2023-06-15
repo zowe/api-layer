@@ -53,9 +53,9 @@ export default class Tile extends Component {
         const status = this.getStatusFromServiceTotals(tile);
         switch (status) {
             case 'UP':
-                return 'All services are running';
+                return 'The service is running';
             case 'DOWN':
-                return 'No services are running';
+                return 'The service is not running';
             case 'WARNING':
                 return this.getStatusTextFromServiceTotals(tile);
             default:
@@ -64,13 +64,14 @@ export default class Tile extends Component {
     };
 
     handleClick = () => {
-        const { tile, history } = this.props;
-        const tileRoute = `/tile/${tile.id}`;
+        const { tile, history, storeCurrentTileId, service } = this.props;
+        const tileRoute = `/service/${service.serviceId}`;
+        storeCurrentTileId(tile.id);
         history.push(tileRoute);
     };
 
     render() {
-        const { tile } = this.props;
+        const { tile, service } = this.props;
 
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
@@ -83,15 +84,17 @@ export default class Tile extends Component {
                             fontSize: '1.125em',
                         }}
                     >
-                        {tile.title}
+                        {service.title}
                     </Typography>
                     <Typography id="tileLabel" className="grid-tile-status">
                         {this.getTileStatus(tile)}
                         {this.getTileStatusText(tile)}
                     </Typography>
-                    <Typography variant="h6" id="grid-tile-sso">
-                        {tile.sso && 'SSO'}
-                    </Typography>
+                    {service.sso && (
+                        <Typography variant="h6" id="grid-tile-sso">
+                            SSO
+                        </Typography>
+                    )}
                 </CardContent>
             </Card>
         );

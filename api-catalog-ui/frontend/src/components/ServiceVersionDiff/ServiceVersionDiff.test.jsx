@@ -33,7 +33,7 @@ describe('>>> ServiceVersionDiff component tests', () => {
 
         expect(serviceVersionDiff.find('[data-testid="menu-items-2"]').first().prop('value')).toEqual('v1');
 
-        expect(serviceVersionDiff.find('[data-testid="diff-button"]').first().prop('children')).toEqual('Go');
+        expect(serviceVersionDiff.find('[data-testid="diff-button"]').first().prop('children')).toEqual('Show');
 
         expect(serviceVersionDiff.find('[data-testid="diff-button"]').first().prop('disabled')).toEqual(true);
     });

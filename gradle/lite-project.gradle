@@ -35,7 +35,7 @@ static def searchSpringBootApp(File input, List<File> output, File basePath) {
 
 def getSpringBootApp() {
     def classes = []
-    project.sourceSets.main.java.dirs.findAll().forEach({folder -> searchSpringBootApp(folder, classes, folder)})
+    project.sourceSets.main.java.srcDirs.findAll().forEach({folder -> searchSpringBootApp(folder, classes, folder)})
     switch (classes.size()) {
         case 0:
             println("No Spring Boot application was found. Please fix project or update lite.gradle (see mainClass = getSpringBootApp() in task liteJar)")

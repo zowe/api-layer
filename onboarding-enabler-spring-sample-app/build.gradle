@@ -8,22 +8,21 @@ buildscript {
         }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath libs.spring.boot.gradle.plugin
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
-apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
 
 bootJar {
-    archiveBaseName.set("enabler-springboot-${springBootVersion}-sample")
+    archiveBaseName.set("enabler-springboot-${libs.versions.springBoot.get()}-sample")
     launchScript()
 }
 
 jar {
-    archiveBaseName.set("enabler-springboot-${springBootVersion}-sample")
+    archiveBaseName.set("enabler-springboot-${libs.versions.springBoot.get()}-sample")
     archiveFileName = archiveBaseName.get() + ".jar"
 }
 
@@ -33,15 +32,15 @@ repositories {
 }
 
 dependencies {
-    implementation(project(':onboarding-enabler-spring'))
-    implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_doc
+    api project(':onboarding-enabler-spring')
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.doc
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
 }
 
 

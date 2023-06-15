@@ -9,6 +9,8 @@ spring:
     mvc:
         pathmatch:
             matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
+    main:
+        allow-circular-references: true
 
 caching:
     storage:

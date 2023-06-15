@@ -11,6 +11,10 @@
 package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeoutException;
+
+import org.eclipse.jetty.websocket.api.CloseException;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -42,5 +46,12 @@ public class WebSocketProxyClientHandler extends AbstractWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         log.warn("WebSocket transport error in session {}: {}", session.getId(), exception.getMessage());
+        if (exception instanceof CloseException && exception.getCause() instanceof TimeoutException) {
+            // Idle timeout
+            webSocketServerSession.close(CloseStatus.NORMAL);
+        } else if (exception instanceof CloseException) {
+            webSocketServerSession.close(new CloseStatus(((CloseException) exception).getStatusCode(), exception.getMessage()));
+        }
+        super.handleTransportError(session, exception);
     }
 }

@@ -1,13 +1,12 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath("org.eclipse.jgit:org.eclipse.jgit") {
-            version {
-                strictly '5.13.0.202109080827-r'
-            }
-        }
+        classpath libs.jgit
     }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
 }
 
 normalization {
@@ -17,16 +16,14 @@ normalization {
     }
 }
 
-apply plugin: 'com.gorylenko.gradle-git-properties'
-
 gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
 dependencies {
-    compileOnly libraries.spring_doc
-    compileOnly libraries.spring_webmvc
-    compileOnly libraries.guava
+    compileOnly libs.spring.doc
+    compileOnly libs.spring.webmvc
+    compileOnly libs.guava
 }
 
 jar {

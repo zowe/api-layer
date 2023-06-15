@@ -66,8 +66,13 @@ export default class Dashboard extends Component {
             refreshedStaticApisError,
             clearError,
             authentication,
+            storeCurrentTileId,
         } = this.props;
-        const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+        const hasSearchCriteria =
+            typeof searchCriteria !== 'undefined' &&
+            searchCriteria !== undefined &&
+            searchCriteria !== null &&
+            searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
@@ -101,7 +106,7 @@ export default class Dashboard extends Component {
                     onClose={this.handleClose}
                 >
                     <Alert onClose={this.handleClose} severity="success" sx={{ width: '100%' }}>
-                        Your mainframe password was sucessfully changed.
+                        Your mainframe password was successfully changed.
                     </Alert>
                 </Snackbar>
                 <ConfirmDialogContainer />
@@ -123,8 +128,14 @@ export default class Dashboard extends Component {
                             <div className="filtering-container">
                                 <h1 className="api-heading">API Catalogs</h1>
                                 <h3>Discover All Broadcom APIs in one place</h3>
+                            </div>
+                            <div id="search">
                                 <Shield title="Search Bar is broken !">
-                                    <SearchCriteria placeholder="Search for APIs" doSearch={this.handleSearch} />
+                                    <SearchCriteria
+                                        id="search-input"
+                                        placeholder="Search for APIs..."
+                                        doSearch={this.handleSearch}
+                                    />
                                 </Shield>
                             </div>
                             {/* <div className="dashboard-grid-header">
@@ -141,6 +152,24 @@ export default class Dashboard extends Component {
                                     </Typography>
                                 )}
                             </div>
+                            <hr id="separator2" />
+                            {hasTiles &&
+                                tiles.map((tile) =>
+                                    tile.services.map((service) => (
+                                        <Tile
+                                            storeCurrentTileId={storeCurrentTileId}
+                                            service={service}
+                                            key={service}
+                                            tile={tile}
+                                            history={history}
+                                        />
+                                    ))
+                                )}
+                            {!hasTiles && hasSearchCriteria && (
+                                <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
+                                    No services found matching search criteria
+                                </Typography>
+                            )}
                         </div>
                         <div id="bottom-info-div">
                             <Container>

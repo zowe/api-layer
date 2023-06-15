@@ -15,6 +15,10 @@ buildCache {
     }
 }
 
+apply from: './gradle/versions.gradle'
+
+include 'platform'
+
 include 'discovery-service'
 include 'discovery-package'
 include 'apiml-utility'

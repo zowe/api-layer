@@ -12,14 +12,13 @@ package org.zowe.apiml.hwsjersey.greeting;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// WARN: JerseyTest does not support Junit 5
 public class GreetingControllerTest extends JerseyTest {
 
     @Override

@@ -1,7 +1,7 @@
-
 plugins {
-    id "io.micronaut.application" version '3.5.1'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    alias(libs.plugins.micronaut.minimal.application)
+    alias(libs.plugins.micronaut.docker)
+    alias(libs.plugins.shadow)
 }
 
 application {
@@ -13,12 +13,12 @@ shadowJar {
     archiveClassifier.set('')
     archiveVersion.set('1.0')
 }
+
 version "0.1"
 group "org.zowe.apiml"
 
-
 micronaut {
-    version = "3.5.1"
+    version = libs.versions.micronaut.get()
     runtime "netty"
     testRuntime "junit5"
     processing {
@@ -28,20 +28,14 @@ micronaut {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-java')
-    implementation project(':onboarding-enabler-micronaut')
-    testImplementation ("io.micronaut:micronaut-http-client")
-    testCompileOnly libraries.javax_inject
+    api project(':onboarding-enabler-java')
+    api project(':onboarding-enabler-micronaut')
+    testImplementation libs.javax.inject
+    testImplementation libs.micronaut.http.client
+    testCompileOnly libs.jakarta.inject
  }
-
-
 
 java {
     sourceCompatibility = JavaVersion.toVersion('1.8')
     targetCompatibility = JavaVersion.toVersion('1.8')
 }
-
-
-
-
-

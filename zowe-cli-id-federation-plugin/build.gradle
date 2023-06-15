@@ -1,11 +1,11 @@
 plugins {
-    id "com.github.node-gradle.node" version "3.5.0"
+    alias(libs.plugins.gradle.node)
 }
 
 node {
     download = true
-    version = projectNodeVersion
-    npmVersion = projectNpmVersion
+    version = libs.versions.projectNode.get()
+    npmVersion = libs.versions.projectNpm.get()
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "ci"
     workDir = file("${project.projectDir}/tools/nodejs")

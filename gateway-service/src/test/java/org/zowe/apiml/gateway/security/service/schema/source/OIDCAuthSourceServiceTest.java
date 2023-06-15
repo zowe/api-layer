@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -75,11 +76,24 @@ class OIDCAuthSourceServiceTest {
     @Nested
     class GivenValidTokenTest {
         @Test
-        void givenTokenInRequestContext_thenReturnTheToken() {
+        void givenOidcTokenInRequestContext_thenReturnTheToken() {
             HttpServletRequest request = new MockHttpServletRequest();
             when(context.getRequest()).thenReturn(request);
-            when(authenticationService.getOIDCTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
-            assertEquals(TOKEN, service.getToken(context).get());
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
+            when(authenticationService.getTokenOrigin(TOKEN)).thenReturn(AuthSource.Origin.OIDC);
+            Optional<String> tokenResult = service.getToken(context);
+            assertTrue(tokenResult.isPresent());
+            assertEquals(TOKEN, tokenResult.get());
+        }
+
+        @Test
+        void givenPatTokenInRequestContext_thenReturnEmpty() {
+            HttpServletRequest request = new MockHttpServletRequest();
+            when(context.getRequest()).thenReturn(request);
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
+            when(authenticationService.getTokenOrigin(TOKEN)).thenReturn(AuthSource.Origin.ZOWE_PAT);
+            Optional<String> tokenResult = service.getToken(context);
+            assertFalse(tokenResult.isPresent());
         }
 
         @Test
@@ -115,8 +129,7 @@ class OIDCAuthSourceServiceTest {
             when(mapper.mapToMainframeUserId(any())).thenReturn(MF_USER);
             String zoweToken = "zowe-token";
             when(tokenCreationService.createJwtTokenWithoutCredentials(MF_USER)).thenReturn(zoweToken);
-            QueryResponse response = new QueryResponse(null, DISTRIB_USER, new Date(), new Date(), ISSUER, null, QueryResponse.Source.ZOWE);
-            when(authenticationService.parseJwtToken(zoweToken)).thenReturn(response);
+            when(authenticationService.getTokenOrigin(zoweToken)).thenReturn(AuthSource.Origin.ZOWE);
             when(authenticationService.getLtpaToken(zoweToken)).thenReturn(expectedToken);
 
             String ltpaResult = service.getLtpaToken(authSource);
@@ -168,26 +181,48 @@ class OIDCAuthSourceServiceTest {
 
         @Test
         void whenIsInvalid_thenReturnTokenInvalid() {
-            OIDCAuthSource authSource = mockValidAuthSource();
-            when(provider.isValid(TOKEN, ISSUER)).thenReturn(false);
+            OIDCAuthSource authSource = new OIDCAuthSource(TOKEN);
+            when(provider.isValid(TOKEN)).thenReturn(false);
             assertFalse(service.isValid(authSource));
         }
 
         @Test
         void whenParse_thenReturnNull() {
-            OIDCAuthSource authSource = mockValidAuthSource();
-            when(provider.isValid(TOKEN, ISSUER)).thenReturn(false);
+            OIDCAuthSource authSource = new OIDCAuthSource(TOKEN);
+            when(provider.isValid(TOKEN)).thenReturn(false);
             AuthSource.Parsed parsedSource = service.parse(authSource);
 
             verify(mapper, times(0)).mapToMainframeUserId(authSource);
             assertNull(parsedSource);
+        }
+
+        @Test
+        void whenTokenIsExpired_thenThrow() {
+            HttpServletRequest request = new MockHttpServletRequest();
+            when(context.getRequest()).thenReturn(request);
+            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(TOKEN));
+            when(authenticationService.getTokenOrigin(TOKEN)).thenThrow(new TokenExpireException("token expired"));
+
+            assertThrows(TokenExpireException.class, () -> service.getToken(context));
+            verify(authenticationService, times(1)).getTokenOrigin(TOKEN);
+        }
+
+        @Test
+        void whenTokenIsNotValid_thenThrow() {
+            HttpServletRequest request = new MockHttpServletRequest();
+            when(context.getRequest()).thenReturn(request);
+            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(TOKEN));
+            when(authenticationService.getTokenOrigin(TOKEN)).thenThrow(new TokenNotValidException("token not valid"));
+
+            assertThrows(TokenNotValidException.class, () -> service.getToken(context));
+            verify(authenticationService, times(1)).getTokenOrigin(TOKEN);
         }
     }
 
     private OIDCAuthSource mockValidAuthSource() {
         QueryResponse tokenResponse = new QueryResponse("domain", DISTRIB_USER, new Date(), new Date(), ISSUER, Collections.emptyList(), QueryResponse.Source.OIDC);
         when(authenticationService.parseJwtToken(TOKEN)).thenReturn(tokenResponse);
-        when(provider.isValid(TOKEN, ISSUER)).thenReturn(true);
+        when(provider.isValid(TOKEN)).thenReturn(true);
         return new OIDCAuthSource(TOKEN);
     }
 }

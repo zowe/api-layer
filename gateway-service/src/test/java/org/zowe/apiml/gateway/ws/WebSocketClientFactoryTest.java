@@ -13,10 +13,15 @@ package org.zowe.apiml.gateway.ws;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
+
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 class WebSocketClientFactoryTest {
 
@@ -48,6 +53,25 @@ class WebSocketClientFactoryTest {
         @Test
         void whenGetClient_thenReturnInstance() {
             assertSame(client, webSocketClientFactory.getClientInstance());
+        }
+
+    }
+
+    @Nested
+    class CreatedInstanceWithConfig {
+
+        private WebSocketClientFactory webSocketClientFactory;
+
+        @BeforeEach
+        void setUp() {
+            SslContextFactory.Client sslClient = mock(SslContextFactory.Client.class);
+            this.webSocketClientFactory = new WebSocketClientFactory(sslClient, 1234);
+        }
+
+        @Test
+        void givenInitilizedClient_thenHasNonDefaultIdleConfig() {
+            WebSocketClient wsClient = (WebSocketClient) ReflectionTestUtils.getField(webSocketClientFactory.getClientInstance(), "client");
+            assertEquals(1234, wsClient.getMaxIdleTimeout());
         }
 
     }

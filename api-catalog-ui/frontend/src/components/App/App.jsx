@@ -39,7 +39,7 @@ class App extends Component {
                         <Router history={history}>
                             <>
                                 <div className="content">
-                                    <Route path="/(dashboard|tile/.*)/" component={HeaderContainer} />
+                                    <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
                                     <Switch>
                                         <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
                                         <Route
@@ -57,7 +57,7 @@ class App extends Component {
                                             )}
                                         />
                                         <Route
-                                            path="/tile/:tileID"
+                                            path="/service"
                                             render={(props, state) => (
                                                 <BigShield history={history}>
                                                     <AsyncDetailPageContainer {...props} {...state} />
@@ -73,7 +73,7 @@ class App extends Component {
                                         />
                                     </Switch>
                                 </div>
-                                <Route path="/(dashboard|tile/.*)/" component={Footer} />
+                                <Route path="/(dashboard|service/.*)/" component={Footer} />
                             </>
                         </Router>
                     </Suspense>

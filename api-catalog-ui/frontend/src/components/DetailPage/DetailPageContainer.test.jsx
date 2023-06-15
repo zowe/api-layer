@@ -47,7 +47,7 @@ describe('DetailPage Container', () => {
         const match = {
             path: 'path',
             params: {
-                tileID: 'id',
+                serviceID: 'id',
             },
         };
 

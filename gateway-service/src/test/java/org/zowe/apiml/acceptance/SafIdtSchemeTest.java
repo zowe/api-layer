@@ -52,7 +52,11 @@ import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
  * The output to be tested is the saf idt token.
  */
 @AcceptanceTest
-@TestPropertySource(properties = {"spring.profiles.active=debug", "apiml.security.x509.externalMapperUrl="})
+@TestPropertySource(properties = {
+    "spring.profiles.active=debug",
+    "apiml.security.x509.enabled=true",
+    "apiml.security.x509.externalMapperUrl="
+})
 class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;

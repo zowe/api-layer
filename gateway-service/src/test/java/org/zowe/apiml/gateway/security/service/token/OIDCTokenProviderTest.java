@@ -20,6 +20,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 
 import java.io.IOException;
@@ -57,7 +61,6 @@ class OIDCTokenProviderTest {
         "}";
 
     private static final String TOKEN = "token";
-    private static final String ISSUER = "https://issuer.com";
 
     @BeforeEach
     void setup() throws CachingServiceClientException, IOException {
@@ -71,6 +74,9 @@ class OIDCTokenProviderTest {
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
         oidcTokenProvider = new OIDCTokenProvider(httpClient);
+        oidcTokenProvider.introspectUrl = "https://acme.com/introspect";
+        oidcTokenProvider.clientId = "client_id";
+        oidcTokenProvider.clientSecret = "client_secret";
     }
 
     @Nested
@@ -78,58 +84,75 @@ class OIDCTokenProviderTest {
         @Test
         void tokenIsActive_thenReturnValid() {
             responseEntity.setContent(IOUtils.toInputStream(BODY, StandardCharsets.UTF_8));
-            assertTrue(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertTrue(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void tokenIsExpired_thenReturnInvalid() {
             responseEntity.setContent(IOUtils.toInputStream(NOT_VALID_BODY, StandardCharsets.UTF_8));
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenClientThrowsException_thenReturnInvalid() throws IOException {
             ClientProtocolException exception = new ClientProtocolException("http error");
             when(httpClient.execute(any())).thenThrow(exception);
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenResponseIsNotValidJson_thenReturnInvalid() {
             responseEntity.setContent(IOUtils.toInputStream("{notValid}", StandardCharsets.UTF_8));
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenResponseStatusIsNotOk_thenReturnInvalid() {
             when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
+    }
+
+    @Nested
+    class GivenEmptyTokenProvided {
         @Test
         void whenTokenIsNull_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(null, ISSUER));
+            assertFalse(oidcTokenProvider.isValid(null));
         }
 
         @Test
         void whenTokenIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid("", ISSUER));
+            assertFalse(oidcTokenProvider.isValid(""));
+        }
+    }
+    @Nested
+    class GivenInvalidConfiguration {
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        @ValueSource(strings = {"not_an_URL", "https//\\:"})
+        void whenInvalidIntrospectUrl_thenReturnInvalid(String url) {
+            oidcTokenProvider.introspectUrl = url;
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
-        @Test
-        void whenIssuerIsNull_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(TOKEN, null));
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void whenInvalidClientId_thenReturnInvalid(String id) {
+            oidcTokenProvider.clientId = id;
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
-        @Test
-        void whenIssuerIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(TOKEN, ""));
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void whenInvalidClientSecret_thenReturnInvalid(String secret) {
+            oidcTokenProvider.clientSecret = secret;
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
-        @Test
-        void whenIssuerIsNotURL_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(TOKEN, "not valid url"));
-        }
-
     }
 
 }

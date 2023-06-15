@@ -1,14 +1,13 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
-        classpath("org.eclipse.jgit:org.eclipse.jgit") {
-            version {
-                strictly '5.13.0.202109080827-r'
-            }
-        }
+        classpath libs.spring.boot.gradle.plugin
+        classpath libs.jgit
     }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
 }
 
 normalization {
@@ -19,8 +18,6 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
@@ -32,7 +29,7 @@ def componentName = "gateway-service"
 setJib(componentName, javaAgentPort, debugPort)
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
 
-ext['netty.version'] = '4.1.86.Final'
+ext['netty.version'] = libs.versions.netty.get()
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -55,144 +52,124 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
-configurations.all {
-    resolutionStrategy {
-        force (libraries.jetty_websocket_client)
-    }
-}
-
 dependencies {
 
-    implementation project(':apiml-security-common')
-    implementation project(':apiml-tomcat-common')
-    implementation project(':apiml-extension-loader')
-    implementation libraries.snakeyaml
-    implementation libraries.spring_boot_starter_webflux
-    implementation libraries.spring_boot_starter_actuator
-    implementation(libraries.spring_boot_starter_web) {
-        exclude group: "org.yaml", module: "snakeyaml"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-    }
-    implementation libraries.spring_boot_starter_websocket
-    implementation libraries.spring_boot_starter_thymeleaf
-    implementation libraries.spring_boot_starter_cache
-    implementation libraries.spring_boot_starter_aop
-    implementation (libraries.spring_cloud_starter_hystrix){
-        exclude group: "org.bouncycastle", module: "bcprov-jdk15on"
-    }
-    implementation libraries.bcprov
-    implementation libraries.spring_security_web
-    implementation libraries.spring_security_config
-    implementation libraries.spring_security_core
-    implementation libraries.spring_security_crypto
-    implementation libraries.xstream
-    implementation libraries.json_smart
+    api project(':apiml-security-common')
+    api project(':apiml-tomcat-common')
+    api project(':apiml-extension-loader')
+    implementation libs.spring.boot.starter.webflux
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.websocket
+    implementation libs.spring.boot.starter.thymeleaf
+    implementation libs.spring.boot.starter.cache
+    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.cloud.starter.hystrix
+    implementation libs.spring.cloud.starter.eureka.server
+    implementation libs.spring.security.web
+    implementation libs.spring.security.config
+    implementation libs.spring.security.core
+    implementation libs.spring.security.crypto
+    implementation libs.xstream
+    implementation libs.json.smart
 
-    implementation(libraries.swagger3_parser) {
-        exclude group: "org.yaml", module: "snakeyaml"
-    }
-    implementation libraries.jackson_annotations
-    implementation libraries.jackson_core
-    implementation libraries.jackson_databind
-    implementation libraries.tomcat_coyote
-    implementation libraries.tomcat_annotations_api
-    implementation libraries.tomcat_embed_core
-    implementation libraries.tomcat_embed_el
-    implementation libraries.tomcat_embed_websocket
-    implementation(libraries.spring_cloud_starter_eureka){
-        exclude group: "com.fasterxml.woodstox", module: "woodstox-core"
-        exclude group: "com.google.code.gson", module: "gson"
-        exclude group: "org.bouncycastle", module: "bcpkix-jdk15on"
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-aop"
-    }
-    implementation libraries.woodstox
-    implementation libraries.bcpkix
-    implementation libraries.gson
-    implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
-    implementation libraries.spring_cloud_starter_zuul
-    implementation libraries.spring_cloud_starter_ribbon
-    implementation libraries.jetty_websocket_common
-    implementation libraries.jetty_websocket_client
-    implementation libraries.jetty_client
-    implementation libraries.jetty_http
-    implementation libraries.jetty_io
-    implementation libraries.jetty_util
-    implementation libraries.jetty_websocket_api
-    implementation libraries.jjwt
-    implementation libraries.nimbusJoseJwt
-    implementation libraries.netty
-    implementation libraries.netty_buffer
-    implementation libraries.netty_codec
-    implementation libraries.netty_codec_dns
-    implementation libraries.netty_codec_haproxy
-    implementation libraries.netty_codec_http
-    implementation libraries.netty_codec_http2
-    implementation libraries.netty_codec_memcache
-    implementation libraries.netty_codec_mqtt
-    implementation libraries.netty_codec_redis
-    implementation libraries.netty_codec_socks
-    implementation libraries.netty_codec_smtp
-    implementation libraries.netty_codec_stomp
-    implementation libraries.netty_codec_xml
-    implementation libraries.netty_common
-    implementation libraries.netty_handler
-    implementation libraries.netty_handler_proxy
-    implementation libraries.netty_resolver
-    implementation libraries.netty_resolver_dns
-    implementation libraries.netty_resolver_dns_native_macos
-    implementation libraries.netty_transport
-    implementation libraries.netty_transport_native_epoll
-    implementation libraries.netty_transport_native_kqueue
-    implementation libraries.netty_transport_native_unix_common
-    implementation libraries.netty_transport_rxtx
-    implementation libraries.netty_transport_sctp
-    implementation libraries.netty_transport_udt
-    implementation libraries.thymeleaf
-    implementation libraries.thymeleafSpring
-    implementation libraries.logback_core
-    implementation libraries.logback_classic
+    implementation libs.ribbon.eureka
+    implementation libs.swagger3.parser
+    implementation libs.jackson.annotations
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.tomcat.coyote
+    implementation libs.tomcat.annotations.api
+    implementation libs.tomcat.embed.core
+    implementation libs.tomcat.embed.el
+    implementation libs.tomcat.embed.websocket
+    implementation libs.spring.cloud.starter.eureka
+    implementation libs.spring.cloud.commons
+    implementation libs.spring.cloud.starter.bootstrap
+    implementation libs.spring.cloud.starter.zuul
+    implementation libs.spring.cloud.starter.ribbon
+    implementation libs.jetty.websocket.common
+    implementation libs.jetty.websocket.client
+    implementation libs.jetty.client
+    implementation libs.jetty.http
+    implementation libs.jetty.io
+    implementation libs.jetty.util
+    implementation libs.jetty.websocket.api
+    implementation libs.jjwt
+    implementation libs.nimbusJoseJwt
+    implementation libs.netty
+    implementation libs.netty.buffer
+    implementation libs.netty.codec
+    implementation libs.netty.codec.dns
+    implementation libs.netty.codec.haproxy
+    implementation libs.netty.codec.http
+    implementation libs.netty.codec.http2
+    implementation libs.netty.codec.memcache
+    implementation libs.netty.codec.mqtt
+    implementation libs.netty.codec.redis
+    implementation libs.netty.codec.socks
+    implementation libs.netty.codec.smtp
+    implementation libs.netty.codec.stomp
+    implementation libs.netty.codec.xml
+    implementation libs.netty.common
+    implementation libs.netty.handler
+    implementation libs.netty.handler.proxy
+    implementation libs.netty.resolver
+    implementation libs.netty.resolver.dns
+    implementation libs.netty.resolver.dns.native.macos
+    implementation libs.netty.transport
+    implementation libs.netty.transport.native.epoll
+    implementation libs.netty.transport.native.kqueue
+    implementation libs.netty.transport.native.unix.common
+    implementation libs.netty.transport.rxtx
+    implementation libs.netty.transport.sctp
+    implementation libs.netty.transport.udt
+    implementation libs.thymeleaf
+    implementation libs.thymeleafSpring
+    implementation libs.logback.core
+    implementation libs.logback.classic
 
-    implementation libraries.commons_io
-    implementation libraries.guava
-    implementation libraries.spring_aop
-    implementation libraries.spring_beans
-    implementation libraries.spring_context
-    implementation libraries.spring_context_support
-    implementation libraries.spring_core
-    implementation libraries.spring_expression
-    implementation libraries.spring_messaging
-    implementation libraries.spring_web
-    implementation libraries.spring_webmvc
-    implementation libraries.spring_websocket
-    implementation libraries.spring_webflux
+    implementation libs.commons.io
+    implementation libs.guava
+    implementation libs.spring.aop
+    implementation libs.spring.beans
+    implementation libs.spring.context
+    implementation libs.spring.context.support
+    implementation libs.spring.core
+    implementation libs.spring.expression
+    implementation libs.spring.messaging
+    implementation libs.spring.web
+    implementation libs.spring.webmvc
+    implementation libs.spring.websocket
+    implementation libs.spring.webflux
 
-    implementation libraries.eh_cache
-    implementation libraries.spring_retry
-    implementation libraries.awaitility
+    implementation libs.eh.cache
+    implementation libs.spring.retry
+    implementation libs.awaitility
 
-    compileOnly libraries.javax_inject
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
-    annotationProcessor libraries.spring_boot_configuration_processor
+    compileOnly libs.jakarta.inject
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    annotationProcessor libs.spring.boot.configuration.processor
 
-    testImplementation libraries.mockito_core
-    testImplementation libraries.spring_mock_mvc
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
-    testRuntimeOnly libraries.http_client
-    testImplementation libraries.rest_assured
-    testImplementation libraries.rest_assured_json_path
-    testImplementation libraries.rest_assured_xml_path
-    testImplementation libraries.javax_inject
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.inline
+    testImplementation libs.spring.mock.mvc
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.json.smart
+    testRuntimeOnly libs.http.client
+    testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.json.path
+    testImplementation libs.rest.assured.xml.path
+    testImplementation libs.jakarta.inject
 
-    testCompileOnly libraries.lombok
-    testAnnotationProcessor libraries.lombok
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 
     testImplementation(testFixtures(project(":integration-tests")))
 
-    implementation libraries.jjwt_impl
-    runtimeOnly libraries.jjwt_jackson
+    implementation libs.jjwt.impl
+    runtimeOnly libs.jjwt.jackson
 }
 
 bootJar {

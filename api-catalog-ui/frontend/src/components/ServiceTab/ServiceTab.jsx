@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip } from '@material-ui/core';
+import { Link, Typography, Tooltip, MenuItem, Select, Button } from '@material-ui/core';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 // import '../Swagger/Swagger.css';
@@ -20,7 +20,14 @@ export default class ServiceTab extends Component {
         super(props);
         this.state = {
             selectedVersion: null,
+            isDialogOpen: false,
         };
+        this.handleDialogClose = this.handleDialogClose.bind(this);
+    }
+
+    get containsVersion() {
+        const { currentService } = this;
+        return currentService && 'apiVersions' in currentService && currentService.apiVersions;
     }
 
     get basePath() {
@@ -45,22 +52,24 @@ export default class ServiceTab extends Component {
 
         const {
             match: {
-                params: { tileID, serviceId },
+                params: { serviceId },
             },
-            tiles,
             selectedService,
             selectedTile,
             selectService,
+            currentTileId,
+            tiles,
         } = this.props;
-        tiles[0].services.forEach((service) => {
-            if (service.serviceId === serviceId) {
-                if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
-                    selectService(service, tileID);
+        if (tiles && tiles.length > 0) {
+            tiles[0].services.forEach((service) => {
+                if (service.serviceId === serviceId) {
+                    if (service.serviceId !== selectedService.serviceId || selectedTile !== currentTileId) {
+                        selectService(service, currentTileId);
+                    }
+                    currentService = service;
                 }
-                currentService = service;
-            }
-        });
-
+            });
+        }
         return currentService;
     }
 
@@ -79,7 +88,7 @@ export default class ServiceTab extends Component {
         const { selectedVersion } = this.state;
         const { currentService } = this;
 
-        if (currentService && currentService.apiVersions) {
+        if (this.containsVersion) {
             apiVersions = currentService.apiVersions.map((version) => {
                 // Pre select default version or if only one version exists select that
                 let tabStyle = {};
@@ -93,39 +102,30 @@ export default class ServiceTab extends Component {
                     tabStyle = { backgroundColor: '#fff' };
                 }
                 return (
-                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
-                    <span
-                        className="nav-tab"
+                    <MenuItem
                         key={version}
-                        style={tabStyle}
                         onClick={() => {
                             this.setState({ selectedVersion: version });
                         }}
+                        value={version}
+                        style={tabStyle}
+                        data-testid="version"
                     >
-                        <Typography data-testid="version" className="version-text">
-                            {version}
-                        </Typography>
-                    </span>
+                        {version}
+                    </MenuItem>
                 );
             });
-            if (apiVersions.length >= 2) {
-                apiVersions.push(
-                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
-                    <span
-                        className="nav-tab"
-                        onClick={() => {
-                            this.setState({ selectedVersion: 'diff' });
-                        }}
-                        style={selectedVersion === 'diff' ? { backgroundColor: '#fff' } : {}}
-                        key="diff"
-                    >
-                        <Typography className="version-text">Compare</Typography>
-                    </span>
-                );
-            }
         }
         return apiVersions;
     }
+
+    handleDialogOpen = () => {
+        this.setState({ isDialogOpen: true, selectedVersion: 'diff' });
+    };
+
+    handleDialogClose = () => {
+        this.setState({ isDialogOpen: false, selectedVersion: null });
+    };
 
     render() {
         const {
@@ -138,15 +138,14 @@ export default class ServiceTab extends Component {
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
-
-        const { selectedVersion } = this.state;
+        const { selectedVersion, isDialogOpen } = this.state;
         const { basePath } = this;
         const { currentService } = this;
         const { hasHomepage } = this;
         const { apiVersions } = this;
+        const { containsVersion } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
-
         return (
             <>
                 {currentService === null && (
@@ -230,16 +229,47 @@ export default class ServiceTab extends Component {
                             >
                                 {selectedService.description}
                             </Typography>
+                            <br />
+                            <br />
+                            <Typography id="swagger-label" size="medium" variant="outlined">
+                                Swagger
+                            </Typography>
+                            <Typography id="version-label" variant="subtitle2">
+                                Version
+                            </Typography>
                         </div>
-                        <div className="tabs-container" style={{ width: '100%' }}>
-                            {apiVersions}
+                        <div>
+                            {containsVersion && (
+                                <Select
+                                    displayEmpty
+                                    id="version-menu"
+                                    value={this.state.selectedVersion}
+                                    data-testid="version-menu"
+                                >
+                                    {apiVersions}
+                                </Select>
+                            )}
+                            <Button
+                                id="compare-button"
+                                disabled={apiVersions.length < 2}
+                                style={
+                                    apiVersions.length < 2
+                                        ? { backgroundColor: '#e4e4e4', color: '#c0c0c0', opacity: '0.5' }
+                                        : { backgroundColor: '#fff' }
+                                }
+                                onClick={this.handleDialogOpen}
+                                key="diff"
+                            >
+                                <Typography className="version-text">Compare API versions</Typography>
+                            </Button>
                         </div>
-                        {selectedVersion !== 'diff' ? (
-                            <SwaggerContainer selectedVersion={selectedVersion} />
-                        ) : (
+                        {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
+                        {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
+                                handleDialog={this.handleDialogClose}
                                 serviceId={selectedService.serviceId}
                                 versions={currentService.apiVersions}
+                                isDialogOpen={isDialogOpen}
                             />
                         )}
                     </div>

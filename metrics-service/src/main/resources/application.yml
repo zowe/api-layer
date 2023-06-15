@@ -93,6 +93,8 @@ spring:
     application:
         name: Metrics Service
     output.ansi.enabled: always
+    main:
+        allow-circular-references: true
 
 springdoc:
     pathsToMatch: /api/v1/**
@@ -129,11 +131,6 @@ management:
 turbine:
     aggregator:
         clusterConfig: APICATALOG,CACHINGSERVICE,GATEWAY,DISCOVERY # uppercase serviceId
-    instanceUrlSuffix:
-        APICATALOG: /apicatalog/application/hystrixstream
-        CACHINGSERVICE: /cachingservice/application/hystrixstream
-        GATEWAY: /application/hystrixstream
-        DISCOVERY: /application/hystrixstream
     appConfig: apicatalog,cachingservice,gateway,discovery # lowercase serviceId
 
 ---
