@@ -1,0 +1,41 @@
+body {
+  #user-info-text {
+    padding: var( --spaceSmaller ) var( --spaceSmaller ) 0px;
+  }
+  .Component-root-3 .MuiPaper-root {
+    margin-top: var( --spaceSmallest );
+    border: 1px solid var( --divider00 );
+  }
+  .header {
+    padding: var( --spaceSmallest) var( --spaceSmall );
+  
+    &, > * {
+      display: flex;
+      flex-direction: row;
+    }
+    .app-icon-container img {
+      height: 40px;
+    }
+  
+    .right-icons {
+      margin-left: auto;
+  
+      .logout-container > button {
+        min-width: 50px;
+  
+        &, svg {
+          padding: 0px;
+          margin: 0px;
+        }
+      }
+    }// end right icons
+  
+    .product-name {
+      align-items: center;
+  
+      > a + a {
+        margin-left: var( --spaceSmall);
+      }
+    }
+  }//end header
+}

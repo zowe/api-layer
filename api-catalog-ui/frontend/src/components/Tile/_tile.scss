@@ -1,0 +1,61 @@
+body {
+  .MuiPaper-elevation1 {
+    box-shadow: var( --surfaceEffect10 );
+  }
+  .MuiPaper-rounded {
+    border-radius: var( --borderRadius1 );
+  }
+  .MuiSvgIcon-root {
+    margin-right: var( --spaceSmaller );
+  }
+  .MuiCard-root {
+    padding: var( --spaceSmallest );
+    margin: var( --spaceSmallest ) var( --spaceSmaller ) var( --spaceMedium );
+
+    &:hover {
+      cursor: pointer;
+      background: var( --surface15 );
+    }
+  }
+
+  .MuiCardContent-root,
+  .dashboard-grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &, &:last-child {
+      padding: var( --spaceMedium );
+    }
+    > * {
+      margin-left: var( --spaceLarge );
+      flex: 1;
+
+      &.tile-description,
+      &.description-header {
+        flex: 3;
+      }
+      &#grid-tile-sso {
+        width: 50px;
+        flex: unset;
+        margin: 0px;
+      }
+      &.tile-description,
+      &:first-child {
+        text-align: left;
+      }
+      &:last-child {
+        text-align: right;
+      }
+    }
+  }//end card content
+
+  .dashboard-grid-header {
+    padding: var( --spaceSmall ) var( --spaceLarger);
+    font-size: var( --fontSmall );
+
+    > *:not(:last-child) {
+      text-align: left;
+    }
+  }
+}

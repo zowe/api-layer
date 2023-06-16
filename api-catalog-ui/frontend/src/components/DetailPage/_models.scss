@@ -1,0 +1,64 @@
+body {
+  .models {
+    .models-control,
+    .model-box,
+    .model-box-control {
+      width: 100%;
+      cursor: pointer;
+    }
+    .models-control,
+    .model-box-control {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .model-container {
+      margin-bottom: var( --spaceSmallest );
+      background: var( --surface20 );
+      border-radius: var( --borderRadius1 );
+      border: 1px solid var( --divider00 );
+    }
+    .pointer {
+      display: flex;
+      justify-content: space-between;
+    }
+    .inner-object, .brace-open, .brace-close {
+      padding: var( --spaceSmall );
+      display: block;
+    }
+    .brace-close {
+      padding-top: var( --spaceNone );
+    }
+    .inner-object {
+      padding: var( --spaceSmall ) var( --spaceSmall ) var( --spaceNone ) var( --spaceLargest );
+
+      td {
+        padding: var( --spaceSmaller );
+
+        &:first-child {
+          min-width: 120px;
+        }
+      }
+    }
+    .model-box-control[aria-expanded="true"] .model-toggle {
+      rotate: -90deg;
+    }
+
+    .model-toggle {
+      width: 20px;
+      height: 20px;
+      display: block;
+      rotate: 90deg;
+      margin-left: auto;
+      
+      &:after {
+        width: 20px;
+        height: 20px;
+        content: "";
+        background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'/%3E%3C/svg%3E") 50% no-repeat;
+        background-size: 100%;
+        display: block;
+      }
+    }
+  }//end models
+}

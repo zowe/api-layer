@@ -14,7 +14,7 @@ import WarningIcon from '@material-ui/icons/Warning';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
-import './Tile.css';
+// import './Tile.css';
 
 export default class Tile extends Component {
     getStatusFromServiceTotals = (tile) => {
@@ -86,7 +86,6 @@ export default class Tile extends Component {
                     >
                         {service.title}
                     </Typography>
-                    <br />
                     <Typography id="tileLabel" className="grid-tile-status">
                         {this.getTileStatus(tile)}
                         {this.getTileStatusText(tile)}

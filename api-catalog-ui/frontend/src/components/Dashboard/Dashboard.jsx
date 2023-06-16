@@ -12,7 +12,7 @@ import { Alert } from '@mui/material';
 import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import './Dashboard.css';
+// import './Dashboard.css';
 import Tile from '../Tile/Tile';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
@@ -81,7 +81,7 @@ export default class Dashboard extends Component {
         }
 
         return (
-            <div>
+            <div className="main-content dashboard-content">
                 <div id="dash-buttons">
                     <DialogDropdown
                         selectEnabler={this.props.selectEnabler}
@@ -125,28 +125,33 @@ export default class Dashboard extends Component {
                 {!fetchTilesError && (
                     <div className="apis">
                         <div id="grid-container">
-                            <div className="api-heading-container">
-                                <h3 id="api-heading-id" className="api-heading">
-                                    API Developer Experience
-                                </h3>
-                                <div>
-                                    <hr id="separator" />
+                            <div className="filtering-container">
+                                <h1 className="api-heading">API Catalogs</h1>
+                                <h3>Discover All Broadcom APIs in one place</h3>
+
+                                <div id="search">
+                                    <Shield title="Search Bar is broken !">
+                                        <SearchCriteria
+                                            id="search-input"
+                                            placeholder="Search for APIs..."
+                                            doSearch={this.handleSearch}
+                                        />
+                                    </Shield>
                                 </div>
                             </div>
-                            <div id="search">
-                                <Shield title="Search Bar is broken !">
-                                    <SearchCriteria
-                                        id="search-input"
-                                        placeholder="Search for APIs..."
-                                        doSearch={this.handleSearch}
-                                    />
-                                </Shield>
-                            </div>
-                            <div id="info-headers-div">
-                                <h3 className="info-headers">Swagger</h3>
-                                <h3 className="info-headers">Use Cases</h3>
-                                <h3 className="info-headers">Tutorials</h3>
-                                <h3 className="info-headers">Videos</h3>
+                            {/* <div className="dashboard-grid-header">
+                                <div />
+                                <div className="description-header">Description</div>
+                                <div>Status</div>
+                                <div>Type</div>
+                            </div> */}
+                            <div className="scrollable-flex-content">
+                                {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
+                                {!hasTiles && hasSearchCriteria && (
+                                    <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
+                                        No tiles found matching search criteria
+                                    </Typography>
+                                )}
                             </div>
                             <hr id="separator2" />
                             {hasTiles &&
@@ -169,17 +174,15 @@ export default class Dashboard extends Component {
                         </div>
                         <div id="bottom-info-div">
                             <Container>
-                                <h4 className="footer-links">Capabilities</h4>
+                                <strong className="footer-links">Capabilities</strong>
                                 <Link className="links" />
                             </Container>
-                            <vl id="footer-menu-separator" />
                             <Container>
-                                <h4>Resources</h4>
+                                <strong>Resources</strong>
                                 <Link className="links">Blog</Link>
                             </Container>
-                            <vl id="footer-menu-separator" />
                             <Container>
-                                <h4>Just a placeholder</h4>
+                                <strong>Just a placeholder</strong>
                                 <Link className="links" />
                             </Container>
                         </div>
