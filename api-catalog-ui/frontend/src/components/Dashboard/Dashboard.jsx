@@ -145,14 +145,6 @@ export default class Dashboard extends Component {
                                 <div>Status</div>
                                 <div>Type</div>
                             </div> */}
-                            <div className="scrollable-flex-content">
-                                {hasTiles && tiles.map((tile) => <Tile key={tile.id} tile={tile} history={history} />)}
-                                {!hasTiles && hasSearchCriteria && (
-                                    <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
-                                        No tiles found matching search criteria
-                                    </Typography>
-                                )}
-                            </div>
                             <hr id="separator2" />
                             {hasTiles &&
                                 tiles.map((tile) =>
