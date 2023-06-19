@@ -10,7 +10,6 @@
 import { Component } from 'react';
 import { Typography, Button } from '@material-ui/core';
 import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIos';
-// import '../../Dashboard/Dashboard.css';
 import './BigShield.css';
 
 export default class BigShield extends Component {

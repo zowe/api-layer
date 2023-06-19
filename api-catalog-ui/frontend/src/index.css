@@ -1,3 +1,16 @@
+@import "../src/components/App/App.css";
+@import "../src/webflow.css";
+@import "../src/components/Header/Header.css";
+@import "../src/components/Tile/Tile.css";
+@import "../src/components/Dashboard/Dashboard.css";
+@import "../src/components/Search/search.css";
+@import "../src/components/Spinner/Spinner.css";
+@import "../src/components/Footer/footer.css";
+@import "../src/components/DetailPage/DetailPage.css";
+@import "../src/components/DetailPage/ReactRouterTabs.css";
+@import "../src/components/Swagger/Swagger.css";
+@import "../src/components/ServiceTab/ServiceTab.css";
+@import "../src/components/PageNotFound/PageNotFound.css";
 body {
     margin: 0;
     padding: 0;

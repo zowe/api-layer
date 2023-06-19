@@ -11,8 +11,6 @@ import { Component } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 
-// import './PageNotFound.css';
-
 export default class PageNotFound extends Component {
     handleGoToHome = () => {
         const { history } = this.props;
