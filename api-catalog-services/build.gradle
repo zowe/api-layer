@@ -17,7 +17,6 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
@@ -56,14 +55,14 @@ configurations.all {
 }
 
 dependencies {
-    implementation(project(':security-service-client-spring')) {
+    api(project(':security-service-client-spring')) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
+    implementation group: 'io.swagger', name: 'swagger-models', version: "${swaggerCoreVersion}"
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.springframework", module: "spring-web"
         exclude group: "org.springframework", module: "spring-webmvc"
@@ -85,7 +84,9 @@ dependencies {
     }
     implementation libraries.spring_boot_configuration_processor
     implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_bootstrap) {
+        transitive false
+    }
     implementation(libraries.spring_cloud_starter_eureka){
         exclude group: "com.google.code.gson", module: "gson"
     }
@@ -138,17 +139,17 @@ dependencies {
     implementation libraries.logback_core
     implementation libraries.logback_classic
 
-    testCompile libraries.rest_assured
-    testCompile libraries.spring_mock_mvc
+    testImplementation libraries.rest_assured
+    testImplementation libraries.spring_mock_mvc
 
-    testCompile libraries.lombok
+    testImplementation libraries.lombok
     testAnnotationProcessor libraries.lombok
 
-    testCompile(libraries.spring_boot_starter_test) {
+    testImplementation(libraries.spring_boot_starter_test) {
         exclude group: "org.springframework", module: "spring-test"
     }
-    testCompile libraries.spring_test
-    testCompile libraries.json_smart
+    testImplementation libraries.spring_test
+    testImplementation libraries.json_smart
 }
 
 bootJar {

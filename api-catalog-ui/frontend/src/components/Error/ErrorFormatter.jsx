@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Text } from 'mineral-ui';
-import renderHTML from 'react-render-html';
+import htmr from 'htmr';
 import uuidv4 from 'uuid/v4';
 
 const colorDanger = '#de1b1b';
@@ -34,7 +34,7 @@ function extractAjaxError(error) {
 function formaHtmlError(message, color) {
     return (
         <Text key={uuidv4()} element="h5" fontWeight="semiBold" color={color}>
-            {renderHTML(message)}
+            {htmr(message)}
         </Text>
     );
 }

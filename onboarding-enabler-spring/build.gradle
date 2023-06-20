@@ -10,8 +10,6 @@ buildscript {
     }
 }
 
-apply plugin: 'io.spring.dependency-management'
-
 publish {
     outputs.upToDateWhen { false }
     doLast {
@@ -20,8 +18,8 @@ publish {
 }
 
 dependencies {
-    compile project(':apiml-utility')
-    compile project(':onboarding-enabler-java')
+    api project(':apiml-utility')
+    api project(':onboarding-enabler-java')
 
     implementation(libraries.spring_boot_starter_web){
         exclude group: "org.springframework", module: "spring-web"
@@ -59,18 +57,18 @@ dependencies {
     implementation libraries.xstream
     implementation libraries.jettison
 
-    testCompile(libraries.spring_boot_starter_test) {
+    testImplementation(libraries.spring_boot_starter_test) {
         exclude group: "org.springframework", module: "spring-test"
     }
-    testCompile libraries.spring_test
-    testCompile libraries.json_smart
-    testCompile libraries.mockito_core
+    testImplementation libraries.spring_test
+    testImplementation libraries.json_smart
+    testImplementation libraries.mockito_core
 
     annotationProcessor libraries.spring_boot_configuration_processor
-    testCompile libraries.gson
+    testImplementation libraries.gson
 }
 
 jar {
     baseName = "onboarding-enabler-spring"
-    archiveName = "${baseName}.jar"
+    archiveFileName = "${baseName}.jar"
 }

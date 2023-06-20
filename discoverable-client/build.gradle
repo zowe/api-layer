@@ -48,8 +48,8 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-spring')
-    implementation project(':zaas-client')
+    api project(':onboarding-enabler-spring')
+    api project(':zaas-client')
     implementation (libraries.spring_doc) {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
         exclude group: "org.yaml", module: "snakeyaml"
@@ -87,7 +87,9 @@ dependencies {
     implementation libraries.spring_boot_starter_security
     implementation libraries.zowe_attls
     implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_bootstrap) {
+        transitive false
+    }
     implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_cloud_hystrix_dashboard
     implementation libraries.spring_security_web
@@ -110,7 +112,7 @@ dependencies {
 }
 
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar.archiveFileName = "${bootJar.baseName}.jar"
 
 publishing {
     publications {

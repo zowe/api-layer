@@ -44,16 +44,15 @@ apply from: 'gradle/publish.gradle'
 apply from: 'gradle/sonar.gradle'
 apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
-apply from: 'gradle/generate-pom.gradle'
 apply from: 'gradle/lite.gradle'
 
 allprojects {
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'idea'
-    apply plugin: 'maven'
     apply plugin: 'org.cadixdev.licenser'
     apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'eclipse'
+    apply plugin: 'java-test-fixtures'
 
     repositories mavenRepositories
 
@@ -73,6 +72,23 @@ allprojects {
 
     configurations.all {
         exclude group: "javax.servlet", module: "servlet-api"
+
+        resolutionStrategy.dependencySubstitution {
+            substitute(module('aopalliance:aopalliance:1.0')).using(module('org.glassfish.hk2.external:aopalliance-repackaged:3.0.3'))
+            // versions are clashing - Micronaut enabler requires both versions, Gradle as default selected newer one
+            //substitute(module('javax.inject:javax.inject:1')).using(module('jakarta.inject:jakarta.inject-api:1.0.5'))
+            substitute(module('javax.activation:javax.activation-api:1.0')).using(module('jakarta.activation:jakarta.activation-api:1.2.2'))
+        }
+    }
+
+    dependencies {
+        constraints {
+            compileOnly libraries.values()
+            implementation libraries.values()
+            testImplementation libraries.values()
+            testFixturesImplementation libraries.values()
+            annotationProcessor libraries.values()
+        }
     }
 }
 

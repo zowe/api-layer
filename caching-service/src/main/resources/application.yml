@@ -111,6 +111,8 @@ spring:
         pathmatch:
             matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output.ansi.enabled: always
+    main:
+        allow-circular-references: true
 
 springdoc:
     pathsToMatch: /api/v1/**

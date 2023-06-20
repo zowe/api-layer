@@ -93,6 +93,8 @@ spring:
     application:
         name: Metrics Service
     output.ansi.enabled: always
+    main:
+        allow-circular-references: true
 
 springdoc:
     pathsToMatch: /api/v1/**

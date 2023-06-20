@@ -1,47 +1,31 @@
 dependencies {
-    compile(project(':apiml-common'))
+    api(project(':apiml-common'))
     implementation libraries.spring_boot_starter_aop
-    implementation(libraries.spring_boot_starter_web){
-        exclude group: "org.springframework", module: "spring-web"
-        exclude group: "org.springframework", module: "spring-webmvc"
-        exclude group: "org.springframework", module: "spring-context"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-el"
-        exclude group: "org.yaml", module: "snakeyaml"
+    implementation(libraries.spring_boot_starter_web) {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
-        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
-        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
-        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
     }
     implementation libraries.tomcat_embed_el
-    implementation libraries.snakeyaml
-    compile libraries.spring_security_web
-    compile libraries.spring_security_config
-    compile libraries.apache_commons_lang3
-    compile libraries.bcprov;
-    compile libraries.bcpkix;
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.apache_commons_lang3
+    implementation libraries.bcprov;
+    implementation libraries.bcpkix;
 
     implementation libraries.spring_aop
     implementation libraries.spring_beans
     implementation libraries.spring_context
-    implementation libraries.spring_core
     implementation libraries.spring_expression
-    implementation libraries.spring_web
-    implementation libraries.spring_webmvc
 
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile libraries.mockito_core
-    testCompile libraries.spring_mock_mvc
-    testCompile(libraries.spring_boot_starter_test) {
-        exclude group: "org.springframework", module: "spring-test"
-    }
-    testCompile libraries.spring_test
-    testCompile libraries.json_smart
+    testImplementation libraries.mockito_core
+    testImplementation libraries.spring_mock_mvc
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
 
     testCompileOnly libraries.lombok
-    testCompile libraries.gson
+    testImplementation libraries.gson
     testAnnotationProcessor libraries.lombok
 }

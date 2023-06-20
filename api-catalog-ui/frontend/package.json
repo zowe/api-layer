@@ -6,13 +6,13 @@
     "dependencies": {
         "@babel/core": "7.14.2",
         "@emotion/core": "10.1.1",
-        "@emotion/is-prop-valid": "1.1.0",
         "@emotion/styled": "10.0.27",
         "agentkeepalive": "4.1.4",
         "buffer": "6.0.3",
         "emotion-theming": "10.0.27",
         "exception-formatter": "1.0.7",
         "history": "4.10.1",
+        "htmr": "1.0.1",
         "install": "0.12.2",
         "lodash": "4.17.21",
         "loglevel": "1.6.1",
@@ -24,7 +24,6 @@
         "react-dom": "16.14.0",
         "react-loadable": "5.5.0",
         "react-redux": "5.1.1",
-        "react-render-html": "0.6.0",
         "react-router-dom": "4.3.1",
         "react-router-tabs": "1.2.0",
         "react-toastify": "4.4.3",
@@ -37,7 +36,7 @@
         "redux-thunk": "2.3.0",
         "request-promise-native": "1.0.9",
         "rxjs": "6.3.3",
-        "swagger-ui-react": "3.52.5",
+        "swagger-ui-react": "4.19.1",
         "util": "0.12.4",
         "uuid": "3.3.2"
     },
@@ -46,14 +45,13 @@
         "@emotion/is-prop-valid": "1.1.0",
         "ua-parser-js": "0.7.34",
         "nth-check": "2.0.1",
-        "jsdom": "16.5.0",
+        "jsdom": "16.6.0",
         "got": "12.1.0",
         "react-error-overlay": "6.0.9",
         "fast-json-patch": "3.1.1",
         "isomorphic-fetch": "1.7.0"
     },
     "scripts": {
-        "preinstall": "npm-force-resolutions",
         "lint": "eslint \"src/**/*.{js,jsx}\"",
         "build": "react-scripts build",
         "postbuild": "rimraf build/**/*.map",
@@ -82,6 +80,7 @@
         "@testing-library/jest-dom": "5.16.1",
         "@testing-library/react": "12.1.2",
         "@testing-library/user-event": "13.5.0",
+        "ajv": "^7.2.4",
         "ansi-regex": "5.0.1",
         "body-parser": "1.19.2",
         "concurrently": "5.3.0",
@@ -110,10 +109,7 @@
         "json-schema": "0.4.0",
         "mini-css-extract-plugin": "2.4.7",
         "nodemon": "2.0.18",
-        "npm-force-resolutions": "0.0.10",
-        "nth-check": "2.0.1",
         "prettier": "2.3.0",
-        "react-error-overlay": "6.0.9",
         "react-scripts": "5.0.1",
         "react-testing-library": "5.3.0",
         "redux-mock-store": "1.5.4",
@@ -124,6 +120,9 @@
         "yaml": "1.10.2"
     },
     "jest": {
+        "transformIgnorePatterns": [
+            "/node_modules/?!(swagger-ui-react/swagger-ui-es-bundle-core.js)"
+        ],
         "collectCoverageFrom": [
             "src/App.{jsx,js}",
             "src/**/*.{jsx,js}",

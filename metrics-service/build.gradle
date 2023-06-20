@@ -17,7 +17,6 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
@@ -50,10 +49,10 @@ gitProperties {
 }
 
 dependencies {
-    implementation(project(':onboarding-enabler-spring')) {
+    api(project(':onboarding-enabler-spring')) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
-    implementation(project(':security-service-client-spring')) {
+    api(project(':security-service-client-spring')) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
 
@@ -90,7 +89,9 @@ dependencies {
     implementation libraries.tomcat_embed_el
     implementation libraries.gson
     implementation libraries.spring_cloud_commons
-    implementation libraries.spring_cloud_starter_bootstrap
+    implementation(libraries.spring_cloud_starter_bootstrap) {
+        transitive false
+    }
     implementation libraries.spring_cloud_starter_turbine
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
@@ -122,14 +123,14 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    testCompile libraries.lombok
+    testImplementation libraries.lombok
     testAnnotationProcessor libraries.lombok
-    testCompile(libraries.spring_boot_starter_test) {
+    testImplementation(libraries.spring_boot_starter_test) {
         exclude group: "org.springframework", module: "spring-test"
     }
-    testCompile libraries.spring_test
-    testCompile libraries.json_smart
-    testCompile libraries.rest_assured
+    testImplementation libraries.spring_test
+    testImplementation libraries.json_smart
+    testImplementation libraries.rest_assured
 }
 
 def uiModule = "${project(':metrics-service-ui').projectDir}"
@@ -157,7 +158,7 @@ bootRun {
     systemProperties = System.properties
 }
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar.archiveFileName = "${bootJar.baseName}.jar"
 
 jar {
     enabled true

@@ -41,23 +41,23 @@ public class SslContext {
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
     private static AtomicReference<SslContextConfigurer> configurer = new AtomicReference<>();
 
-    public synchronized static void prepareSslAuthentication(SslContextConfigurer providedCconfigurer) throws Exception {
+    public synchronized static void prepareSslAuthentication(SslContextConfigurer providedConfigurer) throws Exception {
 
-        if (configurer.get() != null && !configurer.get().equals(providedCconfigurer)) {
+        if (configurer.get() != null && !configurer.get().equals(providedConfigurer)) {
             throw new IllegalStateException("You cannot initialize this class twice with different configuration");
         }
 
         if (!isInitialized.get()) {
-            configurer.set(providedCconfigurer);
-            X509HostnameVerifier hostnameVerifier = providedCconfigurer.getHostnameVerifier();
+            configurer.set(providedConfigurer);
+            X509HostnameVerifier hostnameVerifier = providedConfigurer.getHostnameVerifier();
 
             log.info("SSLContext is constructing. This should happen only once.");
             TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
             SSLContext sslContext = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
-                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
+                .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
+                    providedConfigurer.getKeystorePassword(), providedConfigurer.getKeystorePassword(),
                     (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
@@ -66,8 +66,8 @@ public class SslContext {
 
             SSLContext sslContext2 = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystore()),
-                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword())
+                .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystore()),
+                    providedConfigurer.getKeystorePassword(), providedConfigurer.getKeystorePassword())
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
             clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2, hostnameVerifier)));
@@ -79,8 +79,8 @@ public class SslContext {
             tlsWithoutCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3, hostnameVerifier)));
             SSLContext sslContext4 = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
-                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
+                .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
+                    providedConfigurer.getKeystorePassword(), providedConfigurer.getKeystorePassword(),
                     (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "unknownuser")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
@@ -88,8 +88,8 @@ public class SslContext {
 
             SSLContext sslContext5 = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
-                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
+                .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
+                    providedConfigurer.getKeystorePassword(), providedConfigurer.getKeystorePassword(),
                     (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "user")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
@@ -135,9 +135,9 @@ public class SslContext {
 
             SSLContext sslContext7 = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
-                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
-                    (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apiml external certificate authority")
+                .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
+                    providedConfigurer.getKeystorePassword(), providedConfigurer.getKeystorePassword(),
+                    (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "server")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
 
