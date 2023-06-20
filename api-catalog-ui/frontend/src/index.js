@@ -31,7 +31,7 @@ import { sendError } from './actions/error-actions';
 import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 
-if (process.env.REACT_APP_API_PORTAL) {
+if (process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true') {
     import('./index.scss');
 } else {
     import('./index.css');

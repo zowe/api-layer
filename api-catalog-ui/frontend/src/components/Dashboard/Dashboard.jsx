@@ -74,7 +74,8 @@ export default class Dashboard extends Component {
             searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
-        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL;
+        const apiPortalEnabled =
+            process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
@@ -82,23 +83,25 @@ export default class Dashboard extends Component {
 
         return (
             <div className="main-content dashboard-content">
-                <div id="dash-buttons">
-                    <DialogDropdown
-                        selectEnabler={this.props.selectEnabler}
-                        data={enablerData}
-                        toggleWizard={this.toggleWizard}
-                        visible
-                    />
-                    <IconButton
-                        id="refresh-api-button"
-                        size="medium"
-                        variant="outlined"
-                        onClick={this.refreshStaticApis}
-                        style={{ borderRadius: '0.1875em' }}
-                    >
-                        Refresh Static APIs
-                    </IconButton>
-                </div>
+                {!apiPortalEnabled && (
+                    <div id="dash-buttons">
+                        <DialogDropdown
+                            selectEnabler={this.props.selectEnabler}
+                            data={enablerData}
+                            toggleWizard={this.toggleWizard}
+                            visible
+                        />
+                        <IconButton
+                            id="refresh-api-button"
+                            size="medium"
+                            variant="outlined"
+                            onClick={this.refreshStaticApis}
+                            style={{ borderRadius: '0.1875em' }}
+                        >
+                            Refresh Static APIs
+                        </IconButton>
+                    </div>
+                )}
                 <WizardContainer />
                 <Snackbar
                     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}

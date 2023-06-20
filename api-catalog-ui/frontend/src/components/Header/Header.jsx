@@ -84,45 +84,47 @@ function Header(props) {
                 </Link>
             </div>
             <div className="right-icons">
-                <div className="logout-container">
-                    <Button
-                        className={classes.root}
-                        data-testid="logout-menu"
-                        aria-controls={open ? 'basic-menu' : undefined}
-                        aria-expanded={open ? 'true' : undefined}
-                        aria-haspopup="true"
-                        aria-label="more"
-                        onClick={openMenu}
-                        endIcon={<KeyboardArrowDownIcon id="down-arrow" />}
-                    >
-                        {s}
-                    </Button>
-                    <StyledMenu
-                        keepMounted
-                        open={open}
-                        onClose={closeMenu}
-                        anchorEl={anchorEl}
-                        getContentAnchorEl={null}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center',
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'center',
-                        }}
-                    >
-                        <div id="profile-menu">
-                            <Typography variant="subtitle2" gutterBottom component="div" id="user-info-text">
-                                Logged in as <strong>{username}</strong>
-                            </Typography>
-                            <Divider />
-                            <MenuItem id="logout-button" data-testid="logout" onClick={handleLogout}>
-                                Log out
-                            </MenuItem>
-                        </div>
-                    </StyledMenu>
-                </div>
+                {!process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'false' && (
+                    <div className="logout-container">
+                        <Button
+                            className={classes.root}
+                            data-testid="logout-menu"
+                            aria-controls={open ? 'basic-menu' : undefined}
+                            aria-expanded={open ? 'true' : undefined}
+                            aria-haspopup="true"
+                            aria-label="more"
+                            onClick={openMenu}
+                            endIcon={<KeyboardArrowDownIcon id="down-arrow" />}
+                        >
+                            {s}
+                        </Button>
+                        <StyledMenu
+                            keepMounted
+                            open={open}
+                            onClose={closeMenu}
+                            anchorEl={anchorEl}
+                            getContentAnchorEl={null}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'center',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'center',
+                            }}
+                        >
+                            <div id="profile-menu">
+                                <Typography variant="subtitle2" gutterBottom component="div" id="user-info-text">
+                                    Logged in as <strong>{username}</strong>
+                                </Typography>
+                                <Divider />
+                                <MenuItem id="logout-button" data-testid="logout" onClick={handleLogout}>
+                                    Log out
+                                </MenuItem>
+                            </div>
+                        </StyledMenu>
+                    </div>
+                )}
             </div>
         </div>
     );
