@@ -74,6 +74,7 @@ export default class Dashboard extends Component {
             searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
+        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
@@ -125,9 +126,12 @@ export default class Dashboard extends Component {
                     <div className="apis">
                         <div id="grid-container">
                             <div className="filtering-container">
-                                <h1 className="api-heading">API Catalogs</h1>
-                                <h3>Discover All Broadcom APIs in one place</h3>
-
+                                {apiPortalEnabled && (
+                                    <div>
+                                        <h1 className="api-heading">API Catalog</h1>
+                                        <h3>Discover All Broadcom APIs in one place</h3>
+                                    </div>
+                                )}
                                 <div id="search">
                                     <Shield title="Search Bar is broken !">
                                         <SearchCriteria
@@ -138,12 +142,14 @@ export default class Dashboard extends Component {
                                     </Shield>
                                 </div>
                             </div>
-                            {/* <div className="dashboard-grid-header">
-                                <div />
-                                <div className="description-header">Description</div>
-                                <div>Status</div>
-                                <div>Type</div>
-                            </div> */}
+                            {apiPortalEnabled && (
+                                <div className="dashboard-grid-header">
+                                    <h4 className="description-header">Swagger</h4>
+                                    <h4 className="description-header">Use Cases</h4>
+                                    <h4 className="description-header">Tutorials</h4>
+                                    <h4 className="description-header">Videos</h4>
+                                </div>
+                            )}
                             <hr id="separator2" />
                             {hasTiles &&
                                 tiles.map((tile) =>

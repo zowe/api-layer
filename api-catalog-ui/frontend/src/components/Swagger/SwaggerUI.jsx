@@ -10,7 +10,6 @@
 import { Component } from 'react';
 import * as React from 'react';
 import SwaggerUi from 'swagger-ui-react';
-// import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
