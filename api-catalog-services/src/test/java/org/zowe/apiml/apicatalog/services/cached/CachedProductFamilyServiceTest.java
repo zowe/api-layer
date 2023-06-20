@@ -62,7 +62,7 @@ class CachedProductFamilyServiceTest {
         underTest = new CachedProductFamilyService(
                 cachedServicesService,
                 transformService,
-                cacheRefreshUpdateThresholdInMillis);
+                cacheRefreshUpdateThresholdInMillis, null);
 
         servicesBuilder = new ServicesBuilder(underTest);
     }
@@ -294,7 +294,7 @@ class CachedProductFamilyServiceTest {
                 underTest = new CachedProductFamilyService(
                         null,
                         transformService,
-                        5);
+                        5, null);
                 // This is considered as old update.
                 underTest.saveContainerFromInstance("demoapp", servicesBuilder.instance1);
 
@@ -329,7 +329,7 @@ class CachedProductFamilyServiceTest {
                 underTest = new CachedProductFamilyService(
                         cachedServicesService,
                         transformService,
-                        cacheRefreshUpdateThresholdInMillis);
+                        cacheRefreshUpdateThresholdInMillis, null);
             }
 
             @Nested

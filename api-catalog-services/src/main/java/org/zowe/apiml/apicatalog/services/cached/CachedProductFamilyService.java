@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
+import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
@@ -57,6 +58,7 @@ public class CachedProductFamilyService {
     private final Map<String, APIContainer> products = new HashMap<>();
 
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
+    private final CustomStyleConfig customStyleConfig;
 
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
@@ -64,10 +66,12 @@ public class CachedProductFamilyService {
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
                                       @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}")
-                                          Integer cacheRefreshUpdateThresholdInMillis) {
+                                          Integer cacheRefreshUpdateThresholdInMillis,
+                                      CustomStyleConfig customStyleConfig) {
         this.cachedServicesService = cachedServicesService;
         this.transformService = transformService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
+        this.customStyleConfig = customStyleConfig;
     }
 
     /**
@@ -232,6 +236,60 @@ public class CachedProductFamilyService {
         setStatus(apiContainer, servicesCount, activeServicesCount);
         apiContainer.setSso(isSso);
         apiContainer.setHideServiceInfo(hideServiceInfo);
+
+        // set metadata to customize the UI
+        if (customStyleConfig != null) {
+            setCustomUiConfig(apiContainer);
+        }
+
+    }
+
+    /**
+     * Map the configuration to customize the Catalog UI to the container
+     * @param apiContainer
+     */
+    private void setCustomUiConfig(APIContainer apiContainer) {
+        if (customStyleConfig.getDashboardPage() != null &&
+            customStyleConfig.getDashboardPage().getBackgroundColor() != null &&
+            !customStyleConfig.getDashboardPage().getBackgroundColor().isEmpty()) {
+            apiContainer.setDashboardBackgroundColor(customStyleConfig.getDashboardPage().getBackgroundColor());
+        }
+        if (customStyleConfig.getHeader() != null &&
+            customStyleConfig.getHeader().getBackgroundColor() != null &&
+            !customStyleConfig.getHeader().getBackgroundColor().isEmpty()) {
+            apiContainer.setHeaderBackgroundColor(customStyleConfig.getHeader().getBackgroundColor());
+        }
+        if (customStyleConfig.getDetailPage() != null &&
+            customStyleConfig.getDetailPage().getBackgroundColor() != null &&
+            !customStyleConfig.getDetailPage().getBackgroundColor().isEmpty()) {
+            apiContainer.setDetailBackgroundColor(customStyleConfig.getDetailPage().getBackgroundColor());
+        }
+        if (customStyleConfig.getTilesAndNavMenu() != null) {
+            if (customStyleConfig.getTilesAndNavMenu().getBackgroundColor() != null && !customStyleConfig.getTilesAndNavMenu().getBackgroundColor().isEmpty()) {
+                apiContainer.setTilesAndMenuBackgroundColor(customStyleConfig.getTilesAndNavMenu().getBackgroundColor());
+            }
+            if (customStyleConfig.getTilesAndNavMenu().getBorderColor() != null && !customStyleConfig.getTilesAndNavMenu().getBorderColor().isEmpty()) {
+                apiContainer.setTilesAndMenuBorderColor(customStyleConfig.getTilesAndNavMenu().getBorderColor());
+            }
+        }
+        if (customStyleConfig.getTitlesColor() != null && !customStyleConfig.getTitlesColor().isEmpty()) {
+            apiContainer.setTitlesColor(customStyleConfig.getTitlesColor());
+        }
+        if (customStyleConfig.getFont() != null && !customStyleConfig.getFont().isEmpty()) {
+            apiContainer.setFont(customStyleConfig.getFont());
+        }
+        if (customStyleConfig.getHoverColor() != null && !customStyleConfig.getHoverColor().isEmpty()) {
+            apiContainer.setHoverColor(customStyleConfig.getHoverColor());
+        }
+        if (customStyleConfig.getFocusColor() != null && !customStyleConfig.getFocusColor().isEmpty()) {
+            apiContainer.setFocusColor(customStyleConfig.getFocusColor());
+        }
+        if (customStyleConfig.getBoxShadowColor() != null && !customStyleConfig.getBoxShadowColor().isEmpty()) {
+            apiContainer.setBoxShadowColor(customStyleConfig.getBoxShadowColor());
+        }
+        if (customStyleConfig.getHyperlinksColor() != null && !customStyleConfig.getHyperlinksColor().isEmpty()) {
+            apiContainer.setHyperlinksColor(customStyleConfig.getHyperlinksColor());
+        }
     }
 
     /**
