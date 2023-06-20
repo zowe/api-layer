@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.util;
 
 import org.zowe.apiml.apicatalog.model.APIContainer;

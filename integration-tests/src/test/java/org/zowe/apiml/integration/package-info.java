@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 /**
  * Temporary storage for the integration tests until the functional ones are removed to the specific packages.
  */

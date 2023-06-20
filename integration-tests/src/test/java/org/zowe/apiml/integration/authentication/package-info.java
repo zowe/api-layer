@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 /**
  * The goal of this package is to verify that the authentication works properly. The authentication is either integration
  * with the authentication providers e.g. SAF and zOSMF or integration with the Gateway.

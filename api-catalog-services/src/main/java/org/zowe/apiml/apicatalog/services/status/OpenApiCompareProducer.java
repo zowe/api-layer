@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.apicatalog.services.status;
 
 import org.openapitools.openapidiff.core.OpenApiCompare;

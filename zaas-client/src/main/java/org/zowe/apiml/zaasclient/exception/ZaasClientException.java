@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.zaasclient.exception;
 
 public class ZaasClientException extends Exception {

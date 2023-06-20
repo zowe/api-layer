@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.enable;
 
 import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;

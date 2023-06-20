@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.hwsjersey;
 
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;

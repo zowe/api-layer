@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.security.common.error;
 
 import org.zowe.apiml.message.api.ApiMessageView;

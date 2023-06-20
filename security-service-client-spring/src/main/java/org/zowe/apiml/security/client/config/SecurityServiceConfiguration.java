@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.security.client.config;
 
 import org.zowe.apiml.product.gateway.GatewayClient;

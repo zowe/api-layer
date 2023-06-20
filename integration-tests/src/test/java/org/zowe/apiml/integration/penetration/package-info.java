@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 /**
  * This package is for tests that verify our security claims in other ways than the default authentication tests.
  */

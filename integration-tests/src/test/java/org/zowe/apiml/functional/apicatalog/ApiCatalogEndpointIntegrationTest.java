@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.functional.apicatalog;
 
 import com.jayway.jsonpath.DocumentContext;
