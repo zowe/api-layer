@@ -50,7 +50,7 @@ body {
   }
 
   .content {
-    &, .main-content {
+    &, .main-content dashboard-content {
       display: flex;
       flex-direction: column;
     }

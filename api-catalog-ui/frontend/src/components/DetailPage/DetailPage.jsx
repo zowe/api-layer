@@ -66,7 +66,7 @@ export default class DetailPage extends Component {
             fetchTilesStart(currentTileId);
         }
         return (
-            <div className="main-content detail-content">
+            <div className="main-content2 detail-content">
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">

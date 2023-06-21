@@ -93,7 +93,6 @@ body .detail-content {
     #right-resources-menu {
         float: right;
         display: flex;
-        //padding-left: 25px;
         flex-direction: column;
         align-items: flex-start;
     }
@@ -103,6 +102,7 @@ body .detail-content {
         flex-direction: column;
         align-items: center;
         min-width: 368px;
+        margin-right: 75px;
         box-shadow: 0 0 6px hsl(210 14% 90%);
         padding: 10px 5px 10px 20px;
         flex: 1 0 0;
@@ -113,5 +113,25 @@ body .detail-content {
         position: relative;
         background: white;
     }
+
+    .links {
+        display: flex;
+        font-size: 14px;
+    }
+
+    .content {
+        &, .main-content2 detail-content {
+            display: contents;
+        }
+    }
+
+    .paragraph-description-container {
+        width: 80%;
+        margin-left: 56px;
+    }
+    .content-description-container {
+        margin-right: 92px;
+    }
+
 
 }
