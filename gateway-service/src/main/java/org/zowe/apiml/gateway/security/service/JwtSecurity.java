@@ -116,7 +116,7 @@ public class JwtSecurity {
     @PostConstruct
     public void loadAppropriateJwtKeyOrFail() {
         updateStorePaths();
-        JwtProducer used = actualJwtProducer(providers.isZosmfConfigurationSetToLtpa());
+        JwtProducer used = actualJwtProducer();
         loadJwtSecret();
         switch (used) {
             case ZOSMF:
@@ -146,14 +146,11 @@ public class JwtSecurity {
      * @return Currently used JWT Producer or Unknown.
      */
     public JwtProducer actualJwtProducer() {
-        return actualJwtProducer(providers.isZosmfConfigurationSetToLtpa() || !providers.zosmfSupportsJwt());
-    }
-
-    public JwtProducer actualJwtProducer(boolean isLtpaSupported) {
         if (!providers.isZosfmUsed()) {
             return JwtProducer.APIML;
         } else {
-            if (isLtpaSupported) {
+            boolean isAPIMLIssuerOfJWT = providers.isZosmfConfigurationSetToLtpa() || !providers.zosmfSupportsJwt();
+            if (isAPIMLIssuerOfJWT) {
                 return JwtProducer.APIML;
             } else if (providers.isZosmfAvailableAndOnline()) {
                 return JwtProducer.ZOSMF;
