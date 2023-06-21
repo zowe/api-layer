@@ -2,7 +2,7 @@
     box-sizing: border-box;
 }
 
-.detail-page {
+.main-content detail-content {
     text-align: left;
     background-color: #EFEFEF;
 }
@@ -158,16 +158,6 @@ div.content-description-container > div > div:nth-child(2) > div {
     width: auto;
     /*width: 80%;*/
     margin-left: 56px;
-}
-
-/*disabled for Zowe Catalog*/
-#right-resources-menu {
-    display: none;
-    float: right;
-    /*display: flex;*/
-    /*padding-left: 25px;*/
-    flex-direction: column;
-    align-items: flex-start;
 }
 
 .content-description-container {

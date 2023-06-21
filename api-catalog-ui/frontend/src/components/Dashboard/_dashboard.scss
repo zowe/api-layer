@@ -21,8 +21,19 @@
       left: calc(50% - #{calc(var( --headerLineWidth ) / 2)});
     }
   }
+    #search {
+        height: 50px;
+        width: 422px;
+        margin-left: auto;
+        margin-right: auto;
+        background: #FFFFFF;
+        border: 1px solid #C9C8C5;
+        .MuiFormControl-root {
+            display: flex;
+        }
+    }
 
-  #grid-container,
+    #grid-container,
   .apis {
     height: 100%;
     display: flex;
@@ -37,7 +48,7 @@
   #dash-buttons {
     display: flex;
     justify-content: flex-end;
-  
+
     > *:last-child {
       margin-left: var( --spaceSmall );
     }
@@ -54,6 +65,8 @@
       left: var( --spaceSmaller );
     }
     .MuiInputBase-input {
+      margin-top: auto;
+      margin-left: 10px;
       padding: var( --spaceMedium ) var( --spaceSmall ) var( --spaceMedium ) var( --spaceLargest );
     }
     .MuiInput-underline {

@@ -84,7 +84,7 @@ function Header(props) {
                 </Link>
             </div>
             <div className="right-icons">
-                {!process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'false' && (
+                {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'false' && (
                     <div className="logout-container">
                         <Button
                             className={classes.root}

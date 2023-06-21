@@ -120,15 +120,17 @@ export default class DetailPage extends Component {
                                 )}
                             </div>
                         </div>
-                        <div id="right-resources-menu">
-                            <Typography variant="subtitle1">On this page</Typography>
-                            <Container>
-                                <Link className="links">Swagger</Link>
-                                <Link className="links">Use cases</Link>
-                                <Link className="links">Tutorials</Link>
-                                <Link className="links">Videos</Link>
-                            </Container>
-                        </div>
+                        {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true' && (
+                            <div id="right-resources-menu">
+                                <Typography variant="subtitle1">On this page</Typography>
+                                <Container>
+                                    <Link className="links">Swagger</Link>
+                                    <Link className="links">Use cases</Link>
+                                    <Link className="links">Tutorials</Link>
+                                    <Link className="links">Videos</Link>
+                                </Container>
+                            </div>
+                        )}
                     </div>
                 )}
                 <div className="content-description-container">

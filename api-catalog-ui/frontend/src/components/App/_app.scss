@@ -40,7 +40,7 @@ body {
       }
     }
   }//end ul
-  
+
   small {
     margin: var( --spaceSmaller) 0;
     display: block;
@@ -115,29 +115,6 @@ body {
       padding: 0px var( --spaceSmall );
     }
   }//end button
-
-  input {
-    &[type=text] {
-      border: 1px solid var( --input00Bc );
-      background: var( --input00Bg );
-      color: var( --text10 );
-      border-radius: var( --borderRadius1 );
-      padding: var( --spaceSmallest ) var( --spaceSmall );
-      transition: box-shadow .5s ease, border-color .5s ease;
-
-      &:hover {
-        border-color: var( --input00BcHover );
-      }
-      &:focus {
-        border-color: var( --input00BcFocus );
-        box-shadow: var( --inputEffect00Focus );
-      }
-      &:disabled {
-        border-color: var( --input00BcDisabled );
-        background: var( --input00BgDisabled );
-      }
-    }
-  }// end input
 
   select {
     font-size: var( --fontSmall );

@@ -58,7 +58,7 @@ body .detail-content {
           }
         }
       }//end info
-    }//end .wrapper, .scheme-container 
+    }//end .wrapper, .scheme-container
   }//end swagger-ui
 
   .header {
@@ -89,4 +89,29 @@ body .detail-content {
       }
     }
   }
+
+    #right-resources-menu {
+        float: right;
+        display: flex;
+        //padding-left: 25px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .nav-bar {
+        min-height: 84vh;
+        flex-direction: column;
+        align-items: center;
+        min-width: 368px;
+        box-shadow: 0 0 6px hsl(210 14% 90%);
+        padding: 10px 5px 10px 20px;
+        flex: 1 0 0;
+        width: auto;
+        height: auto;
+        display: table-column;
+        float: left;
+        position: relative;
+        background: white;
+    }
+
 }
