@@ -60,6 +60,8 @@ server:
     ssl:
         enabled: false
 
+archaius.deployment.environment: test
+
 eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}

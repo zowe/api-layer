@@ -2,6 +2,15 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.9.0 (2023-06-12)`
+
+* Feature: Personal access tokens are now accepted as Bearer authentication and in the apimlAuthenticationToken cookie (#2908) ([7c393a6](https://github.com/zowe/api-layer/commit/7c393a6)), closes [#2908](https://github.com/zowe/api-layer/issues/2908)
+* Feature:  A OAuth2 access token is now accepted as an authentication source (#2922) ([3809622](https://github.com/zowe/api-layer/commit/3809622)), closes [#2835](https://github.com/zowe/api-layer/issues/2835)
+* Feature: The maximum idle timeout for websocket connections (between the gateway and the registered service) is now configurable (#2914) ([020da87](https://github.com/zowe/api-layer/commit/020da87)), closes [#2914](https://github.com/zowe/api-layer/issues/2914)
+
+* Bugfix:  Ignore client certificate in a request when x509 authentication is not enabled (#2930) ([406f588](https://github.com/zowe/api-layer/commit/406f588)), closes [#2930](https://github.com/zowe/api-layer/issues/2930)
+* Bugfix:  Return the correct list of public keys when z/OSMF is not available (#2936) ([030a34f](https://github.com/zowe/api-layer/commit/030a34f)), closes [#2936](https://github.com/zowe/api-layer/issues/2936)
+
 ## `2.8.0 (2023-04-27)`
 
 * Feature: A unique authentication cookie name has been added for multi-instance deployment (#2812) ([6654271](https://github.com/zowe/api-layer/commit/6654271)), closes [#2812](https://github.com/zowe/api-layer/issues/2812)

@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.security.common.handler;
 
-import org.springframework.context.annotation.Primary;
-import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
  * Authentication error handler
  */
 @Slf4j
-@Component
+@Component("failedAuthenticationHandler")
 @Primary
 @RequiredArgsConstructor
 public class FailedAuthenticationHandler implements AuthenticationFailureHandler {

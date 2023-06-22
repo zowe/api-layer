@@ -35,7 +35,9 @@ public class HandlerInitializer {
     public HandlerInitializer(SuccessfulLoginHandler successfulLoginHandler,
                               @Qualifier("plainAuth")
                               UnauthorizedHandler unAuthorizedHandler,
+                              @Qualifier("basicAuth")
                               BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
+                              @Qualifier("failedAuthenticationHandler")
                               FailedAuthenticationHandler authenticationFailureHandler,
                               ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
         this.successfulLoginHandler = successfulLoginHandler;
