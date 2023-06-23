@@ -135,6 +135,10 @@ a {
     border: 1px solid #C9C8C5;
 }
 
+#search_no_results {
+    color: #1d5bbf;
+}
+
 .no-tiles-container {
     margin-left: 2rem;
     text-align: left;

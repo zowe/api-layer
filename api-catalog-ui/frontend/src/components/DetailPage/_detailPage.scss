@@ -1,4 +1,14 @@
+$color_1: #CC092F;
+$background-color_1: #fff;
+$background-color_2: #f5f7fa;
+
 body .detail-content {
+    h6#resources-menu-title {
+        color: $color_1;
+    }
+    h2#title {
+        color: $color_1;
+    }
   .swagger-ui {
     padding: var(--spaceMedium) var(--spaceSmall);
     display: block;
@@ -132,6 +142,34 @@ body .detail-content {
     .content-description-container {
         margin-right: 92px;
     }
+    #go-back-button {
+        margin-left: 56px;
+        margin-top: 20px;
+        font-size: 13px;
+        font-weight: bold;
+        width: fit-content;
+        padding-left: .6rem;
+        padding-right: .6rem;
+        height: 32px;
+        border-radius: 3px;
+        background-color: $background-color_1;
+        cursor: pointer;
+        color: $color_1;
+        transition: .3s background-color;
+        &:hover {
+            background-color: $background-color_2;
+        }
+    }
 
+    .MuiSvgIcon-root.ChevronLeftIcon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: red; /* Change the icon color to red */
+        pointer-events: none;
+    }
 
 }

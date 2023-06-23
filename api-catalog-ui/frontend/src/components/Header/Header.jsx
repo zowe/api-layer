@@ -84,6 +84,12 @@ function Header(props) {
                 </Link>
             </div>
             <div className="right-icons">
+                <Link component="button" variant="body2">
+                    Zowe Docs
+                </Link>
+                <Link component="button" variant="body2">
+                    Zowe Authentication
+                </Link>
                 {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'false' && (
                     <div className="logout-container">
                         <Button

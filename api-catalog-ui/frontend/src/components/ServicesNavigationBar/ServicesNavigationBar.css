@@ -13,6 +13,10 @@
     transition: color 100ms ease-out;
 }
 
+#search_no_results {
+    color: #1d5bbf;
+}
+
 .tabs {
     height: 100%;
     display: flex;

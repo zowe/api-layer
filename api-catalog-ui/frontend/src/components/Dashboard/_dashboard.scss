@@ -33,7 +33,7 @@
         }
     }
 
-    #grid-container,
+    #grid-container ,
   .apis {
     height: 100%;
     display: flex;
@@ -44,6 +44,11 @@
     border-top: 1px solid var( --criticalShade00 );
     padding-top: var( --spaceSmaller);
   }
+
+    #search_no_results {
+        margin: auto;
+        color: #CC092F;
+    }
 
   #dash-buttons {
     display: flex;
@@ -61,7 +66,7 @@
 
     .MuiSvgIcon-root {
       color: var( --text20 );
-      position: absolute;
+      position: relative;
       left: var( --spaceSmaller );
     }
     .MuiInputBase-input {

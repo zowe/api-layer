@@ -1,16 +1,40 @@
 $color_1: #50b7f5;
 $background-color_1: #EFEFEF;
+$color_2: #CC092F;
 
+.MuiTab-root {
+    font-weight: normal; // Set the default font weight
+    transition: font-weight 0.3s; // Add transition for smooth effect
+
+    &:hover {
+        font-weight: bold; // Set font weight to bold on hover
+    }
+}
+.MuiTab-root .MuiTab-wrapper:hover {
+    color: inherit; /* Use the default color on hover */
+    text-decoration: none; /* Remove underline on hover */
+}
+
+.MuiTab-root:hover {
+    color: inherit; /* Use the default color on hover */
+    background-color: transparent; /* Remove background color on hover */
+}
 .nav-tabs {
+    .tabs {
+        color: black;
+        &:hover {
+            color: black;
+        }
+    }
     width: auto;
     border: 3px solid #F7F9FA;
     overflow-y: auto;
     display: flex;
+    color: black;
     align-items: cover;
     cursor: pointer;
     &:hover {
-        background-color: $background-color_1;
-        color: $color_1;
+        border-color: $color_2;
         transition: color 100ms ease-out;
     }
 }
@@ -46,3 +70,10 @@ $background-color_1: #EFEFEF;
     margin-bottom: 10px;
     font-weight: bold;
 }
+
+#search_no_results {
+    margin: auto;
+    color: $color_2;
+}
+
+

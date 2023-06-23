@@ -9,7 +9,6 @@
  */
 import { Tab, Tabs } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
-import './ServicesNavigationBar.css';
 
 function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services }) {
     const handleTabClick = (value) => {
