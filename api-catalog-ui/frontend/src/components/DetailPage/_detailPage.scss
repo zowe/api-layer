@@ -8,6 +8,7 @@ body .detail-content {
     }
     h2#title {
         color: $color_1;
+        font-weight: initial;
     }
   .swagger-ui {
     padding: var(--spaceMedium) var(--spaceSmall);
@@ -101,10 +102,17 @@ body .detail-content {
   }
 
     #right-resources-menu {
+        position: relative;
         float: right;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        border-radius: 4px;
+        background: #F7F9FA;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        padding: 14px;
+        margin-right: 30px;
+        margin-top: -119px;
     }
 
     .nav-bar {
@@ -141,6 +149,12 @@ body .detail-content {
     }
     .content-description-container {
         margin-right: 92px;
+    }
+    #description {
+        position: relative;
+    }
+    h4#description {
+        font-weight: initial;
     }
     #go-back-button {
         margin-left: 56px;

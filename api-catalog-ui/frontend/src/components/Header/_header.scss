@@ -8,7 +8,7 @@ body {
   }
   .header {
     padding: var( --spaceSmallest) var( --spaceSmall );
-  
+
     &, > * {
       display: flex;
       flex-direction: row;
@@ -16,23 +16,30 @@ body {
     .app-icon-container img {
       height: 40px;
     }
-  
+    #auth {
+        width: 175px;
+    }
+
+    #doc {
+        margin-right: 70px;
+        width: 120px;
+    }
     .right-icons {
       margin-left: auto;
-  
+
       .logout-container > button {
         min-width: 50px;
-  
+
         &, svg {
           padding: 0px;
           margin: 0px;
         }
       }
     }// end right icons
-  
+
     .product-name {
       align-items: center;
-  
+
       > a + a {
         margin-left: var( --spaceSmall);
       }

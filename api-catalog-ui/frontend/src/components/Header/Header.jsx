@@ -12,6 +12,8 @@ import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled }
 import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
+import zoweDocsImage from '../../assets/images/zowe-docs.png';
+import zoweAuthImage from '../../assets/images/zowe-auth.png';
 
 const useStyles = makeStyles({
     root: {
@@ -84,11 +86,15 @@ function Header(props) {
                 </Link>
             </div>
             <div className="right-icons">
-                <Link component="button" variant="body2">
-                    Zowe Docs
+                <Link href="https://docs.zowe.org">
+                    <div>
+                        <img id="doc" alt="Zowe docs" src={zoweDocsImage} />
+                    </div>
                 </Link>
-                <Link component="button" variant="body2">
-                    Zowe Authentication
+                <Link href="https://docs.zowe.org/stable/extend/extend-apiml/authentication-for-apiml-services/#authentication-endpoints">
+                    <div>
+                        <img id="auth" alt="Zowe authentication" src={zoweAuthImage} />
+                    </div>
                 </Link>
                 {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'false' && (
                     <div className="logout-container">
