@@ -4,7 +4,7 @@
   --fontFamily00: "Roboto", "Helvetica", "Arial", sans-serif;
   --fontFamilyMono: "Source Code Pro", monospace;
   //bg colors
-  --surface00: radial-gradient(80.11% 93.49% at 6.75% 9.06%, rgba(209, 224, 246, 0.39) 0%, rgba(209, 224, 246, 0) 100%), radial-gradient(52.93% 49.13% at 91.84% 90.56%, rgba(209, 224, 246, 0.455) 0%, rgba(209, 224, 246, 0) 100%), #FFFFFF;
+  --surface00:  var(--light-primary-alternate-shade-ffffff, #FFF);
 
   --surface05: #fff;
   --surface10: rgba(255, 255, 255, 0.9);
@@ -29,7 +29,7 @@
   --warn10: #FCA130;
 
   --unknown10: #E9E8E5;
-  
+
   // shadows
   --surfaceEffect10: 0px 3px 5px 1px rgba(0, 0, 0, 0.2);
 

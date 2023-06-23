@@ -13,7 +13,6 @@ import { Typography } from '@material-ui/core';
 import SideBarLinks from './SideBarLinks';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
-import './ServicesNavigationBar.css';
 
 export default class ServicesNavigationBar extends Component {
     componentWillUnmount() {

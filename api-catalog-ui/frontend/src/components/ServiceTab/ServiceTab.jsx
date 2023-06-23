@@ -236,13 +236,14 @@ export default class ServiceTab extends Component {
                                 Version
                             </Typography>
                         </div>
-                        <div>
+                        <div id="version-div">
                             {containsVersion && (
                                 <Select
                                     displayEmpty
                                     id="version-menu"
                                     value={this.state.selectedVersion}
                                     data-testid="version-menu"
+                                    disableUnderline
                                 >
                                     {apiVersions}
                                 </Select>

@@ -11,6 +11,7 @@
 @import "../src/components/Swagger/Swagger.css";
 @import "../src/components/ServiceTab/ServiceTab.css";
 @import "../src/components/PageNotFound/PageNotFound.css";
+@import "../src/components/ServicesNavigationBar/ServicesNavigationBar.css";
 body {
     margin: 0;
     padding: 0;
