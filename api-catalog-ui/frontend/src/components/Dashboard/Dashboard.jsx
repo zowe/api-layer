@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Typography, IconButton, Snackbar, Container, Link } from '@material-ui/core';
+import { Typography, IconButton, Snackbar } from '@material-ui/core';
 import { Alert } from '@mui/material';
 import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
@@ -186,20 +186,6 @@ export default class Dashboard extends Component {
                                     No services found matching search criteria
                                 </Typography>
                             )}
-                        </div>
-                        <div id="bottom-info-div">
-                            <Container>
-                                <strong className="footer-links">Capabilities</strong>
-                                <Link className="links" />
-                            </Container>
-                            <Container>
-                                <strong>News & Information</strong>
-                                <Link className="links">Blog</Link>
-                            </Container>
-                            <Container>
-                                <strong>Contact Us</strong>
-                                <Link className="links" />
-                            </Container>
                         </div>
                     </div>
                 )}

@@ -8,15 +8,29 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import { Link } from '@material-ui/core';
+import { Container, Link } from '@material-ui/core';
 
 export default class Footer extends Component {
     render() {
-        if (process.env.REACT_APP_CA_ENV === 'false') {
+        if (process.env.REACT_APP_API_PORTAL === 'false') {
             return null;
         }
         return (
             <footer id="pageFooter">
+                <div id="bottom-info-div">
+                    <Container>
+                        <strong className="footer-links">Capabilities</strong>
+                        <Link className="links" />
+                    </Container>
+                    <Container>
+                        <strong>News & Information</strong>
+                        <Link className="links">Blog</Link>
+                    </Container>
+                    <Container>
+                        <strong>Contact Us</strong>
+                        <Link className="links" />
+                    </Container>
+                </div>
                 <div className="left">
                     <img alt="" id="footerLogo" />
                     <Link className="footer-links" />

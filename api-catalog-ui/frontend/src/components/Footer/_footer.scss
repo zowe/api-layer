@@ -1,5 +1,7 @@
 body #bottom-info-div {
   display: flex;
+  width: 74%;
+  margin: auto;
   justify-content: space-between;
   padding: var( --spaceMedium ) 0px;
   text-align: center;

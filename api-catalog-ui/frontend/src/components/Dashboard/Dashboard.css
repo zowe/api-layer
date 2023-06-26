@@ -44,15 +44,6 @@ a {
     /*disabled for Zowe Catalog*/
     display: none;
 }
-#bottom-info-div {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 74%;
-    margin: auto;
-    /*disabled for Zowe Catalog*/
-    display: none;
-}
 
 .footer-links {
     font-size: 18px;

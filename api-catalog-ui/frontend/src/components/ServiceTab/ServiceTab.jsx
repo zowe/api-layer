@@ -129,14 +129,16 @@ export default class ServiceTab extends Component {
         let useCasesCounter = 0;
         let tutorialsCounter = 0;
         let videosCounter = 0;
-        if ('useCasesCounter' in service && service.useCasesCounter) {
-            useCasesCounter = service.useCasesCounter.length;
-        }
-        if ('tutorialsCounter' in service && service.tutorialsCounter) {
-            tutorialsCounter = service.tutorialsCounter.length;
-        }
-        if ('videos' in service && service.videos) {
-            videosCounter = service.videos.length;
+        if (service) {
+            if ('useCasesCounter' in service && service.useCasesCounter) {
+                useCasesCounter = service.useCasesCounter.length;
+            }
+            if ('tutorialsCounter' in service && service.tutorialsCounter) {
+                tutorialsCounter = service.tutorialsCounter.length;
+            }
+            if ('videos' in service && service.videos) {
+                videosCounter = service.videos.length;
+            }
         }
         return { useCasesCounter, tutorialsCounter, videosCounter };
     }
@@ -304,7 +306,7 @@ export default class ServiceTab extends Component {
                                     size="medium"
                                     variant="outlined"
                                 >
-                                    Tutorials ({tutorialsCounter})
+                                    Tutorials ({tutorialsCounter} articles)
                                 </Typography>
                                 <Typography
                                     className="footer-labels"
