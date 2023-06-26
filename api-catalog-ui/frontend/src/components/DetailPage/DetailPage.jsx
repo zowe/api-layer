@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component, Suspense } from 'react';
-import { Container, IconButton, Link, Typography } from '@material-ui/core';
+import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import Spinner from '../Spinner/Spinner';
@@ -65,6 +65,8 @@ export default class DetailPage extends Component {
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         }
+        const apiPortalEnabled =
+            process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
         return (
             <div className="main-content2 detail-content">
                 <Spinner isLoading={isLoading} />
@@ -120,7 +122,7 @@ export default class DetailPage extends Component {
                                 )}
                             </div>
                         </div>
-                        {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true' && (
+                        {apiPortalEnabled && (
                             <div id="right-resources-menu">
                                 <Typography id="resources-menu-title" variant="subtitle1">
                                     On this page
@@ -175,6 +177,7 @@ export default class DetailPage extends Component {
                             </Router>
                         </Suspense>
                     )}
+                    {apiPortalEnabled && <Divider light />}
                 </div>
             </div>
         );

@@ -34,7 +34,7 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
                 component={RouterLink}
                 to={`${match.url}/${services}`}
                 label={text}
-                wrapped="false"
+                wrapped={false}
             />
         </Tabs>
     );

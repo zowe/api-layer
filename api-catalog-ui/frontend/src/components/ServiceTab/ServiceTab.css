@@ -86,6 +86,7 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     text-align: center;
     /* Data Small/Regular */
     font-size: 12px;
+    text-transform: none;
     line-height: 14px;
     letter-spacing: 0.24px;
     order-radius: 3px;

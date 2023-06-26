@@ -73,11 +73,9 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
 }
 #compare-button {
     font-size: 12px;
-    //letter-spacing: 0.24px;
-    //order-radius: 3px;
     margin-left: 20px;
-    //margin-top: -32px;
     border: 1px solid var(--link-in-the-text, #0056B3);
+    text-transform: none;
 }
 
 .swagger-ui .apiInfo-item {
@@ -89,6 +87,7 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
 }
 #detail-footer {
     margin-left: 10px;
+    margin-bottom: 30px;
     display: grid;
 }
 
@@ -96,6 +95,5 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     color: $color_3;
     font-size: 28px;
     letter-spacing: 0.5px;
-    margin-top: 20px;
 }
 
