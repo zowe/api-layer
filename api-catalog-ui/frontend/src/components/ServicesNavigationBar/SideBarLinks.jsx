@@ -25,7 +25,6 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
             value={text}
             variant="scrollable"
             scrollButtons="auto"
-            visibleScrollbar="true"
         >
             <Tab
                 onClick={() => handleTabClick(services)}

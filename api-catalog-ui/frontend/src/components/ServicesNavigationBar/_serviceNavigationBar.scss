@@ -20,7 +20,11 @@ $color_2: #CC092F;
     background-color: transparent; /* Remove background color on hover */
 }
 .nav-tabs {
+    background: var(--white-ffffff, #FFF);
+    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
     .tabs {
+        text-transform: none;
+        font-size: 16px;
         color: black;
         &:hover {
             color: black;

@@ -21,7 +21,11 @@ function filterService(searchCriteria, service) {
     if (!service.title) {
         return false;
     }
-    return service.title.toLowerCase().includes(searchCriteria.toLowerCase());
+    let matchDoc = false;
+    if (service.apiDoc) {
+        matchDoc = service.apiDoc.toLowerCase().includes(searchCriteria.toLowerCase());
+    }
+    return service.title.toLowerCase().includes(searchCriteria.toLowerCase()) || matchDoc;
 }
 
 function compareResult(searchCriteria, tile, filteredServices) {
