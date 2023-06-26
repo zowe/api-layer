@@ -125,6 +125,22 @@ export default class ServiceTab extends Component {
         this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
+    countAdditionalContent(service) {
+        let useCasesCounter = 0;
+        let tutorialsCounter = 0;
+        let videosCounter = 0;
+        if ('useCasesCounter' in service && service.useCasesCounter) {
+            useCasesCounter = service.useCasesCounter.length;
+        }
+        if ('tutorialsCounter' in service && service.tutorialsCounter) {
+            tutorialsCounter = service.tutorialsCounter.length;
+        }
+        if ('videos' in service && service.videos) {
+            videosCounter = service.videos.length;
+        }
+        return { useCasesCounter, tutorialsCounter, videosCounter };
+    }
+
     render() {
         const {
             match: {
@@ -144,6 +160,7 @@ export default class ServiceTab extends Component {
         const { containsVersion } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
+        const { useCasesCounter, tutorialsCounter, videosCounter } = this.countAdditionalContent(currentService);
         return (
             <>
                 {currentService === null && (
@@ -279,7 +296,7 @@ export default class ServiceTab extends Component {
                                     size="medium"
                                     variant="outlined"
                                 >
-                                    Use Cases
+                                    Use Cases ({useCasesCounter})
                                 </Typography>
                                 <Typography
                                     className="footer-labels"
@@ -287,7 +304,7 @@ export default class ServiceTab extends Component {
                                     size="medium"
                                     variant="outlined"
                                 >
-                                    Tutorials
+                                    Tutorials ({tutorialsCounter})
                                 </Typography>
                                 <Typography
                                     className="footer-labels"
@@ -295,7 +312,7 @@ export default class ServiceTab extends Component {
                                     size="medium"
                                     variant="outlined"
                                 >
-                                    Videos
+                                    Videos ({videosCounter})
                                 </Typography>
                             </div>
                         )}

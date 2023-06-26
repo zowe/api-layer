@@ -193,11 +193,11 @@ export default class Dashboard extends Component {
                                 <Link className="links" />
                             </Container>
                             <Container>
-                                <strong>Resources</strong>
+                                <strong>News & Information</strong>
                                 <Link className="links">Blog</Link>
                             </Container>
                             <Container>
-                                <strong>Just a placeholder</strong>
+                                <strong>Contact Us</strong>
                                 <Link className="links" />
                             </Container>
                         </div>
