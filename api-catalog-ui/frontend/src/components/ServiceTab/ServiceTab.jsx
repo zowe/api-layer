@@ -271,6 +271,34 @@ export default class ServiceTab extends Component {
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
+                        {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true' && (
+                            <div id="detail-footer">
+                                <Typography
+                                    className="footer-labels"
+                                    id="use-cases-label"
+                                    size="medium"
+                                    variant="outlined"
+                                >
+                                    Use Cases
+                                </Typography>
+                                <Typography
+                                    className="footer-labels"
+                                    id="tutorials-label"
+                                    size="medium"
+                                    variant="outlined"
+                                >
+                                    Tutorials
+                                </Typography>
+                                <Typography
+                                    className="footer-labels"
+                                    id="videos-label"
+                                    size="medium"
+                                    variant="outlined"
+                                >
+                                    Videos
+                                </Typography>
+                            </div>
+                        )}
                     </div>
                 </Shield>
             </>

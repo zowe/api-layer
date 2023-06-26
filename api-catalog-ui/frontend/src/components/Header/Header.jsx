@@ -87,14 +87,10 @@ function Header(props) {
             </div>
             <div className="right-icons">
                 <Link href="https://docs.zowe.org">
-                    <div>
-                        <img id="doc" alt="Zowe docs" src={zoweDocsImage} />
-                    </div>
+                    <img id="doc" alt="Zowe docs" src={zoweDocsImage} />
                 </Link>
                 <Link href="https://docs.zowe.org/stable/extend/extend-apiml/authentication-for-apiml-services/#authentication-endpoints">
-                    <div>
-                        <img id="auth" alt="Zowe authentication" src={zoweAuthImage} />
-                    </div>
+                    <img id="auth" alt="Zowe authentication" src={zoweAuthImage} />
                 </Link>
                 {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'false' && (
                     <div className="logout-container">

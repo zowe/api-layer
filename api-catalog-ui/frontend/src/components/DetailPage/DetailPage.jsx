@@ -126,10 +126,18 @@ export default class DetailPage extends Component {
                                     On this page
                                 </Typography>
                                 <Container>
-                                    <Link className="links">Swagger</Link>
-                                    <Link className="links">Use cases</Link>
-                                    <Link className="links">Tutorials</Link>
-                                    <Link className="links">Videos</Link>
+                                    <Link className="links" href="#swagger-label">
+                                        Swagger
+                                    </Link>
+                                    <Link className="links" href="#use-cases-label">
+                                        Use cases
+                                    </Link>
+                                    <Link className="links" href="#tutorials-label">
+                                        Tutorials
+                                    </Link>
+                                    <Link className="links" href="#videos-label">
+                                        Videos
+                                    </Link>
                                 </Container>
                             </div>
                         )}

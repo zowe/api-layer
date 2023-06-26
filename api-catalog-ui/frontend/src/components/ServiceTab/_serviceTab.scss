@@ -87,3 +87,15 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
 #version-div {
     display: flex;
 }
+#detail-footer {
+    margin-left: 10px;
+    display: grid;
+}
+
+.footer-labels {
+    color: $color_3;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+    margin-top: 20px;
+}
+
