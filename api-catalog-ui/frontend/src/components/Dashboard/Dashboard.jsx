@@ -54,6 +54,18 @@ export default class Dashboard extends Component {
         closeAlert();
     };
 
+    /**
+     * Custom the UI look to match the setup from the service metadata
+     * @param tiles
+     */
+    // eslint-disable-next-line react/no-unused-class-component-methods
+    customUIStyle = (tiles) => {
+        const root = document.documentElement;
+        if (tiles[0].dashboardBackgroundColor) {
+            root?.style.setProperty('--surface00', tiles[0].dashboardBackgroundColor);
+        }
+    };
+
     render() {
         const {
             tiles,
@@ -80,7 +92,10 @@ export default class Dashboard extends Component {
             fetchTilesStop();
             error = formatError(fetchTilesError);
         }
-
+        // TODO define proper flag to enable this customization
+        // if (hasTiles) {
+        //     this.customUIStyle(tiles);
+        // }
         return (
             <div className="main-content dashboard-content">
                 {!apiPortalEnabled && (
