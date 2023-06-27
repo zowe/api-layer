@@ -69,6 +69,7 @@ export default class DetailPage extends Component {
             process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
         return (
             <div className="main-content2 detail-content">
+                {apiPortalEnabled && <Divider light id="footer-divider" />}
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">

@@ -82,7 +82,9 @@ function Header(props) {
                     </div>
                 </Link>
                 <Link href={dashboard}>
-                    <Typography variant="subtitle2">API Catalog</Typography>
+                    <Typography id="product-title" variant="subtitle2">
+                        API Catalog
+                    </Typography>
                 </Link>
             </div>
             <div className="right-icons">
