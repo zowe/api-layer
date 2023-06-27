@@ -256,11 +256,15 @@ export default class ServiceTab extends Component {
                             </Typography>
                         </div>
                         <div id="version-div">
-                            {containsVersion && (
+                            {containsVersion && currentService && (
                                 <Select
                                     displayEmpty
                                     id="version-menu"
-                                    value={this.state.selectedVersion}
+                                    value={
+                                        this.state.selectedVersion
+                                            ? this.state.selectedVersion
+                                            : currentService.defaultApiVersion
+                                    }
                                     data-testid="version-menu"
                                     disableUnderline
                                 >
