@@ -1,7 +1,13 @@
 body {
+    /* Extra small devices (phones, 600px and down) */
+    @media only screen and (max-width: 600px) {
+        #zowe-links {
+            display: contents;
+        }
+    }
   #product-title {
       font-weight: bold;
-      font-size: 24px;
+      font-size: 20px;
   }
   #user-info-text {
     padding: var( --spaceSmaller ) var( --spaceSmaller ) 0px;

@@ -115,6 +115,13 @@ body .detail-content {
         margin-top: -119px;
     }
 
+    /* Extra small devices (phones, 600px and down) */
+    @media only screen and (max-width: 600px) {
+        #right-resources-menu {
+            display: contents;
+        }
+    }
+
     .nav-bar {
         min-height: 84vh;
         flex-direction: column;
