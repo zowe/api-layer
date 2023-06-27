@@ -257,3 +257,16 @@ a {
     width: 100%;
     display: block;
 }
+
+@media only screen and (max-width: 600px) {
+    #dash-buttons {
+        margin: 0;
+        float: none;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    #search {
+        width: auto;
+    }
+}

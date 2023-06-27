@@ -71,3 +71,16 @@ svg.MuiSvgIcon-root.clear-text-search {
         width: 320px;
     }
 }
+
+@media only screen and (max-width: 600px) {
+    #search-icon {
+        margin-left: auto;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    svg.MuiSvgIcon-root.clear-text-search
+    {
+        margin-left: auto;
+    }
+}
