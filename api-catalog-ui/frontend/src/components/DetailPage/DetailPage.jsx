@@ -177,7 +177,7 @@ export default class DetailPage extends Component {
                             </Router>
                         </Suspense>
                     )}
-                    {apiPortalEnabled && <Divider light />}
+                    {apiPortalEnabled && <Divider light id="footer-divider" />}
                 </div>
             </div>
         );

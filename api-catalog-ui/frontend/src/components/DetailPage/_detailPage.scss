@@ -147,9 +147,6 @@ body .detail-content {
         width: 80%;
         margin-left: 56px;
     }
-    .content-description-container {
-        margin-right: 92px;
-    }
     #description {
         position: relative;
     }
@@ -185,6 +182,10 @@ body .detail-content {
         height: 100%;
         background-color: #CC092F; /* Change the icon color to red */
         pointer-events: none;
+    }
+
+    #footer-divider {
+        margin: none;
     }
 
 }

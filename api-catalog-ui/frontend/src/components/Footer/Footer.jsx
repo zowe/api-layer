@@ -12,36 +12,36 @@ import { Container, Link } from '@material-ui/core';
 
 export default class Footer extends Component {
     render() {
-        if (process.env.REACT_APP_API_PORTAL === 'false') {
-            return null;
+        if (process.env.REACT_APP_API_PORTAL === 'true' || process.env.REACT_APP_CA_ENV === 'true') {
+            return (
+                <footer id="pageFooter">
+                    <div id="bottom-info-div">
+                        <Container>
+                            <strong className="footer-links">Capabilities</strong>
+                            <Link className="links" />
+                        </Container>
+                        <Container>
+                            <strong>News & Information</strong>
+                            <Link className="links">Blog</Link>
+                        </Container>
+                        <Container>
+                            <strong>Contact Us</strong>
+                            <Link className="links" />
+                        </Container>
+                    </div>
+                    <div className="left">
+                        <img alt="" id="footerLogo" />
+                        <Link className="footer-links" />
+                        <br />
+                        <br />
+                        <p />
+                    </div>
+                    <div className="right">
+                        <Link data-testid="link" />
+                    </div>
+                </footer>
+            );
         }
-        return (
-            <footer id="pageFooter">
-                <div id="bottom-info-div">
-                    <Container>
-                        <strong className="footer-links">Capabilities</strong>
-                        <Link className="links" />
-                    </Container>
-                    <Container>
-                        <strong>News & Information</strong>
-                        <Link className="links">Blog</Link>
-                    </Container>
-                    <Container>
-                        <strong>Contact Us</strong>
-                        <Link className="links" />
-                    </Container>
-                </div>
-                <div className="left">
-                    <img alt="" id="footerLogo" />
-                    <Link className="footer-links" />
-                    <br />
-                    <br />
-                    <p />
-                </div>
-                <div className="right">
-                    <Link data-testid="link" />
-                </div>
-            </footer>
-        );
+        return null;
     }
 }

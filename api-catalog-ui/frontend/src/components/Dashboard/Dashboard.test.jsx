@@ -43,6 +43,7 @@ const ajaxError = {
 
 describe('>>> Dashboard component tests', () => {
     it('should have "Refresh Static APIs" button', () => {
+        process.env.REACT_APP_API_PORTAL = false;
         const wrapper = shallow(
             <Dashboard
                 tiles={null}
