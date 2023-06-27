@@ -84,10 +84,11 @@ a {
     }
 }
 
-@media only screen and (max-width: 390px) {
+@media only screen and (max-width: 600px) {
     .grid-tile {
-        width: 320px;
-        height: 200px;
+        width: 175%;
+        height: 130px;
+        margin: auto;
     }
 
     .grid-tile > .grid-tile-status {

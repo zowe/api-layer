@@ -163,3 +163,15 @@ div.content-description-container > div > div:nth-child(2) > div {
 .content-description-container {
     margin-right: 92px;
 }
+
+@media only screen and (max-width: 600px) {
+    .api-description-container {
+        margin-left: 0;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .nav-bar {
+        width: 600px;
+    }
+}

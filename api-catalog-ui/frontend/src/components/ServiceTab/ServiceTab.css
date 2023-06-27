@@ -100,3 +100,10 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     font-weight: 700;
     line-height: 22px;
 }
+
+@media only screen and (max-width: 600px) {
+    .serviceTab {
+        width: 600px;
+        margin: 0;
+    }
+}

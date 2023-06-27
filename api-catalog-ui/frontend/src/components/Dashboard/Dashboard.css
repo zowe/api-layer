@@ -155,7 +155,7 @@ a {
     }
 }
 
-@media only screen and (max-width: 390px) {
+@media only screen and (max-width: 600px) {
     .filtering-container {
         grid-template-columns: 320px;
     }
@@ -209,7 +209,7 @@ a {
         }
     }
 
-    @media only screen and (max-width: 390px) {
+    @media only screen and (max-width: 600px) {
         #grid-container {
             padding-left: 1rem;
             padding-right: 1rem;
