@@ -10,35 +10,21 @@
 import { Card, CardContent, Typography } from '@material-ui/core';
 import { Component } from 'react';
 import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
-import WarningIcon from '@material-ui/icons/Warning';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 export default class Tile extends Component {
-    getStatusFromServiceTotals = (tile) => {
-        const { status } = tile;
-        let tileStatus = status;
-        if (tileStatus === 'UP' && tile.totalServices !== tile.activeServices) {
-            tileStatus = 'WARNING';
-        }
-        return tileStatus;
-    };
-
-    getStatusTextFromServiceTotals = (tile) => `${tile.activeServices} of ${tile.totalServices} services are running`;
-
     getTileStatus = (tile) => {
         const unknownIcon = <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
         if (tile === null || tile === undefined) {
             return unknownIcon;
         }
-        const status = this.getStatusFromServiceTotals(tile);
+        const { status } = tile;
         switch (status) {
             case 'UP':
                 return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)', fontSize: '12px' }} />;
             case 'DOWN':
                 return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)', fontSize: '12px' }} />;
-            case 'WARNING':
-                return <WarningIcon id="warning" style={{ color: 'rgb(173, 95, 0)', fontSize: '12px' }} />;
             default:
                 return unknownIcon;
         }
@@ -48,16 +34,20 @@ export default class Tile extends Component {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
-        const status = this.getStatusFromServiceTotals(tile);
-        switch (status) {
-            case 'UP':
-                return 'The service is running';
-            case 'DOWN':
-                return 'The service is not running';
-            case 'WARNING':
-                return this.getStatusTextFromServiceTotals(tile);
-            default:
-                return 'Status unknown';
+        const apiPortalEnabled =
+            process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
+        if (!apiPortalEnabled) {
+            const { status } = tile;
+            switch (status) {
+                case 'UP':
+                    return 'The service is running';
+                case 'DOWN':
+                    return 'The service is not running';
+                case 'WARNING':
+                    return this.getStatusTextFromServiceTotals(tile);
+                default:
+                    return 'Status unknown';
+            }
         }
     };
 
@@ -74,6 +64,10 @@ export default class Tile extends Component {
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
                 <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
+                    <Typography id="tileLabel" className="grid-tile-status">
+                        {this.getTileStatus(tile)}
+                        {this.getTileStatusText(tile)}
+                    </Typography>
                     <Typography
                         variant="subtitle1"
                         style={{
@@ -84,13 +78,9 @@ export default class Tile extends Component {
                     >
                         {service.title}
                     </Typography>
-                    <Typography id="tileLabel" className="grid-tile-status">
-                        {this.getTileStatus(tile)}
-                        {this.getTileStatusText(tile)}
-                    </Typography>
                     {service.sso && (
                         <Typography variant="h6" id="grid-tile-sso">
-                            SSO
+                            (SSO)
                         </Typography>
                     )}
                 </CardContent>

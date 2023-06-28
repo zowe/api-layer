@@ -21,7 +21,6 @@ body {
   .MuiCardContent-root,
   .dashboard-grid-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
 
     &, &:last-child {
@@ -29,7 +28,6 @@ body {
     }
     > * {
       margin-left: var( --spaceLarge );
-      flex: 1;
 
       &.tile-description,
       &.description-header {
@@ -38,7 +36,7 @@ body {
       &#grid-tile-sso {
         width: 50px;
         flex: unset;
-        margin: 0px;
+        margin: 0px 0 0 30px;
       }
       &.tile-description,
       &:first-child {
@@ -53,6 +51,8 @@ body {
   .dashboard-grid-header {
     padding: var( --spaceSmall ) var( --spaceLarger);
     font-size: var( --fontSmall );
+    margin-left: auto;
+    width: 38%;
 
     > *:not(:last-child) {
       text-align: left;
