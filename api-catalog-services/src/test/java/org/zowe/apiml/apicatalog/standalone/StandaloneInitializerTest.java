@@ -21,7 +21,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.mockito.Mockito.mock;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
+@ActiveProfiles("test")
 class StandaloneInitializerTest {
 
     @Mock
@@ -76,6 +79,7 @@ class StandaloneInitializerTest {
     }
 
     @Configuration
+    @Profile("test")
     public static class TestConfiguration {
 
         @MockBean

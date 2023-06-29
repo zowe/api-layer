@@ -17,10 +17,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
@@ -28,7 +28,9 @@ import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import java.util.Collections;
 
 import static java.time.Duration.ofMillis;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -73,7 +75,7 @@ class GatewayInstanceInitializerTest {
         assertEquals("localhost:9090", gatewayConfigProperties.getHostname());
     }
 
-    @Configuration
+    @TestConfiguration
     static class TestConfig {
 
         @MockBean

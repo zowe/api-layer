@@ -31,11 +31,22 @@ import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.stream.Collectors.toList;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SSO;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_TITLE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_VERSION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
 /**
  * Caching service for eureka services
@@ -246,50 +257,11 @@ public class CachedProductFamilyService {
 
     /**
      * Map the configuration to customize the Catalog UI to the container
+     *
      * @param apiContainer
      */
     private void setCustomUiConfig(APIContainer apiContainer) {
-        if (customStyleConfig.getDashboardPage() != null &&
-            customStyleConfig.getDashboardPage().getBackgroundColor() != null &&
-            !customStyleConfig.getDashboardPage().getBackgroundColor().isEmpty()) {
-            apiContainer.setDashboardBackgroundColor(customStyleConfig.getDashboardPage().getBackgroundColor());
-        }
-        if (customStyleConfig.getHeader() != null &&
-            customStyleConfig.getHeader().getBackgroundColor() != null &&
-            !customStyleConfig.getHeader().getBackgroundColor().isEmpty()) {
-            apiContainer.setHeaderBackgroundColor(customStyleConfig.getHeader().getBackgroundColor());
-        }
-        if (customStyleConfig.getDetailPage() != null &&
-            customStyleConfig.getDetailPage().getBackgroundColor() != null &&
-            !customStyleConfig.getDetailPage().getBackgroundColor().isEmpty()) {
-            apiContainer.setDetailBackgroundColor(customStyleConfig.getDetailPage().getBackgroundColor());
-        }
-        if (customStyleConfig.getTilesAndNavMenu() != null) {
-            if (customStyleConfig.getTilesAndNavMenu().getBackgroundColor() != null && !customStyleConfig.getTilesAndNavMenu().getBackgroundColor().isEmpty()) {
-                apiContainer.setTilesAndMenuBackgroundColor(customStyleConfig.getTilesAndNavMenu().getBackgroundColor());
-            }
-            if (customStyleConfig.getTilesAndNavMenu().getBorderColor() != null && !customStyleConfig.getTilesAndNavMenu().getBorderColor().isEmpty()) {
-                apiContainer.setTilesAndMenuBorderColor(customStyleConfig.getTilesAndNavMenu().getBorderColor());
-            }
-        }
-        if (customStyleConfig.getTitlesColor() != null && !customStyleConfig.getTitlesColor().isEmpty()) {
-            apiContainer.setTitlesColor(customStyleConfig.getTitlesColor());
-        }
-        if (customStyleConfig.getFont() != null && !customStyleConfig.getFont().isEmpty()) {
-            apiContainer.setFont(customStyleConfig.getFont());
-        }
-        if (customStyleConfig.getHoverColor() != null && !customStyleConfig.getHoverColor().isEmpty()) {
-            apiContainer.setHoverColor(customStyleConfig.getHoverColor());
-        }
-        if (customStyleConfig.getFocusColor() != null && !customStyleConfig.getFocusColor().isEmpty()) {
-            apiContainer.setFocusColor(customStyleConfig.getFocusColor());
-        }
-        if (customStyleConfig.getBoxShadowColor() != null && !customStyleConfig.getBoxShadowColor().isEmpty()) {
-            apiContainer.setBoxShadowColor(customStyleConfig.getBoxShadowColor());
-        }
-        if (customStyleConfig.getHyperlinksColor() != null && !customStyleConfig.getHyperlinksColor().isEmpty()) {
-            apiContainer.setHyperlinksColor(customStyleConfig.getHyperlinksColor());
-        }
+        apiContainer.setCustomStyleConfig(customStyleConfig);
     }
 
     /**
@@ -462,6 +434,7 @@ public class CachedProductFamilyService {
         } else {
             apiContainer.setStatus("WARNING");
         }
+
     }
 
 }

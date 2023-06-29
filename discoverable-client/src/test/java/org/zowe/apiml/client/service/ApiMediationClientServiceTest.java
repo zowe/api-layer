@@ -11,13 +11,15 @@
 package org.zowe.apiml.client.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -32,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Import(ApiMediationClientServiceTest.TestConfig.class)
+@ActiveProfiles("test")
 class ApiMediationClientServiceTest {
 
     private ApiMediationClientService apiMediationClientService;
@@ -70,7 +73,8 @@ class ApiMediationClientServiceTest {
         assertTrue(apiMediationClientService.unregister());
     }
 
-    @Configuration
+    @TestConfiguration
+    @Profile("test")
     public static class TestConfig {
         @Bean
         public DiscoverableClientConfig discoverableClientConfig() {

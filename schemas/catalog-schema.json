@@ -20,6 +20,60 @@
                                             "$ref": "#/$defs/port",
                                             "default": 7554
                                         },
+                                        "apiml": {
+                                            "type": "object",
+                                            "description": "Zowe API ML specific properties",
+                                            "properties": {
+                                                "catalog": {
+                                                    "type": "object",
+                                                    "description": "API Catalog customization",
+                                                    "properties": {
+                                                        "customStyle": {
+                                                            "type": "object",
+                                                            "description": "",
+                                                            "properties": {
+                                                                "logo": {
+                                                                    "type": "string",
+                                                                    "description": "Location of API Catalog logo"
+                                                                },
+                                                                "titlesColor": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                },
+                                                                "fontFamily": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                },
+                                                                "hoverColor": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                },
+                                                                "focusColor": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                },
+                                                                "hyperlinksColor": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                },
+                                                                "boxShadowColor": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                },
+                                                                "headerColor": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                },
+                                                                "backgroundColor": {
+                                                                    "type": "string",
+                                                                    "description": ""
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
                                         "debug": {
                                             "type": "boolean",
                                             "description": "Enable debug logs in metrics service"

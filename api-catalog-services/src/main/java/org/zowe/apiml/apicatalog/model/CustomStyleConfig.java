@@ -10,45 +10,31 @@
 
 package org.zowe.apiml.apicatalog.model;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.Serializable;
+import java.util.List;
+
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "apiml.catalog.custom-style", ignoreInvalidFields = true)
-public class CustomStyleConfig {
+@JsonAutoDetect(fieldVisibility = Visibility.NONE, getterVisibility = Visibility.PUBLIC_ONLY, setterVisibility = Visibility.PUBLIC_ONLY)
+public class CustomStyleConfig implements Serializable {
+
+    private String logo = "";
     private String titlesColor = "";
-    private String font = "";
+    private String fontFamily = "";
     private String hoverColor = "";
     private String focusColor = "";
     private String hyperlinksColor = "";
     private String boxShadowColor = "";
+    private String headerColor = "";
+    private String backgroundColor = "";
+    private String docLink = "";
+    private List<String> newsInfoLinks;
 
-    private DashboardPage dashboardPage;
-    private DetailPage detailPage;
-    private Header header;
-    private TilesAndNavMenu tilesAndNavMenu;
-
-    @Data
-    public static class Header {
-        private String backgroundColor = "";
-
-    }
-
-    @Data
-    public static class DashboardPage {
-        private String backgroundColor = "";
-    }
-
-    @Data
-    public static class DetailPage {
-        private String backgroundColor = "";
-    }
-
-    @Data
-    public static class TilesAndNavMenu {
-        private String backgroundColor = "";
-        private String borderColor = "";
-    }
 }

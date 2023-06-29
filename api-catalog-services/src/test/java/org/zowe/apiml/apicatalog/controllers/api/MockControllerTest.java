@@ -12,16 +12,16 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.apicatalog.standalone.ExampleService;
 
@@ -33,12 +33,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(
     controllers = { MockController.class },
     excludeAutoConfiguration = { SecurityAutoConfiguration.class}
 )
 @ContextConfiguration(classes = MockControllerTest.Context.class)
+@ActiveProfiles("test")
 class MockControllerTest {
 
     @Autowired
@@ -71,6 +71,7 @@ class MockControllerTest {
     }
 
     @Configuration
+    @Profile("test")
     @SpyBean(ExampleService.class)
     static class Context {
 
