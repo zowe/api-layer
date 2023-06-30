@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +33,7 @@ import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenTy
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "apiml.security.auth.provider", havingValue = "zosmf", matchIfMissing = true)
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
     private final AuthenticationService authenticationService;
