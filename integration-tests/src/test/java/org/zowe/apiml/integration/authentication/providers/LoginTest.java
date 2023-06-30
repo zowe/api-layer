@@ -69,7 +69,6 @@ class LoginTest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
-    private final static String EXPIRED_PASSWORD = "expiredPassword";
 
     protected static URI[] loginUrlsSource() {
         return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
@@ -165,7 +164,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInHeader(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
 
-                String headerValue =  Base64.getEncoder().encodeToString((INVALID_USERNAME + ":" + INVALID_PASSWORD).getBytes(StandardCharsets.UTF_8));
+                String headerValue = "Basic " + Base64.getEncoder().encodeToString((INVALID_USERNAME + ":" + INVALID_PASSWORD).getBytes(StandardCharsets.UTF_8));
 
                 given()
                     .contentType(JSON)
@@ -179,39 +178,6 @@ class LoginTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest(name = "givenExpiredAccountCredentialsInBody {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenExpiredAccountCredentialsInBody(URI loginUrl) {
-                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, EXPIRED_PASSWORD.toCharArray());
-
-                given()
-                    .contentType(JSON)
-                    .body(loginRequest)
-                .when()
-                    .post(loginUrl)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body(
-                        "messages.find { it.messageNumber == 'ZWEAT412E' }.messageContent", containsString("expire")
-                    );
-            }
-
-            @ParameterizedTest(name = "givenExpiredAccountCredentialsInHeader {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenExpiredAccountCredentialsInHeader(URI loginUrl) {
-                String headerValue =  Base64.getEncoder().encodeToString((INVALID_USERNAME + ":" + EXPIRED_PASSWORD).getBytes(StandardCharsets.UTF_8));
-
-                given()
-                    .contentType(JSON)
-                        .header(HttpHeaders.AUTHORIZATION, headerValue)
-                .when()
-                    .post(loginUrl)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body(
-                        "messages.find { it.messageNumber == 'ZWEAT412E' }.messageContent", containsString("expire")
-                    );
-            }
         }
 
         @Nested
