@@ -213,12 +213,12 @@ public class AccessTokenServiceTest {
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
                 .then().statusCode(200);
-//            revoke all tokens fro USERNAME
+//            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
             given().contentType(ContentType.JSON).config(SslContext.clientCertApiml).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
-                .then().statusCode(401);
+                .then().statusCode(403);
 //            validate after revocation rule
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
