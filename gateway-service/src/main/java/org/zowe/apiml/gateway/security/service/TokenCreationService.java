@@ -23,12 +23,14 @@ import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class TokenCreationService {
     private final Providers providers;
-    private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
+    private final Optional<ZosmfAuthenticationProvider> zosmfAuthenticationProvider;
     private final PassTicketService passTicketService;
     private final AuthenticationService authenticationService;
 
@@ -56,7 +58,9 @@ public class TokenCreationService {
                 log.debug("Generating PassTicket for user: {} and ZOSMF applid: {}", user, zosmfApplId);
                 String passTicket = passTicketService.generate(user, zosmfApplId);
                 log.debug("Generated passticket: {}", passTicket);
-                return ((TokenAuthentication) zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)))
+                return ((TokenAuthentication) zosmfAuthenticationProvider
+                    .orElseThrow(() -> new IllegalStateException("The z/OSMF is not configured. The config value `apiml.security.auth.provider` should be set to `zosmf`."))
+                    .authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)))
                     .getCredentials();
             } catch (IRRPassTicketGenerationException e) {
                 throw new AuthenticationTokenException("Problem with generating PassTicket");

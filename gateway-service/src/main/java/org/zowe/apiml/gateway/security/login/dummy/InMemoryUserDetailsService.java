@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +31,7 @@ import java.util.List;
  */
 @Component
 @Qualifier("dummyService")
+@ConditionalOnProperty(value = "apiml.security.auth.provider", havingValue = "dummy")
 public class InMemoryUserDetailsService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
 

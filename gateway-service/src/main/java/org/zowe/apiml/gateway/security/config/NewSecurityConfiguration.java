@@ -28,6 +28,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -41,8 +43,8 @@ import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
 import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
-import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.FailedAccessTokenHandler;
+import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
@@ -63,6 +65,7 @@ import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.*;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -132,7 +135,7 @@ public class NewSecurityConfiguration {
                 .anyRequest().permitAll()
                 .and()
 
-                .x509()
+                .x509().userDetailsService(x509UserDetailsService())
 
                 .and()
                 .logout()
@@ -204,7 +207,7 @@ public class NewSecurityConfiguration {
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
-                .x509()
+                .x509().userDetailsService(x509UserDetailsService())
                 .and()
                 .authenticationProvider(compoundAuthProvider) // for authenticating credentials
                 .authenticationProvider(tokenAuthenticationProvider)
@@ -259,7 +262,7 @@ public class NewSecurityConfiguration {
                     .authorizeRequests()
                     .anyRequest().authenticated()
                     .and()
-                    .x509()
+                    .x509().userDetailsService(x509UserDetailsService())
                     .and()
                     .authenticationProvider(compoundAuthProvider) // for authenticating credentials
                     .apply(new CustomSecurityFilters());
@@ -273,23 +276,24 @@ public class NewSecurityConfiguration {
                         .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 }
+
+                private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
+                    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                    return new BasicAuthFilter("/**",
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        securityObjectMapper,
+                        authenticationManager,
+                        handlerInitializer.getResourceAccessExceptionHandler());
+                }
+
+                private X509AuthenticationFilter x509AuthenticationFilter() {
+                    return new X509AuthAwareFilter("/**",
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        x509AuthenticationProvider);
+                }
+
             }
 
-            private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
-                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                return new BasicAuthFilter("/**",
-                    handlerInitializer.getAuthenticationFailureHandler(),
-                    securityObjectMapper,
-                    authenticationManager,
-                    handlerInitializer.getResourceAccessExceptionHandler());
-            }
-
-
-            private X509AuthenticationFilter x509AuthenticationFilter() {
-                return new X509AuthAwareFilter("/**",
-                    handlerInitializer.getAuthenticationFailureHandler(),
-                    x509AuthenticationProvider);
-            }
         }
 
 
@@ -498,7 +502,7 @@ public class NewSecurityConfiguration {
                         // filter out API ML certificate
                         .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 } else {
-                    http.x509(); // default x509 filter, authenticates trusted cert
+                    http.x509().userDetailsService(x509UserDetailsService()); // default x509 filter, authenticates trusted cert
                 }
 
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -633,4 +637,9 @@ public class NewSecurityConfiguration {
             .exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
             .and();
     }
+
+    private UserDetailsService x509UserDetailsService() {
+        return username -> new User(username, "", Collections.emptyList());
+    }
+
 }
