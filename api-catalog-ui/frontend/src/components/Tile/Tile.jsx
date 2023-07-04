@@ -43,8 +43,6 @@ export default class Tile extends Component {
                     return 'The service is running';
                 case 'DOWN':
                     return 'The service is not running';
-                case 'WARNING':
-                    return this.getStatusTextFromServiceTotals(tile);
                 default:
                     return 'Status unknown';
             }

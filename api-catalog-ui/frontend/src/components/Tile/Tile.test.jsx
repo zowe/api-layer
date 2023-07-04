@@ -77,9 +77,6 @@ describe('>>> Tile component tests', () => {
         expect(instance.getTileStatus(sampleTile).props.id).toBe('success');
         sampleTile.status = 'DOWN';
         expect(instance.getTileStatus(sampleTile).props.id).toBe('danger');
-        sampleTile.totalServices = 2;
-        sampleTile.status = 'UP';
-        expect(instance.getTileStatus(sampleTile).props.id).toBe('warning');
         sampleTile.status = 'UNKNOWN';
         expect(instance.getTileStatus(sampleTile).props.id).toBe('unknown');
     });
@@ -89,15 +86,11 @@ describe('>>> Tile component tests', () => {
         const wrapper = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
         const instance = wrapper.instance();
         expect(instance.getTileStatusText(sampleTile)).toBe('The service is running');
-        sampleTile.totalServices = 2;
-        expect(instance.getTileStatusText(sampleTile)).toBe('1 of 2 services are running');
         resetSampleTile();
         sampleTile.status = 'DOWN';
         expect(instance.getTileStatusText(sampleTile)).toBe('The service is not running');
         resetSampleTile();
         sampleTile.status = 'WARNING';
-        sampleTile.totalServices = 2;
-        expect(instance.getTileStatusText(sampleTile)).toBe('1 of 2 services are running');
         resetSampleTile();
         sampleTile.status = 'UNKNOWN';
         expect(instance.getTileStatusText(sampleTile)).toBe('Status unknown');
