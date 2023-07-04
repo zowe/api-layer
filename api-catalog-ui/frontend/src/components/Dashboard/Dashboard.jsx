@@ -61,8 +61,49 @@ export default class Dashboard extends Component {
     // eslint-disable-next-line react/no-unused-class-component-methods
     customUIStyle = (tiles) => {
         const root = document.documentElement;
-        if (tiles[0].dashboardBackgroundColor) {
-            root?.style.setProperty('--surface00', tiles[0].dashboardBackgroundColor);
+        const logo = document.getElementById('logo');
+        if (logo) {
+            logo.src = '';
+        }
+        // eslint-disable-next-line no-console
+        console.log(logo);
+        if (tiles[0].backgroundColor) {
+            root?.style.setProperty('--surface00', tiles[0].backgroundColor);
+        }
+        if (tiles[0].headerColor) {
+            const divider = document.getElementById('separator2');
+            const logoutButton = document.getElementById('logout-button');
+            const titleLabel = document.getElementById('title');
+            const swaggerLabel = document.getElementById('title');
+            const header = document.getElementsByClassName('header');
+            const spinner = document.getElementsByClassName('lds-ring');
+            if (header && header.length > 0) {
+                header[0].style.setProperty('background-color', tiles[0].headerColor);
+            }
+            if (spinner && spinner.length > 0) {
+                spinner[0].style.setProperty('border-color', tiles[0].headerColor);
+            }
+            if (divider) {
+                divider.style.setProperty('background-color', tiles[0].headerColor);
+            }
+            if (logoutButton) {
+                logoutButton.style.setProperty('background-color', tiles[0].headerColor);
+            }
+            if (titleLabel) {
+                titleLabel.style.setProperty('color', tiles[0].headerColor);
+            }
+            if (swaggerLabel) {
+                swaggerLabel.style.setProperty('color', tiles[0].headerColor);
+            }
+        }
+        if (tiles[0].fontFamily) {
+            root?.style.setProperty('--fontFamily00', tiles[0].fontFamily);
+        }
+        if (tiles[0].hyperlinksColor) {
+            root?.style.setProperty('--link10Hover', tiles[0].hyperlinksColor);
+            root?.style.setProperty('--controlText15', tiles[0].hyperlinksColor);
+            root?.style.setProperty('--criticalShade10', tiles[0].hyperlinksColor);
+            root?.style.setProperty('--criticalShade00', tiles[0].hyperlinksColor);
         }
     };
 
@@ -92,8 +133,8 @@ export default class Dashboard extends Component {
             fetchTilesStop();
             error = formatError(fetchTilesError);
         }
-        // TODO define proper flag to enable this customization
-        // if (hasTiles) {
+
+        // if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
         //     this.customUIStyle(tiles);
         // }
         return (

@@ -253,7 +253,7 @@ a {
     margin-bottom: auto;
     margin-top: auto;
     height: 2px;
-    width: 100%;
+    width: 1096px;
     display: block;
 }
 
@@ -262,10 +262,11 @@ a {
         margin: 0;
         float: none;
     }
-}
-
-@media only screen and (max-width: 600px) {
     #search {
         width: auto;
     }
+    #separator2 {
+      width: 100%;
+    }
 }
+
