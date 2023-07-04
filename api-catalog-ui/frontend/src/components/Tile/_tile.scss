@@ -31,7 +31,7 @@ body {
 
       &.tile-description,
       &.description-header {
-        flex: 3;
+        margin-left: 70px;
       }
       &#grid-tile-sso {
         width: 50px;
@@ -49,13 +49,71 @@ body {
   }//end card content
 
   .dashboard-grid-header {
+    position: relative;
     padding: var( --spaceSmall ) var( --spaceLarger);
     font-size: var( --fontSmall );
     margin-left: auto;
-    width: 38%;
 
     > *:not(:last-child) {
       text-align: left;
     }
   }
+
+    #media-icons {
+        position: absolute;
+        right: 186px;
+    }
+
+    #videos {
+        margin-right: 95px;
+        width: 30px;
+        height: 20px;
+    }
+    #tutorials {
+        margin-right: 90px;
+        height: 20px;
+    }
+
+    @media only screen and (max-width: 1500px) {
+        #media-icons {
+            position: relative;
+            right: auto;
+            float: left;
+        }
+        #videos {
+            margin-right: 0;
+            height: 20px;
+        }
+        #tutorials {
+            margin-right: 0;
+            height: 20px;
+        }
+        #use-cases-counter {
+            margin-right: 0;
+        }
+    }
+
+    @media only screen and (max-width: 1500px) {
+        .dashboard-grid-header {
+            display: none;
+        }
+        #media-icons {
+            display: none;
+        }
+    }
+    .media-labels {
+        font-size: 14px;
+    }
+    #videos-counter {
+        color: #602C0A;
+        margin-right: 5px;
+    }
+    #use-cases-counter {
+        color: #D61A00;
+        margin-right: 120px;
+    }
+    #tutorials-counter {
+        color: #9B51E0;
+        margin-right: 5px;
+    }
 }
