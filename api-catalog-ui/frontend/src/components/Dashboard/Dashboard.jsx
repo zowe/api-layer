@@ -55,21 +55,55 @@ export default class Dashboard extends Component {
     };
 
     /**
+     * Retrieve the logo set in the configuration
+     * @returns {Promise<T>}
+     */
+    fetchImagePath() {
+        const getImgUrl = `${process.env.REACT_APP_GATEWAY_URL}/apicatalog/api/v1/custom-logo`;
+
+        return fetch(getImgUrl)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const contentType = response.headers.get('Content-Type');
+                return response.blob().then((blob) => {
+                    const blobWithContentType = new Blob([blob], { type: contentType });
+                    return URL.createObjectURL(blobWithContentType);
+                });
+            })
+            .catch((error) => {
+                throw new Error(`Error fetching image path: ${error.message}`);
+            });
+    }
+
+    /**
      * Custom the UI look to match the setup from the service metadata
      * @param tiles
      */
-    // eslint-disable-next-line react/no-unused-class-component-methods
-    customUIStyle = (tiles) => {
+    customUIStyle = async (tiles) => {
         const root = document.documentElement;
         const logo = document.getElementById('logo');
         if (logo) {
-            logo.src = '';
+            logo.src = await this.fetchImagePath();
         }
-        // eslint-disable-next-line no-console
-        console.log(logo);
         if (tiles[0].backgroundColor) {
             root?.style.setProperty('--surface00', tiles[0].backgroundColor);
         }
+        this.setMultipleElements(tiles);
+        if (tiles[0].fontFamily) {
+            root?.style.setProperty('--fontFamily00', tiles[0].fontFamily);
+        }
+        if (tiles[0].hyperlinksColor) {
+            root?.style.setProperty('--link10Hover', tiles[0].hyperlinksColor);
+            root?.style.setProperty('--controlText15', tiles[0].hyperlinksColor);
+            root?.style.setProperty('--criticalShade10', tiles[0].hyperlinksColor);
+            root?.style.setProperty('--criticalShade00', tiles[0].hyperlinksColor);
+        }
+    };
+
+    setMultipleElements(tiles) {
         if (tiles[0].headerColor) {
             const divider = document.getElementById('separator2');
             const logoutButton = document.getElementById('logout-button');
@@ -96,16 +130,7 @@ export default class Dashboard extends Component {
                 swaggerLabel.style.setProperty('color', tiles[0].headerColor);
             }
         }
-        if (tiles[0].fontFamily) {
-            root?.style.setProperty('--fontFamily00', tiles[0].fontFamily);
-        }
-        if (tiles[0].hyperlinksColor) {
-            root?.style.setProperty('--link10Hover', tiles[0].hyperlinksColor);
-            root?.style.setProperty('--controlText15', tiles[0].hyperlinksColor);
-            root?.style.setProperty('--criticalShade10', tiles[0].hyperlinksColor);
-            root?.style.setProperty('--criticalShade00', tiles[0].hyperlinksColor);
-        }
-    };
+    }
 
     render() {
         const {
@@ -134,9 +159,9 @@ export default class Dashboard extends Component {
             error = formatError(fetchTilesError);
         }
 
-        // if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
-        //     this.customUIStyle(tiles);
-        // }
+        if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
+            this.customUIStyle(tiles);
+        }
         return (
             <div className="main-content dashboard-content">
                 {!apiPortalEnabled && (
