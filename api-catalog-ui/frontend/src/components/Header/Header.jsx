@@ -14,6 +14,7 @@ import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
 import zoweDocsImage from '../../assets/images/zowe-docs.png';
 import zoweAuthImage from '../../assets/images/zowe-auth.png';
+import customDoc from '../../assets/images/custom-doc.png';
 
 const useStyles = makeStyles({
     root: {
@@ -55,7 +56,7 @@ const StyledMenu = styled((props) => (
 function Header(props) {
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
-    const { logout } = props;
+    const { logout, tiles } = props;
     const classes = useStyles();
     const handleLogout = () => {
         logout();
@@ -73,6 +74,13 @@ function Header(props) {
     const s = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
     const dashboard = '#/dashboard';
     const username = localStorage.getItem('username');
+    const hasTiles = tiles && tiles.length > 0;
+    let docLink;
+    if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
+        if (tiles[0].customStyleConfig.docLink) {
+            docLink = tiles[0].customStyleConfig.docLink.split('|');
+        }
+    }
     return (
         <div className="header">
             <div className="product-name">
@@ -88,6 +96,12 @@ function Header(props) {
                 </Link>
             </div>
             <div className="right-icons">
+                {docLink && (
+                    <Link id="internal-link" rel="noopener noreferrer" target="_blank" href={docLink[1]}>
+                        {docLink[0]}
+                        <img id="img-internal-link" alt="Internal doc" src={customDoc} />
+                    </Link>
+                )}
                 {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true' && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">

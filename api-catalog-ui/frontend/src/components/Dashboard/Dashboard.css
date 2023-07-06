@@ -229,6 +229,7 @@ a {
     height: 2em;
     color: #3272d9;
     background-color: #ffffff;
+    margin-right: 10px;
 }
 
 #refresh-api-button:hover, #onboard-wizard-button:hover, #wizard-done-button:hover, #wizard-cancel-button:hover, #onboard-wizard-button.MuiButton-label:hover, .wizardForm .MuiButton-label:hover, .wizardForm button.MuiButtonBase-root.MuiButton-root.MuiButton-text:hover {
@@ -255,6 +256,10 @@ a {
     height: 2px;
     width: 1096px;
     display: block;
+}
+
+#top-right-buttons {
+    display: contents;
 }
 
 @media only screen and (max-width: 600px) {
