@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.login.dummy;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +33,7 @@ import static org.zowe.apiml.security.SecurityUtils.readPassword;
  * Allows Gateway to run without mainframe (z/OSMF service)
  */
 @Component
+@ConditionalOnProperty(value = "apiml.security.auth.provider", havingValue = "dummy")
 public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
     private static final String DUMMY_PROVIDER = "Dummy provider";
 

@@ -17,19 +17,28 @@ import io.restassured.http.Cookie;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.json.JSONObject;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.*;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.SAFAuthTest;
+import org.zowe.apiml.util.categories.zOSMFAuthTest;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -111,7 +120,7 @@ class LoginTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInHeader(URI loginUrl) {
                 String token = given()
-                    .auth().preemptive().basic(getUsername(), new String(getPassword()))
+                    .auth().preemptive().basic(getUsername(), getPassword())
                     .contentType(JSON)
                 .when()
                     .post(loginUrl)
@@ -155,11 +164,11 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInHeader(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
 
-                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD.toCharArray());
+                String headerValue = "Basic " + Base64.getEncoder().encodeToString((INVALID_USERNAME + ":" + INVALID_PASSWORD).getBytes(StandardCharsets.UTF_8));
 
                 given()
                     .contentType(JSON)
-                    .body(loginRequest)
+                    .header(HttpHeaders.AUTHORIZATION, headerValue)
                 .when()
                     .post(loginUrl)
                 .then()
@@ -168,6 +177,7 @@ class LoginTest implements TestWithStartedInstances {
                         "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
 
         @Nested

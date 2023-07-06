@@ -58,7 +58,12 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     }
 
     private AuthenticationProvider getConfiguredLoginAuthProvider() {
-        return authProvidersMap.get(loginProvider.getAuthProviderBeanName());
+        String providerBeanName = loginProvider.getAuthProviderBeanName();
+        AuthenticationProvider authenticationProvider = authProvidersMap.get(providerBeanName);
+        if (authenticationProvider == null) {
+            log.warn("Login provider {} is not available.", providerBeanName);
+        }
+        return authenticationProvider;
     }
 
     public synchronized String getLoginAuthProviderName() {
@@ -95,7 +100,10 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         AuthenticationProvider configuredLoginAuthProvider = getConfiguredLoginAuthProvider();
-        return configuredLoginAuthProvider.authenticate(authentication);
+        if (configuredLoginAuthProvider != null) {
+            return configuredLoginAuthProvider.authenticate(authentication);
+        }
+        return null;
     }
 
     /**
@@ -121,6 +129,9 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
         AuthenticationProvider configuredLoginAuthProvider = getConfiguredLoginAuthProvider();
-        return configuredLoginAuthProvider.supports(authentication);
+        if (configuredLoginAuthProvider != null) {
+            return configuredLoginAuthProvider.supports(authentication);
+        }
+        return false;
     }
 }

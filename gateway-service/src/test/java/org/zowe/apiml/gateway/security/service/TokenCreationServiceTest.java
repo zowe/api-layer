@@ -20,6 +20,8 @@ import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.util.Optional;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,7 +50,7 @@ class TokenCreationServiceTest {
         providers = mock(Providers.class);
         authenticationService = mock(AuthenticationService.class);
 
-        underTest = new TokenCreationService(providers, zosmfAuthenticationProvider, passTicketService, authenticationService);
+        underTest = new TokenCreationService(providers, Optional.of(zosmfAuthenticationProvider), passTicketService, authenticationService);
         underTest.zosmfApplId = "IZUDFLT";
     }
 
