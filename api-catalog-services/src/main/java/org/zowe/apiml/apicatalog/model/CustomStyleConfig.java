@@ -17,7 +17,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 @Configuration
@@ -35,6 +34,5 @@ public class CustomStyleConfig implements Serializable {
     private String headerColor = "";
     private String backgroundColor = "";
     private String docLink = "";
-    private List<String> newsInfoLinks;
 
 }

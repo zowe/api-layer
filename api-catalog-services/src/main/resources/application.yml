@@ -82,15 +82,14 @@ apiml:
         customStyle:
             logo:
             titlesColor: "#c71c3a"
-            fontFamily: "fantasy"
+            fontFamily: "Roboto"
             hoverColor:
             focusColor:
             hyperlinksColor:
             headerColor:
             boxShadowColor:
-            backgroundColor: "#c71c3a"  #will be used also for the buttons labels color in the header
+            backgroundColor: "#c71c3a"
             docLink:
-            newsInfoLinks:
 
     service-registry:
         serviceFetchDelayInMillis:  20000

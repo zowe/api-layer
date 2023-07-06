@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import { Container, Link } from '@material-ui/core';
+import { Container, Link, Typography } from '@material-ui/core';
 
 export default class Footer extends Component {
     render() {
@@ -17,12 +17,12 @@ export default class Footer extends Component {
                 <footer id="pageFooter">
                     <div id="bottom-info-div">
                         <Container>
-                            <strong className="footer-links">Capabilities</strong>
+                            <strong>Capabilities</strong>
                             <Link className="links" />
                         </Container>
                         <Container>
                             <strong>News & Information</strong>
-                            <Link className="links">Blog</Link>
+                            <Link className="links">Support Portal</Link>
                         </Container>
                         <Container>
                             <strong>Contact Us</strong>
@@ -39,6 +39,7 @@ export default class Footer extends Component {
                     <div className="right">
                         <Link data-testid="link" />
                     </div>
+                    <Typography id="footer-message" variant="subtitle2" />
                 </footer>
             );
         }
