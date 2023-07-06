@@ -6,6 +6,7 @@ $font-family_1: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Sego
 
 .swagger-ui {
     .apiInfo-item {
+        line-height: 1.5;
         span {
             display: inline;
             font-size: 13px;
@@ -75,10 +76,6 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     margin-left: 20px;
     border: 1px solid var(--link-in-the-text, #0056B3);
     text-transform: none;
-}
-
-.swagger-ui .apiInfo-item {
-    line-height: 1.5;
 }
 
 #version-div {

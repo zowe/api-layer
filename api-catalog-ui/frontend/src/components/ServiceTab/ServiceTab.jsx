@@ -12,6 +12,7 @@ import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
+import countAdditionalContent from '../../utils/countAdditionalContent';
 
 export default class ServiceTab extends Component {
     constructor(props) {
@@ -125,24 +126,6 @@ export default class ServiceTab extends Component {
         this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
-    countAdditionalContent(service) {
-        let useCasesCounter = 0;
-        let tutorialsCounter = 0;
-        let videosCounter = 0;
-        if (service) {
-            if ('useCasesCounter' in service && service.useCasesCounter) {
-                useCasesCounter = service.useCasesCounter.length;
-            }
-            if ('tutorialsCounter' in service && service.tutorialsCounter) {
-                tutorialsCounter = service.tutorialsCounter.length;
-            }
-            if ('videos' in service && service.videos) {
-                videosCounter = service.videos.length;
-            }
-        }
-        return { useCasesCounter, tutorialsCounter, videosCounter };
-    }
-
     render() {
         const {
             match: {
@@ -162,7 +145,7 @@ export default class ServiceTab extends Component {
         const { containsVersion } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
-        const { useCasesCounter, tutorialsCounter, videosCounter } = this.countAdditionalContent(currentService);
+        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContent(currentService);
         return (
             <>
                 {currentService === null && (

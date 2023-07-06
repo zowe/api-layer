@@ -7,6 +7,8 @@ $color_2: #CC092F;
     transition: font-weight 0.3s; // Add transition for smooth effect
 
     &:hover {
+        color: inherit; /* Use the default color on hover */
+        background-color: transparent; /* Remove background color on hover */
         font-weight: bold; // Set font weight to bold on hover
     }
 }
@@ -15,10 +17,6 @@ $color_2: #CC092F;
     text-decoration: none; /* Remove underline on hover */
 }
 
-.MuiTab-root:hover {
-    color: inherit; /* Use the default color on hover */
-    background-color: transparent; /* Remove background color on hover */
-}
 .nav-tabs {
     background: var(--white-ffffff, #FFF);
     box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
