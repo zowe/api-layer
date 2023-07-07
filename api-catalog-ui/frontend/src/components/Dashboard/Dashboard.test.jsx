@@ -182,6 +182,7 @@ describe('>>> Dashboard component tests', () => {
             title: 'API Mediation Layer API',
             status: 'UP',
             description: 'lkajsdlkjaldskj',
+            customStyleConfig: {},
             services: [
                 {
                     serviceId: 'apicatalog',

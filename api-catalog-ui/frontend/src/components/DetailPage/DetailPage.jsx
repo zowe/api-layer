@@ -18,6 +18,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
+import { customUIStyle } from '../../utils/utilFunctions';
 
 export default class DetailPage extends Component {
     componentDidMount() {
@@ -67,6 +68,10 @@ export default class DetailPage extends Component {
         }
         const apiPortalEnabled =
             process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
+        const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
+        if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
+            customUIStyle(tiles[0].customStyleConfig);
+        }
         return (
             <div className="main-content2 detail-content">
                 {apiPortalEnabled && <Divider light id="footer-divider" />}

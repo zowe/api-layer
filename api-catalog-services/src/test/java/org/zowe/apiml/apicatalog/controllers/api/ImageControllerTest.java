@@ -39,15 +39,50 @@ class ImageControllerTest {
     }
 
     @Nested
-    class WhenCallingImageEndpoint {
-        @Test
-        void thenDownloadImage() throws Exception {
-            ReflectionTestUtils.setField(imageController, "image", "src/test/resources/api-catalog.png");
+    class GivenImageEndpointRequest {
+        @Nested
+        class WhenPngFormat {
+            @Test
+            void thenDownloadImage() throws Exception {
+                ReflectionTestUtils.setField(imageController, "image", "src/test/resources/api-catalog.png");
 
-            mockMvc.perform(get("/custom-logo"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.IMAGE_PNG))
-                .andReturn();
+                mockMvc.perform(get("/custom-logo"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.IMAGE_PNG))
+                    .andReturn();
+            }
+        }
+
+        @Nested
+        class WhenJpegFormat {
+            @Test
+            void thenDownloadImage() throws Exception {
+                ReflectionTestUtils.setField(imageController, "image", "src/test/resources/api-catalog.jpeg");
+
+                mockMvc.perform(get("/custom-logo"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.IMAGE_JPEG))
+                    .andReturn();
+                ReflectionTestUtils.setField(imageController, "image", "src/test/resources/api-catalog.jpg");
+
+                mockMvc.perform(get("/custom-logo"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.IMAGE_JPEG))
+                    .andReturn();
+            }
+        }
+
+        @Nested
+        class WhenSvgFormat {
+            @Test
+            void thenDownloadImage() throws Exception {
+                ReflectionTestUtils.setField(imageController, "image", "src/test/resources/api-catalog.svg");
+
+                mockMvc.perform(get("/custom-logo"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.valueOf("image/svg+xml")))
+                    .andReturn();
+            }
         }
 
         @Test

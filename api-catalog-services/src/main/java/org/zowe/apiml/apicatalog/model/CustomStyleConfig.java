@@ -25,14 +25,11 @@ import java.io.Serializable;
 public class CustomStyleConfig implements Serializable {
 
     private String logo = "";
-    private String titlesColor = "";
     private String fontFamily = "";
-    private String hoverColor = "";
-    private String focusColor = "";
-    private String hyperlinksColor = "";
-    private String boxShadowColor = "";
+    private String titlesColor = "";
     private String headerColor = "";
     private String backgroundColor = "";
+    private String textColor = "";
     private String docLink = "";
 
 }

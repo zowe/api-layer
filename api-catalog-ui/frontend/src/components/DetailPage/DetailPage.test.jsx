@@ -16,6 +16,7 @@ const tile = {
     title: 'API Mediation Layer for z/OS internal API services',
     status: 'UP',
     description: 'lkajsdlkjaldskj',
+    customStyleConfig: {},
     services: [
         {
             serviceId: 'apicatalog',

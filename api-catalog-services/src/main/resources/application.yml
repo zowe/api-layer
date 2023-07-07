@@ -81,14 +81,11 @@ apiml:
         # Configuration to customize the style of Catalog UI
         customStyle:
             logo:
-            titlesColor: "#c71c3a"
-            fontFamily: "Roboto"
-            hoverColor:
-            focusColor:
-            hyperlinksColor:
+            fontFamily:
+            titlesColor:
             headerColor:
-            boxShadowColor:
-            backgroundColor: "#c71c3a"
+            backgroundColor:
+            textColor:
             docLink:
 
     service-registry:

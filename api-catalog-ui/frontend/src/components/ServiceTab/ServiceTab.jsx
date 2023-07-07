@@ -12,7 +12,7 @@ import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import countAdditionalContent from '../../utils/countAdditionalContent';
+import countAdditionalContents from '../../utils/utilFunctions';
 
 export default class ServiceTab extends Component {
     constructor(props) {
@@ -145,7 +145,7 @@ export default class ServiceTab extends Component {
         const { containsVersion } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
-        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContent(currentService);
+        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(currentService);
         return (
             <>
                 {currentService === null && (

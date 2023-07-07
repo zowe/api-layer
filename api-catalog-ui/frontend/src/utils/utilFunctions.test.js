@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import countAdditionalContent from './countAdditionalContent';
+import countAdditionalContents from './utilFunctions';
 
-describe('>>> Count Additional Content', () => {
+describe('>>> Util Functions tests', () => {
     it('should count medias', () => {
         const service = {
             id: 'service',
@@ -17,6 +17,6 @@ describe('>>> Count Additional Content', () => {
             tutorials: [],
             videos: [],
         };
-        expect(countAdditionalContent(service)).toEqual({ tutorialsCounter: 0, useCasesCounter: 2, videosCounter: 0 });
+        expect(countAdditionalContents(service)).toEqual({ tutorialsCounter: 0, useCasesCounter: 2, videosCounter: 0 });
     });
 });

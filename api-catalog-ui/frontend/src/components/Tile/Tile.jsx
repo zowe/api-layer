@@ -14,7 +14,7 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import videosImg from '../../assets/images/videos.png';
 import tutorialsImg from '../../assets/images/tutorials.png';
-import countAdditionalContent from '../../utils/countAdditionalContent';
+import utilFunctions from '../../utils/utilFunctions';
 
 export default class Tile extends Component {
     getTileStatus = (tile) => {
@@ -63,7 +63,7 @@ export default class Tile extends Component {
         const { tile, service } = this.props;
         const apiPortalEnabled =
             process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
-        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContent(service);
+        const { useCasesCounter, tutorialsCounter, videosCounter } = utilFunctions(service);
 
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
