@@ -38,35 +38,27 @@
                                                                 },
                                                                 "titlesColor": {
                                                                     "type": "string",
-                                                                    "description": ""
+                                                                    "description": "Color of the Catalog title labels"
                                                                 },
                                                                 "fontFamily": {
                                                                     "type": "string",
-                                                                    "description": ""
-                                                                },
-                                                                "hoverColor": {
-                                                                    "type": "string",
-                                                                    "description": ""
-                                                                },
-                                                                "focusColor": {
-                                                                    "type": "string",
-                                                                    "description": ""
-                                                                },
-                                                                "hyperlinksColor": {
-                                                                    "type": "string",
-                                                                    "description": ""
-                                                                },
-                                                                "boxShadowColor": {
-                                                                    "type": "string",
-                                                                    "description": ""
+                                                                    "description": "Font family used for the UI"
                                                                 },
                                                                 "headerColor": {
                                                                     "type": "string",
-                                                                    "description": ""
+                                                                    "description": "Header color"
                                                                 },
                                                                 "backgroundColor": {
                                                                     "type": "string",
-                                                                    "description": ""
+                                                                    "description": "Background color for dashboard and detail page"
+                                                                },
+                                                                "textColor": {
+                                                                    "type": "string",
+                                                                    "description": "Color used for the UI paragraph texts (i.e. service description)"
+                                                                },
+                                                                "docLink": {
+                                                                    "type": "string",
+                                                                    "description": "Custom link that would be displayed in the top right side of the header"
                                                                 }
                                                             }
                                                         }
