@@ -99,7 +99,9 @@ export const customUIStyle = async (uiConfig) => {
 
         const detailPage = document.getElementsByClassName('content');
         root.style.backgroundColor = uiConfig.backgroundColor;
-        detailPage[0].style.backgroundColor = uiConfig.backgroundColor;
+        if (detailPage[0]) {
+            detailPage[0].style.backgroundColor = uiConfig.backgroundColor;
+        }
     }
     setMultipleElements(uiConfig);
     if (uiConfig.fontFamily) {

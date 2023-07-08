@@ -10,6 +10,15 @@
 import countAdditionalContents, { customUIStyle } from './utilFunctions';
 
 describe('>>> Util Functions tests', () => {
+    function mockFetch() {
+        return jest.fn().mockImplementation(() =>
+            Promise.resolve({
+                ok: true,
+                headers: { get: () => 'image/png', 'Content-Type': 'image/png' },
+                blob: () => Promise.resolve(new Blob(['dummy-image-data'], { type: 'image/png' })),
+            })
+        );
+    }
     beforeEach(() => {
         document.body.innerHTML = `
       <div id="separator2"></div>
@@ -17,6 +26,10 @@ describe('>>> Util Functions tests', () => {
       <div id="title"></div>
       <div id="swagger-label"></div>
       <div class="header"></div>
+      <div class="apis"></div>
+      <div class="content"></div>
+      <div id="description"></div>
+      <div id="logo"></div>
     `;
     });
 
@@ -33,22 +46,41 @@ describe('>>> Util Functions tests', () => {
         expect(countAdditionalContents(service)).toEqual({ tutorialsCounter: 0, useCasesCounter: 2, videosCounter: 0 });
     });
 
-    it('should apply UI changes', () => {
+    it('should apply UI changes', async () => {
         const uiConfig = {
+            logo: '/path/img.png',
             headerColor: 'red',
+            backgroundColor: 'blue',
+            fontFamily: 'Arial',
+            textColor: 'white',
         };
 
-        customUIStyle(uiConfig);
+        global.URL.createObjectURL = jest.fn().mockReturnValue('img-url');
+        global.fetch = mockFetch();
+        await customUIStyle(uiConfig);
+        const logo = document.getElementById('logo');
         const header = document.getElementsByClassName('header')[0];
         const divider = document.getElementById('separator2');
         const title = document.getElementById('title');
         const swaggerLabel = document.getElementById('swagger-label');
         const logoutButton = document.getElementById('go-back-button');
-
+        const homepage = document.getElementsByClassName('apis')[0];
+        const detailPage = document.getElementsByClassName('content')[0];
+        const description = document.getElementById('description');
+        expect(logo.src).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('red');
         expect(divider.style.getPropertyValue('background-color')).toBe('red');
         expect(title.style.getPropertyValue('color')).toBe('red');
         expect(swaggerLabel.style.getPropertyValue('color')).toBe('red');
         expect(logoutButton.style.getPropertyValue('color')).toBe('red');
+        expect(homepage.style.backgroundColor).toBe('blue');
+        expect(homepage.style.backgroundImage).toBe('none');
+        expect(detailPage.style.backgroundColor).toBe('blue');
+        expect(document.documentElement.style.backgroundColor).toBe('blue');
+        expect(description.style.color).toBe('white');
+        expect(document.body.style.fontFamily).toBe('Arial');
+        // Clean up the mocks
+        jest.restoreAllMocks();
+        global.fetch.mockRestore();
     });
 });
