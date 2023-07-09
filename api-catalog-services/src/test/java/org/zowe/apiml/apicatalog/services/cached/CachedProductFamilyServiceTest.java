@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
+import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.apicatalog.util.ServicesBuilder;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
@@ -54,15 +55,17 @@ class CachedProductFamilyServiceTest {
     private TransformService transformService;
     private CachedServicesService cachedServicesService;
     private ServicesBuilder servicesBuilder;
-
+    private CustomStyleConfig customStyleConfig;
     @BeforeEach
     void setUp() {
         cachedServicesService = mock(CachedServicesService.class);
         transformService = mock(TransformService.class);
+        customStyleConfig = mock(CustomStyleConfig.class);
+
         underTest = new CachedProductFamilyService(
                 cachedServicesService,
                 transformService,
-                cacheRefreshUpdateThresholdInMillis, null);
+                cacheRefreshUpdateThresholdInMillis, customStyleConfig);
 
         servicesBuilder = new ServicesBuilder(underTest);
     }
