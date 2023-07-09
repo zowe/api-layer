@@ -39,4 +39,24 @@ describe('>>> Header component tests', () => {
         fireEvent.click(screen.getByText('Log out'));
         expect(logout).toHaveBeenCalled();
     });
+
+    it('should create doc link', () => {
+        const dummyTile = [
+            {
+                version: '1.0.0',
+                id: 'apicatalog',
+                title: 'API Mediation Layer API',
+                status: 'UP',
+                description: 'lkajsdlkjaldskj',
+                customStyleConfig: {
+                    docLink: 'https://internal.com',
+                },
+            },
+        ];
+        process.env.REACT_APP_API_PORTAL = false;
+        const wrapper = enzyme.shallow(<Header tiles={dummyTile} />);
+        const link = wrapper.find('[data-testid="internal-link"]');
+        expect(link.exists()).toEqual(true);
+        expect(link.props().children.at(0)).toBe('https://internal.com');
+    });
 });

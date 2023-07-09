@@ -97,7 +97,13 @@ function Header(props) {
             </div>
             <div className="right-icons">
                 {docLink && (
-                    <Link id="internal-link" rel="noopener noreferrer" target="_blank" href={docLink[1]}>
+                    <Link
+                        data-testid="internal-link"
+                        id="internal-link"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        href={docLink[1]}
+                    >
                         {docLink[0]}
                         <img id="img-internal-link" alt="Internal doc" src={customDoc} />
                     </Link>
