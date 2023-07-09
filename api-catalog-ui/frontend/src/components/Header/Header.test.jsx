@@ -49,7 +49,7 @@ describe('>>> Header component tests', () => {
                 status: 'UP',
                 description: 'lkajsdlkjaldskj',
                 customStyleConfig: {
-                    docLink: 'https://internal.com',
+                    docLink: 'doc|https://internal.com',
                 },
             },
         ];
@@ -57,6 +57,7 @@ describe('>>> Header component tests', () => {
         const wrapper = enzyme.shallow(<Header tiles={dummyTile} />);
         const link = wrapper.find('[data-testid="internal-link"]');
         expect(link.exists()).toEqual(true);
-        expect(link.props().children.at(0)).toBe('https://internal.com');
+        expect(link.props().children.at(0)).toBe('doc');
+        expect(link.props().href).toEqual('https://internal.com');
     });
 });
