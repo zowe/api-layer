@@ -66,8 +66,7 @@ export default class DetailPage extends Component {
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         }
-        const apiPortalEnabled =
-            process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);

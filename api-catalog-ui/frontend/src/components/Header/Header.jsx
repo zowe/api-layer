@@ -108,7 +108,7 @@ function Header(props) {
                         <img id="img-internal-link" alt="Internal doc" src={customDoc} />
                     </Link>
                 )}
-                {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true' && (
+                {process.env.REACT_APP_API_PORTAL === 'true' && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">
                             <img id="doc" alt="Zowe docs" src={zoweDocsImage} />

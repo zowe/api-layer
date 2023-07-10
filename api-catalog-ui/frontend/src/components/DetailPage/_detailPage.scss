@@ -7,6 +7,7 @@ body .detail-content {
         color: $color_1;
     }
     h2#title {
+        margin-left: 12px;
         color: $color_1;
         font-weight: initial;
     }
@@ -152,7 +153,7 @@ body .detail-content {
 
     .paragraph-description-container {
         width: 80%;
-        margin-left: 56px;
+        margin-left: 12px;
     }
     #description {
         position: relative;
@@ -162,7 +163,8 @@ body .detail-content {
         font-weight: initial;
     }
     #go-back-button {
-        margin-left: 56px;
+        margin-left: 12px;
+        display: inline;
         margin-top: 20px;
         font-size: 13px;
         font-weight: bold;
@@ -197,6 +199,10 @@ body .detail-content {
 
     span.schemes-title {
         margin-right: 8px;
+    }
+
+    .detailed-description-container {
+        display: flow-root;
     }
 
 }

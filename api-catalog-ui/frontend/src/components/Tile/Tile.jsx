@@ -37,8 +37,7 @@ export default class Tile extends Component {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
-        const apiPortalEnabled =
-            process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
         if (!apiPortalEnabled) {
             const { status } = tile;
             switch (status) {
@@ -61,8 +60,7 @@ export default class Tile extends Component {
 
     render() {
         const { tile, service } = this.props;
-        const apiPortalEnabled =
-            process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
         const { useCasesCounter, tutorialsCounter, videosCounter } = utilFunctions(service);
 
         return (

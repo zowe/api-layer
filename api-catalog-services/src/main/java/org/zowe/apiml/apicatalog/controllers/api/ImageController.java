@@ -38,10 +38,10 @@ public class ImageController {
     @ResponseBody
     public ResponseEntity<InputStreamResource> downloadImage() {
         try {
-        File imageFile = new File(image);
-        String extension = image.substring(image.lastIndexOf(".") + 1);
-        MediaType mediaType;
-        InputStream imageStream = new FileInputStream(imageFile);
+            File imageFile = new File(image);
+            String extension = image.substring(image.lastIndexOf(".") + 1);
+            MediaType mediaType;
+            InputStream imageStream = new FileInputStream(imageFile);
             switch (extension.toLowerCase()) {
                 case "png":
                     mediaType = MediaType.IMAGE_PNG;

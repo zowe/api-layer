@@ -22,11 +22,19 @@ div.content-description-container > div > div:nth-child(2) > div {
     padding-right: 110px;
 }
 
+.apiInfo-item {
+    margin-top: 14px;
+}
+
 .apiInfo-item label, .swagger-ui .apiInfo-item span {
     display: inline;
     font-size: 13px;
     font-family: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     line-height: 1.5;
+}
+
+#service-title {
+    margin-bottom: 10px;
 }
 
 .apiInfo-item p {

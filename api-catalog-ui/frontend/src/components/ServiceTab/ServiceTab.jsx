@@ -156,7 +156,7 @@ export default class ServiceTab extends Component {
                 <Shield title={message}>
                     <div className="serviceTab">
                         <div className="header">
-                            <Typography data-testid="service" variant="h4">
+                            <Typography id="service-title" data-testid="service" variant="h4">
                                 {selectedService.title}
                             </Typography>
                             {hasHomepage && (
@@ -265,7 +265,7 @@ export default class ServiceTab extends Component {
                                 onClick={this.handleDialogOpen}
                                 key="diff"
                             >
-                                <Typography className="version-text">Compare API versions</Typography>
+                                <Typography className="version-text">Compare API Versions</Typography>
                             </Button>
                         </div>
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
@@ -277,7 +277,7 @@ export default class ServiceTab extends Component {
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
-                        {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true' && (
+                        {process.env.REACT_APP_API_PORTAL === 'true' && (
                             <div id="detail-footer">
                                 <Typography
                                     className="footer-labels"

@@ -51,7 +51,7 @@
 }
 
 .api-description-container {
-    margin-left: 388px;
+    margin-left: 397px;
     padding: 2.2rem;
 }
 
@@ -99,6 +99,7 @@
     font-size: 16px;
     color: #58606e;
     line-height: 130%;
+    width: 90%;
 }
 
 #service-tab {
