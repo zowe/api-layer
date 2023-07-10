@@ -39,10 +39,11 @@ public class ImageController {
     @HystrixCommand()
     @ResponseBody
     public ResponseEntity<InputStreamResource> downloadImage() {
-        File imageFile = new File(image);
-        String extension = image.substring(image.lastIndexOf(".") + 1);
-        MediaType mediaType;
-        try (InputStream imageStream = new FileInputStream(imageFile)) {
+        try {
+            File imageFile = new File(image);
+            String extension = image.substring(image.lastIndexOf(".") + 1);
+            MediaType mediaType;
+            InputStream imageStream = new FileInputStream(imageFile);
             switch (extension.toLowerCase()) {
                 case "png":
                     mediaType = MediaType.IMAGE_PNG;
