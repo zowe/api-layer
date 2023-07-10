@@ -62,7 +62,7 @@ public class APIContainer implements Serializable {
     @Schema(description = "Control whether the service's information should be shown")
     private boolean hideServiceInfo;
 
-    @Schema(description = "")
+    @Schema(description = "Control selected style properties")
     private CustomStyleConfig customStyleConfig;
 
     public APIContainer() {
