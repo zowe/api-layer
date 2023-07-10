@@ -1,7 +1,7 @@
 dependencies {
     implementation libs.eureka.client
     implementation libs.netflix.servo
-    implementation libs.jettison
+
     implementation libs.http.client
     implementation libs.http.core
     implementation libs.jackson.annotations
