@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +28,6 @@ import java.io.InputStream;
 
 @RestController
 @RequestMapping("/")
-@Slf4j
 public class ImageController {
 
     @Value("${apiml.catalog.customStyle.logo:}")
@@ -39,10 +37,11 @@ public class ImageController {
     @HystrixCommand()
     @ResponseBody
     public ResponseEntity<InputStreamResource> downloadImage() {
+        try {
         File imageFile = new File(image);
         String extension = image.substring(image.lastIndexOf(".") + 1);
         MediaType mediaType;
-        try (InputStream imageStream = new FileInputStream(imageFile)) {
+        InputStream imageStream = new FileInputStream(imageFile);
             switch (extension.toLowerCase()) {
                 case "png":
                     mediaType = MediaType.IMAGE_PNG;
