@@ -86,7 +86,7 @@ describe('>>> SideBarLinks component tests', () => {
             component: RouterLink,
             to: '/example/service1',
             label: 'Tab Text',
-            wrapped: false,
+            wrapped: true,
         });
     });
 });

@@ -61,7 +61,7 @@ export default class ServiceVersionDiff extends Component {
                             {closeIcon}
                         </IconButton>
                     </DialogActions>
-                    <DialogTitle id="dialog-title">Compare API versions</DialogTitle>
+                    <DialogTitle id="dialog-title">Compare API Versions</DialogTitle>
                     <Divider />
                     <DialogContent>
                         <div className="api-diff-form">

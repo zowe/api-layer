@@ -265,7 +265,7 @@ export default class ServiceTab extends Component {
                                 onClick={this.handleDialogOpen}
                                 key="diff"
                             >
-                                <Typography className="version-text">Compare API versions</Typography>
+                                <Typography className="version-text">Compare API Versions</Typography>
                             </Button>
                         </div>
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
