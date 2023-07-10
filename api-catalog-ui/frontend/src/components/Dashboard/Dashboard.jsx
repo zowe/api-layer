@@ -75,8 +75,7 @@ export default class Dashboard extends Component {
             searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
-        const apiPortalEnabled =
-            process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);

@@ -53,11 +53,7 @@ export default class DialogDropdown extends Component {
     }
 
     renderDropdown() {
-        if (
-            !this.props.visible ||
-            !Array.isArray(this.state.data) ||
-            (process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true')
-        ) {
+        if (!this.props.visible || !Array.isArray(this.state.data) || process.env.REACT_APP_API_PORTAL === 'true') {
             return null;
         }
         return (

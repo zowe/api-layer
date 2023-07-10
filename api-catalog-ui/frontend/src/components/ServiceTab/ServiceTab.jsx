@@ -277,7 +277,7 @@ export default class ServiceTab extends Component {
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
-                        {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true' && (
+                        {process.env.REACT_APP_API_PORTAL === 'true' && (
                             <div id="detail-footer">
                                 <Typography
                                     className="footer-labels"
