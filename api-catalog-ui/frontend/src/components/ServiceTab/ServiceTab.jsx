@@ -156,7 +156,7 @@ export default class ServiceTab extends Component {
                 <Shield title={message}>
                     <div className="serviceTab">
                         <div className="header">
-                            <Typography data-testid="service" variant="h4">
+                            <Typography id="service-title" data-testid="service" variant="h4">
                                 {selectedService.title}
                             </Typography>
                             {hasHomepage && (

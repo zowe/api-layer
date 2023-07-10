@@ -8,6 +8,7 @@
 }
 
 .nav-tabs:hover {
+    border-color: #50b7f5;
     background-color: #EFEFEF;
     color: #50b7f5;
     transition: color 100ms ease-out;
@@ -46,3 +47,10 @@
 #serviceIdTabs {
     margin-bottom: 10px;
 }
+
+.MuiTab-root :hover {
+    color: inherit; /* Use the default color on hover */
+    background-color: transparent; /* Remove background color on hover */
+    font-weight: bold;
+}
+
