@@ -18,7 +18,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import { customUIStyle } from '../../utils/utilFunctions';
+import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
 export default class DetailPage extends Component {
     componentDidMount() {
@@ -66,7 +66,7 @@ export default class DetailPage extends Component {
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         }
-        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);

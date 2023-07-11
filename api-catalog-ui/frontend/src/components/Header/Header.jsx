@@ -15,6 +15,7 @@ import productImage from '../../assets/images/api-catalog-logo.png';
 import zoweDocsImage from '../../assets/images/zowe-docs.png';
 import zoweAuthImage from '../../assets/images/zowe-auth.png';
 import customDoc from '../../assets/images/custom-doc.png';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 const useStyles = makeStyles({
     root: {
@@ -96,7 +97,7 @@ function Header(props) {
                 </Link>
             </div>
             <div className="right-icons">
-                {docLink && (
+                {docLink && docLink.length === 2 && (
                     <Link
                         data-testid="internal-link"
                         id="internal-link"
@@ -108,7 +109,7 @@ function Header(props) {
                         <img id="img-internal-link" alt="Internal doc" src={customDoc} />
                     </Link>
                 )}
-                {process.env.REACT_APP_API_PORTAL === 'true' && (
+                {isAPIPortal() && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">
                             <img id="doc" alt="Zowe docs" src={zoweDocsImage} />
@@ -122,7 +123,7 @@ function Header(props) {
                         </Link>
                     </div>
                 )}
-                {process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'false' && (
+                {!isAPIPortal() && (
                     <div className="logout-container">
                         <Button
                             className={classes.root}

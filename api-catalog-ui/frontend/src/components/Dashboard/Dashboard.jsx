@@ -20,7 +20,7 @@ import WizardContainer from '../Wizard/WizardContainer';
 import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
-import { customUIStyle } from '../../utils/utilFunctions';
+import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
 export default class Dashboard extends Component {
     componentDidMount() {
@@ -75,7 +75,7 @@ export default class Dashboard extends Component {
             searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
-        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = isAPIPortal();
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);

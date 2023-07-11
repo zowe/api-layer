@@ -9,10 +9,11 @@
  */
 import { Component } from 'react';
 import { Container, Link, Typography } from '@material-ui/core';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 export default class Footer extends Component {
     render() {
-        if (process.env.REACT_APP_API_PORTAL === 'true' || process.env.REACT_APP_CA_ENV === 'true') {
+        if (isAPIPortal() || process.env.REACT_APP_CA_ENV === 'true') {
             return (
                 <footer id="pageFooter">
                     <div id="bottom-info-div">

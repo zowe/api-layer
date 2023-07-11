@@ -14,7 +14,7 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import videosImg from '../../assets/images/videos.png';
 import tutorialsImg from '../../assets/images/tutorials.png';
-import utilFunctions from '../../utils/utilFunctions';
+import utilFunctions, { isAPIPortal } from '../../utils/utilFunctions';
 
 export default class Tile extends Component {
     getTileStatus = (tile) => {
@@ -37,7 +37,7 @@ export default class Tile extends Component {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
-        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = isAPIPortal();
         if (!apiPortalEnabled) {
             const { status } = tile;
             switch (status) {
@@ -60,7 +60,7 @@ export default class Tile extends Component {
 
     render() {
         const { tile, service } = this.props;
-        const apiPortalEnabled = process.env.REACT_APP_API_PORTAL === 'true';
+        const apiPortalEnabled = isAPIPortal();
         const { useCasesCounter, tutorialsCounter, videosCounter } = utilFunctions(service);
 
         return (

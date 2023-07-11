@@ -30,8 +30,9 @@ import { rootEpic } from './epics';
 import { sendError } from './actions/error-actions';
 import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
+import { isAPIPortal } from './utils/utilFunctions';
 
-if (process.env.REACT_APP_API_PORTAL !== undefined && process.env.REACT_APP_API_PORTAL === 'true') {
+if (isAPIPortal()) {
     import('./index.scss');
 } else {
     import('./index.css');

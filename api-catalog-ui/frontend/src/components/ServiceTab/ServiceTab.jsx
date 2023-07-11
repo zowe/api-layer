@@ -12,7 +12,7 @@ import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import countAdditionalContents from '../../utils/utilFunctions';
+import countAdditionalContents, { isAPIPortal } from '../../utils/utilFunctions';
 
 export default class ServiceTab extends Component {
     constructor(props) {
@@ -277,7 +277,7 @@ export default class ServiceTab extends Component {
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
-                        {process.env.REACT_APP_API_PORTAL === 'true' && (
+                        {isAPIPortal() && (
                             <div id="detail-footer">
                                 <Typography
                                     className="footer-labels"
