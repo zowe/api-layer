@@ -67,7 +67,9 @@ describe('>>> Util Functions tests', () => {
         const homepage = document.getElementsByClassName('apis')[0];
         const detailPage = document.getElementsByClassName('content')[0];
         const description = document.getElementById('description');
+        const link = document.querySelector("link[rel~='icon']");
         expect(logo.src).toContain('img-url');
+        expect(link.href).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('red');
         expect(divider.style.getPropertyValue('background-color')).toBe('red');
         expect(title.style.getPropertyValue('color')).toBe('red');
