@@ -87,7 +87,15 @@ export const customUIStyle = async (uiConfig) => {
     const root = document.documentElement;
     const logo = document.getElementById('logo');
     if (logo && uiConfig.logo) {
-        logo.src = await fetchImagePath();
+        let link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        const img = await fetchImagePath();
+        link.href = img;
+        logo.src = img;
     }
 
     if (uiConfig.backgroundColor) {
