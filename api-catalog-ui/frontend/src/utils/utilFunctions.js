@@ -125,6 +125,4 @@ export const customUIStyle = async (uiConfig) => {
     }
 };
 
-export const isAPIPortal = () => {
-    return process.env.REACT_APP_API_PORTAL === 'true';
-};
+export const isAPIPortal = () => process.env.REACT_APP_API_PORTAL === 'true';
