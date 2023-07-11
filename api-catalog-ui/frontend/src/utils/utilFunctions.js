@@ -105,7 +105,17 @@ export const customUIStyle = async (uiConfig) => {
     }
     setMultipleElements(uiConfig);
     if (uiConfig.fontFamily) {
-        document.body.style.fontFamily = uiConfig.fontFamily;
+        const allElements = document.querySelectorAll('*');
+
+        allElements.forEach((element) => {
+            element.style.removeProperty('font-family');
+            element.style.setProperty('font-family', uiConfig.fontFamily);
+        });
+        const tileLabel = document.querySelector('p#tileLabel');
+        if (tileLabel) {
+            tileLabel.style.removeProperty('font-family');
+            tileLabel.style.fontFamily = uiConfig.fontFamily;
+        }
     }
     if (uiConfig.textColor) {
         const description = document.getElementById('description');
