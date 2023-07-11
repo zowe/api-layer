@@ -14,13 +14,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHeaders;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +35,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +51,7 @@ import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -60,7 +59,6 @@ import java.util.Optional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = SafMethodSecurityExpressionControllerTest.TestController.class)
 @ContextConfiguration(classes = {
     SecurityControllerExceptionHandler.class,
@@ -109,7 +107,7 @@ class SafMethodSecurityExpressionControllerTest {
             .andExpect(status().isUnauthorized());
     }
 
-    @Configuration
+    @TestConfiguration
     @EnableGlobalMethodSecurity(prePostEnabled = true)
     public static class SecurityConfiguration {
 
@@ -154,10 +152,9 @@ class SafMethodSecurityExpressionControllerTest {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             return http
-                .authorizeRequests().anyRequest().authenticated()
-                .and()
-                .apply(new CustomSecurityFilters())
-                .and().build();
+                    .authorizeRequests(requests -> requests.anyRequest().authenticated())
+                    .apply(new CustomSecurityFilters())
+                    .and().build();
         }
 
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {

@@ -11,7 +11,9 @@ import { connect } from 'react-redux';
 import { userActions } from '../../actions/user-actions';
 import Header from './Header';
 
-const mapStateToProps = () => ({});
+const mapStateToProps = (state) => ({
+    tiles: state.tilesReducer.tiles,
+});
 
 const mapDispatchToProps = {
     logout: () => userActions.logout(),

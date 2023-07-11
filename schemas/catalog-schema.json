@@ -20,6 +20,52 @@
                                             "$ref": "#/$defs/port",
                                             "default": 7554
                                         },
+                                        "apiml": {
+                                            "type": "object",
+                                            "description": "Zowe API ML specific properties",
+                                            "properties": {
+                                                "catalog": {
+                                                    "type": "object",
+                                                    "description": "API Catalog customization",
+                                                    "properties": {
+                                                        "customStyle": {
+                                                            "type": "object",
+                                                            "description": "",
+                                                            "properties": {
+                                                                "logo": {
+                                                                    "type": "string",
+                                                                    "description": "Location of API Catalog logo"
+                                                                },
+                                                                "titlesColor": {
+                                                                    "type": "string",
+                                                                    "description": "Color of the Catalog title labels"
+                                                                },
+                                                                "fontFamily": {
+                                                                    "type": "string",
+                                                                    "description": "Font family used for the UI"
+                                                                },
+                                                                "headerColor": {
+                                                                    "type": "string",
+                                                                    "description": "Header color"
+                                                                },
+                                                                "backgroundColor": {
+                                                                    "type": "string",
+                                                                    "description": "Background color for dashboard and detail page"
+                                                                },
+                                                                "textColor": {
+                                                                    "type": "string",
+                                                                    "description": "Color used for the UI paragraph texts (i.e. service description)"
+                                                                },
+                                                                "docLink": {
+                                                                    "type": "string",
+                                                                    "description": "Custom link that would be displayed in the top right side of the header"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
                                         "debug": {
                                             "type": "boolean",
                                             "description": "Enable debug logs in metrics service"

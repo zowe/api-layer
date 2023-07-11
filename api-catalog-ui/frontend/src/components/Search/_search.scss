@@ -1,0 +1,77 @@
+.filtering-container {
+  width: 40%;
+}
+
+
+.clear-text-search {
+    &:hover {
+        cursor: pointer;
+        float: right;
+    }
+    margin-top: 10px;
+}
+.api-heading-container {
+    float: left;
+    .search-bar {
+        height: 50px;
+        width: 422px;
+        font-style: italic;
+        margin-top: 7px;
+        margin-left: 40px;
+        background: #FFFFFF;
+        border: 1px solid #C9C8C5;
+    }
+}
+#search-input {
+    &:before {
+        border-bottom: none;
+    }
+    &:after {
+        border: none;
+    }
+    &:hover {
+        &:not(.Mui-disabled) {
+            &:before {
+                border-bottom: none;
+            }
+        }
+    }
+    font-style: italic;
+    margin-top: 7px;
+}
+.MuiFormControl-root.MuiTextField-root.search-bar {
+    display: contents;
+}
+#search {
+    >div {
+        >div {
+            >input {
+                font-style: italic;
+                width: auto;
+            }
+        }
+    }
+}
+svg.MuiSvgIcon-root.clear-text-search {
+    margin-left: 142px;
+}
+#search-icon {
+    margin-left: 142px;
+    position: relative;
+    float: left;
+    width: auto;
+}
+@media only screen and (max-width: 530px) {
+    .api-heading-container {
+        .search-bar {
+            width: 360px;
+        }
+    }
+}
+@media only screen and (max-width: 390px) {
+    .api-heading-container {
+        .search-bar {
+            width: 320px;
+        }
+    }
+}

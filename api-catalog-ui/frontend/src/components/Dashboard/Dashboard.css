@@ -44,15 +44,6 @@ a {
     /*disabled for Zowe Catalog*/
     display: none;
 }
-#bottom-info-div {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 74%;
-    margin: auto;
-    /*disabled for Zowe Catalog*/
-    display: none;
-}
 
 .footer-links {
     font-size: 18px;
@@ -135,6 +126,10 @@ a {
     border: 1px solid #C9C8C5;
 }
 
+#search_no_results {
+    color: #1d5bbf;
+}
+
 .no-tiles-container {
     margin-left: 2rem;
     text-align: left;
@@ -160,7 +155,7 @@ a {
     }
 }
 
-@media only screen and (max-width: 390px) {
+@media only screen and (max-width: 600px) {
     .filtering-container {
         grid-template-columns: 320px;
     }
@@ -200,7 +195,6 @@ a {
     }
 
     .no-tiles-container {
-        margin-top: 2rem;
         margin-left: 2rem;
         text-align: left;
         overflow: hidden;
@@ -214,7 +208,7 @@ a {
         }
     }
 
-    @media only screen and (max-width: 390px) {
+    @media only screen and (max-width: 600px) {
         #grid-container {
             padding-left: 1rem;
             padding-right: 1rem;
@@ -235,6 +229,7 @@ a {
     height: 2em;
     color: #3272d9;
     background-color: #ffffff;
+    margin-right: 10px;
 }
 
 #refresh-api-button:hover, #onboard-wizard-button:hover, #wizard-done-button:hover, #wizard-cancel-button:hover, #onboard-wizard-button.MuiButton-label:hover, .wizardForm .MuiButton-label:hover, .wizardForm button.MuiButtonBase-root.MuiButton-root.MuiButton-text:hover {
@@ -262,3 +257,21 @@ a {
     width: 1096px;
     display: block;
 }
+
+#top-right-buttons {
+    display: contents;
+}
+
+@media only screen and (max-width: 600px) {
+    #dash-buttons {
+        margin: 0;
+        float: none;
+    }
+    #search {
+        width: auto;
+    }
+    #separator2 {
+      width: 100%;
+    }
+}
+

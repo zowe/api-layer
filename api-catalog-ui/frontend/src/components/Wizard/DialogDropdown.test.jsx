@@ -14,6 +14,7 @@ import DialogDropdown from './DialogDropdown';
 
 describe('>>> DialogDropdown tests', () => {
     it('should have "Onboard New API" button', () => {
+        process.env.REACT_APP_API_PORTAL = false;
         render(
             <DialogDropdown
                 visible

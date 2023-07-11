@@ -12,7 +12,10 @@ import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled }
 import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
-import './Header.css';
+import zoweDocsImage from '../../assets/images/zowe-docs.png';
+import zoweAuthImage from '../../assets/images/zowe-auth.png';
+import customDoc from '../../assets/images/custom-doc.png';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 const useStyles = makeStyles({
     root: {
@@ -54,7 +57,7 @@ const StyledMenu = styled((props) => (
 function Header(props) {
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
-    const { logout } = props;
+    const { logout, tiles } = props;
     const classes = useStyles();
     const handleLogout = () => {
         logout();
@@ -72,6 +75,13 @@ function Header(props) {
     const s = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
     const dashboard = '#/dashboard';
     const username = localStorage.getItem('username');
+    const hasTiles = tiles && tiles.length > 0;
+    let docLink;
+    if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
+        if (tiles[0].customStyleConfig.docLink) {
+            docLink = tiles[0].customStyleConfig.docLink.split('|');
+        }
+    }
     return (
         <div className="header">
             <div className="product-name">
@@ -81,49 +91,79 @@ function Header(props) {
                     </div>
                 </Link>
                 <Link href={dashboard}>
-                    <Typography variant="subtitle2">API Catalog</Typography>
+                    <Typography id="product-title" variant="subtitle2">
+                        API Catalog
+                    </Typography>
                 </Link>
             </div>
             <div className="right-icons">
-                <div className="logout-container">
-                    <Button
-                        className={classes.root}
-                        data-testid="logout-menu"
-                        aria-controls={open ? 'basic-menu' : undefined}
-                        aria-expanded={open ? 'true' : undefined}
-                        aria-haspopup="true"
-                        aria-label="more"
-                        onClick={openMenu}
-                        endIcon={<KeyboardArrowDownIcon id="down-arrow" />}
+                {docLink && docLink.length === 2 && (
+                    <Link
+                        data-testid="internal-link"
+                        id="internal-link"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        href={docLink[1]}
                     >
-                        {s}
-                    </Button>
-                    <StyledMenu
-                        keepMounted
-                        open={open}
-                        onClose={closeMenu}
-                        anchorEl={anchorEl}
-                        getContentAnchorEl={null}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center',
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'center',
-                        }}
-                    >
-                        <div id="profile-menu">
-                            <Typography variant="subtitle2" gutterBottom component="div" id="user-info-text">
-                                Logged in as <strong>{username}</strong>
-                            </Typography>
-                            <Divider />
-                            <MenuItem id="logout-button" data-testid="logout" onClick={handleLogout}>
-                                Log out
-                            </MenuItem>
-                        </div>
-                    </StyledMenu>
-                </div>
+                        {docLink[0]}
+                        <img id="img-internal-link" alt="Internal doc" src={customDoc} />
+                    </Link>
+                )}
+                {isAPIPortal() && (
+                    <div id="zowe-links">
+                        <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">
+                            <img id="doc" alt="Zowe docs" src={zoweDocsImage} />
+                        </Link>
+                        <Link
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            href="https://docs.zowe.org/stable/extend/extend-apiml/authentication-for-apiml-services/#authentication-endpoints"
+                        >
+                            <img id="auth" alt="Zowe authentication" src={zoweAuthImage} />
+                        </Link>
+                    </div>
+                )}
+                {!isAPIPortal() && (
+                    <div className="logout-container">
+                        <Button
+                            className={classes.root}
+                            data-testid="logout-menu"
+                            aria-controls={open ? 'basic-menu' : undefined}
+                            aria-expanded={open ? 'true' : undefined}
+                            aria-haspopup="true"
+                            aria-label="more"
+                            onClick={openMenu}
+                            endIcon={<KeyboardArrowDownIcon id="down-arrow" />}
+                        >
+                            {s}
+                        </Button>
+                        <StyledMenu
+                            keepMounted
+                            open={open}
+                            onClose={closeMenu}
+                            anchorEl={anchorEl}
+                            getContentAnchorEl={null}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'center',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'center',
+                            }}
+                        >
+                            <div id="profile-menu">
+                                <Typography variant="subtitle2" gutterBottom component="div" id="user-info-text">
+                                    Logged in as <strong>{username}</strong>
+                                </Typography>
+                                <Divider />
+                                <MenuItem id="logout-button" data-testid="logout" onClick={handleLogout}>
+                                    Log out
+                                </MenuItem>
+                            </div>
+                        </StyledMenu>
+                    </div>
+                )}
             </div>
         </div>
     );

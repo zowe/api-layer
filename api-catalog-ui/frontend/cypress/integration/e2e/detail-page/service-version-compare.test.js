@@ -47,10 +47,9 @@ describe('>>> Service version compare Test', () => {
 
     it('Should switch to compare tab when clicked', () => {
         cy.get('.api-diff-container').should('not.exist');
-        cy.get(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div.tabs-swagger > div.serviceTab > div:nth-child(2) > button > span > p'
-        ).should('contain.text', 'Compare');
-        cy.get('#compare-button').click();
+        cy.get('#compare-button > span.MuiButton-label > p')
+            .should('contain.text', 'Compare API Versions')
+            .click();
         cy.get('.api-diff-container').should('exist');
 
         cy.get('.api-diff-form').should('exist');
@@ -69,10 +68,8 @@ describe('>>> Service version compare Test', () => {
     });
 
     it('Should display version in selector', () => {
-        cy.get(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div.tabs-swagger > div.serviceTab > div:nth-child(2) > button > span > p'
-        )
-            .should('contain.text', 'Compare')
+        cy.get('#compare-button > span.MuiButton-label > p')
+            .should('contain.text', 'Compare API Versions')
             .click();
 
         cy.get(PATH_TO_VERSION_SELECTORS).click();
@@ -85,10 +82,8 @@ describe('>>> Service version compare Test', () => {
 
     it('Should display diff when versions set', () => {
         cy.get('.api-diff-container').should('not.exist');
-        cy.get(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div.tabs-swagger > div.serviceTab > div:nth-child(2) > button > span > p'
-        )
-            .should('contain.text', 'Compare')
+        cy.get('#compare-button > span.MuiButton-label > p')
+            .should('contain.text', 'Compare API Versions')
             .click();
 
         cy.get(PATH_TO_VERSION_SELECTORS).click();

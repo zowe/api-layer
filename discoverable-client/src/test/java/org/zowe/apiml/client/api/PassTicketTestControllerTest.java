@@ -10,29 +10,27 @@
 
 package org.zowe.apiml.client.api;
 
-import org.zowe.apiml.client.configuration.PassTicketConfiguration;
-import org.zowe.apiml.passticket.PassTicketService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.zowe.apiml.client.configuration.PassTicketConfiguration;
+import org.zowe.apiml.passticket.PassTicketService;
 
 import javax.servlet.ServletException;
+
 import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = { PassTicketTestController.class })
 @Import(PassTicketTestControllerTest.Context.class)
 class PassTicketTestControllerTest {
@@ -74,7 +72,7 @@ class PassTicketTestControllerTest {
             this.mockMvc.perform(get("/api/v1/passticketTest").header("Authorization", BAD_PASSTICKET_AUTH_HEADER)));
     }
 
-    @Configuration
+    @TestConfiguration
     @ComponentScan(basePackageClasses = {
         PassTicketConfiguration.class
     })

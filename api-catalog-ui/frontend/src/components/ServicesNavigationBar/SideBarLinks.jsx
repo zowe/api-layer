@@ -9,7 +9,6 @@
  */
 import { Tab, Tabs } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
-import './ServicesNavigationBar.css';
 
 function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services }) {
     const handleTabClick = (value) => {
@@ -26,7 +25,6 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
             value={text}
             variant="scrollable"
             scrollButtons="auto"
-            visibleScrollbar="true"
         >
             <Tab
                 onClick={() => handleTabClick(services)}
@@ -35,7 +33,7 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
                 component={RouterLink}
                 to={`${match.url}/${services}`}
                 label={text}
-                wrapped="false"
+                wrapped
             />
         </Tabs>
     );

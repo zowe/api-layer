@@ -78,6 +78,15 @@ apiml:
         title: API Mediation Layer API
         description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
         version:  1.0.0
+        # Configuration to customize the style of Catalog UI
+        customStyle:
+            logo:
+            fontFamily:
+            titlesColor:
+            headerColor:
+            backgroundColor:
+            textColor:
+            docLink:
 
     service-registry:
         serviceFetchDelayInMillis:  20000

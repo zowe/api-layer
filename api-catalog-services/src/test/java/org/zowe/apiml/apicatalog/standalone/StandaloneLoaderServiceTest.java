@@ -57,7 +57,7 @@ class StandaloneLoaderServiceTest {
             TransformService transformService = new TransformService(gatewayClient);
             cachedServicesService = new CachedServicesService();
             CachedProductFamilyService cachedProductFamilyService =
-                new CachedProductFamilyService(cachedServicesService, transformService, null);
+                new CachedProductFamilyService(cachedServicesService, transformService, 1000, null);
             InstanceInitializeService instanceInitializeService = new InstanceInitializeService(cachedProductFamilyService, cachedServicesService, null, null);
             StandaloneAPIDocRetrievalService standaloneAPIDocRetrievalService = new StandaloneAPIDocRetrievalService();
             cachedApiDocService = new CachedApiDocService(standaloneAPIDocRetrievalService, null);

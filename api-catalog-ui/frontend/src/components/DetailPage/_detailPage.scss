@@ -1,0 +1,208 @@
+$color_1: #CC092F;
+$background-color_1: #fff;
+$background-color_2: #f5f7fa;
+
+body .detail-content {
+    h6#resources-menu-title {
+        color: $color_1;
+    }
+    h2#title {
+        margin-left: 12px;
+        color: $color_1;
+        font-weight: initial;
+    }
+  .swagger-ui {
+    padding: var(--spaceMedium) var(--spaceSmall);
+    display: block;
+
+    > div:first-child,
+    .auth-wrapper > button,
+    .loading-container,
+    .loading-container .loading,
+    .checkbox input[type=checkbox],
+    table thead tr td,
+    table thead tr th,
+    .Resizer.vertical.disabled,
+    #operations-apimlHidden-get_apimlHidden,
+    #operations-tag-apimlNoTransformation,
+    #operations-tag-apimlHidden,
+    div.info > hgroup.main > a,
+    svg.svg-assets {
+      display: none;
+    }
+
+    .wrapper,
+    .scheme-container {
+      margin-top: var( --spaceLargest );
+
+      &.information-container, &.filter {
+        margin-top: var( --spaceSmall );
+      }
+      .servers-title {
+        display: block;
+        margin-bottom: var( --spaceSmaller );
+      }
+      label {
+        & + span {
+          margin-left: var( --spaceSmall );
+          color: var( --text20 );
+        }
+      }
+
+      .info {
+        code {
+          padding: var( --spaceSmallest);
+          border-radius: var( --borderRadius1 );
+          background: var( --surface105 );
+          font-family: var( --fontFamilyMono );
+          color: var( --textCode );
+        }
+        pre {
+          font-family: var( --fontFamily00 );
+        }
+        h2.title {
+          @extend .MuiTypography-h4;
+          margin-top: 0px;
+        }
+        .version {
+          &:before {
+            content: "API Version:";
+          }
+        }
+      }//end info
+    }//end .wrapper, .scheme-container
+  }//end swagger-ui
+
+  .header {
+    padding: var( --spaceMedium ) var( --spaceSmall );
+    display: flex;
+    flex-direction: column;
+    background: var( --surface05 );
+
+    > h4 {
+      margin-top: 0px;
+    }
+    .MuiLink-root {
+      margin-bottom: var( --spaceMedium );
+    }
+    .apiInfo-item {
+      flex-direction: column;
+    }
+    h6 {
+      display: flex;
+
+      label {
+        flex: 1;
+        max-width: 130px;
+      }
+      span {
+        flex: 1;
+        font-weight: var( --fontWeightNormal );
+      }
+    }
+  }
+
+    #right-resources-menu {
+        position: relative;
+        float: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        border-radius: 4px;
+        background: #F7F9FA;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        padding: 14px;
+        margin-right: 30px;
+        margin-top: -119px;
+    }
+
+    /* Extra small devices (phones, 600px and down) */
+    @media only screen and (max-width: 600px) {
+        #right-resources-menu {
+            display: contents;
+        }
+    }
+
+    .nav-bar {
+        min-height: 84vh;
+        flex-direction: column;
+        align-items: center;
+        min-width: 368px;
+        margin-right: 75px;
+        box-shadow: 0 0 6px hsl(210 14% 90%);
+        padding: 10px 5px 10px 20px;
+        flex: 1 0 0;
+        width: auto;
+        height: auto;
+        display: table-column;
+        float: left;
+        position: relative;
+        background: #F7F9FA;
+    }
+
+    .links {
+        display: flex;
+        font-size: 14px;
+    }
+
+    .content {
+        &, .main-content2 detail-content {
+            display: contents;
+        }
+    }
+
+    .paragraph-description-container {
+        width: 80%;
+        margin-left: 12px;
+    }
+    #description {
+        position: relative;
+    }
+    h4#description {
+        display: contents;
+        font-weight: initial;
+    }
+    #go-back-button {
+        margin-left: 12px;
+        display: inline;
+        margin-top: 20px;
+        font-size: 13px;
+        font-weight: bold;
+        width: fit-content;
+        padding-left: .6rem;
+        padding-right: .6rem;
+        height: 32px;
+        border-radius: 3px;
+        background-color: $background-color_1;
+        cursor: pointer;
+        color: $color_1;
+        transition: .3s background-color;
+        &:hover {
+            background-color: $background-color_2;
+        }
+    }
+
+    .MuiSvgIcon-root.ChevronLeftIcon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #CC092F; /* Change the icon color to red */
+        pointer-events: none;
+    }
+
+    #footer-divider {
+        margin: none;
+    }
+
+    span.schemes-title {
+        margin-right: 8px;
+    }
+
+    .detailed-description-container {
+        display: flow-root;
+    }
+
+}

@@ -25,12 +25,18 @@ import reduxCatch from 'redux-catch';
 import storageSession from 'redux-persist/lib/storage/session';
 import { persistReducer, persistStore } from 'redux-persist';
 import thunk from 'redux-thunk';
-import './index.css';
 import { rootReducer } from './reducers/index';
 import { rootEpic } from './epics';
 import { sendError } from './actions/error-actions';
 import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
+import { isAPIPortal } from './utils/utilFunctions';
+
+if (isAPIPortal()) {
+    import('./index.scss');
+} else {
+    import('./index.css');
+}
 
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);

@@ -8,12 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component, Suspense } from 'react';
-import { Container, IconButton, Link, Typography } from '@material-ui/core';
+import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
-
-import './DetailPage.css';
-import './ReactRouterTabs.css';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
@@ -21,6 +18,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
+import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
 export default class DetailPage extends Component {
     componentDidMount() {
@@ -68,8 +66,14 @@ export default class DetailPage extends Component {
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         }
+        const apiPortalEnabled = isAPIPortal();
+        const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
+        if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
+            customUIStyle(tiles[0].customStyleConfig);
+        }
         return (
-            <div className="detail-page">
+            <div className="main-content2 detail-content">
+                {apiPortalEnabled && <Divider light id="footer-divider" />}
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
@@ -110,28 +114,40 @@ export default class DetailPage extends Component {
                         <div className="detailed-description-container">
                             <div className="title-api-container">
                                 {tiles !== undefined && tiles.length === 1 && (
-                                    <div id="title" className="text-block-11">
+                                    <h2 id="title" className="text-block-11">
                                         {tiles[0].title}
-                                    </div>
+                                    </h2>
                                 )}
                             </div>
                             <div className="paragraph-description-container">
                                 {tiles !== undefined && tiles.length > 0 && (
-                                    <div id="description" className="text-block-12">
+                                    <h4 id="description" className="text-block-12">
                                         {tiles[0].description}
-                                    </div>
+                                    </h4>
                                 )}
                             </div>
                         </div>
-                        <div id="right-resources-menu">
-                            <Typography variant="subtitle1">On this page</Typography>
-                            <Container>
-                                <Link className="links">Swagger</Link>
-                                <Link className="links">Use cases</Link>
-                                <Link className="links">Tutorials</Link>
-                                <Link className="links">Videos</Link>
-                            </Container>
-                        </div>
+                        {apiPortalEnabled && (
+                            <div id="right-resources-menu">
+                                <Typography id="resources-menu-title" variant="subtitle1">
+                                    On this page
+                                </Typography>
+                                <Container>
+                                    <Link className="links" href="#swagger-label">
+                                        Swagger
+                                    </Link>
+                                    <Link className="links" href="#use-cases-label">
+                                        Use cases
+                                    </Link>
+                                    <Link className="links" href="#tutorials-label">
+                                        Tutorials
+                                    </Link>
+                                    <Link className="links" href="#videos-label">
+                                        Videos
+                                    </Link>
+                                </Container>
+                            </div>
+                        )}
                     </div>
                 )}
                 <div className="content-description-container">
@@ -166,6 +182,7 @@ export default class DetailPage extends Component {
                             </Router>
                         </Suspense>
                     )}
+                    {apiPortalEnabled && <Divider light id="footer-divider" />}
                 </div>
             </div>
         );

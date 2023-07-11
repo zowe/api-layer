@@ -109,7 +109,7 @@ gateway-service/jwt*.tmp
 # zowe-api-dev
 .api-dev
 .zowe-api-dev
-user-zowe-api.json
+user-zowe-api*.json
 lastJob.json
 invalidated*.data
 invalidated*.index

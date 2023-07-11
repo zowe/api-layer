@@ -12,14 +12,12 @@ package org.zowe.apiml.security.common.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.zowe.apiml.security.common.auth.saf.SafMethodSecurityExpressionHandler;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 
-@Configuration
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)

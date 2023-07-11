@@ -57,7 +57,7 @@ describe('>>> Dashboard test', () => {
 
         cy.get('@search').clear();
 
-        cy.get('#search > div > div > input').as('search').type('API Catalog');
+        cy.get('#search > div > div > input').as('search').type('API Gateway');
 
         cy.get('.grid-tile').should('have.length', 1);
 

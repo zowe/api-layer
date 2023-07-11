@@ -1,0 +1,74 @@
+$color_1: #50b7f5;
+$background-color_1: #EFEFEF;
+$color_2: #CC092F;
+
+.MuiTab-root {
+    font-weight: normal; // Set the default font weight
+    transition: font-weight 0.3s; // Add transition for smooth effect
+
+    &:hover {
+        color: inherit; /* Use the default color on hover */
+        background-color: transparent; /* Remove background color on hover */
+        font-weight: bold; // Set font weight to bold on hover
+    }
+}
+.MuiTab-root .MuiTab-wrapper:hover {
+    color: inherit; /* Use the default color on hover */
+    text-decoration: none; /* Remove underline on hover */
+}
+
+.nav-tabs {
+    background: var(--white-ffffff, #FFF);
+    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
+    .tabs {
+        text-transform: none;
+        font-size: 16px;
+        color: black;
+        &:hover {
+            color: black;
+        }
+    }
+    width: auto;
+    border: 3px solid #F7F9FA;
+    overflow-y: auto;
+    display: flex;
+    color: black;
+    align-items: cover;
+    cursor: pointer;
+    &:hover {
+        border-color: $color_2;
+        transition: color 100ms ease-out;
+    }
+}
+
+#search2 {
+    height: 47px;
+    background: #FFFFFF;
+    border: 1px solid #C9C8C5;
+    margin-right: 15px;
+    margin-bottom: 9px;
+    >div {
+        >div {
+            >input {
+                margin-left: 13px;
+                margin-top: 6px;
+            }
+            >div {
+                >#search-icon {
+                    margin-top: 7px;
+                }
+            }
+        }
+    }
+}
+#serviceIdTabs {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#search_no_results {
+    margin: auto;
+    color: $color_2;
+}
+
+

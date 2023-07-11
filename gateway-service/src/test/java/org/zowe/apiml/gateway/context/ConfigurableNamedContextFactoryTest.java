@@ -23,8 +23,10 @@ import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.MapPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.DayOfWeek;
@@ -36,15 +38,19 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ContextConfiguration(classes = ConfigurableNamedContextFactoryTest.MainContextConfiguration.class)
+@ActiveProfiles("test")
 class ConfigurableNamedContextFactoryTest {
 
     //This is here to load context fast by creating just this bean
+    @Profile("test")
     @Configuration
     public static class MainContextConfiguration {
         @Bean

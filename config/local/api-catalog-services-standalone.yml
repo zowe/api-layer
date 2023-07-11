@@ -1,0 +1,44 @@
+spring.profiles.include: diag,standalone
+
+logging:
+    level:
+        org.apache.http.impl.conn: INFO
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+    instance:
+        leaseExpirationDurationInSeconds: 6
+        leaseRenewalIntervalInSeconds: 1
+
+server:
+    address: 0.0.0.0
+    port: 10015
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: /docker/all-services.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        clientAuth: want
+        trustStore: /docker/all-services.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+apiml:
+    enabled: false
+    catalog:
+        standalone:
+            enabled: true
+            servicesDirectory: /docker/catalog-standalone-defs
+    banner: console
+    discovery:
+        staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
+    metrics:
+        serviceId: metrics-service
+        enabled: true
+spring:
+    output:
+        ansi:
+            enabled: always

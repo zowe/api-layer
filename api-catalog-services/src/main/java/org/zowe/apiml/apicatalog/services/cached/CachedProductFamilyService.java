@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
+import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
@@ -30,11 +31,22 @@ import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.stream.Collectors.toList;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SSO;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_TITLE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_VERSION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
 /**
  * Caching service for eureka services
@@ -57,6 +69,7 @@ public class CachedProductFamilyService {
     private final Map<String, APIContainer> products = new HashMap<>();
 
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
+    private final CustomStyleConfig customStyleConfig;
 
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
@@ -64,10 +77,12 @@ public class CachedProductFamilyService {
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
                                       @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}")
-                                          Integer cacheRefreshUpdateThresholdInMillis) {
+                                          Integer cacheRefreshUpdateThresholdInMillis,
+                                      CustomStyleConfig customStyleConfig) {
         this.cachedServicesService = cachedServicesService;
         this.transformService = transformService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
+        this.customStyleConfig = customStyleConfig;
     }
 
     /**
@@ -232,6 +247,21 @@ public class CachedProductFamilyService {
         setStatus(apiContainer, servicesCount, activeServicesCount);
         apiContainer.setSso(isSso);
         apiContainer.setHideServiceInfo(hideServiceInfo);
+
+        // set metadata to customize the UI
+        if (customStyleConfig != null) {
+            setCustomUiConfig(apiContainer);
+        }
+
+    }
+
+    /**
+     * Map the configuration to customize the Catalog UI to the container
+     *
+     * @param apiContainer
+     */
+    private void setCustomUiConfig(APIContainer apiContainer) {
+        apiContainer.setCustomStyleConfig(customStyleConfig);
     }
 
     /**
@@ -404,6 +434,7 @@ public class CachedProductFamilyService {
         } else {
             apiContainer.setStatus("WARNING");
         }
+
     }
 
 }

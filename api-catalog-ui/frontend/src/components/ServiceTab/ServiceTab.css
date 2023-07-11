@@ -22,11 +22,19 @@ div.content-description-container > div > div:nth-child(2) > div {
     padding-right: 110px;
 }
 
+.apiInfo-item {
+    margin-top: 14px;
+}
+
 .apiInfo-item label, .swagger-ui .apiInfo-item span {
     display: inline;
     font-size: 13px;
     font-family: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     line-height: 1.5;
+}
+
+#service-title {
+    margin-bottom: 10px;
 }
 
 .apiInfo-item p {
@@ -86,6 +94,7 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     text-align: center;
     /* Data Small/Regular */
     font-size: 12px;
+    text-transform: none;
     line-height: 14px;
     letter-spacing: 0.24px;
     order-radius: 3px;
@@ -98,4 +107,11 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     font-size: 22px;
     font-weight: 700;
     line-height: 22px;
+}
+
+@media only screen and (max-width: 600px) {
+    .serviceTab {
+        width: 600px;
+        margin: 0;
+    }
 }

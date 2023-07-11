@@ -2,7 +2,7 @@
     box-sizing: border-box;
 }
 
-.detail-page {
+.main-content2 detail-content {
     text-align: left;
     background-color: #EFEFEF;
 }
@@ -51,7 +51,7 @@
 }
 
 .api-description-container {
-    margin-left: 388px;
+    margin-left: 397px;
     padding: 2.2rem;
 }
 
@@ -99,6 +99,7 @@
     font-size: 16px;
     color: #58606e;
     line-height: 130%;
+    width: 90%;
 }
 
 #service-tab {
@@ -106,15 +107,6 @@
 }
 
 .no-tiles-container {
-    margin-top: 2rem;
-    margin-left: 2rem;
-    text-align: left;
-    overflow: hidden;
-    width: 100%;
-}
-
-.no-tiles-container {
-    margin-top: 2rem;
     margin-left: 2rem;
     text-align: left;
     overflow: hidden;
@@ -160,16 +152,18 @@ div.content-description-container > div > div:nth-child(2) > div {
     margin-left: 56px;
 }
 
-/*disabled for Zowe Catalog*/
-#right-resources-menu {
-    display: none;
-    float: right;
-    /*display: flex;*/
-    /*padding-left: 25px;*/
-    flex-direction: column;
-    align-items: flex-start;
-}
-
 .content-description-container {
     margin-right: 92px;
+}
+
+@media only screen and (max-width: 600px) {
+    .api-description-container {
+        margin-left: 0;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .nav-bar {
+        width: 600px;
+    }
 }

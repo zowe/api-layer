@@ -18,8 +18,13 @@ const mockStore = configureStore();
 describe('Header Container', () => {
     let store;
     let container;
+    const tiles = [{ title: 'test', id: '2', description: 'test', services: [{ title: 'test' }] }];
     beforeEach(() => {
-        store = mockStore({});
+        store = mockStore({
+            tilesReducer: {
+                tiles,
+            },
+        });
 
         container = render(
             <Provider store={store}>

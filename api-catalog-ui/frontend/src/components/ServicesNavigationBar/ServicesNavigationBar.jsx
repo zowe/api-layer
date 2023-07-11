@@ -13,7 +13,6 @@ import { Typography } from '@material-ui/core';
 import SideBarLinks from './SideBarLinks';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
-import './ServicesNavigationBar.css';
 
 export default class ServicesNavigationBar extends Component {
     componentWillUnmount() {
@@ -59,7 +58,7 @@ export default class ServicesNavigationBar extends Component {
                     ))
                 )}
                 {!hasTiles && hasSearchCriteria && (
-                    <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
+                    <Typography id="search_no_results" variant="subtitle2">
                         No services found matching search criteria
                     </Typography>
                 )}

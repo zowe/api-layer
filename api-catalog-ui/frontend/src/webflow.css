@@ -2994,3 +2994,10 @@ html.w-mod-js *[data-ix="doc-load-hidden"] {
         text-align: center;
     }
 }
+
+@media only screen and (max-width: 600px) {
+    .header {
+        width: 600px;
+    }
+}
+
