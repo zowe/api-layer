@@ -19,7 +19,7 @@ dependencies {
     implementation libs.spring.boot.starter.web
     implementation libs.jackson.core
     implementation libs.jackson.databind
-
+    implementation libs.jettison
     implementation libs.spring.aop
     implementation libs.spring.beans
     implementation libs.spring.context
