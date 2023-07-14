@@ -3,6 +3,8 @@
 }
 
 .main-content2 detail-content {
+    display: flex;
+    height: 100vh;
     text-align: left;
     background-color: #EFEFEF;
 }
@@ -47,7 +49,6 @@
     margin-top: 2rem;
     text-align: left;
     overflow: hidden;
-    width: 100%;
 }
 
 .api-description-container {
@@ -130,7 +131,7 @@ div.content-description-container > div > div:nth-child(2) > div {
 }
 
 .nav-bar {
-    min-height: 84vh;
+    min-height: 40vh;
     flex-direction: column;
     align-items: center;
     min-width: 368px;

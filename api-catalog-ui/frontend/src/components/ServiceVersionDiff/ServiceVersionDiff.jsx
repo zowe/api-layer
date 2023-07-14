@@ -22,7 +22,6 @@ import {
     Divider,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-import './ServiceVersionDiff.css';
 
 export default class ServiceVersionDiff extends Component {
     constructor(props) {
@@ -71,6 +70,7 @@ export default class ServiceVersionDiff extends Component {
                                 <Select
                                     data-testid="select-1"
                                     label="versionSelect1"
+                                    className="select-diff"
                                     value={selectedVersion1}
                                     onChange={this.handleVersion1Change}
                                     sx={selectorStyle}
@@ -87,6 +87,7 @@ export default class ServiceVersionDiff extends Component {
                                 <InputLabel shrink>Version</InputLabel>
                                 <Select
                                     data-testid="select-2"
+                                    className="select-diff"
                                     label="versionSelect2"
                                     value={selectedVersion2}
                                     onChange={this.handleVersion2Change}

@@ -11,7 +11,6 @@ import yaml from 'js-yaml';
 import * as YAML from 'yaml';
 import { Component } from 'react';
 import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
-import './wizard.css';
 import WizardNavigationContainer from './WizardComponents/WizardNavigationContainer';
 
 export default class WizardDialog extends Component {

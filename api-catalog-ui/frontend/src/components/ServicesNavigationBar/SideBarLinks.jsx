@@ -7,9 +7,26 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Tab, Tabs } from '@material-ui/core';
+import { Tab, Tabs, Tooltip, withStyles } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 
+const styles = {
+    truncatedTabLabel: {
+        maxWidth: 250,
+        width: 'max-content',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+};
+
+const TruncatedTabLabel = withStyles(styles)(({ label }) => (
+    <Tooltip title={label} placement="bottom">
+        <div style={styles.truncatedTabLabel} title={label}>
+            {label}
+        </div>
+    </Tooltip>
+));
 function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services }) {
     const handleTabClick = (value) => {
         const correctTile = originalTiles.find((tile) => tile.services.some((service) => service.serviceId === value));
@@ -32,7 +49,7 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
                 className="tabs"
                 component={RouterLink}
                 to={`${match.url}/${services}`}
-                label={text}
+                label={<TruncatedTabLabel classes={styles} label={text} />}
                 wrapped
             />
         </Tabs>

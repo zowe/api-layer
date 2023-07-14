@@ -12,7 +12,7 @@
 .api-diff-form>p {
 	margin-top: auto;
 	padding-left: 8px;
-	padding-right: 8px;
+	padding-right: 18px;
 	font-size: x-large;
 	color: #58606e;
 }
@@ -141,4 +141,8 @@ s, del, .missing, del.comment {
 
 .MuiSelect-select {
     width: 110px;
+}
+
+#dialog-title {
+    margin-top: -8px;
 }

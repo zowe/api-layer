@@ -96,6 +96,8 @@ export const customUIStyle = async (uiConfig) => {
         const img = await fetchImagePath();
         link.href = img;
         logo.src = img;
+        logo.style.height = 'auto';
+        logo.style.width = 'auto';
     }
 
     if (uiConfig.backgroundColor) {

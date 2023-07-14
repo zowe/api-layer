@@ -230,7 +230,6 @@ export default class ServiceTab extends Component {
                                 {selectedService.description}
                             </Typography>
                             <br />
-                            <br />
                             <Typography id="swagger-label" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
@@ -259,8 +258,8 @@ export default class ServiceTab extends Component {
                                 disabled={apiVersions.length < 2}
                                 style={
                                     apiVersions.length < 2
-                                        ? { backgroundColor: '#e4e4e4', color: '#c0c0c0', opacity: '0.5' }
-                                        : { backgroundColor: '#fff' }
+                                        ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
+                                        : { backgroundColor: '#fff', color: '#0056B3' }
                                 }
                                 onClick={this.handleDialogOpen}
                                 key="diff"
@@ -287,6 +286,9 @@ export default class ServiceTab extends Component {
                                 >
                                     Use Cases ({useCasesCounter})
                                 </Typography>
+                                <br />
+                                {useCasesCounter === 0 && <Typography>There are no Use Cases.</Typography>}
+                                <br />
                                 <Typography
                                     className="footer-labels"
                                     id="tutorials-label"
@@ -295,6 +297,9 @@ export default class ServiceTab extends Component {
                                 >
                                     Tutorials ({tutorialsCounter} articles)
                                 </Typography>
+                                <br />
+                                {tutorialsCounter === 0 && <Typography>There are no Tutorials.</Typography>}
+                                <br />
                                 <Typography
                                     className="footer-labels"
                                     id="videos-label"
@@ -303,6 +308,8 @@ export default class ServiceTab extends Component {
                                 >
                                     Videos ({videosCounter})
                                 </Typography>
+                                <br />
+                                {videosCounter === 0 && <Typography>There are no Videos.</Typography>}
                             </div>
                         )}
                     </div>

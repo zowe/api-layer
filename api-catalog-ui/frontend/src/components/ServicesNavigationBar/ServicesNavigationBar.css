@@ -54,3 +54,10 @@
     font-weight: bold;
 }
 
+span.MuiTab-wrapper {
+    display: inline-block;
+}
+
+.MuiTabs-root {
+    margin-left: 39px;
+}
