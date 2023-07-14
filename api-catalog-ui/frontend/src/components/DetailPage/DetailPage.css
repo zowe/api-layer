@@ -46,7 +46,6 @@
 }
 
 .detailed-description-container {
-    margin-top: 2rem;
     text-align: left;
     overflow: hidden;
 }
@@ -88,7 +87,6 @@
 }
 
 #title {
-    padding: 2rem .3rem 1.3rem 0;
     color: #58606e;
     font-size: 28px;
     font-weight: 700;

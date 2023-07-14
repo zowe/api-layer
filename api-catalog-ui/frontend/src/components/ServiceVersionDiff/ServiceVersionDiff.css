@@ -6,7 +6,7 @@
 .api-diff-form {
 	margin: auto;
 	display: flex;
-	width: fit-content;
+	width: auto;
 }
 
 .api-diff-form>p {

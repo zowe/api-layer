@@ -93,3 +93,9 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     letter-spacing: 0.5px;
 }
 
+@media only screen and (max-width: 1208px) {
+    #compare-button {
+        margin-left: 54px;
+        margin-top: 10px;
+    }
+}
