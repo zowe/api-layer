@@ -20,11 +20,9 @@ const styles = {
     },
 };
 
-const TruncatedTabLabel = withStyles(styles)(({ label }) => (
+const TruncatedTabLabel = withStyles(styles)(({ classes, label }) => (
     <Tooltip title={label} placement="bottom">
-        <div style={styles.truncatedTabLabel} title={label}>
-            {label}
-        </div>
+        <div className={classes.truncatedTabLabel}>{label}</div>
     </Tooltip>
 ));
 function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services }) {
@@ -49,7 +47,7 @@ function SideBarLinks({ storeCurrentTileId, originalTiles, text, match, services
                 className="tabs"
                 component={RouterLink}
                 to={`${match.url}/${services}`}
-                label={<TruncatedTabLabel classes={styles} label={text} />}
+                label={<TruncatedTabLabel label={text} />}
                 wrapped
             />
         </Tabs>
