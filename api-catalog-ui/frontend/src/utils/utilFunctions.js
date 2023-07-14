@@ -79,6 +79,29 @@ function fetchImagePath() {
         });
 }
 
+function handleWhiteHeader(uiConfig) {
+    if (uiConfig.docLink) {
+        const docText = document.querySelector('#internal-link');
+        const goBackButton = document.querySelector('#go-back-button');
+        const swaggerLabel = document.getElementById('swagger-label');
+        const title = document.getElementById('title');
+        if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+            if (docText) {
+                docText.style.color = 'black';
+            }
+            if (goBackButton) {
+                goBackButton.style.color = 'black';
+            }
+            if (swaggerLabel) {
+                swaggerLabel.style.color = 'black';
+            }
+            if (title) {
+                title.style.color = 'black';
+            }
+        }
+    }
+}
+
 /**
  * Custom the UI look to match the setup from the service metadata
  * @param uiConfig the configuration to customize the UI
@@ -133,6 +156,7 @@ export const customUIStyle = async (uiConfig) => {
             description.style.color = uiConfig.textColor;
         }
     }
+    handleWhiteHeader(uiConfig);
 };
 
 export const isAPIPortal = () => process.env.REACT_APP_API_PORTAL === 'true';
