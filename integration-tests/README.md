@@ -2,9 +2,9 @@
 # Integration Tests
 
 - [Introduction](#introduction)
-- [The tests take care of the services.](#the-tests-take-care-of-the-services)
+- [The tests take care of the services](#the-tests-take-care-of-the-services)
 - [Local run of services and then integration tests](#local-run-of-services-and-then-integration-tests)
-- [The services run elsewhere.](#the-services-run-elsewhere)
+- [The services run elsewhere](#the-services-run-elsewhere)
 - [Manual testing of Discovery Service in HTTP mode](#manual-testing-of-discovery-service-in-http-mode)
 - [Running all tests (including slow)](#running-all-tests-including-slow)
 - [Running a Specific Test](#running-a-specific-test)
@@ -19,6 +19,9 @@ The Integration tests can be run against specific setup and instance or they can
 ## The tests take care of the services
 
 In this setup the integration test suite starts and stops the service. It is aimed at all runs for testing the integrations off-platform.
+
+**Note:** In this mode, the code assumes both Java and NodeJs are accessible in the PATH, make sure these are the correct versions.
+`JAVA_HOME` and `NODE_HOME` can be used to customise their location as well.
 
 **Follow these steps:**
 
