@@ -37,6 +37,8 @@ function setMultipleElements(uiConfig) {
         const title1 = document.getElementById('title');
         const swaggerLabel = document.getElementById('swagger-label');
         const header = document.getElementsByClassName('header');
+        const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
+        const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
         if (header && header.length > 0) {
             header[0].style.setProperty('background-color', uiConfig.headerColor);
         }
@@ -51,6 +53,20 @@ function setMultipleElements(uiConfig) {
         }
         if (logoutButton) {
             logoutButton.style.setProperty('color', uiConfig.headerColor);
+        }
+        if (wizardButton) {
+            if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+                wizardButton.style.setProperty('color', 'black');
+            } else {
+                wizardButton.style.setProperty('color', uiConfig.headerColor);
+            }
+        }
+        if (refreshButton) {
+            if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+                refreshButton.style.setProperty('color', 'black');
+            } else {
+                refreshButton.style.setProperty('color', uiConfig.headerColor);
+            }
         }
     }
 }
@@ -85,6 +101,7 @@ function handleWhiteHeader(uiConfig) {
         const goBackButton = document.querySelector('#go-back-button');
         const swaggerLabel = document.getElementById('swagger-label');
         const title = document.getElementById('title');
+        const productTitle = document.getElementById('product-title');
         if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
             if (docText) {
                 docText.style.color = 'black';
@@ -97,6 +114,9 @@ function handleWhiteHeader(uiConfig) {
             }
             if (title) {
                 title.style.color = 'black';
+            }
+            if (productTitle) {
+                productTitle.style.color = 'black';
             }
         }
     }
