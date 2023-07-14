@@ -262,7 +262,7 @@ a {
     display: contents;
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 1120px) {
     #dash-buttons {
         margin: 0;
         float: none;
