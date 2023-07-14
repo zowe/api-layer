@@ -37,11 +37,9 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.awaitility.Awaitility.await;
 
@@ -77,12 +75,14 @@ public class JwtSecurity {
 
     private final Providers providers;
     private final ZosmfListener zosmfListener;
+    private final String zosmfServiceId;
 
-    private final List<String> events = new ArrayList<>();
+    private final List<String> events = Collections.synchronizedList(new ArrayList<>());
 
     @Autowired
     public JwtSecurity(Providers providers, ApimlDiscoveryClient discoveryClient) {
         this.providers = providers;
+        this.zosmfServiceId = providers.getZosmfServiceId();
         this.zosmfListener = new ZosmfListener(discoveryClient);
     }
 
@@ -120,18 +120,18 @@ public class JwtSecurity {
         loadJwtSecret();
         switch (used) {
             case ZOSMF:
-                log.info("zOSMF is used as the JWT producer");
-                events.add("zOSMF is recognized as authentication provider.");
+                log.info("z/OSMF instance {} is used as the JWT producer", zosmfServiceId);
+                addEvent("z/OSMF instance " + zosmfServiceId + " is recognized as authentication provider.");
                 validateInitializationAgainstZosmf();
                 break;
             case APIML:
                 log.info("API ML is used as the JWT producer");
-                events.add("API ML is recognized as authentication provider.");
+                addEvent("API ML is recognized as authentication provider.");
                 validateJwtSecret();
                 break;
             case UNKNOWN:
-                log.info("zOSMF is probably used as the JWT producer but isn't available yet.");
-                events.add("Wait for zOSMF to come online before deciding who provides JWT tokens.");
+                log.info("z/OSMF instance {} is probably used as the JWT producer but isn't available yet.", zosmfServiceId);
+                addEvent("Wait for z/OSMF instance " + zosmfServiceId + " to come online before deciding who provides JWT tokens.");
                 validateInitializationWhenZosmfIsAvailable();
                 break;
             default:
@@ -207,12 +207,12 @@ public class JwtSecurity {
      */
     private void validateInitializationAgainstZosmf() {
         if (!providers.zosmfSupportsJwt()) {
-            events.add("API ML is responsible for token generation.");
-            log.debug("zOSMF is UP and does not support JWT");
+            addEvent("API ML is responsible for token generation.");
+            log.debug("z/OSMF instance {} is UP and does not support JWT", zosmfServiceId);
             validateJwtSecret();
         } else {
-            events.add("zOSMF is UP and supports JWT");
-            log.debug("zOSMF is UP and supports JWT");
+            addEvent("z/OSMF instance " + zosmfServiceId + " is UP and supports JWT");
+            log.debug("z/OSMF instance {} is UP and supports JWT", zosmfServiceId);
         }
     }
 
@@ -260,16 +260,18 @@ public class JwtSecurity {
 
         new Thread(() -> {
             try {
-                events.add("Started waiting for zOSMF to be registered and known by the discovery service");
-                log.debug("Waiting for zOSMF to be registered and known by the Discovery Service.");
+                addEvent("Started waiting for z/OSMF instance " + zosmfServiceId + " to be registered and known by the discovery service");
+                log.debug("Waiting for z/OSMF instance {} to be registered and known by the Discovery Service.", zosmfServiceId);
                 await()
                     .atMost(Duration.of(timeout, ChronoUnit.MINUTES))
                     .with()
                     .pollInterval(Durations.ONE_MINUTE)
                     .until(zosmfListener::isZosmfReady);
             } catch (ConditionTimeoutException e) {
-                apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
-                apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");
+                synchronized (events) {
+                    apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
+                }
+                apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
                 System.exit(1);
             }
         }).start();
@@ -298,11 +300,11 @@ public class JwtSecurity {
                     return;
                 }
 
-                events.add("Discovery Service Cache was updated.");
-                log.debug("Trying to reach the zOSMF.");
+                addEvent("Discovery Service Cache was updated.");
+                log.debug("Trying to reach the z/OSMF instance " + zosmfServiceId + ".");
                 if (providers.isZosmfAvailableAndOnline()) {
-                    events.add("zOSMF is avaiable and online.");
-                    log.debug("The zOSMF was reached ");
+                    addEvent("z/OSMF instance " + zosmfServiceId + " is available and online.");
+                    log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);
 
                     discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
                     isZosmfReady = true;
@@ -310,9 +312,13 @@ public class JwtSecurity {
                     try {
                         validateInitializationAgainstZosmf();
                     } catch (HttpsConfigError e) {
-                        apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
+                        synchronized (events) {
+                            apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
+                        }
                         System.exit(1);
                     }
+                } else {
+                    addEvent("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
                 }
             }
         };
@@ -337,5 +343,10 @@ public class JwtSecurity {
         ZOSMF,
         APIML,
         UNKNOWN
+    }
+
+    private void addEvent(String event) {
+        Instant time = Instant.now();
+        events.add(time + " " + event);
     }
 }

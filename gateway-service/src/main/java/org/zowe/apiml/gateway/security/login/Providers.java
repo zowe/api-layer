@@ -40,6 +40,15 @@ public class Providers {
     }
 
     /**
+     * Provide configured z/OSMF service ID from the Gateway auth configuration.
+     *
+     * @return service ID of z/OSMF instance
+     */
+    public String getZosmfServiceId() {
+        return authConfigurationProperties.validatedZosmfServiceId();
+    }
+
+    /**
      * Verify that the zOSMF is registered in the Discovery service and that we can actually reach it.
      *
      * @return true if the service is registered and properly responds.
