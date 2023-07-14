@@ -76,18 +76,18 @@ describe('>>> SideBarLinks component tests', () => {
                 services={servicesMock}
             />
         );
-        // eslint-disable-next-line no-console
-        console.log(wrapper.find(Tab).props());
-        expect(wrapper.find(Tab)).toHaveLength(1);
+        const tabComponent = wrapper.find(Tab);
 
-        // expect(wrapper.find(Tab).props()).toMatchSnapshot({
-        //     onClick: expect.any(Function),
-        //     value: 'Tab Text',
-        //     className: 'tabs',
-        //     component: RouterLink,
-        //     to: '/example/service1',
-        //     label: '<WithStyles(Component)
-        //     wrapped: true,
-        // });
+        expect(tabComponent).toHaveLength(1);
+
+        expect(tabComponent.props()).toEqual({
+            onClick: expect.any(Function),
+            value: 'Tab Text',
+            className: 'tabs',
+            component: RouterLink,
+            to: '/example/service1',
+            wrapped: true,
+            label: expect.anything(),
+        });
     });
 });
