@@ -32,6 +32,12 @@ describe('>>> Util Functions tests', () => {
       <div id="logo"></div>
       <div id="internal-link"></div>
       <div id="product-title"></div>
+      <div id="onboard-wizard-button">
+        <span class="MuiButton-label"></span>
+      </div>
+      <div id="refresh-api-button">
+        <span class="MuiIconButton-label"></span>
+      </div>
     `;
     });
 
@@ -70,12 +76,16 @@ describe('>>> Util Functions tests', () => {
         const detailPage = document.getElementsByClassName('content')[0];
         const description = document.getElementById('description');
         const link = document.querySelector("link[rel~='icon']");
+        const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
+        const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
         expect(logo.src).toContain('img-url');
         expect(link.href).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('red');
         expect(divider.style.getPropertyValue('background-color')).toBe('red');
         expect(title.style.getPropertyValue('color')).toBe('red');
         expect(swaggerLabel.style.getPropertyValue('color')).toBe('red');
+        expect(wizardButton.style.getPropertyValue('color')).toBe('red');
+        expect(refreshButton.style.getPropertyValue('color')).toBe('red');
         expect(logoutButton.style.getPropertyValue('color')).toBe('red');
         expect(homepage.style.backgroundColor).toBe('blue');
         expect(homepage.style.backgroundImage).toBe('none');
@@ -106,6 +116,8 @@ describe('>>> Util Functions tests', () => {
         const productTitle = document.getElementById('product-title');
         const docLink = document.getElementById('internal-link');
         const swaggerLabel = document.getElementById('swagger-label');
+        const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
+        const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
         const link = document.querySelector("link[rel~='icon']");
         expect(link.href).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('white');
@@ -113,6 +125,8 @@ describe('>>> Util Functions tests', () => {
         expect(productTitle.style.getPropertyValue('color')).toBe('black');
         expect(docLink.style.getPropertyValue('color')).toBe('black');
         expect(swaggerLabel.style.getPropertyValue('color')).toBe('black');
+        expect(wizardButton.style.getPropertyValue('color')).toBe('black');
+        expect(refreshButton.style.getPropertyValue('color')).toBe('black');
         expect(document.documentElement.style.backgroundColor).toBe('blue');
         // Clean up the mocks
         jest.restoreAllMocks();

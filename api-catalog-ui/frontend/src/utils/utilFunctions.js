@@ -30,38 +30,6 @@ export default function countAdditionalContents(service) {
     return { useCasesCounter, tutorialsCounter, videosCounter };
 }
 
-function setElementsColor(header, uiConfig, divider, title1, swaggerLabel, logoutButton, wizardButton, refreshButton) {
-    if (header && header.length > 0) {
-        header[0].style.setProperty('background-color', uiConfig.headerColor);
-    }
-    if (divider) {
-        divider.style.setProperty('background-color', uiConfig.headerColor);
-    }
-    if (title1) {
-        title1.style.setProperty('color', uiConfig.headerColor);
-    }
-    if (swaggerLabel) {
-        swaggerLabel.style.setProperty('color', uiConfig.headerColor);
-    }
-    if (logoutButton) {
-        logoutButton.style.setProperty('color', uiConfig.headerColor);
-    }
-    if (wizardButton) {
-        if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
-            wizardButton.style.setProperty('color', 'black');
-        } else {
-            wizardButton.style.setProperty('color', uiConfig.headerColor);
-        }
-    }
-    if (refreshButton) {
-        if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
-            refreshButton.style.setProperty('color', 'black');
-        } else {
-            refreshButton.style.setProperty('color', uiConfig.headerColor);
-        }
-    }
-}
-
 function setMultipleElements(uiConfig) {
     if (uiConfig.headerColor) {
         const divider = document.getElementById('separator2');
@@ -71,7 +39,35 @@ function setMultipleElements(uiConfig) {
         const header = document.getElementsByClassName('header');
         const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
         const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
-        setElementsColor(header, uiConfig, divider, title1, swaggerLabel, logoutButton, wizardButton, refreshButton);
+        if (header && header.length > 0) {
+            header[0].style.setProperty('background-color', uiConfig.headerColor);
+        }
+        if (divider) {
+            divider.style.setProperty('background-color', uiConfig.headerColor);
+        }
+        if (title1) {
+            title1.style.setProperty('color', uiConfig.headerColor);
+        }
+        if (swaggerLabel) {
+            swaggerLabel.style.setProperty('color', uiConfig.headerColor);
+        }
+        if (logoutButton) {
+            logoutButton.style.setProperty('color', uiConfig.headerColor);
+        }
+        if (wizardButton) {
+            if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+                wizardButton.style.setProperty('color', 'black');
+            } else {
+                wizardButton.style.setProperty('color', uiConfig.headerColor);
+            }
+        }
+        if (refreshButton) {
+            if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+                refreshButton.style.setProperty('color', 'black');
+            } else {
+                refreshButton.style.setProperty('color', uiConfig.headerColor);
+            }
+        }
     }
 }
 
