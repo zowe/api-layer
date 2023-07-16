@@ -30,6 +30,8 @@ describe('>>> Util Functions tests', () => {
       <div class="content"></div>
       <div id="description"></div>
       <div id="logo"></div>
+      <div id="internal-link"></div>
+      <div id="product-title"></div>
     `;
     });
 
@@ -81,6 +83,37 @@ describe('>>> Util Functions tests', () => {
         expect(document.documentElement.style.backgroundColor).toBe('blue');
         expect(description.style.color).toBe('white');
         expect(document.body.style.fontFamily).toBe('Arial');
+        // Clean up the mocks
+        jest.restoreAllMocks();
+        global.fetch.mockRestore();
+    });
+
+    it('should handle elements in case of white header', async () => {
+        const uiConfig = {
+            logo: '/path/img.png',
+            headerColor: 'white',
+            backgroundColor: 'blue',
+            fontFamily: 'Arial',
+            textColor: 'black',
+            docLink: 'doc|doc.com',
+        };
+
+        global.URL.createObjectURL = jest.fn().mockReturnValue('img-url');
+        global.fetch = mockFetch();
+        await customUIStyle(uiConfig);
+        const header = document.getElementsByClassName('header')[0];
+        const title = document.getElementById('title');
+        const productTitle = document.getElementById('product-title');
+        const docLink = document.getElementById('internal-link');
+        const swaggerLabel = document.getElementById('swagger-label');
+        const link = document.querySelector("link[rel~='icon']");
+        expect(link.href).toContain('img-url');
+        expect(header.style.getPropertyValue('background-color')).toBe('white');
+        expect(title.style.getPropertyValue('color')).toBe('black');
+        expect(productTitle.style.getPropertyValue('color')).toBe('black');
+        expect(docLink.style.getPropertyValue('color')).toBe('black');
+        expect(swaggerLabel.style.getPropertyValue('color')).toBe('black');
+        expect(document.documentElement.style.backgroundColor).toBe('blue');
         // Clean up the mocks
         jest.restoreAllMocks();
         global.fetch.mockRestore();

@@ -96,28 +96,28 @@ function fetchImagePath() {
 }
 
 function handleWhiteHeader(uiConfig) {
-    if (uiConfig.docLink) {
-        const docText = document.querySelector('#internal-link');
-        const goBackButton = document.querySelector('#go-back-button');
-        const swaggerLabel = document.getElementById('swagger-label');
-        const title = document.getElementById('title');
-        const productTitle = document.getElementById('product-title');
-        if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+    const goBackButton = document.querySelector('#go-back-button');
+    const swaggerLabel = document.getElementById('swagger-label');
+    const title = document.getElementById('title');
+    const productTitle = document.getElementById('product-title');
+    if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+        if (uiConfig.docLink) {
+            const docText = document.querySelector('#internal-link');
             if (docText) {
                 docText.style.color = 'black';
             }
-            if (goBackButton) {
-                goBackButton.style.color = 'black';
-            }
-            if (swaggerLabel) {
-                swaggerLabel.style.color = 'black';
-            }
-            if (title) {
-                title.style.color = 'black';
-            }
-            if (productTitle) {
-                productTitle.style.color = 'black';
-            }
+        }
+        if (goBackButton) {
+            goBackButton.style.color = 'black';
+        }
+        if (swaggerLabel) {
+            swaggerLabel.style.color = 'black';
+        }
+        if (title) {
+            title.style.color = 'black';
+        }
+        if (productTitle) {
+            productTitle.style.color = 'black';
         }
     }
 }
