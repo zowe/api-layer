@@ -148,13 +148,10 @@ public abstract class AbstractZosmfService {
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
         if (re instanceof ResourceAccessException) {
             if (re.getCause() instanceof SSLHandshakeException) {
-
-                // TODO longer message, specify things to verify, certificate common name, certificate validity
-                log.error("SSL Misconfiguration, z/OSMF is not accessible", re); // TODO does it happen?
+                log.error("SSL Misconfiguration, z/OSMF is not accessible", re);
             } else {
-                log.warn("Exception ", re); // TODO Verify which cases fall into this
+                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
             }
-            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
             return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         }
 
@@ -164,9 +161,9 @@ public abstract class AbstractZosmfService {
 
         if (re instanceof RestClientException) {
             if (re.getCause() instanceof ConnectException) {
-                log.warn(" {}", re.getMessage());
+                log.warn("Please verify z/OSMF instance is up and running {}", re.getMessage());
             } else {
-                log.debug("z/OSMF isn't accessible"); // Fix this debug message
+                log.debug("z/OSMF isn't accessible. {}", re.getMessage());
             }
             apimlLog.log("org.zowe.apiml.security.generic", re.getMessage(), url);
             return new AuthenticationServiceException("A failure occurred when authenticating.", re);
