@@ -233,12 +233,14 @@ export default class ServiceTab extends Component {
                             <Typography id="swagger-label" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
-                            <Typography id="version-label" variant="subtitle2">
-                                Version
-                            </Typography>
-                        </div>
-                        <div id="version-div">
                             {containsVersion && currentService && (
+                                <Typography id="version-label" variant="subtitle2">
+                                    Version
+                                </Typography>
+                            )}
+                        </div>
+                        {containsVersion && currentService && (
+                            <div id="version-div">
                                 <Select
                                     displayEmpty
                                     id="version-menu"
@@ -252,21 +254,21 @@ export default class ServiceTab extends Component {
                                 >
                                     {apiVersions}
                                 </Select>
-                            )}
-                            <Button
-                                id="compare-button"
-                                disabled={apiVersions.length < 2}
-                                style={
-                                    apiVersions.length < 2
-                                        ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
-                                        : { backgroundColor: '#fff', color: '#0056B3' }
-                                }
-                                onClick={this.handleDialogOpen}
-                                key="diff"
-                            >
-                                <Typography className="version-text">Compare API Versions</Typography>
-                            </Button>
-                        </div>
+                                <Button
+                                    id="compare-button"
+                                    disabled={apiVersions.length < 2}
+                                    style={
+                                        apiVersions.length < 2
+                                            ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
+                                            : { backgroundColor: '#fff', color: '#0056B3' }
+                                    }
+                                    onClick={this.handleDialogOpen}
+                                    key="diff"
+                                >
+                                    <Typography className="version-text">Compare API Versions</Typography>
+                                </Button>
+                            </div>
+                        )}
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
                         {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
