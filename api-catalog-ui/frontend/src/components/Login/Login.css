@@ -45,7 +45,6 @@
 .w-form {
     display: inline-table;
     resize: inherit;
-    position: static;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
@@ -140,8 +139,7 @@ form#login-form {
 }
 
 .susp-card {
-    padding-top: 200px;
-    padding-left: 600px;
+    margin: auto;
 }
 
 .MuiFormControl-root {
