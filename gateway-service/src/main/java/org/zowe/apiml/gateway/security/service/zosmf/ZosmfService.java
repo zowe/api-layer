@@ -226,22 +226,8 @@ public class ZosmfService extends AbstractZosmfService {
             }
 
             return info.getStatusCode() == HttpStatus.OK;
-        } catch (ResourceAccessException ex) {
-            if (ex.getCause() instanceof SSLHandshakeException) {
-                // TODO longer message, specify things to verify, certificate common name, certificate validity
-                log.error("SSL Misconfiguration, z/OSMF is not accessible", ex); // TODO does it happen?
-            } else {
-                log.warn("Exception ", ex); // TODO Verify which cases fall into this
-            }
-            return false;
-        } catch (RestClientException ex) {
-            // XXX - Which exceptions are being caught here?
-            if (ex.getCause() instanceof ConnectException) {
-                log.warn(" {}", ex.getMessage());
-            } else {
-                log.debug("z/OSMF isn't accessible on URI: {}", infoURIEndpoint); // Fix this debug message
-            }
-
+        } catch (RuntimeException ex) {
+            handleExceptionOnCall(infoURIEndpoint, ex);
             return false;
         }
     }
