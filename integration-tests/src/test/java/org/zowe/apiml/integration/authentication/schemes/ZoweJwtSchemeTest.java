@@ -61,6 +61,9 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
 
     @Test
     void givenInvalidClientCertificateInRequest() {
+
+        // TODO Could these verify logs?
+
         given()
             .config(SslContext.selfSignedUntrusted)
             .when()

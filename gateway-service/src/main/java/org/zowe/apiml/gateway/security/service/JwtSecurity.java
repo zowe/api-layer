@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
@@ -23,6 +24,8 @@ import org.awaitility.Durations;
 import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
@@ -79,15 +82,19 @@ public class JwtSecurity {
 
     private final List<String> events = Collections.synchronizedList(new ArrayList<>());
 
+    private ApplicationContext applicationContext;
+
     @Autowired
-    public JwtSecurity(Providers providers, ApimlDiscoveryClient discoveryClient) {
+    public JwtSecurity(Providers providers, ApimlDiscoveryClient discoveryClient, ApplicationContext context) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
         this.zosmfListener = new ZosmfListener(discoveryClient);
+        this.applicationContext = context;
     }
 
-    public JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient) {
-        this(providers, discoveryClient);
+    @VisibleForTesting
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient, ApplicationContext context) {
+        this(providers, discoveryClient, context);
 
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;
@@ -272,7 +279,7 @@ public class JwtSecurity {
                     apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
                 }
                 apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
-                System.exit(1);
+                SpringApplication.exit(applicationContext, () -> 1);
             }
         }).start();
     }
@@ -280,6 +287,7 @@ public class JwtSecurity {
     /**
      * Only for unit testing
      */
+    @VisibleForTesting
     ZosmfListener getZosmfListener() {
         return zosmfListener;
     }
@@ -315,7 +323,7 @@ public class JwtSecurity {
                         synchronized (events) {
                             apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
                         }
-                        System.exit(1);
+                        SpringApplication.exit(applicationContext, () -> 1);
                     }
                 } else {
                     addEvent("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");

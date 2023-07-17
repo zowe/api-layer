@@ -36,6 +36,9 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.SSLHandshakeException;
+
+import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.*;
 
@@ -83,7 +86,6 @@ public class ZosmfService extends AbstractZosmfService {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ZosmfInfo {
-
 
         @JsonProperty("zosmf_version")
         private int version;
@@ -209,7 +211,7 @@ public class ZosmfService extends AbstractZosmfService {
         headers.add(ZOSMF_CSRF_HEADER, "");
 
         String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
-        log.debug("Verifying zOSMF accessibility on info endpoint: {}", infoURIEndpoint);
+        log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
 
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
@@ -219,9 +221,26 @@ public class ZosmfService extends AbstractZosmfService {
                 ZosmfInfo.class
             );
 
+            if (info.getStatusCode() != HttpStatus.OK && HttpStatus.Series.resolve(info.getStatusCodeValue()) == HttpStatus.Series.INFORMATIONAL) { // TODO for different ranges.
+                log.debug("Request to z/OSMF \"{}\" failed with HTTP status code {}", infoURIEndpoint, info.getStatusCodeValue());
+            }
+
             return info.getStatusCode() == HttpStatus.OK;
+        } catch (ResourceAccessException ex) {
+            if (ex.getCause() instanceof SSLHandshakeException) {
+                // TODO longer message, specify things to verify, certificate common name, certificate validity
+                log.error("SSL Misconfiguration, z/OSMF is not accessible", ex); // TODO does it happen?
+            } else {
+                log.warn("Exception ", ex); // TODO Verify which cases fall into this
+            }
+            return false;
         } catch (RestClientException ex) {
-            log.debug("zOSMF isn't accessible on URI: {}", infoURIEndpoint);
+            // XXX - Which exceptions are being caught here?
+            if (ex.getCause() instanceof ConnectException) {
+                log.warn(" {}", ex.getMessage());
+            } else {
+                log.debug("z/OSMF isn't accessible on URI: {}", infoURIEndpoint); // Fix this debug message
+            }
 
             return false;
         }

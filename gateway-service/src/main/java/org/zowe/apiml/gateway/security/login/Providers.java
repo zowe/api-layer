@@ -35,7 +35,7 @@ public class Providers {
      */
     public boolean isZosmfAvailable() {
         boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
-        log.debug("zOSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
+        log.debug("z/OSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
         return isZosmfRegisteredAndPropagated;
     }
 
@@ -54,17 +54,41 @@ public class Providers {
      * @return true if the service is registered and properly responds.
      */
     public boolean isZosmfAvailableAndOnline() {
+        // TODO Validate
+        /*
+
+GW does not trust its certificate --> seems like this is not really part of the rest template in GW
+CN and hostname are not matching --> this is already covered.
+certificate is expired --> this is already covered.
+cannot find the public certificate (or CA) in the truststore --> no truststore for this communication, probably yes for the discovery service.
+not match TLS versions --> now covered in exception validation.
+Connection was rejected --> now covered in exception validation.
+Unknown hostname (a DNS issue)z/OSMF return unexpected return code (ie. 500) --> now covered in status code validation.
+
+*/
         try {
             boolean isAvailable = isZosmfAvailable();
             boolean isAccessible = zosmfService.isAccessible();
-            log.debug("zOSMF is registered and propagated to the DS: {} and is accessible based on the information: {}", isAvailable, isAccessible);
+
+            if (!isAccessible) {
+                log.debug("");
+                analyse();
+                // Why is it not accessible
+            }
+
+            // TODO Some errors could be unsalvable?
+
+            log.debug("z/OSMF is registered and propagated to the DS: {} and is accessible based on the information: {}", isAvailable, isAccessible);
 
             return isAvailable && isAccessible;
         } catch (ServiceNotAccessibleException exception) {
-            log.debug("zOSMF isn't registered to the Gateway yet");
+            log.debug("z/OSMF is not registered to the Gateway yet");
 
             return false;
         }
+    }
+
+    private void analyse() {
     }
 
     /**

@@ -172,6 +172,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {
+        // FIXME no logs?
         if (serviceId != null) {
             QueryResponse parsedToken = authenticationService.parseJwtWithSignature(jwtToken);
             if (parsedToken != null && parsedToken.getScopes() != null) {
