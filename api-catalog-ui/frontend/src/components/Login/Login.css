@@ -45,6 +45,7 @@
 .w-form {
     display: inline-table;
     resize: inherit;
+    position: static;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
