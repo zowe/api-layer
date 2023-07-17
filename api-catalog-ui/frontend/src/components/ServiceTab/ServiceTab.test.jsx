@@ -97,4 +97,41 @@ describe('>>> ServiceTab component tests', () => {
         dropDownMenu.children().at(1).simulate('click');
         expect(serviceTab.find('[data-testid="version-menu"]').first().text()).toBe('org.zowe v1org.zowe v2');
     });
+
+    it('should throw error when tiles are null', () => {
+        const selectService = jest.fn();
+        expect(() =>
+            shallow(
+                <ServiceTab
+                    match={params}
+                    selectedService={selectedService}
+                    tiles={null}
+                    selectService={selectService}
+                />
+            )
+        ).toThrow('No tile is selected.');
+    });
+
+    it('should throw error when tiles are undefined', () => {
+        const selectService = jest.fn();
+        expect(() =>
+            shallow(
+                <ServiceTab
+                    match={params}
+                    selectedService={selectedService}
+                    tiles={undefined}
+                    selectService={selectService}
+                />
+            )
+        ).toThrow('No tile is selected.');
+    });
+
+    it('should throw error when tiles are empty', () => {
+        const selectService = jest.fn();
+        expect(() =>
+            shallow(
+                <ServiceTab match={params} selectedService={selectedService} tiles={[]} selectService={selectService} />
+            )
+        ).toThrow('No tile is selected.');
+    });
 });
