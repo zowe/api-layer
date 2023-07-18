@@ -148,20 +148,24 @@ public abstract class AbstractZosmfService {
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
         if (re instanceof ResourceAccessException) {
             if (re.getCause() instanceof SSLHandshakeException) {
-                log.error("SSL Misconfiguration, z/OSMF is not accessible", re);
-            } else {
-                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
+                log.error("SSL Misconfiguration, z/OSMF is not accessible. Please verify the following: \n" +
+                " - CN (Common Name) and z/OSMF hostname have to match.\n" +
+                " - Certificate is expired\n" +
+                " - TLS version match\n" +
+                "Further details and a stack trace will follow", re);
             }
+            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
             return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         }
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
+            log.warn("Request to z/OSMF requires authentication", re.getMessage()); // TODO can we get the URI?
             return new BadCredentialsException("Invalid Credentials");
         }
 
         if (re instanceof RestClientException) {
             if (re.getCause() instanceof ConnectException) {
-                log.warn("Please verify z/OSMF instance is up and running {}", re.getMessage());
+                log.warn("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running {}", re.getMessage());
             } else {
                 log.debug("z/OSMF isn't accessible. {}", re.getMessage());
             }
