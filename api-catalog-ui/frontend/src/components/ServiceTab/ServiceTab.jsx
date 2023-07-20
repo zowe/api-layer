@@ -19,6 +19,7 @@ export default class ServiceTab extends Component {
         super(props);
         this.state = {
             selectedVersion: null,
+            previousVersion: null,
             isDialogOpen: false,
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
@@ -119,6 +120,8 @@ export default class ServiceTab extends Component {
     }
 
     handleDialogOpen = () => {
+        const { selectedVersion } = this.state;
+        this.setState({ previousVersion: selectedVersion });
         this.setState({ isDialogOpen: true, selectedVersion: 'diff' });
     };
 
@@ -272,6 +275,7 @@ export default class ServiceTab extends Component {
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
                         {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
+                                selectedVersion={this.state.previousVersion}
                                 handleDialog={this.handleDialogClose}
                                 serviceId={selectedService.serviceId}
                                 versions={currentService.apiVersions}

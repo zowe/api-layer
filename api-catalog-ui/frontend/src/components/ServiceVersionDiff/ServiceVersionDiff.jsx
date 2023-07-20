@@ -46,7 +46,7 @@ export default class ServiceVersionDiff extends Component {
     };
 
     render() {
-        const { serviceId, versions, getDiff, diffText, handleDialog } = this.props;
+        const { serviceId, versions, getDiff, diffText, handleDialog, selectedVersion } = this.props;
         const { selectedVersion1, selectedVersion2, open } = this.state;
         const selectorStyle = {
             width: '140px',
@@ -71,7 +71,7 @@ export default class ServiceVersionDiff extends Component {
                                     data-testid="select-1"
                                     label="versionSelect1"
                                     className="select-diff"
-                                    value={selectedVersion1}
+                                    value={selectedVersion}
                                     onChange={this.handleVersion1Change}
                                     sx={selectorStyle}
                                 >

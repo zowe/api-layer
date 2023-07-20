@@ -21,6 +21,10 @@
 	margin-left: 8px;
 }
 
+#close-dialog > span > svg {
+ fill: black;
+}
+
 .article {
 	padding: 20px;
 	max-width: 960px;
