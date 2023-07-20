@@ -162,6 +162,20 @@ messages:
       reason: "The provided id is not valid under conformance criteria."
       action: "Verify the conformance criteria, provide valid service id."
 
+    - key: org.zowe.apiml.gateway.verifier.NoMetadata
+      number: ZWEAG718
+      type: ERROR
+      text: "Cannot retrieve metadata: '%s'"
+      reason: "Metadata aren't accessible"
+      action: "Verify that the metadata are accessible and not empty"
+
+    - key: org.zowe.apiml.gateway.verifier.NonConformant
+      number: ZWEAG719
+      type: INFO
+      text: "The service is not conformant: %s"
+      reason: "The provided service is not valid under conformance criteria."
+      action: "Verify the conformance criteria."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic

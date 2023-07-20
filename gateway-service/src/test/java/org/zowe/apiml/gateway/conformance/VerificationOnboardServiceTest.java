@@ -10,15 +10,7 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -29,6 +21,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class VerificationOnboardServiceTest {
@@ -43,17 +44,26 @@ public class VerificationOnboardServiceTest {
     private static final String SWAGGER_NAME = "apiml.apiInfo.api-v2.swaggerUrl";
     private static final String SWAGGER_URL = "https://hostname/sampleclient/api-doc";
 
+    @Test
+    void whenCheckingOnboardedService() {
+        when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
+        assertFalse(verificationOnboardService.checkOnboarding("Test"));
+        assertTrue(verificationOnboardService.checkOnboarding("OnboardedService"));
+
+    }
+
 
     @ParameterizedTest
     @MethodSource("provideGatewayConfiguration")
-    void givenGatewayConfiguration_thenReturnCorrectResponse(Map<String, String> metadata, String expectedUrl, String serviceId, boolean expectServiceInstance) {
+    void givenGatewayConfiguration_thenReturnSwagger(Map<String, String> metadata, String expectedUrl, String serviceId, boolean expectServiceInstance) {
         DefaultServiceInstance defaultServiceInstance = new DefaultServiceInstance("sys1.acme.net", serviceId, "localhost", 10010, true, metadata);
-        List<ServiceInstance> serviceInstances = new ArrayList<ServiceInstance>();
+        List<ServiceInstance> serviceInstances = new ArrayList<>();
         if (expectServiceInstance) {
             serviceInstances.add(defaultServiceInstance);
         }
         when(discoveryClient.getInstances(GATEWAY_ID)).thenReturn(serviceInstances);
-        String actualUrl = verificationOnboardService.retrieveMetaData(GATEWAY_ID);
+
+        String actualUrl = verificationOnboardService.retrieveSwagger(GATEWAY_ID);
         assertEquals(expectedUrl, actualUrl);
     }
 
@@ -66,24 +76,6 @@ public class VerificationOnboardServiceTest {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("provideOnboardConfiguration")
-    void givenOnboardInfo_thenReturnCorrectResponse(List<String> serviceList, boolean expectedOnboard, String serviceId) {
-        when(discoveryClient.getServices()).thenReturn(serviceList);
-        assertEquals(expectedOnboard, verificationOnboardService.checkOnboarding(serviceId)); 
-    }
-
-    private static Stream<Arguments> provideOnboardConfiguration() {
-        return Stream.of(
-            Arguments.of(new ArrayList<String>() {{
-                add(GATEWAY_ID);
-            }}, true, GATEWAY_ID),
-            Arguments.of(new ArrayList<String>() {{
-                add("zowesample");
-            }}, false, GATEWAY_ID),
-            Arguments.of(new ArrayList<String>(), false, GATEWAY_ID)
-        );
-    }
 
 }
 
