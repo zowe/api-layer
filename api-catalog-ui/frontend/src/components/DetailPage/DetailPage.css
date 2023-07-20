@@ -145,9 +145,7 @@ div.content-description-container > div > div:nth-child(2) > div {
 }
 
 .paragraph-description-container {
-    /*change width via templating mechanism to create space for the right menu (width 80%) */
     width: auto;
-    /*width: 80%;*/
     margin-left: 56px;
 }
 

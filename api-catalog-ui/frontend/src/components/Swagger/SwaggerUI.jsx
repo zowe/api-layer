@@ -96,7 +96,7 @@ export default class SwaggerUI extends Component {
     setSwaggerState = () => {
         const { selectedService, selectedVersion } = this.props;
         let codeSnippets = null;
-        if (selectedService.apis.length !== 0) {
+        if (selectedService && 'apis' in selectedService && selectedService.apis && selectedService.apis.length !== 0) {
             if (
                 selectedService.apis[selectedVersion] !== null &&
                 selectedService.apis[selectedVersion] !== undefined &&

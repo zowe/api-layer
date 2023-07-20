@@ -27,6 +27,7 @@ export default class DetailPage extends Component {
         if (currentTileId) {
             fetchTilesStart(currentTileId);
         }
+        localStorage.removeItem('selectedTab');
     }
 
     componentWillUnmount() {

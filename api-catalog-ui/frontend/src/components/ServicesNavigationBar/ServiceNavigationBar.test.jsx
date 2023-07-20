@@ -33,21 +33,15 @@ const tile = {
     createdTimestamp: '2018-08-22T08:31:22.948+0000',
 };
 
+const match = {
+    url: '/service',
+};
+
 describe('>>> ServiceNavigationBar component tests', () => {
     it('should clear when unmounting', () => {
         const clear = jest.fn();
         const serviceNavigationBar = shallow(
-            <ServicesNavigationBar clear={clear} services={[tile]} currentTileId="apicatalog" />
-        );
-        const instance = serviceNavigationBar.instance();
-        instance.componentWillUnmount();
-        expect(clear).toHaveBeenCalled();
-    });
-
-    it('should clear when unmounting', () => {
-        const clear = jest.fn();
-        const serviceNavigationBar = shallow(
-            <ServicesNavigationBar clear={clear} services={[tile]} currentTileId="apicatalog" />
+            <ServicesNavigationBar match={match} clear={clear} services={[tile]} currentTileId="apicatalog" />
         );
         const instance = serviceNavigationBar.instance();
         instance.componentWillUnmount();

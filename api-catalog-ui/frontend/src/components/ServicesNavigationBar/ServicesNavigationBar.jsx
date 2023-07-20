@@ -9,8 +9,8 @@
  */
 
 import { Component } from 'react';
-import { Typography } from '@material-ui/core';
-import SideBarLinks from './SideBarLinks';
+import { Tab, Tabs, Tooltip, Typography, withStyles } from '@material-ui/core';
+import { Link as RouterLink } from 'react-router-dom';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 
@@ -25,10 +25,38 @@ export default class ServicesNavigationBar extends Component {
         filterText(value);
     };
 
+    handleTabChange = (event, selectedTab) => {
+        localStorage.setItem('selectedTab', selectedTab);
+    };
+
+    handleTabClick = (id) => {
+        const { storeCurrentTileId, services } = this.props;
+        const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
+        if (correctTile) {
+            storeCurrentTileId(correctTile.id);
+        }
+    };
+
+    styles = () => ({
+        truncatedTabLabel: {
+            maxWidth: 340,
+            width: 'max-content',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+        },
+    });
+
     render() {
-        const { match, services, searchCriteria, storeCurrentTileId } = this.props;
+        const { match, services, searchCriteria } = this.props;
         const hasTiles = services && services.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+        const selectedTab = Number(localStorage.getItem('selectedTab'));
+        const TruncatedTabLabel = withStyles(this.styles)(({ classes, label }) => (
+            <Tooltip title={label} placement="bottom">
+                <div className={classes.truncatedTabLabel}>{label}</div>
+            </Tooltip>
+        ));
         return (
             <div>
                 <div id="search2">
@@ -43,20 +71,29 @@ export default class ServicesNavigationBar extends Component {
                 <Typography id="serviceIdTabs" variant="h5">
                     Product APIs
                 </Typography>
-                {services.map((tile) =>
-                    tile.services.map((service) => (
-                        <div key={service.serviceId} className="nav-tabs">
-                            <SideBarLinks
-                                storeCurrentTileId={storeCurrentTileId}
-                                originalTiles={services}
+                <Tabs
+                    value={selectedTab}
+                    onChange={this.handleTabChange}
+                    variant="scrollable"
+                    orientation="vertical"
+                    scrollButtons="auto"
+                    className="custom-tabs"
+                >
+                    {services.map((tile, tileIndex) =>
+                        tile.services.map((service, serviceIndex) => (
+                            <Tab
+                                onClick={() => this.handleTabClick(service.serviceId)}
                                 key={service.serviceId}
-                                text={service.title}
-                                match={match}
-                                services={service.serviceId}
+                                className="tabs"
+                                component={RouterLink}
+                                to={`${match.url}/${service.serviceId}`}
+                                value={tileIndex * services.length + serviceIndex}
+                                label={<TruncatedTabLabel label={service.title} />}
+                                wrapped
                             />
-                        </div>
-                    ))
-                )}
+                        ))
+                    )}
+                </Tabs>
                 {!hasTiles && hasSearchCriteria && (
                     <Typography id="search_no_results" variant="subtitle2">
                         No services found matching search criteria
