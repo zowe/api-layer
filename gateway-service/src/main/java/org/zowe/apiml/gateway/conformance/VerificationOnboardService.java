@@ -61,6 +61,13 @@ public class VerificationOnboardService {
     }
 
 
+
+    /**
+     * Accepts serviceId and retrieves the Swagger url if it exists
+     *
+     * @param serviceId serviceId to check
+     * @return SwaggerUrl when able, empty string otherwise
+     */
     public String retrieveSwagger(String serviceId) {
 
         if (!canRetrieveMetaData(serviceId)) {
