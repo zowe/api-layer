@@ -10,18 +10,17 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-import java.util.List;
-import java.util.Map;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
 
 /**
- * service class offered methods for checking onboarding information and also retrieve metadata from
- * provided serviceid.
+ * Service class that offers methods for checking onboarding information and also checks availability metadata from
+ * a provided serviceId.
  */
 @Service
 @RequiredArgsConstructor
@@ -30,37 +29,52 @@ public class VerificationOnboardService {
     private final DiscoveryClient discoveryClient;
 
     /**
-     * Accept serviceId and check if the service is onboarded to the API Mediation Layer
-     * @param serviceId accept serviceId to check
-     * @return return true if the service is known by Eureka otherwise false.
+     * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
+     *
+     * @param serviceId serviceId to check
+     * @return true if the service is known by Eureka otherwise false.
      */
     public boolean checkOnboarding(String serviceId) {
-        
+
         List<String> serviceLists = discoveryClient.getServices();
+
         return serviceLists.contains(serviceId);
 
     }
 
     /**
-     * Accept serviceId and check if the 
-     * @param serviceId accept serviceId to check
-     * @return return swagger Url if the metadata can be retrieved, otherwise an empty string.
+     * Accepts serviceId and checks if the metadata field exists and is not empty
+     *
+     * @param serviceId serviceId to check
+     * @return true when it can retrieve metadata, false otherwise.
      */
-    public String retrieveMetaData(String serviceId) {
+    public boolean canRetrieveMetaData(String serviceId) {
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
 
         if (!serviceInstances.isEmpty()) {
             ServiceInstance serviceInstance = serviceInstances.get(0);
             Map<String, String> metadata = serviceInstance.getMetadata();
-            if (metadata != null && !metadata.isEmpty()) {
-                String swaggerUrl = metadata.get("apiml.apiInfo.api-v2.swaggerUrl");
-                if (swaggerUrl != null) {
-                    return swaggerUrl;
-                }
-            }
+            return metadata != null && !metadata.isEmpty();
         }
+        return false;
+    }
+
+
+    public String retrieveSwagger(String serviceId) {
+
+        if (!canRetrieveMetaData(serviceId)) {
+            return "";
+        }
+        ServiceInstance serviceInstance = discoveryClient.getInstances(serviceId).get(0);
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String swaggerUrl = metadata.get("apiml.apiInfo.api-v2.swaggerUrl");
+        if (swaggerUrl != null) {
+            return swaggerUrl;
+        }
+
         return "";
     }
+
 
 }

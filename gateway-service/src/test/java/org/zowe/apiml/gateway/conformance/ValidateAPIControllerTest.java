@@ -10,101 +10,128 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.CoreMatchers.containsString;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
-
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @AcceptanceTest
-public class ValidateAPIControllerTest extends AcceptanceTestWithTwoServices {
-    
-    private String validatePath;
-    private MessageService messageService;
-    private ValidateAPIController validateAPIController;
+public class ValidateAPIControllerTest {
 
     @Autowired
+    private ValidateAPIController validateAPIController;
+
+    @MockBean
     private VerificationOnboardService verificationOnboardService;
-    
+
     @BeforeEach
-    void setup() throws IOException {
-        validatePath = "/validate";
+    void setup() {
+        MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
+        validateAPIController = new ValidateAPIController(messageService, verificationOnboardService);
+        standaloneSetup(validateAPIController);
+    }
+
+
+    @Nested
+    class GivenWrongServiceId {
+        @Test
+        public void whenServiceIdTooLong_thenNonconformant() {
+
+            String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
+
+            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
+            when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
+
+            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().getMessageContent().contains("The serviceId is longer than 64 characters"));
+
+        }
+
+        @Test
+        public void whenServiceIdTooLongAndSymbols_thenNonconformant() {
+
+            String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
+
+            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
+            when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
+
+            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().getMessageContent().contains("The serviceId is longer than 64 characters"));
+            assertTrue(result.getBody().getMessageContent().contains("The serviceId contains symbols or upper case letters"));
+
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"test-test", "TEST", "Test"})
+        public void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
+
+            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
+            when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
+
+            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().getMessageContent().contains("The serviceId contains symbols or upper case letters"));
+
+        }
+
     }
 
     @Nested
-    class GivenControllerServiceID {
-
-        @BeforeEach
-        void setup() throws IOException {
-            messageService = new YamlMessageService("/gateway-log-messages.yml");
-            validateAPIController = new ValidateAPIController(messageService, verificationOnboardService);
-            standaloneSetup(validateAPIController);
-        }
+    class ServiceNotOnboarded {
 
         @Test
-        void whenServiceId_validate() throws Exception {
-            given()  
-                .param("serviceID","validserviceid")
-            .when()          
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The service is not registered"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
+        public void WhenServiceNotOboarded_thenError() {
+
+            String testString = "notOnboarded";
+
+            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(false);
+
+            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().getMessageContent().contains("The service is not registered"));
+
         }
 
-        @Test
-        void whenServiceId_InvalidateUpper() throws Exception {
-           
-            given()
-                .param("serviceID", "Invalidserviceidcontainupperletter")
-            .when()
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The serviceid contains symbols or upper case letters"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
-        }
 
         @Test
-        void whenServiceId_InvalidateSymbol() throws Exception {
-            given()
-                .param("serviceID", "invalid@serviceid_containsymbols")
-            .when()
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The serviceid contains symbols or upper case letters"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
-        }
+        public void LegacyWhenServiceNotOboarded_thenError() {
 
-        
-        @Test
-        void whenServiceId_InvalidateLength() throws Exception {
-            given()
-                .param("serviceID", "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklwsezxcvbnmqwertyuiop")
-            .when()
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The serviceid is longer than 64 characters"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
+            String testString = "notOnboarded";
+
+            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(false);
+
+            ResponseEntity<ApiMessage> result = validateAPIController.checkValidateLegacy(testString);
+
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().getMessageContent().contains("The service is not registered"));
+
         }
-        
     }
 }
+
