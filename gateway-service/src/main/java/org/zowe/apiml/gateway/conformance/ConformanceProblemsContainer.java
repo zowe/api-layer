@@ -13,6 +13,12 @@ package org.zowe.apiml.gateway.conformance;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
+
+
+/**
+ * Java class that is used to keep track of found conformance issues
+ */
 public class ConformanceProblemsContainer extends HashMap<String, ArrayList<String>> {
 
     @Override

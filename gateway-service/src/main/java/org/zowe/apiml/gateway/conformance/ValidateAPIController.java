@@ -84,7 +84,7 @@ public class ValidateAPIController {
 
 
     /**
-     * Mapping the old endpoint to the new one
+     * Mapping so the old endpoint keeps working.
      *
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
@@ -97,7 +97,7 @@ public class ValidateAPIController {
 
 
     /**
-     * Makes a response when a conformance criteria is failed
+     * Creates a response when a conformance criteria is failed.
      *
      * @param foundNonConformanceIssues list of found issues
      * @return Response that this controller returns
@@ -125,7 +125,7 @@ public class ValidateAPIController {
 
 
     /**
-     * Checks if metadata can be retrieved
+     * Checks if metadata can be retrieved.
      *
      * @param serviceId serviceId to check
      * @return Either empty list or list containing one item with the explanation of the problem
