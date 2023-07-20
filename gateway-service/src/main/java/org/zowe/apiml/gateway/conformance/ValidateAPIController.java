@@ -103,7 +103,6 @@ public class ValidateAPIController {
      * @return Response that this controller returns
      */
     private ResponseEntity<ApiMessage> GenerateBadRequestResponseEntity(String key, ConformanceProblemsContainer foundNonConformanceIssues) {
-        System.out.println(foundNonConformanceIssues);
         return new ResponseEntity<>(messageService.createMessage(key, foundNonConformanceIssues.toString()).mapToApiMessage(), HttpStatus.BAD_REQUEST);
     }
 
