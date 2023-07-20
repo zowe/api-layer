@@ -16,6 +16,8 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
@@ -27,6 +29,9 @@ public class Providers {
     private final CompoundAuthProvider compoundAuthProvider;
     private final ZosmfService zosmfService;
 
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     /**
      * This method decides whether the Zosmf service is available.
      *
@@ -34,8 +39,13 @@ public class Providers {
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public boolean isZosmfAvailable() {
-        boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
-        log.debug("z/OSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
+
+        String  zosmfServiceId = authConfigurationProperties.validatedZosmfServiceId();
+        boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(zosmfServiceId).isEmpty();
+        if (!isZosmfRegisteredAndPropagated) {
+            apimlLog.log("org.zowe.apiml.security.auth.zosmf.serviceId", zosmfServiceId);
+        }
+            log.debug("z/OSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
         return isZosmfRegisteredAndPropagated;
     }
 

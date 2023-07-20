@@ -24,7 +24,6 @@ import org.awaitility.Durations;
 import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
@@ -40,7 +39,6 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -80,7 +78,7 @@ public class JwtSecurity {
     private final ZosmfListener zosmfListener;
     private final String zosmfServiceId;
 
-    private final List<String> events = Collections.synchronizedList(new ArrayList<>());
+    private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
     private ApplicationContext applicationContext;
 
@@ -279,7 +277,7 @@ public class JwtSecurity {
                     apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
                 }
                 apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
-                SpringApplication.exit(applicationContext, () -> 1);
+                System.exit(1);
             }
         }).start();
     }
@@ -323,7 +321,7 @@ public class JwtSecurity {
                         synchronized (events) {
                             apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
                         }
-                        SpringApplication.exit(applicationContext, () -> 1);
+                        System.exit(1);
                     }
                 } else {
                     addEvent("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
@@ -354,7 +352,6 @@ public class JwtSecurity {
     }
 
     private void addEvent(String event) {
-        Instant time = Instant.now();
-        events.add(time + " " + event);
+        events.add( event);
     }
 }
