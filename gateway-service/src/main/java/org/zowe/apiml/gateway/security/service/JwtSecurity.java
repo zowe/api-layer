@@ -24,7 +24,6 @@ import org.awaitility.Durations;
 import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
@@ -88,7 +87,7 @@ public class JwtSecurity {
     }
 
     @VisibleForTesting
-    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient, ApplicationContext context) {
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient) {
         this(providers, discoveryClient);
 
         this.keyStore = keyStore;

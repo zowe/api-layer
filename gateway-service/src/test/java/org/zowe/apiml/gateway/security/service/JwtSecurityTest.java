@@ -54,7 +54,7 @@ class JwtSecurityTest {
     class WhenInitializedWithValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient, null);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
         }
 
         @Test
@@ -86,7 +86,7 @@ class JwtSecurityTest {
     class WhenInitializedWithoutValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient, null);
+            underTest = new JwtSecurity(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
         }
 
         @Test
@@ -124,7 +124,7 @@ class JwtSecurityTest {
 
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient, null);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
         }
 
         @Test
@@ -192,7 +192,7 @@ class JwtSecurityTest {
     class GetJwkPublicKey {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient, null);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
 
             when(providers.isZosfmUsed()).thenReturn(false);
         }
