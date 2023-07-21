@@ -10,13 +10,20 @@
 
 package org.zowe.apiml.gateway.conformance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.core.util.Json;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.message.api.ApiMessage;
@@ -24,8 +31,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @AcceptanceTest
@@ -37,13 +43,37 @@ public class ValidateAPIControllerTest {
     @MockBean
     private VerificationOnboardService verificationOnboardService;
 
+
+    ResponseEntity<String> result;
+
+
     @BeforeEach
     void setup() {
         MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
         validateAPIController = new ValidateAPIController(messageService, verificationOnboardService);
         standaloneSetup(validateAPIController);
+
+        result = new ResponseEntity<String>(HttpStatus.I_AM_A_TEAPOT); // Here only in case we forget to reassign result
     }
 
+
+    @AfterEach
+    void checkValidJson() {
+        ObjectMapper mapper = new ObjectMapper()
+            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+        boolean valid;
+
+        try {
+            mapper.readTree(result.getBody());
+            valid = true;
+        } catch (JsonProcessingException e) {
+            valid = false;
+        }
+        assertTrue(valid);
+
+
+    }
 
     @Nested
     class GivenWrongServiceId {
@@ -55,11 +85,11 @@ public class ValidateAPIControllerTest {
             when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
             when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
 
-            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString);
 
             assertNotNull(result.getBody());
 
-            assertTrue(result.getBody().getMessageContent().contains("The serviceId is longer than 64 characters"));
+            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
 
         }
 
@@ -71,12 +101,12 @@ public class ValidateAPIControllerTest {
             when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
             when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
 
-            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString);
 
             assertNotNull(result.getBody());
 
-            assertTrue(result.getBody().getMessageContent().contains("The serviceId is longer than 64 characters"));
-            assertTrue(result.getBody().getMessageContent().contains("The serviceId contains symbols or upper case letters"));
+            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
+            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
 
         }
 
@@ -87,13 +117,14 @@ public class ValidateAPIControllerTest {
             when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
             when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
 
-            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString);
 
             assertNotNull(result.getBody());
 
-            assertTrue(result.getBody().getMessageContent().contains("The serviceId contains symbols or upper case letters"));
+            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
 
         }
+
 
     }
 
@@ -107,12 +138,12 @@ public class ValidateAPIControllerTest {
 
             when(verificationOnboardService.checkOnboarding(testString)).thenReturn(false);
 
-            ResponseEntity<ApiMessage> result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString);
 
 
             assertNotNull(result.getBody());
 
-            assertTrue(result.getBody().getMessageContent().contains("The service is not registered"));
+            assertTrue(result.getBody().contains("The service is not registered"));
 
         }
 
@@ -124,12 +155,12 @@ public class ValidateAPIControllerTest {
 
             when(verificationOnboardService.checkOnboarding(testString)).thenReturn(false);
 
-            ResponseEntity<ApiMessage> result = validateAPIController.checkValidateLegacy(testString);
+            result = validateAPIController.checkValidateLegacy(testString);
 
 
             assertNotNull(result.getBody());
 
-            assertTrue(result.getBody().getMessageContent().contains("The service is not registered"));
+            assertTrue(result.getBody().contains("The service is not registered"));
 
         }
     }
