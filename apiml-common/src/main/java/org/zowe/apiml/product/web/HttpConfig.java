@@ -23,19 +23,22 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -114,7 +117,6 @@ public class HttpConfig {
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
-    private ApplicationContext context;
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
@@ -175,11 +177,11 @@ public class HttpConfig {
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
 
         } catch (HttpsConfigError e) {
-            log.error("Invalid configuration of HTTPs: {}", e.getMessage()); // Why not print stack trace? Should we have a log for stacktraces only?
-            SpringApplication.exit(context, () -> 1);
+            log.error("Invalid configuration of HTTPs: {}", e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
             log.error("Cannot construct configuration of HTTPs: {}", e.getMessage());
-            SpringApplication.exit(context, () -> 1);
+            System.exit(1);
         }
     }
 
