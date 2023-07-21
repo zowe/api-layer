@@ -286,7 +286,6 @@ public class ZosmfService extends AbstractZosmfService {
         headers.add(ZOSMF_CSRF_HEADER, "");
         headers.setContentType(MediaType.APPLICATION_JSON);
         try {
-            log.error("authentication: {}, headers: {}", authentication, headers);
             return restTemplateWithoutKeystore.exchange(
                 url,
                 httpMethod,
