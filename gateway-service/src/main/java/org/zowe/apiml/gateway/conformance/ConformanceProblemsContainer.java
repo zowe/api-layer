@@ -10,6 +10,13 @@
 
 package org.zowe.apiml.gateway.conformance;
 
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -47,6 +54,8 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     public String toString() {
         StringBuilder result = new StringBuilder();
 
+        result.append("{");
+
         boolean firstLoop = true;
 
         ArrayList<String> sortedKeySet = new ArrayList<>(this.keySet());
@@ -65,16 +74,56 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
             }
 
 
-            result.append(key);
-            result.append(":");
-            result.append(get(key).toString());
+            result.append("\"").append(key).append("\"");
+            result.append(":[");
+
+            boolean firstInnerLoop = true;
+            for (String i : get(key) ) {
+                if(!firstInnerLoop){
+                    result.append(",");
+                }
+                try {
+                    result.append(new ObjectMapper().writeValueAsString(i));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                firstInnerLoop = false;
+            }
+            result.append("]");
 
             firstLoop = false;
         }
 
-
+        result.append("}");
         return result.toString();
     }
 
+
+    public String createBadRequestAPIResponseBody(String key, Message correspondingMessage){
+        String result;
+
+        String template = "{\n" +
+            "    \"messageAction\": \"replaceWithMessageAction\",\n" +
+            "    \"messageContent\": {\n" +
+            "        \"The service is not conformant\": \n" +
+            "            replaceWithMessageContent\n" +
+            "    },\n" +
+            "    \"messageKey\": \"replaceWithMessageKey\",\n" +
+            "    \"messageNumber\": \"replaceWithMessageNumber\",\n" +
+            "    \"messageReason\": \"replaceWithMessageReason\",\n" +
+            "    \"messageType\": \"replaceWithMessageType\"\n" +
+            "}" ;
+
+        result = template.replace("replaceWithMessageKey", key);
+        result = result.replace("replaceWithMessageContent", this.toString());
+
+        result = result.replace("replaceWithMessageReason", correspondingMessage.mapToApiMessage().getMessageReason());
+        result = result.replace("replaceWithMessageNumber", correspondingMessage.mapToApiMessage().getMessageNumber());
+        result = result.replace("replaceWithMessageType", correspondingMessage.mapToApiMessage().getMessageType().toString());
+        result = result.replace("replaceWithMessageAction", correspondingMessage.mapToApiMessage().getMessageAction());
+
+        return result;
+
+    }
 
 }

@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConformanceProblemsContainerTest {
 
@@ -79,7 +79,7 @@ class ConformanceProblemsContainerTest {
             result.add("Two");
             container.put("Key", result);
 
-            assertEquals(container.toString(), "Key:[One, Two]");
+            assertEquals("{\"Key\":[\"One\",\"Two\"]}", container.toString());
         }
 
         @Test
@@ -95,7 +95,7 @@ class ConformanceProblemsContainerTest {
             container.put("Key", first);
             container.put("Key2", second);
 
-            assertEquals(container.toString(), "Key:[One, Two],Key2:[One, Two]");
+            assertEquals("{\"Key\":[\"One\",\"Two\"],\"Key2\":[\"One\",\"Two\"]}", container.toString());
         }
     }
 }

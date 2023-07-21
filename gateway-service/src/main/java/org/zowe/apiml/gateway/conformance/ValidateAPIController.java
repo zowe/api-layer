@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.api.ApiMessage;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class ValidateAPIController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @HystrixCommand
-    public ResponseEntity<ApiMessage> checkConformance(@PathVariable String serviceId) {
+    public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
 
 
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer();
@@ -79,7 +80,9 @@ public class ValidateAPIController {
             return GenerateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
         }
 
-        return new ResponseEntity<>(HttpStatus.OK);
+//        return new ResponseEntity<>(HttpStatus.OK);
+
+        return new ResponseEntity<>("{\"message\":\"Service fulfills all checked conformance criteria\"}"  ,HttpStatus.OK);
     }
 
 
@@ -91,7 +94,7 @@ public class ValidateAPIController {
      */
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand
-    public ResponseEntity<ApiMessage> checkValidateLegacy(@RequestBody String serviceId) {
+    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
         return checkConformance(serviceId);
     }
 
@@ -102,8 +105,8 @@ public class ValidateAPIController {
      * @param foundNonConformanceIssues list of found issues
      * @return Response that this controller returns
      */
-    private ResponseEntity<ApiMessage> GenerateBadRequestResponseEntity(String key, ConformanceProblemsContainer foundNonConformanceIssues) {
-        return new ResponseEntity<>(messageService.createMessage(key, foundNonConformanceIssues.toString()).mapToApiMessage(), HttpStatus.BAD_REQUEST);
+    private ResponseEntity<String> GenerateBadRequestResponseEntity(String key, ConformanceProblemsContainer foundNonConformanceIssues) {
+        return new ResponseEntity<>(foundNonConformanceIssues.createBadRequestAPIResponseBody(key, messageService.createMessage(key)) ,HttpStatus.BAD_REQUEST);
     }
 
 
