@@ -175,6 +175,7 @@ public abstract class AbstractZosmfService {
 
         if (re.getCause() instanceof ConnectException) {
             log.warn("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running {}", re.getMessage());
+            return new ServiceNotAccessibleException("Could not connect to z/OSMF service.");
         }
 
         if (re instanceof RestClientException) {

@@ -266,7 +266,7 @@ public class ZosmfService extends AbstractZosmfService {
             final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(
                 url,
                 httpMethod,
-                new HttpEntity<>(null, headers), String.class); // TODO
+                new HttpEntity<>(null, headers), String.class);
             return getAuthenticationResponse(response);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
@@ -286,30 +286,36 @@ public class ZosmfService extends AbstractZosmfService {
         headers.add(ZOSMF_CSRF_HEADER, "");
         headers.setContentType(MediaType.APPLICATION_JSON);
         try {
+            log.error("authentication: {}, headers: {}", authentication, headers);
             return restTemplateWithoutKeystore.exchange(
                 url,
                 httpMethod,
-                new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers), String.class);
+                new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers),
+                String.class);
         } catch (HttpServerErrorException e) {
             log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
                 "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provided are correct.");
-            throw handleExceptionOnChangePasswordCall(e);
+            throw handleServerErrorOnChangePasswordCall(e);
+        } catch (HttpClientErrorException e) {
+            throw new BadCredentialsException("Client error in change password: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
         }
     }
 
-    private RuntimeException handleExceptionOnChangePasswordCall(HttpServerErrorException e) {
+    private RuntimeException handleServerErrorOnChangePasswordCall(HttpServerErrorException e) {
         try {
             ZosmfAuthResponse response = securityObjectMapper.readValue(e.getResponseBodyAsByteArray(), ZosmfAuthResponse.class);
             if (response.getReturnCode() == 4) {
+                log.error("z/OSMF internal error attempting password change: {}", e.getResponseBodyAsString());
                 return new AuthenticationServiceException("z/OSMF internal error: " + e.getResponseBodyAsString());
             } else {
-                // TODO https://github.com/zowe/api-layer/issues/2995
-                return new BadCredentialsException("Failed to change password, z/OSMF response " + e.getResponseBodyAsString());
+                // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
+                log.debug("Failed to change password, z/OSMF response: {}", e.getResponseBodyAsString());
+                return new BadCredentialsException("Failed to change password, z/OSMF response: " + e.getResponseBodyAsString());
             }
         } catch (IOException ioe) {
-            log.debug("Error processing change password response body: {}", ioe.getMessage());
+            log.error("Error processing change password response body: {}", ioe.getMessage());
             return new AuthenticationServiceException("Error processing change password response", ioe);
         }
     }

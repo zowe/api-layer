@@ -28,8 +28,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -39,6 +41,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -258,11 +261,24 @@ class ZosmfServiceTest {
 
         @Nested
         class WhenChangingPassword {
+
+            private final HttpHeaders requiredHeaders;
+            private ZosmfService zosmfService;
+            {
+                requiredHeaders = new HttpHeaders();
+                requiredHeaders.add("X-CSRF-ZOSMF-HEADER", "");
+                requiredHeaders.setContentType(MediaType.APPLICATION_JSON);
+            }
+
+            @BeforeEach
+            void setUp() {
+                this.zosmfService = getZosmfServiceSpy();
+            }
+
             @Test
             void thenChangePasswordWithSuccess() {
                 LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
                 Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
-                ZosmfService zosmfService = getZosmfServiceSpy();
 
                 ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", null, HttpStatus.OK);
                 doReturn(responseEntity).when(zosmfService).issueChangePasswordRequest(any(), any(), any());
@@ -275,6 +291,45 @@ class ZosmfServiceTest {
                 ResponseEntity<?> response = zosmfService.changePassword(authentication);
 
                 assertTrue(response.getStatusCode().is2xxSuccessful());
+            }
+
+            @Nested
+            class WhenClientError {
+
+                @Test
+                void thenChangePasswordWithClientError() {
+                    LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
+                    Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
+
+                    when(authentication.getCredentials()).thenReturn(loginRequest);
+
+                    when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+                        HttpMethod.PUT,
+                        new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
+                        String.class))
+                    .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+                    assertThrows(BadCredentialsException.class, () -> zosmfService.changePassword(authentication));
+                }
+            }
+
+            @Nested
+            class WhenServerError {
+                @Test
+                void thenChangePasswordWithServerError() {
+                    LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
+                    Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
+
+                    when(authentication.getCredentials()).thenReturn(loginRequest);
+
+                    when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+                        HttpMethod.PUT,
+                        new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
+                        String.class))
+                    .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+                    assertThrows(AuthenticationServiceException.class, () -> zosmfService.changePassword(authentication));
+                }
             }
         }
     }
