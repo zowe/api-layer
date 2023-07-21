@@ -20,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -159,16 +160,25 @@ public abstract class AbstractZosmfService {
         }
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
-            log.warn("Request to z/OSMF requires authentication", re.getMessage()); // TODO can we get the URI?
+            log.warn("Request to z/OSMF requires authentication", re.getMessage());
             return new BadCredentialsException("Invalid Credentials");
         }
 
-        if (re instanceof RestClientException) {
-            if (re.getCause() instanceof ConnectException) {
-                log.warn("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running {}", re.getMessage());
+        if (re instanceof RestClientResponseException) {
+            RestClientResponseException responseException = (RestClientResponseException) re;
+            if (log.isTraceEnabled()) {
+                log.trace("z/OSMF request {} failed with status code {}, server response: {}", url, responseException.getRawStatusCode(), responseException.getResponseBodyAsString());
             } else {
-                log.debug("z/OSMF isn't accessible. {}", re.getMessage());
+                log.debug("z/OSMF request {} failed with status code {}", url, responseException.getRawStatusCode());
             }
+        }
+
+        if (re.getCause() instanceof ConnectException) {
+            log.warn("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running {}", re.getMessage());
+        }
+
+        if (re instanceof RestClientException) {
+            log.debug("z/OSMF isn't accessible. {}", re.getMessage());
             apimlLog.log("org.zowe.apiml.security.generic", re.getMessage(), url);
             return new AuthenticationServiceException("A failure occurred when authenticating.", re);
         }

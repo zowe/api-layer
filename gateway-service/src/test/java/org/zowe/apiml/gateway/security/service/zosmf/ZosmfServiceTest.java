@@ -15,29 +15,65 @@ import com.netflix.discovery.DiscoveryClient;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
+@ExtendWith(MockitoExtension.class)
 class ZosmfServiceTest {
+
+    @Captor
+    private ArgumentCaptor<String> loggingCaptor;
 
     private static final String ZOSMF_ID = "zosmf";
 
@@ -191,8 +227,6 @@ class ZosmfServiceTest {
                 Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
                 LoginRequest loginRequest = mock(LoginRequest.class);
                 ZosmfService zosmfService = getZosmfServiceSpy();
-                doReturn(true).when(zosmfService).loginEndpointExists();
-                ZosmfService.AuthenticationResponse responseMock = mock(ZosmfService.AuthenticationResponse.class);
                 when(authentication.getCredentials()).thenReturn(loginRequest);
                 doReturn(true).when(zosmfService).loginEndpointExists();
 
@@ -212,7 +246,6 @@ class ZosmfServiceTest {
                 );
                 when(loginRequest.getPassword()).thenReturn("password".toCharArray());
                 when(authentication.getPrincipal()).thenReturn("principal");
-                doReturn(responseMock).when(zosmfService).issueAuthenticationRequest(authentication, eq(any()), any());
 
                 ZosmfService.AuthenticationResponse response = zosmfService.authenticate(authentication);
 
@@ -230,7 +263,6 @@ class ZosmfServiceTest {
                 LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
                 Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
                 ZosmfService zosmfService = getZosmfServiceSpy();
-                when(authentication.getCredentials()).thenReturn(loginRequest);
 
                 ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", null, HttpStatus.OK);
                 doReturn(responseEntity).when(zosmfService).issueChangePasswordRequest(any(), any(), any());
@@ -240,7 +272,7 @@ class ZosmfServiceTest {
                     new HttpEntity<>(loginRequest, null),
                     String.class
                 );
-                ResponseEntity response = zosmfService.changePassword(authentication);
+                ResponseEntity<?> response = zosmfService.changePassword(authentication);
 
                 assertTrue(response.getStatusCode().is2xxSuccessful());
             }
@@ -627,7 +659,6 @@ class ZosmfServiceTest {
             underTest = spy(zosmfService);
             doReturn(ZOSMF_URL).when(underTest).getURI(any());
         }
-
 
         @Test
         void givenZosmfIsAvailable_thenTrueIsReturned() {

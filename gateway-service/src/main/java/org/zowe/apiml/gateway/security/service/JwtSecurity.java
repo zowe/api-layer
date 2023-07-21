@@ -80,19 +80,16 @@ public class JwtSecurity {
 
     private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
-    private ApplicationContext applicationContext;
-
     @Autowired
-    public JwtSecurity(Providers providers, ApimlDiscoveryClient discoveryClient, ApplicationContext context) {
+    public JwtSecurity(Providers providers, ApimlDiscoveryClient discoveryClient) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
         this.zosmfListener = new ZosmfListener(discoveryClient);
-        this.applicationContext = context;
     }
 
     @VisibleForTesting
     JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient, ApplicationContext context) {
-        this(providers, discoveryClient, context);
+        this(providers, discoveryClient);
 
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;

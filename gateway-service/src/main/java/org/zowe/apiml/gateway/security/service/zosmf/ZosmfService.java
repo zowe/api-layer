@@ -37,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -50,6 +51,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -228,15 +230,17 @@ public class ZosmfService extends AbstractZosmfService {
         log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
 
         try {
-            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore
+            .exchange(
                 infoURIEndpoint,
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 ZosmfInfo.class
             );
 
-            if (info.getStatusCode() != HttpStatus.OK && HttpStatus.Series.resolve(info.getStatusCodeValue()) == HttpStatus.Series.INFORMATIONAL) { // TODO for different ranges.
-                log.debug("Request to verify z/OSMF availability \"{}\" failed with HTTP status code {}", infoURIEndpoint, info.getStatusCodeValue());
+            if (info.getStatusCode() != HttpStatus.OK) {
+                log.error("Unexpected status code {} from z/OSMF accessing URI {}\n"
+                    + "Response from z/OSMF was \"{}\"", info.getStatusCodeValue(), infoURIEndpoint, String.valueOf(info.getBody()));
             }
 
             return info.getStatusCode() == HttpStatus.OK;
@@ -262,7 +266,7 @@ public class ZosmfService extends AbstractZosmfService {
             final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(
                 url,
                 httpMethod,
-                new HttpEntity<>(null, headers), String.class);
+                new HttpEntity<>(null, headers), String.class); // TODO
             return getAuthenticationResponse(response);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
@@ -286,10 +290,27 @@ public class ZosmfService extends AbstractZosmfService {
                 url,
                 httpMethod,
                 new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers), String.class);
-        } catch (RuntimeException re) {
+        } catch (HttpServerErrorException e) {
             log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
-                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provide are correct.");
+                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provided are correct.");
+            throw handleExceptionOnChangePasswordCall(e);
+        } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
+        }
+    }
+
+    private RuntimeException handleExceptionOnChangePasswordCall(HttpServerErrorException e) {
+        try {
+            ZosmfAuthResponse response = securityObjectMapper.readValue(e.getResponseBodyAsByteArray(), ZosmfAuthResponse.class);
+            if (response.getReturnCode() == 4) {
+                return new AuthenticationServiceException("z/OSMF internal error: " + e.getResponseBodyAsString());
+            } else {
+                // TODO https://github.com/zowe/api-layer/issues/2995
+                return new BadCredentialsException("Failed to change password, z/OSMF response " + e.getResponseBodyAsString());
+            }
+        } catch (IOException ioe) {
+            log.debug("Error processing change password response body: {}", ioe.getMessage());
+            return new AuthenticationServiceException("Error processing change password response", ioe);
         }
     }
 
