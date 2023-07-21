@@ -70,8 +70,8 @@ public class Providers {
             log.debug("z/OSMF is registered and propagated to the DS: {} and is accessible based on the information: {}", isAvailable, isAccessible);
 
             return isAvailable && isAccessible;
-        } catch (ServiceNotAccessibleException exception) {
-            log.debug("z/OSMF is not registered to the Gateway yet");
+        } catch (ServiceNotAccessibleException e) {
+            log.debug("z/OSMF is not registered to the Gateway yet: {}", e.getMessage());
 
             return false;
         }
