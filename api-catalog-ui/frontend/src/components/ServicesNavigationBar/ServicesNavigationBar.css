@@ -24,15 +24,14 @@
     gap: 10px;
     width: auto;
     background: var(--white-ffffff, #FFF);
-    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
+    box-shadow: 2px 2px 4px 1px rgba(0, 0, 0, 0.25);
 }
 
 #search2 {
     height: 47px;
     background: #FFFFFF;
     border: 1px solid #C9C8C5;
-    margin-right: 15px;
-    margin-bottom: 9px;
+    margin: 5px 12px 9px -4px;
 }
 
 #search2 > div > div > input {
@@ -46,6 +45,7 @@
 
 #serviceIdTabs {
     margin-bottom: 10px;
+    margin-left: -4px;
 }
 
 .MuiTab-root :hover {
@@ -65,6 +65,8 @@ span.MuiTab-wrapper {
 }
 
 .MuiTabs-scroller.MuiTabs-scrollable > div > a {
+    margin-left: 8px;
+    margin-right: 2px;
     max-width: 370px;
     margin-bottom: 5px;
     text-transform: none;

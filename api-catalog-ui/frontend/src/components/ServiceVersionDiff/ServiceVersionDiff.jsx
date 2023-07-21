@@ -25,12 +25,13 @@ import CloseIcon from '@material-ui/icons/Close';
 
 export default class ServiceVersionDiff extends Component {
     constructor(props) {
-        const { version1, version2 } = props;
+        const { version1, version2, selectedVersion } = props;
         super(props);
         this.state = {
             selectedVersion1: version1 ? { text: version1 } : undefined,
             selectedVersion2: version2 ? { text: version2 } : undefined,
             open: props.isDialogOpen,
+            defaultVersion: selectedVersion,
         };
 
         this.handleVersion1Change = this.handleVersion1Change.bind(this);
@@ -38,6 +39,7 @@ export default class ServiceVersionDiff extends Component {
     }
 
     handleVersion1Change = (event) => {
+        this.setState({ defaultVersion: null });
         this.setState({ selectedVersion1: event.target.value });
     };
 
@@ -46,7 +48,7 @@ export default class ServiceVersionDiff extends Component {
     };
 
     render() {
-        const { serviceId, versions, getDiff, diffText, handleDialog, selectedVersion } = this.props;
+        const { serviceId, versions, getDiff, diffText, handleDialog } = this.props;
         const { selectedVersion1, selectedVersion2, open } = this.state;
         const selectorStyle = {
             width: '140px',
@@ -71,7 +73,8 @@ export default class ServiceVersionDiff extends Component {
                                     data-testid="select-1"
                                     label="versionSelect1"
                                     className="select-diff"
-                                    value={selectedVersion}
+                                    displayEmpty
+                                    value={this.state.defaultVersion || selectedVersion1}
                                     onChange={this.handleVersion1Change}
                                     sx={selectorStyle}
                                 >
@@ -105,7 +108,11 @@ export default class ServiceVersionDiff extends Component {
                                 id="diff-button"
                                 data-testid="diff-button"
                                 onClick={() => {
-                                    getDiff(serviceId, selectedVersion1, selectedVersion2);
+                                    if (this.state.defaultVersion) {
+                                        getDiff(serviceId, this.state.defaultVersion, selectedVersion2);
+                                    } else {
+                                        getDiff(serviceId, selectedVersion1, selectedVersion2);
+                                    }
                                 }}
                             >
                                 Show

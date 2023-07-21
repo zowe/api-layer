@@ -3,10 +3,11 @@ $background-color_1: #EFEFEF;
 $color_2: #CC092F;
 
 #search2 {
+    margin-top: 10px;
     height: 47px;
     background: #FFFFFF;
     border: 1px solid #C9C8C5;
-    margin-right: 15px;
+    margin-right: 12px;
     margin-bottom: 9px;
     >div {
         >div {
@@ -47,6 +48,7 @@ span.MuiTab-wrapper {
 }
 
 .MuiTabs-scroller.MuiTabs-scrollable > div > a {
+    background: var(--white-ffffff, #FFF);
     max-width: 362px;
     margin-bottom: 5px;
     text-transform: none;

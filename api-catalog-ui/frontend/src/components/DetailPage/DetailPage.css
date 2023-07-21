@@ -51,7 +51,7 @@
 }
 
 .api-description-container {
-    margin-left: 397px;
+    margin-left: 375px;
     padding: 2.2rem;
 }
 
@@ -129,12 +129,13 @@ div.content-description-container > div > div:nth-child(2) > div {
 }
 
 .nav-bar {
+    max-width: 380px;
     min-height: 40vh;
     flex-direction: column;
     align-items: center;
     min-width: 368px;
     box-shadow: 0 0 6px hsl(210 14% 90%);
-    padding: 10px 5px 10px 20px;
+    padding: 10px 5px 16px 20px;
     flex: 1 0 0;
     width: auto;
     height: auto;
@@ -163,4 +164,8 @@ div.content-description-container > div > div:nth-child(2) > div {
     .nav-bar {
         width: 600px;
     }
+}
+
+.MuiTabs-root.custom-tabs.MuiTabs-vertical {
+    margin-right: 12px;
 }

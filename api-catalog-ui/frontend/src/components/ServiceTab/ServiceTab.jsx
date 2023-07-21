@@ -119,9 +119,17 @@ export default class ServiceTab extends Component {
         return apiVersions;
     }
 
-    handleDialogOpen = () => {
+    handleDialogOpen = (currentService) => {
         const { selectedVersion } = this.state;
-        this.setState({ previousVersion: selectedVersion });
+        // eslint-disable-next-line no-console
+        console.log(selectedVersion);
+        // eslint-disable-next-line no-console
+        console.log(currentService);
+        if (selectedVersion === null) {
+            this.setState({ previousVersion: currentService.defaultApiVersion });
+        } else {
+            this.setState({ previousVersion: selectedVersion });
+        }
         this.setState({ isDialogOpen: true, selectedVersion: 'diff' });
     };
 
@@ -152,8 +160,10 @@ export default class ServiceTab extends Component {
         return (
             <>
                 {currentService === null && (
-                    <Typography variant="h3">
-                        <p style={{ marginLeft: '122px' }}>This tile does not contain service "{serviceId}"</p>
+                    <Typography id="no-tiles-error" variant="h4">
+                        <p style={{ marginLeft: '88px' }}>
+                            The service ID "{serviceId}" does not match any registered service
+                        </p>
                     </Typography>
                 )}
                 <Shield title={message}>
@@ -265,7 +275,7 @@ export default class ServiceTab extends Component {
                                             ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
                                             : { backgroundColor: '#fff', color: '#0056B3' }
                                     }
-                                    onClick={this.handleDialogOpen}
+                                    onClick={() => this.handleDialogOpen(currentService)}
                                     key="diff"
                                 >
                                     <Typography className="version-text">Compare API Versions</Typography>

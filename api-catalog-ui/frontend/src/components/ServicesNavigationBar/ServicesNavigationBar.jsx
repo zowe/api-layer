@@ -39,7 +39,7 @@ export default class ServicesNavigationBar extends Component {
 
     styles = () => ({
         truncatedTabLabel: {
-            maxWidth: 340,
+            maxWidth: '323px',
             width: 'max-content',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -71,33 +71,35 @@ export default class ServicesNavigationBar extends Component {
                 <Typography id="serviceIdTabs" variant="h5">
                     Product APIs
                 </Typography>
-                <Tabs
-                    value={selectedTab}
-                    onChange={this.handleTabChange}
-                    variant="scrollable"
-                    orientation="vertical"
-                    scrollButtons="auto"
-                    className="custom-tabs"
-                >
-                    {services.map((tile, tileIndex) =>
-                        tile.services.map((service, serviceIndex) => (
-                            <Tab
-                                onClick={() => this.handleTabClick(service.serviceId)}
-                                key={service.serviceId}
-                                className="tabs"
-                                component={RouterLink}
-                                to={`${match.url}/${service.serviceId}`}
-                                value={tileIndex * services.length + serviceIndex}
-                                label={<TruncatedTabLabel label={service.title} />}
-                                wrapped
-                            />
-                        ))
-                    )}
-                </Tabs>
                 {!hasTiles && hasSearchCriteria && (
                     <Typography id="search_no_results" variant="subtitle2">
                         No services found matching search criteria
                     </Typography>
+                )}
+                {hasTiles && (
+                    <Tabs
+                        value={selectedTab}
+                        onChange={this.handleTabChange}
+                        variant="scrollable"
+                        orientation="vertical"
+                        scrollButtons="auto"
+                        className="custom-tabs"
+                    >
+                        {services.map((tile, tileIndex) =>
+                            tile.services.map((service, serviceIndex) => (
+                                <Tab
+                                    onClick={() => this.handleTabClick(service.serviceId)}
+                                    key={service.serviceId}
+                                    className="tabs"
+                                    component={RouterLink}
+                                    to={`${match.url}/${service.serviceId}`}
+                                    value={tileIndex * services.length + serviceIndex}
+                                    label={<TruncatedTabLabel label={service.title} />}
+                                    wrapped
+                                />
+                            ))
+                        )}
+                    </Tabs>
                 )}
             </div>
         );

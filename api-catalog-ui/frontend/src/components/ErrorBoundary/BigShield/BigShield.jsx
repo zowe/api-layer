@@ -60,7 +60,13 @@ export default class BigShield extends Component {
                         <br />
                         {!disableButton && (
                             <div>
-                                <Button primary onClick={this.handleGoToHome} size="medium" iconStart={iconBack}>
+                                <Button
+                                    id="go-back-button"
+                                    primary
+                                    onClick={this.handleGoToHome}
+                                    size="medium"
+                                    iconStart={iconBack}
+                                >
                                     Go to Dashboard
                                 </Button>
                             </div>
