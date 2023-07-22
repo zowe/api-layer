@@ -136,4 +136,24 @@ describe('>>> ServiceTab component tests', () => {
             )
         ).toThrow('No tile is selected.');
     });
+
+    it('should display default message for custom portal', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const serviceTab = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedService}
+                tiles={[tiles]}
+                selectService={selectService}
+            />
+        );
+        expect(serviceTab.find('.footer-labels').exists()).toEqual(true);
+        expect(serviceTab.find('.footer-labels').children().at(0).text()).toContain('Use Cases');
+        expect(serviceTab.find('.footer-labels').children().at(2).text()).toContain('Tutorials');
+        expect(serviceTab.find('.footer-labels').children().at(4).text()).toContain('Videos');
+        expect(serviceTab.find('[data-testid="no-use-cases"]').text()).toBe('There are no Use Cases.');
+        expect(serviceTab.find('[data-testid="no-tutorials"]').text()).toBe('There are no Tutorials.');
+        expect(serviceTab.find('[data-testid="no-videos"]').text()).toBe('There are no Videos.');
+    });
 });

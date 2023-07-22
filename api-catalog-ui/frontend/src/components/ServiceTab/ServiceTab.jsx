@@ -303,7 +303,9 @@ export default class ServiceTab extends Component {
                                     Use Cases ({useCasesCounter})
                                 </Typography>
                                 <br />
-                                {useCasesCounter === 0 && <Typography>There are no Use Cases.</Typography>}
+                                {useCasesCounter === 0 && (
+                                    <Typography data-testid="no-use-cases">There are no Use Cases.</Typography>
+                                )}
                                 <br />
                                 <Typography
                                     className="footer-labels"
@@ -314,7 +316,9 @@ export default class ServiceTab extends Component {
                                     Tutorials ({tutorialsCounter} articles)
                                 </Typography>
                                 <br />
-                                {tutorialsCounter === 0 && <Typography>There are no Tutorials.</Typography>}
+                                {tutorialsCounter === 0 && (
+                                    <Typography data-testid="no-tutorials">There are no Tutorials.</Typography>
+                                )}
                                 <br />
                                 <Typography
                                     className="footer-labels"
@@ -325,7 +329,9 @@ export default class ServiceTab extends Component {
                                     Videos ({videosCounter})
                                 </Typography>
                                 <br />
-                                {videosCounter === 0 && <Typography>There are no Videos.</Typography>}
+                                {videosCounter === 0 && (
+                                    <Typography data-testid="no-videos">There are no Videos.</Typography>
+                                )}
                             </div>
                         )}
                     </div>
