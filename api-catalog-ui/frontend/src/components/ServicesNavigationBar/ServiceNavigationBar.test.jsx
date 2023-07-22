@@ -82,4 +82,19 @@ describe('>>> ServiceNavigationBar component tests', () => {
         expect(serviceNavigationBar.find('#serviceIdTabs')).toExist();
         expect(serviceNavigationBar.find('#serviceIdTabs').text()).toEqual('Product APIs');
     });
+
+    it('should set current tile id', () => {
+        const storeCurrentTileId = jest.fn();
+        const serviceNavigationBar = shallow(
+            <ServicesNavigationBar
+                services={[tile]}
+                match={match}
+                currentTileId="apicatalog"
+                storeCurrentTileId={storeCurrentTileId}
+            />
+        );
+        const instance = serviceNavigationBar.instance();
+        instance.handleTabClick('apicatalog');
+        expect(storeCurrentTileId).toHaveBeenCalled();
+    });
 });
