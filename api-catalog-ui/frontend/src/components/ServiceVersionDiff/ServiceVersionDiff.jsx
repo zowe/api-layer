@@ -38,6 +38,10 @@ export default class ServiceVersionDiff extends Component {
         this.handleVersion2Change = this.handleVersion2Change.bind(this);
     }
 
+    componentDidMount() {
+        this.setState({ selectedVersion1: null, selectedVersion2: null });
+    }
+
     handleVersion1Change = (event) => {
         this.setState({ defaultVersion: null });
         this.setState({ selectedVersion1: event.target.value });
