@@ -41,6 +41,12 @@ export default class DetailPage extends Component {
         history.push('/dashboard');
     };
 
+    handleLinkClick = (e, id) => {
+        e.preventDefault();
+        const elementToView = document.querySelector(id);
+        elementToView.scrollIntoView();
+    };
+
     render() {
         const {
             tiles,
@@ -134,16 +140,22 @@ export default class DetailPage extends Component {
                                     On this page
                                 </Typography>
                                 <Container>
-                                    <Link className="links" href="#swagger-label">
+                                    <Link className="links" onClick={(e) => this.handleLinkClick(e, '#swagger-label')}>
                                         Swagger
                                     </Link>
-                                    <Link className="links" href="#use-cases-label">
+                                    <Link
+                                        className="links"
+                                        onClick={(e) => this.handleLinkClick(e, '#use-cases-label')}
+                                    >
                                         Use cases
                                     </Link>
-                                    <Link className="links" href="#tutorials-label">
+                                    <Link
+                                        className="links"
+                                        onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
+                                    >
                                         Tutorials
                                     </Link>
-                                    <Link className="links" href="#videos-label">
+                                    <Link className="links" onClick={(e) => this.handleLinkClick(e, '#videos-label')}>
                                         Videos
                                     </Link>
                                 </Container>
