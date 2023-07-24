@@ -10,19 +10,27 @@
 
 package org.zowe.apiml.gateway.security.service.zosmf;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -37,6 +45,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -45,9 +54,13 @@ import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import javax.net.ssl.SSLHandshakeException;
+
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -61,7 +74,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -727,16 +742,100 @@ class ZosmfServiceTest {
             assertThat(underTest.isAccessible(), is(true));
         }
 
-        @Test
-        void givenZosmfIsUnavailable_thenFalseIsReturned() {
-            when(restTemplate.exchange(
-                eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ZosmfService.ZosmfInfo.class)
-            )).thenThrow(RestClientException.class);
+        @Nested
+        class WhenZosmfIsNotAvailable {
 
-            assertThat(underTest.isAccessible(), is(false));
+            @Mock
+            private Appender<ILoggingEvent> mockedAppender;
+
+            @Captor
+            private ArgumentCaptor<LoggingEvent> loggingCaptor;
+
+            private Logger logger;
+
+            @BeforeEach
+            void setUp() {
+                logger = (Logger) LoggerFactory.getLogger(AbstractZosmfService.class);
+                logger.detachAndStopAllAppenders();
+                logger.getLoggerContext().resetTurboFilterList();
+                logger.addAppender(mockedAppender);
+                logger.setLevel(Level.TRACE);
+            }
+
+            @AfterEach
+            void tearDown() {
+                logger.detachAppender(mockedAppender);
+            }
+
+            private String loggedValues() {
+                List<LoggingEvent> values = loggingCaptor.getAllValues();
+                assertNotNull(values);
+                assertFalse(values.isEmpty());
+                return values.stream().map(element -> element.getFormattedMessage()).collect(Collectors.joining("\n"));
+            }
+
+            @Test
+            void givenZosmfIsUnavailable_thenFalseIsReturned() {
+                when(restTemplate.exchange(
+                    eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(ZosmfService.ZosmfInfo.class)
+                )).thenThrow(RestClientException.class);
+
+                assertThat(underTest.isAccessible(), is(false));
+                verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
+                String values = loggedValues();
+                assertTrue(values.length() > 0);
+                assertTrue(values.contains("z/OSMF isn't accessible"), values);
+            }
+
+            @Test
+            void givenSSLError_thenFalseAndException() {
+                when(restTemplate.exchange(
+                    eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(ZosmfService.ZosmfInfo.class)
+                )).thenThrow(new ResourceAccessException("resource access exception", new SSLHandshakeException("handshake exception")));
+
+                assertThat(underTest.isAccessible(), is(false));
+                verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
+                String values = loggedValues();
+                assertTrue(values.length() > 0);
+                assertTrue(values.contains("SSL Misconfiguration, z/OSMF is not accessible. Please verify the following:"), values);
+                assertTrue(values.contains("- CN (Common Name) and z/OSMF hostname have to match."), values);
+                assertTrue(values.contains("- Certificate is expired"), values);
+                assertTrue(values.contains("- TLS version match"), values);
+            }
+
+            @Test
+            void givenConnectionIssue_thenFalseAndException() {
+                when(restTemplate.exchange(
+                    eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(ZosmfService.ZosmfInfo.class)
+                )).thenThrow(new RestClientException("resource access exception", new ConnectException("connection exception")));
+
+                assertThat(underTest.isAccessible(), is(false));
+                verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
+                String values = loggedValues();
+                assertTrue(values.length() > 0);
+                assertTrue(values.contains("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running"), values);
+                assertTrue(values.contains("connection exception"), values);
+            }
+
+            @Test
+            void givenUnexpectedStatusCode_thenFalseAndException() {
+                when(restTemplate.exchange(
+                    eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(ZosmfService.ZosmfInfo.class)
+                )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+                assertThat(underTest.isAccessible(), is(false));
+            }
         }
     }
 }
