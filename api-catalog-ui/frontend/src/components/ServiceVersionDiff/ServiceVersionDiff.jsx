@@ -104,7 +104,7 @@ export default class ServiceVersionDiff extends Component {
                                 </Select>
                             </FormControl>
                             <IconButton
-                                disabled={!selectedVersion1 || !selectedVersion2}
+                                disabled={!selectedVersion2}
                                 id="diff-button"
                                 data-testid="diff-button"
                                 onClick={() => {
