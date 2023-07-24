@@ -122,7 +122,7 @@ public class JwtSecurity {
         switch (used) {
             case ZOSMF:
                 log.info("z/OSMF instance {} is used as the JWT producer", zosmfServiceId);
-                addEvent("z/OSMF instance " + zosmfServiceId + " is recognized as authentication provider.");
+                addEvent(String.format("z/OSMF instance %s is recognized as authentication provider.", zosmfServiceId));
                 validateInitializationAgainstZosmf();
                 break;
             case APIML:
@@ -132,7 +132,7 @@ public class JwtSecurity {
                 break;
             case UNKNOWN:
                 log.info("z/OSMF instance {} is probably used as the JWT producer but isn't available yet.", zosmfServiceId);
-                addEvent("Wait for z/OSMF instance " + zosmfServiceId + " to come online before deciding who provides JWT tokens.");
+                addEvent(String.format("Wait for z/OSMF instance %s to come online before deciding who provides JWT tokens.", zosmfServiceId));
                 validateInitializationWhenZosmfIsAvailable();
                 break;
             default:
@@ -212,7 +212,7 @@ public class JwtSecurity {
             log.debug("z/OSMF instance {} is UP and does not support JWT", zosmfServiceId);
             validateJwtSecret();
         } else {
-            addEvent("z/OSMF instance " + zosmfServiceId + " is UP and supports JWT");
+            addEvent(String.format("z/OSMF instance %s is UP and supports JWT", zosmfServiceId));
             log.debug("z/OSMF instance {} is UP and supports JWT", zosmfServiceId);
         }
     }
