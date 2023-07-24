@@ -57,6 +57,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import javax.net.ssl.SSLHandshakeException;
 
 import java.net.ConnectException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -276,12 +277,18 @@ class ZosmfServiceTest {
         @Nested
         class WhenChangingPassword {
 
+            private LoginRequest loginRequest;
+            private Authentication authentication;
+
             private final HttpHeaders requiredHeaders;
             private ZosmfService zosmfService;
             {
                 requiredHeaders = new HttpHeaders();
                 requiredHeaders.add("X-CSRF-ZOSMF-HEADER", "");
                 requiredHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+                loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
+                authentication = mock(UsernamePasswordAuthenticationToken.class);
             }
 
             @BeforeEach
@@ -312,9 +319,6 @@ class ZosmfServiceTest {
 
                 @Test
                 void thenChangePasswordWithClientError() {
-                    LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
-                    Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
-
                     when(authentication.getCredentials()).thenReturn(loginRequest);
 
                     when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
@@ -331,9 +335,6 @@ class ZosmfServiceTest {
             class WhenServerError {
                 @Test
                 void thenChangePasswordWithServerError() {
-                    LoginRequest loginRequest = new LoginRequest("username", "password".toCharArray(), "newPassword".toCharArray());
-                    Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
-
                     when(authentication.getCredentials()).thenReturn(loginRequest);
 
                     when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
@@ -343,6 +344,32 @@ class ZosmfServiceTest {
                     .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
                     assertThrows(AuthenticationServiceException.class, () -> zosmfService.changePassword(authentication));
+                }
+
+                @Test
+                void thenChangePasswordWithZosmfInternalError() {
+                    when(authentication.getCredentials()).thenReturn(loginRequest);
+
+                    when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+                        HttpMethod.PUT,
+                        new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
+                        String.class))
+                    .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error", "{\"returnCode\": 4}".getBytes(), Charset.defaultCharset()));
+
+                    assertThrows(AuthenticationServiceException.class, () -> zosmfService.changePassword(authentication));
+                }
+
+                @Test
+                void thenChangePasswordWithZosmfValidationError() {
+                    when(authentication.getCredentials()).thenReturn(loginRequest);
+
+                    when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+                        HttpMethod.PUT,
+                        new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
+                        String.class))
+                    .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error", "{\"returnCode\": 8}".getBytes(), Charset.defaultCharset()));
+
+                    assertThrows(BadCredentialsException.class, () -> zosmfService.changePassword(authentication));
                 }
             }
         }
