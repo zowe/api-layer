@@ -25,14 +25,15 @@ class ConformanceProblemsContainerTest {
 
     ConformanceProblemsContainer container;
 
-    @BeforeEach
-    void setup() {
-        container = new ConformanceProblemsContainer();
-    }
-
-
     @Nested
     class GivenInputs {
+
+        @BeforeEach
+        void setup() {
+            container = new ConformanceProblemsContainer();
+        }
+
+
         @ParameterizedTest
         @ValueSource(ints = {1, 5, 0})
         void whenInserting_thenCorrectSize(int size) {
@@ -72,6 +73,13 @@ class ConformanceProblemsContainerTest {
 
     @Nested
     class GivenAContainer {
+
+        @BeforeEach
+        void setup() {
+            container = new ConformanceProblemsContainer();
+        }
+
+
         @Test
         void whenOneItemIn_thenToString() {
             ArrayList<String> result = new ArrayList<>();

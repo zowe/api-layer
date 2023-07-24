@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.conformance;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 
@@ -42,44 +41,18 @@ public class VerificationOnboardService {
 
     }
 
-    /**
-     * Accepts serviceId and checks if the metadata field exists and is not empty
-     *
-     * @param serviceId serviceId to check
-     * @return true when it can retrieve metadata, false otherwise.
-     */
-    public boolean canRetrieveMetaData(String serviceId) {
-
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
-
-        if (!serviceInstances.isEmpty()) {
-            ServiceInstance serviceInstance = serviceInstances.get(0);
-            Map<String, String> metadata = serviceInstance.getMetadata();
-            return metadata != null && !metadata.isEmpty();
-        }
-        return false;
-    }
-
-
 
     /**
-     * Accepts serviceId and retrieves the Swagger url if it exists
+     * Accepts metadata and retrieves the Swagger url if it exists
      *
-     * @param serviceId serviceId to check
+     * @param metadata to grab swagger from
      * @return SwaggerUrl when able, empty string otherwise
      */
-    public String retrieveSwagger(String serviceId) {
-
-        if (!canRetrieveMetaData(serviceId)) {
-            return "";
-        }
-        ServiceInstance serviceInstance = discoveryClient.getInstances(serviceId).get(0);
-        Map<String, String> metadata = serviceInstance.getMetadata();
+    public String retrieveSwagger(Map<String, String> metadata) {
         String swaggerUrl = metadata.get("apiml.apiInfo.api-v2.swaggerUrl");
         if (swaggerUrl != null) {
             return swaggerUrl;
         }
-
         return "";
     }
 
