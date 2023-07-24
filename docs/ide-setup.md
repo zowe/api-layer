@@ -12,7 +12,7 @@ Guidelines relevant for development of the API Mediation Layer in the IntelliJ I
 
 ### Running of the services
 
-These are the application main classes and their corresponding service names for configuration files:
+- These are the application main classes and their corresponding service names for configuration files:
     1. ApiCatalogApplication - api-catalog-service
     2. DiscoverableClientSampleApplication - discoverable-client
     3. DiscoveryServiceApplication - discovery-service
@@ -20,15 +20,23 @@ These are the application main classes and their corresponding service names for
     5. GatewayApplication - gateway-service
     6. MockServicesApplication - mock-services
 
-#### If using IDEA Ultimate Edition
-- Go to 'Services', it is available via alt+8 or on the bottom line of the IDEA.
+- There are no configuration files for:
+    1. CachingService
+    2. MetricsServiceApplication 
+    
+- If you plan on using the [Dummy Authentication Provider](https://docs.zowe.org/stable/extend/extend-apiml/authentication-for-apiml-services/#dummy-authentication-provider) open the ./config/local/gateway-service.yml file and update `apiml.security.auth.provider:` to have value  `dummy`
 
+#### If using IDEA Ultimate Edition 2023
+- Go to 'Services', it is available via alt+8 or on the bottom line of the IDEA.
+ 
 For each of the available services:
 
-1. Right click a service and select 'Edit Configuration' (or press F4 while the service is selected)
-2. Clear all 'VM options' in the 'Environment' section
-3. Then under the 'Override parameters' section add a new parameter `spring.config.additional-location` and its value `file:./config/local/{SERVICE_NAME}.yml` Replace SERVICE_NAME with the above service names.
-4. Run the service
+1. Right click a service and select 'Edit Configuration' (or press Shift + F4 while the service is selected)
+2. Check that there are no set Environment variables (if you do not see the field you can press Alt + E or click on Modify options and select the Environment variables option from the list)
+    * For the Discovery service add Environment variable `spring.profiles.active` and it's value `https`
+5. Then in the 'Override configuration properties' section (Alt + P or select it from the Modify options list again) add a new parameter `spring.config.additional-location` and its value `file:./config/local/{SERVICE_NAME}.yml` Replace SERVICE_NAME with the above service names.
+6. Check that you are shortening the command line, Modify options -> Java -> Shorten command line and in the new field select JAR manifest.
+7. Run the service
 
 #### If using IDEA Community Edition
 
