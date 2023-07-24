@@ -159,7 +159,7 @@ messages:
       number: ZWEAG717
       type: ERROR
       text: "The service id provided is invalid: '%s'"
-      reason: "The provided id is not valid under conformance criteria."
+      reason: "The provided id is not valid under the conformance criteria."
       action: "Verify the conformance criteria, provide valid service id."
 
     - key: org.zowe.apiml.gateway.verifier.NoMetadata
@@ -173,7 +173,7 @@ messages:
       number: ZWEAG719
       type: INFO
       text: "The service is not conformant: %s"
-      reason: "The provided service is not valid under conformance criteria."
+      reason: "The provided service does not satisfy the conformance criteria and is therefore not valid."
       action: "Verify the conformance criteria."
 
     # Legacy messages
