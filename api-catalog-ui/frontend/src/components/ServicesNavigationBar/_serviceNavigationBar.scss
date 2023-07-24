@@ -71,3 +71,15 @@ span.MuiTab-wrapper {
 .MuiTab-wrapped {
     height: 60px;
 }
+
+.custom-tabs .MuiTabs-indicator {
+    display: none;
+}
+
+.custom-tabs .tabs:hover {
+    border: 4px solid $color_2;
+}
+
+.custom-tabs .tabs.Mui-selected {
+    border: 4px solid $color_2;
+}
