@@ -13,22 +13,23 @@ package org.zowe.apiml.gateway.conformance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.core.util.Json;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +44,9 @@ public class ValidateAPIControllerTest {
     @MockBean
     private VerificationOnboardService verificationOnboardService;
 
+    @MockBean
+    private DiscoveryClient discoveryClient;
+
 
     ResponseEntity<String> result;
 
@@ -50,8 +54,10 @@ public class ValidateAPIControllerTest {
     @BeforeEach
     void setup() {
         MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
-        validateAPIController = new ValidateAPIController(messageService, verificationOnboardService);
+        validateAPIController = new ValidateAPIController(messageService, verificationOnboardService, discoveryClient);
         standaloneSetup(validateAPIController);
+        when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
+
 
         result = new ResponseEntity<String>(HttpStatus.I_AM_A_TEAPOT); // Here only in case we forget to reassign result
     }
@@ -73,7 +79,9 @@ public class ValidateAPIControllerTest {
         assertTrue(valid);
 
 
+
     }
+
 
     @Nested
     class GivenWrongServiceId {
@@ -81,9 +89,6 @@ public class ValidateAPIControllerTest {
         public void whenServiceIdTooLong_thenNonconformant() {
 
             String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
-
-            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
-            when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
 
             result = validateAPIController.checkConformance(testString);
 
@@ -98,8 +103,6 @@ public class ValidateAPIControllerTest {
 
             String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
 
-            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
-            when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
 
             result = validateAPIController.checkConformance(testString);
 
@@ -114,14 +117,24 @@ public class ValidateAPIControllerTest {
         @ValueSource(strings = {"test-test", "TEST", "Test"})
         public void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
 
-            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(true);
-            when(verificationOnboardService.canRetrieveMetaData(testString)).thenReturn(true);
-
             result = validateAPIController.checkConformance(testString);
 
             assertNotNull(result.getBody());
 
             assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
+
+        }
+
+        @Test
+        public void notInvalidTextFormat() {
+
+            String testString = "test";
+
+            result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertFalse(result.getBody().contains("Message service is requested to create a message with an invalid text format"));
 
         }
 
@@ -139,7 +152,6 @@ public class ValidateAPIControllerTest {
             when(verificationOnboardService.checkOnboarding(testString)).thenReturn(false);
 
             result = validateAPIController.checkConformance(testString);
-
 
             assertNotNull(result.getBody());
 

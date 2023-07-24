@@ -13,9 +13,7 @@ package org.zowe.apiml.gateway.conformance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.message.api.ApiMessage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +97,7 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     }
 
 
-    public String createBadRequestAPIResponseBody(String key, Message correspondingMessage){
+    public String createBadRequestAPIResponseBody(String key, ApiMessage correspondingAPIMessage) {
         String result;
 
         String template = "{\n" +
@@ -112,15 +110,15 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
             "    \"messageNumber\": \"replaceWithMessageNumber\",\n" +
             "    \"messageReason\": \"replaceWithMessageReason\",\n" +
             "    \"messageType\": \"replaceWithMessageType\"\n" +
-            "}" ;
+            "}";
 
         result = template.replace("replaceWithMessageKey", key);
         result = result.replace("replaceWithMessageContent", this.toString());
 
-        result = result.replace("replaceWithMessageReason", correspondingMessage.mapToApiMessage().getMessageReason());
-        result = result.replace("replaceWithMessageNumber", correspondingMessage.mapToApiMessage().getMessageNumber());
-        result = result.replace("replaceWithMessageType", correspondingMessage.mapToApiMessage().getMessageType().toString());
-        result = result.replace("replaceWithMessageAction", correspondingMessage.mapToApiMessage().getMessageAction());
+        result = result.replace("replaceWithMessageReason", correspondingAPIMessage.getMessageReason());
+        result = result.replace("replaceWithMessageNumber", correspondingAPIMessage.getMessageNumber());
+        result = result.replace("replaceWithMessageType", correspondingAPIMessage.getMessageType().toString());
+        result = result.replace("replaceWithMessageAction", correspondingAPIMessage.getMessageAction());
 
         return result;
 
