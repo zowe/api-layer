@@ -38,6 +38,7 @@ describe('>>> Util Functions tests', () => {
       <div id="refresh-api-button">
         <span class="MuiIconButton-label"></span>
       </div>
+      <p id="tileLabel"></p>
     `;
     });
 
@@ -119,6 +120,7 @@ describe('>>> Util Functions tests', () => {
         const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
         const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
         const link = document.querySelector("link[rel~='icon']");
+        const tileLabel = document.querySelector('p#tileLabel');
         expect(link.href).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('white');
         expect(title.style.getPropertyValue('color')).toBe('black');
@@ -127,9 +129,19 @@ describe('>>> Util Functions tests', () => {
         expect(swaggerLabel.style.getPropertyValue('color')).toBe('black');
         expect(wizardButton.style.getPropertyValue('color')).toBe('black');
         expect(refreshButton.style.getPropertyValue('color')).toBe('black');
+        expect(tileLabel.style.getPropertyValue('font-family')).toBe('Arial');
         expect(document.documentElement.style.backgroundColor).toBe('blue');
         // Clean up the mocks
         jest.restoreAllMocks();
         global.fetch.mockRestore();
+    });
+
+    it('should return network error when fetching image', async () => {
+        const uiConfig = {
+            logo: '/wrong-path/img.png',
+        };
+
+        global.fetch = () => Promise.resolve({ ok: false, status: 404 });
+        await expect(customUIStyle(uiConfig)).rejects.toThrow('Network response was not ok');
     });
 });

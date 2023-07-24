@@ -121,10 +121,6 @@ export default class ServiceTab extends Component {
 
     handleDialogOpen = (currentService) => {
         const { selectedVersion } = this.state;
-        // eslint-disable-next-line no-console
-        console.log(selectedVersion);
-        // eslint-disable-next-line no-console
-        console.log(currentService);
         if (selectedVersion === null) {
             this.setState({ previousVersion: currentService.defaultApiVersion });
         } else {
