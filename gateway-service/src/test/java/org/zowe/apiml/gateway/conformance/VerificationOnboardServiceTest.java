@@ -19,9 +19,9 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,18 +33,29 @@ public class VerificationOnboardServiceTest {
     @Mock
     private DiscoveryClient discoveryClient;
 
-    private static final String GATEWAY_ID = "gateway";
-    private static final String SWAGGER_NAME = "apiml.apiInfo.api-v2.swaggerUrl";
-    private static final String SWAGGER_URL = "https://hostname/sampleclient/api-doc";
 
     @Test
     void whenCheckingOnboardedService() {
         when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
         assertFalse(verificationOnboardService.checkOnboarding("Test"));
         assertTrue(verificationOnboardService.checkOnboarding("OnboardedService"));
-
     }
 
+    @Test
+    void whenRetrievingSwagger() {
+        final String swaggerUrl = "https://hostname/sampleclient/api-doc";
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
+        assertEquals(swaggerUrl, verificationOnboardService.retrieveSwagger(metadata));
+    }
+
+
+    @Test
+    void whenRetrievingEmptySwagger() {
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("apiml.apiInfo.api-v2.swaggerUrl", null);
+        assertEquals("", verificationOnboardService.retrieveSwagger(metadata));
+    }
 
 }
 

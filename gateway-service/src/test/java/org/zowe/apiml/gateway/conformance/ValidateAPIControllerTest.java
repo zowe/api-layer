@@ -19,8 +19,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,8 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,32 +63,29 @@ public class ValidateAPIControllerTest {
         when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
 
 
-        result = new ResponseEntity<String>(HttpStatus.I_AM_A_TEAPOT); // Here only in case we forget to reassign result
-    }
-
-
-    @AfterEach
-    void checkValidJson() {
-        ObjectMapper mapper = new ObjectMapper()
-            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
-
-        boolean valid;
-
-        try {
-            mapper.readTree(result.getBody());
-            valid = true;
-        } catch (JsonProcessingException e) {
-            valid = false;
-        }
-        assertTrue(valid);
-
-
-
+        result = new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT); // Here only in case we forget to reassign result
     }
 
 
     @Nested
     class GivenWrongServiceId {
+
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+            boolean valid;
+
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
+        }
+
         @Test
         public void whenServiceIdTooLong_thenNonconformant() {
 
@@ -143,13 +144,25 @@ public class ValidateAPIControllerTest {
 
     @Nested
     class ServiceNotOnboarded {
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+            boolean valid;
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
+        }
+
 
         @Test
         public void WhenServiceNotOboarded_thenError() {
 
-            String testString = "notOnboarded";
-
-            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(false);
+            String testString = "notonboarded";
 
             result = validateAPIController.checkConformance(testString);
 
@@ -163,9 +176,7 @@ public class ValidateAPIControllerTest {
         @Test
         public void LegacyWhenServiceNotOboarded_thenError() {
 
-            String testString = "notOnboarded";
-
-            when(verificationOnboardService.checkOnboarding(testString)).thenReturn(false);
+            String testString = "notonboarded";
 
             result = validateAPIController.checkValidateLegacy(testString);
 
@@ -175,6 +186,77 @@ public class ValidateAPIControllerTest {
             assertTrue(result.getBody().contains("The service is not registered"));
 
         }
+    }
+
+
+    @Nested
+    class GivenMetadata {
+        @Test
+        void whenEmpty_thenCorrectResponse() {
+            HashMap<String, String> metadata = new HashMap<>();
+            assertEquals(validateAPIController.metaDataCheck(metadata), "Cannot Retrieve MetaData");
+        }
+
+        @Test
+        void whenNotEmpty_thenCorrectResponse() {
+            HashMap<String, String> metadata = new HashMap<>();
+            metadata.put("key", "value");
+            assertEquals(validateAPIController.metaDataCheck(metadata), "");
+        }
+    }
+
+
+    @Nested
+    class GivenInstanceList {
+        @Test
+        void whenEmpty_thenCorrectResponse() {
+
+            List<ServiceInstance> list = new ArrayList<>();
+
+            assertTrue(validateAPIController.instanceCheck(list).contains("Cannot retrieve metadata"));
+        }
+
+    }
+
+
+    @Nested
+    class GivenValidEverything {
+
+        @Mock
+        ServiceInstance serviceInstance;
+
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+            boolean valid;
+
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
+        }
+
+
+        @Test
+        void thenOkResponse() {
+            String serviceId = "testservice";
+
+            HashMap<String, String> mockMetadata = new HashMap<>();
+            mockMetadata.put("key", "value");
+
+            when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
+            when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
+            when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
+
+            result = validateAPIController.checkConformance(serviceId);
+            assertEquals(HttpStatus.OK, result.getStatusCode());
+        }
+
     }
 }
 

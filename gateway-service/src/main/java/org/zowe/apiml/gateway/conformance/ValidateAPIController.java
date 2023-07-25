@@ -22,7 +22,6 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -40,8 +39,13 @@ public class ValidateAPIController {
 
 
     private static final String wrongServiceIdKey = "org.zowe.apiml.gateway.verifier.wrongServiceId";
-    private static final String NoMetadataKey = "org.zowe.apiml.gateway.verifier.NoMetadata";
-    private static final String NonConformantKey = "org.zowe.apiml.gateway.verifier.NonConformant";
+    private static final String NoMetadataKey = "org.zowe.apiml.gateway.verifier.noMetadata";
+    private static final String NonConformantKey = "org.zowe.apiml.gateway.verifier.nonConformant";
+
+
+    private static final String problemWithRegistration = "Registration problems";
+    private static final String problemWithMetadata = "Metadata problems";
+    private static final String problemWithConformance = "Conformance problems";
 
 
     private final MessageService messageService;
@@ -68,34 +72,35 @@ public class ValidateAPIController {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer();
 
 
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
+        foundNonConformanceIssues.put(problemWithConformance, validateServiceIdFormat(serviceId));
 
-
-        foundNonConformanceIssues.put("Registration problems", validatorItem1(serviceId));
-        foundNonConformanceIssues.put("Conformance problems", validatorItem5(serviceId));
-
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
-            return GenerateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
-        }
-
-
-        foundNonConformanceIssues.put("Registration problems", instanceCheck(serviceInstances));
-
-        Map<String, String> metadata = getMetadata(serviceInstances);
-
-        foundNonConformanceIssues.put("Metadata problems", metaDataCheck(metadata));
-
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue without metadata
-            return GenerateBadRequestResponseEntity(NoMetadataKey, foundNonConformanceIssues);
-        }
-
-        // Other non conformance checks here
 
         if (foundNonConformanceIssues.size() != 0) {
             return GenerateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
         }
 
-//        return new ResponseEntity<>(HttpStatus.OK);
+        foundNonConformanceIssues.put(problemWithRegistration, checkOnboarding(serviceId));
+
+        if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
+            return GenerateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
+        }
+
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
+        foundNonConformanceIssues.put(problemWithRegistration, instanceCheck(serviceInstances));
+
+        ServiceInstance serviceInstance = serviceInstances.get(0);
+        Map<String, String> metadata = getMetadata(serviceInstance);
+
+        foundNonConformanceIssues.put(problemWithMetadata, metaDataCheck(metadata));
+
+        if (foundNonConformanceIssues.size() != 0) {     // cant continue without metadata
+            return GenerateBadRequestResponseEntity(NoMetadataKey, foundNonConformanceIssues);
+        }
+
+        // Other non conformance checks will be here
+        if (foundNonConformanceIssues.size() != 0) {
+            return GenerateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
+        }
 
         return new ResponseEntity<>("{\"message\":\"Service fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
@@ -127,69 +132,72 @@ public class ValidateAPIController {
 
 
     /**
-     * Checks if the service is onboarded.
+     * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
      * If it's not than it doesn't fulfill Item 1 of conformance criteria
      *
      * @param serviceId serviceId to check
-     * @return list of found issues, empty when conformant
+     * @return string describing the issue or an empty string
      */
-    private ArrayList<String> validatorItem1(String serviceId) {
-        ArrayList<String> result = new ArrayList<>();
+    public String checkOnboarding(String serviceId) {
         if (!verificationOnboardService.checkOnboarding(serviceId)) {
-            result.add("The service is not registered");
+            return "The service is not registered";
         }
-        return result;
+        return "";
+
     }
 
 
     /**
-     * Checks if metadata can be retrieved.
+     * Retrieves metadata
      *
-     * @return Either empty list or list containing one item with the explanation of the problem
+     * @param serviceInstance serviceInstance from which to retrieve the metadata.
+     * @return Metadata of the instance
      */
-    private Map<String, String> getMetadata(List<ServiceInstance> serviceInstances) {
-        ServiceInstance serviceInstance = serviceInstances.get(0);
+    private Map<String, String> getMetadata(ServiceInstance serviceInstance) {
         return serviceInstance.getMetadata();
     }
 
 
     /**
-     * Checks if metadata can be retrieved.
+     * Checks if metadata was retrieved.
      *
-     * @return Either empty list or list containing one item with the explanation of the problem
+     * @param metadata which to test
+     * @return string describing the issue or an empty string
      */
-    private ArrayList<String> metaDataCheck(Map<String, String> metadata) {
-        ArrayList<String> result = new ArrayList<>();
+    public String metaDataCheck(Map<String, String> metadata) {
         if (metadata != null && !metadata.isEmpty()) {
-            return new ArrayList<>();
+            return "";
         }
-        return new ArrayList<>(Collections.singleton("Cannot Retrieve MetaData"));
+        return "Cannot Retrieve MetaData";
     }
 
-    private ArrayList<String> instanceCheck(List<ServiceInstance> serviceInstances) {
+    /**
+     * Checks if a single instance can be retrieved.
+     *
+     * @param serviceInstances to check
+     * @return string describing the issue or an empty string
+     */
+    public String instanceCheck(List<ServiceInstance> serviceInstances) {
         if (serviceInstances.isEmpty()) {
-            return new ArrayList<>(Collections.singleton("Cannot retrieve metadata - no active instance of the service"));
+            return "Cannot retrieve metadata - no active instance of the service";
         }
-        return new ArrayList<>();
+        return "";
     }
 
 
     /**
      * Accept serviceId and checks if it is Zowe conformant according to the specification,
-     * specifically Item 5 from the list. That means that the serviceId contains only lower case characters
-     * without symbols and is shorter than 64 characters
+     * Item 5 from the conformance criteria list. That means that the serviceId contains only lower case
+     * characters without symbols and is shorter than 64 characters
      *
-     * @param serviceId accept serviceID to check
+     * @param serviceId to check
      * @return list of found issues, empty when conformant
      */
-    private ArrayList<String> validatorItem5(String serviceId) {
+    public ArrayList<String> validateServiceIdFormat(String serviceId) {
         ArrayList<String> result = new ArrayList<>();
-
         if (serviceId.length() > MaximumServiceIdLength) {
             result.add("The serviceId is longer than 64 characters");
         }
-
-
         // Check for invalid characters
         final Pattern symbolPattern = Pattern.compile(InvalidServiceIdRegex);
         Matcher findSymbol = symbolPattern.matcher(serviceId);
