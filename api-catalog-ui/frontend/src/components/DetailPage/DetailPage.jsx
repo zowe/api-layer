@@ -44,7 +44,9 @@ export default class DetailPage extends Component {
     handleLinkClick = (e, id) => {
         e.preventDefault();
         const elementToView = document.querySelector(id);
-        elementToView.scrollIntoView();
+        if (elementToView) {
+            elementToView.scrollIntoView();
+        }
     };
 
     render() {

@@ -251,4 +251,51 @@ describe('>>> Detailed Page component tests', () => {
         );
         expect(wrapper.find('#right-resources-menu').exists()).toEqual(true);
     });
+
+    it('should click', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        const history = {
+            push: jest.fn(),
+            pathname: jest.fn(),
+        };
+        const mockHandleLinkClick = jest.fn();
+        const mockEvent = { preventDefault: jest.fn() };
+        const mockElementToView = { scrollIntoView: jest.fn() };
+        document.querySelector = jest.fn().mockReturnValue(mockElementToView);
+        const wrapper = shallow(
+            <DetailPage
+                tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
+                handleLinkClick={mockHandleLinkClick}
+                fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
+                fetchTilesStop={jest.fn()}
+                match={match}
+                history={history}
+            />
+        );
+        // Simulate a click event on the Link component, providing the id as the second argument
+        wrapper.instance().handleLinkClick(mockEvent, '#swagger-label');
+        expect(mockEvent.preventDefault).toHaveBeenCalled();
+        expect(document.querySelector).toHaveBeenCalledWith('#swagger-label');
+        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
+
+        wrapper.instance().handleLinkClick(mockEvent, '#use-cases-label');
+        expect(mockEvent.preventDefault).toHaveBeenCalled();
+        expect(document.querySelector).toHaveBeenCalledWith('#use-cases-label');
+        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
+
+        wrapper.instance().handleLinkClick(mockEvent, '#videos-label');
+        expect(mockEvent.preventDefault).toHaveBeenCalled();
+        expect(document.querySelector).toHaveBeenCalledWith('#videos-label');
+        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
+
+        wrapper.instance().handleLinkClick(mockEvent, '#tutorials-label');
+        expect(mockEvent.preventDefault).toHaveBeenCalled();
+        expect(document.querySelector).toHaveBeenCalledWith('#tutorials-label');
+        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
+    });
 });

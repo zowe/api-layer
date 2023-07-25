@@ -105,7 +105,9 @@ body .detail-content {
     #right-resources-menu {
         position: relative;
         float: right;
-        display: flex;
+        // Hidden for the timebeing until we won't have additional content
+        display: none;
+        //display: flex;
         flex-direction: column;
         align-items: flex-start;
         border-radius: 4px;
