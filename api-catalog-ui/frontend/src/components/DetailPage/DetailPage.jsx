@@ -18,7 +18,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
 export default class DetailPage extends Component {
     componentDidMount() {
@@ -77,6 +77,8 @@ export default class DetailPage extends Component {
         }
         const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
+        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(services);
+        const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);
         }
@@ -138,7 +140,7 @@ export default class DetailPage extends Component {
                                 )}
                             </div>
                         </div>
-                        {apiPortalEnabled && (
+                        {apiPortalEnabled && !onlySwaggerPresent && (
                             <div id="right-resources-menu">
                                 <Typography id="resources-menu-title" variant="subtitle1">
                                     On this page
@@ -151,16 +153,16 @@ export default class DetailPage extends Component {
                                         className="links"
                                         onClick={(e) => this.handleLinkClick(e, '#use-cases-label')}
                                     >
-                                        Use cases
+                                        Use cases ({useCasesCounter})
                                     </Link>
                                     <Link
                                         className="links"
                                         onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
                                     >
-                                        Tutorials
+                                        Tutorials ({tutorialsCounter})
                                     </Link>
                                     <Link className="links" onClick={(e) => this.handleLinkClick(e, '#videos-label')}>
-                                        Videos
+                                        Videos ({videosCounter})
                                     </Link>
                                 </Container>
                             </div>
@@ -184,7 +186,12 @@ export default class DetailPage extends Component {
                                         path={`${match.path}/:serviceId`}
                                         render={() => (
                                             <div className="tabs-swagger">
-                                                <ServiceTabContainer tiles={tiles} />
+                                                <ServiceTabContainer
+                                                    videosCounter={videosCounter}
+                                                    tutorialsCounter={tutorialsCounter}
+                                                    useCasesCounter={useCasesCounter}
+                                                    tiles={tiles}
+                                                />
                                             </div>
                                         )}
                                     />

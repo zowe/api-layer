@@ -140,6 +140,9 @@ export default class ServiceTab extends Component {
             },
             tiles,
             selectedService,
+            useCasesCounter,
+            tutorialsCounter,
+            videosCounter,
         } = this.props;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
@@ -153,7 +156,6 @@ export default class ServiceTab extends Component {
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         const apiPortalEnabled = isAPIPortal();
-        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(currentService);
         const additionalContentsPresent = useCasesCounter !== 0 && tutorialsCounter !== 0 && videosCounter !== 0;
         return (
             <>
