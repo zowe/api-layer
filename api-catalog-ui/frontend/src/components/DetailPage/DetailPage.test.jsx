@@ -237,10 +237,13 @@ describe('>>> Detailed Page component tests', () => {
             push: jest.fn(),
             pathname: jest.fn(),
         };
+        tile.services[0].videos = ['video1', 'video2'];
+        tile.services[0].tutorials = ['tutorial1', 'tutorial2'];
+        tile.services[0].useCases = ['useCase1', 'useCase2'];
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
-                services={tile.services}
+                services={tile.services[0]}
                 currentTileId="apicatalog"
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={fetchNewTiles}
@@ -252,7 +255,7 @@ describe('>>> Detailed Page component tests', () => {
         expect(wrapper.find('#right-resources-menu').exists()).toEqual(true);
     });
 
-    it('should click', () => {
+    it('should click on the links', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();

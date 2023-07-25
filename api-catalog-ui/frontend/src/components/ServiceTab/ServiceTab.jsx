@@ -12,7 +12,7 @@ import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import countAdditionalContents, { isAPIPortal } from '../../utils/utilFunctions';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 export default class ServiceTab extends Component {
     constructor(props) {

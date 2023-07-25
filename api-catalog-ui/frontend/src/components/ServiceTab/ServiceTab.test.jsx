@@ -137,7 +137,7 @@ describe('>>> ServiceTab component tests', () => {
         ).toThrow('No tile is selected.');
     });
 
-    it('should not display default footer for custom portal in case of no additional content', () => {
+    it('should display default footer for custom portal in case of additional content', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const selectService = jest.fn();
         const serviceTab = shallow(
@@ -148,6 +148,6 @@ describe('>>> ServiceTab component tests', () => {
                 selectService={selectService}
             />
         );
-        expect(serviceTab.find('.footer-labels').exists()).toEqual(false);
+        expect(serviceTab.find('.footer-labels').exists()).toEqual(true);
     });
 });
