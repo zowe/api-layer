@@ -152,7 +152,9 @@ export default class ServiceTab extends Component {
         const { containsVersion } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
+        const apiPortalEnabled = isAPIPortal();
         const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(currentService);
+        const additionalContentsPresent = useCasesCounter !== 0 && tutorialsCounter !== 0 && videosCounter !== 0;
         return (
             <>
                 {currentService === null && (
@@ -165,10 +167,12 @@ export default class ServiceTab extends Component {
                 <Shield title={message}>
                     <div className="serviceTab">
                         <div className="header">
-                            <Typography id="service-title" data-testid="service" variant="h4">
-                                {selectedService.title}
-                            </Typography>
-                            {hasHomepage && (
+                            {!apiPortalEnabled && (
+                                <Typography id="service-title" data-testid="service" variant="h4">
+                                    {selectedService.title}
+                                </Typography>
+                            )}
+                            {hasHomepage && !apiPortalEnabled && (
                                 <>
                                     {selectedService.status === 'UP' && (
                                         <Tooltip
@@ -195,41 +199,43 @@ export default class ServiceTab extends Component {
                                     )}
                                 </>
                             )}
-                            <div className="apiInfo-item">
-                                <Tooltip
-                                    key={basePath}
-                                    title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
-                                    placement="bottom"
-                                >
-                                    <Typography data-testid="base-path" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                        <label htmlFor="apiBasePath">API Base Path:</label>
-                                        <span id="apiBasePath">{basePath}</span>
-                                    </Typography>
-                                </Tooltip>
-                                <Tooltip
-                                    key={selectedService.serviceId}
-                                    title="The identifier for this service"
-                                    placement="bottom"
-                                >
-                                    <Typography data-testid="service-id" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                        <label htmlFor="serviceId">Service ID:</label>
-                                        <span id="serviceId">{selectedService.serviceId}</span>
-                                    </Typography>
-                                </Tooltip>
-                                <Tooltip
-                                    key={selectedService.ssoAllInstances}
-                                    title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
-                                    placement="bottom"
-                                >
-                                    <Typography data-testid="sso" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                        <label htmlFor="sso">SSO:</label>
-                                        <span id="sso">{sso}</span>
-                                    </Typography>
-                                </Tooltip>
-                            </div>
+                            {!apiPortalEnabled && (
+                                <div className="apiInfo-item">
+                                    <Tooltip
+                                        key={basePath}
+                                        title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
+                                        placement="bottom"
+                                    >
+                                        <Typography data-testid="base-path" variant="subtitle2">
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="apiBasePath">API Base Path:</label>
+                                            <span id="apiBasePath">{basePath}</span>
+                                        </Typography>
+                                    </Tooltip>
+                                    <Tooltip
+                                        key={selectedService.serviceId}
+                                        title="The identifier for this service"
+                                        placement="bottom"
+                                    >
+                                        <Typography data-testid="service-id" variant="subtitle2">
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="serviceId">Service ID:</label>
+                                            <span id="serviceId">{selectedService.serviceId}</span>
+                                        </Typography>
+                                    </Tooltip>
+                                    <Tooltip
+                                        key={selectedService.ssoAllInstances}
+                                        title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
+                                        placement="bottom"
+                                    >
+                                        <Typography data-testid="sso" variant="subtitle2">
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="sso">SSO:</label>
+                                            <span id="sso">{sso}</span>
+                                        </Typography>
+                                    </Tooltip>
+                                </div>
+                            )}
 
                             <Typography
                                 data-testid="description"
@@ -288,7 +294,7 @@ export default class ServiceTab extends Component {
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
-                        {isAPIPortal() && (
+                        {isAPIPortal() && additionalContentsPresent && (
                             <div id="detail-footer">
                                 <Typography
                                     className="footer-labels"
@@ -299,9 +305,6 @@ export default class ServiceTab extends Component {
                                     Use Cases ({useCasesCounter})
                                 </Typography>
                                 <br />
-                                {useCasesCounter === 0 && (
-                                    <Typography data-testid="no-use-cases">There are no Use Cases.</Typography>
-                                )}
                                 <br />
                                 <Typography
                                     className="footer-labels"
@@ -312,9 +315,6 @@ export default class ServiceTab extends Component {
                                     Tutorials ({tutorialsCounter} articles)
                                 </Typography>
                                 <br />
-                                {tutorialsCounter === 0 && (
-                                    <Typography data-testid="no-tutorials">There are no Tutorials.</Typography>
-                                )}
                                 <br />
                                 <Typography
                                     className="footer-labels"
@@ -325,9 +325,6 @@ export default class ServiceTab extends Component {
                                     Videos ({videosCounter})
                                 </Typography>
                                 <br />
-                                {videosCounter === 0 && (
-                                    <Typography data-testid="no-videos">There are no Videos.</Typography>
-                                )}
                             </div>
                         )}
                     </div>

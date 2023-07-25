@@ -108,16 +108,18 @@ export default class DetailPage extends Component {
                 </div>
                 {!isLoading && !fetchTilesError && (
                     <div className="api-description-container">
-                        <IconButton
-                            id="go-back-button"
-                            data-testid="go-back-button"
-                            color="primary"
-                            onClick={this.handleGoBack}
-                            size="medium"
-                        >
-                            {iconBack}
-                            Back
-                        </IconButton>
+                        {!apiPortalEnabled && (
+                            <IconButton
+                                id="go-back-button"
+                                data-testid="go-back-button"
+                                color="primary"
+                                onClick={this.handleGoBack}
+                                size="medium"
+                            >
+                                {iconBack}
+                                Back
+                            </IconButton>
+                        )}
                         <div className="detailed-description-container">
                             <div className="title-api-container">
                                 {tiles !== undefined && tiles.length === 1 && (
