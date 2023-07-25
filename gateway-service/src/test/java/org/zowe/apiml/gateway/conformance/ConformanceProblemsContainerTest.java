@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConformanceProblemsContainerTest {
 
@@ -48,6 +49,21 @@ class ConformanceProblemsContainerTest {
             assertEquals(container.size(), testList.size());
         }
 
+
+        @Test
+        void whenInserting_thenCanRetrieve() {
+            ArrayList<String> testList = new ArrayList<>();
+
+            for (int i = 0; i < 5; i++) {
+                testList.add("testString");
+            }
+
+            container.put("test", testList);
+
+            assertEquals(container.size(), testList.size());
+            assertTrue(container.get("test").contains("testString"));
+        }
+
         @ParameterizedTest
         @ValueSource(ints = {10, 5, 0})
         void whenInsertingToSameKey_thenCorrectSize(int size) {
@@ -68,6 +84,14 @@ class ConformanceProblemsContainerTest {
                 container.put("test2", testList2);
             }
             assertEquals(container.size(), 2 * size);
+        }
+
+        @Test
+        void whenAddingNullValue_thenCorrectSize() {
+            ArrayList<String> test = null;
+            container.put("test", test);
+
+            assertEquals(0, container.size());
         }
     }
 

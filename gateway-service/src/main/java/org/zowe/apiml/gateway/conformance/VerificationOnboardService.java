@@ -43,7 +43,7 @@ public class VerificationOnboardService {
 
 
     /**
-     * Accepts metadata and retrieves the Swagger url if it exists
+     * Accepts metadata and retrieves the Swagger url if it existsd
      *
      * @param metadata to grab swagger from
      * @return SwaggerUrl when able, empty string otherwise

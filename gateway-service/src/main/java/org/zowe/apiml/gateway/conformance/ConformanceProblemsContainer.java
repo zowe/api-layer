@@ -16,9 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.zowe.apiml.message.api.ApiMessage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-
-
 
 
 /**
@@ -29,11 +28,23 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     @Override
     public ArrayList<String> put(String key, ArrayList<String> value) {
 
+        if (value == null) {
+            return null;
+        }
+
         if (this.get(key) != null && this.get(key).size() != 0) {
             this.get(key).addAll(value);
             return null;
         }
         return super.put(key, new ArrayList<>(value));
+    }
+
+    public ArrayList<String> put(String key, String value) {
+        if (value.equals("")) {
+            return null;
+        }
+
+        return put(key, new ArrayList<>(Collections.singleton(value)));
     }
 
     @Override
@@ -76,8 +87,8 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
             result.append(":[");
 
             boolean firstInnerLoop = true;
-            for (String i : get(key) ) {
-                if(!firstInnerLoop){
+            for (String i : get(key)) {
+                if (!firstInnerLoop) {
                     result.append(",");
                 }
                 try {
