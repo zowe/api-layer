@@ -122,17 +122,17 @@ public class JwtSecurity {
         switch (used) {
             case ZOSMF:
                 log.info("z/OSMF instance {} is used as the JWT producer", zosmfServiceId);
-                addEvent(String.format("z/OSMF instance %s is recognized as authentication provider.", zosmfServiceId));
+                events.add(String.format("z/OSMF instance %s is recognized as authentication provider.", zosmfServiceId));
                 validateInitializationAgainstZosmf();
                 break;
             case APIML:
                 log.info("API ML is used as the JWT producer");
-                addEvent("API ML is recognized as authentication provider.");
+                events.add("API ML is recognized as authentication provider.");
                 validateJwtSecret();
                 break;
             case UNKNOWN:
                 log.info("z/OSMF instance {} is probably used as the JWT producer but isn't available yet.", zosmfServiceId);
-                addEvent(String.format("Wait for z/OSMF instance %s to come online before deciding who provides JWT tokens.", zosmfServiceId));
+                events.add(String.format("Wait for z/OSMF instance %s to come online before deciding who provides JWT tokens.", zosmfServiceId));
                 validateInitializationWhenZosmfIsAvailable();
                 break;
             default:
@@ -208,11 +208,11 @@ public class JwtSecurity {
      */
     private void validateInitializationAgainstZosmf() {
         if (!providers.zosmfSupportsJwt()) {
-            addEvent("API ML is responsible for token generation.");
+            events.add("API ML is responsible for token generation.");
             log.debug("z/OSMF instance {} is UP and does not support JWT", zosmfServiceId);
             validateJwtSecret();
         } else {
-            addEvent(String.format("z/OSMF instance %s is UP and supports JWT", zosmfServiceId));
+            events.add(String.format("z/OSMF instance %s is UP and supports JWT", zosmfServiceId));
             log.debug("z/OSMF instance {} is UP and supports JWT", zosmfServiceId);
         }
     }
@@ -261,7 +261,7 @@ public class JwtSecurity {
 
         new Thread(() -> {
             try {
-                addEvent("Started waiting for z/OSMF instance " + zosmfServiceId + " to be registered and known by the discovery service");
+                events.add("Started waiting for z/OSMF instance " + zosmfServiceId + " to be registered and known by the discovery service");
                 log.debug("Waiting for z/OSMF instance {} to be registered and known by the Discovery Service.", zosmfServiceId);
                 await()
                     .atMost(Duration.of(timeout, ChronoUnit.MINUTES))
@@ -302,10 +302,10 @@ public class JwtSecurity {
                     return;
                 }
 
-                addEvent("Discovery Service Cache was updated.");
+                events.add("Discovery Service Cache was updated.");
                 log.debug("Trying to reach the z/OSMF instance " + zosmfServiceId + ".");
                 if (providers.isZosmfAvailableAndOnline()) {
-                    addEvent("z/OSMF instance " + zosmfServiceId + " is available and online.");
+                    events.add("z/OSMF instance " + zosmfServiceId + " is available and online.");
                     log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);
 
                     discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
@@ -320,7 +320,7 @@ public class JwtSecurity {
                         System.exit(1);
                     }
                 } else {
-                    addEvent("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
+                    events.add("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
                 }
             }
         };
@@ -345,9 +345,5 @@ public class JwtSecurity {
         ZOSMF,
         APIML,
         UNKNOWN
-    }
-
-    private void addEvent(String event) {
-        events.add( event);
     }
 }
