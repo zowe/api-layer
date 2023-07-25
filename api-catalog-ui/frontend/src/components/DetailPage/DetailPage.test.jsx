@@ -228,4 +228,27 @@ describe('>>> Detailed Page component tests', () => {
         expect(clearService).toHaveBeenCalled();
         expect(fetchTilesStart).toHaveBeenCalled();
     });
+
+    it('should display nav right menu', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        const history = {
+            push: jest.fn(),
+            pathname: jest.fn(),
+        };
+        const wrapper = shallow(
+            <DetailPage
+                tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
+                fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
+                fetchTilesStop={jest.fn()}
+                match={match}
+                history={history}
+            />
+        );
+        expect(wrapper.find('#right-resources-menu').exists()).toEqual(true);
+    });
 });
