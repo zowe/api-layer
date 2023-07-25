@@ -4,6 +4,9 @@
   .header, .header > * {
     align-items: center;
   }
+    #search .MuiFormControl-root {
+        display: contents;
+    }
   h1 {
     margin: var( --spaceMedium ) 0;
     padding-bottom: var( --spaceMedium );
@@ -89,8 +92,4 @@
     height: 2px;
     width: 99%;
     display: block;
-}
-
-.dashboard-content #search .MuiFormControl-root {
-    display: contents;
 }
