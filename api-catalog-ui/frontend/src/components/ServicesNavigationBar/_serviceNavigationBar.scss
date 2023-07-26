@@ -18,6 +18,7 @@ $color_2: #CC092F;
             >div {
                 >#search-icon {
                     margin-top: 7px;
+                    margin-left: 120px;
                 }
             }
         }
@@ -58,6 +59,12 @@ span.MuiTab-wrapper {
 .MuiTabs-root.custom-tabs.MuiTabs-vertical {
     margin-left: auto;
 }
+
+svg.MuiSvgIcon-root.clear-text-search {
+    margin-left: 120px;
+    margin-bottom: 3px;
+}
+
 
 .tabs {
     height: 100%;

@@ -31,19 +31,13 @@ export default function countAdditionalContents(service) {
 }
 
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {
+    const color =
+        uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF' ? 'black' : uiConfig.headerColor;
     if (wizardButton) {
-        if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
-            wizardButton.style.setProperty('color', 'black');
-        } else {
-            wizardButton.style.setProperty('color', uiConfig.headerColor);
-        }
+        wizardButton.style.setProperty('color', color);
     }
     if (refreshButton) {
-        if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
-            refreshButton.style.setProperty('color', 'black');
-        } else {
-            refreshButton.style.setProperty('color', uiConfig.headerColor);
-        }
+        refreshButton.style.setProperty('color', color);
     }
 }
 

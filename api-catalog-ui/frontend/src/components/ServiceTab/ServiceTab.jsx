@@ -126,7 +126,11 @@ export default class ServiceTab extends Component {
         } else {
             this.setState({ previousVersion: selectedVersion });
         }
-        this.setState({ isDialogOpen: true, selectedVersion: 'diff' });
+        this.setState({
+            isDialogOpen: true,
+            selectedVersion: 'diff',
+            previousVersion: selectedVersion ?? currentService.defaultApiVersion,
+        });
     };
 
     handleDialogClose = () => {

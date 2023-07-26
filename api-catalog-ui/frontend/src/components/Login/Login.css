@@ -8,6 +8,12 @@
     right: 6rem;
 }
 
+#spinner {
+    position: absolute;
+    z-index: 1;
+    margin-left: -64px;
+}
+
 .login-object {
     overflow: hidden;
     background-image: url("../../assets/images/zowe-background.jpg");

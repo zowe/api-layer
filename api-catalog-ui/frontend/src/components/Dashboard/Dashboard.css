@@ -126,6 +126,25 @@ a {
     border: 1px solid #C9C8C5;
 }
 
+#search > div > div > div > #search-icon {
+    margin-left: 168px;
+}
+
+#search-input > svg {
+    margin-left: 168px;
+}
+
+/* For Firefox */
+@-moz-document url-prefix() {
+    #search > div > div > div > #search-icon {
+        margin-left: 125px;
+    }
+    #search-input > svg {
+        margin-left: 125px;
+    }
+}
+
+
 #search_no_results {
     color: #1d5bbf;
 }

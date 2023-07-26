@@ -112,11 +112,7 @@ export default class ServiceVersionDiff extends Component {
                                 id="diff-button"
                                 data-testid="diff-button"
                                 onClick={() => {
-                                    if (this.state.defaultVersion) {
-                                        getDiff(serviceId, this.state.defaultVersion, selectedVersion2);
-                                    } else {
-                                        getDiff(serviceId, selectedVersion1, selectedVersion2);
-                                    }
+                                    getDiff(serviceId, this.state.defaultVersion ?? selectedVersion1, selectedVersion2);
                                 }}
                             >
                                 Show

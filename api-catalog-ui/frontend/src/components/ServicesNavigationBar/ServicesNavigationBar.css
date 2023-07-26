@@ -76,3 +76,7 @@ span.MuiTab-wrapper {
 .custom-tabs .tabs.Mui-selected {
     border: 4px solid #0056B3;
 }
+
+svg.MuiSvgIcon-root.clear-text-search {
+    margin-bottom: 3px;
+}

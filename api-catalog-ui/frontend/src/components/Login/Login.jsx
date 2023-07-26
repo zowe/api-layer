@@ -185,15 +185,7 @@ function Login(props) {
 
     return (
         <div className="login-object">
-            <Spinner
-                label=""
-                isLoading={isFetching}
-                css={{
-                    position: 'absolute',
-                    zIndex: '1',
-                    marginLeft: '-64px',
-                }}
-            />
+            <Spinner label="" isLoading={isFetching} />
             <div className="susp-card">
                 <div className="w-form">
                     <form

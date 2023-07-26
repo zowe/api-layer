@@ -24,6 +24,7 @@
       left: calc(50% - #{calc(var( --headerLineWidth ) / 2)});
     }
   }
+
     #search {
         height: 50px;
         width: 422px;
@@ -31,6 +32,21 @@
         margin-right: auto;
         background: #FFFFFF;
         border: 1px solid #C9C8C5;
+
+        display: flex;
+        >div {
+            >div {
+                >input {
+                    margin-left: auto;
+                    position: static;
+                }
+                >div {
+                    >#search-icon {
+                       margin-left: 156px;
+                    }
+                }
+            }
+        }
     }
 
     #grid-container ,
@@ -68,7 +84,28 @@
       color: var( --text20 );
       position: relative;
       left: var( --spaceSmaller );
+      margin-top: 0px;
+      margin-left: 156px;
     }
+
+      /* For Firefox */
+      @-moz-document url-prefix() {
+          .MuiSvgIcon-root {
+              margin-left: 130px;
+          }
+          #search {
+              >div {
+                  >div {
+                      >div {
+                          >#search-icon {
+                              margin-left: 130px;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
     .MuiInputBase-input {
       margin-top: auto;
       margin-left: 10px;
