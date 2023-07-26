@@ -165,9 +165,7 @@ export default class ServiceTab extends Component {
             <>
                 {currentService === null && (
                     <Typography id="no-tiles-error" variant="h4">
-                        <p style={{ marginLeft: '88px' }}>
-                            The service ID "{serviceId}" does not match any registered service
-                        </p>
+                        <p>The service ID "{serviceId}" does not match any registered service</p>
                     </Typography>
                 )}
                 <Shield title={message}>

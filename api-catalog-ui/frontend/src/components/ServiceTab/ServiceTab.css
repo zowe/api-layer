@@ -127,3 +127,7 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     font-size: 22px;
     color: #CC092F;
 }
+
+#no-tiles-error > p {
+    margin-left: 88px;
+}

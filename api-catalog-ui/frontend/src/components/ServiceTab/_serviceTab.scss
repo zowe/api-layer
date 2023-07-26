@@ -99,3 +99,12 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
         margin-top: 10px;
     }
 }
+
+#no-tiles-error {
+    font-size: 22px;
+    color: $color_3;
+}
+
+#no-tiles-error > p {
+    margin-left: 11px;
+}
