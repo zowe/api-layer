@@ -3,6 +3,7 @@
 ### Usage
 
 java -jar certificate-analyser-<version>.jar --help
+
 ```
 Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
                     [-a=<keyAlias>] [-k=<keyStore>] [-kt=<keyStoreType>]
@@ -28,9 +29,10 @@ Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
       -tt, --truststoretype=<trustStoreType>
                 Truststore type, default is PKCS12
 ```
+
 *NOTE*
 
-keypasswd - if you specify this parameter without a value(e.g. java -jar <file.jar> --keypasswd), you will be asked to enter the password 
+keypasswd - if you specify this parameter without a value(e.g. java -jar <file.jar> --keypasswd), you will be asked to enter the password
 
 trustpasswd - if you specify this parameter without a value(e.g. java -jar <file.jar> --trustpasswd), you will be asked to enter the password
             -  if this parameter is omitted completely, value from keypasswd will be used
@@ -39,14 +41,12 @@ truststoretype - if this parameter is omitted completely, value from keystoretyp
 
 ### Do local handshake
 
-java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>.jar --keystore ../../../keystore/localhost/localhost.keystore.p12 --truststore ../../../keystore/localhost/localhost.truststore.p12 --keypasswd password --keyalias localhost --local 
+java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>.jar --keystore ../../../keystore/localhost/localhost.keystore.p12 --truststore ../../../keystore/localhost/localhost.truststore.p12 --keypasswd password --keyalias localhost --local
 
 ### Keyring
 
 If you are using SAF keyrings, you need to provide an additional parameter in command line `-Djava.protocol.handler.pkgs=com.ibm.crypto.provider`.
 
-### Possible issues:
+### Possible issues
 
 Keystore/truststore is owned by different user - permission error. Temporarily Change read permission to all.
-
-

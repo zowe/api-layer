@@ -15,20 +15,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
-import org.springframework.http.*;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
@@ -36,8 +50,13 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
+
+import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -83,7 +102,6 @@ public class ZosmfService extends AbstractZosmfService {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ZosmfInfo {
-
 
         @JsonProperty("zosmf_version")
         private int version;
@@ -209,20 +227,25 @@ public class ZosmfService extends AbstractZosmfService {
         headers.add(ZOSMF_CSRF_HEADER, "");
 
         String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
-        log.debug("Verifying zOSMF accessibility on info endpoint: {}", infoURIEndpoint);
+        log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
 
         try {
-            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore
+            .exchange(
                 infoURIEndpoint,
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 ZosmfInfo.class
             );
 
-            return info.getStatusCode() == HttpStatus.OK;
-        } catch (RestClientException ex) {
-            log.debug("zOSMF isn't accessible on URI: {}", infoURIEndpoint);
+            if (info.getStatusCode() != HttpStatus.OK) {
+                log.error("Unexpected status code {} from z/OSMF accessing URI {}\n"
+                    + "Response from z/OSMF was \"{}\"", info.getStatusCodeValue(), infoURIEndpoint, String.valueOf(info.getBody()));
+            }
 
+            return info.getStatusCode() == HttpStatus.OK;
+        } catch (RuntimeException ex) {
+            handleExceptionOnCall(infoURIEndpoint, ex);
             return false;
         }
     }
@@ -266,11 +289,33 @@ public class ZosmfService extends AbstractZosmfService {
             return restTemplateWithoutKeystore.exchange(
                 url,
                 httpMethod,
-                new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers), String.class);
-        } catch (RuntimeException re) {
+                new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers),
+                String.class);
+        } catch (HttpServerErrorException e) {
             log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
-                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provide are correct.");
+                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provided are correct.");
+            throw handleServerErrorOnChangePasswordCall(e);
+        } catch (HttpClientErrorException e) {
+            throw new BadCredentialsException("Client error in change password: " + e.getResponseBodyAsString(), e);
+        } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
+        }
+    }
+
+    private RuntimeException handleServerErrorOnChangePasswordCall(HttpServerErrorException e) {
+        try {
+            ZosmfAuthResponse response = securityObjectMapper.readValue(e.getResponseBodyAsByteArray(), ZosmfAuthResponse.class);
+            if (response.getReturnCode() == 4) {
+                log.error("z/OSMF internal error attempting password change: {}", e.getResponseBodyAsString());
+                return new AuthenticationServiceException("z/OSMF internal error: " + e.getResponseBodyAsString());
+            } else {
+                // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
+                log.debug("Failed to change password, z/OSMF response: {}", e.getResponseBodyAsString());
+                return new BadCredentialsException("Failed to change password, z/OSMF response: " + e.getResponseBodyAsString());
+            }
+        } catch (IOException ioe) {
+            log.error("Error processing change password response body: {}", ioe.getMessage());
+            return new AuthenticationServiceException("Error processing change password response", ioe);
         }
     }
 

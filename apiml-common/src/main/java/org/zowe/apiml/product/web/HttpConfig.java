@@ -28,12 +28,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -173,10 +178,10 @@ public class HttpConfig {
 
         } catch (HttpsConfigError e) {
             log.error("Invalid configuration of HTTPs: {}", e.getMessage());
-            System.exit(1); // NOSONAR
+            System.exit(1);
         } catch (Exception e) {
             log.error("Cannot construct configuration of HTTPs: {}", e.getMessage());
-            System.exit(1); // NOSONAR
+            System.exit(1);
         }
     }
 
