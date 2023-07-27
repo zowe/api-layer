@@ -31,7 +31,7 @@ class ConformanceProblemsContainerTest {
 
         @BeforeEach
         void setup() {
-            container = new ConformanceProblemsContainer();
+            container = new ConformanceProblemsContainer("dummy");
         }
 
 
@@ -93,6 +93,17 @@ class ConformanceProblemsContainerTest {
 
             assertEquals(0, container.size());
         }
+
+
+
+        @Test
+        void whenAddingNullValue2_thenCorrectSize(){
+            String test = null;
+            container.put("test", test);
+
+            assertEquals(0, container.size());
+
+        }
     }
 
     @Nested
@@ -100,7 +111,7 @@ class ConformanceProblemsContainerTest {
 
         @BeforeEach
         void setup() {
-            container = new ConformanceProblemsContainer();
+            container = new ConformanceProblemsContainer("Dummy");
         }
 
 

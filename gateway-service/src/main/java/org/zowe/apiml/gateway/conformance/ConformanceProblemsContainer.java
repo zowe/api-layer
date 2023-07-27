@@ -25,6 +25,16 @@ import java.util.HashMap;
  */
 public class ConformanceProblemsContainer extends HashMap<String, ArrayList<String>> {
 
+
+
+    private final String serviceId;
+
+
+    ConformanceProblemsContainer(String serviceId){
+        super();
+        this.serviceId = serviceId;
+    }
+
     @Override
     public ArrayList<String> put(String key, ArrayList<String> value) {
 
@@ -40,7 +50,7 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     }
 
     public ArrayList<String> put(String key, String value) {
-        if (value.equals("")) {
+        if (value == null || value.equals("")) {
             return null;
         }
 
@@ -114,7 +124,7 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
         String template = "{\n" +
             "    \"messageAction\": \"replaceWithMessageAction\",\n" +
             "    \"messageContent\": {\n" +
-            "        \"The service is not conformant\": \n" +
+            "        \"The service " + serviceId + " is not conformant\": \n" +
             "            replaceWithMessageContent\n" +
             "    },\n" +
             "    \"messageKey\": \"replaceWithMessageKey\",\n" +
