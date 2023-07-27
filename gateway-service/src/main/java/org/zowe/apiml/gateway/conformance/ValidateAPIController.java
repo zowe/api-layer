@@ -69,7 +69,7 @@ public class ValidateAPIController {
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
 
 
-        ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer();
+        ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
 
 
         foundNonConformanceIssues.put(problemWithConformance, validateServiceIdFormat(serviceId));
@@ -88,6 +88,10 @@ public class ValidateAPIController {
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
         foundNonConformanceIssues.put(problemWithRegistration, instanceCheck(serviceInstances));
 
+        if (foundNonConformanceIssues.size() != 0) {     // cant continue if we cant retrieve an instance
+            return GenerateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
+        }
+
         ServiceInstance serviceInstance = serviceInstances.get(0);
         Map<String, String> metadata = getMetadata(serviceInstance);
 
@@ -97,12 +101,7 @@ public class ValidateAPIController {
             return GenerateBadRequestResponseEntity(NoMetadataKey, foundNonConformanceIssues);
         }
 
-        // Other non conformance checks will be here
-        if (foundNonConformanceIssues.size() != 0) {
-            return GenerateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
-        }
-
-        return new ResponseEntity<>("{\"message\":\"Service fulfills all checked conformance criteria\"}", HttpStatus.OK);
+        return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
 
 
