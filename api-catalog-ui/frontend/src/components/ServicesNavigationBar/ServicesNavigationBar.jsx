@@ -26,6 +26,7 @@ export default class ServicesNavigationBar extends Component {
     };
 
     handleTabChange = (event, selectedTab) => {
+        localStorage.removeItem('serviceId');
         localStorage.setItem('selectedTab', selectedTab);
     };
 
@@ -51,7 +52,19 @@ export default class ServicesNavigationBar extends Component {
         const { match, services, searchCriteria } = this.props;
         const hasTiles = services && services.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
-        const selectedTab = Number(localStorage.getItem('selectedTab'));
+        let selectedTab = Number(localStorage.getItem('selectedTab'));
+        let allServices;
+        let allServiceIds;
+        if (hasTiles) {
+            allServices = services.flatMap((tile) => tile.services);
+            allServiceIds = allServices.map((service) => service.serviceId);
+            if (localStorage.getItem('serviceId')) {
+                const id = localStorage.getItem('serviceId');
+                if (allServiceIds.includes(id)) {
+                    selectedTab = allServiceIds.indexOf(id);
+                }
+            }
+        }
         const TruncatedTabLabel = withStyles(this.styles)(({ classes, label }) => (
             <Tooltip title={label} placement="bottom">
                 <div className={classes.truncatedTabLabel}>{label}</div>
@@ -78,27 +91,25 @@ export default class ServicesNavigationBar extends Component {
                 )}
                 {hasTiles && (
                     <Tabs
-                        value={selectedTab}
+                        value={selectedTab || 0}
                         onChange={this.handleTabChange}
                         variant="scrollable"
                         orientation="vertical"
                         scrollButtons="auto"
                         className="custom-tabs"
                     >
-                        {services.map((tile, tileIndex) =>
-                            tile.services.map((service, serviceIndex) => (
-                                <Tab
-                                    onClick={() => this.handleTabClick(service.serviceId)}
-                                    key={service.serviceId}
-                                    className="tabs"
-                                    component={RouterLink}
-                                    to={`${match.url}/${service.serviceId}`}
-                                    value={tileIndex * services.length + serviceIndex}
-                                    label={<TruncatedTabLabel label={service.title} />}
-                                    wrapped
-                                />
-                            ))
-                        )}
+                        {allServices.map((service, serviceIndex) => (
+                            <Tab
+                                onClick={() => this.handleTabClick(service.serviceId)}
+                                key={service.serviceId}
+                                className="tabs"
+                                component={RouterLink}
+                                to={`${match.url}/${service.serviceId}`}
+                                value={serviceIndex}
+                                label={<TruncatedTabLabel label={service.title} />}
+                                wrapped
+                            />
+                        ))}
                     </Tabs>
                 )}
             </div>

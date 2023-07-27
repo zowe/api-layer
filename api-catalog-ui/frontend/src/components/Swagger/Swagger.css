@@ -1753,3 +1753,7 @@ button.opblock-summary-control {
 svg.svg-assets {
     display: none;
 }
+
+#no-doc_message {
+    color: #de1b1b;
+}

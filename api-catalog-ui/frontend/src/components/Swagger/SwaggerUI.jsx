@@ -180,7 +180,7 @@ export default class SwaggerUI extends Component {
             <div style={{ width: '100%', background: '#ffffff' }}>
                 {error && (
                     <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
-                        <h4 style={{ color: '#de1b1b' }}>
+                        <h4 id="no-doc_message">
                             API documentation could not be retrieved. There may be something wrong in your Swagger
                             definition. Please review the values of 'schemes', 'host' and 'basePath'.
                         </h4>
