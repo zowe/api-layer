@@ -7,23 +7,32 @@ $color_2: #CC092F;
     height: 47px;
     background: #FFFFFF;
     border: 1px solid #C9C8C5;
-    margin-right: 12px;
+    margin-right: 13px;
     margin-bottom: 9px;
+
+    .MuiInput-root {
+        width: 100%;
+    }
     >div {
         >div {
             >input {
-                margin-left: 13px;
-                margin-top: 6px;
+                padding-left: 16px;
+                padding-right: 40px;
+                padding-top: 14px;
             }
             >div {
                 >#search-icon {
                     margin-top: 7px;
-                    margin-left: 120px;
+                }
+                margin-right: 0;
+                &#search-input {
+                    right: 5px;
                 }
             }
         }
     }
 }
+
 #serviceIdTabs {
     margin-bottom: 10px;
     font-weight: bold;

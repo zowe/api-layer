@@ -34,6 +34,10 @@
         border: 1px solid #C9C8C5;
 
         display: flex;
+
+        .MuiInput-root {
+            width: 100%;
+        }
         >div {
             >div {
                 >input {

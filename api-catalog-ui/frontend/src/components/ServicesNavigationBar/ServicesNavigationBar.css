@@ -17,12 +17,17 @@
     height: 47px;
     background: #FFFFFF;
     border: 1px solid #C9C8C5;
-    margin: 5px 12px 9px -4px;
+    margin: 5px 14px 9px -1px;
+}
+
+#search2 .MuiInputBase-root {
+    width: 100%;
 }
 
 #search2 > div > div > input {
-    margin-left: 13px;
-    margin-top: 6px;
+    padding-left: 10px;
+    padding-right: 40px;
+    padding-top: 14px;
 }
 
 #search2> div> div> div> #search-icon {
@@ -47,6 +52,9 @@ span.MuiTab-wrapper {
 
 .MuiTabs-root {
     margin-left: -10px;
+}
+.MuiTabs-root > div:nth-child(2) {
+    padding-top: 2px;
 }
 
 .MuiTabs-scroller.MuiTabs-scrollable > div > a {

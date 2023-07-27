@@ -126,6 +126,10 @@ a {
     border: 1px solid #C9C8C5;
 }
 
+#search .MuiInputBase-root {
+    width: 100%;
+}
+
 #search > div > div > div > #search-icon {
     margin-left: 168px;
 }
