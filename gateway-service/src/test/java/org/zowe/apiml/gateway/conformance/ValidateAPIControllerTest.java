@@ -30,6 +30,9 @@ import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -220,7 +223,7 @@ public class ValidateAPIControllerTest {
 
 
     @Nested
-    class GivenValidEverything {
+    class GivenCheckConformanceFunction {
 
         @Mock
         ServiceInstance serviceInstance;
@@ -242,21 +245,45 @@ public class ValidateAPIControllerTest {
         }
 
 
-        @Test
-        void thenOkResponse() {
+
+        @ParameterizedTest
+        @ValueSource(strings={"src/test/resources/api-doc.json", "src/test/resources/api-doc-v2.json"})
+        void whenEverythingOk_thenOkResponse(String mockSwaggerFileLocation) throws IOException {
             String serviceId = "testservice";
 
             HashMap<String, String> mockMetadata = new HashMap<>();
-            mockMetadata.put("key", "value");
+            mockMetadata.put("swaggerUrl", "https://sample.swagger.url");
+
+            File mockSwaggerFile = new File(mockSwaggerFileLocation);
+
+            when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
+            when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
+            when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
+            when(verificationOnboardService.FindSwaggerUrl(mockMetadata)).thenReturn("a");
+
+            when(verificationOnboardService.getSwagger("a")).thenReturn(new String(Files.readAllBytes(mockSwaggerFile.getAbsoluteFile().toPath())));
+
+            result = validateAPIController.checkConformance(serviceId);
+
+            System.out.println(result.getBody());
+
+            assertEquals(HttpStatus.OK, result.getStatusCode());
+        }
+        @Test
+        void whenBadMetadata_thenBadMetadataResponse() {
+            String serviceId = "testservice";
+
+            HashMap<String, String> mockMetadata = new HashMap<>();
 
             when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
             when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
 
             result = validateAPIController.checkConformance(serviceId);
-            assertEquals(HttpStatus.OK, result.getStatusCode());
+            assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+            assertNotNull(result.getBody());
+            assertTrue(result.getBody().contains("Cannot Retrieve MetaData"));
         }
-
     }
 }
 
