@@ -60,7 +60,7 @@ export default class ServiceTab extends Component {
             currentTileId,
             tiles,
         } = this.props;
-        if (tiles && tiles.length > 0) {
+        if (tiles && tiles.length > 0 && tiles[0] && tiles[0].services) {
             tiles[0].services.forEach((service) => {
                 if (service.serviceId === serviceId) {
                     if (service.serviceId !== selectedService.serviceId || selectedTile !== currentTileId) {

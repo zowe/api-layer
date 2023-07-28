@@ -22,10 +22,14 @@ import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils
 
 export default class DetailPage extends Component {
     componentDidMount() {
-        const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
+        const { fetchTilesStart, currentTileId, fetchNewTiles, history } = this.props;
         fetchNewTiles();
         if (currentTileId) {
             fetchTilesStart(currentTileId);
+        }
+        if (!localStorage.getItem('serviceId')) {
+            const id = history.location.pathname.split('/service/')[1];
+            localStorage.setItem('serviceId', id);
         }
         localStorage.removeItem('selectedTab');
     }
@@ -51,7 +55,6 @@ export default class DetailPage extends Component {
 
     render() {
         const {
-            tiles,
             isLoading,
             clearService,
             fetchTilesStop,
@@ -64,6 +67,7 @@ export default class DetailPage extends Component {
             currentTileId,
             fetchNewTiles,
         } = this.props;
+        let { tiles } = this.props;
         const iconBack = <ChevronLeftIcon />;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
@@ -74,6 +78,14 @@ export default class DetailPage extends Component {
             fetchTilesStop();
             fetchNewTiles();
             fetchTilesStart(currentTileId);
+        } else if (services && services.length > 0 && !currentTileId) {
+            const id = history.location.pathname.split('/service/')[1];
+            if (id) {
+                const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
+                if (correctTile) {
+                    tiles = [correctTile];
+                }
+            }
         }
         const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
