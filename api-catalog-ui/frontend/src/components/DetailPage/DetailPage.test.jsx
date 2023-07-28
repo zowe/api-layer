@@ -38,14 +38,17 @@ const match = {
     path: '/service',
 };
 
+const history = {
+    push: jest.fn(),
+    location: {
+        pathname: '/service/serviceId',
+    },
+};
+
 describe('>>> Detailed Page component tests', () => {
     it('should start epic on mount', () => {
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
-        const history = {
-            push: jest.fn(),
-            pathname: jest.fn(),
-        };
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
@@ -65,10 +68,6 @@ describe('>>> Detailed Page component tests', () => {
 
     it('should stop epic on unmount', () => {
         const fetchTilesStop = jest.fn();
-        const history = {
-            push: jest.fn(),
-            pathname: jest.fn(),
-        };
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
@@ -85,7 +84,6 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should handle a back button click', () => {
-        const historyMock = { push: jest.fn() };
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
@@ -94,12 +92,12 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                history={historyMock}
+                history={history}
                 match={match}
             />
         );
         wrapper.find('[data-testid="go-back-button"]').simulate('click');
-        expect(historyMock.push.mock.calls[0]).toEqual(['/dashboard']);
+        expect(history.push.mock.calls[0]).toEqual(['/dashboard']);
     });
 
     it('should load spinner when waiting for data', () => {
@@ -119,7 +117,6 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should display tile title', () => {
-        const historyMock = { push: jest.fn() };
         const isLoading = false;
         const wrapper = shallow(
             <DetailPage
@@ -129,7 +126,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                history={historyMock}
+                history={history}
                 match={match}
                 isLoading={isLoading}
             />
@@ -139,7 +136,6 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should display tile description', () => {
-        const historyMock = { push: jest.fn() };
         const isLoading = false;
         const wrapper = shallow(
             <DetailPage
@@ -149,7 +145,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                history={historyMock}
+                history={history}
                 match={match}
                 isLoading={isLoading}
             />
@@ -159,7 +155,6 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
-        const historyMock = { push: jest.fn() };
         const isLoading = false;
         const fetchTilesStop = jest.fn();
         const fetchTilesError = {
@@ -171,7 +166,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
-                history={historyMock}
+                history={history}
                 fetchTilesError={fetchTilesError}
                 match={match}
                 isLoading={isLoading}
@@ -181,7 +176,6 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
-        const historyMock = { push: jest.fn() };
         const isLoading = false;
         const fetchTilesStop = jest.fn();
         const fetchTilesError = {
@@ -193,7 +187,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
-                history={historyMock}
+                history={history}
                 fetchTilesError={fetchTilesError}
                 match={match}
                 isLoading={isLoading}
@@ -203,7 +197,6 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should clear the selected service, stop and restart fetching if a different tile is selected ', () => {
-        const historyMock = { push: jest.fn() };
         const isLoading = false;
         const fetchTilesError = null;
         const fetchTilesStop = jest.fn();
@@ -217,7 +210,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
-                history={historyMock}
+                history={history}
                 fetchTilesError={fetchTilesError}
                 match={match}
                 isLoading={isLoading}
@@ -233,10 +226,6 @@ describe('>>> Detailed Page component tests', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
-        const history = {
-            push: jest.fn(),
-            pathname: jest.fn(),
-        };
         tile.services[0].videos = ['video1', 'video2'];
         tile.services[0].tutorials = ['tutorial1', 'tutorial2'];
         tile.services[0].useCases = ['useCase1', 'useCase2'];
@@ -259,10 +248,6 @@ describe('>>> Detailed Page component tests', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
-        const history = {
-            push: jest.fn(),
-            pathname: jest.fn(),
-        };
         const mockHandleLinkClick = jest.fn();
         const mockEvent = { preventDefault: jest.fn() };
         const mockElementToView = { scrollIntoView: jest.fn() };
