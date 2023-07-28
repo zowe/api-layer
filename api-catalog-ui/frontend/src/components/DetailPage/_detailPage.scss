@@ -163,7 +163,6 @@ body .detail-content {
         font-weight: initial;
     }
     #go-back-button {
-        margin-left: 12px;
         display: inline;
         margin-top: 20px;
         font-size: 13px;
@@ -203,6 +202,15 @@ body .detail-content {
 
     .detailed-description-container {
         display: flow-root;
+    }
+    .no-tiles-container {
+        margin-left: 20px;
+    }
+
+    .btn > h4 {
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: 13px;
     }
 
 }

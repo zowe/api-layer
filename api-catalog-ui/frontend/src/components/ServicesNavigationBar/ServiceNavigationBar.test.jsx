@@ -84,6 +84,7 @@ describe('>>> ServiceNavigationBar component tests', () => {
     });
 
     it('should set current tile id', () => {
+        localStorage.setItem('serviceId', 'apicatalog');
         const storeCurrentTileId = jest.fn();
         const serviceNavigationBar = shallow(
             <ServicesNavigationBar
@@ -96,5 +97,6 @@ describe('>>> ServiceNavigationBar component tests', () => {
         const instance = serviceNavigationBar.instance();
         instance.handleTabClick('apicatalog');
         expect(storeCurrentTileId).toHaveBeenCalled();
+        localStorage.removeItem('serviceId');
     });
 });

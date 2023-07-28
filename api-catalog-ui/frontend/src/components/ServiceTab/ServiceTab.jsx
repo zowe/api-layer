@@ -196,7 +196,7 @@ export default class ServiceTab extends Component {
                                             title="API Homepage navigation is disabled as the service is not running"
                                             placement="bottom"
                                         >
-                                            <Link variant="danger">
+                                            <Link data-testid="red-homepage" variant="danger">
                                                 <strong>Service Homepage</strong>
                                             </Link>
                                         </Tooltip>

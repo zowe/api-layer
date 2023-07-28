@@ -33,6 +33,22 @@ const selectedService = {
     apis: { 'org.zowe v1': { gatewayUrl: 'api/v1' } },
 };
 
+const selectedServiceDown = {
+    serviceId: 'gateway',
+    title: 'API Gateway',
+    description:
+        'API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.',
+    status: 'DOWN',
+    baseUrl: 'https://localhost:6000',
+    homePageUrl: 'https://localhost:10010/',
+    basePath: '/gateway/api/v1',
+    apiDoc: null,
+    apiVersions: ['org.zowe v1', 'org.zowe v2'],
+    defaultApiVersion: ['org.zowe v1'],
+    ssoAllInstances: true,
+    apis: { 'org.zowe v1': { gatewayUrl: 'api/v1' } },
+};
+
 const tiles = {
     version: '1.0.0',
     id: 'apimediationlayer',
@@ -171,5 +187,19 @@ describe('>>> ServiceTab component tests', () => {
         );
         expect(serviceTab.find('.footer-labels').exists()).toEqual(false);
         expect(serviceTab.find('#detail-footer').exists()).toEqual(false);
+    });
+
+    it('should display home page link if service down', () => {
+        process.env.REACT_APP_API_PORTAL = false;
+        const selectService = jest.fn();
+        const serviceTab = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+            />
+        );
+        expect(serviceTab.find('[data-testid="red-homepage"]').exists()).toEqual(true);
     });
 });
