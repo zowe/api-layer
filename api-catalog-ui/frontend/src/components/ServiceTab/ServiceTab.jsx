@@ -12,13 +12,14 @@ import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import countAdditionalContents, { isAPIPortal } from '../../utils/utilFunctions';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 export default class ServiceTab extends Component {
     constructor(props) {
         super(props);
         this.state = {
             selectedVersion: null,
+            previousVersion: null,
             isDialogOpen: false,
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
@@ -59,7 +60,7 @@ export default class ServiceTab extends Component {
             currentTileId,
             tiles,
         } = this.props;
-        if (tiles && tiles.length > 0) {
+        if (tiles && tiles.length > 0 && tiles[0] && tiles[0].services) {
             tiles[0].services.forEach((service) => {
                 if (service.serviceId === serviceId) {
                     if (service.serviceId !== selectedService.serviceId || selectedTile !== currentTileId) {
@@ -118,8 +119,18 @@ export default class ServiceTab extends Component {
         return apiVersions;
     }
 
-    handleDialogOpen = () => {
-        this.setState({ isDialogOpen: true, selectedVersion: 'diff' });
+    handleDialogOpen = (currentService) => {
+        const { selectedVersion } = this.state;
+        if (selectedVersion === null) {
+            this.setState({ previousVersion: currentService.defaultApiVersion });
+        } else {
+            this.setState({ previousVersion: selectedVersion });
+        }
+        this.setState({
+            isDialogOpen: true,
+            selectedVersion: 'diff',
+            previousVersion: selectedVersion ?? currentService.defaultApiVersion,
+        });
     };
 
     handleDialogClose = () => {
@@ -133,6 +144,9 @@ export default class ServiceTab extends Component {
             },
             tiles,
             selectedService,
+            useCasesCounter,
+            tutorialsCounter,
+            videosCounter,
         } = this.props;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
@@ -145,21 +159,24 @@ export default class ServiceTab extends Component {
         const { containsVersion } = this;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
-        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(currentService);
+        const apiPortalEnabled = isAPIPortal();
+        const additionalContentsPresent = useCasesCounter !== 0 && tutorialsCounter !== 0 && videosCounter !== 0;
         return (
             <>
                 {currentService === null && (
-                    <Typography variant="h3">
-                        <p style={{ marginLeft: '122px' }}>This tile does not contain service "{serviceId}"</p>
+                    <Typography id="no-tiles-error" variant="h4">
+                        <p>The service ID "{serviceId}" does not match any registered service</p>
                     </Typography>
                 )}
                 <Shield title={message}>
                     <div className="serviceTab">
                         <div className="header">
-                            <Typography id="service-title" data-testid="service" variant="h4">
-                                {selectedService.title}
-                            </Typography>
-                            {hasHomepage && (
+                            {!apiPortalEnabled && (
+                                <Typography id="service-title" data-testid="service" variant="h4">
+                                    {selectedService.title}
+                                </Typography>
+                            )}
+                            {hasHomepage && !apiPortalEnabled && (
                                 <>
                                     {selectedService.status === 'UP' && (
                                         <Tooltip
@@ -179,48 +196,50 @@ export default class ServiceTab extends Component {
                                             title="API Homepage navigation is disabled as the service is not running"
                                             placement="bottom"
                                         >
-                                            <Link variant="danger">
+                                            <Link data-testid="red-homepage" variant="danger">
                                                 <strong>Service Homepage</strong>
                                             </Link>
                                         </Tooltip>
                                     )}
                                 </>
                             )}
-                            <div className="apiInfo-item">
-                                <Tooltip
-                                    key={basePath}
-                                    title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
-                                    placement="bottom"
-                                >
-                                    <Typography data-testid="base-path" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                        <label htmlFor="apiBasePath">API Base Path:</label>
-                                        <span id="apiBasePath">{basePath}</span>
-                                    </Typography>
-                                </Tooltip>
-                                <Tooltip
-                                    key={selectedService.serviceId}
-                                    title="The identifier for this service"
-                                    placement="bottom"
-                                >
-                                    <Typography data-testid="service-id" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                        <label htmlFor="serviceId">Service ID:</label>
-                                        <span id="serviceId">{selectedService.serviceId}</span>
-                                    </Typography>
-                                </Tooltip>
-                                <Tooltip
-                                    key={selectedService.ssoAllInstances}
-                                    title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
-                                    placement="bottom"
-                                >
-                                    <Typography data-testid="sso" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-                                        <label htmlFor="sso">SSO:</label>
-                                        <span id="sso">{sso}</span>
-                                    </Typography>
-                                </Tooltip>
-                            </div>
+                            {!apiPortalEnabled && (
+                                <div className="apiInfo-item">
+                                    <Tooltip
+                                        key={basePath}
+                                        title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
+                                        placement="bottom"
+                                    >
+                                        <Typography data-testid="base-path" variant="subtitle2">
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="apiBasePath">API Base Path:</label>
+                                            <span id="apiBasePath">{basePath}</span>
+                                        </Typography>
+                                    </Tooltip>
+                                    <Tooltip
+                                        key={selectedService.serviceId}
+                                        title="The identifier for this service"
+                                        placement="bottom"
+                                    >
+                                        <Typography data-testid="service-id" variant="subtitle2">
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="serviceId">Service ID:</label>
+                                            <span id="serviceId">{selectedService.serviceId}</span>
+                                        </Typography>
+                                    </Tooltip>
+                                    <Tooltip
+                                        key={selectedService.ssoAllInstances}
+                                        title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
+                                        placement="bottom"
+                                    >
+                                        <Typography data-testid="sso" variant="subtitle2">
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="sso">SSO:</label>
+                                            <span id="sso">{sso}</span>
+                                        </Typography>
+                                    </Tooltip>
+                                </div>
+                            )}
 
                             <Typography
                                 data-testid="description"
@@ -230,16 +249,17 @@ export default class ServiceTab extends Component {
                                 {selectedService.description}
                             </Typography>
                             <br />
-                            <br />
                             <Typography id="swagger-label" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
-                            <Typography id="version-label" variant="subtitle2">
-                                Version
-                            </Typography>
-                        </div>
-                        <div id="version-div">
                             {containsVersion && currentService && (
+                                <Typography id="version-label" variant="subtitle2">
+                                    Version
+                                </Typography>
+                            )}
+                        </div>
+                        {containsVersion && currentService && (
+                            <div id="version-div">
                                 <Select
                                     displayEmpty
                                     id="version-menu"
@@ -253,31 +273,32 @@ export default class ServiceTab extends Component {
                                 >
                                     {apiVersions}
                                 </Select>
-                            )}
-                            <Button
-                                id="compare-button"
-                                disabled={apiVersions.length < 2}
-                                style={
-                                    apiVersions.length < 2
-                                        ? { backgroundColor: '#e4e4e4', color: '#c0c0c0', opacity: '0.5' }
-                                        : { backgroundColor: '#fff' }
-                                }
-                                onClick={this.handleDialogOpen}
-                                key="diff"
-                            >
-                                <Typography className="version-text">Compare API Versions</Typography>
-                            </Button>
-                        </div>
+                                <Button
+                                    id="compare-button"
+                                    disabled={apiVersions.length < 2}
+                                    style={
+                                        apiVersions.length < 2
+                                            ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
+                                            : { backgroundColor: '#fff', color: '#0056B3' }
+                                    }
+                                    onClick={() => this.handleDialogOpen(currentService)}
+                                    key="diff"
+                                >
+                                    <Typography className="version-text">Compare API Versions</Typography>
+                                </Button>
+                            </div>
+                        )}
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
                         {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
+                                selectedVersion={this.state.previousVersion}
                                 handleDialog={this.handleDialogClose}
                                 serviceId={selectedService.serviceId}
                                 versions={currentService.apiVersions}
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
-                        {isAPIPortal() && (
+                        {isAPIPortal() && additionalContentsPresent && (
                             <div id="detail-footer">
                                 <Typography
                                     className="footer-labels"
@@ -287,6 +308,8 @@ export default class ServiceTab extends Component {
                                 >
                                     Use Cases ({useCasesCounter})
                                 </Typography>
+                                <br />
+                                <br />
                                 <Typography
                                     className="footer-labels"
                                     id="tutorials-label"
@@ -295,6 +318,8 @@ export default class ServiceTab extends Component {
                                 >
                                     Tutorials ({tutorialsCounter} articles)
                                 </Typography>
+                                <br />
+                                <br />
                                 <Typography
                                     className="footer-labels"
                                     id="videos-label"
@@ -303,6 +328,7 @@ export default class ServiceTab extends Component {
                                 >
                                     Videos ({videosCounter})
                                 </Typography>
+                                <br />
                             </div>
                         )}
                     </div>

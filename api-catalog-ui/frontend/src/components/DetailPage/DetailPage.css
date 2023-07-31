@@ -3,6 +3,8 @@
 }
 
 .main-content2 detail-content {
+    display: flex;
+    height: 100vh;
     text-align: left;
     background-color: #EFEFEF;
 }
@@ -44,14 +46,12 @@
 }
 
 .detailed-description-container {
-    margin-top: 2rem;
     text-align: left;
     overflow: hidden;
-    width: 100%;
 }
 
 .api-description-container {
-    margin-left: 397px;
+    margin-left: 375px;
     padding: 2.2rem;
 }
 
@@ -87,7 +87,6 @@
 }
 
 #title {
-    padding: 2rem .3rem 1.3rem 0;
     color: #58606e;
     font-size: 28px;
     font-weight: 700;
@@ -130,12 +129,13 @@ div.content-description-container > div > div:nth-child(2) > div {
 }
 
 .nav-bar {
-    min-height: 84vh;
+    max-width: 380px;
+    min-height: 40vh;
     flex-direction: column;
     align-items: center;
     min-width: 368px;
     box-shadow: 0 0 6px hsl(210 14% 90%);
-    padding: 10px 5px 10px 20px;
+    padding: 10px 5px 16px 20px;
     flex: 1 0 0;
     width: auto;
     height: auto;
@@ -146,9 +146,7 @@ div.content-description-container > div > div:nth-child(2) > div {
 }
 
 .paragraph-description-container {
-    /*change width via templating mechanism to create space for the right menu (width 80%) */
     width: auto;
-    /*width: 80%;*/
     margin-left: 56px;
 }
 
@@ -166,4 +164,8 @@ div.content-description-container > div > div:nth-child(2) > div {
     .nav-bar {
         width: 600px;
     }
+}
+
+.MuiTabs-root.custom-tabs.MuiTabs-vertical {
+    margin-right: 12px;
 }

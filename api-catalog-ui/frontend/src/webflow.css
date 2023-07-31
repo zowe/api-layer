@@ -227,7 +227,7 @@ td, th {
 }
 
 html {
-    height: 100%
+    height: 100%;
 }
 
 body {
@@ -2997,7 +2997,7 @@ html.w-mod-js *[data-ix="doc-load-hidden"] {
 
 @media only screen and (max-width: 600px) {
     .header {
-        width: 600px;
+        width: max-content;
     }
 }
 
