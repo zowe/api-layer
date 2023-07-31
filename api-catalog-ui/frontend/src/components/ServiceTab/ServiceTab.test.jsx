@@ -202,4 +202,74 @@ describe('>>> ServiceTab component tests', () => {
         );
         expect(serviceTab.find('[data-testid="red-homepage"]').exists()).toEqual(true);
     });
+
+    it('should update state correctly when selectedVersion is null', () => {
+        process.env.REACT_APP_API_PORTAL = false;
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+            />
+        );
+        wrapper.setState({ selectedVersion: null });
+
+        wrapper.instance().handleDialogOpen(selectedService);
+
+        expect(wrapper.state().isDialogOpen).toEqual(true);
+        expect(wrapper.state().selectedVersion).toEqual('diff');
+        expect(wrapper.state().previousVersion).toEqual(selectedService.defaultApiVersion);
+    });
+
+    it('should call handleDialogOpen on button click', () => {
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        const handleDialogOpenSpy = jest.spyOn(wrapper.instance(), 'handleDialogOpen');
+
+        const button = wrapper.find('#compare-button');
+        button.simulate('click');
+
+        expect(handleDialogOpenSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should disable the button if apiVersions length is less than 2', () => {
+        const selectService = jest.fn();
+        const apiVersions = ['1.0.0'];
+        selectedService.apiVersions = apiVersions;
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        wrapper.setState({ apiVersions });
+
+        const button = wrapper.find('#compare-button');
+
+        expect(button.prop('disabled')).toEqual(true);
+        expect(button.prop('style')).toEqual({
+            backgroundColor: '#e4e4e4',
+            color: '#6b6868',
+            opacity: '0.5',
+        });
+    });
+
+    it('should enable the button if apiVersions length is greater than or equal to 2', () => {
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        const apiVersions = ['org.zowe v1', 'org.zowe v2'];
+        selectedService.apiVersions = apiVersions;
+        wrapper.setState({ apiVersions });
+
+        const button = wrapper.find('#compare-button');
+
+        expect(button.prop('disabled')).toEqual(false);
+        expect(button.prop('style')).toEqual({
+            backgroundColor: '#fff',
+            color: '#0056B3',
+        });
+    });
 });

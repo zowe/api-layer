@@ -255,7 +255,7 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
-                services={tile.services}
+                services={[tile]}
                 currentTileId="apicatalog"
                 handleLinkClick={mockHandleLinkClick}
                 fetchTilesStart={fetchTilesStart}
@@ -285,5 +285,27 @@ describe('>>> Detailed Page component tests', () => {
         expect(mockEvent.preventDefault).toHaveBeenCalled();
         expect(document.querySelector).toHaveBeenCalledWith('#tutorials-label');
         expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
+    });
+
+    it('should get correct service tile if currentTileId not defined', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        const mockHandleLinkClick = jest.fn();
+        const wrapper = shallow(
+            <DetailPage
+                tiles={[tile]}
+                services={[tile]}
+                currentTileId={null}
+                handleLinkClick={mockHandleLinkClick}
+                fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
+                fetchTilesStop={jest.fn()}
+                match={match}
+                history={history}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.componentDidMount();
     });
 });
