@@ -45,7 +45,7 @@
                     position: static;
                 }
                 >div {
-                    >#search-icon {
+                    #search-icon {
                        margin-left: 156px;
                     }
                 }
@@ -97,16 +97,8 @@
           .MuiSvgIcon-root {
               margin-left: 130px;
           }
-          #search {
-              >div {
-                  >div {
-                      >div {
-                          >#search-icon {
-                              margin-left: 130px;
-                          }
-                      }
-                  }
-              }
+          #search #search-icon {
+              margin-left: 130px;
           }
       }
 
