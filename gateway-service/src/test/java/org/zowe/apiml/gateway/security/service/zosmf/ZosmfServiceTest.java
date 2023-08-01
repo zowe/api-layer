@@ -849,11 +849,7 @@ class ZosmfServiceTest {
                 )).thenThrow(new RestClientException("resource access exception", new ConnectException("connection exception")));
 
                 assertThat(underTest.isAccessible(), is(false));
-                verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
-                String values = loggedValues();
-                assertTrue(values.length() > 0);
-                assertTrue(values.contains("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running"), values);
-                assertTrue(values.contains("connection exception"), values);
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception; nested exception is java.net.ConnectException: connection exception");
             }
 
             @Test
