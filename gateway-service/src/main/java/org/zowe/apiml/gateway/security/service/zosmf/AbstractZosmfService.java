@@ -173,7 +173,6 @@ public abstract class AbstractZosmfService {
 
         if (re.getCause() instanceof ConnectException) {
             apimlLog.log("org.zowe.apiml.security.auth.zosmf.connectError", re.getMessage());
-            log.warn("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running {}", re.getMessage()); // TODO add message
             return new ServiceNotAccessibleException("Could not connect to z/OSMF service.");
         }
 

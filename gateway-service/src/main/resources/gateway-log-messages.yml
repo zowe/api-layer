@@ -377,7 +377,6 @@ messages:
       number: ZWEAG181
       type: INFO
       text: "apiml.security.auth.zosmf.serviceId = '%s' is either not registered or not online yet."
-      # TODO how is this message appropriate for when discovery is not yet available
       reason: "An incorrect value of the apiml.security.auth.zosmf.serviceId parameter is set in the configuration or it is not registered."
       action: "Ensure that the value of apiml.security.auth.provider is set either to 'dummy' if you want to use dummy mode, or to 'zosmf' if you want to use the z/OSMF authentication provider."
 
