@@ -6,19 +6,23 @@
 .api-diff-form {
 	margin: auto;
 	display: flex;
-	width: fit-content;
+	width: auto;
 }
 
 .api-diff-form>p {
 	margin-top: auto;
 	padding-left: 8px;
-	padding-right: 8px;
+	padding-right: 18px;
 	font-size: x-large;
 	color: #58606e;
 }
 
 .api-diff-form>button {
 	margin-left: 8px;
+}
+
+#close-dialog > span > svg {
+ fill: black;
 }
 
 .article {
@@ -141,4 +145,8 @@ s, del, .missing, del.comment {
 
 .MuiSelect-select {
     width: 110px;
+}
+
+#dialog-title {
+    margin-top: -8px;
 }

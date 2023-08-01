@@ -33,6 +33,22 @@ const selectedService = {
     apis: { 'org.zowe v1': { gatewayUrl: 'api/v1' } },
 };
 
+const selectedServiceDown = {
+    serviceId: 'gateway',
+    title: 'API Gateway',
+    description:
+        'API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.',
+    status: 'DOWN',
+    baseUrl: 'https://localhost:6000',
+    homePageUrl: 'https://localhost:10010/',
+    basePath: '/gateway/api/v1',
+    apiDoc: null,
+    apiVersions: ['org.zowe v1', 'org.zowe v2'],
+    defaultApiVersion: ['org.zowe v1'],
+    ssoAllInstances: true,
+    apis: { 'org.zowe v1': { gatewayUrl: 'api/v1' } },
+};
+
 const tiles = {
     version: '1.0.0',
     id: 'apimediationlayer',
@@ -42,8 +58,10 @@ const tiles = {
         'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
     services: [selectedService],
 };
-
 describe('>>> ServiceTab component tests', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_API_PORTAL = false;
+    });
     it('should display service tab information', () => {
         const selectService = jest.fn();
         const serviceTab = shallow(
@@ -96,5 +114,162 @@ describe('>>> ServiceTab component tests', () => {
         expect(dropDownMenu.children().at(1).text()).toEqual('org.zowe v2');
         dropDownMenu.children().at(1).simulate('click');
         expect(serviceTab.find('[data-testid="version-menu"]').first().text()).toBe('org.zowe v1org.zowe v2');
+    });
+
+    it('should throw error when tiles are null', () => {
+        const selectService = jest.fn();
+        expect(() =>
+            shallow(
+                <ServiceTab
+                    match={params}
+                    selectedService={selectedService}
+                    tiles={null}
+                    selectService={selectService}
+                />
+            )
+        ).toThrow('No tile is selected.');
+    });
+
+    it('should throw error when tiles are undefined', () => {
+        const selectService = jest.fn();
+        expect(() =>
+            shallow(
+                <ServiceTab
+                    match={params}
+                    selectedService={selectedService}
+                    tiles={undefined}
+                    selectService={selectService}
+                />
+            )
+        ).toThrow('No tile is selected.');
+    });
+
+    it('should throw error when tiles are empty', () => {
+        const selectService = jest.fn();
+        expect(() =>
+            shallow(
+                <ServiceTab match={params} selectedService={selectedService} tiles={[]} selectService={selectService} />
+            )
+        ).toThrow('No tile is selected.');
+    });
+
+    it('should display default footer for custom portal in case of additional content', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const serviceTab = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedService}
+                tiles={[tiles]}
+                selectService={selectService}
+                useCasesCounter={1}
+                videosCounter={2}
+                tutorialsCounter={1}
+            />
+        );
+        expect(serviceTab.find('.footer-labels').exists()).toEqual(true);
+        expect(serviceTab.find('#detail-footer').exists()).toEqual(true);
+    });
+
+    it('should not display default footer for custom portal in case there is not additional content', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const serviceTab = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedService}
+                tiles={[tiles]}
+                selectService={selectService}
+                useCasesCounter={0}
+                videosCounter={0}
+                tutorialsCounter={0}
+            />
+        );
+        expect(serviceTab.find('.footer-labels').exists()).toEqual(false);
+        expect(serviceTab.find('#detail-footer').exists()).toEqual(false);
+    });
+
+    it('should display home page link if service down', () => {
+        process.env.REACT_APP_API_PORTAL = false;
+        const selectService = jest.fn();
+        const serviceTab = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+            />
+        );
+        expect(serviceTab.find('[data-testid="red-homepage"]').exists()).toEqual(true);
+    });
+
+    it('should update state correctly when selectedVersion is null', () => {
+        process.env.REACT_APP_API_PORTAL = false;
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+            />
+        );
+        wrapper.setState({ selectedVersion: null });
+
+        wrapper.instance().handleDialogOpen(selectedService);
+
+        expect(wrapper.state().isDialogOpen).toEqual(true);
+        expect(wrapper.state().selectedVersion).toEqual('diff');
+        expect(wrapper.state().previousVersion).toEqual(selectedService.defaultApiVersion);
+    });
+
+    it('should call handleDialogOpen on button click', () => {
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        const handleDialogOpenSpy = jest.spyOn(wrapper.instance(), 'handleDialogOpen');
+
+        const button = wrapper.find('#compare-button');
+        button.simulate('click');
+
+        expect(handleDialogOpenSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should disable the button if apiVersions length is less than 2', () => {
+        const selectService = jest.fn();
+        const apiVersions = ['1.0.0'];
+        selectedService.apiVersions = apiVersions;
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        wrapper.setState({ apiVersions });
+
+        const button = wrapper.find('#compare-button');
+
+        expect(button.prop('disabled')).toEqual(true);
+        expect(button.prop('style')).toEqual({
+            backgroundColor: '#e4e4e4',
+            color: '#6b6868',
+            opacity: '0.5',
+        });
+    });
+
+    it('should enable the button if apiVersions length is greater than or equal to 2', () => {
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        const apiVersions = ['org.zowe v1', 'org.zowe v2'];
+        selectedService.apiVersions = apiVersions;
+        wrapper.setState({ apiVersions });
+
+        const button = wrapper.find('#compare-button');
+
+        expect(button.prop('disabled')).toEqual(false);
+        expect(button.prop('style')).toEqual({
+            backgroundColor: '#fff',
+            color: '#0056B3',
+        });
     });
 });

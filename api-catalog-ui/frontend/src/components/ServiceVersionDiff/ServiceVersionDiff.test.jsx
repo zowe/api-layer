@@ -53,4 +53,25 @@ describe('>>> ServiceVersionDiff component tests', () => {
         serviceVersionDiff.find('[data-testid="diff-button"]').first().simulate('click');
         expect(getDiff.mock.calls.length).toBe(1);
     });
+
+    it('Should call getDiff when default version', () => {
+        const getDiff = jest.fn();
+        const serviceVersionDiff = shallow(
+            <ServiceVersionDiff getDiff={getDiff} serviceId="service" versions={['v1', 'v2']} version2="v2" />
+        );
+
+        serviceVersionDiff.find('[data-testid="diff-button"]').first().simulate('click');
+        expect(getDiff.mock.calls.length).toBe(1);
+    });
+
+    it('should set current tile id with default version', () => {
+        const getDiff = jest.fn();
+        const serviceVersionDiff = shallow(
+            <ServiceVersionDiff getDiff={getDiff} serviceId="service" versions={['v1', 'v2']} version2="v2" />
+        );
+        serviceVersionDiff.setState({ defaultVersion: 'v1' });
+
+        serviceVersionDiff.find('[data-testid="diff-button"]').first().simulate('click');
+        expect(getDiff.mock.calls.length).toBe(1);
+    });
 });

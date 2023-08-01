@@ -25,7 +25,6 @@ a.nav-tab {
     }
 }
 p.MuiTypography-root.version-text.MuiTypography-body1 {
-    color: $color_2;
     font-size: 14px;
     font-weight: bold;
 }
@@ -88,8 +87,24 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
 }
 
 .footer-labels {
+    margin-bottom: -2px;
     color: $color_3;
     font-size: 28px;
     letter-spacing: 0.5px;
 }
 
+@media only screen and (max-width: 1208px) {
+    #compare-button {
+        margin-left: 54px;
+        margin-top: 10px;
+    }
+}
+
+#no-tiles-error {
+    font-size: 22px;
+    color: $color_3;
+}
+
+#no-tiles-error > p {
+    margin-left: 11px;
+}

@@ -115,3 +115,19 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
         margin: 0;
     }
 }
+
+@media only screen and (max-width: 1208px) {
+    #compare-button {
+        margin-left: 54px;
+        margin-top: 10px;
+    }
+}
+
+#no-tiles-error {
+    font-size: 22px;
+    color: #CC092F;
+}
+
+#no-tiles-error > p {
+    margin-left: 88px;
+}
