@@ -332,6 +332,6 @@ messages:
           - CN (Common Name) and z/OSMF hostname have to match.\n
           - Certificate is expired\n
           - TLS version match\n
-        Further details and a stack trace will follow
+        Enable debugging to see further details in stack trace
       reason: "z/OSMF connection has an incorrect configuration"
       action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS"
