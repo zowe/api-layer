@@ -403,7 +403,7 @@ messages:
       number: ZWEAG184
       type: ERROR
       text: "Could not connecto to z/OSMF: %s"
-      reason:
+      reason: There was a connection issue between the API Mediation Layer instance and z/OSMF
       action: Verify z/OSMF is running. Verify connectivity to z/OSMF from this instance.
 
     - key: org.zowe.apiml.security.auth.zosmf.changePwd.notAvailable
