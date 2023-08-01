@@ -390,30 +390,47 @@ messages:
           - Certificate is expired\n
           - TLS version match\n
         Further details and a stack trace will follow
-      reason: ""
-      action: ""
+      reason: "z/OSMF connection has an incorrect configuration"
+      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS"
 
-log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
-                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed");
+    - key: org.zowe.apiml.security.auth.zosmf.jwt.internalError
+      number: ZWEAG183
+      type: ERROR
+      text: z/OSMF internal error
+      reason: z/OSMF returned HTTP Status %s
+      action: Review z/OSMF status and availability
 
+    - key: org.zowe.apiml.security.auth.zosmf.connectError
+      number: ZWEAG184
+      type: ERROR
+      text: "Could not connecto to z/OSMF: %s"
+      reason:
+      action: Verify z/OSMF is running. Verify connectivity to z/OSMF from this instance.
+
+    - key: org.zowe.apiml.security.auth.zosmf.changePwd.notAvailable
+      number: ZWEAG185
+      type: WARNING
+      text: The change password endpoint has failed with code %s
+      reason: The change password endpoint was not found.
+      action: Ensure PTF for APAR PH34912 is applied (https://www.ibm.com/support/pages/apar/PH34912)
+
+    - key: org.zowe.apiml.security.auth.zosmf.changePwd.internalError
+      number: ZWEAG186
+      type: ERROR
+      text: "z/OSMF internal error attempting password change: %s"
+      reason: z/OSMF informed of an internal error
+      action: Verify z/OSMF error log.
 
     - key: org.zowe.apiml.security.auth.zosmf.jwtNotFound
-      number: ZWEAG183
+      number: ZWEAG187
       type: WARNING
       text: The check of z/OSMF JWT authentication endpoint has failed. Using z/OSMF info endpoint as backup.
       reason: z/OSMF JWT endpoint was not found
       action: Ensure APAR PH12143 (https://www.ibm.com/support/pages/apar/PH12143) fix has been applied.
 
-    - key: org.zowe.apiml.security.auth.zosmf.
-      number:
-      type:
-      text:
-      reason:
-      action:
-
-    # - key: org.zowe.apiml.security.auth.zosmf.
-    #   number:
-    #   type:
-    #   text:
-    #   reason:
-    #   action:
+    - key: org.zowe.apiml.security.auth.zosmf.jwtEndpointError
+      number: ZWEAG188
+      type: WARNING
+      text: z/OSMF JWT builder endpoint call (%s) failed with %s
+      reason: z/OSMF returned an error code when calling JWT endpoint
+      action: Review z/OSMF status. Contact system administrator
