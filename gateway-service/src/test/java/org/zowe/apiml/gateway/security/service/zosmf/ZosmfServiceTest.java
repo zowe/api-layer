@@ -330,6 +330,19 @@ class ZosmfServiceTest {
 
                     assertThrows(BadCredentialsException.class, () -> zosmfService.changePassword(authentication));
                 }
+
+                @Test
+                void thenChangePasswordWithUnsupportedZosmf() {
+                    when(authentication.getCredentials()).thenReturn(loginRequest);
+
+                    when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+                        HttpMethod.PUT,
+                        new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
+                        String.class))
+                    .thenThrow(HttpClientErrorException.create(HttpStatus.METHOD_NOT_ALLOWED, "Method not allowed", null, null, null));
+
+                    assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.changePassword(authentication));
+                }
             }
 
             @Nested
