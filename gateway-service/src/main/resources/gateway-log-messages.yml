@@ -376,7 +376,7 @@ messages:
     - key: org.zowe.apiml.security.auth.zosmf.serviceId
       number: ZWEAG181
       type: WARNING
-      text: "apiml.security.auth.zosmf.serviceId = '%s' is either not registered or not online yet."
+      text: "z/OSMF service '%s' is either not registered or not online yet."
       reason: "z/OSMF service may not be properly onboarded to API ML"
       action: "Verify if z/OSMF is up and registered to Discovery Service."
 
