@@ -68,6 +68,7 @@ import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenTy
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ZosmfService extends AbstractZosmfService {
 
+    private static final String JWT_ENDPOINT_ERROR_MSGID = "org.zowe.apiml.security.auth.zosmf.jwtEndpointError";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
     /**
@@ -292,10 +293,13 @@ public class ZosmfService extends AbstractZosmfService {
                 new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers),
                 String.class);
         } catch (HttpServerErrorException e) {
-            log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
-                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provided are correct.");
             throw handleServerErrorOnChangePasswordCall(e);
+        } catch (HttpClientErrorException.NotFound | HttpClientErrorException.MethodNotAllowed e) {
+            apimlLog.log("org.zowe.apiml.security.auth.zosmf.changePwd.notAvailable", e.getStatusCode());
+            throw new ServiceNotAccessibleException("Change password endpoint is not available in z/OSMF", e);
         } catch (HttpClientErrorException e) {
+            // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
+            log.debug("Request to {} failed with status {}: {}", url, e.getRawStatusCode(), e.getMessage());
             throw new BadCredentialsException("Client error in change password: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
@@ -306,7 +310,7 @@ public class ZosmfService extends AbstractZosmfService {
         try {
             ZosmfAuthResponse response = securityObjectMapper.readValue(e.getResponseBodyAsByteArray(), ZosmfAuthResponse.class);
             if (response.getReturnCode() == 4) {
-                log.error("z/OSMF internal error attempting password change: {}", e.getResponseBodyAsString());
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.changePwd.internalError", e.getResponseBodyAsString());
                 return new AuthenticationServiceException("z/OSMF internal error: " + e.getResponseBodyAsString());
             } else {
                 // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
@@ -335,9 +339,7 @@ public class ZosmfService extends AbstractZosmfService {
             if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
                 return true;
             } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
-                log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure APAR PH12143 " +
-                    "(https://www.ibm.com/support/pages/apar/PH12143) fix has been applied. " +
-                    "Using z/OSMF info endpoint as backup.");
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.jwtNotFound");
                 return false;
             } else {
                 log.warn("z/OSMF authentication endpoint with HTTP method " + httpMethod.name() +
@@ -365,18 +367,18 @@ public class ZosmfService extends AbstractZosmfService {
             if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
                 return true;
             } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
-                log.warn("The check of z/OSMF JWT builder endpoint has failed");
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.jwtNotFound");
                 return false;
             } else {
-                log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with status code: "
-                    + hce.getStatusCode(), hce);
+                // other 400 family code
+                apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, hce.getRawStatusCode() + ": " + hce.getMessage());
                 return false;
             }
         } catch (HttpServerErrorException serverError) {
-            log.warn("z/OSMF internal error", serverError);
+            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, serverError.getRawStatusCode() + ": " + serverError.getMessage());
             return false;
         } catch (Exception e) {
-            log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with exception: " + e.getMessage(),e);
+            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, e.getMessage());
             return false;
         }
         return true;

@@ -323,3 +323,15 @@ messages:
       text: "There was an error while reading webfinger configuration"
       reason: "Webfinger provider contains incorrect configuration."
       action: "Contact the administrator to validate webfinger configuration in gateway service."
+
+    - key: org.zowe.apiml.security.auth.zosmf.sslError
+      number: ZWEAG182
+      type: ERROR
+      text: >
+        SSL Misconfiguration, z/OSMF is not accessible. Please verify the following: \n
+          - CN (Common Name) and z/OSMF hostname match\n
+          - The certificate is expired\n
+          - TLS version matches\n
+        Enable debugging to see further details in stack trace
+      reason: "z/OSMF connection has an incorrect configuration"
+      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS."

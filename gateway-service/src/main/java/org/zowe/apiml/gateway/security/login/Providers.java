@@ -21,6 +21,8 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 public class Providers {
@@ -40,12 +42,24 @@ public class Providers {
      */
     public boolean isZosmfAvailable() {
         String  zosmfServiceId = authConfigurationProperties.validatedZosmfServiceId();
-        boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(zosmfServiceId).isEmpty();
-        if (!isZosmfRegisteredAndPropagated) {
-            apimlLog.log("org.zowe.apiml.security.auth.zosmf.serviceId", zosmfServiceId);
+
+        try {
+            this.discoveryClient.probe();
+            List<String> ids = this.discoveryClient.getServices();
+            if (!ids.isEmpty()) {
+                boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(zosmfServiceId).isEmpty();
+                if (!isZosmfRegisteredAndPropagated) {
+                    apimlLog.log("org.zowe.apiml.security.auth.zosmf.serviceId", zosmfServiceId);
+                }
+                log.debug("z/OSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
+                return isZosmfRegisteredAndPropagated;
+            } else {
+                throw new ServiceNotAccessibleException("No registered services");
+            }
+        } catch (RuntimeException e) {
+            log.debug("Discovery Service is not available yet: {}", e.getMessage());
+            return false;
         }
-            log.debug("z/OSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
-        return isZosmfRegisteredAndPropagated;
     }
 
     /**
