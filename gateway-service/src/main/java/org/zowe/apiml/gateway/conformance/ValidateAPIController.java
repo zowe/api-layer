@@ -76,20 +76,20 @@ public class ValidateAPIController {
 
 
         if (foundNonConformanceIssues.size() != 0) {
-            return GenerateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
         }
 
         foundNonConformanceIssues.put(problemWithRegistration, checkOnboarding(serviceId));
 
         if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
-            return GenerateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
         }
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
         foundNonConformanceIssues.put(problemWithRegistration, instanceCheck(serviceInstances));
 
         if (foundNonConformanceIssues.size() != 0) {     // cant continue if we cant retrieve an instance
-            return GenerateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
         }
 
         ServiceInstance serviceInstance = serviceInstances.get(0);
@@ -98,7 +98,7 @@ public class ValidateAPIController {
         foundNonConformanceIssues.put(problemWithMetadata, metaDataCheck(metadata));
 
         if (foundNonConformanceIssues.size() != 0) {     // cant continue without metadata
-            return GenerateBadRequestResponseEntity(NoMetadataKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(NoMetadataKey, foundNonConformanceIssues);
         }
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
@@ -124,7 +124,7 @@ public class ValidateAPIController {
      * @param foundNonConformanceIssues list of found issues
      * @return Response that this controller returns
      */
-    private ResponseEntity<String> GenerateBadRequestResponseEntity(String key, ConformanceProblemsContainer foundNonConformanceIssues) {
+    private ResponseEntity<String> generateBadRequestResponseEntity(String key, ConformanceProblemsContainer foundNonConformanceIssues) {
         Message message = messageService.createMessage(key, "ThisWillBeRemoved");
         return new ResponseEntity<>(foundNonConformanceIssues.createBadRequestAPIResponseBody(key, message.mapToApiMessage()), HttpStatus.BAD_REQUEST);
     }
