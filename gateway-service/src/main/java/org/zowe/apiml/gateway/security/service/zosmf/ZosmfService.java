@@ -232,7 +232,7 @@ public class ZosmfService extends AbstractZosmfService {
         try {
             infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
         } catch (ServiceNotAccessibleException e) {
-
+            log.debug("URI not available because z/OSMF is not registered or wrong URL in Discovery Service");
             return false;
         }
 
@@ -342,6 +342,7 @@ public class ZosmfService extends AbstractZosmfService {
         try {
             url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
         } catch (ServiceNotAccessibleException e) {
+            log.debug("authentication endpoint is not available because z/OSMF is not registered or wrong URL in Discovery Service");
             return false;
         }
 
@@ -375,6 +376,7 @@ public class ZosmfService extends AbstractZosmfService {
         try {
             url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
         } catch (ServiceNotAccessibleException e) {
+            log.debug("jwt endpoint is not available because z/OSMF is not registered or wrong URL in Discovery Service");
             return false;
         }
 
