@@ -121,6 +121,8 @@ public abstract class AbstractZosmfService {
      *
      * @param zosmf the z/OSMF service id
      * @return the uri
+     *
+     * @throws ServiceNotAccessibleException if z/OSMF is not available in discovery service
      */
     protected String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {

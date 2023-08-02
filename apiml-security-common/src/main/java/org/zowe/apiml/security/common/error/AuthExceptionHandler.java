@@ -74,9 +74,15 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleInvalidTokenTypeException(request, response, ex);
         } else if (ex instanceof AuthenticationException) {
             handleAuthenticationException(request, response, ex);
+        } else if (ex instanceof ServiceNotAccessibleException) {
+            handleServiceNotAccessibleException(request, response, ex);
         } else {
             throw new ServletException(ex);
         }
+    }
+
+    private void handleServiceNotAccessibleException(HttpServletRequest request, HttpServletResponse response,
+            RuntimeException ex) {
     }
 
     private void handleZosAuthenticationException(HttpServletResponse response, ZosAuthenticationException ex) throws ServletException {

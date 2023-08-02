@@ -372,7 +372,6 @@ messages:
       reason: "Webfinger provider contains incorrect configuration."
       action: "Contact the administrator to validate webfinger configuration in gateway service."
 
-    # z/OSMF messages
     - key: org.zowe.apiml.security.auth.zosmf.serviceId
       number: ZWEAG181
       type: WARNING
@@ -426,6 +425,13 @@ messages:
       text: The check of z/OSMF JWT authentication endpoint has failed. Using z/OSMF info endpoint as backup.
       reason: z/OSMF JWT endpoint was not found.
       action: Ensure APAR PH12143 (https://www.ibm.com/support/pages/apar/PH12143) fix has been applied.
+
+    - key: org.zowe.apiml.security.auth.zosmf.jwtEndpointError
+      number: ZWEAG188
+      type: WARNING
+      text: z/OSMF JWT builder endpoint call (%s) failed with %s
+      reason: z/OSMF returned an error code when calling JWT endpoint.
+      action: Review z/OSMF status. Contact your system administrator.
 
     - key: org.zowe.apiml.security.auth.zosmf.jwtEndpointError
       number: ZWEAG188

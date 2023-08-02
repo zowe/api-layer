@@ -143,7 +143,6 @@ public class ZosmfService extends AbstractZosmfService {
         meAsProxy = applicationContext.getBean(ZosmfService.class);
     }
 
-
     @Retryable(value = {TokenNotValidException.class}, maxAttempts = 2, backoff = @Backoff(value = 1500))
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
@@ -221,15 +220,23 @@ public class ZosmfService extends AbstractZosmfService {
     /**
      * Verify whether the service is actually accessible.
      *
+     * Note: This method uses getURI, it's also verifying eureka registration
+     *
      * @return true when it's possible to access the Info endpoint via GET.
      */
     public boolean isAccessible() {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
 
-        String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
-        log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
+        String infoURIEndpoint = "";
+        try {
+            infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+        } catch (ServiceNotAccessibleException e) {
 
+            return false;
+        }
+
+        log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore
             .exchange(
@@ -331,7 +338,12 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfAuthenticationEndpoint", key = "#httpMethod.name()")
     public boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
-        String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+        String url = "";
+        try {
+            url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+        } catch (ServiceNotAccessibleException e) {
+            return false;
+        }
 
         try {
             restTemplateWithoutKeystore.exchange(url, httpMethod, new HttpEntity<>(null, headers), String.class);
@@ -359,7 +371,12 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfJwtEndpoint")
     public boolean jwtEndpointExists(HttpHeaders headers) {
-        String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
+        String url = "";
+        try {
+            url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
+        } catch (ServiceNotAccessibleException e) {
+            return false;
+        }
 
         try {
             restTemplateWithoutKeystore.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
