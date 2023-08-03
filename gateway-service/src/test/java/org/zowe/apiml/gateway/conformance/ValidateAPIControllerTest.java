@@ -160,7 +160,7 @@ public class ValidateAPIControllerTest {
 
 
         @Test
-        public void WhenServiceNotOboarded_thenError() {
+        public void whenServiceNotOboarded_thenError() {
 
             String testString = "notonboarded";
 
@@ -174,7 +174,7 @@ public class ValidateAPIControllerTest {
 
 
         @Test
-        public void LegacyWhenServiceNotOboarded_thenError() {
+        public void legacyWhenServiceNotOboarded_thenError() {
 
             String testString = "notonboarded";
 

@@ -30,7 +30,7 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     private final String serviceId;
 
 
-    ConformanceProblemsContainer(String serviceId){
+    ConformanceProblemsContainer(String serviceId) {
         super();
         this.serviceId = serviceId;
     }
