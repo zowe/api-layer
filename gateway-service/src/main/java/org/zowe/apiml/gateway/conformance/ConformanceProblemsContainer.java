@@ -26,11 +26,10 @@ import java.util.HashMap;
 public class ConformanceProblemsContainer extends HashMap<String, ArrayList<String>> {
 
 
-
     private final String serviceId;
 
 
-    ConformanceProblemsContainer(String serviceId){
+    ConformanceProblemsContainer(String serviceId) {
         super();
         this.serviceId = serviceId;
     }

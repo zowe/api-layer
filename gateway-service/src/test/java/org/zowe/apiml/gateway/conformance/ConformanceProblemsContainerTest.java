@@ -95,9 +95,8 @@ class ConformanceProblemsContainerTest {
         }
 
 
-
         @Test
-        void whenAddingNullValue2_thenCorrectSize(){
+        void whenAddingNullValue2_thenCorrectSize() {
             String test = null;
             container.put("test", test);
 
