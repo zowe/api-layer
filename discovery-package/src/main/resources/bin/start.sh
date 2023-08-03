@@ -39,31 +39,27 @@
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
-if [ -n "${LAUNCH_COMPONENT}" ]
-then
+if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 else
     JAR_FILE="$(pwd)/bin/discovery-service-lite.jar"
 fi
 
-echo "jar file: "${JAR_FILE}
+echo "jar file: ${JAR_FILE}"
 # script assumes it's in the discovery component directory and common_lib needs to be relative path
-if [ -z "${CMMN_LB}" ]
-then
+if [ -z "${CMMN_LB}" ]; then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
-    COMMON_LIB=${CMMN_LB}
+    COMMON_LIB="${CMMN_LB}"
 fi
 
-if [ -z "${LIBRARY_PATH}" ]
-then
+if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 # API Mediation Layer Debug Mode
-export LOG_LEVEL=
+unset LOG_LEVEL
 
-if [ "${ZWE_configs_debug}" = "true" ]
-then
+if [ "${ZWE_configs_debug}" = "true" ]; then
   export LOG_LEVEL="debug"
 fi
 
@@ -97,9 +93,8 @@ else
   nonStrictVerifySslCertificatesOfServices=true
 fi
 
-if [ "$(uname)" = "OS/390" ]
-then
-    QUICK_START=-Xquickstart
+if [ "$(uname)" = "OS/390" ]; then
+    QUICK_START="-Xquickstart"
 fi
 
 # setting the cookieName based on the instances
@@ -108,21 +103,20 @@ if [ "${ZWE_components_gateway_apiml_security_auth_uniqueCookie}" = "true"]; the
     cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
 fi
 
-DISCOVERY_LOADER_PATH=${COMMON_LIB}
+DISCOVERY_LOADER_PATH="${COMMON_LIB}"
 
-if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
-then
+if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]; then
     DISCOVERY_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${DISCOVERY_LOADER_PATH}
 fi
 
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/classic"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/j9vm"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/classic"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/default"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/j9vm"
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"

@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,8 @@ import java.util.TimerTask;
 @RequiredArgsConstructor
 public class GatewayStartupListener implements ApplicationListener<ApplicationReadyEvent> {
 
-    private static final long PERIOD = Duration.ofSeconds(15).toMillis(); // should be configurable
+    @Value("${apiml.startupCheckInterval:15}")
+    private int interval;
 
     private final Providers providers;
 
@@ -41,7 +43,7 @@ public class GatewayStartupListener implements ApplicationListener<ApplicationRe
                     }
                 }
 
-            }, 0, PERIOD);
+            }, 0, Duration.ofSeconds(interval).toMillis());
         } else {
             notifyStartup();
         }
