@@ -13,11 +13,13 @@ package org.zowe.apiml.gateway.conformance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.zowe.apiml.message.api.ApiMessage;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -27,7 +29,17 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
 
 
     private final String serviceId;
-
+    private static final String responseMessageTemplate = "{\n" +
+        "\"messageAction\": \"${messageAction}\",\n" +
+        "\"messageContent\": {\n" +
+        "    \"The service ${serviceId} is not conformant\": \n" +
+        "        ${messageContent}\n" +
+        "},\n" +
+        "\"messageKey\": \"${messageKey}\",\n" +
+        "\"messageNumber\": \"${messageNumber}\",\n" +
+        "\"messageReason\": \"${messageReason}\",\n" +
+        "\"messageType\": \"${messageType}\"\n" +
+        "}";
 
     ConformanceProblemsContainer(String serviceId) {
         super();
@@ -118,29 +130,18 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
 
 
     public String createBadRequestAPIResponseBody(String key, ApiMessage correspondingAPIMessage) {
-        String result;
 
-        String template = "{\n" +
-            "    \"messageAction\": \"replaceWithMessageAction\",\n" +
-            "    \"messageContent\": {\n" +
-            "        \"The service " + serviceId + " is not conformant\": \n" +
-            "            replaceWithMessageContent\n" +
-            "    },\n" +
-            "    \"messageKey\": \"replaceWithMessageKey\",\n" +
-            "    \"messageNumber\": \"replaceWithMessageNumber\",\n" +
-            "    \"messageReason\": \"replaceWithMessageReason\",\n" +
-            "    \"messageType\": \"replaceWithMessageType\"\n" +
-            "}";
+        Map<String, String> valuesMap = new HashMap<>();
 
-        result = template.replace("replaceWithMessageKey", key);
-        result = result.replace("replaceWithMessageContent", this.toString());
+        valuesMap.put("messageKey", key);
+        valuesMap.put("messageContent", this.toString());
+        valuesMap.put("serviceId", serviceId);
+        valuesMap.put("messageReason", correspondingAPIMessage.getMessageReason());
+        valuesMap.put("messageNumber", correspondingAPIMessage.getMessageNumber());
+        valuesMap.put("messageType", correspondingAPIMessage.getMessageType().toString());
+        valuesMap.put("messageAction", correspondingAPIMessage.getMessageAction());
 
-        result = result.replace("replaceWithMessageReason", correspondingAPIMessage.getMessageReason());
-        result = result.replace("replaceWithMessageNumber", correspondingAPIMessage.getMessageNumber());
-        result = result.replace("replaceWithMessageType", correspondingAPIMessage.getMessageType().toString());
-        result = result.replace("replaceWithMessageAction", correspondingAPIMessage.getMessageAction());
-
-        return result;
+        return new StrSubstitutor(valuesMap).replace(responseMessageTemplate);
 
     }
 
