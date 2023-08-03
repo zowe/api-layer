@@ -10,101 +10,253 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-import org.apache.http.HttpStatus;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.CoreMatchers.containsString;
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
-import java.io.IOException;
+import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @AcceptanceTest
-public class ValidateAPIControllerTest extends AcceptanceTestWithTwoServices {
-    
-    private String validatePath;
-    private MessageService messageService;
-    private ValidateAPIController validateAPIController;
+public class ValidateAPIControllerTest {
 
     @Autowired
+    private ValidateAPIController validateAPIController;
+
+    @MockBean
     private VerificationOnboardService verificationOnboardService;
-    
+
+    @MockBean
+    private DiscoveryClient discoveryClient;
+
+
+    ResponseEntity<String> result;
+
+
     @BeforeEach
-    void setup() throws IOException {
-        validatePath = "/validate";
+    void setup() {
+        MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
+        validateAPIController = new ValidateAPIController(messageService, verificationOnboardService, discoveryClient);
+        standaloneSetup(validateAPIController);
+        when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
+
+
+        result = new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT); // Here only in case we forget to reassign result
+    }
+
+
+    @Nested
+    class GivenWrongServiceId {
+
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+            boolean valid;
+
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
+        }
+
+        @Test
+        public void whenServiceIdTooLong_thenNonconformant() {
+
+            String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
+
+            result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
+
+        }
+
+        @Test
+        public void whenServiceIdTooLongAndSymbols_thenNonconformant() {
+
+            String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
+
+
+            result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
+            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
+
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"test-test", "TEST", "Test"})
+        public void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
+
+            result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
+
+        }
+
+        @Test
+        public void notInvalidTextFormat() {
+
+            String testString = "test";
+
+            result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertFalse(result.getBody().contains("Message service is requested to create a message with an invalid text format"));
+
+        }
+
+
     }
 
     @Nested
-    class GivenControllerServiceID {
+    class ServiceNotOnboarded {
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+            boolean valid;
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
+        }
 
-        @BeforeEach
-        void setup() throws IOException {
-            messageService = new YamlMessageService("/gateway-log-messages.yml");
-            validateAPIController = new ValidateAPIController(messageService, verificationOnboardService);
-            standaloneSetup(validateAPIController);
+
+        @Test
+        public void WhenServiceNotOboarded_thenError() {
+
+            String testString = "notonboarded";
+
+            result = validateAPIController.checkConformance(testString);
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().contains("The service is not registered"));
+
+        }
+
+
+        @Test
+        public void LegacyWhenServiceNotOboarded_thenError() {
+
+            String testString = "notonboarded";
+
+            result = validateAPIController.checkValidateLegacy(testString);
+
+
+            assertNotNull(result.getBody());
+
+            assertTrue(result.getBody().contains("The service is not registered"));
+
+        }
+    }
+
+
+    @Nested
+    class GivenMetadata {
+        @Test
+        void whenEmpty_thenCorrectResponse() {
+            HashMap<String, String> metadata = new HashMap<>();
+            assertEquals(validateAPIController.metaDataCheck(metadata), "Cannot Retrieve MetaData");
         }
 
         @Test
-        void whenServiceId_validate() throws Exception {
-            given()  
-                .param("serviceID","validserviceid")
-            .when()          
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The service is not registered"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
+        void whenNotEmpty_thenCorrectResponse() {
+            HashMap<String, String> metadata = new HashMap<>();
+            metadata.put("key", "value");
+            assertEquals(validateAPIController.metaDataCheck(metadata), "");
+        }
+    }
+
+
+    @Nested
+    class GivenInstanceList {
+        @Test
+        void whenEmpty_thenCorrectResponse() {
+
+            List<ServiceInstance> list = new ArrayList<>();
+
+            assertTrue(validateAPIController.instanceCheck(list).contains("Cannot retrieve metadata"));
         }
 
-        @Test
-        void whenServiceId_InvalidateUpper() throws Exception {
-           
-            given()
-                .param("serviceID", "Invalidserviceidcontainupperletter")
-            .when()
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The serviceid contains symbols or upper case letters"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+
+    @Nested
+    class GivenValidEverything {
+
+        @Mock
+        ServiceInstance serviceInstance;
+
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+            boolean valid;
+
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
         }
 
+
         @Test
-        void whenServiceId_InvalidateSymbol() throws Exception {
-            given()
-                .param("serviceID", "invalid@serviceid_containsymbols")
-            .when()
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The serviceid contains symbols or upper case letters"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
+        void thenOkResponse() {
+            String serviceId = "testservice";
+
+            HashMap<String, String> mockMetadata = new HashMap<>();
+            mockMetadata.put("key", "value");
+
+            when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
+            when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
+            when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
+
+            result = validateAPIController.checkConformance(serviceId);
+            assertEquals(HttpStatus.OK, result.getStatusCode());
         }
 
-        
-        @Test
-        void whenServiceId_InvalidateLength() throws Exception {
-            given()
-                .param("serviceID", "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklwsezxcvbnmqwertyuiop")
-            .when()
-                .post(basePath + validatePath)
-            .then()
-                .assertThat()
-                .body("messageNumber", equalTo("ZWEAG717E"),
-                    "messageContent", containsString("The serviceid is longer than 64 characters"))
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
-        }
-        
     }
 }
+
