@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 @Component
-@Slf4j
 @RequiredArgsConstructor
 public class GatewayStartupListener implements ApplicationListener<ApplicationReadyEvent> {
 
@@ -33,7 +31,6 @@ public class GatewayStartupListener implements ApplicationListener<ApplicationRe
 
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (providers.isZosfmUsed()) {
-            log.debug(null);
             new Timer().scheduleAtFixedRate(new TimerTask() {
 
                 @Override
