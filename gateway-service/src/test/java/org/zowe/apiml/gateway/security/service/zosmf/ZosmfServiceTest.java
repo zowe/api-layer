@@ -85,6 +85,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -819,6 +820,13 @@ class ZosmfServiceTest {
             }
 
             @Test
+            void givenGetURIFails_thenFalseIsReturned() {
+                when(underTest.getURI(any())).thenThrow(new ServiceNotAccessibleException("z/OSMF not accessible"));
+                assertThat(underTest.isAccessible(), is(false));
+                verifyNoInteractions(restTemplate);
+            }
+
+            @Test
             void givenZosmfIsUnavailable_thenFalseIsReturned() {
                 when(restTemplate.exchange(
                     eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
@@ -874,6 +882,41 @@ class ZosmfServiceTest {
                     eq(ZosmfService.ZosmfInfo.class)
                 )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
                 assertThat(underTest.isAccessible(), is(false));
+            }
+        }
+    }
+
+    @Nested
+    class WhenVerifyingAuthenticationEndpoint {
+
+        private final String ZOSMF_URL = "http://host:port";
+
+        private ZosmfService underTest;
+
+        @BeforeEach
+        void setUp() {
+            when(authConfigurationProperties.validatedZosmfServiceId()).thenReturn(ZOSMF_ID);
+
+            ZosmfService zosmfService = new ZosmfService(
+                authConfigurationProperties,
+                discovery,
+                restTemplate,
+                securityObjectMapper,
+                applicationContext,
+                null
+            );
+
+            underTest = spy(zosmfService);
+            doReturn(ZOSMF_URL).when(underTest).getURI(any());
+        }
+
+        @Nested
+        class GivenZosmfIsNotAvailable {
+            @Test
+            void givenGetURIFails_thenFalseReturned() {
+                when(underTest.getURI(any())).thenThrow(new ServiceNotAccessibleException("z/OSMF not accessible"));
+                assertFalse(underTest.authenticationEndpointExists(null, getBasicRequestHeaders()));
+                verifyNoInteractions(restTemplate);
             }
         }
     }
