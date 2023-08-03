@@ -83,7 +83,7 @@ public class InstanceRetrievalService {
         for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
             // call Eureka REST endpoint to fetch single or all Instances
             try {
-                String responseBody = queryDiscoveryForInstances(requestInfo);
+                String responseBody = queryDiscoveryForInstances(requestInfo, serviceId);
                 if (responseBody != null) {
                     return extractSingleInstanceFromApplication(serviceId, responseBody);
                 }
@@ -106,7 +106,7 @@ public class InstanceRetrievalService {
         List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(null, delta);
         for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
             try {
-                String responseBody = queryDiscoveryForInstances(requestInfo);
+                String responseBody = queryDiscoveryForInstances(requestInfo, null);
                 return extractApplications(responseBody);
             } catch (Exception e) {
                 log.debug("Not able to contact discovery service: " + requestInfo.getKey(), e);
@@ -142,7 +142,7 @@ public class InstanceRetrievalService {
      * @param requestInfo information used to query the discovery service
      * @return ResponseEntity<String> query response
      */
-    private String queryDiscoveryForInstances(Pair<String, Pair<String, String>> requestInfo) throws IOException {
+    private String queryDiscoveryForInstances(Pair<String, Pair<String, String>> requestInfo, String serviceId) throws IOException {
         HttpGet httpGet = new HttpGet(requestInfo.getLeft());
         for (Header header : createRequestHeader(requestInfo.getRight())) {
             httpGet.setHeader(header);
@@ -157,9 +157,14 @@ public class InstanceRetrievalService {
         if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
             return responseBody;
         }
+
         apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
-            statusCode, response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody,
-            requestInfo.getLeft());
+            serviceId != null ? "'" + serviceId + "' "  : "",
+            requestInfo.getLeft(),
+            statusCode,
+            response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody
+            );
+
         return null;
     }
 

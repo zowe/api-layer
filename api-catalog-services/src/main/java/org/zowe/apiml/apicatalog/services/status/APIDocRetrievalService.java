@@ -36,6 +36,7 @@ import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
@@ -395,11 +396,17 @@ public class APIDocRetrievalService {
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {
-        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-        if (instanceInfo == null) {
-            throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + ".");
+        String errMsg = "Could not load instance information for service " + serviceId + ".";
+        try {
+            InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
+            if (instanceInfo == null) {
+                throw new ApiDocNotFoundException(errMsg);
+            }
+
+            return instanceInfo;
+        } catch (InstanceInitializationException e) {
+            throw new ApiDocNotFoundException(errMsg, e);
         }
-        return instanceInfo;
     }
 
     /**
