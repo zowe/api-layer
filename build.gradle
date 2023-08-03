@@ -1,6 +1,9 @@
 apply plugin: 'java-library'
 
 import java.util.regex.Matcher
+import org.gradle.plugins.ide.eclipse.model.AccessRule
+import org.gradle.plugins.ide.eclipse.model.ClasspathEntry
+import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 
 //noinspection GroovyAssignabilityCheck
 group 'org.zowe.apiml'
@@ -59,6 +62,18 @@ allprojects {
 
     eclipse {
         classpath {
+            file {
+                whenMerged { classpath ->
+                    for (ClasspathEntry entry : classpath.getEntries()) {
+                        if (entry instanceof AbstractClasspathEntry) {
+                            AbstractClasspathEntry theEntry = (AbstractClasspathEntry) entry
+                            if (theEntry.path != null && theEntry.path.contains('org.eclipse.jdt.launching.JRE_CONTAINER')) {
+                                theEntry.accessRules.add(new AccessRule('accessible', 'com/sun/net/httpserver/**'))
+                            }
+                        }
+                    }
+                }
+            }
             downloadJavadoc = true
             downloadSources = true
         }
