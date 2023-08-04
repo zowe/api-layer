@@ -43,6 +43,10 @@ public class ProxyRouteLocator extends RouteLocator {
 
         routeDefinition.getPredicates().add(predicate);
 
+        FilterDefinition filterDef = new FilterDefinition();
+        filterDef.setName("AuthSourceFilterFactory");
+        filterDef.addArg("headerName", "X-auth-source");
+        routeDefinition.getFilters().add(filterDef);
         for (FilterDefinition filter : getFilters()) {
             routeDefinition.getFilters().add(filter);
         }
