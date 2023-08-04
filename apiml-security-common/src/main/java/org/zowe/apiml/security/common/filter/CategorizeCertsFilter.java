@@ -80,7 +80,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                     Stream<X509Certificate> newCertsStream = Stream.concat(certsStream, Stream.of(certificate));
                     certs = newCertsStream.toArray(X509Certificate[]::new);
                 } catch (CertificateException | IOException e) {
-                    log.error("Cannot extract X509 certificate from the authentication header {}", X_AUTH_SOURCE);
+                    log.error("Cannot extract X509 certificate from the authentication header {}", X_AUTH_SOURCE, e);
                 }
             }
         }
