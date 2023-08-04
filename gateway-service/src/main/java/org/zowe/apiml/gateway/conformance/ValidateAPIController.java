@@ -81,7 +81,7 @@ public class ValidateAPIController {
 
         foundNonConformanceIssues.put(problemWithRegistration, checkOnboarding(serviceId));
 
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
+        if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service is not registered
             return generateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
         }
 
