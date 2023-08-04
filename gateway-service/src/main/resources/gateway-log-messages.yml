@@ -372,7 +372,6 @@ messages:
       reason: "Webfinger provider contains incorrect configuration."
       action: "Contact the administrator to validate webfinger configuration in gateway service."
 
-    # z/OSMF messages
     - key: org.zowe.apiml.security.auth.zosmf.serviceId
       number: ZWEAG181
       type: WARNING
