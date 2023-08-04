@@ -86,6 +86,7 @@ apiml:
             provider: zosmf
         x509:
             enabled: false
+            authViaHeader: false
             externalMapperUrl:
         saf:
             provider: rest

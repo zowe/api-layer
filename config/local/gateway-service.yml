@@ -32,6 +32,8 @@ apiml:
             verifySslCertificatesOfServices: true
         x509:
             enabled: true
+            authViaHeader: false
+
     banner: console
 
 spring:
