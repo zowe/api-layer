@@ -136,7 +136,7 @@ class ZosmfServiceTest {
             validationStrategyList);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
-        doReturn("http://host:port").when(zosmfService).getURI(any());
+        doReturn("http://host:1433").when(zosmfService).getURI(any());
 
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         return zosmfService;
@@ -602,9 +602,9 @@ class ZosmfServiceTest {
         void thenReturnGivenData() {
             ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
             doReturn(true).when(zosmfService).loginEndpointExists();
-            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:port" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, true));
+            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:1433" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, true));
             doReturn(false).when(zosmfService).loginEndpointExists();
-            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:port" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, false));
+            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:1433" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, false));
         }
     }
 
@@ -752,7 +752,7 @@ class ZosmfServiceTest {
     @Nested
     class WhenTestingIfTheZosmfIsAvailable {
         private ZosmfService underTest;
-        private final String ZOSMF_URL = "http://host:port";
+        private final String ZOSMF_URL = "http://host:1433";
 
         @BeforeEach
         void setUp() {
@@ -889,7 +889,7 @@ class ZosmfServiceTest {
     @Nested
     class WhenVerifyingAuthenticationEndpoint {
 
-        private final String ZOSMF_URL = "http://host:port";
+        private final String ZOSMF_URL = "http://host:1433";
 
         private ZosmfService underTest;
 

@@ -39,6 +39,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.util.UrlUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -52,6 +53,8 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import javax.annotation.PostConstruct;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -149,7 +152,7 @@ public class ZosmfService extends AbstractZosmfService {
         if (loginEndpointExists()) {
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
-                getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
+                getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
                 HttpMethod.POST);
 
             if (meAsProxy.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
@@ -157,7 +160,7 @@ public class ZosmfService extends AbstractZosmfService {
                 throw new TokenNotValidException("Invalid token returned from zosmf");
             }
         } else {
-            String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+            String zosmfInfoURIEndpoint = getURI(getZosmfServiceId(), ZOSMF_INFO_END_POINT);
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 zosmfInfoURIEndpoint,
@@ -172,7 +175,7 @@ public class ZosmfService extends AbstractZosmfService {
         ResponseEntity<String> changePasswordResponse;
         changePasswordResponse = issueChangePasswordRequest(
             authentication,
-            getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
+            getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
             HttpMethod.PUT);
         return changePasswordResponse;
     }
@@ -230,9 +233,9 @@ public class ZosmfService extends AbstractZosmfService {
 
         String infoURIEndpoint = "";
         try {
-            infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+            infoURIEndpoint = getURI(getZosmfServiceId(), ZOSMF_INFO_END_POINT);
         } catch (ServiceNotAccessibleException e) {
-            log.debug("URI not available because z/OSMF instance '{}' is not registered or wrong URL in Discovery Service", getZosmfServiceId());
+            log.debug("URI not available because z/OSMF instance '{}' is not registered or wrong URL in Discovery Service: {}", getZosmfServiceId(), e.getMessage());
             return false;
         }
 
@@ -256,6 +259,17 @@ public class ZosmfService extends AbstractZosmfService {
             handleExceptionOnCall(infoURIEndpoint, ex);
             return false;
         }
+    }
+
+    private String getURI(String serviceId, String path) {
+        String baseUrl = getURI(serviceId);
+        URL url;
+        try {
+            url = new URL(baseUrl);
+        } catch (MalformedURLException e) {
+            throw new ServiceNotAccessibleException("Malformed z/OSMF URL", e);
+        }
+        return UrlUtils.buildFullRequestUrl(url.getProtocol(), url.getHost(), url.getPort(), path, null);
     }
 
     /**
@@ -340,9 +354,9 @@ public class ZosmfService extends AbstractZosmfService {
     public boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
         String url = "";
         try {
-            url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+            url = getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT);
         } catch (ServiceNotAccessibleException e) {
-            log.debug("authentication endpoint is not available because z/OSMF instance '{}'' is not registered or wrong URL in Discovery Service", getZosmfServiceId());
+            log.debug("authentication endpoint is not available because z/OSMF instance '{}'' is not registered or wrong URL in Discovery Service: {}", getZosmfServiceId(), e.getMessage());
             return false;
         }
 
@@ -374,7 +388,7 @@ public class ZosmfService extends AbstractZosmfService {
     public boolean jwtEndpointExists(HttpHeaders headers) {
         String url = "";
         try {
-            url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
+            url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
         } catch (ServiceNotAccessibleException e) {
             log.debug("jwt endpoint is not available because z/OSMF instance '{}' is not registered or wrong URL in Discovery Service", getZosmfServiceId());
             return false;
@@ -463,14 +477,14 @@ public class ZosmfService extends AbstractZosmfService {
     public Map<String, Boolean> getEndpointMap() {
         Map<String, Boolean> endpointMap = new HashMap<>();
 
-        endpointMap.put(getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT, loginEndpointExists());
+        endpointMap.put(getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT), loginEndpointExists());
 
         return endpointMap;
     }
 
     public void invalidate(TokenType type, String token) {
         if (logoutEndpointExists()) {
-            final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+            final String url = getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT);
 
             final HttpHeaders headers = new HttpHeaders();
             headers.add(ZOSMF_CSRF_HEADER, "");
@@ -511,7 +525,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
+        final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
             final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
