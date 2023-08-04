@@ -92,7 +92,7 @@ class X509SchemeTest implements TestWithStartedInstances {
                 String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
                 given()
                     .header("X-Request-Id", "gateway" + gatewayHost)
-                    .config(SslContext.clientCertValid)
+                    .header("x-auth-source", SslContext.clientCertValid)
                     .when()
                     .get(scgUrl)
                     .then()
