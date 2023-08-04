@@ -27,7 +27,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.requests.Endpoints.X509_ENDPOINT;
 
@@ -81,6 +81,22 @@ class X509SchemeTest implements TestWithStartedInstances {
                     .when()
                     .get(X509SchemeTest.URL)
                     .then()
+                    .body("dn", startsWith("CN=APIMTST"))
+                    .body("cn", is("APIMTST")).statusCode(200);
+            }
+
+            @Test
+            @Tag("CloudGatewayServiceRouting")
+            void givenCorrectClientCertificateInHeader() {
+                String gatewayHost = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
+                String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+                given()
+                    .header("X-Request-Id", "gateway" + gatewayHost)
+                    .config(SslContext.clientCertValid)
+                    .when()
+                    .get(scgUrl)
+                    .then()
+                    .body("publicKey", is(not(nullValue())))
                     .body("dn", startsWith("CN=APIMTST"))
                     .body("cn", is("APIMTST")).statusCode(200);
             }
