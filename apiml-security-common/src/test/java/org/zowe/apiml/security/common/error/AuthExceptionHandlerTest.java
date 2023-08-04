@@ -213,6 +213,20 @@ class AuthExceptionHandlerTest {
         });
     }
 
+    @Test
+    void testAuthServiceUnavailable() throws ServletException, IOException {
+        authExceptionHandler.handleException(
+            httpServletRequest,
+            httpServletResponse,
+            new ServiceNotAccessibleException("URI"));
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), httpServletResponse.getStatus());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
+
+        Message message = messageService.createMessage(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+    }
+
     @TestConfiguration
     static class ContextConfiguration {
         @Bean

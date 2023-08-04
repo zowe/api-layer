@@ -12,12 +12,10 @@ package org.zowe.apiml.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
@@ -27,12 +25,9 @@ import org.zowe.apiml.extension.ExtensionConfigReader;
 import org.zowe.apiml.extension.ExtensionsLoader;
 import org.zowe.apiml.gateway.ribbon.GatewayRibbonConfig;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
-import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.version.BuildInfo;
 
 import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
-
-import javax.annotation.Nonnull;
 
 @EnableZuulProxy
 @EnableWebSecurity
@@ -52,7 +47,7 @@ import javax.annotation.Nonnull;
 @EnableEurekaClient
 @EnableWebSocket
 @EnableAspectJAutoProxy
-public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
+public class GatewayApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GatewayApplication.class);
@@ -61,11 +56,5 @@ public class GatewayApplication implements ApplicationListener<ApplicationReadyE
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
-    }
-
-    @Override
-    public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Gateway Service",
-            ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }
