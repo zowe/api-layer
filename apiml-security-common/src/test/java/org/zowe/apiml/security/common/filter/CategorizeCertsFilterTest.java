@@ -11,9 +11,10 @@
 package org.zowe.apiml.security.common.filter;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.utils.X509Utils;
 
 import javax.servlet.FilterChain;
@@ -182,6 +183,53 @@ class CategorizeCertsFilterTest {
 
                 verify(chain, times(1)).doFilter(request, response);
             }
+        }
+
+        @Nested
+        class WhenCertificatesInRequestHeader {
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            String cert = "-----BEGIN CERTIFICATE-----\n" +
+                "MIIEFTCCAv2gAwIBAgIEKWdbVTANBgkqhkiG9w0BAQsFADCBjDELMAkGA1UEBhMC\n" +
+                "Q1oxDTALBgNVBAgTBEJybm8xDTALBgNVBAcTBEJybm8xFDASBgNVBAoTC1pvd2Ug\n" +
+                "U2FtcGxlMRwwGgYDVQQLExNBUEkgTWVkaWF0aW9uIExheWVyMSswKQYDVQQDEyJa\n" +
+                "b3dlIFNlbGYtU2lnbmVkIFVudHJ1c3RlZCBTZXJ2aWNlMB4XDTE4MTIwNzIwMDc1\n" +
+                "MloXDTI4MTIwNDIwMDc1MlowgYwxCzAJBgNVBAYTAkNaMQ0wCwYDVQQIEwRCcm5v\n" +
+                "MQ0wCwYDVQQHEwRCcm5vMRQwEgYDVQQKEwtab3dlIFNhbXBsZTEcMBoGA1UECxMT\n" +
+                "QVBJIE1lZGlhdGlvbiBMYXllcjErMCkGA1UEAxMiWm93ZSBTZWxmLVNpZ25lZCBV\n" +
+                "bnRydXN0ZWQgU2VydmljZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n" +
+                "AJti8p4nr8ztRSbemrAv1ytVLQMbXozhLe3lNaiVADGTFPZYeJ2lDt7oAl238HOY\n" +
+                "ScpOz+JjTeUkL0jsjNYgMhi4J07II/3sJL0SBfVqvvgjUL4BvcpdBl0crSuI/3D4\n" +
+                "OaPue+ZmPFijwdCcw5JbazMoOka/zUwpYYdbwxPUH2BbKfwtmmygX88nkJcRSoQO\n" +
+                "KBdNsUs+QRuUiokZ/FJi7uiOsNZ8eEfQv6qJ7mOJ7l1IrMcNm3jHgodoQi/4jXO1\n" +
+                "np/hZaz/ZDni9kBwcyd64AViB2v7VrrBmjdESt1mtCIMvKMlwAZAqrDO75Q9pepO\n" +
+                "Y7zbN4s9s7IUfyb9431xg2MCAwEAAaN9MHswHQYDVR0lBBYwFAYIKwYBBQUHAwIG\n" +
+                "CCsGAQUFBwMBMA4GA1UdDwEB/wQEAwIE8DArBgNVHREEJDAighVsb2NhbGhvc3Qu\n" +
+                "bG9jYWxkb21haW6CCWxvY2FsaG9zdDAdBgNVHQ4EFgQUIeSN7aNtwH2MnBAGDLre\n" +
+                "TtcSaZ4wDQYJKoZIhvcNAQELBQADggEBAELPbHlG60nO164yrBjZcpQJ/2e5ThOR\n" +
+                "8efXUWExuy/NpwVx0vJg4tb8s9NI3X4pRh3WyD0uGPGkO9w+CAvgUaECePLYjkov\n" +
+                "KIS6Cvlcav9nWqdZau1fywltmOLu8Sq5i42Yvb7ZcPOEwDShpuq0ql7LR7j7P4XH\n" +
+                "+JkA0k9Zi6RfYJAyOOpbD2R4JoMbxBKrxUVs7cEajl2ltckjyRWoB6FBud1IthRR\n" +
+                "mZoPMtlCleKlsKp7yJiE13hpX+qIGnzEQE2gNgQ94dSl4m2xO6pnyDRMAEncmd33\n" +
+                "oehy77omRxNsLzkWe6mjaC8ShMGzG9jYR02iN2h4083/PVXvTZIqwhg=\n" +
+                "-----END CERTIFICATE-----\n";
+            @Test
+            void thenAllClientCertificates() throws IOException, ServletException {
+                ReflectionTestUtils.setField(filter, "x509AuthViaHeader", true);
+                X509Certificate certificate = X509Utils.getCertificate(X509Utils.correctBase64(cert));
+                request.addHeader("x-auth-source", filter.base64EncodePublicKey(certificate));
+                filter.doFilter(request, response, chain);
+
+                X509Certificate[] apimlCerts = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                assertNotNull(apimlCerts);
+                assertEquals(0, apimlCerts.length);
+
+                X509Certificate[] clientCerts = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+                assertNotNull(clientCerts);
+                assertEquals(1, clientCerts.length);
+
+                verify(chain, times(1)).doFilter(request, response);
+            }
+
         }
     }
 }
