@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.functional.gateway;
 
+import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
@@ -18,47 +19,36 @@ import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
-
-import io.restassured.RestAssured;
-
-
 import static io.restassured.RestAssured.given;
-
-import java.net.URISyntaxException;
 
 /**
  * This is an integration test class for ValidateAPIController.java
  * It tests ValidateAPIController with service verificationOnboardService.java
- * 
+ * <p>
  * The test senario is:
  * Send serviceId to validateAPIController then the controller will call verificationOnboardService.java
  * to check if the service is registered and metadata can be retrieved then it will return appropriate message
  * The controller recieve the response from the service and then will post response.
- * 
  */
 @GatewayTest
 public class ValidateAPITest implements TestWithStartedInstances {
 
-    private String gatewayScheme;
-    private String gatewayHost;
-    private int gatewayPort;
-
     private String gatewayUrl;
 
 
-    public ValidateAPITest() throws URISyntaxException {
+    public ValidateAPITest() {
         initGatewayService();
     }
 
     @Test
     @TestsNotMeantForZowe
     void givenValidServiceId() {
-        given()  
+        given()
             .log().all()
-            .param("serviceID","discoverableclient")        
-        .when()          
+            .body("discoverableclient")
+            .when()
             .post(gatewayUrl)
-        .then()
+            .then()
             .assertThat()
             .statusCode(HttpStatus.SC_OK);
 
@@ -67,9 +57,9 @@ public class ValidateAPITest implements TestWithStartedInstances {
 
     private void initGatewayService() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        gatewayScheme = gatewayServiceConfiguration.getScheme();
-        gatewayHost = gatewayServiceConfiguration.getHost();
-        gatewayPort = gatewayServiceConfiguration.getExternalPort();
+        String gatewayScheme = gatewayServiceConfiguration.getScheme();
+        String gatewayHost = gatewayServiceConfiguration.getHost();
+        int gatewayPort = gatewayServiceConfiguration.getExternalPort();
         RestAssured.port = gatewayPort;
         RestAssured.useRelaxedHTTPSValidation();
 

@@ -114,6 +114,7 @@ public class ValidateAPIController {
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
+
         return checkConformance(serviceId);
     }
 
