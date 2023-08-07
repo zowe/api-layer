@@ -39,8 +39,10 @@ describe('>>> Service version compare Test', () => {
     it('Should show compare tab', () => {
         // Location of the compare has changed, it's no longer a specific tab
         cy.get('.tabs-container').should('not.exist');
-        cy.get('.nav-tabs').should('exist');
-        cy.get('.nav-tabs').should('have.length', 12);
+        cy.get('div.MuiTabs-root.custom-tabs.MuiTabs-vertical > div.MuiTabs-scroller.MuiTabs-scrollable > div').should('exist');
+        cy.get('div.MuiTabs-flexContainer.MuiTabs-flexContainerVertical') // Select the parent div
+            .find('a.MuiTab-root') // Find all the anchor elements within the div
+            .should('have.length', 12); // Check if there are 12 anchor elements within the div
         cy.get('.version-text').should('exist');
         cy.get('.version-text').should('contain.text', 'Compare');
     });

@@ -360,3 +360,12 @@ logging:
         org.springframework.security: DEBUG
         org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
         org.zowe.apiml.gateway.security: DEBUG
+
+---
+spring:
+    profiles: zosmfDebug
+
+logging:
+    level:
+        root: INFO
+        org.zowe.apiml.gateway.security.service.zosmf: DEBUG

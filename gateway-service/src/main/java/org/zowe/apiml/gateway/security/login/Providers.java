@@ -16,8 +16,12 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,6 +31,9 @@ public class Providers {
     private final CompoundAuthProvider compoundAuthProvider;
     private final ZosmfService zosmfService;
 
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     /**
      * This method decides whether the Zosmf service is available.
      *
@@ -34,9 +41,34 @@ public class Providers {
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public boolean isZosmfAvailable() {
-        boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
-        log.debug("zOSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
-        return isZosmfRegisteredAndPropagated;
+        String  zosmfServiceId = authConfigurationProperties.validatedZosmfServiceId();
+
+        try {
+            this.discoveryClient.probe();
+            List<String> ids = this.discoveryClient.getServices();
+            if (!ids.isEmpty()) {
+                boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(zosmfServiceId).isEmpty();
+                if (!isZosmfRegisteredAndPropagated) {
+                    apimlLog.log("org.zowe.apiml.security.auth.zosmf.serviceId", zosmfServiceId);
+                }
+                log.debug("z/OSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
+                return isZosmfRegisteredAndPropagated;
+            } else {
+                throw new ServiceNotAccessibleException("No registered services");
+            }
+        } catch (RuntimeException e) {
+            log.debug("Discovery Service is not available yet: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Provide configured z/OSMF service ID from the Gateway auth configuration.
+     *
+     * @return service ID of z/OSMF instance
+     */
+    public String getZosmfServiceId() {
+        return authConfigurationProperties.validatedZosmfServiceId();
     }
 
     /**
@@ -48,11 +80,12 @@ public class Providers {
         try {
             boolean isAvailable = isZosmfAvailable();
             boolean isAccessible = zosmfService.isAccessible();
-            log.debug("zOSMF is registered and propagated to the DS: {} and is accessible based on the information: {}", isAvailable, isAccessible);
+
+            log.debug("z/OSMF is registered and propagated to the DS: {} and is accessible based on the information: {}", isAvailable, isAccessible);
 
             return isAvailable && isAccessible;
-        } catch (ServiceNotAccessibleException exception) {
-            log.debug("zOSMF isn't registered to the Gateway yet");
+        } catch (ServiceNotAccessibleException e) {
+            log.debug("z/OSMF is not registered to the Gateway yet: {}", e.getMessage());
 
             return false;
         }

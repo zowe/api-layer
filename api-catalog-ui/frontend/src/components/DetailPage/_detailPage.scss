@@ -113,13 +113,13 @@ body .detail-content {
         box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
         padding: 14px;
         margin-right: 30px;
-        margin-top: -119px;
+        margin-top: -60px;
     }
 
-    /* Extra small devices (phones, 600px and down) */
-    @media only screen and (max-width: 600px) {
+    /* Extra small devices (phones, 1361px and down) */
+    @media only screen and (max-width: 1361px) {
         #right-resources-menu {
-            display: contents;
+            display: none;
         }
     }
 
@@ -163,7 +163,6 @@ body .detail-content {
         font-weight: initial;
     }
     #go-back-button {
-        margin-left: 12px;
         display: inline;
         margin-top: 20px;
         font-size: 13px;
@@ -203,6 +202,15 @@ body .detail-content {
 
     .detailed-description-container {
         display: flow-root;
+    }
+    .no-tiles-container {
+        margin-left: 20px;
+    }
+
+    .btn > h4 {
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: 13px;
     }
 
 }

@@ -80,6 +80,4 @@ public class ZaasClientTestController {
 class LoginRequest {
     private String username;
     private char[] password;
-
 }
-

@@ -4,3 +4,8 @@
     height: 100vh;
 }
 
+@media only screen and (max-width: 1120px) {
+    .content {
+        width: fit-content;
+    }
+}

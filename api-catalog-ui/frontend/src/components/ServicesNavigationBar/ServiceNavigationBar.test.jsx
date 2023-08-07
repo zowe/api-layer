@@ -33,21 +33,15 @@ const tile = {
     createdTimestamp: '2018-08-22T08:31:22.948+0000',
 };
 
+const match = {
+    url: '/service',
+};
+
 describe('>>> ServiceNavigationBar component tests', () => {
     it('should clear when unmounting', () => {
         const clear = jest.fn();
         const serviceNavigationBar = shallow(
-            <ServicesNavigationBar clear={clear} services={[tile]} currentTileId="apicatalog" />
-        );
-        const instance = serviceNavigationBar.instance();
-        instance.componentWillUnmount();
-        expect(clear).toHaveBeenCalled();
-    });
-
-    it('should clear when unmounting', () => {
-        const clear = jest.fn();
-        const serviceNavigationBar = shallow(
-            <ServicesNavigationBar clear={clear} services={[tile]} currentTileId="apicatalog" />
+            <ServicesNavigationBar match={match} clear={clear} services={[tile]} currentTileId="apicatalog" />
         );
         const instance = serviceNavigationBar.instance();
         instance.componentWillUnmount();
@@ -87,5 +81,22 @@ describe('>>> ServiceNavigationBar component tests', () => {
         );
         expect(serviceNavigationBar.find('#serviceIdTabs')).toExist();
         expect(serviceNavigationBar.find('#serviceIdTabs').text()).toEqual('Product APIs');
+    });
+
+    it('should set current tile id', () => {
+        localStorage.setItem('serviceId', 'apicatalog');
+        const storeCurrentTileId = jest.fn();
+        const serviceNavigationBar = shallow(
+            <ServicesNavigationBar
+                services={[tile]}
+                match={match}
+                currentTileId="apicatalog"
+                storeCurrentTileId={storeCurrentTileId}
+            />
+        );
+        const instance = serviceNavigationBar.instance();
+        instance.handleTabClick('apicatalog');
+        expect(storeCurrentTileId).toHaveBeenCalled();
+        localStorage.removeItem('serviceId');
     });
 });

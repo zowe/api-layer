@@ -96,7 +96,7 @@ export default class SwaggerUI extends Component {
     setSwaggerState = () => {
         const { selectedService, selectedVersion } = this.props;
         let codeSnippets = null;
-        if (selectedService.apis.length !== 0) {
+        if (selectedService && 'apis' in selectedService && selectedService.apis && selectedService.apis.length !== 0) {
             if (
                 selectedService.apis[selectedVersion] !== null &&
                 selectedService.apis[selectedVersion] !== undefined &&
@@ -180,7 +180,7 @@ export default class SwaggerUI extends Component {
             <div style={{ width: '100%', background: '#ffffff' }}>
                 {error && (
                     <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
-                        <h4 style={{ color: '#de1b1b' }}>
+                        <h4 id="no-doc_message">
                             API documentation could not be retrieved. There may be something wrong in your Swagger
                             definition. Please review the values of 'schemes', 'host' and 'basePath'.
                         </h4>

@@ -20,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -28,6 +29,9 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.EurekaUtils;
 
+import javax.net.ssl.SSLHandshakeException;
+
+import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Supplier;
@@ -117,6 +121,8 @@ public abstract class AbstractZosmfService {
      *
      * @param zosmf the z/OSMF service id
      * @return the uri
+     *
+     * @throws ServiceNotAccessibleException if z/OSMF is not available in discovery service
      */
     protected String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
@@ -144,15 +150,36 @@ public abstract class AbstractZosmfService {
      */
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
         if (re instanceof ResourceAccessException) {
-            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
-            return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
+            if (re.getCause() instanceof SSLHandshakeException) {
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.sslError");
+            } else {
+                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
+            }
+            log.debug("ResourceAccessException accessing {}", url, re);
+            return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.", re);
         }
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
+            log.warn("Request to z/OSMF requires authentication", re.getMessage());
             return new BadCredentialsException("Invalid Credentials");
         }
 
+        if (re instanceof RestClientResponseException) {
+            RestClientResponseException responseException = (RestClientResponseException) re;
+            if (log.isTraceEnabled()) {
+                log.trace("z/OSMF request {} failed with status code {}, server response: {}", url, responseException.getRawStatusCode(), responseException.getResponseBodyAsString());
+            } else {
+                log.debug("z/OSMF request {} failed with status code {}", url, responseException.getRawStatusCode());
+            }
+        }
+
+        if (re.getCause() instanceof ConnectException) {
+            apimlLog.log("org.zowe.apiml.security.auth.zosmf.connectError", re.getMessage());
+            return new ServiceNotAccessibleException("Could not connect to z/OSMF service.");
+        }
+
         if (re instanceof RestClientException) {
+            log.debug("z/OSMF isn't accessible. {}", re.getMessage());
             apimlLog.log("org.zowe.apiml.security.generic", re.getMessage(), url);
             return new AuthenticationServiceException("A failure occurred when authenticating.", re);
         }

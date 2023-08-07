@@ -112,26 +112,27 @@ messages:
       type: ERROR
       text: "Configuration error when trying to establish JWT producer. Events: %s"
       reason: "A problem occurred while trying to make sure that there is a valid JWT producer available. A possible cause of the problem is that API ML does not recognize the authentication type used by z/OSMF."
-      action: "Based on the specific information in the message, verify that the key configuration is correct, or alternatively, that z/OSMF is available. If z/OSMF is available, specify the authentication type used by z/OSMF in your configuration settings.\n
-      \n
-      Use the following configuration format:\n
-      ```\n
-      apiml:
-      \n   security:
-      \n      auth:
-      \n          zosmf:
-      \n              jwtAutoconfiguration:\n
-      ```\n
-      Apply one of the following values:\n
-      \n
-      * **auto**\n
-      Signifies that API ML is enabled to resolve the JWT producer\n
-      \n
-      * **jwt**\n
-      Signifies that z/OSMF supports JWT (APAR PH12143 is applied)\n
-      \n
-      * **ltpa**\n
-      Signifies that z/OSMF does not support JWT"
+      action: >
+        Based on the specific information in the message, verify that the key configuration is correct, or alternatively, that z/OSMF is available. If z/OSMF is available, specify the authentication type used by z/OSMF in your configuration settings.\n
+        \n
+        Use the following configuration format:\n
+        ```\n
+          apiml:\n
+            security:\n
+              auth:\n
+                zosmf:\n
+                  jwtAutoconfiguration:\n
+        ```\n
+        Apply one of the following values:\n
+        \n
+        * **auto**\n
+          Signifies that API ML is enabled to resolve the JWT producer\n
+        \n
+        * **jwt**\n
+          Signifies that z/OSMF supports JWT (APAR PH12143 is applied)\n
+        \n
+        * **ltpa**\n
+          Signifies that z/OSMF does not support JWT"
 
     - key: org.zowe.apiml.gateway.keys.unknown
       number: ZWEAG714
@@ -369,7 +370,6 @@ messages:
       reason: "The JWT token or client certificate is not valid"
       action: "Configure your client to provide valid authentication."
 
-
     # Revoke personal access token
     - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
       number: ZWEAT607
@@ -385,3 +385,64 @@ messages:
       text: "There was an error while reading webfinger configuration"
       reason: "Webfinger provider contains incorrect configuration."
       action: "Contact the administrator to validate webfinger configuration in gateway service."
+
+    - key: org.zowe.apiml.security.auth.zosmf.serviceId
+      number: ZWEAG181
+      type: WARNING
+      text: "z/OSMF service '%s' is either not registered or not online yet."
+      reason: "z/OSMF service may not be properly onboarded to API ML."
+      action: "Verify if z/OSMF is up and registered to Discovery Service."
+
+    - key: org.zowe.apiml.security.auth.zosmf.sslError
+      number: ZWEAG182
+      type: ERROR
+      text: >
+        SSL Misconfiguration, z/OSMF is not accessible. Please verify the following: \n
+          - CN (Common Name) and z/OSMF hostname have to match.\n
+          - Certificate is expired\n
+          - TLS version match\n
+        Enable debugging to see further details in stack trace
+      reason: "z/OSMF connection has an incorrect configuration."
+      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS"
+
+    - key: org.zowe.apiml.security.auth.zosmf.jwt.internalError
+      number: ZWEAG183
+      type: ERROR
+      text: z/OSMF internal error
+      reason: z/OSMF returned HTTP Status %s.
+      action: Review z/OSMF status and availability.
+
+    - key: org.zowe.apiml.security.auth.zosmf.connectError
+      number: ZWEAG184
+      type: ERROR
+      text: "Could not connect to z/OSMF: %s"
+      reason: There was a connection issue between the API Mediation Layer instance and z/OSMF.
+      action: Verify z/OSMF is running. Verify connectivity to z/OSMF from this instance.
+
+    - key: org.zowe.apiml.security.auth.zosmf.changePwd.notAvailable
+      number: ZWEAG185
+      type: WARNING
+      text: The change password endpoint has failed with code %s
+      reason: The change password endpoint was not found.
+      action: Ensure PTF for APAR PH34912 is applied. (https://www.ibm.com/support/pages/apar/PH34912)
+
+    - key: org.zowe.apiml.security.auth.zosmf.changePwd.internalError
+      number: ZWEAG186
+      type: ERROR
+      text: "z/OSMF internal error attempting password change: %s"
+      reason: z/OSMF informed of an internal error.
+      action: Verify z/OSMF error log.
+
+    - key: org.zowe.apiml.security.auth.zosmf.jwtNotFound
+      number: ZWEAG187
+      type: WARNING
+      text: The check of z/OSMF JWT authentication endpoint has failed. Using z/OSMF info endpoint as backup.
+      reason: z/OSMF JWT endpoint was not found.
+      action: Ensure APAR PH12143 (https://www.ibm.com/support/pages/apar/PH12143) fix has been applied.
+
+    - key: org.zowe.apiml.security.auth.zosmf.jwtEndpointError
+      number: ZWEAG188
+      type: WARNING
+      text: z/OSMF JWT builder endpoint call (%s) failed with %s
+      reason: z/OSMF returned an error code when calling JWT endpoint.
+      action: Review z/OSMF status. Contact your system administrator.

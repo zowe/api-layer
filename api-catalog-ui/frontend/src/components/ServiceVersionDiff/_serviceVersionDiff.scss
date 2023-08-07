@@ -27,7 +27,7 @@ $border-color_1: rgb(200, 209, 224);
     >p {
         margin-top: auto;
         padding-left: 8px;
-        padding-right: 8px;
+        padding-right: 18px;
         font-size: x-large;
         color: $color_1;
     }
@@ -220,4 +220,14 @@ del.comment {
 }
 .MuiSelect-select {
     width: 110px;
+}
+
+#dialog-title {
+    margin-top: -70px;
+    color: var(--controlText15);
+}
+
+.select-diff {
+    padding-right: 7px;
+    margin-left: -4px;
 }

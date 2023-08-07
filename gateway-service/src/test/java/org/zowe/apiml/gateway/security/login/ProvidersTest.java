@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.security.common.config.AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.*;
@@ -187,6 +188,8 @@ class ProvidersTest {
         when(discovery.getInstances(ZOSMF_ID)).thenReturn(
             Collections.singletonList(mock(ServiceInstance.class))
         );
+        when(discovery.getServices()).thenReturn(Collections.singletonList("serviceId")); // just verifies if there's at least one as a basic health
+        doNothing().when(discovery).probe();
         when(authConfigurationProperties.validatedZosmfServiceId()).thenReturn(ZOSMF_ID);
     }
 }

@@ -4,6 +4,9 @@
   .header, .header > * {
     align-items: center;
   }
+    #search .MuiFormControl-root {
+        display: contents;
+    }
   h1 {
     margin: var( --spaceMedium ) 0;
     padding-bottom: var( --spaceMedium );
@@ -21,6 +24,7 @@
       left: calc(50% - #{calc(var( --headerLineWidth ) / 2)});
     }
   }
+
     #search {
         height: 50px;
         width: 422px;
@@ -28,8 +32,24 @@
         margin-right: auto;
         background: #FFFFFF;
         border: 1px solid #C9C8C5;
-        .MuiFormControl-root {
-            display: flex;
+
+        display: flex;
+
+        .MuiInput-root {
+            width: 100%;
+        }
+        >div {
+            >div {
+                >input {
+                    margin-left: auto;
+                    position: static;
+                }
+                >div {
+                    #search-icon {
+                       margin-left: 156px;
+                    }
+                }
+            }
         }
     }
 
@@ -68,7 +88,20 @@
       color: var( --text20 );
       position: relative;
       left: var( --spaceSmaller );
+      margin-top: 0px;
+      margin-left: 156px;
     }
+
+      /* For Firefox */
+      @-moz-document url-prefix() {
+          .MuiSvgIcon-root {
+              margin-left: 130px;
+          }
+          #search #search-icon {
+              margin-left: 130px;
+          }
+      }
+
     .MuiInputBase-input {
       margin-top: auto;
       margin-left: 10px;
@@ -90,4 +123,3 @@
     width: 99%;
     display: block;
 }
-

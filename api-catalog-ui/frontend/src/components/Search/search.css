@@ -23,10 +23,10 @@
 }
 
 #search > div > div > input {
-    margin-left: 40px;
-    margin-top: 6px;
     font-style: italic;
-    width: auto;
+   padding-left: 10px;
+   padding-right: 40px;
+   padding-top: 15px;
 }
 
 svg.MuiSvgIcon-root.clear-text-search {
@@ -48,16 +48,13 @@ svg.MuiSvgIcon-root.clear-text-search {
 }
 
 #search-input {
+    position: absolute;
+    right: 5px;
     font-style: italic;
-    margin-top: 7px;
 }
 
 #search-icon {
-    margin-left: 142px;
-    position: relative;
-    float: left;
     margin-top: 10px;
-    width: auto;
 }
 
 @media only screen and (max-width: 530px) {
