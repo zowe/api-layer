@@ -115,6 +115,12 @@ public class ValidateAPIController {
     @HystrixCommand
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
 
+        System.out.println(serviceId);
+
+        if (serviceId.startsWith("serviceID")) {
+            serviceId = serviceId.replace("serviceID=", "");
+        }
+        System.out.println(serviceId);
         return checkConformance(serviceId);
     }
 
