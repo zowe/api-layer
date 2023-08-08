@@ -33,7 +33,6 @@ import java.util.Base64;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This filter processes certificates on request. It decides, which certificates are considered for client authentication
@@ -76,9 +75,11 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                     InputStream certStream = new ByteArrayInputStream(decodedCertData);
                     X509Certificate certificate = (X509Certificate) cf.generateCertificate(certStream);
                     certStream.close();
-                    Stream<X509Certificate> certsStream = Arrays.stream(certs);
-                    Stream<X509Certificate> newCertsStream = Stream.concat(certsStream, Stream.of(certificate));
-                    certs = newCertsStream.toArray(X509Certificate[]::new);
+                    certs = Arrays.stream(certs)
+                        .map(cert -> cert.equals(certificate) ? certificate : cert)
+                        .toArray(X509Certificate[]::new);
+                    certs = Arrays.copyOf(certs, certs.length + 1);
+                    certs[certs.length - 1] = certificate;
                 } catch (CertificateException | IOException e) {
                     log.error("Cannot extract X509 certificate from the authentication header {}", X_AUTH_SOURCE, e);
                 }
