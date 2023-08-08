@@ -383,7 +383,9 @@ messages:
       number: ZWEAG182
       type: ERROR
       text: >
-        SSL Misconfiguration, z/OSMF is not accessible. Please verify the following:
+        SSL Misconfiguration, z/OSMF is not accessible.
+        Message: %s
+        Please verify the following:
           - CN (Common Name) and z/OSMF hostname have to match.
           - Certificate is expired
           - TLS version match
