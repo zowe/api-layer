@@ -48,6 +48,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
@@ -84,6 +85,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -134,7 +136,7 @@ class ZosmfServiceTest {
             validationStrategyList);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
-        doReturn("http://host:port").when(zosmfService).getURI(any());
+        doReturn("http://host:1433").when(zosmfService).getURI(any());
 
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         return zosmfService;
@@ -328,6 +330,19 @@ class ZosmfServiceTest {
                     .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
                     assertThrows(BadCredentialsException.class, () -> zosmfService.changePassword(authentication));
+                }
+
+                @Test
+                void thenChangePasswordWithUnsupportedZosmf() {
+                    when(authentication.getCredentials()).thenReturn(loginRequest);
+
+                    when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+                        HttpMethod.PUT,
+                        new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
+                        String.class))
+                    .thenThrow(HttpClientErrorException.create(HttpStatus.METHOD_NOT_ALLOWED, "Method not allowed", null, null, null));
+
+                    assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.changePassword(authentication));
                 }
             }
 
@@ -587,9 +602,9 @@ class ZosmfServiceTest {
         void thenReturnGivenData() {
             ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
             doReturn(true).when(zosmfService).loginEndpointExists();
-            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:port" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, true));
+            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:1433" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, true));
             doReturn(false).when(zosmfService).loginEndpointExists();
-            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:port" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, false));
+            assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:1433" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, false));
         }
     }
 
@@ -737,7 +752,7 @@ class ZosmfServiceTest {
     @Nested
     class WhenTestingIfTheZosmfIsAvailable {
         private ZosmfService underTest;
-        private final String ZOSMF_URL = "http://host:port";
+        private final String ZOSMF_URL = "http://host:1433";
 
         @BeforeEach
         void setUp() {
@@ -773,6 +788,8 @@ class ZosmfServiceTest {
 
             @Mock
             private Appender<ILoggingEvent> mockedAppender;
+            @Mock
+            private ApimlLogger apimlLogger;
 
             @Captor
             private ArgumentCaptor<LoggingEvent> loggingCaptor;
@@ -786,6 +803,8 @@ class ZosmfServiceTest {
                 logger.getLoggerContext().resetTurboFilterList();
                 logger.addAppender(mockedAppender);
                 logger.setLevel(Level.TRACE);
+
+                ReflectionTestUtils.setField(underTest, "apimlLog", apimlLogger);
             }
 
             @AfterEach
@@ -798,6 +817,13 @@ class ZosmfServiceTest {
                 assertNotNull(values);
                 assertFalse(values.isEmpty());
                 return values.stream().map(element -> element.getFormattedMessage()).collect(Collectors.joining("\n"));
+            }
+
+            @Test
+            void givenGetURIFails_thenFalseIsReturned() {
+                when(underTest.getURI(any())).thenThrow(new ServiceNotAccessibleException("z/OSMF not accessible"));
+                assertThat(underTest.isAccessible(), is(false));
+                verifyNoInteractions(restTemplate);
             }
 
             @Test
@@ -829,10 +855,9 @@ class ZosmfServiceTest {
                 verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
                 String values = loggedValues();
                 assertTrue(values.length() > 0);
-                assertTrue(values.contains("SSL Misconfiguration, z/OSMF is not accessible. Please verify the following:"), values);
-                assertTrue(values.contains("- CN (Common Name) and z/OSMF hostname have to match."), values);
-                assertTrue(values.contains("- Certificate is expired"), values);
-                assertTrue(values.contains("- TLS version match"), values);
+                assertTrue(values.contains("ResourceAccessException accessing"), values);
+
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.sslError");
             }
 
             @Test
@@ -845,11 +870,7 @@ class ZosmfServiceTest {
                 )).thenThrow(new RestClientException("resource access exception", new ConnectException("connection exception")));
 
                 assertThat(underTest.isAccessible(), is(false));
-                verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
-                String values = loggedValues();
-                assertTrue(values.length() > 0);
-                assertTrue(values.contains("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running"), values);
-                assertTrue(values.contains("connection exception"), values);
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception; nested exception is java.net.ConnectException: connection exception");
             }
 
             @Test
@@ -861,6 +882,41 @@ class ZosmfServiceTest {
                     eq(ZosmfService.ZosmfInfo.class)
                 )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
                 assertThat(underTest.isAccessible(), is(false));
+            }
+        }
+    }
+
+    @Nested
+    class WhenVerifyingAuthenticationEndpoint {
+
+        private final String ZOSMF_URL = "http://host:1433";
+
+        private ZosmfService underTest;
+
+        @BeforeEach
+        void setUp() {
+            when(authConfigurationProperties.validatedZosmfServiceId()).thenReturn(ZOSMF_ID);
+
+            ZosmfService zosmfService = new ZosmfService(
+                authConfigurationProperties,
+                discovery,
+                restTemplate,
+                securityObjectMapper,
+                applicationContext,
+                null
+            );
+
+            underTest = spy(zosmfService);
+            doReturn(ZOSMF_URL).when(underTest).getURI(any());
+        }
+
+        @Nested
+        class GivenZosmfIsNotAvailable {
+            @Test
+            void givenGetURIFails_thenFalseReturned() {
+                when(underTest.getURI(any())).thenThrow(new ServiceNotAccessibleException("z/OSMF not accessible"));
+                assertFalse(underTest.authenticationEndpointExists(null, getBasicRequestHeaders()));
+                verifyNoInteractions(restTemplate);
             }
         }
     }

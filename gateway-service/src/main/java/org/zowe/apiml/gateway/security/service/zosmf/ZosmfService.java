@@ -39,6 +39,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.util.UrlUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -52,6 +53,8 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import javax.annotation.PostConstruct;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -68,6 +71,7 @@ import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenTy
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ZosmfService extends AbstractZosmfService {
 
+    private static final String JWT_ENDPOINT_ERROR_MSGID = "org.zowe.apiml.security.auth.zosmf.jwtEndpointError";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
     /**
@@ -142,14 +146,13 @@ public class ZosmfService extends AbstractZosmfService {
         meAsProxy = applicationContext.getBean(ZosmfService.class);
     }
 
-
     @Retryable(value = {TokenNotValidException.class}, maxAttempts = 2, backoff = @Backoff(value = 1500))
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
         if (loginEndpointExists()) {
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
-                getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
+                getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
                 HttpMethod.POST);
 
             if (meAsProxy.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
@@ -157,7 +160,7 @@ public class ZosmfService extends AbstractZosmfService {
                 throw new TokenNotValidException("Invalid token returned from zosmf");
             }
         } else {
-            String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+            String zosmfInfoURIEndpoint = getURI(getZosmfServiceId(), ZOSMF_INFO_END_POINT);
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 zosmfInfoURIEndpoint,
@@ -172,7 +175,7 @@ public class ZosmfService extends AbstractZosmfService {
         ResponseEntity<String> changePasswordResponse;
         changePasswordResponse = issueChangePasswordRequest(
             authentication,
-            getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
+            getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
             HttpMethod.PUT);
         return changePasswordResponse;
     }
@@ -220,15 +223,23 @@ public class ZosmfService extends AbstractZosmfService {
     /**
      * Verify whether the service is actually accessible.
      *
+     * Note: This method uses getURI, it's also verifying eureka registration
+     *
      * @return true when it's possible to access the Info endpoint via GET.
      */
     public boolean isAccessible() {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
 
-        String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
-        log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
+        String infoURIEndpoint = "";
+        try {
+            infoURIEndpoint = getURI(getZosmfServiceId(), ZOSMF_INFO_END_POINT);
+        } catch (ServiceNotAccessibleException e) {
+            log.debug("URI not available because z/OSMF instance '{}' is not registered or wrong URL in Discovery Service: {}", getZosmfServiceId(), e.getMessage());
+            return false;
+        }
 
+        log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore
             .exchange(
@@ -248,6 +259,17 @@ public class ZosmfService extends AbstractZosmfService {
             handleExceptionOnCall(infoURIEndpoint, ex);
             return false;
         }
+    }
+
+    private String getURI(String serviceId, String path) {
+        String baseUrl = getURI(serviceId);
+        URL url;
+        try {
+            url = new URL(baseUrl);
+        } catch (MalformedURLException e) {
+            throw new ServiceNotAccessibleException("Malformed z/OSMF URL", e);
+        }
+        return UrlUtils.buildFullRequestUrl(url.getProtocol(), url.getHost(), url.getPort(), path, null);
     }
 
     /**
@@ -292,10 +314,13 @@ public class ZosmfService extends AbstractZosmfService {
                 new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers),
                 String.class);
         } catch (HttpServerErrorException e) {
-            log.warn("The change password endpoint has failed, ensure that the PTF for APAR PH34912 " +
-                "(https://www.ibm.com/support/pages/apar/PH34912) has been installed and that the user ID and old password you provided are correct.");
             throw handleServerErrorOnChangePasswordCall(e);
+        } catch (HttpClientErrorException.NotFound | HttpClientErrorException.MethodNotAllowed e) {
+            apimlLog.log("org.zowe.apiml.security.auth.zosmf.changePwd.notAvailable", e.getStatusCode());
+            throw new ServiceNotAccessibleException("Change password endpoint is not available in z/OSMF", e);
         } catch (HttpClientErrorException e) {
+            // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
+            log.debug("Request to {} failed with status {}: {}", url, e.getRawStatusCode(), e.getMessage());
             throw new BadCredentialsException("Client error in change password: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
@@ -306,7 +331,7 @@ public class ZosmfService extends AbstractZosmfService {
         try {
             ZosmfAuthResponse response = securityObjectMapper.readValue(e.getResponseBodyAsByteArray(), ZosmfAuthResponse.class);
             if (response.getReturnCode() == 4) {
-                log.error("z/OSMF internal error attempting password change: {}", e.getResponseBodyAsString());
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.changePwd.internalError", e.getResponseBodyAsString());
                 return new AuthenticationServiceException("z/OSMF internal error: " + e.getResponseBodyAsString());
             } else {
                 // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
@@ -327,7 +352,13 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfAuthenticationEndpoint", key = "#httpMethod.name()")
     public boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
-        String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+        String url = "";
+        try {
+            url = getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT);
+        } catch (ServiceNotAccessibleException e) {
+            log.debug("authentication endpoint is not available because z/OSMF instance '{}'' is not registered or wrong URL in Discovery Service: {}", getZosmfServiceId(), e.getMessage());
+            return false;
+        }
 
         try {
             restTemplateWithoutKeystore.exchange(url, httpMethod, new HttpEntity<>(null, headers), String.class);
@@ -335,9 +366,7 @@ public class ZosmfService extends AbstractZosmfService {
             if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
                 return true;
             } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
-                log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure APAR PH12143 " +
-                    "(https://www.ibm.com/support/pages/apar/PH12143) fix has been applied. " +
-                    "Using z/OSMF info endpoint as backup.");
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.jwtNotFound");
                 return false;
             } else {
                 log.warn("z/OSMF authentication endpoint with HTTP method " + httpMethod.name() +
@@ -357,7 +386,13 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfJwtEndpoint")
     public boolean jwtEndpointExists(HttpHeaders headers) {
-        String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
+        String url = "";
+        try {
+            url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
+        } catch (ServiceNotAccessibleException e) {
+            log.debug("jwt endpoint is not available because z/OSMF instance '{}' is not registered or wrong URL in Discovery Service", getZosmfServiceId());
+            return false;
+        }
 
         try {
             restTemplateWithoutKeystore.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
@@ -365,18 +400,18 @@ public class ZosmfService extends AbstractZosmfService {
             if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
                 return true;
             } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
-                log.warn("The check of z/OSMF JWT builder endpoint has failed");
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.jwtNotFound");
                 return false;
             } else {
-                log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with status code: "
-                    + hce.getStatusCode(), hce);
+                // other 400 family code
+                apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, hce.getRawStatusCode() + ": " + hce.getMessage());
                 return false;
             }
         } catch (HttpServerErrorException serverError) {
-            log.warn("z/OSMF internal error", serverError);
+            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, serverError.getRawStatusCode() + ": " + serverError.getMessage());
             return false;
         } catch (Exception e) {
-            log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with exception: " + e.getMessage(),e);
+            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, e.getMessage());
             return false;
         }
         return true;
@@ -442,14 +477,14 @@ public class ZosmfService extends AbstractZosmfService {
     public Map<String, Boolean> getEndpointMap() {
         Map<String, Boolean> endpointMap = new HashMap<>();
 
-        endpointMap.put(getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT, loginEndpointExists());
+        endpointMap.put(getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT), loginEndpointExists());
 
         return endpointMap;
     }
 
     public void invalidate(TokenType type, String token) {
         if (logoutEndpointExists()) {
-            final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+            final String url = getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT);
 
             final HttpHeaders headers = new HttpHeaders();
             headers.add(ZOSMF_CSRF_HEADER, "");
@@ -490,7 +525,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
+        final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
             final String json = restTemplateWithoutKeystore.getForObject(url, String.class);

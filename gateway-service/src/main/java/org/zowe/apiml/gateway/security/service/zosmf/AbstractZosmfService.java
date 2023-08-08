@@ -121,6 +121,8 @@ public abstract class AbstractZosmfService {
      *
      * @param zosmf the z/OSMF service id
      * @return the uri
+     *
+     * @throws ServiceNotAccessibleException if z/OSMF is not available in discovery service
      */
     protected String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
@@ -149,14 +151,12 @@ public abstract class AbstractZosmfService {
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
         if (re instanceof ResourceAccessException) {
             if (re.getCause() instanceof SSLHandshakeException) {
-                log.error("SSL Misconfiguration, z/OSMF is not accessible. Please verify the following: \n" +
-                " - CN (Common Name) and z/OSMF hostname have to match.\n" +
-                " - Certificate is expired\n" +
-                " - TLS version match\n" +
-                "Further details and a stack trace will follow", re);
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.sslError");
+            } else {
+                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
             }
-            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
-            return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
+            log.debug("ResourceAccessException accessing {}", url, re);
+            return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.", re);
         }
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
@@ -174,7 +174,7 @@ public abstract class AbstractZosmfService {
         }
 
         if (re.getCause() instanceof ConnectException) {
-            log.warn("Could not connecto to z/OSMF. Please verify z/OSMF instance is up and running {}", re.getMessage());
+            apimlLog.log("org.zowe.apiml.security.auth.zosmf.connectError", re.getMessage());
             return new ServiceNotAccessibleException("Could not connect to z/OSMF service.");
         }
 
