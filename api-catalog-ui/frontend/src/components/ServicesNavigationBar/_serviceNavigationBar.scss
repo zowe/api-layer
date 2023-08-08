@@ -1,14 +1,72 @@
-$color_1: #50b7f5;
-$background-color_1: #EFEFEF;
-$color_2: #CC092F;
+$red-selected-bx: 0 0 0 2px var( --criticalShade10 ) inset;
+
+#serviceIdTabs {
+    margin-bottom: var( --spaceSmall );
+    font-weight: bold;
+}
+#search_no_results {
+    margin: auto;
+    color: var( --criticalShade10 );
+}
+.MuiTab-wrapper {
+    width: 100%;
+    text-align: initial;
+    flex-direction: column;
+}
+span.MuiTab-wrapper {
+    display: inline-block;
+}
+.MuiTabs-root {
+    margin-left: var( --spaceHuge );
+}
+.MuiTabs-scroller.MuiTabs-scrollable > div > a {
+    background: var( --surface05 );
+    width: calc(100% - 4px);
+    max-width: 100%;
+    margin: 0 auto var( --spaceSmaller );
+    text-transform: none;
+    font-size: var( --spaceMedium );
+    height: 54px;
+}
+.MuiTabs-root.custom-tabs.MuiTabs-vertical {
+    margin-left: auto;
+}
+svg.MuiSvgIcon-root.clear-text-search {
+    margin-left: 120px;
+    margin-bottom: var( --spaceTiny );
+}
+.tabs {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--white-ffffff, var( --surface05 ));
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.25);
+}
+.MuiTabs-flexContainerVertical {
+    margin-bottom: var( --spaceSmaller );
+}
+
+.custom-tabs {
+    .MuiTabs-indicator {
+        display: none;
+    }
+    .tabs {
+        &.Mui-selected {
+            box-shadow: $red-selected-bx;
+        }
+        &:hover {
+            box-shadow: $red-selected-bx;
+        }
+    }
+}// end .custom-tabs
 
 #search2 {
-    margin-top: 10px;
+    margin: var( --spaceSmall ) var( --spaceSmall ) 0 var( --spaceSmaller );
     height: 47px;
-    background: #FFFFFF;
-    border: 1px solid #C9C8C5;
-    margin-right: 13px;
-    margin-bottom: 9px;
+    background: var( --surface05 );
+    border: 1px solid var( --divider15 );
+    border-radius: var( --borderRadius1 );
 
     .MuiInput-root {
         width: 100%;
@@ -16,90 +74,20 @@ $color_2: #CC092F;
     >div {
         >div {
             >input {
-                padding-left: 16px;
-                padding-right: 40px;
-                padding-top: 14px;
+                padding-left: var( --spaceMedium );
+                padding-right: var( --spaceHuge );
+                padding-top: var( --spaceSmall );
             }
             >div {
-                >#search-icon {
-                    margin-top: 7px;
-                }
                 margin-right: 0;
+
+                > #search-icon {
+                    margin-top: var( --spaceSmaller );
+                }
                 &#search-input {
-                    right: 5px;
+                    right: var( --spaceSmallest );
                 }
             }
         }
     }
-}
-
-#serviceIdTabs {
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-#search_no_results {
-    margin: auto;
-    color: $color_2;
-}
-
-.MuiTab-wrapper {
-    width: 100%;
-    text-align: initial;
-    flex-direction: column;
-}
-
-span.MuiTab-wrapper {
-    display: inline-block;
-}
-
-.MuiTabs-root {
-    margin-left: 39px;
-}
-
-.MuiTabs-scroller.MuiTabs-scrollable > div > a {
-    background: var(--white-ffffff, #FFF);
-    max-width: 353px;
-    margin-bottom: 5px;
-    text-transform: none;
-    font-size: 16px;
-}
-
-.MuiTabs-root.custom-tabs.MuiTabs-vertical {
-    margin-left: auto;
-}
-
-svg.MuiSvgIcon-root.clear-text-search {
-    margin-left: 120px;
-    margin-bottom: 3px;
-}
-
-
-.tabs {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--white-ffffff, #FFF);
-    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
-}
-
-.MuiTab-wrapped {
-    height: 60px;
-}
-
-.custom-tabs .MuiTabs-indicator {
-    display: none;
-}
-
-.custom-tabs .tabs:hover {
-    border: 4px solid $color_2;
-}
-
-.custom-tabs .tabs.Mui-selected {
-    border: 4px solid $color_2;
-}
-
-.MuiTabs-flexContainerVertical {
-    margin-bottom: 7px;
-}
+}//end search2

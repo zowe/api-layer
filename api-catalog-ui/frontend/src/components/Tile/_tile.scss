@@ -5,11 +5,9 @@ body {
   .MuiPaper-rounded {
     border-radius: var( --borderRadius1 );
   }
-  .MuiSvgIcon-root {
-    margin-right: var( --spaceSmaller );
-  }
+
   .MuiCard-root {
-    padding: var( --spaceSmallest );
+    padding: var( --spaceTiny );
     margin: var( --spaceSmallest ) var( --spaceSmaller ) var( --spaceMedium );
 
     &:hover {
@@ -126,8 +124,8 @@ body {
 
 /* CSS styles for each individual tile */
 .grid-item {
-    flex: 0 0 calc(25% - 16px);
-    margin: 8px;
+    flex: 0 0 calc(25% - #{var( --space-medium )});
+    margin: var( --spaceSmaller );
     position: relative; /* Add relative positioning to the tile */
 }
 

@@ -2,84 +2,100 @@ body {
   .opblock {
     margin-bottom: var( --spaceSmall );
   }
+  .opblock-tag-section {
+    .expand-operation {
+      transform: rotate(180deg);
+    }
+  }
   .opblock-summary {
     display: flex;
     width: 100%;
     margin-bottom: var( --spaceTiny );
+    border: 1px solid var( --surface15 );
+    border-radius: var( --borderRadius1 );
+
+    .opblock-summary-method {
+      padding: var( --spaceSmaller );
+      border-radius: var( --borderRadius1 );
+      font-size: var( --fontSmall );
+      color: var( --text100 );
+    }
+    > button {
+      background: transparent;
+      border-color: transparent;
+    }
+    .copy-to-clipboard {
+      padding: 0 3px;
+      display: flex;
+      align-items: center;
+      margin-right: var( --spaceSmallest );
+
+      svg {
+        background: var( --surface105 );
+        border-radius: 3px;
+        padding: 2px;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+
+    &.opblock-summary-get {
+      background: var( --info05 );
+      border-color: var( --info10 );
+
+      .opblock-summary-method {
+        background: var( --info10 );
+      }
+    }//end get
+    &.opblock-summary-post {
+      background: var( --success05 );
+      border-color: var( --success10 );
+
+      .opblock-summary-method {
+        background: var( --success10 );
+      }
+    }//end post
+    &.opblock-summary-patch {
+      background: var( --success05 );
+      border-color: var( --success20 );
+
+      .opblock-summary-method {
+        background: var( --success20 );
+      }
+    }//end patch
+    &.opblock-summary-delete {
+      background: var( --critical05 );
+      border-color: var( --critical10 );
+
+      .opblock-summary-method {
+        background: var( --critical10 );
+      }
+    }//end delete
+    &.opblock-summary-put {
+      background: var( --warn05 );
+      border-color: var( --warn10 );
+
+      .opblock-summary-method {
+        background: var( --warn10 );
+      }
+    }//end put
 
     .opblock-summary-control {
       width: 100%;
       display: flex;
       align-items: center;
       border-radius: var( --borderRadius1 );
-      padding: var( --spaceSmallest );
+      padding: var( --spaceTiny ) var( --spaceSmallest );
       cursor: pointer;
 
-      &, & + button.authorization__btn {
-        border: 1px solid var( --surface15 );
-      }
-      & + button.authorization__btn {
-        border-left: none;
-        border-top-right-radius: var( --borderRadius1 );
-        border-bottom-right-radius: var( --borderRadius1 );
-      }
-      &:not(:only-child) {
-        border-right: none;
-        border-top-right-radius: 0px;
-        border-bottom-right-radius: 0px;
-      }
-
-      &[aria-label*='post'],
-      &[aria-label*='post'] + button {
-        background: var( --success05 );
-        border-color: var( --success10 );
-
-        .opblock-summary-method {
-          background: var( --success10 );
-          width: 50px;
-        }
-      }
-      &[aria-label*='get'],
-      &[aria-label*='get'] + button {
-        background: var( --info05 );
-        border-color: var( --info10 );
-
-        .opblock-summary-method {
-          background: var( --info10 );
-            width: 50px;
-        }
-      }
-      &[aria-label*='delete'],
-      &[aria-label*='delete'] + button {
-        background: var( --critical05 );
-        border-color: var( --critical10 );
-
-        .opblock-summary-method {
-          background: var( --critical10 );
-          width: 50px;
-        }
-      }
-      &[aria-label*='put'],
-      &[aria-label*='put'] + button {
-        background: var( --warn05 );
-        border-color: var( --warn10 );
-
-        .opblock-summary-method {
-          background: var( --warn10 );
-          width: 50px;
-        }
-      }
-
-      .opblock-summary-method {
-        padding: var( --spaceSmall ) var( --spaceLarge );
-        border-radius: var( --borderRadius1 );
-      }
-
       > *:not(:first-child) {
-        margin-left: var( --spaceLargest );
+        margin-left: var( --spaceMedium );
 
         &.arrow {
           margin-right: var( --spaceSmaller );
+          width: 20px;
         }
         &.opblock-summary-description {
           margin-left: auto;
@@ -94,8 +110,15 @@ body {
     cursor: pointer;
     width: 100%;
     font-size: var( --fontSmall );
-    padding: var( --spaceSmaller ) 0;
+    padding: var( --spaceSmall ) 0;
+    border-bottom: 1px solid var( --divider20 );
+    font-weight: var( --fontWeightNormal );
+    margin-bottom: var( --spaceSmallest );
 
+    .expand-operation {
+      background-color: transparent;
+      border-color: transparent;
+    }
     > * {
       &:not(:first-child) {
         margin-left: var( --spaceSmall );

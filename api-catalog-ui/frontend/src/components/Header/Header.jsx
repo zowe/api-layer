@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled } from '@material-ui/core';
 import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import productImage from '../../assets/images/api-catalog-logo.png';
+import productImage from '../../assets/images/broadcom.svg';
 import zoweDocsImage from '../../assets/images/zowe-docs.png';
 import zoweAuthImage from '../../assets/images/zowe-auth.png';
 import customDoc from '../../assets/images/custom-doc.png';
@@ -87,7 +87,7 @@ function Header(props) {
             <div className="product-name">
                 <Link data-testid="link" href={dashboard}>
                     <div className="app-icon-container">
-                        <img id="logo" alt="API Catalog Product Name" src={productImage} />
+                        <img id="logo" alt="API Catalog" src={productImage} />
                     </div>
                 </Link>
                 <Link href={dashboard}>

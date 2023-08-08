@@ -26,6 +26,36 @@ body {
   .MuiTypography-colorPrimary {
     color: var( --control00 );
   }
+  .MuiTab-textColorInherit {
+    opacity: 1;
+  }
+
+  .MuiTab-root {
+    overflow: visible;
+  }
+  .MuiDialog-container {
+    h1 {
+      font-size: var( --fontLarger );
+    }
+    h2 {
+      font-size: var( --fontLarge );
+    }
+    .MuiDialogActions-root {
+      position: absolute;
+      right: 0px;
+      top: 0px;
+      padding: 6px;
+    }
+    .MuiDialogTitle-root {
+      padding: var( --spaceSmaller ) var( --spaceMedium );
+      color: var(--controlText15);
+      
+      h2 {
+        margin: 0px;
+      }
+    }
+  }//end dialog
+
   ul {
     padding: 0px;
 
@@ -47,6 +77,7 @@ body {
   }
   p {
     margin: 0px;
+    font-weight: var( --fontWeightNormal );
   }
 
   .content {
@@ -71,6 +102,52 @@ body {
       flex: 100%;
       overflow: auto;
     }
+    .main {
+      display: flex;
+
+      .nav-bar,
+      .side-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 368px;
+        width: var( --sideNavWidth );
+        padding: var( --spaceSmall ) var( --spaceSmaller ) var( --spaceSmall ) var( --spaceSmall );
+        position: relative;
+      }
+
+      .nav-bar {
+        box-shadow: 0 0 6px hsl(210 14% 90%);
+        background: var( --surface15 );
+
+        > * {
+          width: 100%;
+        }
+      }//end nav-bar
+
+      .main-content2 {
+        width: 100%;
+        padding: var( --spaceLarge ) var( --spaceSmaller ) 0 var( --contentLeftPadding );
+        position: relative;
+
+        &:before {
+          width: calc(100% - #{var( --contentLeftPadding )} - #{var( --spaceLarger )});
+          height: 2px;
+          background: var( --surface25 );
+          content: "";
+          position: absolute;
+          top: 0;
+          right: 0;
+        }
+        > * {
+          width: 100%;
+
+          &.MuiDivider-light {
+            display: none;
+          }
+        }
+      }//end main-content
+    }
   }//end content
 
   a, a.MuiTypography-colorPrimary {
@@ -84,12 +161,22 @@ body {
     }
   }//end a
 
+  .MuiInputBase-formControl {
+    .visibility-icon {
+      margin-right: var( --spaceNone );
+      display: none;
+    }
+    &:hover .visibility-icon {
+      display: block;
+    }
+  }
+
   button {
     &.MuiIconButton-root,
     &.MuiButtonBase-root,
     &.btn,
     &.tablinks {
-      padding: var( --spaceSmallest ) var( --spaceSmall );
+      padding: var( --spaceSmallest ) var( --spaceSmaller );
       font-size: var( --fontSmall );
       border: 1px solid var( --controlText15 );
       color: var( --controlText15 );
@@ -110,19 +197,32 @@ body {
       &:hover {
         color: var( --controlText15Hover );
       }
+      &.MuiButton-containedPrimary,
+      &#diff-button {
+        background-color: var( --control00 );
+        color: var( --text100 );
+        border-color: var( --control00 );
+      }
+      &.Mui-disabled,
+      &:disabled {
+        background-color: var( --unknown10 ) !important;
+        color: var( --controlText15Disabled ) !important;
+        border-color: var( --controlText15Disabled ) !important;
+      }
     }
     &.MuiButton-outlined {
       padding: 0px var( --spaceSmall );
     }
   }//end button
 
-  select {
+  select, .MuiSelect-select, .MuiSelect-select.MuiSelect-select {
     font-size: var( --fontSmall );
-    padding: var( --spaceSmaller) var( --spaceHuge ) var( --spaceSmaller) var( --spaceSmall );
+    padding: var( --spaceSmallest ) var( --spaceHuge ) var( --spaceSmallest ) var( --spaceSmall );
     border: 1px solid var( --input00Bc );
     border-radius: var( --borderRadius1 );
     background: var( --surface15 ) url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCI+ICAgIDxwYXRoIGQ9Ik0xMy40MTggNy44NTljLjI3MS0uMjY4LjcwOS0uMjY4Ljk3OCAwIC4yNy4yNjguMjcyLjcwMSAwIC45NjlsLTMuOTA4IDMuODNjLS4yNy4yNjgtLjcwNy4yNjgtLjk3OSAwbC0zLjkwOC0zLjgzYy0uMjctLjI2Ny0uMjctLjcwMSAwLS45NjkuMjcxLS4yNjguNzA5LS4yNjguOTc4IDBMMTAgMTFsMy40MTgtMy4xNDF6Ii8+PC9zdmc+) right 10px center no-repeat;
     background-size: 20px;
+    background-color: var( --surface05 );
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .25);
     color: var( --text20 );
     -webkit-appearance: none;
@@ -131,6 +231,13 @@ body {
     max-width: 100%;
     white-space: nowrap;
     text-overflow: ellipsis;
+
+    &.MuiSelect-select {
+
+      & ~ .MuiSvgIcon-root {
+        display: none;
+      }
+    }
   }
 
   .MuiTabs-flexContainerVertical button.MuiButtonBase-root {

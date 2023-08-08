@@ -4,14 +4,18 @@
   .header, .header > * {
     align-items: center;
   }
-    #search .MuiFormControl-root {
-        display: contents;
-    }
+  #search .MuiFormControl-root {
+      display: contents;
+  }
+  h3 {
+    font-weight: var( --fontWeightNormal );
+    margin-bottom: var( --spaceLarge );
+  }
   h1 {
-    margin: var( --spaceMedium ) 0;
-    padding-bottom: var( --spaceMedium );
+    margin: var( --spaceMedium ) 0 var( --spaceLarger );
+    padding-bottom: var( --spaceLarger );
     position: relative;
-    font-weight: var( --fontWeightLight );
+    font-weight: var( --fontWeightMedium );
 
     &::before {
       --headerLineWidth: 120px;
@@ -25,40 +29,31 @@
     }
   }
 
-    #search {
-        height: 50px;
-        width: 422px;
-        margin-left: auto;
-        margin-right: auto;
-        background: #FFFFFF;
-        border: 1px solid #C9C8C5;
+  #search {
+    height: 50px;
+    width: 100%;
+    max-width: 430px;
+    margin-left: auto;
+    margin-right: auto;
+    background: var( --surface05 );
+    border: 1px solid var( --divider15 );
+    display: flex;
 
-        display: flex;
-
-        .MuiInput-root {
-            width: 100%;
-        }
-        >div {
-            >div {
-                >input {
-                    margin-left: auto;
-                    position: static;
-                }
-                >div {
-                    #search-icon {
-                       margin-left: 156px;
-                    }
-                }
-            }
-        }
+    .MuiInput-root {
+      width: 100%;
     }
+    input {
+      margin-left: auto;
+      position: static;
+      padding: var( --spaceMedium ) var( --spaceHuge) var( --spaceMedium ) var( --spaceSmall );
+    }
+  }
 
-    #grid-container ,
+  #grid-container,
   .apis {
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
   }
   .scrollable-flex-content {
     border-top: 1px solid var( --criticalShade00 );
@@ -116,10 +111,10 @@
 }
 
 #separator2 {
-    background-color: #CC092F;
-    margin-bottom: 10px;
+    background-color: var( --criticalShade10 );
+    margin-bottom: var( --spaceMedium );
     margin-top: auto;
-    height: 2px;
+    height: var( --spaceTinier );
     width: 99%;
     display: block;
 }
