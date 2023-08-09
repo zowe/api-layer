@@ -1374,6 +1374,6 @@ jobs:
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
                     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                    GITHUB_TOKEN: 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
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             -   uses: ./.github/actions/teardown
