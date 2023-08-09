@@ -16,10 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.zowe.apiml.message.api.ApiMessage;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -29,17 +26,7 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
 
 
     private final String serviceId;
-    private static final String responseMessageTemplate = "{\n" +
-        "\"messageAction\": \"${messageAction}\",\n" +
-        "\"messageContent\": {\n" +
-        "    \"The service ${serviceId} is not conformant\": \n" +
-        "        ${messageContent}\n" +
-        "},\n" +
-        "\"messageKey\": \"${messageKey}\",\n" +
-        "\"messageNumber\": \"${messageNumber}\",\n" +
-        "\"messageReason\": \"${messageReason}\",\n" +
-        "\"messageType\": \"${messageType}\"\n" +
-        "}";
+    private static final String RESPONSE_MESSAGE_TEMPLATE = "{\n" + "\"messageAction\": \"${messageAction}\",\n" + "\"messageContent\": {\n" + "    \"The service ${serviceId} is not conformant\": \n" + "        ${messageContent}\n" + "},\n" + "\"messageKey\": \"${messageKey}\",\n" + "\"messageNumber\": \"${messageNumber}\",\n" + "\"messageReason\": \"${messageReason}\",\n" + "\"messageType\": \"${messageType}\"\n" + "}";
 
     ConformanceProblemsContainer(String serviceId) {
         super();
@@ -47,25 +34,30 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     }
 
     @Override
-    public ArrayList<String> put(String key, ArrayList<String> value) {
-
-        if (value == null) {
-            return null;
+    public ArrayList<String> put(String key, ArrayList<String> values) {
+        if (values == null) {
+            return new ArrayList<>();
         }
-
-        if (this.get(key) != null && this.get(key).size() != 0) {
-            this.get(key).addAll(value);
-            return null;
+        if (this.get(key) == null || this.get(key).isEmpty()) {
+            return super.put(key, new ArrayList<>(values));
         }
-        return super.put(key, new ArrayList<>(value));
+        for (String value : values) {
+            if (this.get(key).contains(value)) {
+                this.get(key).add(value);
+            }
+        }
+        return new ArrayList<>();
     }
 
-    public ArrayList<String> put(String key, String value) {
+    public List<String> put(String key, String value) {
         if (value == null || value.equals("")) {
-            return null;
+            return new ArrayList<>();
         }
-
         return put(key, new ArrayList<>(Collections.singleton(value)));
+    }
+
+    public List<String> put(String key, List<String> value) {
+        return put(key, new ArrayList<>(value));
     }
 
     @Override
@@ -81,28 +73,28 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     }
 
     @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-
         result.append("{");
-
         boolean firstLoop = true;
 
         ArrayList<String> sortedKeySet = new ArrayList<>(this.keySet());
-        sortedKeySet.remove(null);  // since it used be a set this removes all nulls
+        sortedKeySet.remove(null);  // since it used to be a set this removes all nulls
         sortedKeySet.sort(null);
-
         for (String key : sortedKeySet) {
 
-            if (this.get(key) == null || this.get(key).size() == 0) {
+            if (this.get(key) == null || this.get(key).isEmpty()) {
                 continue;
             }
-
 
             if (!firstLoop) {
                 result.append(",");
             }
-
 
             result.append("\"").append(key).append("\"");
             result.append(":[");
@@ -115,22 +107,19 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
                 try {
                     result.append(new ObjectMapper().writeValueAsString(i));
                 } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    continue;
                 }
                 firstInnerLoop = false;
             }
             result.append("]");
-
             firstLoop = false;
         }
-
         result.append("}");
         return result.toString();
     }
 
 
     public String createBadRequestAPIResponseBody(String key, ApiMessage correspondingAPIMessage) {
-
         Map<String, String> valuesMap = new HashMap<>();
 
         valuesMap.put("messageKey", key);
@@ -141,8 +130,6 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
         valuesMap.put("messageType", correspondingAPIMessage.getMessageType().toString());
         valuesMap.put("messageAction", correspondingAPIMessage.getMessageAction());
 
-        return new StrSubstitutor(valuesMap).replace(responseMessageTemplate);
-
+        return new StrSubstitutor(valuesMap).replace(RESPONSE_MESSAGE_TEMPLATE);
     }
-
 }

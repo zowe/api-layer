@@ -34,32 +34,25 @@ class ConformanceProblemsContainerTest {
             container = new ConformanceProblemsContainer("dummy");
         }
 
-
         @ParameterizedTest
         @ValueSource(ints = {1, 5, 0})
         void whenInserting_thenCorrectSize(int size) {
             ArrayList<String> testList = new ArrayList<>();
-
             for (int i = 0; i < size; i++) {
                 testList.add("testString");
             }
-
             container.put("test", testList);
 
             assertEquals(container.size(), testList.size());
         }
 
-
         @Test
         void whenInserting_thenCanRetrieve() {
             ArrayList<String> testList = new ArrayList<>();
-
             for (int i = 0; i < 5; i++) {
                 testList.add("testString");
             }
-
             container.put("test", testList);
-
             assertEquals(container.size(), testList.size());
             assertTrue(container.get("test").contains("testString"));
         }
@@ -90,16 +83,13 @@ class ConformanceProblemsContainerTest {
         void whenAddingNullValue_thenCorrectSize() {
             ArrayList<String> test = null;
             container.put("test", test);
-
             assertEquals(0, container.size());
         }
-
 
         @Test
         void whenAddingNullValue2_thenCorrectSize() {
             String test = null;
             container.put("test", test);
-
             assertEquals(0, container.size());
 
         }
@@ -113,14 +103,12 @@ class ConformanceProblemsContainerTest {
             container = new ConformanceProblemsContainer("Dummy");
         }
 
-
         @Test
         void whenOneItemIn_thenToString() {
             ArrayList<String> result = new ArrayList<>();
             result.add("One");
             result.add("Two");
             container.put("Key", result);
-
             assertEquals("{\"Key\":[\"One\",\"Two\"]}", container.toString());
         }
 
@@ -129,14 +117,11 @@ class ConformanceProblemsContainerTest {
             ArrayList<String> first = new ArrayList<>();
             first.add("One");
             first.add("Two");
-
             ArrayList<String> second = new ArrayList<>();
             second.add("One");
             second.add("Two");
-
             container.put("Key", first);
             container.put("Key2", second);
-
             assertEquals("{\"Key\":[\"One\",\"Two\"],\"Key2\":[\"One\",\"Two\"]}", container.toString());
         }
     }

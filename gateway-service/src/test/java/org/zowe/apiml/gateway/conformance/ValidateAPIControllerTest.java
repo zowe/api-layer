@@ -87,28 +87,18 @@ public class ValidateAPIControllerTest {
         }
 
         @Test
-        public void whenServiceIdTooLong_thenNonconformant() {
-
+        void whenServiceIdTooLong_thenNonconformant() {
             String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
-
             result = validateAPIController.checkConformance(testString);
-
             assertNotNull(result.getBody());
-
             assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
-
         }
 
         @Test
-        public void whenServiceIdTooLongAndSymbols_thenNonconformant() {
-
+        void whenServiceIdTooLongAndSymbols_thenNonconformant() {
             String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
-
-
             result = validateAPIController.checkConformance(testString);
-
             assertNotNull(result.getBody());
-
             assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
             assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
 
@@ -116,30 +106,19 @@ public class ValidateAPIControllerTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"test-test", "TEST", "Test"})
-        public void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
-
+        void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
             result = validateAPIController.checkConformance(testString);
-
             assertNotNull(result.getBody());
-
             assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
-
         }
 
         @Test
-        public void notInvalidTextFormat() {
-
+        void notInvalidTextFormat() {
             String testString = "test";
-
             result = validateAPIController.checkConformance(testString);
-
             assertNotNull(result.getBody());
-
             assertFalse(result.getBody().contains("Message service is requested to create a message with an invalid text format"));
-
         }
-
-
     }
 
     @Nested
@@ -160,29 +139,18 @@ public class ValidateAPIControllerTest {
 
 
         @Test
-        public void whenServiceNotOboarded_thenError() {
-
+        void whenServiceNotOboarded_thenError() {
             String testString = "notonboarded";
-
             result = validateAPIController.checkConformance(testString);
-
             assertNotNull(result.getBody());
-
             assertTrue(result.getBody().contains("The service is not registered"));
-
         }
 
-
         @Test
-        public void legacyWhenServiceNotOboarded_thenError() {
-
+        void legacyWhenServiceNotOboarded_thenError() {
             String testString = "notonboarded";
-
             result = validateAPIController.checkValidateLegacy(testString);
-
-
             assertNotNull(result.getBody());
-
             assertTrue(result.getBody().contains("The service is not registered"));
 
         }
@@ -194,14 +162,14 @@ public class ValidateAPIControllerTest {
         @Test
         void whenEmpty_thenCorrectResponse() {
             HashMap<String, String> metadata = new HashMap<>();
-            assertEquals(validateAPIController.metaDataCheck(metadata), "Cannot Retrieve MetaData");
+            assertEquals("Cannot Retrieve MetaData", validateAPIController.metaDataCheck(metadata));
         }
 
         @Test
         void whenNotEmpty_thenCorrectResponse() {
             HashMap<String, String> metadata = new HashMap<>();
             metadata.put("key", "value");
-            assertEquals(validateAPIController.metaDataCheck(metadata), "");
+            assertEquals("", validateAPIController.metaDataCheck(metadata));
         }
     }
 
@@ -210,9 +178,7 @@ public class ValidateAPIControllerTest {
     class GivenInstanceList {
         @Test
         void whenEmpty_thenCorrectResponse() {
-
             List<ServiceInstance> list = new ArrayList<>();
-
             assertTrue(validateAPIController.instanceCheck(list).contains("Cannot retrieve metadata"));
         }
 
@@ -229,9 +195,7 @@ public class ValidateAPIControllerTest {
         void checkValidJson() {
             ObjectMapper mapper = new ObjectMapper()
                 .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
-
             boolean valid;
-
             try {
                 mapper.readTree(result.getBody());
                 valid = true;
@@ -245,14 +209,11 @@ public class ValidateAPIControllerTest {
         @Test
         void thenOkResponse() {
             String serviceId = "testservice";
-
             HashMap<String, String> mockMetadata = new HashMap<>();
             mockMetadata.put("key", "value");
-
             when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
             when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
-
             result = validateAPIController.checkConformance(serviceId);
             assertEquals(HttpStatus.OK, result.getStatusCode());
         }

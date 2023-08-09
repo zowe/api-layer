@@ -67,27 +67,20 @@ public class ValidateAPIController {
     )
     @HystrixCommand
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
-
-
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
-
-
         foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
-
 
         if (foundNonConformanceIssues.size() != 0) {
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
         }
 
         foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, checkOnboarding(serviceId));
-
         if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
             return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
         }
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
         foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, instanceCheck(serviceInstances));
-
         if (foundNonConformanceIssues.size() != 0) {     // cant continue if we cant retrieve an instance
             return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
         }
@@ -96,7 +89,6 @@ public class ValidateAPIController {
         Map<String, String> metadata = getMetadata(serviceInstance);
 
         foundNonConformanceIssues.put(METADATA_PROBLEMS, metaDataCheck(metadata));
-
         if (foundNonConformanceIssues.size() != 0) {     // cant continue without metadata
             return generateBadRequestResponseEntity(NO_METADATA_KEY, foundNonConformanceIssues);
         }
@@ -114,13 +106,9 @@ public class ValidateAPIController {
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
-
-        System.out.println(serviceId);
-
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
         }
-        System.out.println(serviceId);
         return checkConformance(serviceId);
     }
 
@@ -199,7 +187,7 @@ public class ValidateAPIController {
      * @param serviceId to check
      * @return list of found issues, empty when conformant
      */
-    public ArrayList<String> validateServiceIdFormat(String serviceId) {
+    public List<String> validateServiceIdFormat(String serviceId) {
         ArrayList<String> result = new ArrayList<>();
         if (serviceId.length() > MAXIMUM_SERVICE_ID_LENGTH) {
             result.add("The serviceId is longer than 64 characters");
