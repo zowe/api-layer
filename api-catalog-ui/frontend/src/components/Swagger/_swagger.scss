@@ -1,4 +1,33 @@
 body {
+  .execute-wrapper {
+    margin-top: var( --spaceSmall );
+  }
+  .responses-table {
+    max-width: 100%;
+
+    td {
+      overflow: auto;
+    }
+    
+  }
+  .responses-inner {
+    width: 100%;
+    overflow: auto;
+
+    .copy-to-clipboard {
+      display: none;
+    }
+    .request-snippets {
+      .curl-command {
+        > div:first-child {
+          padding-left: var( --spaceSmallest ) !important;
+          width: 100%;
+          overflow: auto;
+        }
+      }// end curl-command
+    }// request-snippets
+  }// responses-inner
+  
   .opblock {
     margin-bottom: var( --spaceSmall );
   }
@@ -19,6 +48,7 @@ body {
       border-radius: var( --borderRadius1 );
       font-size: var( --fontSmall );
       color: var( --text100 );
+      min-width: 55px;
     }
     > button {
       background: transparent;

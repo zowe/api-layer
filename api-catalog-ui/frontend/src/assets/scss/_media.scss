@@ -4,6 +4,13 @@
       width: 100%;
     }
     .content {
+      .main-content {
+        width: calc(100vw - calc(#{var( --contentPadding )} * 2));
+
+        #media-icons, .dashboard-grid-header {
+          display: none;
+        }
+      }
       .main {
         .side-bar {
           display: none;
@@ -11,9 +18,6 @@
         .main-content2 {
           width: calc(100% - #{var(--sideNavWidth)} - #{var(--contentLeftPadding)});
           overflow: auto;
-        }
-        .main-content {
-          width: calc(100vw - calc(#{var( --contentPadding )} * 2));
         }
       }
     }

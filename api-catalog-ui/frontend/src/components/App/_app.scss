@@ -95,7 +95,7 @@ body {
 
     .main-content {
       padding: 0 var( --contentPadding ) var( --contentPadding );
-      width: 70vw;
+      width: 85vw;
       margin: 0 auto;
     }
     .scrollable-flex-content {
@@ -129,6 +129,7 @@ body {
         width: 100%;
         padding: var( --spaceLarge ) var( --spaceSmaller ) 0 var( --contentLeftPadding );
         position: relative;
+        overflow-x: auto;
 
         &:before {
           width: calc(100% - #{var( --contentLeftPadding )} - #{var( --spaceLarger )});
@@ -171,6 +172,13 @@ body {
     }
   }
 
+  .btn-group {
+    display: flex;
+
+    > button:not(:last-child) {
+      margin-right: var( --spaceSmaller );
+    }
+  }
   button {
     &.MuiIconButton-root,
     &.MuiButtonBase-root,
@@ -183,6 +191,12 @@ body {
       border-radius: var( --borderRadius1 );
       display: flex;
       align-items: center;
+      cursor: pointer;
+      background: var( --surface05 );
+
+      &:hover {
+        background: var( --surface15 );
+      }
 
       svg {
         fill: var( --controlText15 );
@@ -194,9 +208,7 @@ body {
           margin-right: var( --spaceSmallest );
         }
       }
-      &:hover {
-        color: var( --controlText15Hover );
-      }
+
       &.MuiButton-containedPrimary,
       &#diff-button {
         background-color: var( --control00 );
