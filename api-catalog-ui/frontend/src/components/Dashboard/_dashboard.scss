@@ -102,11 +102,6 @@
       margin-left: 10px;
       padding: var( --spaceMedium ) var( --spaceSmall ) var( --spaceMedium ) var( --spaceLargest );
     }
-    .MuiInput-underline {
-      &:before, &:after {
-        display: none;
-      }
-    }
   }//end filtering-container
 }
 

@@ -170,6 +170,11 @@ body {
     &:hover .visibility-icon {
       display: block;
     }
+    &.MuiInput-underline {
+      &:before, &:after {
+        display: none;
+      }
+    }
   }
 
   .btn-group {
