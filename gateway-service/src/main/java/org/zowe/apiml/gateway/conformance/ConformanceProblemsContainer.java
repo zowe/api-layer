@@ -78,6 +78,12 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("{");
