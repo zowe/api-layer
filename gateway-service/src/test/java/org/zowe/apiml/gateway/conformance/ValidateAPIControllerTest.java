@@ -62,7 +62,6 @@ public class ValidateAPIControllerTest {
 
     @BeforeEach
     void setup() {
-        validateAPIController = new ValidateAPIController(messageService, verificationOnboardService, discoveryClient);
         when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
 
         MessageService realService = new YamlMessageService("/gateway-log-messages.yml");
