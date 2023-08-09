@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class VerificationOnboardServiceTest {
+class VerificationOnboardServiceTest {
 
     @InjectMocks
     private VerificationOnboardService verificationOnboardService;
