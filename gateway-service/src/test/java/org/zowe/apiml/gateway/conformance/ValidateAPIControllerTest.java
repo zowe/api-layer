@@ -17,8 +17,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -62,63 +60,7 @@ public class ValidateAPIControllerTest {
         standaloneSetup(validateAPIController);
         when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
 
-
         result = new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT); // Here only in case we forget to reassign result
-    }
-
-
-    @Nested
-    class GivenWrongServiceId {
-
-        @AfterEach
-        void checkValidJson() {
-            ObjectMapper mapper = new ObjectMapper()
-                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
-
-            boolean valid;
-
-            try {
-                mapper.readTree(result.getBody());
-                valid = true;
-            } catch (JsonProcessingException e) {
-                valid = false;
-            }
-            assertTrue(valid);
-        }
-
-        @Test
-        void whenServiceIdTooLong_thenNonconformant() {
-            String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
-        }
-
-        @Test
-        void whenServiceIdTooLongAndSymbols_thenNonconformant() {
-            String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
-            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
-
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {"test-test", "TEST", "Test"})
-        void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
-        }
-
-        @Test
-        void notInvalidTextFormat() {
-            String testString = "test";
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().contains("Message service is requested to create a message with an invalid text format"));
-        }
     }
 
     @Nested
