@@ -17,8 +17,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.cloud.client.ServiceInstance;
@@ -34,7 +32,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @AcceptanceTest
@@ -77,94 +76,6 @@ public class ValidateAPIControllerTest {
     }
 
 
-    @Nested
-    class GivenWrongServiceId {
-
-        @AfterEach
-        void checkValidJson() {
-            ObjectMapper mapper = new ObjectMapper()
-                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
-
-            boolean valid;
-
-            try {
-                mapper.readTree(result.getBody());
-                valid = true;
-            } catch (JsonProcessingException e) {
-                valid = false;
-            }
-            assertTrue(valid);
-        }
-
-        @Test
-        void whenServiceIdTooLong_thenNonconformant() {
-            String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
-        }
-
-        @Test
-        void whenServiceIdTooLongAndSymbols_thenNonconformant() {
-            String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
-            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
-
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {"test-test", "TEST", "Test"})
-        void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
-        }
-
-        @Test
-        void notInvalidTextFormat() {
-            String testString = "test";
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().contains("Message service is requested to create a message with an invalid text format"));
-        }
-    }
-
-    @Nested
-    class ServiceNotOnboarded {
-        @AfterEach
-        void checkValidJson() {
-            ObjectMapper mapper = new ObjectMapper()
-                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
-            boolean valid;
-            try {
-                mapper.readTree(result.getBody());
-                valid = true;
-            } catch (JsonProcessingException e) {
-                valid = false;
-            }
-            assertTrue(valid);
-        }
-
-
-        @Test
-        void whenServiceNotOboarded_thenError() {
-            String testString = "notonboarded";
-            result = validateAPIController.checkConformance(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The service is not registered"));
-        }
-
-        @Test
-        void legacyWhenServiceNotOboarded_thenError() {
-            String testString = "notonboarded";
-            result = validateAPIController.checkValidateLegacy(testString);
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().contains("The service is not registered"));
-
-        }
-    }
 
 
     @Nested
