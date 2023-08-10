@@ -128,7 +128,7 @@ elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
 else
   # default value is STRICT
   verifySslCertificatesOfServices=true
-  nonStrictVerifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=false
 fi
 
 if [ -z "${ZWE_configs_apiml_catalog_serviceId}" ]

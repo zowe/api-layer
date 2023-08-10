@@ -90,7 +90,7 @@ elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
 else
   # default value is STRICT
   verifySslCertificatesOfServices=true
-  nonStrictVerifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=false
 fi
 
 if [ "$(uname)" = "OS/390" ]; then
