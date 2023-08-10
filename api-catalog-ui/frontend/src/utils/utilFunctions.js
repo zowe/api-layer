@@ -30,6 +30,17 @@ export default function countAdditionalContents(service) {
     return { useCasesCounter, tutorialsCounter, videosCounter };
 }
 
+function setButtonsColor(wizardButton, uiConfig, refreshButton) {
+    const color =
+        uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF' ? 'black' : uiConfig.headerColor;
+    if (wizardButton) {
+        wizardButton.style.setProperty('color', color);
+    }
+    if (refreshButton) {
+        refreshButton.style.setProperty('color', color);
+    }
+}
+
 function setMultipleElements(uiConfig) {
     if (uiConfig.headerColor) {
         const divider = document.getElementById('separator2');
@@ -37,6 +48,8 @@ function setMultipleElements(uiConfig) {
         const title1 = document.getElementById('title');
         const swaggerLabel = document.getElementById('swagger-label');
         const header = document.getElementsByClassName('header');
+        const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
+        const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
         if (header && header.length > 0) {
             header[0].style.setProperty('background-color', uiConfig.headerColor);
         }
@@ -52,6 +65,7 @@ function setMultipleElements(uiConfig) {
         if (logoutButton) {
             logoutButton.style.setProperty('color', uiConfig.headerColor);
         }
+        setButtonsColor(wizardButton, uiConfig, refreshButton);
     }
 }
 
@@ -79,6 +93,33 @@ function fetchImagePath() {
         });
 }
 
+function handleWhiteHeader(uiConfig) {
+    const goBackButton = document.querySelector('#go-back-button');
+    const swaggerLabel = document.getElementById('swagger-label');
+    const title = document.getElementById('title');
+    const productTitle = document.getElementById('product-title');
+    if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
+        if (uiConfig.docLink) {
+            const docText = document.querySelector('#internal-link');
+            if (docText) {
+                docText.style.color = 'black';
+            }
+        }
+        if (goBackButton) {
+            goBackButton.style.color = 'black';
+        }
+        if (swaggerLabel) {
+            swaggerLabel.style.color = 'black';
+        }
+        if (title) {
+            title.style.color = 'black';
+        }
+        if (productTitle) {
+            productTitle.style.color = 'black';
+        }
+    }
+}
+
 /**
  * Custom the UI look to match the setup from the service metadata
  * @param uiConfig the configuration to customize the UI
@@ -96,6 +137,8 @@ export const customUIStyle = async (uiConfig) => {
         const img = await fetchImagePath();
         link.href = img;
         logo.src = img;
+        logo.style.height = 'auto';
+        logo.style.width = 'auto';
     }
 
     if (uiConfig.backgroundColor) {
@@ -131,6 +174,7 @@ export const customUIStyle = async (uiConfig) => {
             description.style.color = uiConfig.textColor;
         }
     }
+    handleWhiteHeader(uiConfig);
 };
 
 export const isAPIPortal = () => process.env.REACT_APP_API_PORTAL === 'true';

@@ -2,65 +2,37 @@ $color_1: #50b7f5;
 $background-color_1: #EFEFEF;
 $color_2: #CC092F;
 
-.MuiTab-root {
-    font-weight: normal; // Set the default font weight
-    transition: font-weight 0.3s; // Add transition for smooth effect
-
-    &:hover {
-        color: inherit; /* Use the default color on hover */
-        background-color: transparent; /* Remove background color on hover */
-        font-weight: bold; // Set font weight to bold on hover
-    }
-}
-.MuiTab-root .MuiTab-wrapper:hover {
-    color: inherit; /* Use the default color on hover */
-    text-decoration: none; /* Remove underline on hover */
-}
-
-.nav-tabs {
-    background: var(--white-ffffff, #FFF);
-    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
-    .tabs {
-        text-transform: none;
-        font-size: 16px;
-        color: black;
-        &:hover {
-            color: black;
-        }
-    }
-    width: auto;
-    border: 3px solid #F7F9FA;
-    overflow-y: auto;
-    display: flex;
-    color: black;
-    align-items: cover;
-    cursor: pointer;
-    &:hover {
-        border-color: $color_2;
-        transition: color 100ms ease-out;
-    }
-}
-
 #search2 {
+    margin-top: 10px;
     height: 47px;
     background: #FFFFFF;
     border: 1px solid #C9C8C5;
-    margin-right: 15px;
+    margin-right: 13px;
     margin-bottom: 9px;
+
+    .MuiInput-root {
+        width: 100%;
+    }
     >div {
         >div {
             >input {
-                margin-left: 13px;
-                margin-top: 6px;
+                padding-left: 16px;
+                padding-right: 40px;
+                padding-top: 14px;
             }
             >div {
                 >#search-icon {
                     margin-top: 7px;
                 }
+                margin-right: 0;
+                &#search-input {
+                    right: 5px;
+                }
             }
         }
     }
 }
+
 #serviceIdTabs {
     margin-bottom: 10px;
     font-weight: bold;
@@ -71,4 +43,63 @@ $color_2: #CC092F;
     color: $color_2;
 }
 
+.MuiTab-wrapper {
+    width: 100%;
+    text-align: initial;
+    flex-direction: column;
+}
 
+span.MuiTab-wrapper {
+    display: inline-block;
+}
+
+.MuiTabs-root {
+    margin-left: 39px;
+}
+
+.MuiTabs-scroller.MuiTabs-scrollable > div > a {
+    background: var(--white-ffffff, #FFF);
+    max-width: 353px;
+    margin-bottom: 5px;
+    text-transform: none;
+    font-size: 16px;
+}
+
+.MuiTabs-root.custom-tabs.MuiTabs-vertical {
+    margin-left: auto;
+}
+
+svg.MuiSvgIcon-root.clear-text-search {
+    margin-left: 120px;
+    margin-bottom: 3px;
+}
+
+
+.tabs {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--white-ffffff, #FFF);
+    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+.MuiTab-wrapped {
+    height: 60px;
+}
+
+.custom-tabs .MuiTabs-indicator {
+    display: none;
+}
+
+.custom-tabs .tabs:hover {
+    border: 4px solid $color_2;
+}
+
+.custom-tabs .tabs.Mui-selected {
+    border: 4px solid $color_2;
+}
+
+.MuiTabs-flexContainerVertical {
+    margin-bottom: 7px;
+}

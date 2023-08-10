@@ -34,18 +34,18 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ValidateAPIController {
 
-    private static final int MaximumServiceIdLength = 64;
-    private static final String InvalidServiceIdRegex = "[^a-z0-9]";
+    private static final int MAXIMUM_SERVICE_ID_LENGTH = 64;
+    private static final String INVALID_SERVICE_ID_REGEX_PATTERN = "[^a-z0-9]";
 
 
-    private static final String wrongServiceIdKey = "org.zowe.apiml.gateway.verifier.wrongServiceId";
-    private static final String NoMetadataKey = "org.zowe.apiml.gateway.verifier.noMetadata";
-    private static final String NonConformantKey = "org.zowe.apiml.gateway.verifier.nonConformant";
+    private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
+    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
+    private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
 
-    private static final String problemWithRegistration = "Registration problems";
-    private static final String problemWithMetadata = "Metadata problems";
-    private static final String problemWithConformance = "Conformance problems";
+    private static final String REGISTRATION_PROBLEMS = "Registration problems";
+    private static final String METADATA_PROBLEMS = "Metadata problems";
+    private static final String CONFORMANCE_PROBLEMS = "Conformance problems";
 
 
     private final MessageService messageService;
@@ -67,38 +67,30 @@ public class ValidateAPIController {
     )
     @HystrixCommand
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
-
-
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
-
-
-        foundNonConformanceIssues.put(problemWithConformance, validateServiceIdFormat(serviceId));
-
+        foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
 
         if (foundNonConformanceIssues.size() != 0) {
-            return generateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
         }
 
-        foundNonConformanceIssues.put(problemWithRegistration, checkOnboarding(serviceId));
-
+        foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, checkOnboarding(serviceId));
         if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
-            return generateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
         }
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
-        foundNonConformanceIssues.put(problemWithRegistration, instanceCheck(serviceInstances));
-
+        foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, instanceCheck(serviceInstances));
         if (foundNonConformanceIssues.size() != 0) {     // cant continue if we cant retrieve an instance
-            return generateBadRequestResponseEntity(wrongServiceIdKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
         }
 
         ServiceInstance serviceInstance = serviceInstances.get(0);
         Map<String, String> metadata = getMetadata(serviceInstance);
 
-        foundNonConformanceIssues.put(problemWithMetadata, metaDataCheck(metadata));
-
+        foundNonConformanceIssues.put(METADATA_PROBLEMS, metaDataCheck(metadata));
         if (foundNonConformanceIssues.size() != 0) {     // cant continue without metadata
-            return generateBadRequestResponseEntity(NoMetadataKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(NO_METADATA_KEY, foundNonConformanceIssues);
         }
 
 
@@ -130,6 +122,9 @@ public class ValidateAPIController {
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
+        if (serviceId.startsWith("serviceID")) {
+            serviceId = serviceId.replace("serviceID=", "");
+        }
         return checkConformance(serviceId);
     }
 
@@ -208,13 +203,13 @@ public class ValidateAPIController {
      * @param serviceId to check
      * @return list of found issues, empty when conformant
      */
-    public ArrayList<String> validateServiceIdFormat(String serviceId) {
+    public List<String> validateServiceIdFormat(String serviceId) {
         ArrayList<String> result = new ArrayList<>();
-        if (serviceId.length() > MaximumServiceIdLength) {
+        if (serviceId.length() > MAXIMUM_SERVICE_ID_LENGTH) {
             result.add("The serviceId is longer than 64 characters");
         }
         // Check for invalid characters
-        final Pattern symbolPattern = Pattern.compile(InvalidServiceIdRegex);
+        final Pattern symbolPattern = Pattern.compile(INVALID_SERVICE_ID_REGEX_PATTERN);
         Matcher findSymbol = symbolPattern.matcher(serviceId);
         if (findSymbol.find()) {
             result.add("The serviceId contains symbols or upper case letters");

@@ -13,11 +13,10 @@ package org.zowe.apiml.gateway.conformance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.zowe.apiml.message.api.ApiMessage;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 
 /**
@@ -26,35 +25,39 @@ import java.util.HashMap;
 public class ConformanceProblemsContainer extends HashMap<String, ArrayList<String>> {
 
 
-
     private final String serviceId;
+    private static final String RESPONSE_MESSAGE_TEMPLATE = "{\n" + "\"messageAction\": \"${messageAction}\",\n" + "\"messageContent\": {\n" + "    \"The service ${serviceId} is not conformant\": \n" + "        ${messageContent}\n" + "},\n" + "\"messageKey\": \"${messageKey}\",\n" + "\"messageNumber\": \"${messageNumber}\",\n" + "\"messageReason\": \"${messageReason}\",\n" + "\"messageType\": \"${messageType}\"\n" + "}";
 
-
-    ConformanceProblemsContainer(String serviceId){
+    ConformanceProblemsContainer(String serviceId) {
         super();
         this.serviceId = serviceId;
     }
 
     @Override
-    public ArrayList<String> put(String key, ArrayList<String> value) {
-
-        if (value == null) {
-            return null;
+    public ArrayList<String> put(String key, ArrayList<String> values) {
+        if (values == null) {
+            return new ArrayList<>();
         }
-
-        if (this.get(key) != null && this.get(key).size() != 0) {
-            this.get(key).addAll(value);
-            return null;
+        if (this.get(key) == null || this.get(key).isEmpty()) {
+            return super.put(key, new ArrayList<>(values));
         }
-        return super.put(key, new ArrayList<>(value));
+        for (String value : values) {
+            if (this.get(key).contains(value)) {
+                this.get(key).add(value);
+            }
+        }
+        return new ArrayList<>();
     }
 
-    public ArrayList<String> put(String key, String value) {
+    public List<String> put(String key, String value) {
         if (value == null || value.equals("")) {
-            return null;
+            return new ArrayList<>();
         }
-
         return put(key, new ArrayList<>(Collections.singleton(value)));
+    }
+
+    public List<String> put(String key, List<String> value) {
+        return put(key, new ArrayList<>(value));
     }
 
     @Override
@@ -70,28 +73,34 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     }
 
     @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-
         result.append("{");
-
         boolean firstLoop = true;
 
         ArrayList<String> sortedKeySet = new ArrayList<>(this.keySet());
-        sortedKeySet.remove(null);  // since it used be a set this removes all nulls
+        sortedKeySet.remove(null);  // since it used to be a set this removes all nulls
         sortedKeySet.sort(null);
-
         for (String key : sortedKeySet) {
 
-            if (this.get(key) == null || this.get(key).size() == 0) {
+            if (this.get(key) == null || this.get(key).isEmpty()) {
                 continue;
             }
-
 
             if (!firstLoop) {
                 result.append(",");
             }
-
 
             result.append("\"").append(key).append("\"");
             result.append(":[");
@@ -104,45 +113,29 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
                 try {
                     result.append(new ObjectMapper().writeValueAsString(i));
                 } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    continue;
                 }
                 firstInnerLoop = false;
             }
             result.append("]");
-
             firstLoop = false;
         }
-
         result.append("}");
         return result.toString();
     }
 
 
     public String createBadRequestAPIResponseBody(String key, ApiMessage correspondingAPIMessage) {
-        String result;
+        Map<String, String> valuesMap = new HashMap<>();
 
-        String template = "{\n" +
-            "    \"messageAction\": \"replaceWithMessageAction\",\n" +
-            "    \"messageContent\": {\n" +
-            "        \"The service " + serviceId + " is not conformant\": \n" +
-            "            replaceWithMessageContent\n" +
-            "    },\n" +
-            "    \"messageKey\": \"replaceWithMessageKey\",\n" +
-            "    \"messageNumber\": \"replaceWithMessageNumber\",\n" +
-            "    \"messageReason\": \"replaceWithMessageReason\",\n" +
-            "    \"messageType\": \"replaceWithMessageType\"\n" +
-            "}";
+        valuesMap.put("messageKey", key);
+        valuesMap.put("messageContent", this.toString());
+        valuesMap.put("serviceId", serviceId);
+        valuesMap.put("messageReason", correspondingAPIMessage.getMessageReason());
+        valuesMap.put("messageNumber", correspondingAPIMessage.getMessageNumber());
+        valuesMap.put("messageType", correspondingAPIMessage.getMessageType().toString());
+        valuesMap.put("messageAction", correspondingAPIMessage.getMessageAction());
 
-        result = template.replace("replaceWithMessageKey", key);
-        result = result.replace("replaceWithMessageContent", this.toString());
-
-        result = result.replace("replaceWithMessageReason", correspondingAPIMessage.getMessageReason());
-        result = result.replace("replaceWithMessageNumber", correspondingAPIMessage.getMessageNumber());
-        result = result.replace("replaceWithMessageType", correspondingAPIMessage.getMessageType().toString());
-        result = result.replace("replaceWithMessageAction", correspondingAPIMessage.getMessageAction());
-
-        return result;
-
+        return new StrSubstitutor(valuesMap).replace(RESPONSE_MESSAGE_TEMPLATE);
     }
-
 }

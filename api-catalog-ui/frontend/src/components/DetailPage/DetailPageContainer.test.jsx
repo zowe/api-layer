@@ -53,7 +53,7 @@ describe('DetailPage Container', () => {
 
         const history = {
             location: {
-                pathname: {},
+                pathname: '/service/serviceId',
             },
             push: jest.fn(),
             listen: jest.fn(),

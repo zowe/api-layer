@@ -56,7 +56,11 @@ export default class SearchCriteria extends Component {
                 data-testid="search-bar"
                 InputProps={{
                     disableUnderline: true,
-                    endAdornment: <InputAdornment id="search-input">{icon}</InputAdornment>,
+                    endAdornment: (
+                        <InputAdornment position="end" id="search-input">
+                            {icon}
+                        </InputAdornment>
+                    ),
                 }}
                 placeholder={placeholder}
                 value={criteria}

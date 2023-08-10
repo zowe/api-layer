@@ -56,6 +56,7 @@ export default class Tile extends Component {
         const tileRoute = `/service/${service.serviceId}`;
         storeCurrentTileId(tile.id);
         history.push(tileRoute);
+        localStorage.setItem('serviceId', service.serviceId);
     };
 
     render() {

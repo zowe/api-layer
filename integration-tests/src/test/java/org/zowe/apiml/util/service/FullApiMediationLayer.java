@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 //TODO this class doesn't lend itself well to switching of configurations.
 //attls is integrated in a kludgy way, and deserves a rewrite
@@ -61,7 +62,12 @@ public class FullApiMediationLayer {
 
     private void prepareNodeJsSampleApp() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("node");
+
+        // If NODE_HOME is defined in environment variable, use it, otherwise assume in PATH
+        String path = Optional.ofNullable(System.getenv("NODE_HOME"))
+                                .map(javaHome -> javaHome + "/bin/")
+                                .orElse("");
+        parameters.add(path + "node");
         parameters.add("src/index.js");
 
         ProcessBuilder builder1 = new ProcessBuilder(parameters);

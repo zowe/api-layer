@@ -22,6 +22,7 @@
 
 #wizard-navigation {
     min-height: 20em;
+    margin-left: auto;
 }
 
 #wizard-navigation > div {
@@ -153,7 +154,7 @@ label.MuiFormLabel-root.MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLab
     display: none;
 }
 
-#yaml-upload {  
+#yaml-upload {
     display: flex;
     justify-content: center;
     align-items: center;

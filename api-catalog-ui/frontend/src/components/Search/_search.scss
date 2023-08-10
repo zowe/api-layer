@@ -36,8 +36,9 @@
             }
         }
     }
+    position: absolute;
     font-style: italic;
-    margin-top: 7px;
+    right: 10px;
 }
 .MuiFormControl-root.MuiTextField-root.search-bar {
     display: contents;
@@ -46,17 +47,14 @@
     >div {
         >div {
             >input {
-                font-style: italic;
-                width: auto;
+                padding-left: 16px;
+                padding-right: 40px;
+                padding-top: 16px;
             }
         }
     }
 }
-svg.MuiSvgIcon-root.clear-text-search {
-    margin-left: 142px;
-}
 #search-icon {
-    margin-left: 142px;
     position: relative;
     float: left;
     width: auto;
