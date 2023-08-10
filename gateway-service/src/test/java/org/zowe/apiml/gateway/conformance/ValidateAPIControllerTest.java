@@ -14,7 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,26 +53,25 @@ public class ValidateAPIControllerTest {
 
     @Mock
     private MessageService messageService;
+    @Mock
+    ServiceInstance serviceInstance;
 
 
     ResponseEntity<String> result;
 
 
     private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
-    //    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
+    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
     private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
     private static final Message WRONG_SERVICE_ID_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved");
-    //    private static final Message NO_METADATA_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(NO_METADATA_KEY, "ThisWillBeRemoved");
+    private static final Message NO_METADATA_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(NO_METADATA_KEY, "ThisWillBeRemoved");
     private static final Message NON_CONFORMANT_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved");
 
-
-    @BeforeEach
+    @AfterEach
     void cleanup() {
-
         result = null;
     }
-
 
     @Nested
     class GivenWrongServiceId {
@@ -185,6 +183,19 @@ public class ValidateAPIControllerTest {
             metadata.put("key", "value");
             assertEquals("", validateAPIController.metaDataCheck(metadata));
         }
+
+        @Test
+        void whenEmpty_thenCorrectConformanceResponse() {
+            String serviceId = "testservice";
+            HashMap<String, String> mockMetadata = new HashMap<>();
+            when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
+            when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
+            when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
+            when(messageService.createMessage(NO_METADATA_KEY, "ThisWillBeRemoved")).thenReturn(NO_METADATA_MESSAGE);
+            result = validateAPIController.checkConformance(serviceId);
+            assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        }
+
     }
 
 
@@ -201,8 +212,6 @@ public class ValidateAPIControllerTest {
     @Nested
     class GivenValidEverything {
 
-        @Mock
-        ServiceInstance serviceInstance;
 
         @AfterEach
         void checkValidJson() {
