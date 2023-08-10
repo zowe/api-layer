@@ -857,7 +857,7 @@ class ZosmfServiceTest {
                 assertTrue(values.length() > 0);
                 assertTrue(values.contains("ResourceAccessException accessing"), values);
 
-                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.sslError");
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.sslError", "resource access exception; nested exception is javax.net.ssl.SSLHandshakeException: handshake exception");
             }
 
             @Test
