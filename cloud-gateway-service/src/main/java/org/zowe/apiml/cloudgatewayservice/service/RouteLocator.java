@@ -1,162 +1,124 @@
 /*
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License v2.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v20.html
+ * Copyright (c) 2022 Broadcom.  All Rights Reserved.  The term
+ * "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
- * SPDX-License-Identifier: EPL-2.0
+ * This software and all information contained therein is
+ * confidential and proprietary and shall not be duplicated,
+ * used, disclosed, or disseminated in any way except as
+ * authorized by the applicable license agreement, without the
+ * express written permission of Broadcom.  All authorized
+ * reproductions must be marked with this language.
  *
- * Copyright Contributors to the Zowe Project.
+ * EXCEPT AS SET FORTH IN THE APPLICABLE LICENSE AGREEMENT, TO
+ * THE EXTENT PERMITTED BY APPLICABLE LAW, BROADCOM PROVIDES THIS
+ * SOFTWARE WITHOUT WARRANTY OF ANY KIND, INCLUDING WITHOUT
+ * LIMITATION, ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR
+ * FITNESS FOR A PARTICULAR PURPOSE.  IN NO EVENT WILL BROADCOM
+ * BE LIABLE TO THE END USER OR ANY THIRD PARTY FOR ANY LOSS OR
+ * DAMAGE, DIRECT OR INDIRECT, FROM THE USE OF THIS SOFTWARE,
+ * INCLUDING WITHOUT LIMITATION, LOST PROFITS, BUSINESS
+ * INTERRUPTION, GOODWILL, OR LOST DATA, EVEN IF BROADCOM IS
+ * EXPRESSLY ADVISED OF SUCH LOSS OR DAMAGE.
  */
-
 package org.zowe.apiml.cloudgatewayservice.service;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
-import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
 import org.springframework.context.ApplicationContext;
-import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.stereotype.Service;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.cloudgatewayservice.service.routing.RouteDefinitionProducer;
+import org.zowe.apiml.cloudgatewayservice.service.scheme.SchemeHandler;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
-import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@Slf4j
+@Service
 public class RouteLocator implements RouteDefinitionLocator {
 
-    private final DiscoveryLocatorProperties properties;
+    private final ApplicationContext context;
 
-    private final String routeIdPrefix;
+    private final CorsUtils corsUtils;
+    private final ReactiveDiscoveryClient discoveryClient;
 
-    private final SimpleEvaluationContext evalCtxt;
+    private final List<FilterDefinition> commonFilters;
+    private final List<RouteDefinitionProducer> routeDefinitionProducers;
+    private final Map<String, SchemeHandler> schemeHandlers = new HashMap<>();
 
-    private Flux<List<ServiceInstance>> serviceInstances;
-    private List<FilterDefinition> filters;
-    private ApplicationContext context;
+    @Getter(lazy=true, value = AccessLevel.PRIVATE)
+    private final UrlBasedCorsConfigurationSource corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
 
-    private UrlBasedCorsConfigurationSource corsConfigurationSource;
-    private CorsUtils corsUtils;
-    private EurekaMetadataParser metadataParser = new EurekaMetadataParser();
-
-    public RouteLocator(ReactiveDiscoveryClient discoveryClient,
-                        DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
-        this(properties);
-        this.filters = filters;
-        serviceInstances = discoveryClient.getServices()
-            .flatMap(service -> discoveryClient.getInstances(service).collectList());
+    public RouteLocator(
+        ApplicationContext context,
+        CorsUtils corsUtils,
+        ReactiveDiscoveryClient discoveryClient,
+        List<FilterDefinition> commonFilters,
+        List<SchemeHandler> schemeHandlersList,
+        List<RouteDefinitionProducer> routeDefinitionProducers
+    ) {
         this.context = context;
         this.corsUtils = corsUtils;
-    }
+        this.discoveryClient = discoveryClient;
+        this.commonFilters = commonFilters;
+        this.routeDefinitionProducers = routeDefinitionProducers;
 
-
-    public UrlBasedCorsConfigurationSource getConfigSource() {
-        if (corsConfigurationSource != null) {
-            return corsConfigurationSource;
+        for (SchemeHandler schemeHandler : schemeHandlersList) {
+            schemeHandlers.put(schemeHandler.getAuthenticationScheme().getScheme(), schemeHandler);
         }
-        corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
-        return corsConfigurationSource;
     }
 
-    private RouteLocator(DiscoveryLocatorProperties properties) {
-        this.properties = properties;
-        routeIdPrefix = this.getClass().getSimpleName() + "_";
-        evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
+    private Flux<List<ServiceInstance>> getServiceInstances() {
+        return discoveryClient.getServices()
+            .flatMap(service -> discoveryClient.getInstances(service)
+            .collectList());
     }
 
-    public List<FilterDefinition> getFilters() {
-        return filters;
+    protected void setAuth(RouteDefinition routeDefinition, Authentication auth) {
+        if (auth != null && auth.getScheme() != null) {
+            SchemeHandler schemeHandler = schemeHandlers.get(auth.getScheme());
+            if (schemeHandler != null) {
+                schemeHandler.apply(routeDefinition, auth);
+            }
+        }
+    }
+
+    private void setCors(ServiceInstance serviceInstance) {
+        corsUtils.setCorsConfiguration(
+            serviceInstance.getServiceId().toLowerCase(),
+            serviceInstance.getMetadata(),
+            (prefix, serviceId, config) -> getCorsConfigurationSource().registerCorsConfiguration("/" + serviceId + "/**", config));
     }
 
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
+        EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+        return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
+            Authentication auth = metadataParser.parseAuthentication(serviceInstance.getMetadata());
+            setCors(serviceInstance);
+            return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream().map(routedService ->
+                routeDefinitionProducers.stream()
+                    .map(rdp -> {
+                        RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
+                        routeDefinition.getFilters().addAll(commonFilters);
+                        setAuth(routeDefinition, auth);
 
-        SpelExpressionParser parser = new SpelExpressionParser();
-        Expression urlExpr = parser.parseExpression(properties.getUrlExpression());
-
-        return serviceInstances.filter(instances -> !instances.isEmpty()).flatMap(Flux::fromIterable)
-            .collectMap(ServiceInstance::getInstanceId)
-            // remove duplicates
-            .flatMapMany(map -> Flux.fromIterable(map.values())).map(instance -> {
-
-                List<RoutedService> routedServices = metadataParser.parseToListRoute(instance.getMetadata());
-
-
-                List<RouteDefinition> definitionsForInstance = new ArrayList<>();
-                for (RoutedService service : routedServices) {
-                    RouteDefinition routeDefinition = buildRouteDefinition(urlExpr, instance, service.getSubServiceId());
-
-                    setProperties(routeDefinition, instance, service);
-
-                    definitionsForInstance.add(routeDefinition);
-                }
-                corsUtils.setCorsConfiguration(instance.getServiceId().toLowerCase(), instance.getMetadata(), (prefix, serviceId, config) -> getConfigSource().registerCorsConfiguration("/" + serviceId + "/**", config));
-                return definitionsForInstance;
-            }).flatMapIterable(list -> list);
-    }
-
-    protected void setProperties(RouteDefinition routeDefinition, ServiceInstance instance, RoutedService service) {
-        PredicateDefinition predicate = new PredicateDefinition();
-        predicate.setName("Path");
-        String predicateValue = "/" + instance.getServiceId().toLowerCase() + "/" + service.getGatewayUrl() + "/**";
-        predicate.addArg("pattern", predicateValue);
-        routeDefinition.getPredicates().add(predicate);
-
-        FilterDefinition filter = new FilterDefinition();
-        filter.setName("RewritePath");
-
-        filter.addArg("regexp", predicateValue.replace("/**", "/?(?<remaining>.*)"));
-        filter.addArg("replacement", service.getServiceUrl() + "/${remaining}");
-
-        routeDefinition.getFilters().add(filter);
-        Authentication auth = metadataParser.parseAuthentication(instance.getMetadata());
-
-        if (auth != null && auth.getScheme() != null) {
-            String schemeName = auth.getScheme().getScheme();
-            if (AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme().equals(schemeName)) {
-                FilterDefinition filerDef = new FilterDefinition();
-                filerDef.setName("PassticketFilterFactory");
-                filerDef.addArg("applicationName", auth.getApplid());
-                routeDefinition.getFilters().add(filerDef);
-            } else if (AuthenticationScheme.X509.getScheme().equals(schemeName)) {
-                FilterDefinition x509filter = new FilterDefinition();
-                x509filter.setName("X509FilterFactory");
-                Map<String,String> m = new HashMap<>();
-                m.put("headers",auth.getHeaders());
-                x509filter.setArgs(m);
-                routeDefinition.getFilters().add(x509filter);
-            }
-        }
-
-        for (FilterDefinition defaultFilter : getFilters()) {
-            routeDefinition.getFilters().add(defaultFilter);
-        }
-    }
-
-    protected RouteDefinition buildRouteDefinition(Expression urlExpr, ServiceInstance serviceInstance, String routeId) {
-        String serviceId = serviceInstance.getServiceId();
-        RouteDefinition routeDefinition = new RouteDefinition();
-        routeDefinition.setId(this.routeIdPrefix + serviceId + routeId);
-        String uri = urlExpr.getValue(this.evalCtxt, serviceInstance, String.class);
-        routeDefinition.setUri(URI.create(uri));
-        // add instance metadata
-        routeDefinition.setMetadata(new LinkedHashMap<>(serviceInstance.getMetadata()));
-        return routeDefinition;
-    }
-
-    public String getRouteIdPrefix() {
-        return routeIdPrefix;
+                        return routeDefinition;
+                    }).collect(Collectors.toList())
+            ).collect(Collectors.toList());
+        })
+        .flatMapIterable(list -> list)
+        .flatMapIterable(list -> list);
     }
 
 }

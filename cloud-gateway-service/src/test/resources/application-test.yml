@@ -9,9 +9,6 @@ apiml:
         id: cloud-gateway
         port: 10023
         hostname: localhost
-        gateway:
-            proxy:
-                enabled: true
 server:
     port: ${apiml.service.port}
     ssl:
