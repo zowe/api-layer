@@ -17,55 +17,60 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.cloudgatewayservice.security.AuthSourceSign;
+import org.zowe.apiml.constants.ApimlConstants;
 
+import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
 /**
- * Objective is to include new header in the request which contain authentication source (client cert)
- * for further processing by the domain gateway.
+ * Objective is to include new headers in the request which contain authentication source (client cert)
+ * and its signature for further processing by the domain gateway.
  */
 @Service
 @Slf4j
 public class AuthSourceFilterFactory extends AbstractGatewayFilterFactory<AuthSourceFilterFactory.Config> {
 
-    public AuthSourceFilterFactory(MessageService messageService) {
+    public AuthSourceFilterFactory(AuthSourceSign authSourceSign) {
         super(Config.class);
-        this.messageService = messageService;
+        this.authSourceSign = authSourceSign;
     }
 
-    private final MessageService messageService;
+    private final AuthSourceSign authSourceSign;
 
     @Override
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
-            String authSource = "none";
             if (exchange.getRequest().getSslInfo() != null) {
                 X509Certificate[] certificates = exchange.getRequest().getSslInfo().getPeerCertificates();
                 if (certificates != null && certificates.length > 0) {
-                    byte[] certBytes = new byte[0];
-                    try {
-                        certBytes = certificates[0].getEncoded();
-                    } catch (CertificateEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-                    authSource = Base64.getEncoder().encodeToString(certBytes);
+                    ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
+                        try {
+                            byte[] certBytes = certificates[0].getEncoded();
+                            byte[] signBytes = authSourceSign.sign(certBytes);
+                            final String authSource = Base64.getEncoder().encodeToString(certBytes);
+                            final String authSignature = Base64.getEncoder().encodeToString(signBytes);
+                            headers.add(config.getAuthSourceHeader(), authSource);
+                            headers.add(config.getAuthSignatureHeader(), authSignature);
+                        } catch (CertificateEncodingException e) {
+                            headers.add(ApimlConstants.AUTH_FAIL_HEADER, "Invalid client certificate in request. Error message: " + e.getMessage());
+                        } catch (SignatureException e) {
+                            headers.add(ApimlConstants.AUTH_FAIL_HEADER, "Failed to sign the client certificate in request. Error message: " + e.getMessage());
+                        }
+                    }).build();
+                    return chain.filter(exchange.mutate().request(request).build());
                 }
             }
-            String finalAuthSource = authSource;
-            ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
-                headers.add(config.getHeaderName(), finalAuthSource);
-
-            }).build();
-            return chain.filter(exchange.mutate().request(request).build());
+            return chain.filter(exchange);
         });
     }
 
     @Getter
     @Setter
     public static class Config {
-        private String headerName;
+        private String authSourceHeader;
+        private String authSignatureHeader;
     }
 }
