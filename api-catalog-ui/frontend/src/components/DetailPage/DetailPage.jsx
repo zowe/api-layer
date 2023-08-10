@@ -95,26 +95,7 @@ export default class DetailPage extends Component {
             customUIStyle(tiles[0].customStyleConfig);
         }
         return (
-            <div className="main-content2 detail-content">
-                {apiPortalEnabled && <Divider light id="footer-divider" />}
-                <Spinner isLoading={isLoading} />
-                {fetchTilesError && (
-                    <div className="no-tiles-container">
-                        <br />
-                        <IconButton id="go-back-button" onClick={this.handleGoBack} size="medium">
-                            {iconBack}
-                            Back
-                        </IconButton>
-                        <br />
-                        <br />
-                        <br />
-                        <br />
-                        <Typography style={{ color: '#de1b1b' }} data-testid="detail-page-error" variant="subtitle2">
-                            Tile details for "{currentTileId}" could not be retrieved, the following error was returned:
-                        </Typography>
-                        {error}
-                    </div>
-                )}
+            <div className="main">
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
@@ -122,104 +103,127 @@ export default class DetailPage extends Component {
                         </Shield>
                     )}
                 </div>
-                {!isLoading && !fetchTilesError && (
-                    <div className="api-description-container">
-                        {!apiPortalEnabled && (
-                            <IconButton
-                                id="go-back-button"
-                                data-testid="go-back-button"
-                                color="primary"
-                                onClick={this.handleGoBack}
-                                size="medium"
-                            >
+
+                <div className="main-content2 detail-content">
+                    {apiPortalEnabled && <Divider light id="footer-divider" />}
+                    <Spinner isLoading={isLoading} />
+                    {fetchTilesError && (
+                        <div className="no-tiles-container">
+                            <br />
+                            <IconButton id="go-back-button" onClick={this.handleGoBack} size="medium">
                                 {iconBack}
                                 Back
                             </IconButton>
-                        )}
-                        <div className="detailed-description-container">
-                            <div className="title-api-container">
-                                {tiles !== undefined && tiles.length === 1 && (
-                                    <h2 id="title" className="text-block-11">
-                                        {tiles[0].title}
-                                    </h2>
-                                )}
-                            </div>
-                            <div className="paragraph-description-container">
-                                {tiles !== undefined && tiles.length > 0 && (
-                                    <h4 id="description" className="text-block-12">
-                                        {tiles[0].description}
-                                    </h4>
-                                )}
-                            </div>
+                            <br />
+                            <br />
+                            <Typography style={{ color: '#de1b1b' }} data-testid="detail-page-error" variant="subtitle2">
+                                Tile details for "{currentTileId}" could not be retrieved, the following error was returned:
+                            </Typography>
+                            {error}
                         </div>
-                        {apiPortalEnabled && !onlySwaggerPresent && (
-                            <div id="right-resources-menu">
-                                <Typography id="resources-menu-title" variant="subtitle1">
-                                    On this page
-                                </Typography>
-                                <Container>
-                                    <Link className="links" onClick={(e) => this.handleLinkClick(e, '#swagger-label')}>
-                                        Swagger
-                                    </Link>
-                                    <Link
-                                        className="links"
-                                        onClick={(e) => this.handleLinkClick(e, '#use-cases-label')}
-                                    >
-                                        Use cases ({useCasesCounter})
-                                    </Link>
-                                    <Link
-                                        className="links"
-                                        onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
-                                    >
-                                        Tutorials ({tutorialsCounter})
-                                    </Link>
-                                    <Link className="links" onClick={(e) => this.handleLinkClick(e, '#videos-label')}>
-                                        Videos ({videosCounter})
-                                    </Link>
-                                </Container>
-                            </div>
-                        )}
-                    </div>
-                )}
-                <div className="content-description-container">
-                    {tiles !== undefined && tiles.length === 1 && (
-                        <Suspense>
-                            <Router history={history}>
-                                <Switch>
-                                    <Route
-                                        exact
-                                        path={`${match.path}`}
-                                        render={() => (
-                                            <Redirect replace to={`${match.url}/${tiles[0].services[0].serviceId}`} />
-                                        )}
-                                    />
-                                    <Route
-                                        exact
-                                        path={`${match.path}/:serviceId`}
-                                        render={() => (
-                                            <div className="tabs-swagger">
-                                                <ServiceTabContainer
-                                                    videosCounter={videosCounter}
-                                                    tutorialsCounter={tutorialsCounter}
-                                                    useCasesCounter={useCasesCounter}
-                                                    tiles={tiles}
-                                                />
-                                            </div>
-                                        )}
-                                    />
-                                    <Route
-                                        render={(props, state) => (
-                                            <BigShield history={history}>
-                                                <PageNotFound {...props} {...state} />
-                                            </BigShield>
-                                        )}
-                                    />
-                                </Switch>
-                            </Router>
-                        </Suspense>
                     )}
-                    {apiPortalEnabled && <Divider light id="footer-divider" />}
+                    
+                    {!isLoading && !fetchTilesError && (
+                        <div className="api-description-container">
+                            {!apiPortalEnabled && (
+                                <IconButton
+                                    id="go-back-button"
+                                    data-testid="go-back-button"
+                                    color="primary"
+                                    onClick={this.handleGoBack}
+                                    size="medium"
+                                >
+                                    {iconBack}
+                                    Back
+                                </IconButton>
+                            )}
+                            <div className="detailed-description-container">
+                                <div className="title-api-container">
+                                    {tiles !== undefined && tiles.length === 1 && (
+                                        <h2 id="title" className="text-block-11">
+                                            {tiles[0].title}
+                                        </h2>
+                                    )}
+                                </div>
+                                <div className="paragraph-description-container">
+                                    {tiles !== undefined && tiles.length > 0 && (
+                                        <p id="description" className="text-block-12">
+                                            {tiles[0].description}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            {apiPortalEnabled && !onlySwaggerPresent && (
+                                <div id="right-resources-menu">
+                                    <Typography id="resources-menu-title" variant="subtitle1">
+                                        On this page
+                                    </Typography>
+                                    <Container>
+                                        <Link className="links" onClick={(e) => this.handleLinkClick(e, '#swagger-label')}>
+                                            Swagger
+                                        </Link>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#use-cases-label')}
+                                        >
+                                            Use cases ({useCasesCounter})
+                                        </Link>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
+                                        >
+                                            Tutorials ({tutorialsCounter})
+                                        </Link>
+                                        <Link className="links" onClick={(e) => this.handleLinkClick(e, '#videos-label')}>
+                                            Videos ({videosCounter})
+                                        </Link>
+                                    </Container>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="content-description-container">
+                        {tiles !== undefined && tiles.length === 1 && (
+                            <Suspense>
+                                <Router history={history}>
+                                    <Switch>
+                                        <Route
+                                            exact
+                                            path={`${match.path}`}
+                                            render={() => (
+                                                <Redirect replace to={`${match.url}/${tiles[0].services[0].serviceId}`} />
+                                            )}
+                                        />
+                                        <Route
+                                            exact
+                                            path={`${match.path}/:serviceId`}
+                                            render={() => (
+                                                <div className="tabs-swagger">
+                                                    <ServiceTabContainer
+                                                        videosCounter={videosCounter}
+                                                        tutorialsCounter={tutorialsCounter}
+                                                        useCasesCounter={useCasesCounter}
+                                                        tiles={tiles}
+                                                    />
+                                                </div>
+                                            )}
+                                        />
+                                        <Route
+                                            render={(props, state) => (
+                                                <BigShield history={history}>
+                                                    <PageNotFound {...props} {...state} />
+                                                </BigShield>
+                                            )}
+                                        />
+                                    </Switch>
+                                </Router>
+                            </Suspense>
+                        )}
+                        {apiPortalEnabled && <Divider light id="footer-divider" />}
+                    </div>
                 </div>
+
+                <div className="side-bar"></div>
             </div>
         );
     }

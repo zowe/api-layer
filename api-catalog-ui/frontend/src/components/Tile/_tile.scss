@@ -5,11 +5,9 @@ body {
   .MuiPaper-rounded {
     border-radius: var( --borderRadius1 );
   }
-  .MuiSvgIcon-root {
-    margin-right: var( --spaceSmaller );
-  }
+
   .MuiCard-root {
-    padding: var( --spaceSmallest );
+    padding: var( --spaceTiny );
     margin: var( --spaceSmallest ) var( --spaceSmaller ) var( --spaceMedium );
 
     &:hover {
@@ -31,12 +29,11 @@ body {
 
       &.tile-description,
       &.description-header {
-        margin-left: 70px;
+        margin-left: 80px;
       }
       &#grid-tile-sso {
-        width: 50px;
         flex: unset;
-        margin: 0px 0 0 30px;
+        margin: 0px var( --spaceLarge ) 0px var( --spaceLargest );
       }
       &.tile-description,
       &:first-child {
@@ -50,9 +47,12 @@ body {
 
   .dashboard-grid-header {
     position: relative;
-    padding: var( --spaceSmall ) var( --spaceLarger);
     font-size: var( --fontSmall );
+    padding: 0;
+    margin-right: var( --spaceLargest );
     margin-left: auto;
+    padding-top: 0;
+    padding-bottom: 0;
 
     > *:not(:last-child) {
       text-align: left;
@@ -60,7 +60,7 @@ body {
   }
 
     #videos {
-        margin-right: 120px;
+        margin-right: var( --spaceMedium );
         width: 30px;
         height: 20px;
     }
@@ -71,34 +71,6 @@ body {
 
     .MuiCardContent-root.tile {
         display: flex;
-    }
-
-    @media only screen and (max-width: 1500px) {
-        #media-icons {
-            position: relative;
-            right: auto;
-            float: left;
-        }
-        #videos {
-            margin-right: 0;
-            height: 20px;
-        }
-        #tutorials {
-            margin-right: 0;
-            height: 20px;
-        }
-        #use-cases-counter {
-            margin-right: 0;
-        }
-    }
-
-    @media only screen and (max-width: 1500px) {
-        .dashboard-grid-header {
-            display: none;
-        }
-        #media-icons {
-            display: none;
-        }
     }
     .media-labels {
         font-size: 14px;
@@ -126,20 +98,16 @@ body {
 
 /* CSS styles for each individual tile */
 .grid-item {
-    flex: 0 0 calc(25% - 16px);
-    margin: 8px;
+    flex: 0 0 calc(25% - #{var( --space-medium )});
+    margin: var( --spaceSmaller );
     position: relative; /* Add relative positioning to the tile */
 }
 
 /* CSS styles for media-icons group within each tile */
 #media-icons {
-    margin-right: -102px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    position: absolute; /* Use absolute positioning for the icons container */
-    right: 0; /* Align the icons container to the right side of the tile */
-    top: 50%; /* Vertically center the icons container */
-    transform: translateY(-50%); /* Correct the vertical alignment */
+    margin-left: auto;
 }
 
