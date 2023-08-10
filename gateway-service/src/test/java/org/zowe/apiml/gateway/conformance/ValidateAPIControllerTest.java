@@ -17,13 +17,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
@@ -32,11 +36,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@AcceptanceTest
+
+@ExtendWith(MockitoExtension.class)
 public class ValidateAPIControllerTest {
 
     @InjectMocks
@@ -56,26 +60,115 @@ public class ValidateAPIControllerTest {
 
 
     private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
-    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
+    //    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
     private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
+    private static final Message WRONG_SERVICE_ID_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved");
+    //    private static final Message NO_METADATA_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(NO_METADATA_KEY, "ThisWillBeRemoved");
+    private static final Message NON_CONFORMANT_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved");
+
+
     @BeforeEach
-    void setup() {
-        when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
-
-        MessageService realService = new YamlMessageService("/gateway-log-messages.yml");
-
-        when(messageService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved"))
-            .thenReturn(realService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved"));
-        when(messageService.createMessage(NO_METADATA_KEY, "ThisWillBeRemoved"))
-            .thenReturn(realService.createMessage(NO_METADATA_KEY, "ThisWillBeRemoved"));
-        when(messageService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved"))
-            .thenReturn(realService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved"));
+    void cleanup() {
 
         result = null;
     }
 
 
+    @Nested
+    class GivenWrongServiceId {
+
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+            boolean valid;
+
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
+        }
+
+        @Test
+        void whenServiceIdTooLong_thenNonconformant() {
+            when(messageService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved")).thenReturn(NON_CONFORMANT_MESSAGE);
+            String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
+            result = validateAPIController.checkConformance(testString);
+            assertNotNull(result.getBody());
+            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
+        }
+
+        @Test
+        void whenServiceIdTooLongAndSymbols_thenNonconformant() {
+            when(messageService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved")).thenReturn(NON_CONFORMANT_MESSAGE);
+            String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
+            result = validateAPIController.checkConformance(testString);
+            assertNotNull(result.getBody());
+            assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
+            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
+
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"test-test", "TEST", "Test"})
+        void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
+            when(messageService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved")).thenReturn(NON_CONFORMANT_MESSAGE);
+            result = validateAPIController.checkConformance(testString);
+            assertNotNull(result.getBody());
+            assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
+        }
+
+        @Test
+        void notInvalidTextFormat() {
+            when(messageService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved")).thenReturn(WRONG_SERVICE_ID_MESSAGE);
+            String testString = "test";
+            result = validateAPIController.checkConformance(testString);
+            assertNotNull(result.getBody());
+            assertFalse(result.getBody().contains("Message service is requested to create a message with an invalid text format"));
+        }
+    }
+
+    @Nested
+    class ServiceNotOnboarded {
+        @AfterEach
+        void checkValidJson() {
+            ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+            boolean valid;
+            try {
+                mapper.readTree(result.getBody());
+                valid = true;
+            } catch (JsonProcessingException e) {
+                valid = false;
+            }
+            assertTrue(valid);
+        }
+
+
+        @Test
+        void whenServiceNotOboarded_thenError() {
+            when(messageService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved")).thenReturn(WRONG_SERVICE_ID_MESSAGE);
+            String testString = "notonboarded";
+            result = validateAPIController.checkConformance(testString);
+            assertNotNull(result.getBody());
+            assertTrue(result.getBody().contains("The service is not registered"));
+        }
+
+        @Test
+        void legacyWhenServiceNotOboarded_thenError() {
+            when(messageService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved")).thenReturn(WRONG_SERVICE_ID_MESSAGE);
+            String testString = "notonboarded";
+            result = validateAPIController.checkValidateLegacy(testString);
+            assertNotNull(result.getBody());
+            assertTrue(result.getBody().contains("The service is not registered"));
+
+        }
+    }
 
 
     @Nested
@@ -102,7 +195,6 @@ public class ValidateAPIControllerTest {
             List<ServiceInstance> list = new ArrayList<>();
             assertTrue(validateAPIController.instanceCheck(list).contains("Cannot retrieve metadata"));
         }
-
     }
 
 
