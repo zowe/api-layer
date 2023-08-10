@@ -36,6 +36,5 @@ jobs:
                     name: CITests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
-                        discovery-service/**
 
             -   uses: ./.github/actions/teardown
