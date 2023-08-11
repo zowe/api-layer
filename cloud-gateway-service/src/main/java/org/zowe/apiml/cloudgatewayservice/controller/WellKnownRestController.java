@@ -5,42 +5,40 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.cloudgatewayservice.security.AuthSourceSign;
 
+import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
-public class JwkSetRestController {
+@RequestMapping(WellKnownRestController.CONTROLLER_PATH)
+public class WellKnownRestController {
+    public static final String CONTROLLER_PATH = "/gateway/.well-known";
 
     private final AuthSourceSign authSourceSign;
 
-    @GetMapping("/.well-known/jwks.json")
+    @GetMapping("/jwks.json")
     @ResponseBody
-    public ResponseEntity<Object> keys() {
-        JWKSet publicKeys = getJwkPublicKeys();
-        if (publicKeys == null) {
-            return new ResponseEntity<>("No public key available.", HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity<>(publicKeys.toJSONObject(true), HttpStatus.OK);
-        }
+    public Map<String, Object> getPublicKeys() {
+        JWKSet jwkSet = buildJWKSet();
+        return jwkSet.toJSONObject(true);
     }
 
-
-    private JWKSet getJwkPublicKeys() {
-        if (authSourceSign.getPublicKey() == null) {
-            return null;
+    private JWKSet buildJWKSet() {
+        PublicKey publicKey = authSourceSign.getPublicKey();
+        if (publicKey == null) {
+            return new JWKSet();
         }
-        final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) authSourceSign.getPublicKey())
+        final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) publicKey)
             .keyUse(KeyUse.SIGNATURE)
             .algorithm(JWSAlgorithm.RS256)
             .build();
         return new JWKSet(rsaKey);
     }
-
 }
