@@ -20,6 +20,7 @@
  * INTERRUPTION, GOODWILL, OR LOST DATA, EVEN IF BROADCOM IS
  * EXPRESSLY ADVISED OF SUCH LOSS OR DAMAGE.
  */
+
 package org.zowe.apiml.cloudgatewayservice.service.routing;
 
 import org.springframework.cloud.client.ServiceInstance;
