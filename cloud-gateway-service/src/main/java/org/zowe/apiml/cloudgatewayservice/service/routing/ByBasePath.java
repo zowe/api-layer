@@ -29,6 +29,7 @@ import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.util.StringUtils;
 
 @Component
 public class ByBasePath extends RouteDefinitionProducer {
@@ -37,13 +38,26 @@ public class ByBasePath extends RouteDefinitionProducer {
         super(properties);
     }
 
+    private String constructUrl(String...parts) {
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            part = StringUtils.removeFirstAndLastOccurrence(part, "/");
+            if (part.isEmpty()) continue;
+
+            sb.append('/');
+            sb.append(part);
+        }
+        return sb.toString();
+    }
+
     @Override
     public void setCondition(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
         PredicateDefinition predicate = new PredicateDefinition();
         predicate.setName("Path");
-        String predicateValue = "/" + serviceInstance.getServiceId().toLowerCase() + "/" + routedService.getGatewayUrl() + "/**";
+        String predicateValue = constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "**");
         predicate.addArg("pattern", predicateValue);
         routeDefinition.getPredicates().add(predicate);
+        routeDefinition.setOrder(routeDefinition.getOrder() + routedService.getServiceUrl().length());
     }
 
     @Override
@@ -51,8 +65,8 @@ public class ByBasePath extends RouteDefinitionProducer {
         FilterDefinition filter = new FilterDefinition();
         filter.setName("RewritePath");
 
-        filter.addArg("regexp", "/" + serviceInstance.getServiceId().toLowerCase() + "/" + routedService.getGatewayUrl() + "/?(?<remaining>.*)");
-        filter.addArg("replacement", routedService.getServiceUrl() + "/${remaining}");
+        filter.addArg("regexp", constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "?(?<remaining>.*)"));
+        filter.addArg("replacement", constructUrl(routedService.getServiceUrl(), "${remaining}"));
 
         routeDefinition.getFilters().add(filter);
     }

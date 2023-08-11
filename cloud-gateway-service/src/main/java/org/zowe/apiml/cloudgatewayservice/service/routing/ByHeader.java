@@ -30,8 +30,6 @@ import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.routing.RoutedService;
 
-import java.util.Locale;
-
 @Component
 public class ByHeader extends RouteDefinitionProducer {
 
@@ -47,7 +45,7 @@ public class ByHeader extends RouteDefinitionProducer {
 
         predicate.setName("Header");
         predicate.addArg("header", TARGET_HEADER_NAME);
-        predicate.addArg("regexp", serviceInstance.getServiceId().toLowerCase(Locale.ROOT) + "(/.*)?");
+        predicate.addArg("regexp", serviceInstance.getServiceId() + "(/.*)?");
 
         routeDefinition.getPredicates().add(predicate);
     }

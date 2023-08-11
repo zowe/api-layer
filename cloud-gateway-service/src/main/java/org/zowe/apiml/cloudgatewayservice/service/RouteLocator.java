@@ -36,13 +36,19 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.cloudgatewayservice.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.cloudgatewayservice.service.scheme.SchemeHandler;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
+import org.zowe.apiml.util.StringUtils;
 import reactor.core.publisher.Flux;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @Service
 public class RouteLocator implements RouteDefinitionLocator {
@@ -97,19 +103,43 @@ public class RouteLocator implements RouteDefinitionLocator {
         corsUtils.setCorsConfiguration(
             serviceInstance.getServiceId().toLowerCase(),
             serviceInstance.getMetadata(),
-            (prefix, serviceId, config) -> getCorsConfigurationSource().registerCorsConfiguration("/" + serviceId + "/**", config));
+            (prefix, serviceId, config) -> {
+                serviceId = serviceInstance.getMetadata().getOrDefault(APIML_ID, serviceInstance.getServiceId());
+                getCorsConfigurationSource().registerCorsConfiguration("/" + serviceId + "/**", config);
+            });
+    }
+
+    private String normalizeUrl(String in) {
+        in = in.replaceAll("\\*", "");
+        in = StringUtils.removeFirstAndLastOccurrence(in, "/");
+        return in;
     }
 
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
         EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+        AtomicInteger order = new AtomicInteger();
+        /**
+         * It generates each rule for each combination of instance x routing x generator ({@link RouteDefinitionProducer})
+         *
+         * The routes are sorted by serviceUrl to avoid clashing between multiple levels of paths, ie. /** vs /a, stars are
+         * removed in {@link #normalizeUrl(String)}.
+         *
+         * Sorting routes and generators by order allows to redefine order of each rule. There is no possible to have
+         * multiple valid rules for the same case at one moment.
+         */
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
             Authentication auth = metadataParser.parseAuthentication(serviceInstance.getMetadata());
             setCors(serviceInstance);
-            return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream().map(routedService ->
-                routeDefinitionProducers.stream()
+            return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
+                // sorting avoid a conflict with the more general pattern
+                .sorted(Comparator.<RoutedService>comparingInt(x -> normalizeUrl(x.getServiceUrl()).length()).reversed())
+                .map(routedService ->
+                    routeDefinitionProducers.stream()
+                    .sorted(Comparator.comparingInt(x -> x.getOrder()))
                     .map(rdp -> {
                         RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
+                        routeDefinition.setOrder(order.getAndIncrement());
                         routeDefinition.getFilters().addAll(commonFilters);
                         setAuth(routeDefinition, auth);
 

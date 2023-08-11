@@ -26,7 +26,7 @@ public class StringUtils {
      * Remove from parameter 'input' the first and the last occurrence of parameter 'str'
      * @param input
      * @param str
-     * @return the the input string without the initial and final occurrence of str
+     * @return the input string without the initial and final occurrence of str
      */
     public static String removeFirstAndLastOccurrence(String input, String str) {
         if (input == null) {
@@ -34,24 +34,23 @@ public class StringUtils {
         }
 
         input = input.trim();
-        if (input.isEmpty()) {
+
+        if (str == null) {
+            return input;
+        }
+
+        int startIndex = input.startsWith(str) ? str.length() : 0;
+        int endIndex = input.endsWith(str) ? str.length() : 0;
+
+        if ((startIndex == 0) && (endIndex == 0)) {
+            return input;
+        }
+
+        if (startIndex + endIndex >= input.length()) {
             return "";
         }
 
-        int start = 0;
-        int stop = input.length();
-
-        if (input.startsWith(str)) {
-            start = 1;
-        }
-
-        if (input.endsWith(str)) {
-            stop = input.length() - 1;
-        }
-
-        input = input.substring(start, stop);
-
-        return input;
+        return input.substring(startIndex, input.length() - endIndex);
     }
 
     /**

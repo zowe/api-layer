@@ -32,6 +32,7 @@ public final class EurekaMetadataDefinition {
     public static final String SERVICE_TITLE = "apiml.service.title";
     public static final String SERVICE_DESCRIPTION = "apiml.service.description";
     public static final String SERVICE_EXTERNAL_URL = "apiml.service.externalUrl";
+    public static final String APIML_ID = "apiml.service.id";
 
     public static final String API_INFO = "apiml.apiInfo";
     public static final String API_INFO_API_ID = "apiId";
