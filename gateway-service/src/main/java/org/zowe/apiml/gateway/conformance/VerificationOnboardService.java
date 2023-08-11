@@ -10,10 +10,20 @@
 
 package org.zowe.apiml.gateway.conformance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.parser.SwaggerParser;
+import io.swagger.parser.util.SwaggerDeserializationResult;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -43,13 +53,25 @@ public class VerificationOnboardService {
 
 
     /**
-     * Accepts metadata and retrieves the Swagger url if it existsd
+     * Accepts metadata and retrieves the Swagger url if it exists
      *
      * @param metadata to grab swagger from
      * @return SwaggerUrl when able, empty string otherwise
      */
-    public String retrieveSwagger(Map<String, String> metadata) {
-        String swaggerUrl = metadata.get("apiml.apiInfo.api-v2.swaggerUrl");
+    public String findSwaggerUrl(Map<String, String> metadata) {
+
+
+        String swaggerKey = null;
+        for (String key : metadata.keySet()) {
+            if (key.contains("swaggerUrl")) {        // Find the correct key for swagger docs, can be both apiml.apiInfo.0.swaggerUrl or apiml.apiInfo.api-v1.swaggerUrl for example
+                swaggerKey = key;
+                break;
+            }
+        }
+        if (swaggerKey == null) {
+            return "";
+        }
+        String swaggerUrl = metadata.get(swaggerKey);
         if (swaggerUrl != null) {
             return swaggerUrl;
         }
@@ -57,4 +79,58 @@ public class VerificationOnboardService {
     }
 
 
+    public String getSwagger(String swaggerUrl) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        String response;
+        response = restTemplate.getForEntity(swaggerUrl, String.class).getBody();
+
+        return response;
+    }
+
+
+    public List<String> verifySwaggerDocumentation(String swaggerDoc, String serviceId) {
+        return new ArrayList<>(validateConformanceToSwaggerSpecification(swaggerDoc, serviceId));
+    }
+
+
+    public List<String> validateConformanceToSwaggerSpecification(String swaggerDoc, String serviceId) {
+        JsonNode root;
+        try {
+            root = new ObjectMapper().readTree(swaggerDoc);
+        } catch (JsonProcessingException e) {
+            return new ArrayList<>(Collections.singleton("Could not parse Swagger documentation"));
+        }
+        if (root.findValue("openapi") != null && root.findValue("openapi").asText().split("\\.")[0].equals("3")) {
+            return validateOpenApi3(swaggerDoc, serviceId);
+        } else if (root.findValue("swagger") != null && root.findValue("swagger").asText().equals("2.0")) {
+            return validateOpenApi2(swaggerDoc, serviceId);
+        } else
+            return new ArrayList<>(Collections.singleton("Swagger documentation is not conformant to either OpenAPI V2 nor V3 - can't " +
+                "find the version (that is cant find field named 'swagger' with value '2.0' or 'openapi' with version starting with '3' )"));
+    }
+
+
+    private List<String> validateOpenApi2(String swaggerAsString, String serviceId) {
+
+        assert (serviceId != null);    // will be changed
+
+        SwaggerDeserializationResult parseResult = new SwaggerParser().readWithInfo(swaggerAsString);
+        if (parseResult.getMessages() != null) return parseResult.getMessages();
+
+        return new ArrayList<>();
+    }
+
+    private List<String> validateOpenApi3(String swaggerAsString, String serviceId) {
+
+        assert (serviceId != null); // will be changed
+
+        SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(swaggerAsString);
+        if (parseResult.getMessages() != null) return parseResult.getMessages();
+
+        return new ArrayList<>();
+    }
+
+
 }
+
