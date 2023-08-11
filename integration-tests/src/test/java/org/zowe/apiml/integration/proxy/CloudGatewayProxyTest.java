@@ -16,14 +16,18 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SslContext;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
+import static org.zowe.apiml.util.requests.Endpoints.X509_ENDPOINT;
 
 @Tag("CloudGatewayProxyTest")
 class CloudGatewayProxyTest {
@@ -38,9 +42,9 @@ class CloudGatewayProxyTest {
 
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
         given().header("X-Request-Id", "gatewaygateway-service")
-            .get(new URI(scgUrl)).then().statusCode(200);
+            .get(new URI(scgUrl)).then().statusCode(HttpStatus.SC_OK);
         given().header("X-Request-Id", "gatewaygateway-service-2")
-            .get(new URI(scgUrl)).then().statusCode(200);
+            .get(new URI(scgUrl)).then().statusCode(HttpStatus.SC_OK);
     }
 
     @Test
@@ -56,5 +60,20 @@ class CloudGatewayProxyTest {
                 .then()
                 .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
         });
+    }
+
+    @Test
+    void givenClientCertInRequest_thenCertPassedToDomainGateway() throws URISyntaxException {
+        RestAssured.useRelaxedHTTPSValidation();
+        String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+        given()
+            .config(SslContext.clientCertValid)
+            .header("X-Request-Id", "gatewaygateway-service")
+            .when()
+            .get(new URI(scgUrl))
+            .then()
+            .statusCode(HttpStatus.SC_OK)
+            .body("dn", startsWith("CN=APIMTST"))
+            .body("cn", is("APIMTST"));
     }
 }
