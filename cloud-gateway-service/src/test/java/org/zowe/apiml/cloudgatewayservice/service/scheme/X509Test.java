@@ -23,31 +23,33 @@
 
 package org.zowe.apiml.cloudgatewayservice.service.scheme;
 
+import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
-import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Component
-public class X509 implements SchemeHandler {
+class X509Test {
 
-    @Override
-    public AuthenticationScheme getAuthenticationScheme() {
-        return AuthenticationScheme.X509;
+    @Test
+    void givenX509_whenGetAuthenticationScheme_thenReturnProperType() {
+        assertEquals(AuthenticationScheme.X509, new X509().getAuthenticationScheme());
     }
 
-    @Override
-    public void apply(RouteDefinition routeDefinition, Authentication auth) {
-        FilterDefinition x509filter = new FilterDefinition();
-        x509filter.setName("X509FilterFactory");
-        Map<String,String> m = new HashMap<>();
-        m.put("headers", auth.getHeaders());
-        x509filter.setArgs(m);
-        routeDefinition.getFilters().add(x509filter);
+    @Test
+    void givenX509_whenApply_thenFulfillFilterFactorArgs() {
+        RouteDefinition routeDefinition = new RouteDefinition();
+        Authentication authentication = new Authentication();
+        authentication.setHeaders("header1,header2");
+
+        new X509().apply(routeDefinition, authentication);
+
+        assertEquals(1, routeDefinition.getFilters().size());
+        FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);
+        assertEquals("header1,header2", filterDefinition.getArgs().get("headers"));
+        assertEquals("X509FilterFactory", filterDefinition.getName());
     }
 
 }
