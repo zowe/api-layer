@@ -121,6 +121,8 @@ public abstract class AbstractZosmfService {
      *
      * @param zosmf the z/OSMF service id
      * @return the uri
+     *
+     * @throws ServiceNotAccessibleException if z/OSMF is not available in discovery service
      */
     protected String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
@@ -149,7 +151,7 @@ public abstract class AbstractZosmfService {
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
         if (re instanceof ResourceAccessException) {
             if (re.getCause() instanceof SSLHandshakeException) {
-                apimlLog.log("org.zowe.apiml.security.auth.zosmf.sslError");
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.sslError", re.getMessage());
             } else {
                 apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
             }

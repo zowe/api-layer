@@ -113,26 +113,26 @@ messages:
       text: "Configuration error when trying to establish JWT producer. Events: %s"
       reason: "A problem occurred while trying to make sure that there is a valid JWT producer available. A possible cause of the problem is that API ML does not recognize the authentication type used by z/OSMF."
       action: >
-        Based on the specific information in the message, verify that the key configuration is correct, or alternatively, that z/OSMF is available. If z/OSMF is available, specify the authentication type used by z/OSMF in your configuration settings.\n
-        \n
-        Use the following configuration format:\n
-        ```\n
-          apiml:\n
-            security:\n
-              auth:\n
-                zosmf:\n
-                  jwtAutoconfiguration:\n
-        ```\n
-        Apply one of the following values:\n
-        \n
-        * **auto**\n
-          Signifies that API ML is enabled to resolve the JWT producer\n
-        \n
-        * **jwt**\n
-          Signifies that z/OSMF supports JWT (APAR PH12143 is applied)\n
-        \n
-        * **ltpa**\n
-          Signifies that z/OSMF does not support JWT"
+        Based on the specific information in the message, verify that the key configuration is correct, or alternatively, that z/OSMF is available. If z/OSMF is available, specify the authentication type used by z/OSMF in your configuration settings.
+
+        Use the following configuration format:
+        ```
+          apiml:
+            security:
+              auth:
+                zosmf:
+                  jwtAutoconfiguration:
+        ```
+        Apply one of the following values:
+
+        * **auto**
+          Signifies that API ML is enabled to resolve the JWT producer
+
+        * **jwt**
+          Signifies that z/OSMF supports JWT (APAR PH12143 is applied)
+
+        * **ltpa**
+          Signifies that z/OSMF does not support JWT
 
     - key: org.zowe.apiml.gateway.keys.unknown
       number: ZWEAG714
@@ -372,7 +372,6 @@ messages:
       reason: "Webfinger provider contains incorrect configuration."
       action: "Contact the administrator to validate webfinger configuration in gateway service."
 
-    # z/OSMF messages
     - key: org.zowe.apiml.security.auth.zosmf.serviceId
       number: ZWEAG181
       type: WARNING
@@ -384,10 +383,13 @@ messages:
       number: ZWEAG182
       type: ERROR
       text: >
-        SSL Misconfiguration, z/OSMF is not accessible. Please verify the following: \n
-          - CN (Common Name) and z/OSMF hostname have to match.\n
-          - Certificate is expired\n
-          - TLS version match\n
+        SSL Misconfiguration, z/OSMF is not accessible.
+        Message: %s
+        Please verify the following:
+          - CN (Common Name) and z/OSMF hostname have to match.
+          - Certificate is expired
+          - TLS version match
+          - z/OSMF server certificate is trusted in Zowe's truststore
         Enable debugging to see further details in stack trace
       reason: "z/OSMF connection has an incorrect configuration."
       action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS"
