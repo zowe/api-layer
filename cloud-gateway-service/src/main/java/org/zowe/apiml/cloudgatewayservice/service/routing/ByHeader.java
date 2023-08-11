@@ -40,7 +40,7 @@ public class ByHeader extends RouteDefinitionProducer {
     }
 
     @Override
-    public void setCondition(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
+    protected void setCondition(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
         PredicateDefinition predicate = new PredicateDefinition();
 
         predicate.setName("Header");
@@ -51,7 +51,7 @@ public class ByHeader extends RouteDefinitionProducer {
     }
 
     @Override
-    public void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
+    protected void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
         FilterDefinition filter = new FilterDefinition();
         filter.setName("HeaderRouteStepFilterFactory");
         filter.addArg("header", TARGET_HEADER_NAME);

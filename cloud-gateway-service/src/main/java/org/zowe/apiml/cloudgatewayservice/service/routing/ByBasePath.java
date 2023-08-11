@@ -38,7 +38,7 @@ public class ByBasePath extends RouteDefinitionProducer {
         super(properties);
     }
 
-    private String constructUrl(String...parts) {
+    static String constructUrl(String...parts) {
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
             part = StringUtils.removeFirstAndLastOccurrence(part, "/");
@@ -51,17 +51,16 @@ public class ByBasePath extends RouteDefinitionProducer {
     }
 
     @Override
-    public void setCondition(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
+    protected void setCondition(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
         PredicateDefinition predicate = new PredicateDefinition();
         predicate.setName("Path");
         String predicateValue = constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "**");
         predicate.addArg("pattern", predicateValue);
         routeDefinition.getPredicates().add(predicate);
-        routeDefinition.setOrder(routeDefinition.getOrder() + routedService.getServiceUrl().length());
     }
 
     @Override
-    public void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
+    protected void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
         FilterDefinition filter = new FilterDefinition();
         filter.setName("RewritePath");
 
