@@ -23,26 +23,33 @@
 
 package org.zowe.apiml.cloudgatewayservice.service.scheme;
 
+import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
-import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
-@Component
-public class HttpBasicPassticket implements SchemeHandler {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    @Override
-    public AuthenticationScheme getAuthenticationScheme() {
-        return AuthenticationScheme.HTTP_BASIC_PASSTICKET;
+class HttpBasicPassticketTest {
+
+    @Test
+    void givenInstance_whenGetAuthenticationScheme_thenReturnProperType() {
+        assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, new HttpBasicPassticket().getAuthenticationScheme());
     }
 
-    @Override
-    public void apply(RouteDefinition routeDefinition, Authentication auth) {
-        FilterDefinition filerDef = new FilterDefinition();
-        filerDef.setName("PassticketFilterFactory");
-        filerDef.addArg("applicationName", auth.getApplid());
-        routeDefinition.getFilters().add(filerDef);
+    @Test
+    void givenInstance_whenApply_thenFulfillFilterFactorArgs() {
+        RouteDefinition routeDefinition = new RouteDefinition();
+        Authentication authentication = new Authentication();
+        authentication.setApplid("applid");
+
+        new HttpBasicPassticket().apply(routeDefinition, authentication);
+
+        assertEquals(1, routeDefinition.getFilters().size());
+        FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);
+        assertEquals("applid", filterDefinition.getArgs().get("applicationName"));
+        assertEquals("PassticketFilterFactory", filterDefinition.getName());
     }
 
 }
