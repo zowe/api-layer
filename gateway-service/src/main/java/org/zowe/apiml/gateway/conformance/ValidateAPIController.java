@@ -93,20 +93,18 @@ public class ValidateAPIController {
             return generateBadRequestResponseEntity(NO_METADATA_KEY, foundNonConformanceIssues);
         }
 
-
-
         String swaggerUrl = verificationOnboardService.FindSwaggerUrl(metadata);
 
         if (swaggerUrl == null || swaggerUrl.equals("")){
-            foundNonConformanceIssues.put(problemWithConformance, "Could not find Swagger Url");
-            return GenerateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
-            }
+            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, "Could not find Swagger Url");
+            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
+        }
 
         String swagger = verificationOnboardService.getSwagger(swaggerUrl);
-        foundNonConformanceIssues.put(problemWithConformance, validateSwagger(swagger));
+        foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateSwagger(swagger));
 
         if (foundNonConformanceIssues.size() != 0) {
-            return GenerateBadRequestResponseEntity(NonConformantKey, foundNonConformanceIssues);
+            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
         }
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
@@ -218,6 +216,7 @@ public class ValidateAPIController {
         return result;
     }
 
+
     /**
      * Checks if the service has valid Swagger documentation.
      * If it's not than it doesn't fulfill Item 10 of conformance criteria
@@ -228,8 +227,6 @@ public class ValidateAPIController {
     private ArrayList<String> validateSwagger(String swaggerDoc) {
         return verificationOnboardService.verifySwaggerDocumentation(swaggerDoc);
     }
-
-
 
 
 }
