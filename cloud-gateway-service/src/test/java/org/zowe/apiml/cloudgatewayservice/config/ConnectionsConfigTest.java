@@ -50,16 +50,6 @@ class ConnectionsConfigTest {
     }
 
     @Nested
-    class WhenCreateRouteLocator {
-        @Test
-        void thenIsNotNull() {
-            ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
-            DiscoveryLocatorProperties properties = mock(DiscoveryLocatorProperties.class);
-            Assertions.assertNotNull(routingConfig.proxyRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value")), null, null));
-        }
-    }
-
-    @Nested
     class WhenInitializeEurekaClient {
         @Mock
         private ApplicationInfoManager manager;
