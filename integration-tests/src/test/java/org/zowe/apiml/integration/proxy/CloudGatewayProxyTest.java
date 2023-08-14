@@ -10,36 +10,60 @@
 
 package org.zowe.apiml.integration.proxy;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.TlsConfiguration;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.PublicKey;
+import java.text.ParseException;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
-import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
-import static org.zowe.apiml.util.requests.Endpoints.X509_ENDPOINT;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.zowe.apiml.security.SecurityUtils.loadPublicKey;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("CloudGatewayProxyTest")
 class CloudGatewayProxyTest {
     private static final int SECOND = 1000;
     private static final int DEFAULT_TIMEOUT = 2 * SECOND;
 
-    static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static CloudGatewayConfiguration conf;
+    static PublicKey publicKey;
+
+    @BeforeAll
+    static void setup() {
+        RestAssured.useRelaxedHTTPSValidation();
+        conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+        TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
+        HttpsConfig config = HttpsConfig.builder()
+            .keyAlias(tlsConf.getKeyAlias())
+            .keyStore(tlsConf.getKeyStore())
+            .keyPassword(tlsConf.getKeyPassword())
+            .keyStorePassword(tlsConf.getKeyStorePassword())
+            .keyStoreType(tlsConf.getKeyStoreType())
+            .build();
+        publicKey = loadPublicKey(config);
+        assertNotNull(publicKey);
+    }
 
     @Test
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
         given().header("X-Request-Id", "gatewaygateway-service")
             .get(new URI(scgUrl)).then().statusCode(HttpStatus.SC_OK);
@@ -49,7 +73,6 @@ class CloudGatewayProxyTest {
 
     @Test
     void givenRequestTimeoutIsReached_thenDropConnection() {
-        RestAssured.useRelaxedHTTPSValidation();
         String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
         assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
             given()
@@ -64,8 +87,7 @@ class CloudGatewayProxyTest {
 
     @Test
     void givenClientCertInRequest_thenCertPassedToDomainGateway() throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-        String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
         given()
             .config(SslContext.clientCertValid)
             .header("X-Request-Id", "gatewaygateway-service")
@@ -75,5 +97,21 @@ class CloudGatewayProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("dn", startsWith("CN=APIMTST"))
             .body("cn", is("APIMTST"));
+    }
+
+    @Test
+    void givenWellKnownRequest_thenJWKSetContainsPublicKey() throws URISyntaxException, IOException, ParseException, JOSEException {
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_WELL_KNOWN_JWKS);
+        // test if the endpoint is alive
+        given()
+            .when()
+            .get(new URI(scgUrl))
+            .then()
+            .statusCode(HttpStatus.SC_OK);
+        // test that public key can be retrieved
+        JWKSet jwkSet = JWKSet.load(new URL(scgUrl));
+        assertNotNull(jwkSet.getKeys());
+        assertFalse(jwkSet.getKeys().isEmpty());
+        assertEquals(publicKey, jwkSet.getKeys().get(0).toRSAKey().toPublicKey());
     }
 }

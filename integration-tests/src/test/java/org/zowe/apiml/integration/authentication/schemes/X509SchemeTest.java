@@ -86,22 +86,6 @@ class X509SchemeTest implements TestWithStartedInstances {
             }
 
             @Test
-            @Tag("CloudGatewayServiceRouting")
-            void givenCorrectClientCertificateInHeader() {
-                String gatewayHost = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-                String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
-                given()
-                    .header("X-Request-Id", "gateway" + gatewayHost)
-                    .header("x-auth-source", SslContext.clientCertValid)
-                    .when()
-                    .get(scgUrl)
-                    .then()
-                    .body("publicKey", is(not(nullValue())))
-                    .body("dn", startsWith("CN=APIMTST"))
-                    .body("cn", is("APIMTST")).statusCode(200);
-            }
-
-            @Test
             void givenApimlCertificateInRequest() {
                 given()
                     .config(SslContext.clientCertApiml)

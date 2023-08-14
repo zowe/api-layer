@@ -15,6 +15,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -28,6 +29,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(WellKnownRestController.CONTROLLER_PATH)
+@ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "true")
 public class WellKnownRestController {
     public static final String CONTROLLER_PATH = "/gateway/.well-known";
 

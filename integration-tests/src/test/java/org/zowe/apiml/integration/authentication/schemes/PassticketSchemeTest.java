@@ -16,6 +16,7 @@ import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
 import org.apache.http.message.BasicNameValuePair;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +48,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.integration.penetration.JwtPenTest.getToken;
 import static org.zowe.apiml.util.SecurityUtils.*;
-import static org.zowe.apiml.util.requests.Endpoints.PASSTICKET_TEST_ENDPOINT;
-import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 @GeneralAuthenticationTest
@@ -97,7 +97,6 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         @Test
         @Tag("CloudGatewayServiceRouting")
         void givenValidJWT_thenTranslateToPassticket() {
-            RestAssured.useRelaxedHTTPSValidation();
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             verifyPassTicketHeaders(
                 given().cookie(COOKIE_NAME, jwt)
@@ -110,16 +109,27 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         @Test
         @Tag("CloudGatewayServiceRouting")
         void givenNoJWT_thenErrorHeaderIsCreated() {
-            RestAssured.useRelaxedHTTPSValidation();
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             given()
                 .when()
                 .get(scgUrl)
                 .then()
+                .statusCode(SC_OK)
                 .body("headers.x-zowe-auth-failure", startsWith("ZWEAG141E"))
-                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG141E"))
-                .statusCode(200);
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG141E"));
         }
+
+        @Test
+        @Tag("CloudGatewayServiceRouting")
+        void givenWellKnownRequest_thenReturnNotFound() {
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_WELL_KNOWN_JWKS);
+            given()
+                .when()
+                .get(scgUrl)
+                .then()
+                .statusCode(HttpStatus.SC_NOT_FOUND);
+        }
+
     }
 
     @Nested
