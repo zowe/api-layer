@@ -20,6 +20,10 @@ import org.zowe.apiml.security.SecurityUtils;
 import javax.annotation.PostConstruct;
 import java.security.*;
 
+/**
+ * This service provides a digital signature of any authentication source (or any byte array)
+ * and the associated public key which can be used for the signature verification.
+ */
 @Service
 @Slf4j
 public class AuthSourceSign {
@@ -41,6 +45,9 @@ public class AuthSourceSign {
 
     private PrivateKey privateKey;
 
+    /**
+     * Get the public key for the signature verification
+     */
     @Getter
     private PublicKey publicKey;
 
@@ -48,6 +55,14 @@ public class AuthSourceSign {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
+    /**
+     * Generates the digital signature of the provided data array.
+     * The algorithm used for the signature is {@value #ALGORITHM}.
+     *
+     * @param data Byte array of the data which should be signed.
+     * @return The digital signature in the form of byte array
+     * @throws SignatureException when generating signature fails. The message provides details of the failure.
+     */
     public byte[] sign(byte[] data) throws SignatureException {
         Signature signature;
         try {
@@ -64,6 +79,15 @@ public class AuthSourceSign {
         }
     }
 
+    /**
+     * Verifies the validity of the signature and provided data array. The public key provided by {@link AuthSourceSign#getPublicKey()}
+     * is used for the verification. (This method is currently used only in tests)
+     *
+     * @param data          The byte array of data which should be verified
+     * @param dataSignature The byte array of the associated signature
+     * @return True if the signature is valid for provided block of data. False otherwise.
+     * @throws SignatureException when validation of the signature fails. The message provides details of the failure.
+     */
     public boolean verify(byte[] data, byte[] dataSignature) throws SignatureException {
         Signature signature;
         try {
@@ -89,11 +113,11 @@ public class AuthSourceSign {
 
     private HttpsConfig currentConfig() {
         return HttpsConfig.builder()
-                .keyAlias(keyAlias)
-                .keyStore(keyStore)
-                .keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword)
-                .keyStoreType(keyStoreType)
-                .build();
+            .keyAlias(keyAlias)
+            .keyStore(keyStore)
+            .keyPassword(keyPassword)
+            .keyStorePassword(keyStorePassword)
+            .keyStoreType(keyStoreType)
+            .build();
     }
 }

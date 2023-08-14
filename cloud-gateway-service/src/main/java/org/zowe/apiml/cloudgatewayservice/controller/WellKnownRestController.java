@@ -26,6 +26,11 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 
+/**
+ * Controller to provide the /.well-known information. Especially the jwk set with the public key used
+ * for the verification of digital signature.
+ * Currently, this controller should be available only when the Cloud Gateway is in proxy mode.
+ */
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(WellKnownRestController.CONTROLLER_PATH)
