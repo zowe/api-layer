@@ -18,10 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigInteger;
 import java.net.URL;
 import java.security.*;
-import java.security.spec.RSAPublicKeySpec;
 
 /**
  * Service to retrieve the public key during initialization of CertificateValidator bean. The public key is then used to verify the
@@ -40,16 +38,8 @@ public class CertificateValidator {
     public void initializePublicKey() {
         try {
             JWKSet jwkSet = JWKSet.load(new URL(publicKeyEndpoint));
-
             RSAKey rsaKey = (RSAKey) jwkSet.getKeys().get(0);
-
-            BigInteger modulus = rsaKey.getModulus().decodeToBigInteger();
-            BigInteger publicExponent = rsaKey.getPublicExponent().decodeToBigInteger();
-
-            RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(modulus, publicExponent);
-
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            publicKey = keyFactory.generatePublic(rsaPublicKeySpec);
+            publicKey = rsaKey.toPublicKey();
         } catch (Exception e) {
             log.error("Failed to initialize public key. {}", e.getMessage());
         }
