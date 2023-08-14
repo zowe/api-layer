@@ -93,19 +93,33 @@ public class ValidateAPIController {
             return generateBadRequestResponseEntity(NO_METADATA_KEY, foundNonConformanceIssues);
         }
 
-        String swaggerUrl = verificationOnboardService.FindSwaggerUrl(metadata);
 
-        if (swaggerUrl == null || swaggerUrl.equals("")){
+        String swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
+
+        if (swaggerUrl == null || swaggerUrl.equals("")) {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, "Could not find Swagger Url");
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
         }
 
         String swagger = verificationOnboardService.getSwagger(swaggerUrl);
-        foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateSwagger(swagger));
+        AbstractSwaggerParser swaggerParser;
 
+        try {
+            swaggerParser = ParserFactory.parseSwagger(swagger);
+        } catch (SwaggerParsingException e) {
+            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, e.getMessage());
+            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
+        }
+
+        List<String> parserResponses = swaggerParser.getMessages();
+
+        if (parserResponses != null) {
+            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, parserResponses);
+        }
         if (foundNonConformanceIssues.size() != 0) {
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
         }
+
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
@@ -214,18 +228,6 @@ public class ValidateAPIController {
         }
 
         return result;
-    }
-
-
-    /**
-     * Checks if the service has valid Swagger documentation.
-     * If it's not than it doesn't fulfill Item 10 of conformance criteria
-     *
-     * @param metadata to check
-     * @return list of found issues, empty when conformant
-     */
-    private ArrayList<String> validateSwagger(String swaggerDoc) {
-        return verificationOnboardService.verifySwaggerDocumentation(swaggerDoc);
     }
 
 

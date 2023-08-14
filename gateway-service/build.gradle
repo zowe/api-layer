@@ -75,7 +75,8 @@ dependencies {
 
     implementation libs.ribbon.eureka
     implementation libs.swagger3.parser
-    implementation group: 'io.swagger', name: 'swagger-parser', version: '2.0.0-rc1'
+    implementation libs.swagger.models
+    implementation libs.swagger.inflector
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind

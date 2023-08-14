@@ -10,20 +10,11 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.parser.OpenAPIV3Parser;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import v2.io.swagger.parser.SwaggerParser;
-import v2.io.swagger.parser.util.SwaggerDeserializationResult;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +27,7 @@ import java.util.Map;
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
+
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -58,8 +50,7 @@ public class VerificationOnboardService {
      * @param metadata to grab swagger from
      * @return SwaggerUrl when able, empty string otherwise
      */
-    public String FindSwaggerUrl(Map<String, String> metadata) {
-
+    public String findSwaggerUrl(Map<String, String> metadata) {
 
         String swaggerKey = null;
         for (String key : metadata.keySet()) {
@@ -83,69 +74,11 @@ public class VerificationOnboardService {
         RestTemplate restTemplate = new RestTemplate();
 
         String response;
-        ObjectMapper mapper = new ObjectMapper();
         response = restTemplate.getForEntity(swaggerUrl, String.class).getBody();
 
         return response;
     }
 
-
-    /**
-     * Accept serviceId and check if the
-     *
-     * @param SwaggerDoc
-     * @return return swagger Url if the metadata can be retrieved, otherwise an empty string.
-     */
-    public ArrayList<String> verifySwaggerDocumentation(String SwaggerDoc) {
-        return new ArrayList<>(validateConformanceToSwaggerSpecification(SwaggerDoc));
-    }
-
-
-    public ArrayList<String> validateConformanceToSwaggerSpecification(String SwaggerDoc) {
-
-        JsonNode root;
-        try {
-            root = new ObjectMapper().readTree(SwaggerDoc);
-        } catch (JsonProcessingException e) {
-            return new ArrayList<>(Collections.singleton("Could not parse Swagger documentation"));
-        }
-
-        if (root.findValue("openapi") != null && root.findValue("openapi").asText().split("\\.")[0].equals("3")) {
-
-            return validateOpenApi3(SwaggerDoc);
-
-        } else if (root.findValue("swagger") != null && root.findValue("swagger").asText().equals("2.0")) {
-
-            return validateOpenApi2(SwaggerDoc);
-
-        } else
-            return new ArrayList<>(Collections.singleton("Swagger documentation is not conformant to either OpenAPI V2 nor V3 - can't find the version (that is cant find field named 'swagger' with value '2.0' or 'openapi' with version starting with '3' )"));
-
-    }
-
-
-    private ArrayList<String> validateOpenApi3(String swaggerAsString) {
-
-        ArrayList<String> result = new ArrayList<>();
-
-        SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(swaggerAsString);
-
-        if (parseResult.getMessages() != null) result.addAll(parseResult.getMessages());
-
-        return result;
-    }
-
-
-    private ArrayList<String> validateOpenApi2(String swaggerAsString) {
-
-        ArrayList<String> result = new ArrayList<>();
-
-        SwaggerDeserializationResult parseResult = new SwaggerParser().readWithInfo(swaggerAsString);
-
-        if (parseResult.getMessages() != null) result.addAll(parseResult.getMessages());
-
-        return result;
-    }
 
 
 }
