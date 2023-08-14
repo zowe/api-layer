@@ -116,13 +116,18 @@ export default class DetailPage extends Component {
                             </IconButton>
                             <br />
                             <br />
-                            <Typography style={{ color: '#de1b1b' }} data-testid="detail-page-error" variant="subtitle2">
-                                Tile details for "{currentTileId}" could not be retrieved, the following error was returned:
+                            <Typography
+                                style={{ color: '#de1b1b' }}
+                                data-testid="detail-page-error"
+                                variant="subtitle2"
+                            >
+                                Tile details for "{currentTileId}" could not be retrieved, the following error was
+                                returned:
                             </Typography>
                             {error}
                         </div>
                     )}
-                    
+
                     {!isLoading && !fetchTilesError && (
                         <div className="api-description-container">
                             {!apiPortalEnabled && (
@@ -159,7 +164,10 @@ export default class DetailPage extends Component {
                                         On this page
                                     </Typography>
                                     <Container>
-                                        <Link className="links" onClick={(e) => this.handleLinkClick(e, '#swagger-label')}>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#swagger-label')}
+                                        >
                                             Swagger
                                         </Link>
                                         <Link
@@ -174,7 +182,10 @@ export default class DetailPage extends Component {
                                         >
                                             Tutorials ({tutorialsCounter})
                                         </Link>
-                                        <Link className="links" onClick={(e) => this.handleLinkClick(e, '#videos-label')}>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#videos-label')}
+                                        >
                                             Videos ({videosCounter})
                                         </Link>
                                     </Container>
@@ -191,7 +202,10 @@ export default class DetailPage extends Component {
                                             exact
                                             path={`${match.path}`}
                                             render={() => (
-                                                <Redirect replace to={`${match.url}/${tiles[0].services[0].serviceId}`} />
+                                                <Redirect
+                                                    replace
+                                                    to={`${match.url}/${tiles[0].services[0].serviceId}`}
+                                                />
                                             )}
                                         />
                                         <Route
@@ -223,7 +237,7 @@ export default class DetailPage extends Component {
                     </div>
                 </div>
 
-                <div className="side-bar"></div>
+                <div className="side-bar" />
             </div>
         );
     }
