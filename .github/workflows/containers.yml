@@ -142,6 +142,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_AUTHVIAHEADER: true
+                    APIML_SECURITY_X509_PUBLICKEYURL: https://cloud-gateway-service:10023/gateway/.well-known/jwks.json
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:

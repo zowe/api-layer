@@ -12,6 +12,7 @@ package org.zowe.apiml.security.common.verify;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,10 @@ import java.security.*;
 public class CertificateValidator {
     private PublicKey publicKey;
     private static final String ALGORITHM = "SHA256withRSA";
+
+    @Getter
+    @Value("${apiml.security.x509.authViaHeader:false}")
+    private boolean certInHeader;
     @Value("${apiml.security.x509.publicKeyUrl:}")
     private String publicKeyEndpoint;
 

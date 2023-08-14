@@ -13,8 +13,6 @@ package org.zowe.apiml.security.common.filter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
@@ -41,7 +39,6 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 @Slf4j
-@Component
 public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
@@ -49,8 +46,6 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
     private static final String X_AUTH_SOURCE = "x-auth-source";
     private static final String X_AUTH_SIGNATURE = "x-auth-signature";
-    @Value("${apiml.security.x509.authViaHeader:false}")
-    private boolean x509AuthViaHeader;
     private final Set<String> publicKeyCertificatesBase64;
     private final CertificateValidator certificateValidator;
 
@@ -89,7 +84,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (x509AuthViaHeader) {
+        if (certificateValidator.isCertInHeader()) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             String certFromHeader = httpRequest.getHeader(X_AUTH_SOURCE);
             String certSignature = httpRequest.getHeader(X_AUTH_SIGNATURE);
