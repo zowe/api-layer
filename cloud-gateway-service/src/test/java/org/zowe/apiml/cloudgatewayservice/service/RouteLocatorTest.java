@@ -10,78 +10,218 @@
 
 package org.zowe.apiml.cloudgatewayservice.service;
 
+import org.apache.logging.log4j.util.TriConsumer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.cloud.client.DefaultServiceInstance;
+import org.mockito.ArgumentCaptor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.cloudgatewayservice.service.routing.RouteDefinitionProducer;
+import org.zowe.apiml.cloudgatewayservice.service.scheme.SchemeHandler;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 class RouteLocatorTest {
 
-    static Map<String, String> metadata = new HashMap<>();
+    private static final FilterDefinition[] COMMON_FILTERS = {
+        new FilterDefinition(), new FilterDefinition()
+    };
+    private static final SchemeHandler[] SCHEME_HANDLER_FILTERS = {
+        createSchemeHandler(AuthenticationScheme.BYPASS), createSchemeHandler(AuthenticationScheme.ZOWE_JWT)
+    };
+    private static final RouteDefinitionProducer[] PRODUCERS = {
+        createRouteDefinitionProducer(5, "id5"),
+        createRouteDefinitionProducer(0, "id0"),
+        createRouteDefinitionProducer(10, "id10")
+    };
 
-    static {
-        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
-        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
+    private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = mock(UrlBasedCorsConfigurationSource.class);
+    private CorsUtils corsUtils = mock(CorsUtils.class);
+    private ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
+
+    private RouteLocator routeLocator;
+
+    @BeforeEach
+    void init() {
+        ApplicationContext context = mock(ApplicationContext.class);
+        doReturn(urlBasedCorsConfigurationSource).when(context).getBean(UrlBasedCorsConfigurationSource.class);
+
+        routeLocator = spy(new RouteLocator(
+            context,
+            corsUtils,
+            discoveryClient,
+            Arrays.asList(COMMON_FILTERS),
+            Arrays.asList(SCHEME_HANDLER_FILTERS),
+            Arrays.asList(PRODUCERS)
+        ));
     }
 
-    ServiceInstance instance = new DefaultServiceInstance("gateway-10012", "gateway", "gatewayhost", 10012, true, metadata);
-    ServiceInstance instance2 = new DefaultServiceInstance("gateway-2-10012", "gateway", "gatewayhost-2", 10012, true, metadata);
-    ReactiveDiscoveryClient dc = mock(ReactiveDiscoveryClient.class);
-    DiscoveryLocatorProperties properties = new DiscoveryLocatorProperties();
+    private ServiceInstance createServiceInstance(String serviceId, String...routes) {
+        ServiceInstance serviceInstance = mock(ServiceInstance.class);
+        doReturn(serviceId).when(serviceInstance).getServiceId();
 
-//    @Nested
-//    class GivenRouteLocator {
-//        @Test
-//        void givenServiceWithDefinedMetadata_thenLocateRoutes() {
-//            Flux<String> services = Flux.fromIterable(Collections.singleton("gateway"));
-//            Flux<ServiceInstance> serviceInstances = Flux.fromIterable(Collections.singleton(instance));
-//            when(dc.getServices()).thenReturn(services);
-//            when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-//            CorsUtils corsUtils = new CorsUtils(false);
-//            RouteLocator locator = new RouteLocator(dc, properties, Collections.singletonList(new FilterDefinition("name=value")), null, corsUtils);
-//            Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
-//            List<RouteDefinition> definitions = definitionFlux.collectList().block();
-//            assertNotNull(definitions);
-//            assertEquals(1, definitions.size());
-//        }
-//    }
-//
-//    @Nested
-//    class GivenProxyRouteLocator {
-//        @Test
-//        void whenServiceIsMatched_thenCreateRouteWithCorrectPredicate() {
-//            Flux<String> services = Flux.fromIterable(Collections.singleton("gateway"));
-//            List<ServiceInstance> instances = Arrays.asList(instance, instance2);
-//            Flux<ServiceInstance> serviceInstances = Flux.fromIterable(instances);
-//            when(dc.getServices()).thenReturn(services);
-//            when(dc.getInstances("gateway")).thenReturn(serviceInstances);
-//            CorsUtils corsUtils = new CorsUtils(false);
-//            ProxyRouteLocator locator = new ProxyRouteLocator(dc, properties, Collections.emptyList(), null, corsUtils);
-//            Flux<RouteDefinition> definitionFlux = locator.getRouteDefinitions();
-//            List<RouteDefinition> definitions = definitionFlux.collectList().block();
-//            assertNotNull(definitions);
-//            assertEquals(2, definitions.size());
-//            for (int i = 0; i < definitions.size(); i++) {
-//                RouteDefinition def = definitions.get(i);
-//                String expression = def.getPredicates().get(0).getArgs().get("regexp");
-//                assertTrue(Pattern.matches(expression, instances.get(i).getServiceId() + instances.get(i).getHost()));
-//            }
-//        }
-//    }
+        Map<String, String> metadata = new HashMap<>();
+        int i = 1;
+        for (String route : routes) {
+            metadata.put("apiml.routes.api-v" + i + ".gatewayUrl", route);
+            metadata.put("apiml.routes.api-v" + i + ".serviceUrl", route);
+            i++;
+        }
+        doReturn(metadata).when(serviceInstance).getMetadata();
 
+        return serviceInstance;
+    }
+
+    private static SchemeHandler createSchemeHandler(AuthenticationScheme type) {
+        SchemeHandler out = mock(SchemeHandler.class);
+        doReturn(type).when(out).getAuthenticationScheme();
+        return out;
+    }
+
+    private static RouteDefinitionProducer createRouteDefinitionProducer(int order, String id) {
+        EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+        RouteDefinitionProducer rdp = mock(RouteDefinitionProducer.class);
+        doReturn(order).when(rdp).getOrder();
+        doAnswer(answer -> {
+            ServiceInstance serviceInstance = answer.getArgument(0);
+            RoutedService routedService = answer.getArgument(1);
+
+            RouteDefinition routeDefinition = new RouteDefinition();
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("serviceId", serviceInstance.getServiceId());
+            metadata.put("gatewayUrl", routedService.getGatewayUrl());
+            metadata.put("producerId", id);
+            routeDefinition.setMetadata(metadata);
+
+            return routeDefinition;
+        }).when(rdp).get(any(), any());
+        return rdp;
+    }
+
+    @Nested
+    class CommonMethods {
+
+        @Test
+        void givenDiscoveryClient_whenGetServiceInstances_thenMapThem() {
+            when(discoveryClient.getServices()).thenReturn(Flux.fromArray(new String[] {"service1", "service2"}));
+            ServiceInstance serviceInstance1 = mock(ServiceInstance.class);
+            ServiceInstance serviceInstance2 = mock(ServiceInstance.class);
+            doReturn(Flux.just(serviceInstance1)).when(discoveryClient).getInstances("service1");
+            doReturn(Flux.just(serviceInstance2)).when(discoveryClient).getInstances("service2");
+
+            doCallRealMethod().when(routeLocator).getServiceInstances();
+            assertArrayEquals(
+                new Object[] {Collections.singletonList(serviceInstance1), Collections.singletonList(serviceInstance2)},
+                routeLocator.getServiceInstances().toStream().toArray()
+            );
+        }
+
+        @Test
+        void givenNoAuthentication_whenSetAuth_thenDoNothing() {
+            assertDoesNotThrow(() -> routeLocator.setAuth(null, null));
+        }
+
+        @Test
+        void givenNoAuthenticationScheme_whenSetAuth_thenDoNothing() {
+            assertDoesNotThrow(() -> routeLocator.setAuth(null, new Authentication()));
+        }
+
+        @Test
+        void givenUnknownAuthenticationScheme_whenSetAuth_thenDoNothing() {
+            assertDoesNotThrow(() -> routeLocator.setAuth(null, new Authentication(AuthenticationScheme.X509, null)));
+        }
+
+        @Test
+        void givenExistingAuthenticationScheme_whenSetAuth_thenCallApply() {
+            RouteDefinition routeDefinition = mock(RouteDefinition.class);
+            Authentication authentication = new Authentication(AuthenticationScheme.BYPASS, null);
+
+            routeLocator.setAuth(routeDefinition, authentication);
+
+            verify(SCHEME_HANDLER_FILTERS[0]).apply(routeDefinition, authentication);
+        }
+
+        private TriConsumer<String, String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
+            ServiceInstance serviceInstance = createServiceInstance("myservice", "api/v1");
+            metadataProcessor.accept(serviceInstance.getMetadata());
+
+            routeLocator.setCors(serviceInstance);
+            ArgumentCaptor<TriConsumer<String, String, CorsConfiguration>> lambdaCaptor = ArgumentCaptor.forClass(TriConsumer.class);
+            verify(corsUtils).setCorsConfiguration(anyString(), any(), lambdaCaptor.capture());
+
+            return lambdaCaptor.getValue();
+        }
+
+        @Test
+        void givenApimlId_whenSetCors_thenServiceIdIsReplacedWithApimlId() {
+            TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> md.put(APIML_ID, "apimlid"));
+
+            corsLambda.accept(null, "myservice", null);
+
+            verify(urlBasedCorsConfigurationSource).registerCorsConfiguration("/apimlid/**", null);
+        }
+
+        @Test
+        void givenNoApimlId_whenSetCors_thenServiceIdIsUsed() {
+            TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {});
+
+            corsLambda.accept(null, "myservice", null);
+
+            verify(urlBasedCorsConfigurationSource).registerCorsConfiguration("/myservice/**", null);
+        }
+
+    }
+
+    @Nested
+    class Generating {
+
+        @Test
+        void givenRouteLocator_whenGetRouteDefinitions_thenGenerateAll() {
+            doReturn(Flux.fromIterable(Arrays.asList(
+                Arrays.asList(
+                    createServiceInstance("service1", "/", "/a/b"),
+                    createServiceInstance("service2", "/a/b", "/")
+                )
+            ))).when(routeLocator).getServiceInstances();
+
+            RouteDefinition[] rds = routeLocator.getRouteDefinitions().toStream().toArray(RouteDefinition[]::new);
+
+            int index = 0;
+            for (String serviceId : new String[] {"service1", "service2"}) {
+                verify(corsUtils).setCorsConfiguration(eq(serviceId), any(), any());
+
+                for (String gatewayUrl : new String[] {"a/b", ""}) {
+                    for (String producerId : new String[] {"id0", "id5", "id10"}) {
+                        assertEquals(index, rds[index].getOrder());
+                        assertEquals(serviceId, rds[index].getMetadata().get("serviceId"));
+                        assertEquals(gatewayUrl, rds[index].getMetadata().get("gatewayUrl"));
+                        assertEquals(producerId, rds[index].getMetadata().get("producerId"));
+                        index++;
+                    }
+                }
+            }
+        }
+
+    }
 
 }

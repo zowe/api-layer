@@ -20,6 +20,7 @@
  * INTERRUPTION, GOODWILL, OR LOST DATA, EVEN IF BROADCOM IS
  * EXPRESSLY ADVISED OF SUCH LOSS OR DAMAGE.
  */
+
 package org.zowe.apiml.cloudgatewayservice.service;
 
 import lombok.AccessLevel;
@@ -33,6 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.cloudgatewayservice.service.scheme.SchemeHandler;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -60,7 +62,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private final List<FilterDefinition> commonFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
-    private final Map<String, SchemeHandler> schemeHandlers = new HashMap<>();
+    private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new HashMap<>();
 
     @Getter(lazy=true, value = AccessLevel.PRIVATE)
     private final UrlBasedCorsConfigurationSource corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
@@ -80,17 +82,17 @@ public class RouteLocator implements RouteDefinitionLocator {
         this.routeDefinitionProducers = routeDefinitionProducers;
 
         for (SchemeHandler schemeHandler : schemeHandlersList) {
-            schemeHandlers.put(schemeHandler.getAuthenticationScheme().getScheme(), schemeHandler);
+            schemeHandlers.put(schemeHandler.getAuthenticationScheme(), schemeHandler);
         }
     }
 
-    private Flux<List<ServiceInstance>> getServiceInstances() {
+    Flux<List<ServiceInstance>> getServiceInstances() {
         return discoveryClient.getServices()
             .flatMap(service -> discoveryClient.getInstances(service)
             .collectList());
     }
 
-    protected void setAuth(RouteDefinition routeDefinition, Authentication auth) {
+    void setAuth(RouteDefinition routeDefinition, Authentication auth) {
         if (auth != null && auth.getScheme() != null) {
             SchemeHandler schemeHandler = schemeHandlers.get(auth.getScheme());
             if (schemeHandler != null) {
@@ -99,7 +101,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         }
     }
 
-    private void setCors(ServiceInstance serviceInstance) {
+    void setCors(ServiceInstance serviceInstance) {
         corsUtils.setCorsConfiguration(
             serviceInstance.getServiceId().toLowerCase(),
             serviceInstance.getMetadata(),
@@ -109,12 +111,6 @@ public class RouteLocator implements RouteDefinitionLocator {
             });
     }
 
-    private String normalizeUrl(String in) {
-        in = in.replaceAll("\\*", "");
-        in = StringUtils.removeFirstAndLastOccurrence(in, "/");
-        return in;
-    }
-
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
         EurekaMetadataParser metadataParser = new EurekaMetadataParser();
@@ -122,8 +118,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         /**
          * It generates each rule for each combination of instance x routing x generator ({@link RouteDefinitionProducer})
          *
-         * The routes are sorted by serviceUrl to avoid clashing between multiple levels of paths, ie. /** vs /a, stars are
-         * removed in {@link #normalizeUrl(String)}.
+         * The routes are sorted by serviceUrl to avoid clashing between multiple levels of paths, ie. / vs. /a.
          *
          * Sorting routes and generators by order allows to redefine order of each rule. There is no possible to have
          * multiple valid rules for the same case at one moment.
@@ -133,7 +128,7 @@ public class RouteLocator implements RouteDefinitionLocator {
             setCors(serviceInstance);
             return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
                 // sorting avoid a conflict with the more general pattern
-                .sorted(Comparator.<RoutedService>comparingInt(x -> normalizeUrl(x.getServiceUrl()).length()).reversed())
+                .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed())
                 .map(routedService ->
                     routeDefinitionProducers.stream()
                     .sorted(Comparator.comparingInt(x -> x.getOrder()))
