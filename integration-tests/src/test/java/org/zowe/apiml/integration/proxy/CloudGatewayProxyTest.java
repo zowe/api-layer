@@ -15,6 +15,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.HttpsConfig;
@@ -24,9 +25,9 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.TlsConfiguration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.PublicKey;
 import java.text.ParseException;
 import java.time.Duration;
@@ -47,8 +48,7 @@ class CloudGatewayProxyTest {
     static PublicKey publicKey;
 
     @BeforeAll
-    static void setup() {
-        RestAssured.useRelaxedHTTPSValidation();
+    static void init() {
         conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
         TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
         HttpsConfig config = HttpsConfig.builder()
@@ -60,6 +60,11 @@ class CloudGatewayProxyTest {
             .build();
         publicKey = loadPublicKey(config);
         assertNotNull(publicKey);
+    }
+
+    @BeforeEach
+    void setUp() {
+        RestAssured.useRelaxedHTTPSValidation();
     }
 
     @Test
@@ -102,14 +107,15 @@ class CloudGatewayProxyTest {
     @Test
     void givenWellKnownRequest_thenJWKSetContainsPublicKey() throws URISyntaxException, IOException, ParseException, JOSEException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_WELL_KNOWN_JWKS);
-        // test if the endpoint is alive
-        given()
-            .when()
-            .get(new URI(scgUrl))
-            .then()
-            .statusCode(HttpStatus.SC_OK);
-        // test that public key can be retrieved
-        JWKSet jwkSet = JWKSet.load(new URL(scgUrl));
+        InputStream response =
+            given()
+                .when()
+                .get(new URI(scgUrl))
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().body().asInputStream();
+
+        JWKSet jwkSet = JWKSet.load(response);
         assertNotNull(jwkSet.getKeys());
         assertFalse(jwkSet.getKeys().isEmpty());
         assertEquals(publicKey, jwkSet.getKeys().get(0).toRSAKey().toPublicKey());
