@@ -51,7 +51,7 @@ class CategorizeCertsFilterTest {
 
         @BeforeEach
         void setUp() {
-            filter = new CategorizeCertsFilter(Collections.emptySet());
+            filter = new CategorizeCertsFilter(Collections.emptySet(), null);
         }
 
         @Nested
@@ -126,7 +126,7 @@ class CategorizeCertsFilterTest {
             filter = new CategorizeCertsFilter(new HashSet<>(Arrays.asList(
                 X509Utils.correctBase64("apimlCert1"),
                 X509Utils.correctBase64("apimlCert2")
-            )));
+            )), null);
         }
 
         @Nested

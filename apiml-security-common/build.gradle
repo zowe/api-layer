@@ -18,6 +18,7 @@ dependencies {
     implementation libs.spring.expression
     implementation libs.spring.web
     implementation libs.spring.webmvc
+    implementation libs.nimbusJoseJwt
 
     compileOnly libs.javax.servlet.api
     compileOnly libs.lombok

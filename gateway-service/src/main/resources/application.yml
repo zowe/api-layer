@@ -87,6 +87,7 @@ apiml:
         x509:
             enabled: false
             authViaHeader: false
+            publicKeyUrl:
             externalMapperUrl:
         saf:
             provider: rest

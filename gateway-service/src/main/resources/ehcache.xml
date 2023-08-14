@@ -15,5 +15,6 @@
     <cache name="zosmfJwtEndpoint" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="60" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="validationOIDCToken" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="20" timeToLiveSeconds="20" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="parseOIDCToken" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="20" timeToLiveSeconds="20" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
+    <cache name="publicKey" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="20" timeToLiveSeconds="20" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
 
 </ehcache>

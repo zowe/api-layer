@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -46,41 +48,55 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
     private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
     private static final String X_AUTH_SOURCE = "x-auth-source";
+    private static final String X_AUTH_SIGNATURE = "x-auth-signature";
     @Value("${apiml.security.x509.authViaHeader:false}")
     private boolean x509AuthViaHeader;
     private final Set<String> publicKeyCertificatesBase64;
+    private final CertificateValidator certificateValidator;
 
     public Set<String> getPublicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
     }
 
+    private X509Certificate[] getX509Certificates(X509Certificate[] certs, String certFromHeader, String certSignature) throws SignatureException, CertificateException, IOException {
+        byte[] decodedCertData = Base64.getDecoder().decode(certFromHeader);
+        byte[] decodedSignatureData = Base64.getDecoder().decode(certSignature);
+        boolean certificateIntegrity = certificateValidator.verify(decodedCertData, decodedSignatureData);
+        if (certificateIntegrity) {
+            if (certs == null) {
+                certs = new X509Certificate[0];
+            }
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            InputStream certStream = new ByteArrayInputStream(decodedCertData);
+            X509Certificate certificate = (X509Certificate) cf.generateCertificate(certStream);
+            certStream.close();
+            certs = Arrays.stream(certs)
+                .map(cert -> cert.equals(certificate) ? certificate : cert)
+                .toArray(X509Certificate[]::new);
+            certs = Arrays.copyOf(certs, certs.length + 1);
+            certs[certs.length - 1] = certificate;
+            return certs;
+        }
+        return certs;
+    }
+
     /**
      * Get certificates from request (if exists), separate them (to use only APIML certificate to request sign and
      * other for authentication) and store again into request.
-     *
+     * If authentication via certificate in header is enabled, get certificate from a custom authentication header,
+     * decrypt it to validate its authenticity using the public key and store it in the request.
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
         if (x509AuthViaHeader) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
-            if (certs == null) {
-                certs = new X509Certificate[0];
-            }
             String certFromHeader = httpRequest.getHeader(X_AUTH_SOURCE);
-            if (certFromHeader != null && !certFromHeader.isEmpty()) {
+            String certSignature = httpRequest.getHeader(X_AUTH_SIGNATURE);
+            if (certFromHeader != null && certSignature != null && !certFromHeader.isEmpty() && !certSignature.isEmpty()) {
                 try {
-                    byte[] decodedCertData = Base64.getDecoder().decode(certFromHeader);
-                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                    InputStream certStream = new ByteArrayInputStream(decodedCertData);
-                    X509Certificate certificate = (X509Certificate) cf.generateCertificate(certStream);
-                    certStream.close();
-                    certs = Arrays.stream(certs)
-                        .map(cert -> cert.equals(certificate) ? certificate : cert)
-                        .toArray(X509Certificate[]::new);
-                    certs = Arrays.copyOf(certs, certs.length + 1);
-                    certs[certs.length - 1] = certificate;
-                } catch (CertificateException | IOException e) {
+                    certs = getX509Certificates(certs, certFromHeader, certSignature);
+                } catch (CertificateException | IOException | SignatureException e) {
                     log.error("Cannot extract X509 certificate from the authentication header {}", X_AUTH_SOURCE, e);
                 }
             }
