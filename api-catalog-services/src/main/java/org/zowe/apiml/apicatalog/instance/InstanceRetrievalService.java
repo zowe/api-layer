@@ -109,7 +109,7 @@ public class InstanceRetrievalService {
                 String responseBody = queryDiscoveryForInstances(requestInfo);
                 return extractApplications(responseBody);
             } catch (Exception e) {
-                log.debug("Not able to contact discovery service: " + requestInfo.getEurekaRequestUrl(), e);
+                log.debug("Not able to contact discovery service: {}", requestInfo.getEurekaRequestUrl(), e);
             }
         }
         //  call Eureka REST endpoint to fetch single or all Instances
