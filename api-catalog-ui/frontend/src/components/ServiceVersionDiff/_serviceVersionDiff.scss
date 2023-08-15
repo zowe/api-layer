@@ -1,233 +1,112 @@
-$color_1: #58606e;
-$color_2: #fff;
-$color_3: #dfdfdf;
-$color_4: #d8fa3c;
-$color_5: #F44336;
-$color_6: #3e373785;
-$color_7: rgb(50, 114, 217);
 $font-family_1: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-$background-color_1: #0B7CAF;
-$background-color_2: #009688;
-$background-color_3: #c5862b;
-$background-color_4: #F44336;
-$background-color_5: #504949;
-$background-color_6: rgb(255, 255, 255);
-$background-color_7: rgb(200, 209, 224);
-$border-color_1: rgb(200, 209, 224);
 
 /* Class for link show/hide article */
 .api-diff-container {
     margin: auto;
-    padding-top: 20px;
+    padding-top: var( --spaceLarge );
 }
 .api-diff-form {
-    margin: auto;
     display: flex;
-    width: fit-content;
-    >p {
-        margin-top: auto;
-        padding-left: 8px;
-        padding-right: 18px;
-        font-size: x-large;
-        color: $color_1;
-    }
-    >button {
-        margin-left: 8px;
-    }
-}
-.article {
-    padding: 20px;
-    max-width: 960px;
-    margin: 0px auto;
-    box-shadow: 0px 0px 4px #ccc;
-    background: #fff;
-    margin-top: 80px;
-    >div {
-        padding: 10px 10px;
+    align-items: center;
+    background: var( --surface15 );
+    border: 1px solid var( --surface25 );
+    padding: var( --spaceSmall );
+    border-radius: var( --borderRadius1 );
+    justify-content: space-around;
+    margin: 0 0 var( --spaceSmall );
+
+    > *:not(:last-child) {
+        margin-right: var( --spaceSmall );
     }
 }
-.POST {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_1;
-}
-.post {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_1;
-}
-.get {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_2;
-}
-.GET {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_2;
-}
-.put {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_3;
-}
-.PUT {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_3;
-}
-.delete {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_4;
-}
-.DELETE {
-    color: $color_2;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 8px;
-    margin: 0 4px;
-    width: 40px;
-    display: inline-block;
-    text-align: center;
-    background-color: $background-color_4;
-}
-hr {
-    color: $color_3;
-}
-ol {
-    >li {
-        margin: 24px;
-        >ul {
-            background-color: $background-color_5;
-            color: $color_2;
-            padding: 8px 16px;
+.api-diff-content {
+    .article > div {
+        padding: var( --spaceSmaller );
+
+        ol {
+            padding-left: var( --spaceMedium );
+
+            > li {
+                margin: 24px;
+
+                > * {
+                    vertical-align: middle;
+                }
+
+                > ul {
+                    background-color: var( --surface105 );
+                    color: var( --surface05 );
+                    padding: var( --spaceSmaller ) var( --spaceMedium );
+                    margin: 10px 0;
+
+                    > li {
+                        margin: 10px 0;
+                    }
+                    &.change > li {
+                        margin: 10px 20px;
+                    }
+                }
+            }
         }
     }
 }
-ul.change {
-    >li {
-        margin: 10px 20px;
-    }
+.POST, .post, .PATCH, .patch, .get, .GET, .put, .PUT, .delete, .DELETE {
+    padding: var( --spaceSmallest );
+    border-radius: var( --borderRadius1 );
+    font-size: var( --fontSmaller );
+    margin: 0 var( --spaceSmallest );
+    width: var( --spaceHuge );
+    display: inline-block;
+    text-align: center;
+    font-weight: var( --fontWeightBold );
 }
-ul {
-    margin: 10px 0;
-    >li {
-        margin: 10px 0;
-    }
+.PATCH,
+.patch {
+    background-color: var( --success20 );
 }
+.POST, .post {
+    background-color: var( --success10 );
+}
+.get, .GET {
+    background-color: var( --info10 );
+}
+.put, .PUT {
+    background-color: var( --warn10 );
+}
+.delete, .DELETE {
+    background-color: var( --critical10 );
+}
+
 .comment {
-    color: $color_4;
-    margin-left: 16px;
+    color: var( --highlight10 );
+    margin-left: var( --spaceMedium );
     font-size: 14px;
 }
 .missing {
-    >s {
+    color: var( --critical10 );
+
+    > s {
         padding: 0 4px;
     }
-    >del {
+    > del {
         padding: 0 4px;
     }
-    color: $color_5;
-    >.comment {
-        color: $color_5;
+    > .comment {
+        color: var( --critical10 );
     }
 }
 s {
-    color: $color_5;
+    color: var( --critical10 );
 }
 del {
-    color: $color_5;
+    color: var( --critical10 );
 }
 del.comment {
-    color: $color_5;
+    color: var( --critical10 );
 }
 .showhide {
-    color: $color_6;
     text-decoration: none;
-    padding: 2px;
-    font-size: 12px;
+    padding: var( --spaceTiny );
+    font-size: var( --spaceSmall );
     float: right;
-}
-#diff-button {
-    margin: 3px 20px;
-    box-sizing: border-box;
-    color: $color_7;
-    font-family: $font-family_1;
-    font-size: 16px;
-    line-height: 1.25;
-    outline: 0px;
-    -webkit-font-smoothing: antialiased;
-    background-color: $background-color_6;
-    border-color: $border-color_1;
-    border-radius: 0.1875em;
-    border-style: solid;
-    border-width: 1px;
-    cursor: pointer;
-    display: inline-block;
-    font-weight: 600;
-    height: 2.5em;
-    min-width: 2.5em;
-    padding: 0px 0.5em;
-    text-decoration: none;
-    vertical-align: middle;
-    &:hover {
-        background: rgb(200, 209, 224);
-        background-color: $background-color_7;
-    }
-}
-.MuiSelect-select {
-    width: 110px;
-}
-
-#dialog-title {
-    margin-top: -70px;
-    color: var(--controlText15);
-}
-
-.select-diff {
-    padding-right: 7px;
-    margin-left: -4px;
 }
