@@ -1,18 +1,16 @@
-$color_1: #CC092F;
-$background-color_1: #fff;
+$color_1: var( --criticalShade10  );
+$background-color_1: var( --surface05 );
 $background-color_2: #f5f7fa;
 
 body .detail-content {
-    h6#resources-menu-title {
-        color: $color_1;
-    }
-    h2#title {
-        margin-left: 12px;
-        color: $color_1;
-        font-weight: initial;
-    }
+  h6#resources-menu-title {
+    color: $color_1;
+  }
+  h2#title {
+    color: $color_1;
+    font-weight: initial;
+  }
   .swagger-ui {
-    padding: var(--spaceMedium) var(--spaceSmall);
     display: block;
 
     > div:first-child,
@@ -35,8 +33,13 @@ body .detail-content {
     .scheme-container {
       margin-top: var( --spaceLargest );
 
-      &.information-container, &.filter {
+      &.information-container,
+      &.filter {
         margin-top: var( --spaceSmall );
+
+        a {
+          @include blueLink();
+        }
       }
       .servers-title {
         display: block;
@@ -59,6 +62,7 @@ body .detail-content {
         }
         pre {
           font-family: var( --fontFamily00 );
+          margin: 0px;
         }
         h2.title {
           @extend .MuiTypography-h4;
@@ -74,7 +78,7 @@ body .detail-content {
   }//end swagger-ui
 
   .header {
-    padding: var( --spaceMedium ) var( --spaceSmall );
+    padding: var( --spaceSmallest ) 0;
     display: flex;
     flex-direction: column;
     background: var( --surface05 );
@@ -123,37 +127,9 @@ body .detail-content {
         }
     }
 
-    .nav-bar {
-        min-height: 84vh;
-        flex-direction: column;
-        align-items: center;
-        min-width: 368px;
-        margin-right: 75px;
-        box-shadow: 0 0 6px hsl(210 14% 90%);
-        padding: 10px 5px 10px 20px;
-        flex: 1 0 0;
-        width: auto;
-        height: auto;
-        display: table-column;
-        float: left;
-        position: relative;
-        background: #F7F9FA;
-    }
-
     .links {
         display: flex;
         font-size: 14px;
-    }
-
-    .content {
-        &, .main-content2 detail-content {
-            display: contents;
-        }
-    }
-
-    .paragraph-description-container {
-        width: 80%;
-        margin-left: 12px;
     }
     #description {
         position: relative;
@@ -165,19 +141,19 @@ body .detail-content {
     #go-back-button {
         display: inline;
         margin-top: 20px;
-        font-size: 13px;
         font-weight: bold;
-        width: fit-content;
-        padding-left: .6rem;
-        padding-right: .6rem;
         height: 32px;
-        border-radius: 3px;
         background-color: $background-color_1;
+        padding-left: var( --spaceSmallest );
         cursor: pointer;
         color: $color_1;
         transition: .3s background-color;
+
         &:hover {
             background-color: $background-color_2;
+        }
+        .MuiSvgIcon-root {
+          margin: 0px;
         }
     }
 
@@ -192,19 +168,12 @@ body .detail-content {
         pointer-events: none;
     }
 
-    #footer-divider {
-        margin: none;
-    }
-
     span.schemes-title {
-        margin-right: 8px;
+        margin-right: var( --spaceSmaller );
     }
 
     .detailed-description-container {
         display: flow-root;
-    }
-    .no-tiles-container {
-        margin-left: 20px;
     }
 
     .btn > h4 {

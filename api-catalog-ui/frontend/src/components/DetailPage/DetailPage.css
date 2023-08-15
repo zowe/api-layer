@@ -1,6 +1,9 @@
 * {
     box-sizing: border-box;
 }
+.main {
+    display: flex;
+}
 
 .main-content2 detail-content {
     display: flex;
@@ -51,7 +54,6 @@
 }
 
 .api-description-container {
-    margin-left: 375px;
     padding: 2.2rem;
 }
 
