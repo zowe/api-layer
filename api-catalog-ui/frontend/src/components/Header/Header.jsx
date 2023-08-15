@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled } from '@material-ui/core';
 import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import productImage from '../../assets/images/broadcom.svg';
+import productImage from '../../assets/images/api-catalog-logo.png';
 import zoweDocsImage from '../../assets/images/zowe-docs.png';
 import zoweAuthImage from '../../assets/images/zowe-auth.png';
 import customDoc from '../../assets/images/custom-doc.png';
