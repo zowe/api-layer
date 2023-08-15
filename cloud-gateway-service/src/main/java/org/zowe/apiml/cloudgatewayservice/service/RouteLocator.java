@@ -36,11 +36,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @Service
 public class RouteLocator implements RouteDefinitionLocator {
+
+    private static final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
     private final ApplicationContext context;
 
@@ -98,9 +101,19 @@ public class RouteLocator implements RouteDefinitionLocator {
             });
     }
 
+    Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
+        // FIXME: this is till the SCGW and GW uses the same DS. The rouing rules should be different for each application
+        if (org.apache.commons.lang.StringUtils.equalsIgnoreCase("GATEWAY", serviceInstance.getServiceId())) {
+            return Stream.of(new RoutedService("zuul", "", "/"));
+        }
+
+        return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
+            // sorting avoid a conflict with the more general pattern
+            .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed());
+    }
+
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
-        EurekaMetadataParser metadataParser = new EurekaMetadataParser();
         AtomicInteger order = new AtomicInteger();
         /**
          * It generates each rule for each combination of instance x routing x generator ({@link RouteDefinitionProducer})
@@ -113,9 +126,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
             Authentication auth = metadataParser.parseAuthentication(serviceInstance.getMetadata());
             setCors(serviceInstance);
-            return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
-                // sorting avoid a conflict with the more general pattern
-                .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed())
+            return getRoutedService(serviceInstance)
                 .map(routedService ->
                     routeDefinitionProducers.stream()
                     .sorted(Comparator.comparingInt(x -> x.getOrder()))

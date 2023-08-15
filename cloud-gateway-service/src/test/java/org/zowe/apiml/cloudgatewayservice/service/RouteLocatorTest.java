@@ -31,11 +31,9 @@ import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -188,6 +186,22 @@ class RouteLocatorTest {
             corsLambda.accept(null, "myservice", null);
 
             verify(urlBasedCorsConfigurationSource).registerCorsConfiguration("/myservice/**", null);
+        }
+
+        @Test
+        void givenGateway_whenGetRoutedService_thenReturnDefaultRouting() {
+            ServiceInstance gw = createServiceInstance("gateway", "api/v1");
+            List<RoutedService> rs = routeLocator.getRoutedService(gw).collect(Collectors.toList());
+            assertEquals(1, rs.size());
+            assertEquals("", rs.get(0).getGatewayUrl());
+            assertEquals("/", rs.get(0).getServiceUrl());
+        }
+
+        @Test
+        void givenNonGatewayService_whenGetRoutedService_thenReturnRoutingFromMetadata() {
+            ServiceInstance s = createServiceInstance("myservice", "api/v1", "ui/v1");
+            List<RoutedService> rs = routeLocator.getRoutedService(s).collect(Collectors.toList());
+            assertEquals(2, rs.size());
         }
 
     }
