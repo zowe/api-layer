@@ -40,7 +40,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
         @Test
         void routeToCorrectService() {
             given()
-                .header("X-Request-Id", "serviceid1localhost")
+                .header("X-Request-Id", "serviceid1")
                 .when()
                 .get(basePath + serviceWithCustomConfiguration.getPath())
                 .then().statusCode(Matchers.is(SC_OK));
@@ -65,7 +65,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
         given()
             .header("Origin", "https://localhost:3000")
-            .header("X-Request-Id", "serviceid1localhost")
+            .header("X-Request-Id", "serviceid1")
             .when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
             .then().statusCode(Matchers.is(SC_FORBIDDEN));
