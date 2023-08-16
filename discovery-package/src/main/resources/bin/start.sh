@@ -85,7 +85,7 @@ if [ "${verify_certificates_config}" = "DISABLED" ]; then
   verifySslCertificatesOfServices=false
   nonStrictVerifySslCertificatesOfServices=true
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
-  verifySslCertificatesOfServices=false
+  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=true
 else
   # default value is STRICT
