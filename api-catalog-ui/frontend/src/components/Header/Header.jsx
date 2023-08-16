@@ -87,7 +87,7 @@ function Header(props) {
             <div className="product-name">
                 <Link data-testid="link" href={dashboard}>
                     <div className="app-icon-container">
-                        <img id="logo" alt="API Catalog Product Name" src={productImage} />
+                        <img id="logo" alt="API Catalog" src={productImage} />
                     </div>
                 </Link>
                 <Link href={dashboard}>

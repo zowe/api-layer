@@ -1,12 +1,9 @@
-$color_1: #3b4151;
-$color_2: black;
-$color_3: #CC092F;
 $font-family_1: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-
 
 .swagger-ui {
     .apiInfo-item {
         line-height: 1.5;
+
         span {
             display: inline;
             font-size: 13px;
@@ -18,93 +15,64 @@ $font-family_1: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Sego
 a.nav-tab {
     display: flex;
     align-items: baseline;
+
     >svg {
         text-align: center;
-        margin-left: .3rem;
-        padding-top: .3rem;
+        margin-left: var( --spaceSmallest );
+        padding-top: var( --spaceSmallest );
     }
 }
 p.MuiTypography-root.version-text.MuiTypography-body1 {
-    font-size: 14px;
+    font-size: var( --fontSmall );
     font-weight: bold;
 }
-#root {
-    >div {
-        >div.content {
-            >div.detail-page {
-                >div.content-description-container {
-                    >div {
-                        >div.tabs-swagger {
-                            >div {
-                                >div.tabs-container {
-                                    >div {
-                                        >div {
-                                            width: auto;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 #swagger-label {
-    color: $color_3;
-    font-size: 28px;
+    color: var( --criticalShade10 );
+    font-size: var( --fontLarger );
     letter-spacing: 0.5px;
+    margin-top: var( --spaceSmaller );
 }
 #version-label {
-    margin-top: 15px;
-    color: $color_2;
-}
-#version-menu {
-    margin: auto;
-    border-radius: 3px;
-    border: 1px solid var(--borders-c-9-c-8-c-5, #C9C8C5);
-    background: var(--white-ffffff, #FFF);
-    width: auto;
-    margin-left: 14px;
-    padding-right: 44px;
-    padding-left: 22px;
+    margin-top: var( --spaceMedium );
+    color: var( --surface100 );
 }
 #compare-button {
-    font-size: 12px;
-    margin-left: 20px;
-    border: 1px solid var(--link-in-the-text, #0056B3);
+    font-size: var( --fontSmaller );
+    border: 1px solid var( --link20 );
     text-transform: none;
-}
 
-#version-div {
-    display: flex;
-}
-#detail-footer {
-    margin-left: 10px;
-    margin-bottom: 30px;
-    display: grid;
-}
-
-.footer-labels {
-    margin-bottom: -2px;
-    color: $color_3;
-    font-size: 28px;
-    letter-spacing: 0.5px;
-}
-
-@media only screen and (max-width: 1208px) {
-    #compare-button {
-        margin-left: 54px;
-        margin-top: 10px;
+    p {
+        font-weight: var( --fontWeightNormal );
+        font-size: var( --fontSmaller );
     }
 }
+body #version-div {
+    display: flex;
+    flex-wrap: wrap;
 
-#no-tiles-error {
-    font-size: 22px;
-    color: $color_3;
+    > .MuiInputBase-root {
+        margin-right: var( --spaceSmall );
+    }
+    > * {
+        margin: 0 var( --spaceSmall ) var( --spaceSmall ) 0;
+    }
+    .MuiSelect-select, button.MuiButtonBase-root {
+        padding-top: var( --spaceTinier );
+        padding-bottom: var( --spaceTineier );
+    }
 }
-
-#no-tiles-error > p {
-    margin-left: 11px;
+#detail-footer {
+    margin-left: var( --spaceSmall );
+    margin-bottom: var( --spaceLargest );
+    display: grid;
+}
+.footer-labels {
+    margin-bottom: -2px;
+    color: var( --criticalShade10 );
+    font-size: var( --fontLarger );
+    letter-spacing: 0.5px;
+}
+#no-tiles-error {
+    font-size: var( --fontMedium );
+    color: var( --criticalShade10 );
 }
