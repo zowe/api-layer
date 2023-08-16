@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -26,6 +27,9 @@ import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "apiml.service.corsEnabled=false"
+})
 class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
