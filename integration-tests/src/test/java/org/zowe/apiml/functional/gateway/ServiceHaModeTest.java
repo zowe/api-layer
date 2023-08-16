@@ -43,7 +43,6 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 @TestsNotMeantForZowe
 @GatewayTest
-@Disabled("Flaky on different environments")
 class ServiceHaModeTest implements TestWithStartedInstances {
     private static final int TIMEOUT = 30;
 
