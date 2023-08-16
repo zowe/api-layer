@@ -40,7 +40,7 @@ export default class ServicesNavigationBar extends Component {
 
     styles = () => ({
         truncatedTabLabel: {
-            maxWidth: '323px',
+            maxWidth: '100%',
             width: 'max-content',
             whiteSpace: 'nowrap',
             overflow: 'hidden',

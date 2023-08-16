@@ -17,7 +17,8 @@
   --surface105: #333840;
 
   --success05:rgba(80, 227, 194, 0.10);
-  --success10:#50E3C2;
+  --success10:#49CC90;
+  --success20: #50E3C2;
 
   --info05: rgba(97, 175, 254, 0.10);
   --info10: #61AFFE;
@@ -30,13 +31,17 @@
 
   --unknown10: #E9E8E5;
 
+  --highlight10: #d8fa3c;
+
   // shadows
   --surfaceEffect10: 0px 3px 5px 1px rgba(0, 0, 0, 0.2);
 
   //borders
   --divider00: #E0E4EB;
   --divider10: #D1D7E0;
+  --divider15: #C9C8C5;
   --divider20: #BDC9DB;
+  --divider30: #80a3df;
 
   //text/link colors
   --text10: #000;
@@ -49,7 +54,7 @@
   --link10: #000;
   --link10Hover: #CC092F;
   --link10Visited: #631AFF;
-  --link20: #0040F0;
+  --link20: #0056B3;
   --link20Hover: #0030B3;
   --link20Visited: #5200FF;
 
@@ -58,17 +63,22 @@
   --textCode: #9012fe;
 
   //action/icon colors
-  --control00: #0040F0;
-  --control00Hover: #0030B2;
-  --control00Active: #0030B2;
+  --control00: #1c54c4;
+  --control00Hover: #0a285e; 
+  --control00Active: #0a285e;
   --control00Disabled: rgba(140, 143, 151, 0.9);
+
+  --control10: #d3e0f4;
+  --control10Hover: #abc2e9; 
+  --control10Active: #abc2e9;
+  --control10Disabled: rgba(140, 143, 151, 0.9);
 
   --controlText15: #CC092F;
   --controlText15Hover: #0E478B;
   --controlText15Disabled: rgba(115, 127, 141, 0.95);
 
   //input
-  --input00Bg: #FFFFFF;
+  --input00Bg: var( --surface05 );
   --input00BgDisabled: rgba(56, 70, 72, 0.15);
   --input00Bc: rgba(56, 70, 72, 0.6);
   --input00BcHover: rgba(56, 70, 72, 0.85);
@@ -111,4 +121,7 @@
   //border-radius
   --borderRadius1: 3px;
   --borderRadius2: 6px;
+
+  --sideNavWidth: 25%;
+  --contentLeftPadding: 4%;
 }
