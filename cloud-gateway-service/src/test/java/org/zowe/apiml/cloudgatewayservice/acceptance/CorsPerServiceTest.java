@@ -32,7 +32,7 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
         );
         given()
             .header("Origin", "https://localhost:3000")
-            .header("X-Request-Id", "serviceid2localhost")
+            .header("X-Request-Id", "serviceid2")
             .when()
             .get(basePath + serviceWithDefaultConfiguration.getPath())
             .then().statusCode(Matchers.is(SC_OK));
