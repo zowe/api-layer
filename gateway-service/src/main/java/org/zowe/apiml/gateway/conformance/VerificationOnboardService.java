@@ -12,11 +12,18 @@ package org.zowe.apiml.gateway.conformance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service class that offers methods for checking onboarding information and also checks availability metadata from
@@ -80,5 +87,40 @@ public class VerificationOnboardService {
     }
 
 
+    public List<String> testGetEndpoints(Set<Endpoint> endpoints) {
+        ArrayList<String> result = new ArrayList<>();
+        boolean gotResponseDifferentFrom404 = false;
 
+        for (Endpoint endpoint : endpoints) {
+            String urlFromSwagger = endpoint.getUrl();
+            // replaces parameters in {} in query
+            String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response;
+            try {
+                response = restTemplate.getForEntity(url, String.class);
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                response = ResponseEntity.status(e.getRawStatusCode()).headers(e.getResponseHeaders())
+                    .body(e.getResponseBodyAsString());
+            }
+
+            if (response.getStatusCode() != HttpStatus.NOT_FOUND) {
+                gotResponseDifferentFrom404 = true;
+            }
+            if (!(endpoint.getValidResponses().contains(String.valueOf(response.getStatusCode().value())) || endpoint.getValidResponses().contains("default"))) {
+                result.add("Calling endpoint at " + endpoint.getUrl() + " gives undocumented " + response.getStatusCode().value()
+                    + " status code, documented responses are:" + endpoint.getValidResponses());
+            }
+        }
+        if (!gotResponseDifferentFrom404) {
+            result.add("Could not verify if API can be called through gateway, attempting to reach all of the following " +
+                "documented GET endpoints gives only 404 response: " + endpoints.stream().map(Endpoint::getUrl).collect(Collectors.toSet()));
+        }
+        return result;
+    }
+
+    public List<String> getProblemsWithEndpointUrls(AbstractSwaggerParser swaggerParser) {
+        return swaggerParser.getProblemsWithEndpointUrls();
+    }
 }

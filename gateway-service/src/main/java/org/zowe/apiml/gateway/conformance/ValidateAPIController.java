@@ -20,10 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.gateway.GatewayClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +55,8 @@ public class ValidateAPIController {
     private final VerificationOnboardService verificationOnboardService;
 
     private final DiscoveryClient discoveryClient;
+
+    private final GatewayClient gatewayClient;
 
 
     /**
@@ -104,18 +108,24 @@ public class ValidateAPIController {
         String swagger = verificationOnboardService.getSwagger(swaggerUrl);
         AbstractSwaggerParser swaggerParser;
 
+
         try {
-            swaggerParser = ParserFactory.parseSwagger(swagger);
+            swaggerParser = ParserFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
         } catch (SwaggerParsingException e) {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, e.getMessage());
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
         }
 
         List<String> parserResponses = swaggerParser.getMessages();
+        if (parserResponses != null) foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, parserResponses);
 
-        if (parserResponses != null) {
-            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, parserResponses);
+        Set<Endpoint> getMethodEndpoints = swaggerParser.getMethodEndpoints();
+        if (!getMethodEndpoints.isEmpty()) {
+            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS,
+                verificationOnboardService.testGetEndpoints(getMethodEndpoints));
         }
+        foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
+
         if (foundNonConformanceIssues.size() != 0) {
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
         }

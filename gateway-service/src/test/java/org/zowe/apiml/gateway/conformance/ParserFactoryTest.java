@@ -17,6 +17,8 @@ class ParserFactoryTest {
     @Nested
     class givenSwaggerDocumentation {
 
+        final String DUMMY_SERVICE_ID = "dummy";
+
 
         public String swaggerFromPath(String path) throws IOException {
             File file = new File(path);
@@ -30,7 +32,7 @@ class ParserFactoryTest {
             String sampleSwagger = swaggerFromPath(path);
 
             List<String> result;
-            result = ParserFactory.parseSwagger(sampleSwagger).getMessages();
+            result = ParserFactory.parseSwagger(sampleSwagger, null, null, DUMMY_SERVICE_ID).getMessages();
             assertEquals(0, result.size());
 
         }
@@ -44,7 +46,7 @@ class ParserFactoryTest {
 
             String brokenSwagger = sampleSwagger2.replace("2.0", "42");
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger));
+            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger, null, null, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -56,7 +58,7 @@ class ParserFactoryTest {
 
             String brokenSwagger = sampleSwagger3.replace("3.0", "42");
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger));
+            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger, null, null, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -69,7 +71,7 @@ class ParserFactoryTest {
 
             String brokenSwagger = sampleSwagger.substring(0, 250);
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger));
+            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger, null, null, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Could not parse Swagger documentation"));
         }

@@ -29,6 +29,8 @@ import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -59,6 +62,8 @@ public class ValidateAPIControllerTest {
     @Mock
     ServiceInstance serviceInstance;
 
+    @Mock
+    private GatewayClient gatewayClient;
 
     ResponseEntity<String> result;
 
@@ -213,24 +218,10 @@ public class ValidateAPIControllerTest {
 
 
     @Nested
-    class GivenValidEverything {
-
-
-//
-//        @Test
-//        void thenOkResponse() {
-//            String serviceId = "testservice";
-//            HashMap<String, String> mockMetadata = new HashMap<>();
-//            mockMetadata.put("key", "value");
-//            when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
-//            when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
-//            when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
-//            result = validateAPIController.checkConformance(serviceId);
-//            assertEquals(HttpStatus.OK, result.getStatusCode());
-//        }
+    class GivenNoInstances {
 
         @Test
-        void whenEmpty_thenCorrectResponse() {
+        void thenCorrectResponse() {
             List<ServiceInstance> list = new ArrayList<>();
             assertTrue(validateAPIController.instanceCheck(list).contains("Cannot retrieve metadata"));
         }
@@ -238,9 +229,7 @@ public class ValidateAPIControllerTest {
 
 
     @Nested
-    class GivenCheckConformanceFunction {
-
-
+    class GivenDifferentMetadata {
         @AfterEach
         void checkValidJson() {
             ObjectMapper mapper = new ObjectMapper()
@@ -255,8 +244,6 @@ public class ValidateAPIControllerTest {
             assertTrue(valid);
         }
 
-
-
         @ParameterizedTest
         @ValueSource(strings={"src/test/resources/api-doc.json", "src/test/resources/api-doc-v2.json"})
         void whenEverythingOk_thenOkResponse(String mockSwaggerFileLocation) throws IOException {
@@ -270,8 +257,11 @@ public class ValidateAPIControllerTest {
             when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
             when(verificationOnboardService.findSwaggerUrl(mockMetadata)).thenReturn("a");
+            when(gatewayClient.getGatewayConfigProperties()).thenReturn(GatewayConfigProperties.builder().build());
 
             when(verificationOnboardService.getSwagger("a")).thenReturn(new String(Files.readAllBytes(mockSwaggerFile.getAbsoluteFile().toPath())));
+            when(verificationOnboardService.testGetEndpoints(any())).thenReturn(new ArrayList<>());
+            when(verificationOnboardService.getProblemsWithEndpointUrls(any())).thenReturn(new ArrayList<>());
 
             result = validateAPIController.checkConformance(serviceId);
 
