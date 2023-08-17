@@ -27,7 +27,7 @@ import org.zowe.apiml.product.routing.RoutedService;
 @Component
 public class ByHeader extends RouteDefinitionProducer {
 
-    private static final String TARGET_HEADER_NAME = "X-Request-Id";
+    private static final String TARGET_HEADER_NAME = "X-Forward-To";
 
     public ByHeader(DiscoveryLocatorProperties properties) {
         super(properties);

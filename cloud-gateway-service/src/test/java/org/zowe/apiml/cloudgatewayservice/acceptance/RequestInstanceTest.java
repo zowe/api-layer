@@ -32,6 +32,8 @@ import static org.hamcrest.core.Is.is;
 })
 class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
+    private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
+
     @BeforeEach
     void setUp() throws IOException {
         mockServerWithSpecificHttpResponse(200, "/serviceid1/test", 0, (headers) -> {
@@ -44,7 +46,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
         @Test
         void routeToCorrectService() {
             given()
-                .header("X-Request-Id", "serviceid1")
+                .header(HEADER_X_FORWARD_TO, "serviceid1")
                 .when()
                 .get(basePath + serviceWithCustomConfiguration.getPath())
                 .then().statusCode(Matchers.is(SC_OK));
@@ -56,7 +58,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
         @Test
         void cantRouteToServer() {
             given()
-                .header("X-Request-Id", "non-existing").
+                .header(HEADER_X_FORWARD_TO, "non-existing").
                 when()
                 .get(basePath + serviceWithCustomConfiguration.getPath())
                 .then()
@@ -69,7 +71,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
         given()
             .header("Origin", "https://localhost:3000")
-            .header("X-Request-Id", "serviceid1")
+            .header(HEADER_X_FORWARD_TO, "serviceid1")
             .when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
             .then().statusCode(Matchers.is(SC_FORBIDDEN));

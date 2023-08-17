@@ -37,7 +37,7 @@ class ByHeaderTest {
     @Nested
     class RuleConstruction {
 
-        private static final String TARGET_HEADER_NAME = "X-Request-Id";
+        private static final String TARGET_HEADER_NAME = "X-Forward-To";
 
         @Test
         void givenInstanceConfig_whenSetCondition_thenConstructRegexCondition() {
