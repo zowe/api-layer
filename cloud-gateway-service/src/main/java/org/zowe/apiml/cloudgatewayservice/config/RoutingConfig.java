@@ -33,6 +33,9 @@ public class RoutingConfig {
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled:-}")
     private String ignoredHeadersWhenCorsEnabled;
 
+    @Value("{apiml.service.forwardClientCertEnabled:false}")
+    private String isClientCertForwardingEnabled;
+
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
     public RouteLocator apimlDiscoveryRouteDefLocator(
@@ -51,14 +54,20 @@ public class RoutingConfig {
     public List<FilterDefinition> filters() {
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
+
         FilterDefinition retryFilter = new FilterDefinition();
         retryFilter.setName("Retry");
-
         retryFilter.addArg("retries", "5");
         retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
+
+        FilterDefinition clientCertFilter = new FilterDefinition();
+        clientCertFilter.setName("ClientCertFilterFactory");
+        clientCertFilter.addArg("enabled", isClientCertForwardingEnabled);
+
         List<FilterDefinition> filters = new ArrayList<>();
         filters.add(circuitBreakerFilter);
         filters.add(retryFilter);
+        filters.add(clientCertFilter);
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
             removeHeaders.setName("RemoveRequestHeader");
