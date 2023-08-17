@@ -17,7 +17,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
 import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -78,17 +77,18 @@ public class InstanceRetrievalService {
             return null;
         }
 
-        List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(serviceId, false);
+        List<EurekaServiceInstanceRequest> eurekaServiceInstanceRequests = constructServiceInfoQueryRequest(serviceId, false);
         // iterate over list of discovery services, return at first success
-        for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
+        for (EurekaServiceInstanceRequest eurekaServiceInstanceRequest : eurekaServiceInstanceRequests) {
             // call Eureka REST endpoint to fetch single or all Instances
             try {
-                String responseBody = queryDiscoveryForInstances(requestInfo);
+                String responseBody = queryDiscoveryForInstances(eurekaServiceInstanceRequest);
                 if (responseBody != null) {
                     return extractSingleInstanceFromApplication(serviceId, responseBody);
                 }
             } catch (Exception e) {
-                log.debug("Error getting instance info from {}, error message: {}", requestInfo.getLeft(), e.getMessage());
+                log.debug("Error obtaining instance information from {}, error message: {}",
+                    eurekaServiceInstanceRequest.getEurekaRequestUrl(), e.getMessage());
             }
         }
         String msg = "An error occurred when trying to get instance info for:  " + serviceId;
@@ -103,13 +103,13 @@ public class InstanceRetrievalService {
      */
     public Applications getAllInstancesFromDiscovery(boolean delta) {
 
-        List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(null, delta);
-        for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
+        List<EurekaServiceInstanceRequest> requestInfoList = constructServiceInfoQueryRequest(null, delta);
+        for (EurekaServiceInstanceRequest requestInfo : requestInfoList) {
             try {
                 String responseBody = queryDiscoveryForInstances(requestInfo);
                 return extractApplications(responseBody);
             } catch (Exception e) {
-                log.debug("Not able to contact discovery service: " + requestInfo.getKey(), e);
+                log.debug("Not able to contact discovery service: {}", requestInfo.getEurekaRequestUrl(), e);
             }
         }
         //  call Eureka REST endpoint to fetch single or all Instances
@@ -139,12 +139,12 @@ public class InstanceRetrievalService {
     /**
      * Query Discovery
      *
-     * @param requestInfo information used to query the discovery service
+     * @param eurekaServiceInstanceRequest information used to query the discovery service
      * @return ResponseEntity<String> query response
      */
-    private String queryDiscoveryForInstances(Pair<String, Pair<String, String>> requestInfo) throws IOException {
-        HttpGet httpGet = new HttpGet(requestInfo.getLeft());
-        for (Header header : createRequestHeader(requestInfo.getRight())) {
+    private String queryDiscoveryForInstances(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) throws IOException {
+        HttpGet httpGet = new HttpGet(eurekaServiceInstanceRequest.getEurekaRequestUrl());
+        for (Header header : createRequestHeader(eurekaServiceInstanceRequest)) {
             httpGet.setHeader(header);
         }
         CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -157,9 +157,14 @@ public class InstanceRetrievalService {
         if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
             return responseBody;
         }
+
         apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
-            statusCode, response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody,
-            requestInfo.getLeft());
+            eurekaServiceInstanceRequest.getServiceId(),
+            eurekaServiceInstanceRequest.getEurekaRequestUrl(),
+            statusCode,
+            response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody
+            );
+
         return null;
     }
 
@@ -195,9 +200,9 @@ public class InstanceRetrievalService {
      * @param serviceId optional service id
      * @return request information
      */
-    private List<Pair<String, Pair<String, String>>> constructServiceInfoQueryRequest(String serviceId, boolean getDelta) {
+    private List<EurekaServiceInstanceRequest> constructServiceInfoQueryRequest(String serviceId, boolean getDelta) {
         String[] discoveryServiceUrls = discoveryConfigProperties.getLocations();
-        List<Pair<String, Pair<String, String>>> discoveryPairs = new ArrayList<>(discoveryServiceUrls.length);
+        List<EurekaServiceInstanceRequest> eurekaServiceInstanceRequests = new ArrayList<>(discoveryServiceUrls.length);
         for (String discoveryUrl : discoveryServiceUrls) {
             String discoveryServiceLocatorUrl = discoveryUrl + APPS_ENDPOINT;
             if (getDelta) {
@@ -211,17 +216,20 @@ public class InstanceRetrievalService {
             String eurekaUsername = discoveryConfigProperties.getEurekaUserName();
             String eurekaUserPassword = discoveryConfigProperties.getEurekaUserPassword();
 
-            Pair<String, String> discoveryServiceCredentials = Pair.of(eurekaUsername, eurekaUserPassword);
+            log.debug("Querying instance information of the service {} from the URL {} with the user {} and password {}",
+                serviceId, discoveryServiceLocatorUrl, eurekaUsername,
+                eurekaUserPassword.isEmpty() ? "NO PASSWORD" : "*******");
 
-            log.debug("Eureka credentials retrieved for user: {} {}",
-                eurekaUsername,
-                (!eurekaUserPassword.isEmpty() ? "*******" : "NO PASSWORD")
-            );
-
-            log.debug("Checking instance info from: " + discoveryServiceLocatorUrl);
-            discoveryPairs.add(Pair.of(discoveryServiceLocatorUrl, discoveryServiceCredentials));
+            EurekaServiceInstanceRequest eurekaServiceInstanceRequest = EurekaServiceInstanceRequest.builder()
+                .serviceId(serviceId)
+                .eurekaRequestUrl(discoveryServiceLocatorUrl)
+                .username(eurekaUsername)
+                .password(eurekaUserPassword)
+                .build();
+            eurekaServiceInstanceRequests.add(eurekaServiceInstanceRequest);
         }
-        return discoveryPairs;
+
+        return eurekaServiceInstanceRequests;
     }
 
     /**
@@ -229,11 +237,11 @@ public class InstanceRetrievalService {
      *
      * @return HTTP Headers
      */
-    private List<Header> createRequestHeader(Pair<String, String> credentials) {
+    private List<Header> createRequestHeader(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) {
         List<Header> headers = new ArrayList<>();
-        if (credentials != null && credentials.getLeft() != null && credentials.getRight() != null) {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString((credentials.getLeft() + ":"
-                + credentials.getRight()).getBytes());
+        if (eurekaServiceInstanceRequest != null && eurekaServiceInstanceRequest.getUsername() != null && eurekaServiceInstanceRequest.getPassword() != null) {
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaServiceInstanceRequest.getUsername() + ":"
+                + eurekaServiceInstanceRequest.getPassword()).getBytes());
             headers.add(new BasicHeader(HttpHeaders.AUTHORIZATION, basicToken));
         }
         headers.add(new BasicHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
