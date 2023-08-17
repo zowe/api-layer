@@ -176,7 +176,7 @@ public class VirtualService implements AutoCloseable {
 
         context = tomcat.addContext("", getContextPath());
         addServlet(HealthServlet.class.getSimpleName(), "/application/health", new HealthServlet());
-        addServlet(InstanceServlet.class.getSimpleName(), "/application/instance", new InstanceServlet());
+        addInstanceServlet(InstanceServlet.class.getSimpleName(),"/application/instance");
     }
 
     private String getContextPath() {
@@ -208,6 +208,12 @@ public class VirtualService implements AutoCloseable {
     public VirtualService addServlet(String name, String pattern, Servlet servlet) {
         Tomcat.addServlet(context, name, servlet);
         context.addServletMappingDecoded(pattern, name);
+
+        return this;
+    }
+
+    public VirtualService addInstanceServlet(String name, String url) {
+        addServlet(name, url, new InstanceServlet());
 
         return this;
     }
@@ -261,7 +267,7 @@ public class VirtualService implements AutoCloseable {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .get(url)
                         .body();
-                    assertEquals(instanceId, responseBody.print());
+                    assertEquals("GET " + instanceId, responseBody.print());
                     break;
                 } catch (RuntimeException | AssertionError e) {
                     testCounter++;
@@ -538,7 +544,9 @@ public class VirtualService implements AutoCloseable {
      * @return URL for each registered gateway
      */
     public List<String> getGatewayUrls() {
-        return DiscoveryUtils.getGatewayUrls().stream().map(x -> x + gatewayPath + "/" + serviceId.toLowerCase()).collect(Collectors.toList());
+        return DiscoveryUtils.getGatewayUrls().stream()
+                .map(x -> String.format("%s/%s%s", x, serviceId.toLowerCase(), gatewayPath))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -658,14 +666,44 @@ public class VirtualService implements AutoCloseable {
      * Servlet answer on /application/instance instanceId. This is base part of method to verify registration on
      * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
-    class InstanceServlet extends HttpServlet {
+    public class InstanceServlet extends HttpServlet {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        private void writeResponse(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setStatus(HttpStatus.SC_OK);
-            resp.getWriter().print(VirtualService.this.instanceId);
+            resp.getWriter().print(req.getMethod() + " " + VirtualService.this.instanceId);
             resp.getWriter().close();
         }
+
     }
 
 }
