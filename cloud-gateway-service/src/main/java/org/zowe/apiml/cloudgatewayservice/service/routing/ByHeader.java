@@ -18,6 +18,12 @@ import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.routing.RoutedService;
 
+/**
+ * The routing rule by header. It uses a header with name {@link ByHeader#TARGET_HEADER_NAME} and make rule routing by
+ * it. It looks for a first part of routing steps and redirect by it (it could contain multiple steps separated by /).
+ *
+ * The rule modify the header for next hop (remove first part of remove the whole one if there is just one part).
+ */
 @Component
 public class ByHeader extends RouteDefinitionProducer {
 

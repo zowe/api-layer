@@ -112,25 +112,29 @@ public class RouteLocator implements RouteDefinitionLocator {
             .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed());
     }
 
+    /**
+     * It generates each rule for each combination of instance x routing x generator ({@link RouteDefinitionProducer})
+     * The routes are sorted by serviceUrl to avoid clashing between multiple levels of paths, ie. / vs. /a.
+     * Sorting routes and generators by order allows to redefine order of each rule. There is no possible to have
+     * multiple valid rules for the same case at one moment.
+     *
+     * @return routing rules
+     */
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
         AtomicInteger order = new AtomicInteger();
-        /**
-         * It generates each rule for each combination of instance x routing x generator ({@link RouteDefinitionProducer})
-         *
-         * The routes are sorted by serviceUrl to avoid clashing between multiple levels of paths, ie. / vs. /a.
-         *
-         * Sorting routes and generators by order allows to redefine order of each rule. There is no possible to have
-         * multiple valid rules for the same case at one moment.
-         */
+        // iterate over services
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
             Authentication auth = metadataParser.parseAuthentication(serviceInstance.getMetadata());
+            // configure CORS for the service (if necessary)
             setCors(serviceInstance);
+            // iterate over routing definition (ordered from the longest one to match with the most specific)
             return getRoutedService(serviceInstance)
                 .map(routedService ->
                     routeDefinitionProducers.stream()
                     .sorted(Comparator.comparingInt(x -> x.getOrder()))
                     .map(rdp -> {
+                        // generate a new routing rule by a specific produces
                         RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
                         routeDefinition.setOrder(order.getAndIncrement());
                         routeDefinition.getFilters().addAll(commonFilters);

@@ -28,6 +28,11 @@ import java.util.Map;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL_URL;
 
+/**
+ * The class that extends this abstract class is responsible to generate routing rule for a specific service and routing.
+ *
+ * The producers define an order ({@link #getOrder()}). It allows to create multiple rules with a prioritization.
+ */
 public abstract class RouteDefinitionProducer {
 
     protected final SimpleEvaluationContext evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
@@ -42,6 +47,12 @@ public abstract class RouteDefinitionProducer {
         return urlExpr.getValue(this.evalCtxt, serviceInstance, String.class);
     }
 
+    /**
+     * The method returns URL to route. In the case the service define URL by attribute apiml.service.externalUrl it is
+     * reused. Otherwise, it generates default URL such as lb://<serviceId>
+     * @param serviceInstance instance of service to process
+     * @return URL for loadbalancer (without path)
+     */
     protected String getHostname(ServiceInstance serviceInstance) {
         String output = null;
         Map<String, String> metadata = serviceInstance.getMetadata();
@@ -79,12 +90,35 @@ public abstract class RouteDefinitionProducer {
         return routeDefinition;
     }
 
+    /**
+     * Define priority of the producer. A producer with lower number is processed before other one.
+     * @return order defines the priority of producer
+     */
     public abstract int getOrder();
 
+    /**
+     * Generates the condition which define if the rule could be used. Usually its checking if request is matching
+     * to the routing rule (by path, header, etc.)
+     * @param routeDefinition the rule created by this bean
+     * @param serviceInstance instance of service
+     * @param routedService routing definition
+     */
     protected abstract void setCondition(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService);
 
+    /**
+     * Generates the action during routing for the service. It could be for example modification of path, header, etc.
+     * @param routeDefinition the rule created by this bean
+     * @param serviceInstance instance of service
+     * @param routedService routing definition
+     */
     protected abstract void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService);
 
+    /**
+     * It creates a rule for specific input.
+     * @param serviceInstance instance of service
+     * @param routedService routing definition
+     * @return definition of routing rule
+     */
     public RouteDefinition get(ServiceInstance serviceInstance, RoutedService routedService) {
         serviceInstance = getEvalServiceInstance(serviceInstance);
         RouteDefinition routeDefinition = buildRouteDefinition(serviceInstance, routedService.getSubServiceId());
@@ -95,6 +129,10 @@ public abstract class RouteDefinitionProducer {
         return routeDefinition;
     }
 
+    /**
+     * This class is responsible to update ServiceInstance without changing data in the origin. It can change
+     * the serviceId. It is helpful if we want to use a different identifier instead of serviceId, ie. ID of APIML.
+     */
     @RequiredArgsConstructor
     static class ServiceInstanceEval implements ServiceInstance {
 
@@ -107,7 +145,7 @@ public abstract class RouteDefinitionProducer {
             return evalServiceId;
         }
 
-        private static interface Overridden {
+        private interface Overridden {
             String getServiceId();
         }
 

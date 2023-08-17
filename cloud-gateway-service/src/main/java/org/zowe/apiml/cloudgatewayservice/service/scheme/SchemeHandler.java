@@ -14,10 +14,21 @@ import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
+/**
+ * This interface is used by handler which add filter to transform credentials in the request.
+ */
 public interface SchemeHandler {
 
+    /**
+     * @return type of supported authentication scheme
+     */
     AuthenticationScheme getAuthenticationScheme();
 
+    /**
+     * Set filter in the routing rule.
+     * @param routeDefinition rule to be updated
+     * @param auth definition of authentication scheme from the service instance
+     */
     void apply(RouteDefinition routeDefinition, Authentication auth);
 
 }

@@ -19,6 +19,13 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.StringUtils;
 
+/**
+ * Routing rule by path modify the path of the request. It makes this replacement:
+ *
+ *  from: /<serviceId>/<gatewayUrl>/<path>
+ *  to: /<serviceUrl>/<path>
+ *
+ */
 @Component
 public class ByBasePath extends RouteDefinitionProducer {
 
