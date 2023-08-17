@@ -767,7 +767,6 @@ public class VirtualService implements AutoCloseable {
 
         private void writeResponse(HttpServletResponse resp) throws IOException {
             resp.setStatus(httpStatus);
-            resp.getWriter().print("Test");
             resp.getWriter().close();
         }
 
