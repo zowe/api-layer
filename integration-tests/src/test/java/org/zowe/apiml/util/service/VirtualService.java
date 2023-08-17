@@ -674,7 +674,7 @@ public class VirtualService implements AutoCloseable {
      * Servlet answer on /application/instance Http method and instanceId. This is base part of method to verify registration on
      * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
-    private class InstanceServlet extends HttpServlet {
+    class InstanceServlet extends HttpServlet {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -718,7 +718,7 @@ public class VirtualService implements AutoCloseable {
      * Servlet returns the specified Http return code for all Http methods
      */
     @RequiredArgsConstructor
-    private static class HttpStatusCodeServlet extends HttpServlet {
+    static class HttpStatusCodeServlet extends HttpServlet {
 
         private final int httpStatus;
 
@@ -754,6 +754,7 @@ public class VirtualService implements AutoCloseable {
 
         private void writeResponse(HttpServletResponse resp) throws IOException {
             resp.setStatus(httpStatus);
+            resp.getWriter().print("Test");
             resp.getWriter().close();
         }
 

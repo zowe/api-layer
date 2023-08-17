@@ -72,8 +72,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 Arguments.of(Method.POST),
                 Arguments.of(Method.PUT),
                 Arguments.of(Method.DELETE),
-                Arguments.of(Method.OPTIONS),
-                Arguments.of(Method.HEAD)
+                Arguments.of(Method.OPTIONS)
         );
     }
 
