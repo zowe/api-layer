@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.gateway.conformance;
 
 import org.junit.jupiter.api.Nested;

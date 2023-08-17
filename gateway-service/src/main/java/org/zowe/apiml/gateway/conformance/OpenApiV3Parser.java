@@ -7,8 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.conformance;
 
+package org.zowe.apiml.gateway.conformance;
 
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
