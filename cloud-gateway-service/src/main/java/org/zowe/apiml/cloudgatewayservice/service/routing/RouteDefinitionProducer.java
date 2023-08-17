@@ -33,7 +33,7 @@ public abstract class RouteDefinitionProducer {
     protected final SimpleEvaluationContext evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
     protected final Expression urlExpr;
 
-    public RouteDefinitionProducer(DiscoveryLocatorProperties properties) {
+    protected RouteDefinitionProducer(DiscoveryLocatorProperties properties) {
         SpelExpressionParser parser = new SpelExpressionParser();
         urlExpr = parser.parseExpression(properties.getUrlExpression());
     }

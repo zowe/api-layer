@@ -31,7 +31,7 @@ import org.zowe.apiml.util.StringUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +52,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private final List<FilterDefinition> commonFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
-    private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new HashMap<>();
+    private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new EnumMap<>(AuthenticationScheme.class);
 
     @Getter(lazy = true, value = AccessLevel.PRIVATE)
     private final UrlBasedCorsConfigurationSource corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
