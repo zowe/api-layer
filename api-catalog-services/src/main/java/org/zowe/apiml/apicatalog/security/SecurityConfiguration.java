@@ -104,7 +104,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(gatewayTokenProvider)
                 .authenticationProvider(new CertificateAuthenticationProvider());
 
-            if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
+            if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
                 if (isAttlsEnabled) {
                     http.x509()
                         .userDetailsService(x509UserDetailsService())

@@ -7,9 +7,9 @@ messages:
     - key: org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed
       number: ZWEAC100
       type: WARNING
-      text: "Could not retrieve all service info from discovery -- %s -- %s -- %s"
-      reason: "The response from The Discovery Service about the registered instances returned an error or empty body."
-      action: "Make sure the Discovery Service is up and running. If the http response error code refers to a security issue, check that both the Discovery Service and Catalog are running with the https scheme and that security is configured properly."
+      text: "Could not retrieve information about service %s from the Discovery Service. Requested URL: %s. Response received: status code: %s, body: %s"
+      reason: "The response from The Discovery Service about the registered service instances returned an error or empty body."
+      action: "Make sure the Discovery Service and requested service are up and running. If the HTTP response error code refers to a security issue, make sure that security configuration is correct."
 
     - key: org.zowe.apiml.apicatalog.serviceRetrievalParsingFailed
       number: ZWEAC101
