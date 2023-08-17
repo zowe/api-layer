@@ -330,9 +330,9 @@ public class VirtualService implements AutoCloseable {
                 try {
                     for (int i = 0; i < instanceCountBefore; i++) {
                         final ResponseBody responseBody = given().when()
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .get(url)
-                                .body();
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .get(url)
+                            .body();
                         assertNotEquals(instanceId, responseBody.print());
                     }
                     break;
