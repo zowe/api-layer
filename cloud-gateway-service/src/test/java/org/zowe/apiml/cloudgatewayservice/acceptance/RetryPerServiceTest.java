@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
 
-import javax.ws.rs.HEAD;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
