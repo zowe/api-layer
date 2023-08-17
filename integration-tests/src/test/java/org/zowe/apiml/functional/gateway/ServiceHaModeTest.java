@@ -61,13 +61,13 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
-    private static Stream<Arguments> RetryableHttpMethods() {
+    private static Stream<Arguments> retryableHttpMethods() {
         return Stream.of(
                 Arguments.of(Method.GET)
         );
     }
 
-    private static Stream<Arguments> NonRetryableHttpMethods() {
+    private static Stream<Arguments> nonRetryableHttpMethods() {
         return Stream.of(
                 Arguments.of(Method.POST),
                 Arguments.of(Method.PUT),
@@ -76,8 +76,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         );
     }
 
-    private static Stream<Arguments> HttpMethods() {
-        return Stream.concat(RetryableHttpMethods(), NonRetryableHttpMethods());
+    private static Stream<Arguments> httpMethods() {
+        return Stream.concat(retryableHttpMethods(), nonRetryableHttpMethods());
     }
 
     @Nested
@@ -118,7 +118,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#HttpMethods")
+            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#httpMethods")
             void verifyThatGatewayRetriesToTheLiveOne(Method method) {
                 routeAndVerifyRetry(service1.getGatewayUrls(), method, TIMEOUT);
             }
@@ -181,18 +181,18 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#RetryableHttpMethods")
+            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#retryableHttpMethods")
             void verifyThatGatewayRetriesGet(Method method) {
-                routeAndVerifyNoRetry(service1.getGatewayUrls(), method, 2);
+                routeAndVerifyRetries(service1.getGatewayUrls(), method, 2);
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#NonRetryableHttpMethods")
+            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#nonRetryableHttpMethods")
             void verifyThatGatewayNotRetriesPost(Method method) {
-                routeAndVerifyNoRetry(service1.getGatewayUrls(), method, 1);
+                routeAndVerifyRetries(service1.getGatewayUrls(), method, 1);
             }
 
-            private void routeAndVerifyNoRetry(List<String> gatewayUrls, Method method, int maximumRetries) {
+            private void routeAndVerifyRetries(List<String> gatewayUrls, Method method, int maximumRetries) {
                 for (String gatewayUrl : gatewayUrls) {
                     IntStream.rangeClosed(0, 1).forEach(x -> {
 
@@ -203,6 +203,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                         }
                         StringTokenizer retryList = new StringTokenizer(response.getHeader("RibbonRetryDebug"), "|");
                         assertThat(retryList.countTokens(), is(lessThanOrEqualTo(maximumRetries)));
+
                     });
                 }
             }
