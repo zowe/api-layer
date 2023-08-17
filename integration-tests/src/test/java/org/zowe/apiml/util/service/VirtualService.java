@@ -214,12 +214,25 @@ public class VirtualService implements AutoCloseable {
         return this;
     }
 
+    /**
+     * Register servlet to get instance information
+     *
+     * @param name under which the servlet is registered to Tomcat
+     * @param url where it will be exposed
+     * @return this instance to next command
+     */
     public VirtualService addInstanceServlet(String name, String url) {
         addServlet(name, url, new InstanceServlet());
 
         return this;
     }
 
+    /**
+     * Register servlet to receive specified Http status code
+     *
+     * @param httpStatus that will be returned
+     * @return this instance to next command
+     */
     public VirtualService addHttpStatusCodeServlet(int httpStatus) {
         addServlet(HttpStatusCodeServlet.class.getName(), "/httpCode", new HttpStatusCodeServlet(httpStatus));
 
