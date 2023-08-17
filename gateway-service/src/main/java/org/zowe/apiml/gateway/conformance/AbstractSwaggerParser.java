@@ -28,10 +28,19 @@ public abstract class AbstractSwaggerParser {
         this.serviceId = serviceId;
     }
 
+    /**
+     * Returns list of issues with compliance with the OpenAPI specification
+     */
     abstract List<String> getMessages();
 
+    /**
+     * Returns list of all documented endpoints
+     */
     abstract Set<Endpoint> getAllEndpoints();
 
+    /**
+     * Returns list of issues with the endpoint URLs, mainly regarding the versioning part of conformance criteria
+     */
     public List<String> getProblemsWithEndpointUrls() {
         Set<Endpoint> endpoints = getAllEndpoints();
 

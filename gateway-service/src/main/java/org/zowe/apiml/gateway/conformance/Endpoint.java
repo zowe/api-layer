@@ -16,11 +16,25 @@ import org.springframework.http.HttpMethod;
 
 import java.util.Set;
 
-
+/**
+ * This class contains all information necessary to call an endpoint through the Gateway
+ */
 @Data
 public class Endpoint {
+    /**
+     * Url of the endpoint in the gateway
+     */
     private final String url;
+    /**
+     * ServiceId of the service that owns the endpoint
+     */
     private final String serviceId;
+    /**
+     * Method which the endpoint accepts
+     */
     private final HttpMethod httpMethod;
+    /**
+     * Documented responses that the API can return, taken from the swagger, they are either of the form "400", "401"... or "default"
+     */
     private final Set<String> validResponses;
 }

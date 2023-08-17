@@ -77,6 +77,12 @@ public class VerificationOnboardService {
     }
 
 
+    /**
+     * Retrieves swagger from the url
+     *
+     * @param swaggerUrl URL to retrieve from
+     * @return Swagger as string
+     */
     public String getSwagger(String swaggerUrl) {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -86,7 +92,12 @@ public class VerificationOnboardService {
         return response;
     }
 
-
+    /**
+     * Checks if endpoints can be called and return documented responses
+     *
+     * @param endpoints endpoints to check
+     * @return List of problems
+     */
     public List<String> testGetEndpoints(Set<Endpoint> endpoints) {
         ArrayList<String> result = new ArrayList<>();
         boolean gotResponseDifferentFrom404 = false;

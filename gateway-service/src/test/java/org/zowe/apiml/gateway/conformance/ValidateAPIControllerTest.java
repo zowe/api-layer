@@ -245,7 +245,7 @@ public class ValidateAPIControllerTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings={"src/test/resources/api-doc.json", "src/test/resources/api-doc-v2.json"})
+        @ValueSource(strings = {"src/test/resources/api-doc.json", "src/test/resources/api-doc-v2.json"})
         void whenEverythingOk_thenOkResponse(String mockSwaggerFileLocation) throws IOException {
             String serviceId = "testservice";
             HashMap<String, String> mockMetadata = new HashMap<>();
