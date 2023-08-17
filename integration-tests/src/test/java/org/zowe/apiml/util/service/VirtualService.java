@@ -14,6 +14,7 @@ import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.util.UrlUtils;
@@ -176,7 +178,7 @@ public class VirtualService implements AutoCloseable {
 
         context = tomcat.addContext("", getContextPath());
         addServlet(HealthServlet.class.getSimpleName(), "/application/health", new HealthServlet());
-        addInstanceServlet(InstanceServlet.class.getSimpleName(),"/application/instance");
+        addInstanceServlet(InstanceServlet.class.getSimpleName(), "/application/instance");
     }
 
     private String getContextPath() {
@@ -214,6 +216,12 @@ public class VirtualService implements AutoCloseable {
 
     public VirtualService addInstanceServlet(String name, String url) {
         addServlet(name, url, new InstanceServlet());
+
+        return this;
+    }
+
+    public VirtualService addHttpStatusCodeServlet(int httpStatus) {
+        addServlet(HttpStatusCodeServlet.class.getName(), "/httpCode", new HttpStatusCodeServlet(httpStatus));
 
         return this;
     }
@@ -267,7 +275,7 @@ public class VirtualService implements AutoCloseable {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .get(url)
                         .body();
-                    assertEquals("GET " + instanceId, responseBody.print());
+                    assertEquals(HttpMethod.GET + " " + instanceId, responseBody.print());
                     break;
                 } catch (RuntimeException | AssertionError e) {
                     testCounter++;
@@ -309,9 +317,9 @@ public class VirtualService implements AutoCloseable {
                 try {
                     for (int i = 0; i < instanceCountBefore; i++) {
                         final ResponseBody responseBody = given().when()
-                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-                            .get(url)
-                            .body();
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .get(url)
+                                .body();
                         assertNotEquals(instanceId, responseBody.print());
                     }
                     break;
@@ -663,10 +671,10 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
-     * Servlet answer on /application/instance instanceId. This is base part of method to verify registration on
+     * Servlet answer on /application/instance Http method and instanceId. This is base part of method to verify registration on
      * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
-    public class InstanceServlet extends HttpServlet {
+    private class InstanceServlet extends HttpServlet {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -701,6 +709,51 @@ public class VirtualService implements AutoCloseable {
         private void writeResponse(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setStatus(HttpStatus.SC_OK);
             resp.getWriter().print(req.getMethod() + " " + VirtualService.this.instanceId);
+            resp.getWriter().close();
+        }
+
+    }
+
+    /**
+     * Servlet returns the specified Http return code for all Http methods
+     */
+    @RequiredArgsConstructor
+    private static class HttpStatusCodeServlet extends HttpServlet {
+
+        private final int httpStatus;
+
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        private void writeResponse(HttpServletResponse resp) throws IOException {
+            resp.setStatus(httpStatus);
             resp.getWriter().close();
         }
 

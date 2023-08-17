@@ -28,9 +28,6 @@ import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.RandomPorts;
 import org.zowe.apiml.util.service.VirtualService;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -41,8 +38,7 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.when;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
@@ -56,6 +52,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @TestsNotMeantForZowe
 @GatewayTest
 class ServiceHaModeTest implements TestWithStartedInstances {
+
     private static final int TIMEOUT = 30;
 
     @BeforeAll
@@ -64,15 +61,24 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
-    private static Stream<Arguments> httpMethods() {
+    private static Stream<Arguments> RetryableHttpMethods() {
         return Stream.of(
-                Arguments.of(Method.GET),
+                Arguments.of(Method.GET)
+        );
+    }
+
+    private static Stream<Arguments> NonRetryableHttpMethods() {
+        return Stream.of(
                 Arguments.of(Method.POST),
                 Arguments.of(Method.PUT),
                 Arguments.of(Method.DELETE),
                 Arguments.of(Method.OPTIONS),
                 Arguments.of(Method.HEAD)
         );
+    }
+
+    private static Stream<Arguments> HttpMethods() {
+        return Stream.concat(RetryableHttpMethods(), NonRetryableHttpMethods());
     }
 
     @Nested
@@ -103,15 +109,17 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 try {
                     service1.close();
                 } catch (Exception e) {
+                    // Just continue
                 }
                 try {
                     service2.close();
                 } catch (Exception e) {
+                    // Just continue
                 }
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#httpMethods")
+            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#HttpMethods")
             void verifyThatGatewayRetriesToTheLiveOne(Method method) {
                 routeAndVerifyRetry(service1.getGatewayUrls(), method, TIMEOUT);
             }
@@ -143,7 +151,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
         @Nested
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-        class OneReturns500 {
+        class OneReturns503 {
 
             @BeforeAll
             void setUp() throws LifecycleException, IOException {
@@ -152,8 +160,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 service1 = new VirtualService("testHaModeService2", ports.get(0));
                 service2 = new VirtualService("testHaModeService2", ports.get(1));
 
-                service1.addInstanceServlet("Http500", "/http500");
-                service2.addServlet(Http500Servlet.class.getName(), "/http500", new Http500Servlet());
+                service1.addInstanceServlet("Http503", "/httpCode");
+                service2.addHttpStatusCodeServlet(HttpStatus.SC_SERVICE_UNAVAILABLE);
 
                 service1.start();
                 service2.start().waitForGatewayRegistration(2, TIMEOUT);
@@ -164,72 +172,40 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 try {
                     service1.close();
                 } catch (Exception e) {
+                    // Just continue
                 }
                 try {
                     service2.close();
                 } catch (Exception e) {
+                    // Just continue
                 }
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#httpMethods")
-            void verifyThatGatewayRetriesToTheLiveOne(Method method) {
-                routeAndVerifyNoRetry(service1.getGatewayUrls(), method);
+            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#RetryableHttpMethods")
+            void verifyThatGatewayRetriesGet(Method method) {
+                routeAndVerifyNoRetry(service1.getGatewayUrls(), method, 2);
             }
 
-            private void routeAndVerifyNoRetry(List<String> gatewayUrls, Method method) {
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#NonRetryableHttpMethods")
+            void verifyThatGatewayNotRetriesPost(Method method) {
+                routeAndVerifyNoRetry(service1.getGatewayUrls(), method, 1);
+            }
+
+            private void routeAndVerifyNoRetry(List<String> gatewayUrls, Method method, int maximumRetries) {
                 for (String gatewayUrl : gatewayUrls) {
                     IntStream.rangeClosed(0, 1).forEach(x -> {
 
-                        String url = gatewayUrl + "/http500";
+                        String url = gatewayUrl + "/httpCode";
                         Response response = doRequest(method, url);
-                        System.out.println(method.toString() + ":" + x + ":" + response.getStatusCode()); //TODO: Why GET end with 500?
-                        if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                            fail("Return should be 200 or 500 but it is: " + response.getStatusCode());
+                        if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_SERVICE_UNAVAILABLE) {
+                            fail("Return should be 200 or 503 but it is: " + response.getStatusCode());
                         }
                         StringTokenizer retryList = new StringTokenizer(response.getHeader("RibbonRetryDebug"), "|");
-                        assertThat(retryList.countTokens(), is(1));
+                        assertThat(retryList.countTokens(), is(lessThanOrEqualTo(maximumRetries)));
                     });
                 }
-            }
-
-            class Http500Servlet extends HttpServlet {
-
-                @Override
-                protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-                    write500Response(resp);
-                }
-
-                @Override
-                protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-                    write500Response(resp);
-                }
-
-                @Override
-                protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-                    write500Response(resp);
-                }
-
-                @Override
-                protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-                    write500Response(resp);
-                }
-
-                @Override
-                protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-                    write500Response(resp);
-                }
-
-                @Override
-                protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-                    write500Response(resp);
-                }
-
-                private void write500Response(HttpServletResponse resp) throws IOException {
-                    resp.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-                    resp.getWriter().close();
-                }
-
             }
 
         }
