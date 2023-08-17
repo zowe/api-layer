@@ -32,7 +32,7 @@ import static io.restassured.RestAssured.given;
  * The controller receive the response from the service and then will post response.
  */
 @GatewayTest
-public class ValidateAPITest implements TestWithStartedInstances {
+class ValidateAPITest implements TestWithStartedInstances {
 
 
     @BeforeEach
@@ -45,12 +45,12 @@ public class ValidateAPITest implements TestWithStartedInstances {
     void testPostEndpoint() {
         given()
             .log().all()
-            .param("serviceID","discoverableclient")
+            .param("serviceID", "discoverableclient")
             .when()
             .post(getLegacyEndpointURLPost())
             .then()
             .assertThat()
-            .statusCode(HttpStatus.SC_OK);
+            .statusCode(HttpStatus.SC_BAD_REQUEST);
 
     }
 
@@ -63,7 +63,7 @@ public class ValidateAPITest implements TestWithStartedInstances {
             .get(getEndpointURLGet() + "/discoverableclient")
             .then()
             .assertThat()
-            .statusCode(HttpStatus.SC_OK);
+            .statusCode(HttpStatus.SC_BAD_REQUEST);
 
     }
 
