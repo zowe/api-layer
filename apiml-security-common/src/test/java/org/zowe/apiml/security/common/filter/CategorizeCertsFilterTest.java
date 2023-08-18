@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.utils.X509Utils;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -39,11 +40,15 @@ class CategorizeCertsFilterTest {
     private FilterChain chain;
     private X509Certificate[] certificates;
 
+    private CertificateValidator certificateValidator;
+
     @BeforeEach
     public void setUp() {
         request = new MockHttpServletRequest();
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
+        certificateValidator = mock(CertificateValidator.class);
+        when(certificateValidator.isCertInHeader()).thenReturn(false);
     }
 
     @Nested
@@ -51,7 +56,7 @@ class CategorizeCertsFilterTest {
 
         @BeforeEach
         void setUp() {
-            filter = new CategorizeCertsFilter(Collections.emptySet(), null);
+            filter = new CategorizeCertsFilter(Collections.emptySet(), certificateValidator);
         }
 
         @Nested

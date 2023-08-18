@@ -10,33 +10,35 @@
 
 package org.zowe.apiml.integration.proxy;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWKSet;
 import io.restassured.RestAssured;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.TlsConfiguration;
+import sun.security.provider.X509Factory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.PublicKey;
-import java.text.ParseException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.time.Duration;
+import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.security.SecurityUtils.loadPublicKey;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("CloudGatewayProxyTest")
@@ -45,10 +47,10 @@ class CloudGatewayProxyTest {
     private static final int DEFAULT_TIMEOUT = 2 * SECOND;
 
     static CloudGatewayConfiguration conf;
-    static PublicKey publicKey;
+    static String trustedCerts;
 
     @BeforeAll
-    static void init() {
+    static void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
         TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
         HttpsConfig config = HttpsConfig.builder()
@@ -58,8 +60,16 @@ class CloudGatewayProxyTest {
             .keyStorePassword(tlsConf.getKeyStorePassword())
             .keyStoreType(tlsConf.getKeyStoreType())
             .build();
-        publicKey = loadPublicKey(config);
-        assertNotNull(publicKey);
+
+        final Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, "\n".getBytes());
+        StringBuilder sb = new StringBuilder();
+        for (Certificate cert : SecurityUtils.loadCertificateChain(config)) {
+            sb.append(X509Factory.BEGIN_CERT).append("\n")
+            .append(mimeEncoder.encodeToString(cert.getEncoded())).append("\n")
+            .append(X509Factory.END_CERT).append("\n");
+        }
+        trustedCerts = sb.toString();
+        assertTrue(StringUtils.isNotEmpty(trustedCerts));
     }
 
     @BeforeEach
@@ -105,19 +115,17 @@ class CloudGatewayProxyTest {
     }
 
     @Test
-    void givenWellKnownRequest_thenJWKSetContainsPublicKey() throws URISyntaxException, IOException, ParseException, JOSEException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_WELL_KNOWN_JWKS);
-        InputStream response =
+    void givenGatewayCertificatesRequest_thenCertificatesChainProvided() throws URISyntaxException {
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_CERTIFICATES);
+        String response =
             given()
                 .when()
                 .get(new URI(scgUrl))
                 .then()
                 .statusCode(HttpStatus.SC_OK)
-                .extract().body().asInputStream();
+                .extract().body().asString();
 
-        JWKSet jwkSet = JWKSet.load(response);
-        assertNotNull(jwkSet.getKeys());
-        assertFalse(jwkSet.getKeys().isEmpty());
-        assertEquals(publicKey, jwkSet.getKeys().get(0).toRSAKey().toPublicKey());
+        assertTrue(StringUtils.isNotEmpty(response));
+        assertEquals(trustedCerts, response);
     }
 }
