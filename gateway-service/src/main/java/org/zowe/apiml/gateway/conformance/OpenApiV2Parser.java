@@ -63,7 +63,11 @@ public class OpenApiV2Parser extends AbstractSwaggerParser {
 
         String endOfUrl;
         if (endpoint.contains("/api/")) {
-            endOfUrl = serviceUrl + baseEndpointPath + endpoint;
+            if (endpoint.indexOf("/api/") > 2) {
+                endOfUrl = endpoint;
+            } else {
+                endOfUrl = serviceUrl + baseEndpointPath + endpoint;
+            }
         } else {
             endOfUrl = serviceUrl + version + baseEndpointPath + endpoint;
         }

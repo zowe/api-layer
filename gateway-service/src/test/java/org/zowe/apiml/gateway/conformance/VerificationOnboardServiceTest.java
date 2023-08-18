@@ -55,6 +55,14 @@ class VerificationOnboardServiceTest {
         assertEquals(swaggerUrl, verificationOnboardService.findSwaggerUrl(metadata));
     }
 
+    @Test
+    void whenRetrievingnNullSwaggerUrl() {
+        final String swaggerUrl = null;
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
+        assertEquals("", verificationOnboardService.findSwaggerUrl(metadata));
+    }
+
 
     @Test
     void whenRetrievingEmptySwaggerUrl() {
@@ -62,6 +70,7 @@ class VerificationOnboardServiceTest {
         metadata.put("apiml.apiInfo.api-v2.swaggerUrl", null);
         assertEquals("", verificationOnboardService.findSwaggerUrl(metadata));
     }
+
 
     @Nested
     class givenEndpoint {
