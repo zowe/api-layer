@@ -62,7 +62,7 @@ describe('>>> Detail page test', () => {
         cy.contains('Service Homepage').should('exist');
 
         cy.get(
-            '#root > div > div.content > div.main-content2.detail-content > div.content-description-container > div.tabs-swagger > div.serviceTab > div.header > a'
+            '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div.tabs-swagger > div.serviceTab > div.header > a'
         )
             .should('have.attr', 'href')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
@@ -101,7 +101,7 @@ describe('>>> Detail page test', () => {
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
 
         cy.get(
-            '#root > div > div.content > div.main-content2.detail-content > div.content-description-container > div > div > div.header > h6:nth-child(4)'
+            '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div > div.header > h6:nth-child(4)'
         )
             .should('exist')
             .should(

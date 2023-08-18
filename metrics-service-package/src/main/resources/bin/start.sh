@@ -60,14 +60,14 @@ fi
 verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
   verifySslCertificatesOfServices=false
-  nonStrictVerifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=true
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
-  verifySslCertificatesOfServices=false
+  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=true
 else
   # default value is STRICT
   verifySslCertificatesOfServices=true
-  nonStrictVerifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=false
 fi
 
 if [ "$(uname)" = "OS/390" ]

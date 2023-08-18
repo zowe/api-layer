@@ -65,7 +65,7 @@ public class SpringSecurityConfig {
             .headers().httpStrictTransportSecurity().disable()
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        if (verifyCertificates || nonStrictVerifyCerts) {
+        if (verifyCertificates || !nonStrictVerifyCerts) {
             http.authorizeRequests().anyRequest().authenticated().and()
                 .x509().userDetailsService(x509UserDetailsService());
             if (isAttlsEnabled) {

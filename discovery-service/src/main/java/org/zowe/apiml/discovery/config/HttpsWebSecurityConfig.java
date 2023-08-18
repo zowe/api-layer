@@ -119,7 +119,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(2)
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.antMatcher("/eureka/**"));
-        if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
+        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeRequests()
                 .anyRequest().authenticated()
                 .and().x509().userDetailsService(x509UserDetailsService());
@@ -143,7 +143,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
             .httpBasic().realmName(DISCOVERY_REALM);
-        if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
+        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeRequests().anyRequest().authenticated().and()
                 .x509().userDetailsService(x509UserDetailsService());
             if (isAttlsEnabled) {
