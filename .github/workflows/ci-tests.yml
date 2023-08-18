@@ -28,7 +28,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew clean build runStartUpCheck --no-build-cache --info --scan -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew clean build runStartUpCheck --info --scan -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
