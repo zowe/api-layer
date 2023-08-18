@@ -35,9 +35,11 @@ public class OpenApiV2Parser extends AbstractSwaggerParser {
     public Set<Endpoint> getAllEndpoints() {
         HashSet<Endpoint> result = new HashSet<>();
         for (Map.Entry<String, Path> entry : swagger.getSwagger().getPaths().entrySet()) {
-            Set<HttpMethod> methods = getMethod(entry.getValue());
-            String url = generateUrlForEndpoint(entry.getKey());
-            HashMap<String, Set<String>> validResponses = getValidResponses(entry.getValue());
+            Path currentPath = entry.getValue();
+            String currentKey = entry.getKey();
+            Set<HttpMethod> methods = getMethod(currentPath);
+            String url = generateUrlForEndpoint(currentKey);
+            HashMap<String, Set<String>> validResponses = getValidResponses(currentPath);
             Endpoint currentEndpoint = new Endpoint(url, serviceId, methods, validResponses);
             result.add(currentEndpoint);
         }

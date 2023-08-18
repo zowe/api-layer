@@ -71,20 +71,20 @@ public class OpenApiV3Parser extends AbstractSwaggerParser {
 
     private Set<HttpMethod> getMethod(PathItem value) {
         Set<HttpMethod> result = new HashSet<>();
+        if (value.getPost() != null) {
+            result.add(HttpMethod.POST);
+        }
         if (value.getGet() != null) {
             result.add(HttpMethod.GET);
+        }
+        if (value.getPatch() != null) {
+            result.add(HttpMethod.PATCH);
         }
         if (value.getHead() != null) {
             result.add(HttpMethod.HEAD);
         }
         if (value.getOptions() != null) {
             result.add(HttpMethod.OPTIONS);
-        }
-        if (value.getPatch() != null) {
-            result.add(HttpMethod.PATCH);
-        }
-        if (value.getPost() != null) {
-            result.add(HttpMethod.POST);
         }
         if (value.getDelete() != null) {
             result.add(HttpMethod.DELETE);
