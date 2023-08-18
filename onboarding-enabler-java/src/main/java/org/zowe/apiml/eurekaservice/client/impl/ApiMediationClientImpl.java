@@ -145,7 +145,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             builder.verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()));
             builder.nonStrictVerifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getNonStrictVerifySslCertificatesOfServices()));
             if (Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()) ||
-                Boolean.TRUE.equals(sslConfig.getNonStrictVerifySslCertificatesOfServices())) {
+                Boolean.FALSE.equals(sslConfig.getNonStrictVerifySslCertificatesOfServices())) {
                 builder.trustStore(sslConfig.getTrustStore())
                     .trustStoreType(sslConfig.getTrustStoreType())
                     .trustStorePassword(sslConfig.getTrustStorePassword());

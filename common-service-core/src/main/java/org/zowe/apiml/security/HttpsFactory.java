@@ -67,7 +67,7 @@ public class HttpsFactory {
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
-        if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices()) {
             return getSSLConnectionSocketFactory();
         } else {
             apimlLog.log("org.zowe.apiml.common.ignoringSsl");
@@ -218,7 +218,7 @@ public class HttpsFactory {
     }
 
     public SSLContext getSslContext() {
-        if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices()) {
             return createSecureSslContext();
         } else {
             return createIgnoringSslContext();
@@ -246,7 +246,7 @@ public class HttpsFactory {
     }
 
     public HostnameVerifier getHostnameVerifier() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
             return new NoopHostnameVerifier();
@@ -268,7 +268,7 @@ public class HttpsFactory {
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
 
-            if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
+            if (config.isVerifySslCertificatesOfServices()) {
                 setSystemSslProperties();
             }
             builder.withCustomSSL(getSslContext());
