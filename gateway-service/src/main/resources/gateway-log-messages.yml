@@ -406,7 +406,7 @@ messages:
           - z/OSMF server certificate is trusted in Zowe's truststore
         Enable debugging to see further details in stack trace.
       reason: "The z/OSMF connection is incorrectly configured."
-      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS."
+      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS. Configure sslDebug to see SSL debugging messages."
 
     - key: org.zowe.apiml.security.auth.zosmf.jwt.internalError
       number: ZWEAG183
