@@ -33,8 +33,8 @@ public class RoutingConfig {
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled:-}")
     private String ignoredHeadersWhenCorsEnabled;
 
-    @Value("{apiml.service.forwardClientCertEnabled:false}")
-    private String isClientCertForwardingEnabled;
+    @Value("${apiml.service.forwardClientCertEnabled:false}")
+    private String forwardingEnabled;
 
     @Bean
     @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
@@ -62,7 +62,7 @@ public class RoutingConfig {
 
         FilterDefinition clientCertFilter = new FilterDefinition();
         clientCertFilter.setName("ClientCertFilterFactory");
-        clientCertFilter.addArg("enabled", isClientCertForwardingEnabled);
+        clientCertFilter.addArg("forwardingEnabled", forwardingEnabled);
 
         List<FilterDefinition> filters = new ArrayList<>();
         filters.add(circuitBreakerFilter);

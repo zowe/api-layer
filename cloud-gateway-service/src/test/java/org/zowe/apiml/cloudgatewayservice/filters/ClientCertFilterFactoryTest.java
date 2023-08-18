@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
 
@@ -45,7 +46,6 @@ class ClientCertFilterFactoryTest {
     SslInfo sslInfo = mock(SslInfo.class);
     ServerWebExchange exchange = mock(ServerWebExchange.class);
     ServerHttpRequest request = mock(ServerHttpRequest.class);
-    X509Certificate certificate = mock(X509Certificate.class);
     GatewayFilterChain chain = mock(GatewayFilterChain.class);
     ClientCertFilterFactory filterFactory;
     ClientCertFilterFactory.Config filterConfig = new ClientCertFilterFactory.Config();
@@ -53,7 +53,7 @@ class ClientCertFilterFactoryTest {
 
     @BeforeEach
     void setup() {
-        x509Certificates[0] = certificate;
+        x509Certificates[0] = mock(X509Certificate.class);
         filterFactory = new ClientCertFilterFactory();
         requestBuilder = new ServerHttpRequestBuilderMock();
         ServerWebExchange.Builder exchangeBuilder = new ServerWebExchangeBuilderMock();
@@ -71,13 +71,13 @@ class ClientCertFilterFactoryTest {
     class GivenValidCertificateInRequest {
 
         @BeforeEach
-        void setup() throws CertificateEncodingException {
-            when(certificate.getEncoded()).thenReturn(CERTIFICATE_BYTES);
+        void setup() throws CertificateException {
+            when(x509Certificates[0].getEncoded()).thenReturn(CERTIFICATE_BYTES);
         }
 
         @Test
-        void whenEnabled_thenAddHeaderToRequest() throws Exception {
-            filterConfig.setEnabled(true);
+        void whenEnabled_thenAddHeaderToRequest() {
+            filterConfig.setForwardingEnabled("true");
             GatewayFilter filter = filterFactory.apply(filterConfig);
             Mono<Void> result = filter.filter(exchange, chain);
             result.block();
@@ -88,8 +88,8 @@ class ClientCertFilterFactoryTest {
         }
 
         @Test
-        void whenDisabled_thenNoHeadersInRequest() throws Exception {
-            filterConfig.setEnabled(false);
+        void whenDisabled_thenNoHeadersInRequest() {
+            filterConfig.setForwardingEnabled("false");
             GatewayFilter filter = filterFactory.apply(filterConfig);
             Mono<Void> result = filter.filter(exchange, chain);
             result.block();
@@ -107,8 +107,8 @@ class ClientCertFilterFactoryTest {
             }
 
             @Test
-            void whenEnabled_thenHeaderContainsNewValue() throws Exception {
-                filterConfig.setEnabled(true);
+            void whenEnabled_thenHeaderContainsNewValue() {
+                filterConfig.setForwardingEnabled("true");
                 GatewayFilter filter = filterFactory.apply(filterConfig);
                 Mono<Void> result = filter.filter(exchange, chain);
                 result.block();
@@ -119,8 +119,8 @@ class ClientCertFilterFactoryTest {
             }
 
             @Test
-            void whenDisabled_thenNoHeadersInRequest() throws Exception {
-                filterConfig.setEnabled(false);
+            void whenDisabled_thenNoHeadersInRequest() {
+                filterConfig.setForwardingEnabled("false");
                 GatewayFilter filter = filterFactory.apply(filterConfig);
                 Mono<Void> result = filter.filter(exchange, chain);
                 result.block();
@@ -133,13 +133,13 @@ class ClientCertFilterFactoryTest {
 
 
     @Nested
-    class GivenCertificateWithIncorrectEncoding {
+    class GivenInvalidCertificateInRequest {
 
         @BeforeEach
         void setup() throws CertificateEncodingException {
-            filterConfig.setEnabled(true);
+            filterConfig.setForwardingEnabled("true");
             requestBuilder.header(CLIENT_CERT_HEADER, "This value cannot pass through the filter.");
-            when(certificate.getEncoded()).thenThrow(new CertificateEncodingException("incorrect encoding"));
+            when(x509Certificates[0].getEncoded()).thenThrow(new CertificateEncodingException("incorrect encoding"));
         }
 
 
@@ -160,7 +160,7 @@ class ClientCertFilterFactoryTest {
 
         @BeforeEach
         void setup() {
-            filterConfig.setEnabled(true);
+            filterConfig.setForwardingEnabled("true");
             requestBuilder.header(CLIENT_CERT_HEADER, "This value cannot pass through the filter.");
             when(sslInfo.getPeerCertificates()).thenReturn(new X509Certificate[0]);
         }
@@ -181,7 +181,7 @@ class ClientCertFilterFactoryTest {
 
         @BeforeEach
         void setup() {
-            filterConfig.setEnabled(true);
+            filterConfig.setForwardingEnabled("true");
             requestBuilder.header(CLIENT_CERT_HEADER, "This value cannot pass through the filter.");
             when(request.getSslInfo()).thenReturn(null);
         }

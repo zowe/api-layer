@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -33,6 +32,10 @@ public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<Client
 
     private static final String CLIENT_CERT_HEADER = "Client-Cert";
 
+    public ClientCertFilterFactory() {
+        super(Config.class);
+    }
+
     /**
      * Filter business logic - Always remove any existing Client-Cert header from incoming request.
      * If feature is enabled, then extracts the client certificate, encode it and put it to new Client-Cert header.
@@ -46,7 +49,7 @@ public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<Client
         return ((exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
                 headers.remove(CLIENT_CERT_HEADER);
-                if (config.isEnabled() && exchange.getRequest().getSslInfo() != null) {
+                if (config.isForwardingEnabled() && exchange.getRequest().getSslInfo() != null) {
                     X509Certificate[] certificates = exchange.getRequest().getSslInfo().getPeerCertificates();
                     if (certificates != null && certificates.length > 0) {
                         try {
@@ -64,9 +67,12 @@ public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<Client
         });
     }
 
-    @Getter
-    @Setter
     public static class Config {
-        private boolean enabled;
+        @Setter
+        private String forwardingEnabled;
+
+        public boolean isForwardingEnabled() {
+            return Boolean.parseBoolean(forwardingEnabled);
+        }
     }
 }
