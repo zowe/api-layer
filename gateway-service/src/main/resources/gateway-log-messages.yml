@@ -400,13 +400,13 @@ messages:
         SSL Misconfiguration, z/OSMF is not accessible.
         Message: %s
         Please verify the following:
-          - CN (Common Name) and z/OSMF hostname have to match.
-          - Certificate is expired
-          - TLS version match
+          - CN (Common Name) and z/OSMF hostname match.
+          - The certificate is valid
+          - TLS version matches
           - z/OSMF server certificate is trusted in Zowe's truststore
-        Enable debugging to see further details in stack trace
-      reason: "z/OSMF connection has an incorrect configuration."
-      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS"
+        Enable debugging to see further details in stack trace.
+      reason: "The z/OSMF connection is incorrectly configured."
+      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS. Configure sslDebug to see SSL debugging messages."
 
     - key: org.zowe.apiml.security.auth.zosmf.jwt.internalError
       number: ZWEAG183
