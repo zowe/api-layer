@@ -35,6 +35,8 @@ public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
 
+    private final RestTemplate restTemplate;
+
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -84,11 +86,8 @@ public class VerificationOnboardService {
      * @return Swagger as string
      */
     public String getSwagger(String swaggerUrl) {
-        RestTemplate restTemplate = new RestTemplate();
-
         String response;
         response = restTemplate.getForEntity(swaggerUrl, String.class).getBody();
-
         return response;
     }
 
@@ -107,7 +106,6 @@ public class VerificationOnboardService {
             // replaces parameters in {} in query
             String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
 
-            RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<String> response;
             try {
                 response = restTemplate.getForEntity(url, String.class);
