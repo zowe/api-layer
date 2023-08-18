@@ -191,6 +191,43 @@ class ParserFactoryTest {
             System.out.println(problems);
             assertTrue(problems.toString().contains("missing /api/"));
         }
+
+
+        @ParameterizedTest
+        @ValueSource(strings = {"get", "post", "delete", "patch", "head", "options", "delete", "put"})
+        void whenSwagger2andDifferentOperations_thenCorrectlyParses(String operation) throws IOException {
+            when(gatewayConfigProperties.getHostname()).thenReturn("hostname");
+            when(gatewayConfigProperties.getScheme()).thenReturn("https");
+
+            String sampleSwagger = swaggerFromPath("src/test/resources/api-doc-v2.json").replace("get", operation);
+
+            AbstractSwaggerParser result = ParserFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            Set<Endpoint> endpoints = result.getAllEndpoints();
+            System.out.println(endpoints);
+            assertFalse(endpoints.isEmpty());
+            assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
+            List<String> problems = result.getProblemsWithEndpointUrls();
+            System.out.println(problems);
+            assertTrue(problems.isEmpty());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"get", "post", "delete", "patch", "head", "options", "delete", "put"})
+        void whenSwagger3andDifferentOperations_thenCorrectlyParses(String operation) throws IOException {
+            when(gatewayConfigProperties.getHostname()).thenReturn("hostname");
+            when(gatewayConfigProperties.getScheme()).thenReturn("https");
+
+            String sampleSwagger = swaggerFromPath("src/test/resources/api-doc.json").replace("get", operation);
+
+            AbstractSwaggerParser result = ParserFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            Set<Endpoint> endpoints = result.getAllEndpoints();
+            System.out.println(endpoints);
+            assertFalse(endpoints.isEmpty());
+            assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
+            List<String> problems = result.getProblemsWithEndpointUrls();
+            System.out.println(problems);
+            assertTrue(problems.isEmpty());
+        }
     }
 
 
