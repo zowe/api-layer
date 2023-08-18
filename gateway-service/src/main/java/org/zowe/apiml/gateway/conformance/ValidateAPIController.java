@@ -119,7 +119,7 @@ public class ValidateAPIController {
         List<String> parserResponses = swaggerParser.getMessages();
         if (parserResponses != null) foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, parserResponses);
 
-        Set<Endpoint> getMethodEndpoints = swaggerParser.getMethodEndpoints();
+        Set<Endpoint> getMethodEndpoints = swaggerParser.getGetMethodEndpoints();
         if (!getMethodEndpoints.isEmpty()) {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS,
                 verificationOnboardService.testGetEndpoints(getMethodEndpoints));

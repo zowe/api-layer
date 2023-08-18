@@ -14,6 +14,7 @@ package org.zowe.apiml.gateway.conformance;
 import lombok.Data;
 import org.springframework.http.HttpMethod;
 
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -30,11 +31,11 @@ public class Endpoint {
      */
     private final String serviceId;
     /**
-     * Method which the endpoint accepts
+     * Methods which the endpoint accepts
      */
-    private final HttpMethod httpMethod;
+    private final Set<HttpMethod> httpMethods;
     /**
      * Documented responses that the API can return, taken from the swagger, they are either of the form "400", "401"... or "default"
      */
-    private final Set<String> validResponses;
+    private final HashMap<String, Set<String>> validResponses;
 }

@@ -16,10 +16,7 @@ import io.swagger.parser.util.SwaggerDeserializationResult;
 import org.springframework.http.HttpMethod;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 public class OpenApiV2Parser extends AbstractSwaggerParser {
@@ -38,17 +35,21 @@ public class OpenApiV2Parser extends AbstractSwaggerParser {
     public Set<Endpoint> getAllEndpoints() {
         HashSet<Endpoint> result = new HashSet<>();
         for (Map.Entry<String, Path> entry : swagger.getSwagger().getPaths().entrySet()) {
-            HttpMethod method = getMethod(entry.getValue());
+            Set<HttpMethod> methods = getMethod(entry.getValue());
             String url = generateUrlForEndpoint(entry.getKey());
-            Set<String> validResponses = getValidResponses(entry.getValue());
-            Endpoint currentEndpoint = new Endpoint(url, serviceId, method, validResponses);
+            HashMap<String, Set<String>> validResponses = getValidResponses(entry.getValue());
+            Endpoint currentEndpoint = new Endpoint(url, serviceId, methods, validResponses);
             result.add(currentEndpoint);
         }
         return result;
     }
 
-    private Set<String> getValidResponses(Path value) {
-        return value.getOperationMap().get(convertSpringHttpToswagger(getMethod(value))).getResponses().keySet();
+    private HashMap<String, Set<String>> getValidResponses(Path value) {
+        HashMap<String, Set<String>> result = new HashMap<>();
+        for (HttpMethod i : getMethod(value)) {
+            result.put(i.name(), value.getOperationMap().get(convertSpringHttpToswagger(i)).getResponses().keySet());
+        }
+        return result;
     }
 
     private String generateUrlForEndpoint(String endpoint) {
@@ -69,23 +70,30 @@ public class OpenApiV2Parser extends AbstractSwaggerParser {
         return baseUrl + endOfUrl.replace("//", "/");
     }
 
-    private HttpMethod getMethod(Path value) {
+    private Set<HttpMethod> getMethod(Path value) {
+        Set<HttpMethod> result = new HashSet<>();
         if (value.getGet() != null) {
-            return HttpMethod.GET;
-        } else if (value.getHead() != null) {
-            return HttpMethod.HEAD;
-        } else if (value.getOptions() != null) {
-            return HttpMethod.OPTIONS;
-        } else if (value.getPatch() != null) {
-            return HttpMethod.PATCH;
-        } else if (value.getPost() != null) {
-            return HttpMethod.POST;
-        } else if (value.getDelete() != null) {
-            return HttpMethod.DELETE;
-        } else if (value.getPut() != null) {
-            return HttpMethod.PUT;
+            result.add(HttpMethod.GET);
         }
-        return null;
+        if (value.getHead() != null) {
+            result.add(HttpMethod.HEAD);
+        }
+        if (value.getOptions() != null) {
+            result.add(HttpMethod.OPTIONS);
+        }
+        if (value.getPatch() != null) {
+            result.add(HttpMethod.PATCH);
+        }
+        if (value.getPost() != null) {
+            result.add(HttpMethod.POST);
+        }
+        if (value.getDelete() != null) {
+            result.add(HttpMethod.DELETE);
+        }
+        if (value.getPut() != null) {
+            result.add(HttpMethod.PUT);
+        }
+        return result;
     }
 
 

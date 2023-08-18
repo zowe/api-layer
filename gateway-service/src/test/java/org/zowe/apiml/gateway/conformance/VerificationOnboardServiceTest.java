@@ -69,11 +69,20 @@ class VerificationOnboardServiceTest {
         void whenEndpointReturnsDocumented400_thenReturnEmptyList() {
             String url = "https://localhost:8000/test";
             ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            Set<HttpMethod> methods = new HashSet<>();
+            methods.add(HttpMethod.GET);
+
+            HashMap<String, Set<String>> responses = new HashMap<>();
+            responses.put("GET", new HashSet<>(Collections.singleton("400")));
+
+
             when(restTemplate.getForEntity(url, String.class)).thenReturn(response);
-            Endpoint endpoint = new Endpoint(url, "testservice", HttpMethod.GET, new HashSet<>(Collections.singleton("400")));
+            Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
             List<String> result = verificationOnboardService.testGetEndpoints(endpoints);
+
+            System.out.println(result);
             assertTrue(result.isEmpty());
 
         }
@@ -82,8 +91,14 @@ class VerificationOnboardServiceTest {
         void whenEndpointReturnsUndocumented500_thenReturnCorrectError() {
             String url = "https://localhost:8000/test";
             ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            Set<HttpMethod> methods = new HashSet<>();
+            methods.add(HttpMethod.GET);
+
+            HashMap<String, Set<String>> responses = new HashMap<>();
+            responses.put("GET", new HashSet<>(Collections.singleton("0")));
+
             when(restTemplate.getForEntity(url, String.class)).thenReturn(response);
-            Endpoint endpoint = new Endpoint(url, "testservice", HttpMethod.GET, new HashSet<>(Collections.singleton("0")));
+            Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
             List<String> result = verificationOnboardService.testGetEndpoints(endpoints);
@@ -95,11 +110,18 @@ class VerificationOnboardServiceTest {
     void whenEndpointReturnsOnly404_thenReturnCorrectError() {
         String url = "https://localhost:8000/test";
         ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Set<HttpMethod> methods = new HashSet<>();
+        methods.add(HttpMethod.GET);
+
+        HashMap<String, Set<String>> responses = new HashMap<>();
+        responses.put("GET", new HashSet<>(Collections.singleton("404")));
+
         when(restTemplate.getForEntity(url, String.class)).thenReturn(response);
-        Endpoint endpoint = new Endpoint(url, "testservice", HttpMethod.GET, new HashSet<>(Collections.singleton("404")));
+        Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
         HashSet<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         List<String> result = verificationOnboardService.testGetEndpoints(endpoints);
+        System.out.println(result);
         assertTrue(result.get(0).contains("Could not verify if API can be called through gateway"));
     }
 

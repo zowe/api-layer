@@ -49,7 +49,7 @@ public abstract class AbstractSwaggerParser {
         boolean isVersionedApi = !searchMetadata(metadata, "apiml", "apiInfo", "version").isEmpty();
 
         for (Endpoint endpoint : endpoints) {
-            if (endpoint.getHttpMethod() == null) {
+            if (endpoint.getHttpMethods() == null) {
                 result.add("Endpoint at " + result + " does not have a specified Http method in Swagger");
             }
             if (!endpoint.getUrl().contains("/api/")) {
@@ -69,11 +69,11 @@ public abstract class AbstractSwaggerParser {
         return result;
     }
 
-    public Set<Endpoint> getMethodEndpoints() {
+    public Set<Endpoint> getGetMethodEndpoints() {
         Set<Endpoint> result = new HashSet<>();
 
         for (Endpoint i : getAllEndpoints()) {
-            if (i.getHttpMethod() == HttpMethod.GET) {
+            if (i.getHttpMethods().contains(HttpMethod.GET)) {
                 result.add(i);
             }
         }

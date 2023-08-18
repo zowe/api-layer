@@ -94,14 +94,14 @@ public class VerificationOnboardService {
     /**
      * Checks if endpoints can be called and return documented responses
      *
-     * @param endpoints endpoints to check
+     * @param getEndpoints GET endpoints to check
      * @return List of problems
      */
-    public List<String> testGetEndpoints(Set<Endpoint> endpoints) {
+    public List<String> testGetEndpoints(Set<Endpoint> getEndpoints) {
         ArrayList<String> result = new ArrayList<>();
         boolean gotResponseDifferentFrom404 = false;
 
-        for (Endpoint endpoint : endpoints) {
+        for (Endpoint endpoint : getEndpoints) {
             String urlFromSwagger = endpoint.getUrl();
             // replaces parameters in {} in query
             String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
@@ -117,14 +117,14 @@ public class VerificationOnboardService {
             if (response.getStatusCode() != HttpStatus.NOT_FOUND) {
                 gotResponseDifferentFrom404 = true;
             }
-            if (!(endpoint.getValidResponses().contains(String.valueOf(response.getStatusCode().value())) || endpoint.getValidResponses().contains("default"))) {
+            if (!(endpoint.getValidResponses().get("GET").contains(String.valueOf(response.getStatusCode().value())) || endpoint.getValidResponses().get("GET").contains("default"))) {
                 result.add("Calling endpoint at " + endpoint.getUrl() + " gives undocumented " + response.getStatusCode().value()
-                    + " status code, documented responses are:" + endpoint.getValidResponses());
+                    + " status code, documented responses are:" + endpoint.getValidResponses().get("GET"));
             }
         }
         if (!gotResponseDifferentFrom404) {
             result.add("Could not verify if API can be called through gateway, attempting to reach all of the following " +
-                "documented GET endpoints gives only 404 response: " + endpoints.stream().map(Endpoint::getUrl).collect(Collectors.toSet()));
+                "documented GET endpoints gives only 404 response: " + getEndpoints.stream().map(Endpoint::getUrl).collect(Collectors.toSet()));
         }
         return result;
     }
