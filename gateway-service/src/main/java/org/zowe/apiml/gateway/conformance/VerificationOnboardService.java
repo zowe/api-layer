@@ -110,7 +110,8 @@ public class VerificationOnboardService {
             try {
                 response = restTemplate.getForEntity(url, String.class);
             } catch (HttpClientErrorException | HttpServerErrorException e) {
-                response = ResponseEntity.status(e.getRawStatusCode()).headers(e.getResponseHeaders())
+                response = ResponseEntity.status(e.getRawStatusCode())
+                    .headers(e.getResponseHeaders())
                     .body(e.getResponseBodyAsString());
             }
 
