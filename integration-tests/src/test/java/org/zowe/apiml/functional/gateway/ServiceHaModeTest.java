@@ -39,6 +39,7 @@ import static io.restassured.RestAssured.when;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
@@ -57,7 +58,6 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
     @BeforeAll
     static void setUp() {
-        RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
@@ -133,9 +133,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
                         try {
                             Response response = doRequest(method, url);
-                            if (response.getStatusCode() != HttpStatus.SC_OK) {
-                                fail();
-                            }
+                            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
                             StringTokenizer retryList = new StringTokenizer(response.getHeader("RibbonRetryDebug"), "|");
                             assertThat(retryList.countTokens(), is(greaterThan(1)));
                             break;
