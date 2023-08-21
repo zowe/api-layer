@@ -129,7 +129,7 @@ public class VerificationOnboardService {
         return result;
     }
 
-    public List<String> getProblemsWithEndpointUrls(AbstractSwaggerParser swaggerParser) {
+    public List<String> getProblemsWithEndpointUrls(AbstractSwaggerValidator swaggerParser) {
         return swaggerParser.getProblemsWithEndpointUrls();
     }
 }

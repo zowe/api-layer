@@ -10,46 +10,45 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-import io.swagger.models.Path;
-import io.swagger.parser.SwaggerParser;
-import io.swagger.parser.util.SwaggerDeserializationResult;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.springframework.http.HttpMethod;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.*;
 
 
-public class OpenApiV2Parser extends AbstractSwaggerParser {
+public class OpenApiV3Validator extends AbstractSwaggerValidator {
+    private final SwaggerParseResult swagger;
 
-    private final SwaggerDeserializationResult swagger;
 
-    OpenApiV2Parser(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
+    public OpenApiV3Validator(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
         super(metadata, gatewayConfigProperties, serviceId);
-        swagger = new SwaggerParser().readWithInfo(swaggerDoc);
+        swagger = new OpenAPIV3Parser().readContents(swaggerDoc);
     }
 
     public List<String> getMessages() {
         return swagger.getMessages();
     }
 
+
     public Set<Endpoint> getAllEndpoints() {
         HashSet<Endpoint> result = new HashSet<>();
-        for (Map.Entry<String, Path> entry : swagger.getSwagger().getPaths().entrySet()) {
-            Path currentPath = entry.getValue();
-            String currentKey = entry.getKey();
-            Set<HttpMethod> methods = getMethod(currentPath);
-            String url = generateUrlForEndpoint(currentKey);
-            HashMap<String, Set<String>> validResponses = getValidResponses(currentPath);
+        for (Map.Entry<String, PathItem> pathEntry : swagger.getOpenAPI().getPaths().entrySet()) {
+            Set<HttpMethod> methods = getMethod(pathEntry.getValue());
+            String url = generateUrlForEndpoint(pathEntry.getKey());
+            HashMap<String, Set<String>> validResponses = getValidResponses(pathEntry.getValue());
             Endpoint currentEndpoint = new Endpoint(url, serviceId, methods, validResponses);
             result.add(currentEndpoint);
         }
         return result;
     }
 
-    private HashMap<String, Set<String>> getValidResponses(Path value) {
+    private HashMap<String, Set<String>> getValidResponses(PathItem value) {
         HashMap<String, Set<String>> result = new HashMap<>();
-        for (HttpMethod i : getMethod(value)) {
-            result.put(i.name(), value.getOperationMap().get(convertSpringHttpToswagger(i)).getResponses().keySet());
+        for (HttpMethod httpMethod : getMethod(value)) {
+            result.put(httpMethod.name(), value.readOperationsMap().get(convertSpringHttpToswagger(httpMethod)).getResponses().keySet());
         }
         return result;
     }
@@ -61,37 +60,31 @@ public class OpenApiV2Parser extends AbstractSwaggerParser {
         String version = searchMetadata(metadata, "apiml", "routes", "gatewayUrl");
         String serviceUrl = searchMetadata(metadata, "apiml", "routes", "serviceUrl");
 
-        String baseEndpointPath = swagger.getSwagger().getBasePath();
-
         String endOfUrl;
         if (endpoint.contains("/api/")) {
-            if (endpoint.indexOf("/api/") > 2) {
-                endOfUrl = endpoint;
-            } else {
-                endOfUrl = serviceUrl + baseEndpointPath + endpoint;
-            }
+            endOfUrl = serviceUrl + endpoint;
         } else {
-            endOfUrl = serviceUrl + version + baseEndpointPath + endpoint;
+            endOfUrl = serviceUrl + version + endpoint;
         }
         return baseUrl + endOfUrl.replace("//", "/");
     }
 
-    private Set<HttpMethod> getMethod(Path value) {
+    private Set<HttpMethod> getMethod(PathItem value) {
         Set<HttpMethod> result = new HashSet<>();
+        if (value.getPost() != null) {
+            result.add(HttpMethod.POST);
+        }
         if (value.getGet() != null) {
             result.add(HttpMethod.GET);
+        }
+        if (value.getPatch() != null) {
+            result.add(HttpMethod.PATCH);
         }
         if (value.getHead() != null) {
             result.add(HttpMethod.HEAD);
         }
         if (value.getOptions() != null) {
             result.add(HttpMethod.OPTIONS);
-        }
-        if (value.getPatch() != null) {
-            result.add(HttpMethod.PATCH);
-        }
-        if (value.getPost() != null) {
-            result.add(HttpMethod.POST);
         }
         if (value.getDelete() != null) {
             result.add(HttpMethod.DELETE);
@@ -102,23 +95,24 @@ public class OpenApiV2Parser extends AbstractSwaggerParser {
         return result;
     }
 
-
-    private io.swagger.models.HttpMethod convertSpringHttpToswagger(HttpMethod input) {
+    private PathItem.HttpMethod convertSpringHttpToswagger(HttpMethod input) {
         if (input == HttpMethod.GET) {
-            return io.swagger.models.HttpMethod.GET;
+            return PathItem.HttpMethod.GET;
         } else if (input == HttpMethod.HEAD) {
-            return io.swagger.models.HttpMethod.HEAD;
+            return PathItem.HttpMethod.HEAD;
         } else if (input == HttpMethod.OPTIONS) {
-            return io.swagger.models.HttpMethod.OPTIONS;
+            return PathItem.HttpMethod.OPTIONS;
         } else if (input == HttpMethod.PATCH) {
-            return io.swagger.models.HttpMethod.PATCH;
+            return PathItem.HttpMethod.PATCH;
         } else if (input == HttpMethod.POST) {
-            return io.swagger.models.HttpMethod.POST;
+            return PathItem.HttpMethod.POST;
         } else if (input == HttpMethod.DELETE) {
-            return io.swagger.models.HttpMethod.DELETE;
+            return PathItem.HttpMethod.DELETE;
         } else if (input == HttpMethod.PUT) {
-            return io.swagger.models.HttpMethod.PUT;
+            return PathItem.HttpMethod.PUT;
         }
         return null;
     }
 }
+
+

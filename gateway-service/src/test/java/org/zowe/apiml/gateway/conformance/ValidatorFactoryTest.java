@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ParserFactoryTest {
+class ValidatorFactoryTest {
 
     final String DUMMY_SERVICE_ID = "dummy";
 
@@ -54,7 +54,7 @@ class ParserFactoryTest {
             String sampleSwagger = swaggerFromPath(path);
 
             List<String> result;
-            result = ParserFactory.parseSwagger(sampleSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID).getMessages();
+            result = ValidatorFactory.parseSwagger(sampleSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID).getMessages();
             assertEquals(0, result.size());
 
         }
@@ -68,7 +68,7 @@ class ParserFactoryTest {
 
             String brokenSwagger = sampleSwagger2.replace("2.0", "42");
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(SwaggerParsingException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -80,7 +80,7 @@ class ParserFactoryTest {
 
             String brokenSwagger = sampleSwagger3.replace("3.0", "42");
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(SwaggerParsingException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -93,7 +93,7 @@ class ParserFactoryTest {
 
             String brokenSwagger = sampleSwagger.substring(0, 250);
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ParserFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(SwaggerParsingException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Could not parse Swagger documentation"));
         }
@@ -126,14 +126,12 @@ class ParserFactoryTest {
 
             String sampleSwagger = swaggerFromPath(path);
 
-            AbstractSwaggerParser result = ParserFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getGetMethodEndpoints();
-            System.out.println(endpoints);
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
             assertTrue(endpoints.iterator().next().getHttpMethods().contains(HttpMethod.GET));
             List<String> problems = result.getProblemsWithEndpointUrls();
-            System.out.println(problems);
             assertTrue(problems.isEmpty());
         }
 
@@ -153,14 +151,12 @@ class ParserFactoryTest {
                 sampleSwagger = sampleSwagger.replace("sampleservice/api/v1", "sampleservice/x1");
             }
 
-            AbstractSwaggerParser result = ParserFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getGetMethodEndpoints();
-            System.out.println(endpoints);
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
             assertTrue(endpoints.iterator().next().getHttpMethods().contains(HttpMethod.GET));
             List<String> problems = result.getProblemsWithEndpointUrls();
-            System.out.println(problems);
             assertTrue(problems.toString().contains("is not versioned according to item 8 of the conformance criteria"));
         }
 
@@ -180,15 +176,13 @@ class ParserFactoryTest {
                 sampleSwagger = sampleSwagger.replace("sampleservice/api/v1", "sampleservice/v1");
             }
 
-            AbstractSwaggerParser result = ParserFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getGetMethodEndpoints();
             assertFalse(endpoints.isEmpty());
 
-            System.out.println(endpoints);
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice"));
             assertTrue(endpoints.iterator().next().getHttpMethods().contains(HttpMethod.GET));
             List<String> problems = result.getProblemsWithEndpointUrls();
-            System.out.println(problems);
             assertTrue(problems.toString().contains("missing /api/"));
         }
 
@@ -201,13 +195,11 @@ class ParserFactoryTest {
 
             String sampleSwagger = swaggerFromPath("src/test/resources/api-doc-v2.json").replace("get", operation);
 
-            AbstractSwaggerParser result = ParserFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getAllEndpoints();
-            System.out.println(endpoints);
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
             List<String> problems = result.getProblemsWithEndpointUrls();
-            System.out.println(problems);
             assertTrue(problems.isEmpty());
         }
 
@@ -219,13 +211,11 @@ class ParserFactoryTest {
 
             String sampleSwagger = swaggerFromPath("src/test/resources/api-doc.json").replace("get", operation);
 
-            AbstractSwaggerParser result = ParserFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getAllEndpoints();
-            System.out.println(endpoints);
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
             List<String> problems = result.getProblemsWithEndpointUrls();
-            System.out.println(problems);
             assertTrue(problems.isEmpty());
         }
     }

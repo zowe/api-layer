@@ -91,7 +91,6 @@ class VerificationOnboardServiceTest {
             endpoints.add(endpoint);
             List<String> result = verificationOnboardService.testGetEndpoints(endpoints);
 
-            System.out.println(result);
             assertTrue(result.isEmpty());
 
         }
@@ -130,7 +129,6 @@ class VerificationOnboardServiceTest {
         HashSet<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         List<String> result = verificationOnboardService.testGetEndpoints(endpoints);
-        System.out.println(result);
         assertTrue(result.get(0).contains("Could not verify if API can be called through gateway"));
     }
 

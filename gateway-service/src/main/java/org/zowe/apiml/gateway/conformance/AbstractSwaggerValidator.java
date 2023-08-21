@@ -16,13 +16,13 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.*;
 
-public abstract class AbstractSwaggerParser {
+public abstract class AbstractSwaggerValidator {
 
     protected final Map<String, String> metadata;
     protected final GatewayConfigProperties gatewayConfigProperties;
     protected final String serviceId;
 
-    protected AbstractSwaggerParser(Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
+    protected AbstractSwaggerValidator(Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
         this.metadata = metadata;
         this.gatewayConfigProperties = gatewayConfigProperties;
         this.serviceId = serviceId;

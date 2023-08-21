@@ -265,8 +265,6 @@ public class ValidateAPIControllerTest {
 
             result = validateAPIController.checkConformance(serviceId);
 
-            System.out.println(result.getBody());
-
             assertEquals(HttpStatus.OK, result.getStatusCode());
         }
 

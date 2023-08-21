@@ -106,11 +106,11 @@ public class ValidateAPIController {
         }
 
         String swagger = verificationOnboardService.getSwagger(swaggerUrl);
-        AbstractSwaggerParser swaggerParser;
+        AbstractSwaggerValidator swaggerParser;
 
 
         try {
-            swaggerParser = ParserFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
+            swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
         } catch (SwaggerParsingException e) {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, e.getMessage());
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
