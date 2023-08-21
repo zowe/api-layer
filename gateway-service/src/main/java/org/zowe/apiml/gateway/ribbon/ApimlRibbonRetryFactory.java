@@ -17,7 +17,6 @@ import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryPolicy;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancerContext;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.http.HttpMethod;
 import org.springframework.retry.RetryListener;
 
 import java.lang.reflect.InvocationTargetException;
@@ -45,8 +44,7 @@ public class ApimlRibbonRetryFactory extends RibbonLoadBalancedRetryFactory {
 
             @Override
             public boolean canRetry(LoadBalancedRetryContext context) {
-                HttpMethod method = context.getRequest().getMethod();
-                return HttpMethod.GET == method || lbContext.isOkToRetryOnAllOperations() || isConnectionRefused(context.getLastThrowable());
+                return super.canRetry(context) || isConnectionRefused(context.getLastThrowable());
             }
 
             @Override
