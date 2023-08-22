@@ -68,7 +68,7 @@ class ValidatorFactoryTest {
 
             String brokenSwagger = sampleSwagger2.replace("2.0", "42");
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -80,7 +80,7 @@ class ValidatorFactoryTest {
 
             String brokenSwagger = sampleSwagger3.replace("3.0", "42");
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -93,7 +93,7 @@ class ValidatorFactoryTest {
 
             String brokenSwagger = sampleSwagger.substring(0, 250);
 
-            Exception e = assertThrows(SwaggerParsingException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Could not parse Swagger documentation"));
         }

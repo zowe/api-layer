@@ -20,12 +20,13 @@ import java.util.Map;
 
 @UtilityClass
 public class ValidatorFactory {
+    private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
     public AbstractSwaggerValidator parseSwagger(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
         JsonNode root;
         try {
             root = new ObjectMapper().readTree(swaggerDoc);
         } catch (JsonProcessingException e) {
-            throw new SwaggerParsingException("Could not parse Swagger documentation");
+            throw new ValidationException("Could not parse Swagger documentation", NON_CONFORMANT_KEY);
         }
         if (root.findValue("openapi") != null && root.findValue("openapi").asText().split("\\.")[0].equals("3")) {
             return new OpenApiV3Validator(swaggerDoc, metadata, gatewayConfigProperties, serviceId);
@@ -33,7 +34,7 @@ public class ValidatorFactory {
         if (root.findValue("swagger") != null && root.findValue("swagger").asText().equals("2.0")) {
             return new OpenApiV2Validator(swaggerDoc, metadata, gatewayConfigProperties, serviceId);
         }
-        throw new SwaggerParsingException("Swagger documentation is not conformant to either OpenAPI V2 nor V3 - cannot " +
-            "find the version (that is cannot find field named 'swagger' with value '2.0' or 'openapi' with version starting with '3' )");
+        throw new ValidationException("Swagger documentation is not conformant to either OpenAPI V2 nor V3 - cannot " +
+            "find the version (that is cannot find field named 'swagger' with value '2.0' or 'openapi' with version starting with '3' )", NON_CONFORMANT_KEY);
     }
 }

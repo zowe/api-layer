@@ -10,8 +10,16 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-public class SwaggerParsingException extends RuntimeException {
-    public SwaggerParsingException(String msg) {
+public class ValidationException extends RuntimeException {
+
+    private final String key;
+
+    public ValidationException(String msg, String key) {
         super(msg);
+        this.key = key;
+    }
+
+    public String getKey() {
+        return key;
     }
 }
