@@ -11,6 +11,8 @@
 package org.zowe.apiml.apicatalog.swagger.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Path;
 import io.swagger.models.Scheme;
@@ -54,11 +56,17 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
         updateExternalDoc(swagger, apiDocInfo);
 
         try {
-            return Json.mapper().writeValueAsString(swagger);
+            return initializeObjectMapper().writeValueAsString(swagger);
         } catch (JsonProcessingException e) {
             log.debug("Could not convert Swagger to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
         }
+    }
+
+    private ObjectMapper initializeObjectMapper() {
+        ObjectMapper objectMapper = Json.mapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
     }
 
     /**
