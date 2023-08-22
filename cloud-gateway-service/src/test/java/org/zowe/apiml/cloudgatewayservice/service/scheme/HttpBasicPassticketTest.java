@@ -21,12 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HttpBasicPassticketTest {
 
     @Test
-    void givenInstance_whenGetAuthenticationScheme_thenReturnProperType() {
+    void givenHttpBasicPassticketInstance_whenGetAuthenticationScheme_thenReturnProperType() {
         assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, new HttpBasicPassticket().getAuthenticationScheme());
     }
 
     @Test
-    void givenInstance_whenApply_thenFulfillFilterFactorArgs() {
+    void givenRouteDefinition_whenApply_thenFulfillFilterFactorArgs() {
         RouteDefinition routeDefinition = new RouteDefinition();
         Authentication authentication = new Authentication();
         authentication.setApplid("applid");

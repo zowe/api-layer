@@ -120,7 +120,7 @@ class RouteLocatorTest {
     class CommonMethods {
 
         @Test
-        void givenDiscoveryClient_whenGetServiceInstances_thenMapThem() {
+        void givenDiscoveryClient_whenGetServiceInstances_thenReturnAllServiceInstances() {
             when(discoveryClient.getServices()).thenReturn(Flux.fromArray(new String[] {"service1", "service2"}));
             ServiceInstance serviceInstance1 = mock(ServiceInstance.class);
             ServiceInstance serviceInstance2 = mock(ServiceInstance.class);
@@ -145,7 +145,7 @@ class RouteLocatorTest {
         }
 
         @Test
-        void givenUnknownAuthenticationScheme_whenSetAuth_thenDoNothing() {
+        void givenAuthenticationSchemeWithoutFilter_whenSetAuth_thenDoNothing() {
             assertDoesNotThrow(() -> routeLocator.setAuth(null, new Authentication(AuthenticationScheme.X509, null)));
         }
 

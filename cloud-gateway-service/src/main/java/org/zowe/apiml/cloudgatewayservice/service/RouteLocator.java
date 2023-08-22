@@ -102,7 +102,7 @@ public class RouteLocator implements RouteDefinitionLocator {
     }
 
     Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
-        // FIXME: this is till the SCGW and GW uses the same DS. The rouing rules should be different for each application
+        // TODO: this is till the SCGW and GW uses the same DS. The routing rules should be different for each application
         if (org.apache.commons.lang.StringUtils.equalsIgnoreCase("GATEWAY", serviceInstance.getServiceId())) {
             return Stream.of(new RoutedService("zuul", "", "/"));
         }
