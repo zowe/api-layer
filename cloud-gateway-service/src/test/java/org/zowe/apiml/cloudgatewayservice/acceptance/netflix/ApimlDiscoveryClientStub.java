@@ -15,10 +15,12 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Applications;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ApimlDiscoveryClientStub extends CloudEurekaClient {
     private ApplicationRegistry applicationRegistry;
@@ -40,11 +42,18 @@ public class ApimlDiscoveryClientStub extends CloudEurekaClient {
 
     @Override
     public List<InstanceInfo> getInstancesByVipAddress(String vipAddress, boolean secure) {
-        return applicationRegistry.getInstances();
+        return applicationRegistry.getInstances().stream()
+            .filter(x -> StringUtils.equalsAnyIgnoreCase(vipAddress, x.getVIPAddress()))
+            .filter(x -> !secure || x.getSecurePort() != 0)
+            .collect(Collectors.toList());
     }
 
     @Override
     public List<InstanceInfo> getInstancesByVipAddress(String vipAddress, boolean secure, String region) {
-        return applicationRegistry.getInstances();
+        return applicationRegistry.getInstances().stream()
+            .filter(x -> StringUtils.equalsAnyIgnoreCase(vipAddress, x.getVIPAddress()))
+            .filter(x -> !secure || x.getSecurePort() != 0)
+            .collect(Collectors.toList());
     }
+
 }

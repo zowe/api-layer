@@ -31,7 +31,7 @@ public class MetadataBuilder {
     public static MetadataBuilder defaultInstance() {
         MetadataBuilder builder = new MetadataBuilder();
         builder.metadata.put("apiml.corsEnabled", "true");
-        builder.metadata.put("apiml.authentication.scheme","httpBasicPassTicket");
+        builder.metadata.put("apiml.authentication.scheme", "httpBasicPassTicket");
         return builder;
     }
 
