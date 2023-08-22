@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ValidatorFactoryTest {
 
-    final String DUMMY_SERVICE_ID = "dummy";
+    final String DUMMY_SERVICE_ID = "sampleservice";
 
     @Mock
     GatewayConfigProperties gatewayConfigProperties;

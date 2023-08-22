@@ -73,6 +73,10 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
         } else {
             endOfUrl = serviceUrl + version + baseEndpointPath + endpoint;
         }
+
+        if (!endOfUrl.contains(serviceId)) {
+            endOfUrl = "/" + serviceId + "/" + endOfUrl;
+        }
         return baseUrl + endOfUrl.replace("//", "/");
     }
 
