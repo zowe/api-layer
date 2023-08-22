@@ -10,15 +10,17 @@
 
 package org.zowe.apiml.gateway.ribbon;
 
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
 import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
+import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryPolicy;
+import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancerContext;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.retry.RetryListener;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.ConnectException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -26,41 +28,47 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ApimlRibbonRetryFactory extends RibbonLoadBalancedRetryFactory {
 
+    private final SpringClientFactory clientFactory;
     private final AtomicReference<ServiceInstanceChooser> serviceInstanceChooser = new AtomicReference<>();
 
     public ApimlRibbonRetryFactory(SpringClientFactory clientFactory) {
         super(clientFactory);
+        this.clientFactory = clientFactory;
     }
 
     @Override
     public LoadBalancedRetryPolicy createRetryPolicy(String service, ServiceInstanceChooser serviceInstanceChooser) {
         this.serviceInstanceChooser.set(serviceInstanceChooser);
-        return new LoadBalancedRetryPolicyFix(super.createRetryPolicy(service, serviceInstanceChooser));
+        RibbonLoadBalancerContext lbContext = this.clientFactory.getLoadBalancerContext(service);
+        return new RibbonLoadBalancedRetryPolicy(service, lbContext, serviceInstanceChooser, clientFactory.getClientConfig(service)) {
+
+            @Override
+            public boolean canRetry(LoadBalancedRetryContext context) {
+                return super.canRetry(context) || isConnectionRefused(context.getLastThrowable());
+            }
+
+            @Override
+            public boolean canRetryNextServer(LoadBalancedRetryContext context) {
+                return super.canRetryNextServer(context) || context.getRetryCount() == 0;
+            }
+
+            private boolean isConnectionRefused(Throwable t) {
+                if (t instanceof InvocationTargetException) {
+                    return isConnectionRefused(((InvocationTargetException) t).getTargetException());
+                }
+
+                return t instanceof ConnectException;
+            }
+
+        };
     }
 
     @Override
     public RetryListener[] createRetryListeners(String service) {
-        return new RetryListener[] {
-            new InitializingRetryListener(this.serviceInstanceChooser.get()),
-            new AbortingRetryListener()
+        return new RetryListener[]{
+                new InitializingRetryListener(this.serviceInstanceChooser.get()),
+                new AbortingRetryListener()
         };
-    }
-
-    @RequiredArgsConstructor
-    private static class LoadBalancedRetryPolicyFix implements LoadBalancedRetryPolicy {
-
-        @Delegate(excludes = CanRetryNextServer.class)
-        private final LoadBalancedRetryPolicy original;
-
-        @Override
-        public boolean canRetryNextServer(LoadBalancedRetryContext context) {
-            return original.canRetryNextServer(context) || context.getRetryCount() == 0;
-        }
-
-        interface CanRetryNextServer {
-            boolean canRetryNextServer(LoadBalancedRetryContext context);
-        }
-
     }
 
 }

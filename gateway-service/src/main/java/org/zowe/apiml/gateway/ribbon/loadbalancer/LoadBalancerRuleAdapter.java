@@ -18,9 +18,12 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
 
 /**
  * This adapter holds the load balancing logic by facilitating server selection.
@@ -34,7 +37,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     private ConfigurableNamedContextFactory<?> configurableNamedContextFactory;
     private Map<String, RequestAwarePredicate> predicateMap;
 
-    // used zuul's implementation of round robin server selection
+    // used zuul's implementation of round-robin server selection
     private AvailabilityPredicate availabilityPredicate;
     private AbstractServerPredicate zuulPredicate;
 
@@ -63,7 +66,8 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         log.debug("Choosing server: {}", key);
         ILoadBalancer lb = getLoadBalancer();
         LoadBalancingContext ctx = new LoadBalancingContext(instanceInfo.getAppName(), instanceInfo);
-        List<Server> allServers = lb.getAllServers();
+        List<Server> allServers = new ArrayList<>(lb.getAllServers());
+        allServers.sort(comparing(Server::isReadyToServe).reversed().thenComparing(Server::getId)); // the original list is in the random order
         log.debug("Path: {}, List of servers from LoadBalancer: {}", ctx.getPath() ,allServers);
         for (RequestAwarePredicate predicate : predicateMap.values()) {
             log.debug("Running predicate: {}, list of servers: {}", allServers, predicate);
