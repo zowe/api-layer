@@ -46,11 +46,11 @@ class ValidatorFactoryTest {
 
 
     @Nested
-    class givenSwaggerDocumentation {
+    class GivenSwaggerDocumentation {
 
         @ParameterizedTest
         @ValueSource(strings = {"src/test/resources/api-doc-v2.json", "src/test/resources/api-doc.json"})
-        void whenCorrectSwagger(String path) throws IOException {
+        void whenCorrectSwagger_thenNoMessages(String path) throws IOException {
             String sampleSwagger = swaggerFromPath(path);
 
             List<String> result;
@@ -61,7 +61,7 @@ class ValidatorFactoryTest {
 
 
         @Test
-        void whenWrongVersioningV2() throws IOException {
+        void whenWrongVersioningV2_thenNonconformant() throws IOException {
 
             String sampleSwagger2 = swaggerFromPath("src/test/resources/api-doc-v2.json");
 
@@ -74,7 +74,7 @@ class ValidatorFactoryTest {
         }
 
         @Test
-        void whenWrongVersioningV3() throws IOException {
+        void whenWrongVersioningV3_thenNonconformant() throws IOException {
 
             String sampleSwagger3 = swaggerFromPath("src/test/resources/api-doc.json");
 
@@ -87,7 +87,7 @@ class ValidatorFactoryTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"src/test/resources/api-doc-v2.json", "src/test/resources/api-doc.json"})
-        void whenBrokenSwagger(String path) throws IOException {
+        void whenBrokenSwagger_thenDoesntParse(String path) throws IOException {
 
             String sampleSwagger = swaggerFromPath(path);
 
@@ -102,7 +102,7 @@ class ValidatorFactoryTest {
 
 
     @Nested
-    class givenMetadataAndEndpoints {
+    class GivenMetadataAndEndpoints {
 
         HashMap<String, String> metadata;
 

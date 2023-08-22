@@ -41,14 +41,14 @@ class VerificationOnboardServiceTest {
 
 
     @Test
-    void whenCheckingOnboardedService() {
+    void whenCheckingOnboardedService_thenCorrectResults() {
         when(discoveryClient.getServices()).thenReturn(new ArrayList<>(Collections.singleton("OnboardedService")));
         assertFalse(verificationOnboardService.checkOnboarding("Test"));
         assertTrue(verificationOnboardService.checkOnboarding("OnboardedService"));
     }
 
     @Test
-    void whenRetrievingSwaggerUrl() {
+    void whenRetrievingSwaggerUrl_thenCorrectlyRetrieves() {
         final String swaggerUrl = "https://hostname/sampleclient/api-doc";
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
@@ -56,7 +56,7 @@ class VerificationOnboardServiceTest {
     }
 
     @Test
-    void whenRetrievingnNullSwaggerUrl() {
+    void whenRetrievingNullSwaggerUrl_thenEmptyMetadata() {
         final String swaggerUrl = null;
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
@@ -65,7 +65,7 @@ class VerificationOnboardServiceTest {
 
 
     @Test
-    void whenRetrievingEmptySwaggerUrl() {
+    void whenRetrievingEmptySwaggerUrl_thenEmptyMetadata() {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("apiml.apiInfo.api-v2.swaggerUrl", null);
         assertEquals("", verificationOnboardService.findSwaggerUrl(metadata));
@@ -73,7 +73,7 @@ class VerificationOnboardServiceTest {
 
 
     @Nested
-    class givenEndpoint {
+    class GivenEndpoint {
         @Test
         void whenEndpointReturnsDocumented400_thenReturnEmptyList() {
             String url = "https://localhost:8000/test";
@@ -115,9 +115,9 @@ class VerificationOnboardServiceTest {
     }
 
     @Test
-    void whenEndpointReturnsOnly404_thenReturnCorrectError() {
+    void whenEndpointNotFound_thenReturnCorrectError() {
         String url = "https://localhost:8000/test";
-        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        ResponseEntity<String> response = new ResponseEntity<>("ZWEAM104E", HttpStatus.NOT_FOUND);
         Set<HttpMethod> methods = new HashSet<>();
         methods.add(HttpMethod.GET);
 
@@ -129,7 +129,7 @@ class VerificationOnboardServiceTest {
         HashSet<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         List<String> result = verificationOnboardService.testGetEndpoints(endpoints);
-        assertTrue(result.get(0).contains("Could not verify if API can be called through gateway"));
+        assertTrue(result.get(0).contains("could not be located, attempting to call it through gateway gives the ZWEAM104E"));
     }
 
 

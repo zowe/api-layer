@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Service class that offers methods for checking onboarding information and also checks availability metadata from
@@ -99,7 +98,6 @@ public class VerificationOnboardService {
      */
     public List<String> testGetEndpoints(Set<Endpoint> getEndpoints) {
         ArrayList<String> result = new ArrayList<>();
-        boolean gotResponseDifferentFrom404 = false;
 
         for (Endpoint endpoint : getEndpoints) {
             String urlFromSwagger = endpoint.getUrl();
@@ -115,18 +113,18 @@ public class VerificationOnboardService {
                     .body(e.getResponseBodyAsString());
             }
 
-            if (response.getStatusCode() != HttpStatus.NOT_FOUND) {
-                gotResponseDifferentFrom404 = true;
+            String responseBody = response.getBody();
+
+            if (responseBody != null && response.getStatusCode() == HttpStatus.NOT_FOUND && responseBody.contains("ZWEAM104E")) {
+                result.add("Documented endpoint at " + endpoint.getUrl() + " could not be located, attempting to call it through gateway gives the ZWEAM104E error");
             }
+
             if (!(endpoint.getValidResponses().get("GET").contains(String.valueOf(response.getStatusCode().value())) || endpoint.getValidResponses().get("GET").contains("default"))) {
                 result.add("Calling endpoint at " + endpoint.getUrl() + " gives undocumented " + response.getStatusCode().value()
                     + " status code, documented responses are:" + endpoint.getValidResponses().get("GET"));
             }
         }
-        if (!gotResponseDifferentFrom404) {
-            result.add("Could not verify if API can be called through gateway, attempting to reach all of the following " +
-                "documented GET endpoints gives only 404 response: " + getEndpoints.stream().map(Endpoint::getUrl).collect(Collectors.toSet()));
-        }
+
         return result;
     }
 

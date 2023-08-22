@@ -20,9 +20,7 @@ import java.util.Map;
 
 @UtilityClass
 public class ValidatorFactory {
-
-
-    public static AbstractSwaggerValidator parseSwagger(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
+    public AbstractSwaggerValidator parseSwagger(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
         JsonNode root;
         try {
             root = new ObjectMapper().readTree(swaggerDoc);
@@ -38,5 +36,4 @@ public class ValidatorFactory {
         throw new SwaggerParsingException("Swagger documentation is not conformant to either OpenAPI V2 nor V3 - cannot " +
             "find the version (that is cannot find field named 'swagger' with value '2.0' or 'openapi' with version starting with '3' )");
     }
-
 }

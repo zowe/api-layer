@@ -72,9 +72,9 @@ public abstract class AbstractSwaggerValidator {
     public Set<Endpoint> getGetMethodEndpoints() {
         Set<Endpoint> result = new HashSet<>();
 
-        for (Endpoint i : getAllEndpoints()) {
-            if (i.getHttpMethods().contains(HttpMethod.GET)) {
-                result.add(i);
+        for (Endpoint endpoint : getAllEndpoints()) {
+            if (endpoint.getHttpMethods().contains(HttpMethod.GET)) {
+                result.add(endpoint);
             }
         }
         return result;
@@ -89,9 +89,9 @@ public abstract class AbstractSwaggerValidator {
         return "";
     }
 
-    private boolean containsAll(String main, String... parts) {
-        for (String i : parts) {
-            if (!main.contains(i)) {
+    private boolean containsAll(String main, String... keywords) {
+        for (String keyword : keywords) {
+            if (!main.contains(keyword)) {
                 return false;
             }
         }

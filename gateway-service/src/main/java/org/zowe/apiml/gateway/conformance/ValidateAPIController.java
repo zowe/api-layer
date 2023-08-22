@@ -73,36 +73,29 @@ public class ValidateAPIController {
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
-
-        if (foundNonConformanceIssues.size() != 0) {
-            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
-        }
+        if (foundNonConformanceIssues.size() != 0) return nonConformantResponse(foundNonConformanceIssues);
 
         foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, checkOnboarding(serviceId));
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
-            return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
-        }
+        // cant continue if a service isn't registered
+        if (foundNonConformanceIssues.size() != 0) return notRegisteredResponse(foundNonConformanceIssues);
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
         foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, instanceCheck(serviceInstances));
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue if we cant retrieve an instance
-            return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
-        }
+        // cant continue if we cant retrieve an instance
+        if (foundNonConformanceIssues.size() != 0) return notRegisteredResponse(foundNonConformanceIssues);
 
         ServiceInstance serviceInstance = serviceInstances.get(0);
         Map<String, String> metadata = getMetadata(serviceInstance);
 
         foundNonConformanceIssues.put(METADATA_PROBLEMS, metaDataCheck(metadata));
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue without metadata
-            return generateBadRequestResponseEntity(NO_METADATA_KEY, foundNonConformanceIssues);
-        }
-
+        // cant continue without metadata
+        if (foundNonConformanceIssues.size() != 0) return badMetadataResponse(foundNonConformanceIssues);
 
         String swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
         if (swaggerUrl == null || swaggerUrl.equals("")) {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, "Could not find Swagger Url");
-            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
+            return nonConformantResponse(foundNonConformanceIssues);
         }
 
         String swagger = verificationOnboardService.getSwagger(swaggerUrl);
@@ -113,7 +106,7 @@ public class ValidateAPIController {
             swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
         } catch (SwaggerParsingException e) {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, e.getMessage());
-            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
+            return nonConformantResponse(foundNonConformanceIssues);
         }
 
         List<String> parserResponses = swaggerParser.getMessages();
@@ -126,12 +119,22 @@ public class ValidateAPIController {
         }
         foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
 
-        if (foundNonConformanceIssues.size() != 0) {
-            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
-        }
+        if (foundNonConformanceIssues.size() != 0) return nonConformantResponse(foundNonConformanceIssues);
 
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
+    }
+
+    private ResponseEntity<String> badMetadataResponse(ConformanceProblemsContainer foundNonConformanceIssues) {
+        return generateBadRequestResponseEntity(NO_METADATA_KEY, foundNonConformanceIssues);
+    }
+
+    private ResponseEntity<String> notRegisteredResponse(ConformanceProblemsContainer foundNonConformanceIssues) {
+        return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
+    }
+
+    private ResponseEntity<String> nonConformantResponse(ConformanceProblemsContainer foundNonConformanceIssues) {
+        return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
     }
 
 
