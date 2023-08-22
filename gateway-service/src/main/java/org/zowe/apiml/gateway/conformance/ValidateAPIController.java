@@ -73,23 +73,23 @@ public class ValidateAPIController {
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
-        if (foundNonConformanceIssues.size() != 0) return nonConformantResponse(foundNonConformanceIssues);
+        if (!foundNonConformanceIssues.isEmpty()) return nonConformantResponse(foundNonConformanceIssues);
 
         foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, checkOnboarding(serviceId));
         // cant continue if a service isn't registered
-        if (foundNonConformanceIssues.size() != 0) return notRegisteredResponse(foundNonConformanceIssues);
+        if (!foundNonConformanceIssues.isEmpty()) return notRegisteredResponse(foundNonConformanceIssues);
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
         foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, instanceCheck(serviceInstances));
         // cant continue if we cant retrieve an instance
-        if (foundNonConformanceIssues.size() != 0) return notRegisteredResponse(foundNonConformanceIssues);
+        if (!foundNonConformanceIssues.isEmpty()) return notRegisteredResponse(foundNonConformanceIssues);
 
         ServiceInstance serviceInstance = serviceInstances.get(0);
         Map<String, String> metadata = getMetadata(serviceInstance);
 
         foundNonConformanceIssues.put(METADATA_PROBLEMS, metaDataCheck(metadata));
         // cant continue without metadata
-        if (foundNonConformanceIssues.size() != 0) return badMetadataResponse(foundNonConformanceIssues);
+        if (!foundNonConformanceIssues.isEmpty()) return badMetadataResponse(foundNonConformanceIssues);
 
         String swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
@@ -113,13 +113,12 @@ public class ValidateAPIController {
         if (parserResponses != null) foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, parserResponses);
 
         Set<Endpoint> getMethodEndpoints = swaggerParser.getGetMethodEndpoints();
-        if (!getMethodEndpoints.isEmpty()) {
-            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS,
-                verificationOnboardService.testGetEndpoints(getMethodEndpoints));
-        }
+        if (!getMethodEndpoints.isEmpty())
+            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.testGetEndpoints(getMethodEndpoints));
+
         foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
 
-        if (foundNonConformanceIssues.size() != 0) return nonConformantResponse(foundNonConformanceIssues);
+        if (!foundNonConformanceIssues.isEmpty()) return nonConformantResponse(foundNonConformanceIssues);
 
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);

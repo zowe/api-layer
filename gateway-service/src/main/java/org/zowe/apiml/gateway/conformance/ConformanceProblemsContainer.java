@@ -73,6 +73,11 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     }
 
     @Override
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    @Override
     public boolean equals(Object o) {
         return super.equals(o);
     }
