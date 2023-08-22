@@ -10,8 +10,11 @@
 
 package org.zowe.apiml.gateway.conformance;
 
+import lombok.Getter;
+
 public class ValidationException extends RuntimeException {
 
+    @Getter
     private final String key;
 
     public ValidationException(String msg, String key) {
@@ -19,7 +22,4 @@ public class ValidationException extends RuntimeException {
         this.key = key;
     }
 
-    public String getKey() {
-        return key;
-    }
 }
