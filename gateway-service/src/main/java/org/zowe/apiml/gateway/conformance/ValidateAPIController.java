@@ -93,21 +93,29 @@ public class ValidateAPIController {
 
         String swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
-        if (swaggerUrl == null || swaggerUrl.equals("")) {
-            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, "Could not find Swagger Url");
-            return nonConformantResponse(foundNonConformanceIssues);
-        }
-
-        String swagger = verificationOnboardService.getSwagger(swaggerUrl);
-        AbstractSwaggerValidator swaggerParser;
-
 
         try {
-            swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
+            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl);
         } catch (SwaggerParsingException e) {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, e.getMessage());
             return nonConformantResponse(foundNonConformanceIssues);
         }
+
+
+        if (!foundNonConformanceIssues.isEmpty()) return nonConformantResponse(foundNonConformanceIssues);
+
+
+        return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
+    }
+
+    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, String swaggerUrl) throws SwaggerParsingException {
+        if (swaggerUrl == null || swaggerUrl.equals("")) {
+            throw new SwaggerParsingException("Could not find Swagger Url");
+        }
+
+        String swagger = verificationOnboardService.getSwagger(swaggerUrl);
+        AbstractSwaggerValidator swaggerParser;
+        swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
 
         List<String> parserResponses = swaggerParser.getMessages();
         if (parserResponses != null) foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, parserResponses);
@@ -117,11 +125,6 @@ public class ValidateAPIController {
             foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.testGetEndpoints(getMethodEndpoints));
 
         foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
-
-        if (!foundNonConformanceIssues.isEmpty()) return nonConformantResponse(foundNonConformanceIssues);
-
-
-        return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
 
     private ResponseEntity<String> badMetadataResponse(ConformanceProblemsContainer foundNonConformanceIssues) {
