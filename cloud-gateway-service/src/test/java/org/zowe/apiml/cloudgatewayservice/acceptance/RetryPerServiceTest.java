@@ -27,6 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AcceptanceTest
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
+
+    private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
+
     Consumer<Headers> dummyConsumer = (headers -> {
     });
 
@@ -36,7 +39,7 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
         void whenGetReturnsUnavailable_thenRetry() throws Exception {
             AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "/serviceid2/test", 0, dummyConsumer, "".getBytes());
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid2")
                 .when()
                 .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then().statusCode(is(SC_SERVICE_UNAVAILABLE));
@@ -47,31 +50,31 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
         void whenRequestReturnsUnauthorized_thenDontRetry() throws Exception {
             AtomicInteger counter = mockServerWithSpecificHttpResponse(401, "/serviceid2/test", 0, dummyConsumer, "".getBytes());
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid2")
                 .when()
                 .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then().statusCode(is(SC_UNAUTHORIZED));
             assertEquals(1, counter.get());
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid2")
                 .when()
                 .post(basePath + serviceWithDefaultConfiguration.getPath())
                 .then().statusCode(is(SC_UNAUTHORIZED));
             assertEquals(2, counter.get());
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid2")
                 .when()
                 .put(basePath + serviceWithDefaultConfiguration.getPath())
                 .then().statusCode(is(SC_UNAUTHORIZED));
             assertEquals(3, counter.get());
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid2")
                 .when()
                 .delete(basePath + serviceWithDefaultConfiguration.getPath())
                 .then().statusCode(is(SC_UNAUTHORIZED));
             assertEquals(4, counter.get());
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid2")
                 .when()
                 .patch(basePath + serviceWithDefaultConfiguration.getPath())
                 .then().statusCode(is(SC_UNAUTHORIZED));
@@ -82,11 +85,13 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
         void whenPostReturnsUnavailable_thenDontRetry() throws Exception {
             AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "/serviceid2/test", 0, dummyConsumer, "".getBytes());
             given()
-                .header("X-Request-Id", "serviceid2localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid2")
                 .when()
                 .post(basePath + serviceWithDefaultConfiguration.getPath())
                 .then().statusCode(is(SC_SERVICE_UNAVAILABLE));
             assertEquals(1, counter.get());
         }
+
     }
+
 }

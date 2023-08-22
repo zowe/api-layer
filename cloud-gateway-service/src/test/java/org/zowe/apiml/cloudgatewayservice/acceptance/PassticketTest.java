@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @AcceptanceTest
 public class PassticketTest extends AcceptanceTestWithTwoServices {
 
-    @Autowired
+    @MockBean
     InstanceInfoService instanceInfoService;
 
     @DynamicPropertySource
