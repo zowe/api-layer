@@ -14,6 +14,7 @@ import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.util.UrlUtils;
@@ -176,7 +178,7 @@ public class VirtualService implements AutoCloseable {
 
         context = tomcat.addContext("", getContextPath());
         addServlet(HealthServlet.class.getSimpleName(), "/application/health", new HealthServlet());
-        addServlet(InstanceServlet.class.getSimpleName(), "/application/instance", new InstanceServlet());
+        addInstanceServlet(InstanceServlet.class.getSimpleName(), "/application/instance");
     }
 
     private String getContextPath() {
@@ -208,6 +210,31 @@ public class VirtualService implements AutoCloseable {
     public VirtualService addServlet(String name, String pattern, Servlet servlet) {
         Tomcat.addServlet(context, name, servlet);
         context.addServletMappingDecoded(pattern, name);
+
+        return this;
+    }
+
+    /**
+     * Register servlet to get instance information
+     *
+     * @param name under which the servlet is registered to Tomcat
+     * @param url where it will be exposed
+     * @return this instance to next command
+     */
+    public VirtualService addInstanceServlet(String name, String url) {
+        addServlet(name, url, new InstanceServlet());
+
+        return this;
+    }
+
+    /**
+     * Register servlet to receive specified Http status code
+     *
+     * @param httpStatus that will be returned
+     * @return this instance to next command
+     */
+    public VirtualService addHttpStatusCodeServlet(int httpStatus) {
+        addServlet(HttpStatusCodeServlet.class.getName(), "/httpCode", new HttpStatusCodeServlet(httpStatus));
 
         return this;
     }
@@ -261,7 +288,7 @@ public class VirtualService implements AutoCloseable {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .get(url)
                         .body();
-                    assertEquals(instanceId, responseBody.print());
+                    assertEquals(HttpMethod.GET + " " + instanceId, responseBody.print());
                     break;
                 } catch (RuntimeException | AssertionError e) {
                     testCounter++;
@@ -538,7 +565,9 @@ public class VirtualService implements AutoCloseable {
      * @return URL for each registered gateway
      */
     public List<String> getGatewayUrls() {
-        return DiscoveryUtils.getGatewayUrls().stream().map(x -> x + gatewayPath + "/" + serviceId.toLowerCase()).collect(Collectors.toList());
+        return DiscoveryUtils.getGatewayUrls().stream()
+                .map(x -> String.format("%s/%s%s", x, serviceId.toLowerCase(), gatewayPath))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -655,17 +684,92 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
-     * Servlet answer on /application/instance instanceId. This is base part of method to verify registration on
+     * Servlet answer on /application/instance Http method and instanceId. This is base part of method to verify registration on
      * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
     class InstanceServlet extends HttpServlet {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        @Override
+        protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(req, resp);
+        }
+
+        private void writeResponse(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setStatus(HttpStatus.SC_OK);
-            resp.getWriter().print(VirtualService.this.instanceId);
+            resp.getWriter().print(req.getMethod() + " " + VirtualService.this.instanceId);
             resp.getWriter().close();
         }
+
+    }
+
+    /**
+     * Servlet returns the specified Http return code for all Http methods
+     */
+    @RequiredArgsConstructor
+    static class HttpStatusCodeServlet extends HttpServlet {
+
+        private final int httpStatus;
+
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        @Override
+        protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            writeResponse(resp);
+        }
+
+        private void writeResponse(HttpServletResponse resp) throws IOException {
+            resp.setStatus(httpStatus);
+            resp.getWriter().close();
+        }
+
     }
 
 }
