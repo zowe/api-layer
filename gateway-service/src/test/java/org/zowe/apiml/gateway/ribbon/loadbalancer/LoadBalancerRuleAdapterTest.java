@@ -14,28 +14,29 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.cloud.context.named.NamedContextFactory;
 import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class LoadBalancerRuleAdapterTest {
 
     private static DiscoveryEnabledServer server;
     private static DiscoveryEnabledServer server1;
-    private static DiscoveryEnabledServer server2;
     private static ILoadBalancer lb;
 
     @BeforeAll
     static void setup() {
         lb = mock(ILoadBalancer.class);
-        server = mock(DiscoveryEnabledServer.class);
-        server1 = mock(DiscoveryEnabledServer.class);
-        server2 = mock(DiscoveryEnabledServer.class);
+        server = createServer("server");
+        server1 = createServer("server2");
     }
 
     @Nested
@@ -44,7 +45,9 @@ class LoadBalancerRuleAdapterTest {
         void choosesRoundRobin() {
             LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), mock(ConfigurableNamedContextFactory.class), null);
             underTest.setLoadBalancer(lb);
-            when(lb.getAllServers()).thenReturn(Arrays.asList(server, server1));
+            List<Server> serverList = Arrays.asList(server, server1);
+            Collections.shuffle(serverList);
+            when(lb.getAllServers()).thenReturn(serverList);
             Server theChosenOne = underTest.choose("key");
             Server theChosenTwo = underTest.choose("key");
             Server theChosenThree = underTest.choose("key");
@@ -59,7 +62,7 @@ class LoadBalancerRuleAdapterTest {
     @Nested
     class GivenAdditionalPredicate {
 
-        private ConfigurableNamedContextFactory configurableNamedContextFactory;
+        private ConfigurableNamedContextFactory<NamedContextFactory.Specification> configurableNamedContextFactory;
         private RequestAwarePredicate requestAwarePredicate;
         private RequestAwarePredicate requestAwarePredicate1;
         private InstanceInfo instanceInfo;
@@ -107,10 +110,11 @@ class LoadBalancerRuleAdapterTest {
     }
 
     @Nested
-    class givenHeterogenousListOfServers {
+    class givenHeterogeneousListOfServers {
 
-        private Map predicateMap = new HashMap<>();
-        private ConfigurableNamedContextFactory configurableNamedContextFactory = mock(ConfigurableNamedContextFactory.class);
+
+        private final Map<String, Object> predicateMap = new HashMap<>();
+        private final ConfigurableNamedContextFactory<NamedContextFactory.Specification> configurableNamedContextFactory = mock(ConfigurableNamedContextFactory.class);
 
         @Test
         void shouldFailFast() {
@@ -122,6 +126,14 @@ class LoadBalancerRuleAdapterTest {
             underTest.setLoadBalancer(lb);
             assertThrows(IllegalStateException.class, () -> underTest.choose("key"));
         }
+    }
+
+    private static DiscoveryEnabledServer createServer(String name) {
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
+                .setAppName(name)
+                .setHostName(name)
+                .build();
+        return new DiscoveryEnabledServer(instanceInfo, true);
     }
 
 }
