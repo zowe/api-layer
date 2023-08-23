@@ -179,7 +179,7 @@ public class ValidateAPIControllerTest {
         @Test
         void whenEmpty_thenCorrectResponse() {
             HashMap<String, String> metadata = new HashMap<>();
-            ValidationException exception = assertThrows(ValidationException.class, () -> validateAPIController.metaDataCheck(metadata));
+            ValidationException exception = assertThrows(ValidationException.class, () -> validateAPIController.checkMetadataCanBeRetrieved(metadata));
             assertEquals("Cannot Retrieve MetaData", exception.getMessage());
         }
 
@@ -187,7 +187,7 @@ public class ValidateAPIControllerTest {
         void whenNotEmpty_thenCorrectResponse() {
             HashMap<String, String> metadata = new HashMap<>();
             metadata.put("key", "value");
-            assertDoesNotThrow(() -> validateAPIController.metaDataCheck(metadata));
+            assertDoesNotThrow(() -> validateAPIController.checkMetadataCanBeRetrieved(metadata));
         }
 
         @Test
@@ -210,7 +210,7 @@ public class ValidateAPIControllerTest {
         @Test
         void whenEmpty_thenCorrectResponse() {
             List<ServiceInstance> list = new ArrayList<>();
-            ValidationException exception = assertThrows(ValidationException.class, () -> validateAPIController.instanceCheck(list));
+            ValidationException exception = assertThrows(ValidationException.class, () -> validateAPIController.checkInstanceCanBeRetrieved(list));
             assertTrue(exception.getMessage().contains("Cannot retrieve metadata"));
         }
     }

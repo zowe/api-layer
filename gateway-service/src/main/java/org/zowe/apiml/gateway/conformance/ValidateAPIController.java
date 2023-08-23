@@ -74,15 +74,15 @@ public class ValidateAPIController {
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
 
         try {
-            checkOnboarding(serviceId);
+            checkServiceIsOnboarded(serviceId);
 
             List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
-            instanceCheck(serviceInstances);
+            checkInstanceCanBeRetrieved(serviceInstances);
 
             ServiceInstance serviceInstance = serviceInstances.get(0);
             Map<String, String> metadata = getMetadata(serviceInstance);
 
-            metaDataCheck(metadata);
+            checkMetadataCanBeRetrieved(metadata);
 
             Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
@@ -162,7 +162,7 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check
      * @throws ValidationException describing the issue
      */
-    public void checkOnboarding(String serviceId) throws ValidationException {
+    public void checkServiceIsOnboarded(String serviceId) throws ValidationException {
         if (!verificationOnboardService.checkOnboarding(serviceId)) {
             throw new ValidationException("The service is not registered", WRONG_SERVICE_ID_KEY);
         }
@@ -186,7 +186,7 @@ public class ValidateAPIController {
      * @param metadata which to test
      * @throws ValidationException describing the issue
      */
-    public void metaDataCheck(Map<String, String> metadata) throws ValidationException {
+    public void checkMetadataCanBeRetrieved(Map<String, String> metadata) throws ValidationException {
         if (!(metadata != null && !metadata.isEmpty())) {
             throw new ValidationException("Cannot Retrieve MetaData", NO_METADATA_KEY);
         }
@@ -198,7 +198,7 @@ public class ValidateAPIController {
      * @param serviceInstances to check
      * @throws ValidationException describing the issue
      */
-    public void instanceCheck(List<ServiceInstance> serviceInstances) throws ValidationException {
+    public void checkInstanceCanBeRetrieved(List<ServiceInstance> serviceInstances) throws ValidationException {
         if (serviceInstances.isEmpty()) {
             throw new ValidationException("Cannot retrieve metadata - no active instance of the service", WRONG_SERVICE_ID_KEY);
         }
