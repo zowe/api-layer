@@ -351,6 +351,16 @@ messages:
       reason: "The JWT token or client certificate is not valid"
       action: "Configure your client to provide valid authentication."
 
+    - key: org.zowe.apiml.common.sslContextInitializationError
+      number: ZWEAM400
+      type: ERROR
+      text: "Error initializing SSL Context: '%s'"
+      reason: "An error occurred while initializing the SSL Context."
+      action: "Refer to the specific message to identify the exact problem.\n
+      Possible causes include:\n
+      - Incorrect security algorithm\n
+      - The keystore is invalid or corrupted\n
+      - The certificate is invalid or corrupted"
 
     # Revoke personal access token
     - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
