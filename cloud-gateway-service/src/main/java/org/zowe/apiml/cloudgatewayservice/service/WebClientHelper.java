@@ -11,10 +11,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyStore;
-import java.util.Collections;
-import java.util.List;
 
 public class WebClientHelper {
+
 
     @SneakyThrows
     public static SslContext load(String keystorePath, char[] password) {
@@ -23,7 +22,6 @@ public class WebClientHelper {
             try (InputStream is = Files.newInputStream(Paths.get(keystorePath))) {
                 KeyStore keyStore = KeyStore.getInstance("PKCS12");
                 keyStore.load(is, password);
-                List<String> aliases = Collections.list(keyStore.aliases());
                 return initSslContext(keyStore, password);
 
             }

@@ -9,12 +9,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import org.zowe.apiml.cloudgatewayservice.service.ServiceInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 @EnableScheduling
 @Slf4j
@@ -23,9 +24,8 @@ import java.util.List;
 @ConditionalOnExpression("${apiml.features.central.enabled:true}")
 @RequiredArgsConstructor
 public class GatewayScanJob {
-
-    public static final Duration GATEWAY_CALL_TIMEOUT = Duration.ofSeconds(30);
     public static final String GATEWAY_SERVICE_ID = "GATEWAY";
+    public static final int OUTBOUND_CALL_PARALLELISM_LEVEL = 20;
 
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
@@ -37,21 +37,18 @@ public class GatewayScanJob {
         Flux<ServiceInstance> serviceInstanceFlux = registeredGateways.flatMapMany(Flux::fromIterable);
 
         serviceInstanceFlux
-                .parallel()
+                .parallel(OUTBOUND_CALL_PARALLELISM_LEVEL)
                 .runOn(Schedulers.parallel())
                 .flatMap(gatewayIndexerService::indexGatewayServices)
                 .subscribe();
-
-        //.doOnNext(gatewayIndexerService::indexGatewayServices)
-
-        //.doOnError(ex -> log.warn("Exception during gw index", ex)))
-        //.doFinally(signal -> log.debug("Scan gateways job finished: {}", signal))
-
     }
 
     @Scheduled(initialDelay = 10000, fixedDelayString = "${apiml.features.central.interval-ms:15000}")
     public void dumpCaches() {
         // Debug
         gatewayIndexerService.dumpIndex();
+        Map<String, List<ServiceInfo>> state = gatewayIndexerService.getCurrentState();
+
+        log.trace("\nCurrent state:\n\t {}\n\n", state);
     }
 }

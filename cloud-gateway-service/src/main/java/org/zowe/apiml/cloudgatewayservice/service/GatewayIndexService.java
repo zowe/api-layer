@@ -2,6 +2,7 @@ package org.zowe.apiml.cloudgatewayservice.service;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMap;
 import io.netty.handler.ssl.SslContext;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,11 +21,8 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelper.load;
 
 /**
@@ -34,26 +32,21 @@ import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelper.load;
 @Service
 @RequiredArgsConstructor
 public class GatewayIndexService {
-
     public static final String METADATA_APIML_ID_KEY = "apiml.service.apimlId";
-    private final Cache<String, ServiceInstance> gatewayInstanceLookup = CacheBuilder.newBuilder().expireAfterWrite(1, MINUTES).build();
-    private final Cache<String, List<ServiceInfo>> alienGatewayServicesCache = CacheBuilder.newBuilder().expireAfterWrite(2, MINUTES).build();
-    private final Cache<String, String> domainInstances = CacheBuilder.newBuilder().expireAfterWrite(1, MINUTES).build();
-    private Map<String, SslContext> outboundSslContexts;
-    private Map<String, WebClient.Builder> outboundWebclientFactories;
+    private static final int CACHE_PERIOD = 120;
+    private final Cache<String, ServiceInstance> gatewayInstanceLookup = CacheBuilder.newBuilder().expireAfterWrite(CACHE_PERIOD, SECONDS).build();
+    private final Cache<String, List<ServiceInfo>> alienGatewayServicesCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_PERIOD, SECONDS).build();
+    private final Cache<String, String> domainInstances = CacheBuilder.newBuilder().expireAfterWrite(CACHE_PERIOD, SECONDS).build();
+    private SslContext outboundSslContext = null;
 
     @PostConstruct
     public void init() {
         //TODO: come up with better WebClient Factory initialization
-        Map<String, String> apimlKeys = new TreeMap<>();
-        apimlKeys.put("apimlId-DZ1", "ca32dev");
-        apimlKeys.put("apimlId-PZ1", "ca32dev");
-        apimlKeys.put("apimlId-PZ2", "ca32dev");
-
-        final SslContext context = load("/keys/ca32/random.p12", "secret".toCharArray());
-
-        outboundSslContexts = apimlKeys.keySet().stream().collect(Collectors.toMap(Function.identity(), key -> context));
-        log.debug("Successfully loaded {} outbound keys", outboundSslContexts.size());
+        try {
+            this.outboundSslContext = load("/keys/ca32/random.p12", "secret".toCharArray());
+        } catch (Exception ex) {
+            log.warn("Outbound ssl context not created");
+        }
     }
 
     @SneakyThrows
@@ -73,9 +66,9 @@ public class GatewayIndexService {
 
     public Mono<List<ServiceInfo>> indexGatewayServices(ServiceInstance registration) {
         String apimlId = extractApimlId(registration).orElse(null);
-        log.debug("running registered gateway instance index: {}", apimlId);
+        log.debug("Fetching registered gateway instance services: {}", apimlId);
         final String domain = extractDomainName(registration);
-        if (apimlId != null && outboundSslContexts.containsKey(apimlId)) {
+        if (apimlId != null && outboundSslContext != null) {
             domainInstances.put(apimlId, domain);
             gatewayInstanceLookup.put(apimlId, registration);
             return fetchServices(apimlId, registration)
@@ -85,7 +78,7 @@ public class GatewayIndexService {
     }
 
     private Mono<List<ServiceInfo>> fetchServices(String apimlId, ServiceInstance registration) {
-        WebClient webClient = buildWebClientFactory(outboundSslContexts.get(apimlId), registration).build();
+        WebClient webClient = buildWebClientFactory(outboundSslContext, registration).build();
         final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() {
         };
 
@@ -119,11 +112,13 @@ public class GatewayIndexService {
             String apimlId = entry.getKey();
             List<ServiceInfo> remoteServices = alienGatewayServicesCache.getIfPresent(apimlId);
             if (remoteServices != null) {
-                remoteServices.forEach(service -> log.trace("\t\t {}", service));
                 log.debug("\t {}-{} : found {} external services", entry.getValue(), apimlId, remoteServices.size());
-                log.debug("\t\t\t");
+                remoteServices.forEach(service -> log.trace("\t\t {}", service));
             }
         }
+    }
 
+    public Map<String, List<ServiceInfo>> getCurrentState() {
+        return ImmutableMap.<String, List<ServiceInfo>>builder().putAll(alienGatewayServicesCache.asMap()).build();
     }
 }
