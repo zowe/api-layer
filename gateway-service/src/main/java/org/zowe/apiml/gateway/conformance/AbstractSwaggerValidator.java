@@ -16,6 +16,8 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.*;
 
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
+
 public abstract class AbstractSwaggerValidator {
 
     protected final Map<String, String> metadata;
@@ -66,7 +68,7 @@ public abstract class AbstractSwaggerValidator {
                     version = "";
                 }
 
-                if (!(version.startsWith("v") && isNumber(version.substring(1)))) {
+                if (!(version.startsWith("v") && isCreatable(version.substring(1)))) {
                     result.add("REST endpoint at " + result + " is not versioned according to item 8 of the conformance criteria");
                 }
             }
@@ -103,12 +105,4 @@ public abstract class AbstractSwaggerValidator {
         return true;
     }
 
-    protected boolean isNumber(String input) {
-        try {
-            Integer.parseInt(input);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
-    }
 }

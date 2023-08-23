@@ -35,10 +35,7 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -247,7 +244,7 @@ public class ValidateAPIControllerTest {
             when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
             when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
-            when(verificationOnboardService.findSwaggerUrl(mockMetadata)).thenReturn("a");
+            when(verificationOnboardService.findSwaggerUrl(mockMetadata)).thenReturn(Optional.of("a"));
             when(gatewayClient.getGatewayConfigProperties()).thenReturn(GatewayConfigProperties.builder().build());
 
             when(verificationOnboardService.getSwagger("a")).thenReturn(new String(Files.readAllBytes(mockSwaggerFile.getAbsoluteFile().toPath())));

@@ -22,10 +22,7 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,7 +69,7 @@ public class ValidateAPIController {
     @HystrixCommand
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
-        foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
+        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
 
@@ -87,19 +84,19 @@ public class ValidateAPIController {
 
             metaDataCheck(metadata);
 
-            String swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
+            Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
             validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl);
         } catch (ValidationException e) {
             switch (e.getKey()) {
                 case WRONG_SERVICE_ID_KEY:
-                    foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, e.getMessage());
+                    foundNonConformanceIssues.add(REGISTRATION_PROBLEMS, e.getMessage());
                     break;
                 case NO_METADATA_KEY:
-                    foundNonConformanceIssues.put(METADATA_PROBLEMS, e.getMessage());
+                    foundNonConformanceIssues.add(METADATA_PROBLEMS, e.getMessage());
                     break;
                 default:
-                    foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, e.getMessage());
+                    foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, e.getMessage());
             }
             return generateBadRequestResponseEntity(e.getKey(), foundNonConformanceIssues);
         }
@@ -110,23 +107,23 @@ public class ValidateAPIController {
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
 
-    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, String swaggerUrl) throws ValidationException {
-        if (swaggerUrl == null || swaggerUrl.equals("")) {
+    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl) throws ValidationException {
+        if (!swaggerUrl.isPresent()) {
             throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
         }
 
-        String swagger = verificationOnboardService.getSwagger(swaggerUrl);
+        String swagger = verificationOnboardService.getSwagger(swaggerUrl.get());
         AbstractSwaggerValidator swaggerParser;
         swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
 
         List<String> parserResponses = swaggerParser.getMessages();
-        if (parserResponses != null) foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, parserResponses);
+        if (parserResponses != null) foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, parserResponses);
 
         Set<Endpoint> getMethodEndpoints = swaggerParser.getGetMethodEndpoints();
         if (!getMethodEndpoints.isEmpty())
-            foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.testGetEndpoints(getMethodEndpoints));
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testGetEndpoints(getMethodEndpoints));
 
-        foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
+        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }
 
 

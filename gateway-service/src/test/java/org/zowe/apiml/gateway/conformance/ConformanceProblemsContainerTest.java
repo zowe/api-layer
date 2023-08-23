@@ -41,7 +41,7 @@ class ConformanceProblemsContainerTest {
             for (int i = 0; i < size; i++) {
                 testList.add("testString");
             }
-            container.put("test", testList);
+            container.add("test", testList);
 
             assertEquals(container.size(), testList.size());
         }
@@ -52,7 +52,7 @@ class ConformanceProblemsContainerTest {
             for (int i = 0; i < 5; i++) {
                 testList.add("testString");
             }
-            container.put("test", testList);
+            container.add("test", testList);
             assertEquals(container.size(), testList.size());
             assertTrue(container.get("test").contains("testString"));
         }
@@ -62,7 +62,7 @@ class ConformanceProblemsContainerTest {
         void whenInsertingToSameKey_thenCorrectSize(int size) {
             ArrayList<String> testList = new ArrayList<>(Collections.singleton("TestString"));
             for (int i = 0; i < size; i++) {
-                container.put("test", testList);
+                container.add("test", testList);
             }
             assertEquals(container.size(), size);
         }
@@ -73,8 +73,8 @@ class ConformanceProblemsContainerTest {
             ArrayList<String> testList = new ArrayList<>(Collections.singleton("TestString"));
             ArrayList<String> testList2 = new ArrayList<>(Collections.singleton("TestString"));
             for (int i = 0; i < size; i++) {
-                container.put("test", testList);
-                container.put("test2", testList2);
+                container.add("test", testList);
+                container.add("test2", testList2);
             }
             assertEquals(container.size(), 2 * size);
         }
@@ -82,14 +82,14 @@ class ConformanceProblemsContainerTest {
         @Test
         void whenAddingNullValue_thenCorrectSize() {
             ArrayList<String> test = null;
-            container.put("test", test);
+            container.add("test", test);
             assertEquals(0, container.size());
         }
 
         @Test
         void whenAddingNullValue2_thenCorrectSize() {
             String test = null;
-            container.put("test", test);
+            container.add("test", test);
             assertEquals(0, container.size());
 
         }
@@ -108,7 +108,7 @@ class ConformanceProblemsContainerTest {
             ArrayList<String> result = new ArrayList<>();
             result.add("One");
             result.add("Two");
-            container.put("Key", result);
+            container.add("Key", result);
             assertEquals("{\"Key\":[\"One\",\"Two\"]}", container.toString());
         }
 
@@ -120,8 +120,8 @@ class ConformanceProblemsContainerTest {
             ArrayList<String> second = new ArrayList<>();
             second.add("One");
             second.add("Two");
-            container.put("Key", first);
-            container.put("Key2", second);
+            container.add("Key", first);
+            container.add("Key2", second);
             assertEquals("{\"Key\":[\"One\",\"Two\"],\"Key2\":[\"One\",\"Two\"]}", container.toString());
         }
     }

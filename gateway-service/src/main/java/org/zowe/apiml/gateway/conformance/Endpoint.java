@@ -38,4 +38,9 @@ public class Endpoint {
      * Documented responses that the API can return, taken from the swagger, they are either of the form "400", "401"... or "default"
      */
     private final HashMap<String, Set<String>> validResponses;
+
+
+    public boolean isGetResponseCodeDocumented(String responseCode) {
+        return getValidResponses().get("GET").contains(responseCode) || getValidResponses().get("GET").contains("default");
+    }
 }

@@ -19,10 +19,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Service class that offers methods for checking onboarding information and also checks availability metadata from
@@ -58,7 +55,7 @@ public class VerificationOnboardService {
      * @param metadata to grab swagger from
      * @return SwaggerUrl when able, empty string otherwise
      */
-    public String findSwaggerUrl(Map<String, String> metadata) {
+    public Optional<String> findSwaggerUrl(Map<String, String> metadata) {
 
         String swaggerKey = null;
         for (String key : metadata.keySet()) {
@@ -68,13 +65,13 @@ public class VerificationOnboardService {
             }
         }
         if (swaggerKey == null) {
-            return "";
+            return Optional.empty();
         }
         String swaggerUrl = metadata.get(swaggerKey);
         if (swaggerUrl != null) {
-            return swaggerUrl;
+            return Optional.of(swaggerUrl);
         }
-        return "";
+        return Optional.empty();
     }
 
 
@@ -119,7 +116,7 @@ public class VerificationOnboardService {
                 result.add("Documented endpoint at " + endpoint.getUrl() + " could not be located, attempting to call it through gateway gives the ZWEAM104E error");
             }
 
-            if (!(endpoint.getValidResponses().get("GET").contains(String.valueOf(response.getStatusCode().value())) || endpoint.getValidResponses().get("GET").contains("default"))) {
+            if (!endpoint.isGetResponseCodeDocumented(String.valueOf(response.getStatusCode().value()))) {
                 result.add("Calling endpoint at " + endpoint.getUrl() + " gives undocumented " + response.getStatusCode().value()
                     + " status code, documented responses are:" + endpoint.getValidResponses().get("GET"));
             }

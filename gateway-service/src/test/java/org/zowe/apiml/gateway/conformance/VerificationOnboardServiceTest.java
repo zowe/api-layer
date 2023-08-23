@@ -52,7 +52,9 @@ class VerificationOnboardServiceTest {
         final String swaggerUrl = "https://hostname/sampleclient/api-doc";
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
-        assertEquals(swaggerUrl, verificationOnboardService.findSwaggerUrl(metadata));
+        Optional<String> result = verificationOnboardService.findSwaggerUrl(metadata);
+        assertTrue(result.isPresent());
+        assertEquals(swaggerUrl, result.get());
     }
 
     @Test
@@ -60,7 +62,7 @@ class VerificationOnboardServiceTest {
         final String swaggerUrl = null;
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
-        assertEquals("", verificationOnboardService.findSwaggerUrl(metadata));
+        assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
     }
 
 
@@ -68,7 +70,7 @@ class VerificationOnboardServiceTest {
     void whenRetrievingEmptySwaggerUrl_thenEmptyMetadata() {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("apiml.apiInfo.api-v2.swaggerUrl", null);
-        assertEquals("", verificationOnboardService.findSwaggerUrl(metadata));
+        assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
     }
 
 
