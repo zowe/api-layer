@@ -11,6 +11,8 @@
 package org.zowe.apiml.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,15 +23,27 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class StringUtilsTest {
 
-    @Test
-    void removeFirstAndLastOccurrenceTest() {
-        assertNull(StringUtils.removeFirstAndLastOccurrence(null, "any-string"));
-
-        String whiteSpace = "       ";
-        assertEquals("", StringUtils.removeFirstAndLastOccurrence(whiteSpace, "any-string"));
-
-        String hasSlashes = "  /blah/   ";
-        assertEquals("blah", StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/"));
+    @ParameterizedTest(name = "removeFirstAndLastOccurrence({0}, {1}) should return {2}")
+    @CsvSource(value = {
+        "'     ',any-string,''",
+        "'  /blah/ ',/,blah",
+        "'  //x// ',/,/x/",
+        "/path/a/b,/,path/a/b",
+        "path/a/b/,/,path/a/b",
+        "/path/a/b/,/,path/a/b",
+        "/,/,''",
+        "abcdefabc,abc,def",
+        "'',/,''",
+        ",/,",
+        "anything,,anything",
+        "'   anything  ',,anything",
+        "x,x,''",
+        "xx,x,''",
+        "xxx,x,x",
+        "xxx,xx,''"
+    })
+    void removeFirstAndLastOccurrenceTest(String input, String substring, String output) {
+        assertEquals(output, StringUtils.removeFirstAndLastOccurrence(input, substring));
     }
 
     @Test

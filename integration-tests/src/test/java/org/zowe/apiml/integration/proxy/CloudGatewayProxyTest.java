@@ -30,6 +30,8 @@ class CloudGatewayProxyTest {
     private static final int SECOND = 1000;
     private static final int DEFAULT_TIMEOUT = 2 * SECOND;
 
+    private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
+
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
     @Test
@@ -37,9 +39,9 @@ class CloudGatewayProxyTest {
         RestAssured.useRelaxedHTTPSValidation();
 
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
-        given().header("X-Request-Id", "gatewaygateway-service")
+        given().header(HEADER_X_FORWARD_TO, "apiml1")
             .get(new URI(scgUrl)).then().statusCode(200);
-        given().header("X-Request-Id", "gatewaygateway-service-2")
+        given().header(HEADER_X_FORWARD_TO, "apiml1")
             .get(new URI(scgUrl)).then().statusCode(200);
     }
 
@@ -49,11 +51,10 @@ class CloudGatewayProxyTest {
         String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
         assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
             given()
-                .header("X-Request-Id", "discoverableclientdiscoverable-client")
-                .when()
-                .get(scgUrl
-                )
-                .then()
+                .header(HEADER_X_FORWARD_TO, "discoverableclient")
+            .when()
+                .get(scgUrl)
+            .then()
                 .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
         });
     }

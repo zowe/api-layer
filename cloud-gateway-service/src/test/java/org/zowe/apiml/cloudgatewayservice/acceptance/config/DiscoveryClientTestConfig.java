@@ -35,7 +35,6 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.common.MetadataBuilder;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
-import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -114,9 +113,4 @@ public class DiscoveryClientTestConfig {
         return jerseyClient;
     }
 
-
-    @Bean
-    InstanceInfoService instanceInfoService() {
-        return mock(InstanceInfoService.class);
-    }
 }
