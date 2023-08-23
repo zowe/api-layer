@@ -13,6 +13,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.List;
 
 @EnableScheduling
@@ -23,8 +24,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GatewayScanJob {
 
+    public static final Duration GATEWAY_CALL_TIMEOUT = Duration.ofSeconds(30);
     public static final String GATEWAY_SERVICE_ID = "GATEWAY";
-    public static final int GATEWAY_SCANNER_PARALLELISM_LEVEL = 10;
 
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
@@ -35,13 +36,17 @@ public class GatewayScanJob {
         Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID);
         Flux<ServiceInstance> serviceInstanceFlux = registeredGateways.flatMapMany(Flux::fromIterable);
 
-        Mono.from(serviceInstanceFlux
-                        .parallel(GATEWAY_SCANNER_PARALLELISM_LEVEL)
-                        .runOn(Schedulers.parallel())
-                        .doOnNext(gatewayIndexerService::indexGatewayServices)
-                        .doOnError(ex -> log.warn("Exception during gw index", ex)))
-                .doFinally(signal -> log.debug("Scan gateways job finished: {}", signal))
-                .block();
+        serviceInstanceFlux
+                .parallel()
+                .runOn(Schedulers.parallel())
+                .flatMap(gatewayIndexerService::indexGatewayServices)
+                .subscribe();
+
+        //.doOnNext(gatewayIndexerService::indexGatewayServices)
+
+        //.doOnError(ex -> log.warn("Exception during gw index", ex)))
+        //.doFinally(signal -> log.debug("Scan gateways job finished: {}", signal))
+
     }
 
     @Scheduled(initialDelay = 10000, fixedDelayString = "${apiml.features.central.interval-ms:15000}")

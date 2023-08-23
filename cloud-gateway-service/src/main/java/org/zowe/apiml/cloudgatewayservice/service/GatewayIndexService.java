@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,8 +17,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
 import javax.annotation.PostConstruct;
-import java.time.Duration;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -35,12 +35,12 @@ import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelper.load;
 @RequiredArgsConstructor
 public class GatewayIndexService {
 
-    public static final Duration GATEWAY_CALL_TIMEOUT = Duration.ofSeconds(30);
     public static final String METADATA_APIML_ID_KEY = "apiml.service.apimlId";
+    private final Cache<String, ServiceInstance> gatewayInstanceLookup = CacheBuilder.newBuilder().expireAfterWrite(1, MINUTES).build();
+    private final Cache<String, List<ServiceInfo>> alienGatewayServicesCache = CacheBuilder.newBuilder().expireAfterWrite(2, MINUTES).build();
+    private final Cache<String, String> domainInstances = CacheBuilder.newBuilder().expireAfterWrite(1, MINUTES).build();
     private Map<String, SslContext> outboundSslContexts;
     private Map<String, WebClient.Builder> outboundWebclientFactories;
-    private final Cache<String, ServiceInstance> gatewayInstanceLookup = CacheBuilder.newBuilder().expireAfterWrite(1, MINUTES).build();
-    private final Cache<String, String> domainInstances = CacheBuilder.newBuilder().expireAfterWrite(1, MINUTES).build();
 
     @PostConstruct
     public void init() {
@@ -57,7 +57,7 @@ public class GatewayIndexService {
     }
 
     @SneakyThrows
-    public WebClient.Builder buildWebClientFactory(SslContext sslContext, ServiceInstance registration) {
+    private WebClient.Builder buildWebClientFactory(SslContext sslContext, ServiceInstance registration) {
         //todo response size 512Kb
         String baseUrl = String.format("%s://%s:%d", registration.getScheme(), registration.getHost(), registration.getPort());
 
@@ -71,27 +71,28 @@ public class GatewayIndexService {
                 .defaultHeader("Accept", "application/json");
     }
 
-    public void indexGatewayServices(ServiceInstance registration) {
+    public Mono<List<ServiceInfo>> indexGatewayServices(ServiceInstance registration) {
         String apimlId = extractApimlId(registration).orElse(null);
         log.debug("running registered gateway instance index: {}", apimlId);
         final String domain = extractDomainName(registration);
         if (apimlId != null && outboundSslContexts.containsKey(apimlId)) {
             domainInstances.put(apimlId, domain);
             gatewayInstanceLookup.put(apimlId, registration);
-
-            fetchServices(apimlId, registration)
-                    .doOnSuccess(log::info)
-                    .doOnError(ex -> log.error("external GW call error", ex))
-                    .block(GATEWAY_CALL_TIMEOUT);
+            return fetchServices(apimlId, registration)
+                    .doOnError(ex -> log.error("external GW call error", ex));
         }
+        return Mono.empty();
     }
 
-    private Mono<String> fetchServices(String apimlId, ServiceInstance registration) {
+    private Mono<List<ServiceInfo>> fetchServices(String apimlId, ServiceInstance registration) {
         WebClient webClient = buildWebClientFactory(outboundSslContexts.get(apimlId), registration).build();
+        final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() {
+        };
 
         return webClient.get().uri("/gateway/services")
                 .retrieve()
-                .bodyToMono(String.class);
+                .bodyToMono(serviceInfoType)
+                .doOnNext(foreignServices -> alienGatewayServicesCache.put(apimlId, foreignServices));
     }
 
     private String extractDomainName(ServiceInstance registration) {
@@ -116,9 +117,12 @@ public class GatewayIndexService {
         log.info("Dump cache having {} records", domainInstances.size());
         for (Map.Entry<String, String> entry : domainInstances.asMap().entrySet()) {
             String apimlId = entry.getKey();
-
-            log.debug("\t {}-{}  {}", entry.getValue(), apimlId, gatewayInstanceLookup.getIfPresent(apimlId));
-
+            List<ServiceInfo> remoteServices = alienGatewayServicesCache.getIfPresent(apimlId);
+            if (remoteServices != null) {
+                remoteServices.forEach(service -> log.trace("\t\t {}", service));
+                log.debug("\t {}-{} : found {} external services", entry.getValue(), apimlId, remoteServices.size());
+                log.debug("\t\t\t");
+            }
         }
 
     }
