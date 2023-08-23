@@ -64,7 +64,7 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
-        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName, Client-Cert
         allowTokenRefresh: false
         jwtInitializerTimeout: 5
         personalAccessToken:

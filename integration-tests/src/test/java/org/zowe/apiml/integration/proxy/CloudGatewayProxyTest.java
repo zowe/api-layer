@@ -21,6 +21,7 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.TlsConfiguration;
 import sun.security.provider.X509Factory;
 
@@ -35,9 +36,10 @@ import java.time.Duration;
 import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("CloudGatewayProxyTest")
 class CloudGatewayProxyTest {

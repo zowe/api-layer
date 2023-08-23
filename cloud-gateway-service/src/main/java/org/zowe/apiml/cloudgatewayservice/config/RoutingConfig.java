@@ -27,7 +27,7 @@ public class RoutingConfig {
     private String ignoredHeadersWhenCorsEnabled;
 
     @Value("${apiml.service.forwardClientCertEnabled:false}")
-    private String forwardingEnabled;
+    private String forwardingClientCertEnabled;
 
     @Bean
     public List<FilterDefinition> filters() {
@@ -41,7 +41,7 @@ public class RoutingConfig {
 
         FilterDefinition clientCertFilter = new FilterDefinition();
         clientCertFilter.setName("ClientCertFilterFactory");
-        clientCertFilter.addArg("forwardingEnabled", forwardingEnabled);
+        clientCertFilter.addArg("forwardingEnabled", forwardingClientCertEnabled);
 
         List<FilterDefinition> filters = new ArrayList<>();
         filters.add(circuitBreakerFilter);

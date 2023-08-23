@@ -16,8 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Service to retrieve the public key during initialization of CertificateValidator bean. The public key is then used to verify the
@@ -41,8 +42,8 @@ public class CertificateValidator {
         this.trustedCertificatesProvider = trustedCertificatesProvider;
     }
 
-    public boolean verifyCerts(X509Certificate[] certs) {
-        Collection<X509Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
+    public boolean compareWithTrustedCerts(X509Certificate[] certs) {
+        List<Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
                 return false;

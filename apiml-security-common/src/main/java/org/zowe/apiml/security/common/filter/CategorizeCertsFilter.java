@@ -51,30 +51,6 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     private final CertificateValidator certificateValidator;
 
-//    private X509Certificate[] getX509Certificates(X509Certificate[] certs, String certFromHeader, String certSignature) throws SignatureException, CertificateException, IOException {
-//        byte[] decodedCertData = Base64.getDecoder().decode(certFromHeader);
-//        byte[] decodedSignatureData = Base64.getDecoder().decode(certSignature);
-//        boolean certificateIntegrity = certificateValidator.verify(decodedCertData, decodedSignatureData);
-//        if (certificateIntegrity) {
-//            if (certs == null) {
-//                certs = new X509Certificate[0];
-//            }
-//            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-//            InputStream certStream = new ByteArrayInputStream(decodedCertData);
-//            X509Certificate certificate = (X509Certificate) cf.generateCertificate(certStream);
-//            certStream.close();
-//            certs = Arrays.stream(certs)
-//                .map(cert -> cert.equals(certificate) ? certificate : cert)
-//                .toArray(X509Certificate[]::new);
-//            certs = Arrays.copyOf(certs, certs.length + 1);
-//            certs[certs.length - 1] = certificate;
-//            return certs;
-//        }
-//        return certs;
-//    }
-
-//    private X509Certificate generateCert()
-
     /**
      * Get certificates from request (if exists), separate them (to use only APIML certificate to request sign and
      * other for authentication) and store again into request.
@@ -85,7 +61,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certificateValidator.isCertInHeader()) {
-            boolean isValid = certificateValidator.verifyCerts(certs);
+            boolean isValid = certificateValidator.compareWithTrustedCerts(certs);
             if (!isValid) {
                 log.error("The certificate chain is not valid.");
             } else {
@@ -97,16 +73,15 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                             .getInstance("X509")
                             .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader)));
                         request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, certificate);
+                        request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, certs);
                     } catch (CertificateException e) {
                         log.error("Cannot extract X509 certificate from the authentication header {}", CLIENT_CERT_HEADER, e);
                     }
                 }
             }
-        }
-
-        if (certs != null) {
+        } else {
             request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
-            request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, notCertificateForClientAuth));
+            request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
     }
@@ -139,12 +114,12 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         this.certificateForClientAuth = certificateForClientAuth;
     }
 
-    public void setNotCertificateForClientAuth(Predicate<X509Certificate> notCertificateForClientAuth) {
-        this.notCertificateForClientAuth = notCertificateForClientAuth;
+    public void setApimlCertificate(Predicate<X509Certificate> apimlCertificate) {
+        this.apimlCertificate = apimlCertificate;
     }
 
     Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
-    Predicate<X509Certificate> notCertificateForClientAuth = crt -> getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
+    Predicate<X509Certificate> apimlCertificate = crt -> getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
 
 
 }

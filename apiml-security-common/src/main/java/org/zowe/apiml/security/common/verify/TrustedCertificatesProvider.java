@@ -2,48 +2,89 @@ package org.zowe.apiml.security.common.verify;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 @Service
 @Slf4j
 public class TrustedCertificatesProvider {
 
-    final RestTemplate restTemplate;
+    private final Set<String> publicKeyCertificatesBase64;
+    private final CloseableHttpClient httpClient;
 
     @Autowired
-    public TrustedCertificatesProvider(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public TrustedCertificatesProvider(@Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient httpClient,
+                                       @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64) {
+        this.httpClient = httpClient;
+        this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
     }
-//    @Cacheable(value = "certificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
-    public Collection<X509Certificate> getTrustedCerts(String certificatesEndpoint) {
-        Collection<? extends Certificate> certs = Collections.emptySet();
-        ResponseEntity<String> responseEntity =
-                restTemplate.exchange(certificatesEndpoint, HttpMethod.GET, null, String.class);
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            String pem = responseEntity.getBody();
-            if (StringUtils.isNotEmpty(pem)) {
-                try {
-                    certs = CertificateFactory
-                        .getInstance("X509")
-                        .generateCertificates(new ByteArrayInputStream(pem.getBytes()));
-                } catch (CertificateException e) {
-                    throw new RuntimeException(e);
-                }
+
+    //    @Cacheable(value = "certificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
+
+    public List<Certificate> getTrustedCerts(String certificatesEndpoint) {
+        List<Certificate> trustedCerts = new ArrayList<>();
+        String pem = callCertificatesEndpoint(certificatesEndpoint);
+        if (StringUtils.isNotEmpty(pem)) {
+            try {
+                Collection<? extends Certificate> certs = CertificateFactory
+                    .getInstance("X.509")
+                    .generateCertificates(new ByteArrayInputStream(pem.getBytes()));
+                trustedCerts.addAll(certs);
+                updateTrustedPublicKeys(trustedCerts);
+            } catch (CertificateException e) {
+                throw new RuntimeException(e);
             }
         }
-        return (Collection<X509Certificate>) certs;
+        return trustedCerts;
+    }
+
+    private String callCertificatesEndpoint(String url) {
+        try {
+            HttpGet httpGet = new HttpGet(new URI(url));
+            HttpResponse httpResponse = httpClient.execute(httpGet);
+            final int statusCode = httpResponse.getStatusLine() != null ? httpResponse.getStatusLine().getStatusCode() : 0;
+            String body = "";
+            if (httpResponse.getEntity() != null) {
+                body = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+            }
+            if (statusCode != HttpStatus.SC_OK) {
+                log.warn("Unexpected response from {} endpoint. Status: {} body: {}", url, statusCode, body);
+                return null;
+            }
+            log.debug("Trusted certificates from {}: {}", url, body);
+            return body;
+
+        } catch (URISyntaxException e) {
+            log.warn("Configuration error: Invalid URL specified in {} parameter.", e.getMessage());
+        } catch (ClientProtocolException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    private void updateTrustedPublicKeys(List<Certificate> certs) {
+        for (Certificate cert : certs) {
+            String publicKey = Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
+            publicKeyCertificatesBase64.add(publicKey);
+        }
     }
 }

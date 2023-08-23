@@ -105,7 +105,7 @@ class CategorizeCertsFilterTest {
             @Test
             void thenAllApimlCertificatesWithReversedLogic() throws IOException, ServletException {
                 filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
-                filter.setNotCertificateForClientAuth(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
+                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
 
                 filter.doFilter(request, response, chain);
 
@@ -170,7 +170,7 @@ class CategorizeCertsFilterTest {
             @Test
             void thenCategorizedCertsWithReversedLogic() throws IOException, ServletException {
                 filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
-                filter.setNotCertificateForClientAuth(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
+                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
 
                 filter.doFilter(request, response, chain);
 

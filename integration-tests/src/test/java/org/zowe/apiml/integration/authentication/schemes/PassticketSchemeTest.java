@@ -122,7 +122,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         @Test
         @Tag("CloudGatewayServiceRouting")
         void givenWellKnownRequest_thenReturnNotFound() {
-            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_WELL_KNOWN_JWKS);
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_CERTIFICATES);
             given()
                 .when()
                 .get(scgUrl)
