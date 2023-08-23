@@ -49,7 +49,7 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
     private HashMap<String, Set<String>> getValidResponses(Path value) {
         HashMap<String, Set<String>> result = new HashMap<>();
         for (HttpMethod httpMethod : getMethod(value)) {
-            result.put(httpMethod.name(), value.getOperationMap().get(convertSpringHttpToswagger(httpMethod)).getResponses().keySet());
+            result.put(httpMethod.name(), value.getOperationMap().get(convertSpringHttpToSwagger(httpMethod)).getResponses().keySet());
         }
         return result;
     }
@@ -107,22 +107,24 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
     }
 
 
-    private io.swagger.models.HttpMethod convertSpringHttpToswagger(HttpMethod input) {
-        if (input == HttpMethod.GET) {
-            return io.swagger.models.HttpMethod.GET;
-        } else if (input == HttpMethod.HEAD) {
-            return io.swagger.models.HttpMethod.HEAD;
-        } else if (input == HttpMethod.OPTIONS) {
-            return io.swagger.models.HttpMethod.OPTIONS;
-        } else if (input == HttpMethod.PATCH) {
-            return io.swagger.models.HttpMethod.PATCH;
-        } else if (input == HttpMethod.POST) {
-            return io.swagger.models.HttpMethod.POST;
-        } else if (input == HttpMethod.DELETE) {
-            return io.swagger.models.HttpMethod.DELETE;
-        } else if (input == HttpMethod.PUT) {
-            return io.swagger.models.HttpMethod.PUT;
+    private io.swagger.models.HttpMethod convertSpringHttpToSwagger(HttpMethod input) {
+        switch (input) {
+            case GET:
+                return io.swagger.models.HttpMethod.GET;
+            case HEAD:
+                return io.swagger.models.HttpMethod.HEAD;
+            case OPTIONS:
+                return io.swagger.models.HttpMethod.OPTIONS;
+            case PATCH:
+                return io.swagger.models.HttpMethod.PATCH;
+            case POST:
+                return io.swagger.models.HttpMethod.POST;
+            case DELETE:
+                return io.swagger.models.HttpMethod.DELETE;
+            case PUT:
+                return io.swagger.models.HttpMethod.PUT;
+            default:
+                return null;
         }
-        return null;
     }
 }

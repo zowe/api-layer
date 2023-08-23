@@ -58,8 +58,13 @@ public abstract class AbstractSwaggerValidator {
             }
             if (isVersionedApi) {
                 int start = endpoint.getUrl().indexOf("/api/") + 5; //this is where the version starts
-                String version = endpoint.getUrl().substring(start);
-                version = version.substring(0, version.indexOf("/"));
+                String version;
+                try {
+                    version = endpoint.getUrl().substring(start);
+                    version = version.substring(0, version.indexOf("/"));
+                } catch (IndexOutOfBoundsException e) {
+                    version = "";
+                }
 
                 if (!(version.startsWith("v") && isNumber(version.substring(1)))) {
                     result.add("REST endpoint at " + result + " is not versioned according to item 8 of the conformance criteria");

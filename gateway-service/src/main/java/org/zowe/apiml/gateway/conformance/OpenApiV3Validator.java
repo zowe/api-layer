@@ -48,7 +48,7 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
     private HashMap<String, Set<String>> getValidResponses(PathItem value) {
         HashMap<String, Set<String>> result = new HashMap<>();
         for (HttpMethod httpMethod : getMethod(value)) {
-            result.put(httpMethod.name(), value.readOperationsMap().get(convertSpringHttpToswagger(httpMethod)).getResponses().keySet());
+            result.put(httpMethod.name(), value.readOperationsMap().get(convertSpringHttpToSwagger(httpMethod)).getResponses().keySet());
         }
         return result;
     }
@@ -95,23 +95,25 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
         return result;
     }
 
-    private PathItem.HttpMethod convertSpringHttpToswagger(HttpMethod input) {
-        if (input == HttpMethod.GET) {
-            return PathItem.HttpMethod.GET;
-        } else if (input == HttpMethod.HEAD) {
-            return PathItem.HttpMethod.HEAD;
-        } else if (input == HttpMethod.OPTIONS) {
-            return PathItem.HttpMethod.OPTIONS;
-        } else if (input == HttpMethod.PATCH) {
-            return PathItem.HttpMethod.PATCH;
-        } else if (input == HttpMethod.POST) {
-            return PathItem.HttpMethod.POST;
-        } else if (input == HttpMethod.DELETE) {
-            return PathItem.HttpMethod.DELETE;
-        } else if (input == HttpMethod.PUT) {
-            return PathItem.HttpMethod.PUT;
+    private PathItem.HttpMethod convertSpringHttpToSwagger(HttpMethod input) {
+        switch (input) {
+            case GET:
+                return PathItem.HttpMethod.GET;
+            case HEAD:
+                return PathItem.HttpMethod.HEAD;
+            case OPTIONS:
+                return PathItem.HttpMethod.OPTIONS;
+            case PATCH:
+                return PathItem.HttpMethod.PATCH;
+            case POST:
+                return PathItem.HttpMethod.POST;
+            case DELETE:
+                return PathItem.HttpMethod.DELETE;
+            case PUT:
+                return PathItem.HttpMethod.PUT;
+            default:
+                return null;
         }
-        return null;
     }
 }
 
