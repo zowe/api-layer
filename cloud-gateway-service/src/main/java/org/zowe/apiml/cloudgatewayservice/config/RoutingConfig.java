@@ -11,16 +11,9 @@
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.cloudgatewayservice.service.ProxyRouteLocator;
-import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
-import org.zowe.apiml.util.CorsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,20 +28,6 @@ public class RoutingConfig {
 
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private String forwardingEnabled;
-
-    @Bean
-    @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "false")
-    public RouteLocator apimlDiscoveryRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
-        return new RouteLocator(discoveryClient, properties, filters, context, corsUtils);
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "apiml.service.gateway.proxy.enabled", havingValue = "true")
-    public RouteLocator proxyRouteDefLocator(
-        ReactiveDiscoveryClient discoveryClient, DiscoveryLocatorProperties properties, List<FilterDefinition> filters, ApplicationContext context, CorsUtils corsUtils) {
-        return new ProxyRouteLocator(discoveryClient, properties, filters, context, corsUtils);
-    }
 
     @Bean
     public List<FilterDefinition> filters() {

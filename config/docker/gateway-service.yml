@@ -1,5 +1,6 @@
 apiml:
     service:
+        apimlId: apiml1
         hostname: gateway-service
         discoveryServiceUrls: https://discovery-service:10011/eureka/
     security:

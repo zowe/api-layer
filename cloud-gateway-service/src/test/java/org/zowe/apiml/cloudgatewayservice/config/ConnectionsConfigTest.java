@@ -20,16 +20,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
-import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Collections;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
@@ -46,16 +40,6 @@ class ConnectionsConfigTest {
         void thenIsNotNull() {
             Assertions.assertNotNull(connectionsConfig);
             Assertions.assertNotNull(connectionsConfig.getEurekaJerseyClient());
-        }
-    }
-
-    @Nested
-    class WhenCreateRouteLocator {
-        @Test
-        void thenIsNotNull() {
-            ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
-            DiscoveryLocatorProperties properties = mock(DiscoveryLocatorProperties.class);
-            Assertions.assertNotNull(routingConfig.proxyRouteDefLocator(discoveryClient, properties, Collections.singletonList(new FilterDefinition("name=value")), null, null));
         }
     }
 

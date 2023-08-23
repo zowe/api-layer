@@ -21,7 +21,6 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.TlsConfiguration;
 import sun.security.provider.X509Factory;
 
@@ -36,15 +35,16 @@ import java.time.Duration;
 import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 
 @Tag("CloudGatewayProxyTest")
 class CloudGatewayProxyTest {
     private static final int SECOND = 1000;
     private static final int DEFAULT_TIMEOUT = 2 * SECOND;
+
+    private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
     static CloudGatewayConfiguration conf;
     static String trustedCerts;
@@ -53,7 +53,7 @@ class CloudGatewayProxyTest {
     static void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
         TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
-        HttpsConfig config = HttpsConfig.builder()
+        HttpsConfig httpsConf = HttpsConfig.builder()
             .keyAlias(tlsConf.getKeyAlias())
             .keyStore(tlsConf.getKeyStore())
             .keyPassword(tlsConf.getKeyPassword())
@@ -61,12 +61,13 @@ class CloudGatewayProxyTest {
             .keyStoreType(tlsConf.getKeyStoreType())
             .build();
 
+        // build the expected certificate chain
         final Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, "\n".getBytes());
         StringBuilder sb = new StringBuilder();
-        for (Certificate cert : SecurityUtils.loadCertificateChain(config)) {
+        for (Certificate cert : SecurityUtils.loadCertificateChain(httpsConf)) {
             sb.append(X509Factory.BEGIN_CERT).append("\n")
-            .append(mimeEncoder.encodeToString(cert.getEncoded())).append("\n")
-            .append(X509Factory.END_CERT).append("\n");
+                .append(mimeEncoder.encodeToString(cert.getEncoded())).append("\n")
+                .append(X509Factory.END_CERT).append("\n");
         }
         trustedCerts = sb.toString();
         assertTrue(StringUtils.isNotEmpty(trustedCerts));
@@ -80,10 +81,10 @@ class CloudGatewayProxyTest {
     @Test
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
-        given().header("X-Request-Id", "gatewaygateway-service")
-            .get(new URI(scgUrl)).then().statusCode(HttpStatus.SC_OK);
-        given().header("X-Request-Id", "gatewaygateway-service-2")
-            .get(new URI(scgUrl)).then().statusCode(HttpStatus.SC_OK);
+        given().header(HEADER_X_FORWARD_TO, "apiml1")
+            .get(new URI(scgUrl)).then().statusCode(200);
+        given().header(HEADER_X_FORWARD_TO, "apiml1")
+            .get(new URI(scgUrl)).then().statusCode(200);
     }
 
     @Test
@@ -91,11 +92,10 @@ class CloudGatewayProxyTest {
         String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
         assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
             given()
-                .header("X-Request-Id", "discoverableclientdiscoverable-client")
-                .when()
-                .get(scgUrl
-                )
-                .then()
+                .header(HEADER_X_FORWARD_TO, "discoverableclient")
+            .when()
+                .get(scgUrl)
+            .then()
                 .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
         });
     }
@@ -105,9 +105,9 @@ class CloudGatewayProxyTest {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
         given()
             .config(SslContext.clientCertValid)
-            .header("X-Request-Id", "gatewaygateway-service")
+            .header(HEADER_X_FORWARD_TO, "gatewaygateway-service")
             .when()
-            .get(new URI(scgUrl))
+            .get(scgUrl)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .body("dn", startsWith("CN=APIMTST"))
