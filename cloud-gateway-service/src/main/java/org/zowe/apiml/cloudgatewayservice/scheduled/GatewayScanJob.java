@@ -35,9 +35,9 @@ import java.util.Map;
  *     cloudGateway:
  *       cachePeriodSec: - default value 120 seconds
  *       parallelismLevel:  - default value 20
- *       outboundKeystore: - default value null
- *       outboundKeystorePassword: - default value null
- *       gatewayScanJobEnabled: - default value true *
+ *       clientKeystore: - default value null
+ *       clientKeystorePassword: - default value null
+ *       gatewayScanJobEnabled: - default value true
  * </pre>
  */
 @EnableScheduling
@@ -52,7 +52,7 @@ public class GatewayScanJob {
     @Value("${apiml.cloudGateway.parallelismLevel:20}")
     private int parallelismLevel;
 
-    @Scheduled(initialDelay = 2000, fixedDelayString = "${apiml.cloudGateway.refresh-interval-ms:30000}")
+    @Scheduled(initialDelay = 5000, fixedDelayString = "${apiml.cloudGateway.refresh-interval-ms:30000}")
     public void runScanExternalGateways() {
         log.debug("Scan gateways job start");
         Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID);
@@ -64,12 +64,20 @@ public class GatewayScanJob {
     }
 
     @Scheduled(initialDelay = 10000, fixedDelayString = "5000")
-    public void dumpCaches() {
-        // Debug
-        gatewayIndexerService.dumpIndex();
+    public void listCaches() {
+
         Map<String, List<ServiceInfo>> fullState = gatewayIndexerService.listRegistry(null, null);
 
+        log.debug("Cache having {} apimlId records", fullState.keySet().size());
+        for (String apimlId : fullState.keySet()) {
+            List<ServiceInfo> servicesInfo = gatewayIndexerService.listRegistry(apimlId, null).get(apimlId);
+            log.debug("\t {}-{} : found {} external services", apimlId, apimlId, servicesInfo.size());
+        }
 
-        log.trace("\nCurrent state:\n\t {}\n\n", fullState);
+        Map<String, List<ServiceInfo>> allSysviews = gatewayIndexerService.listRegistry(null, "bcm.sysview");
+        for (Map.Entry<String, List<ServiceInfo>> apimlEntiry : allSysviews.entrySet()) {
+            log.debug("Listing all sysview services at: {}", apimlEntiry.getKey());
+            apimlEntiry.getValue().forEach(serviceInfo -> log.debug("\t {} - {}", serviceInfo.getServiceId(), serviceInfo.getInstances()));
+        }
     }
 }

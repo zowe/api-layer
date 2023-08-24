@@ -20,18 +20,20 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -40,7 +42,8 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelper.load;
 
 /**
- * Maintain external gateways lookup data. Internal caches uses apimlId is a key.
+ * Maintain all registered gateways lookup data. Internal caches uses apimlId is a key.
+ * if apimlId key is not available then synthetic key is generated containing <code>SUBSTITUTE_</code> prefix and <code>instanceId</code>
  */
 @Slf4j
 @Service
@@ -49,40 +52,40 @@ public class GatewayIndexService {
     private final Cache<String, ServiceInstance> gatewayInstanceLookup;
     private final Cache<String, List<ServiceInfo>> gatewayServicesCache;
     private final WebClient defaultWebClient;
-    private SslContext customOutboundSslContext = null;
+    private SslContext customClientSslContext = null;
 
     public GatewayIndexService(WebClient defaultWebClient,
                                @Value("${apiml.cloudGateway.cachePeriodSec:120}") int cachePeriodSec,
-                               @Value("${apiml.cloudGateway.outboundKeystore:#{null}}") String outboundKeystorePath,
-                               @Value("${apiml.cloudGateway.outboundKeystorePassword:#{null}}") String outboundKeystorePassword) {
+                               @Value("${apiml.cloudGateway.clientKeystore:#{null}}") String clientKeystorePath,
+                               @Value("${apiml.cloudGateway.clientKeystorePassword:#{null}}") String clientKeystorePassword) {
         this.defaultWebClient = defaultWebClient;
 
         gatewayInstanceLookup = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
         gatewayServicesCache = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
 
-        if (isNotBlank(outboundKeystorePath) && isNotBlank(outboundKeystorePassword)) {
-            customOutboundSslContext = load(outboundKeystorePath, outboundKeystorePassword.toCharArray());
+        if (isNotBlank(clientKeystorePath) && isNotBlank(clientKeystorePassword)) {
+            customClientSslContext = load(clientKeystorePath, clientKeystorePassword.toCharArray());
         }
     }
 
     @SneakyThrows
-    private WebClient.Builder buildWebClientFactory(ServiceInstance registration) {
+    private WebClient buildWebClient(ServiceInstance registration) {
         final String baseUrl = String.format("%s://%s:%d", registration.getScheme(), registration.getHost(), registration.getPort());
-        if (this.customOutboundSslContext != null) {
-
-            SslProvider sslProvider = SslProvider.builder().sslContext(customOutboundSslContext).build();
+        if (this.customClientSslContext != null) {
+            SslProvider sslProvider = SslProvider.builder().sslContext(customClientSslContext).build();
             HttpClient httpClient = HttpClient.create()
                     .secure(sslProvider);
 
             return WebClient.builder()
                     .baseUrl(baseUrl)
                     .clientConnector(new ReactorClientHttpConnector(httpClient))
-                    .defaultHeader("Accept", "application/json");
-
+                    .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                    .build();
         }
+
         return defaultWebClient.mutate()
                 .baseUrl(baseUrl)
-                .defaultHeader("Accept", "application/json");
+                .build();
     }
 
     public Mono<List<ServiceInfo>> indexGatewayServices(ServiceInstance registration) {
@@ -90,12 +93,13 @@ public class GatewayIndexService {
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
         gatewayInstanceLookup.put(apimlIdKey, registration);
         return fetchServices(apimlIdKey, registration)
-                .doOnError(ex -> log.error("external GW call error", ex))
+                .doOnError(ex -> log.warn("external GW call error", ex))
+                .onErrorComplete()
                 .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
     }
 
     private Mono<List<ServiceInfo>> fetchServices(String apimlId, ServiceInstance registration) {
-        WebClient webClient = buildWebClientFactory(registration).build();
+        WebClient webClient = buildWebClient(registration);
         final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() {
         };
 
@@ -116,44 +120,33 @@ public class GatewayIndexService {
         return Optional.empty();
     }
 
-    public void dumpIndex() {
-        //todo - delete later
-        Set<String> apimlIds = gatewayServicesCache.asMap().keySet();
-        log.info("Dump cache having {} records", apimlIds.size());
-        for (String apimlId : apimlIds) {
-            Map.Entry<String, List<ServiceInfo>> apimlServices = listRegistry(apimlId, null).entrySet().stream()
-                    .findFirst().orElse(null);
-
-            if (apimlServices != null) {
-                log.debug("\t {}-{} : found {} external services", apimlId, apimlServices.getKey(), apimlServices.getValue().size());
-                apimlServices.getValue().forEach(service -> log.trace("\t\t {}", service));
-            }
-        }
-    }
-
-    /*List<ServiceInfo> filterApimlIdServices(String apimlId, String apiId) {
-        List<ServiceInfo> apimlIdServices = alienGatewayServicesCache.getIfPresent(apimlId);
-        if (apimlIdServices != null) {
-            return apimlIdServices.stream()
-                    .filter(serviceInfo -> apiId==null || isSameApiId(serviceInfo, apiId))
-                    .collect(Collectors.toList());
-
-        }
-        return Collections.emptyList();
-    }*/
-
+    /**
+     * list currently cached apiml registry with option to filter by the <code>apimlId</code> and <code>apiId</code>
+     *
+     * @param apimlId - filter for only services from the particular apiml instance, NULL - filter not applied
+     * @param apiId   - filter for only services of particular type e.g. <code>bcm.sysview</code>
+     * @return full of filter immutable map of the registry
+     */
     public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId) {
 
         Map<String, List<ServiceInfo>> allServices = ImmutableMap.<String, List<ServiceInfo>>builder()
                 .putAll(gatewayServicesCache.asMap()).build();
         return allServices.entrySet().stream()
                 .filter(entry -> apimlId == null || StringUtils.equals(apimlId, entry.getKey()))
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().stream().filter(serviceInfo -> apiId == null || isSameApiId(serviceInfo, apiId)).collect(Collectors.toList())))
+                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiId(entry.getValue(), apiId)))
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
-
     }
 
-    private boolean isSameApiId(ServiceInfo serviceInfo, String apiId) {
+    List<ServiceInfo> filterServicesByApiId(List<ServiceInfo> apimlIdServices, String apiId) {
+        if (!CollectionUtils.isEmpty(apimlIdServices)) {
+            return apimlIdServices.stream()
+                    .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    private boolean hasSameApiId(ServiceInfo serviceInfo, String apiId) {
         if (serviceInfo.getApiml() != null && !isEmpty(serviceInfo.getApiml().getApiInfo())) {
             return StringUtils.equals(apiId, serviceInfo.getApiml().getApiInfo().get(0).getApiId());
         }
