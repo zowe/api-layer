@@ -25,11 +25,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -56,34 +58,37 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * other for authentication) and store again into request.
      * If authentication via certificate in header is enabled, get certificate from a custom authentication header,
      * decrypt it to validate its authenticity using the public key and store it in the request.
+     *
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certificateValidator.isCertInHeader()) {
-            boolean isValid = certificateValidator.compareWithTrustedCerts(certs);
-            if (!isValid) {
-                log.error("The certificate chain is not valid.");
-            } else {
-                HttpServletRequest httpRequest = (HttpServletRequest) request;
-                String certFromHeader = httpRequest.getHeader(CLIENT_CERT_HEADER);
-                if (StringUtils.isNotEmpty(certFromHeader)) {
-                    try {
-                        X509Certificate certificate = (X509Certificate) CertificateFactory
-                            .getInstance("X509")
-                            .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader)));
-                        request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, certificate);
-                        request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, certs);
-                    } catch (CertificateException e) {
-                        log.error("Cannot extract X509 certificate from the authentication header {}", CLIENT_CERT_HEADER, e);
-                    }
-                }
+        if (certificateValidator.isCertInHeader() && certificateValidator.isTrusted(certs)) {
+            Optional<Certificate> clientCert = getClientCert((HttpServletRequest) request);
+            if (clientCert.isPresent()) {
+                // add the client certificate to the certs array
+                certs = Arrays.copyOf(certs, certs.length + 1);
+                certs[certs.length - 1] = (X509Certificate) clientCert.get();
             }
-        } else {
-            request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
-            request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
-            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
+        request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
+        request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
+        log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
+    }
+
+    private Optional<Certificate> getClientCert(HttpServletRequest request) {
+        String certFromHeader = request.getHeader(CLIENT_CERT_HEADER);
+        if (StringUtils.isNotEmpty(certFromHeader)) {
+            try {
+                Certificate certificate = CertificateFactory
+                    .getInstance("X.509")
+                    .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader)));
+                return Optional.of(certificate);
+            } catch (CertificateException e) {
+                log.error("Cannot extract X509 certificate from the authentication header {}", CLIENT_CERT_HEADER, e);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

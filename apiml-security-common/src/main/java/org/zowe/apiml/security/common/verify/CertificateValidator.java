@@ -21,8 +21,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 /**
- * Service to retrieve the public key during initialization of CertificateValidator bean. The public key is then used to verify the
- * certificate's signature provided on the request header.
+ * Service to verify if given certificate chain can be trusted.
  */
 @Service
 @Slf4j
@@ -42,13 +41,21 @@ public class CertificateValidator {
         this.trustedCertificatesProvider = trustedCertificatesProvider;
     }
 
-    public boolean compareWithTrustedCerts(X509Certificate[] certs) {
+    /**
+     * Compare given certificates with a list of trusted certs.
+     *
+     * @param certs Certificates to compare with known trusted ones
+     * @return true if all given certificates are known false otherwise
+     */
+    public boolean isTrusted(X509Certificate[] certs) {
         List<Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
+                log.debug("Untrusted certificate found.");
                 return false;
             }
         }
+        log.debug("All certificates are trusted.");
         return true;
     }
 }

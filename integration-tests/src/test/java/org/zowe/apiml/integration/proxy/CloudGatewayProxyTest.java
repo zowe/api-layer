@@ -23,7 +23,6 @@ import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.TlsConfiguration;
-import sun.security.provider.X509Factory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -67,9 +66,9 @@ class CloudGatewayProxyTest {
         final Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, "\n".getBytes());
         StringBuilder sb = new StringBuilder();
         for (Certificate cert : SecurityUtils.loadCertificateChain(httpsConf)) {
-            sb.append(X509Factory.BEGIN_CERT).append("\n")
+            sb.append("-----BEGIN CERTIFICATE-----\n")
                 .append(mimeEncoder.encodeToString(cert.getEncoded())).append("\n")
-                .append(X509Factory.END_CERT).append("\n");
+                .append("-----END CERTIFICATE-----\n");
         }
         trustedCerts = sb.toString();
         assertTrue(StringUtils.isNotEmpty(trustedCerts));
