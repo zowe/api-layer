@@ -20,10 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.gateway.GatewayClient;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +53,8 @@ public class ValidateAPIController {
 
     private final DiscoveryClient discoveryClient;
 
+    private final GatewayClient gatewayClient;
+
 
     /**
      * Accepts serviceID and checks conformance criteria
@@ -68,32 +69,61 @@ public class ValidateAPIController {
     @HystrixCommand
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
-        foundNonConformanceIssues.put(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
-
-        if (foundNonConformanceIssues.size() != 0) {
+        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
+        if (!foundNonConformanceIssues.isEmpty())
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
+
+        try {
+            checkServiceIsOnboarded(serviceId);
+
+            List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
+            checkInstanceCanBeRetrieved(serviceInstances);
+
+            ServiceInstance serviceInstance = serviceInstances.get(0);
+            Map<String, String> metadata = getMetadata(serviceInstance);
+
+            checkMetadataCanBeRetrieved(metadata);
+
+            Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
+
+            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl);
+        } catch (ValidationException e) {
+            switch (e.getKey()) {
+                case WRONG_SERVICE_ID_KEY:
+                    foundNonConformanceIssues.add(REGISTRATION_PROBLEMS, e.getMessage());
+                    break;
+                case NO_METADATA_KEY:
+                    foundNonConformanceIssues.add(METADATA_PROBLEMS, e.getMessage());
+                    break;
+                default:
+                    foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, e.getMessage());
+            }
+            return generateBadRequestResponseEntity(e.getKey(), foundNonConformanceIssues);
         }
 
-        foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, checkOnboarding(serviceId));
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue if a service isn't registered
-            return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
-        }
-
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
-        foundNonConformanceIssues.put(REGISTRATION_PROBLEMS, instanceCheck(serviceInstances));
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue if we cant retrieve an instance
-            return generateBadRequestResponseEntity(WRONG_SERVICE_ID_KEY, foundNonConformanceIssues);
-        }
-
-        ServiceInstance serviceInstance = serviceInstances.get(0);
-        Map<String, String> metadata = getMetadata(serviceInstance);
-
-        foundNonConformanceIssues.put(METADATA_PROBLEMS, metaDataCheck(metadata));
-        if (foundNonConformanceIssues.size() != 0) {     // cant continue without metadata
-            return generateBadRequestResponseEntity(NO_METADATA_KEY, foundNonConformanceIssues);
-        }
+        if (!foundNonConformanceIssues.isEmpty())
+            return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
+    }
+
+    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl) throws ValidationException {
+        if (!swaggerUrl.isPresent()) {
+            throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
+        }
+
+        String swagger = verificationOnboardService.getSwagger(swaggerUrl.get());
+        AbstractSwaggerValidator swaggerParser;
+        swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
+
+        List<String> parserResponses = swaggerParser.getMessages();
+        if (parserResponses != null) foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, parserResponses);
+
+        Set<Endpoint> getMethodEndpoints = swaggerParser.getGetMethodEndpoints();
+        if (!getMethodEndpoints.isEmpty())
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testGetEndpoints(getMethodEndpoints));
+
+        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }
 
 
@@ -130,14 +160,12 @@ public class ValidateAPIController {
      * If it's not than it doesn't fulfill Item 1 of conformance criteria
      *
      * @param serviceId serviceId to check
-     * @return string describing the issue or an empty string
+     * @throws ValidationException describing the issue
      */
-    public String checkOnboarding(String serviceId) {
+    public void checkServiceIsOnboarded(String serviceId) throws ValidationException {
         if (!verificationOnboardService.checkOnboarding(serviceId)) {
-            return "The service is not registered";
+            throw new ValidationException("The service is not registered", WRONG_SERVICE_ID_KEY);
         }
-        return "";
-
     }
 
 
@@ -156,26 +184,24 @@ public class ValidateAPIController {
      * Checks if metadata was retrieved.
      *
      * @param metadata which to test
-     * @return string describing the issue or an empty string
+     * @throws ValidationException describing the issue
      */
-    public String metaDataCheck(Map<String, String> metadata) {
-        if (metadata != null && !metadata.isEmpty()) {
-            return "";
+    public void checkMetadataCanBeRetrieved(Map<String, String> metadata) throws ValidationException {
+        if (!(metadata != null && !metadata.isEmpty())) {
+            throw new ValidationException("Cannot Retrieve MetaData", NO_METADATA_KEY);
         }
-        return "Cannot Retrieve MetaData";
     }
 
     /**
      * Checks if a single instance can be retrieved.
      *
      * @param serviceInstances to check
-     * @return string describing the issue or an empty string
+     * @throws ValidationException describing the issue
      */
-    public String instanceCheck(List<ServiceInstance> serviceInstances) {
+    public void checkInstanceCanBeRetrieved(List<ServiceInstance> serviceInstances) throws ValidationException {
         if (serviceInstances.isEmpty()) {
-            return "Cannot retrieve metadata - no active instance of the service";
+            throw new ValidationException("Cannot retrieve metadata - no active instance of the service", WRONG_SERVICE_ID_KEY);
         }
-        return "";
     }
 
 
