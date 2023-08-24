@@ -13,6 +13,8 @@ package org.zowe.apiml.cloudgatewayservice.service;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -29,9 +31,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class WebClientHelper {
     @InjectApimlLogger
-    private final static ApimlLogger apimlLog = ApimlLogger.empty();
+    private static final ApimlLogger apimlLog = ApimlLogger.empty();
 
     public static SslContext load(String keystorePath, char[] password) {
         File keyStoreFile = new File(keystorePath);

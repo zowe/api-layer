@@ -369,3 +369,10 @@ messages:
       text: "Body in the revoke request is not valid."
       reason: "The request body is not valid"
       action: "Use a valid body in the request. Format of a message: {userId: string, (optional)timestamp: long} or {serviceId: string, (optional)timestamp: long}."
+
+    - key: org.zowe.apiml.gateway.servicesRequestFailed
+      number: ZWESG100
+      type: WARNING
+      text: "The /services request through external Gateway failed. Error returned: '%s'"
+      reason: "The external Gateway service is not available."
+      action: "Make sure that the external Gateway service is running and that the /services API is accessible."

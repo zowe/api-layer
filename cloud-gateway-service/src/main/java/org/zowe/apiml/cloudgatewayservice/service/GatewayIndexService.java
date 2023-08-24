@@ -25,6 +25,8 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
@@ -48,6 +50,8 @@ import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelper.load;
 @Slf4j
 @Service
 public class GatewayIndexService {
+    @InjectApimlLogger
+    private static final ApimlLogger apimlLog = ApimlLogger.empty();
     public static final String METADATA_APIML_ID_KEY = "apiml.service.apimlId";
     private final Cache<String, ServiceInstance> gatewayInstanceLookup;
     private final Cache<String, List<ServiceInfo>> gatewayServicesCache;
@@ -93,7 +97,7 @@ public class GatewayIndexService {
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
         gatewayInstanceLookup.put(apimlIdKey, registration);
         return fetchServices(apimlIdKey, registration)
-                .doOnError(ex -> log.warn("external GW call error", ex))
+                .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", ex))
                 .onErrorComplete()
                 .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
     }
