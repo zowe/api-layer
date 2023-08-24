@@ -53,15 +53,25 @@ public class GatewayScanJob {
     private int parallelismLevel;
 
     @Scheduled(initialDelay = 5000, fixedDelayString = "${apiml.cloudGateway.refresh-interval-ms:30000}")
-    public void runScanExternalGateways() {
+    public void startScanExternalGatewayJob() {
         log.debug("Scan gateways job start");
+        doScanExternalGateway()
+                .subscribe();
+    }
+
+
+    /**
+     * reactive entry point  for the external gateways index refresh
+     */
+    protected Flux<List<ServiceInfo>> doScanExternalGateway() {
+
         Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID);
         Flux<ServiceInstance> serviceInstanceFlux = registeredGateways.flatMapMany(Flux::fromIterable);
 
-        serviceInstanceFlux
-                .flatMap(gatewayIndexerService::indexGatewayServices, parallelismLevel)
-                .subscribe();
+        return serviceInstanceFlux
+                .flatMap(gatewayIndexerService::indexGatewayServices, parallelismLevel);
     }
+
 
     @Scheduled(initialDelay = 10000, fixedDelayString = "5000")
     public void listCaches() {
