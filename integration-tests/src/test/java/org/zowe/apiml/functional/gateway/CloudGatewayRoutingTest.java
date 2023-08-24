@@ -27,15 +27,18 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 
 @DiscoverableClientDependentTest
 @Tag("CloudGatewayServiceRouting")
-public class CloudGatewayRoutingTest implements TestWithStartedInstances {
+class CloudGatewayRoutingTest implements TestWithStartedInstances {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
+    private static final String NON_EXISTING_SERVICE_ID = "noservice";
+    private static final String NON_EXISTING_SERVICE_ENDPOINT = "/noservice/api/v1/something";
+    private static final String WRONG_VERSION_ENPOINT = "/discoverableclient/api/v10/greeting";
+
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
-    @ParameterizedTest(name = "When header X-Forward-To is set to {1} should return 200")
+    @ParameterizedTest(name = "When base path is {0} should return 200")
     @CsvSource({
-        "apiml1" + DISCOVERABLE_GREET,
-        "cloud-gateway" + DISCOVERABLE_GREET,
+        "/apiml1" + DISCOVERABLE_GREET,
         DISCOVERABLE_GREET,
     })
     void testRoutingWithBasePath(String basePath) throws URISyntaxException {
@@ -45,10 +48,9 @@ public class CloudGatewayRoutingTest implements TestWithStartedInstances {
         given().get(new URI(scgUrl)).then().statusCode(200);
     }
 
-    @ParameterizedTest(name = "When header X-Forward-To is set to {1} should return 200")
+    @ParameterizedTest(name = "When header X-Forward-To is set to {0} should return 200")
     @CsvSource({
         "apiml1",
-        "cloud-gateway/discoverableclient",
         "discoverableclient",
     })
     void testRoutingWithHeader(String forwardTo) throws URISyntaxException {
@@ -57,5 +59,54 @@ public class CloudGatewayRoutingTest implements TestWithStartedInstances {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET);
         given().header(HEADER_X_FORWARD_TO, forwardTo)
             .get(new URI(scgUrl)).then().statusCode(200);
+    }
+
+    @ParameterizedTest(name = "When base path is {0} should return 404")
+    @CsvSource({
+        "/apiml1" + NON_EXISTING_SERVICE_ENDPOINT,
+        NON_EXISTING_SERVICE_ENDPOINT,
+    })
+    void testRoutingWithIncorrectServiceInBasePath(String basePath) throws URISyntaxException {
+        RestAssured.useRelaxedHTTPSValidation();
+
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
+        given().get(new URI(scgUrl)).then().statusCode(404);
+    }
+
+    @ParameterizedTest(name = "When header X-Forward-To is set to {0} should return 404")
+    @CsvSource({
+        "apiml1",
+        NON_EXISTING_SERVICE_ID,
+    })
+    void testRoutingWithIncorrectServiceInHeader(String forwardTo) throws URISyntaxException {
+        RestAssured.useRelaxedHTTPSValidation();
+
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), NON_EXISTING_SERVICE_ENDPOINT);
+        given().header(HEADER_X_FORWARD_TO, forwardTo)
+            .get(new URI(scgUrl)).then().statusCode(404);
+    }
+
+    @ParameterizedTest(name = "When header X-Forward-To is set to {0} and base path is {1} should return 404")
+    @CsvSource({
+        "apiml1,/apiml1" + DISCOVERABLE_GREET,
+    })
+    void testWrongRoutingWithHeader(String forwardTo, String endpoint) throws URISyntaxException {
+        RestAssured.useRelaxedHTTPSValidation();
+
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), endpoint);
+        given().header(HEADER_X_FORWARD_TO, forwardTo)
+            .get(new URI(scgUrl)).then().statusCode(404);
+    }
+
+    @ParameterizedTest(name = "When base path is {0} should return 404")
+    @CsvSource({
+        "/apiml1" + WRONG_VERSION_ENPOINT,
+        WRONG_VERSION_ENPOINT,
+    })
+    void testWrongRoutingWithBasePath(String basePath) throws URISyntaxException {
+        RestAssured.useRelaxedHTTPSValidation();
+
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
+        given().get(new URI(scgUrl)).then().statusCode(404);
     }
 }
