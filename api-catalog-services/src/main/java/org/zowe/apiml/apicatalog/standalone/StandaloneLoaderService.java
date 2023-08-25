@@ -61,30 +61,42 @@ public class StandaloneLoaderService {
 
     private void loadApplicationCache() {
         File[] appFiles = getFiles(servicesDirectory + "/apps");
+        log.debug("Found {} files", appFiles.length);
         if (appFiles.length == 0) {
             log.error("No service definition files found.");
             return;
         }
 
         for (File file : appFiles) {
-            createContainerFromFile(file);
+            log.debug("Processing file {}", file.getName());
+            try {
+                createContainerFromFile(file);
+            } catch (Exception e) {
+                log.error("Failed to load file {} because {}", file.getName(), e.getMessage());
+            }
         }
     }
 
     private void loadOpenAPICache() {
         File[] openAPIFiles = getFiles(servicesDirectory + "/apiDocs");
+        log.debug("Found {} API Doc files", openAPIFiles.length);
         if (openAPIFiles.length == 0) {
             log.error("No apiDocs files found.");
             return;
         }
 
         for (File openAPIFile : openAPIFiles) {
-            loadApiDocCache(openAPIFile);
+            log.debug("Processing {}", openAPIFile.getName());
+            try {
+                loadApiDocCache(openAPIFile);
+            } catch (Exception e) {
+                log.error("Fail to load API Doc from {} because {}", openAPIFile.getName(), e.getMessage());
+            }
         }
     }
 
     private void createContainerFromFile(File file) {
-        log.info("Initialising services from '{}' file.", file.getName());
+        log.debug("Initialising services from '{}' file.", file.getName());
 
         try {
             Applications apps = objectMapper.readValue(file, Applications.class);
@@ -95,6 +107,8 @@ public class StandaloneLoaderService {
             });
         } catch (IOException e) {
             log.error("Unable to parse service definition '{}' because {}", file.getName(), e.getMessage());
+        } catch (Exception e) {
+            log.error("Exception encountered while loading '{}' because {}", file.getName(), e.getMessage());
         }
     }
 
@@ -118,7 +132,6 @@ public class StandaloneLoaderService {
             }
             String serviceId = name[0];
             String apiVersion = name[1];
-
 
             String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
 
