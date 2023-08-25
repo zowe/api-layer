@@ -152,7 +152,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_GATEWAY_TIMEOUT: 2
-                    APIML_SERVICE_GATEWAY_PROXY_ENABLED: true
+                    APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
 

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.utils.X509Utils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
@@ -219,9 +218,10 @@ class CategorizeCertsFilterTest {
                 "-----END CERTIFICATE-----\n";
             @Test
             void thenAllClientCertificates() throws IOException, ServletException {
-                ReflectionTestUtils.setField(filter, "acceptForwardedCert", true);
+                when(certificateValidator.isForwardingEnabled()).thenReturn(true);
+                when(certificateValidator.isTrusted(any())).thenReturn(true);
                 X509Certificate certificate = X509Utils.getCertificate(X509Utils.correctBase64(cert));
-                request.addHeader("x-auth-source", filter.base64EncodePublicKey(certificate));
+                request.addHeader("Client-Cert", filter.base64EncodePublicKey(certificate));
                 filter.doFilter(request, response, chain);
 
                 X509Certificate[] apimlCerts = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
