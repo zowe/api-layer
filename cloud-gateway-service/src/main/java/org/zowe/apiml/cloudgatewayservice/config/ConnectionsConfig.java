@@ -47,7 +47,6 @@ import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
@@ -114,8 +113,7 @@ public class ConnectionsConfig {
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
     private final ApplicationContext context;
-    @InjectApimlLogger
-    private static final ApimlLogger apimlLog = ApimlLogger.empty();
+    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
@@ -175,7 +173,6 @@ public class ConnectionsConfig {
             trustManagerFactory.init(trustStore);
             return SslContextBuilder.forClient().keyManager(keyManagerFactory).trustManager(trustManagerFactory).build();
         } catch (Exception e) {
-            log.error("Exception while creating SSL context", e);
             apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
             System.exit(1);
             return null;

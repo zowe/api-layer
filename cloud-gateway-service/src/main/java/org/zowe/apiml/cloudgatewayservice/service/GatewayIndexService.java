@@ -26,16 +26,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -50,8 +46,7 @@ import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelper.load;
 @Slf4j
 @Service
 public class GatewayIndexService {
-    @InjectApimlLogger
-    private static final ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger apimlLog = ApimlLogger.of(GatewayIndexService.class, YamlMessageServiceInstance.getInstance());
     public static final String METADATA_APIML_ID_KEY = "apiml.service.apimlId";
     private final Cache<String, ServiceInstance> gatewayInstanceLookup;
     private final Cache<String, List<ServiceInfo>> gatewayServicesCache;
@@ -97,7 +92,7 @@ public class GatewayIndexService {
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
         gatewayInstanceLookup.put(apimlIdKey, registration);
         return fetchServices(apimlIdKey, registration)
-                .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", ex))
+                .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex))
                 .onErrorComplete()
                 .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
     }

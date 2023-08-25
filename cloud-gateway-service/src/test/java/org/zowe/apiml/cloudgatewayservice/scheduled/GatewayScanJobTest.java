@@ -12,6 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.scheduled;
 
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -65,16 +66,19 @@ class GatewayScanJobTest {
         lenient().when(gatewayIndexerService.indexGatewayServices(instanceTwo)).thenReturn(Mono.just(apimlServicesTwo));
     }
 
-    @Test
-    void shouldTriggerIndexingForRegisteredGateways() {
-        StepVerifier.create(gatewayScanJob.doScanExternalGateway())
+    @Nested
+    class WhenScanningExternalGateway {
+        @Test
+        void shouldTriggerIndexingForRegisteredGateways() {
+            StepVerifier.create(gatewayScanJob.doScanExternalGateway())
                 .expectNext(apimlServicesOne)
                 .expectNext(apimlServicesTwo)
                 .verifyComplete();
 
-        verify(gatewayIndexerService).indexGatewayServices(instanceOne);
-        verify(gatewayIndexerService).indexGatewayServices(instanceTwo);
-        verifyNoMoreInteractions(gatewayIndexerService);
+            verify(gatewayIndexerService).indexGatewayServices(instanceOne);
+            verify(gatewayIndexerService).indexGatewayServices(instanceTwo);
+            verifyNoMoreInteractions(gatewayIndexerService);
+        }
     }
 
     @Test

@@ -17,7 +17,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
@@ -33,8 +33,7 @@ import java.security.UnrecoverableKeyException;
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class WebClientHelper {
-    @InjectApimlLogger
-    private static final ApimlLogger apimlLog = ApimlLogger.empty();
+    private static final ApimlLogger apimlLog = ApimlLogger.of(WebClientHelper.class, YamlMessageServiceInstance.getInstance());
 
     public static SslContext load(String keystorePath, char[] password) {
         File keyStoreFile = new File(keystorePath);
@@ -44,7 +43,6 @@ public class WebClientHelper {
                 keyStore.load(is, password);
                 return initSslContext(keyStore, password);
             } catch (Exception e) {
-                log.error("Exception while creating SSL context", e);
                 apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
                 System.exit(1);
                 return null;
