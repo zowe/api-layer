@@ -33,7 +33,8 @@ apiml:
             verifySslCertificatesOfServices: true
         x509:
             enabled: true
-            authViaHeader: false
+            acceptForwardedCert: true
+            certificatesUrl: https://localhost:10023/gateway/certificates
 
     banner: console
 

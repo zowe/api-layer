@@ -30,8 +30,8 @@ public class CertificateValidator {
     final TrustedCertificatesProvider trustedCertificatesProvider;
 
     @Getter
-    @Value("${apiml.security.x509.authViaHeader:false}")
-    private boolean certInHeader;
+    @Value("${apiml.security.x509.acceptForwardedCert:false}")
+    private boolean forwardingEnabled;
 
     @Value("${apiml.security.x509.certificatesUrl:}")
     private String proxyCertificatesEndpoint;

@@ -14,13 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,6 +40,9 @@ public class TrustedCertificatesProvider {
     private final Set<String> publicKeyCertificatesBase64;
     private final CloseableHttpClient httpClient;
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     @Autowired
     public TrustedCertificatesProvider(@Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient httpClient,
                                        @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64) {
@@ -47,7 +51,6 @@ public class TrustedCertificatesProvider {
     }
 
     //    @Cacheable(value = "certificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
-
     public List<Certificate> getTrustedCerts(String certificatesEndpoint) {
         List<Certificate> trustedCerts = new ArrayList<>();
         String pem = callCertificatesEndpoint(certificatesEndpoint);
@@ -59,7 +62,7 @@ public class TrustedCertificatesProvider {
                 trustedCerts.addAll(certs);
                 updateTrustedPublicKeys(trustedCerts);
             } catch (CertificateException e) {
-                throw new RuntimeException(e);
+                apimlLog.log("org.zowe.apiml.security.common.verify.errorParsingCertificates", e.getMessage());
             }
         }
         return trustedCerts;
@@ -75,18 +78,16 @@ public class TrustedCertificatesProvider {
                 body = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             }
             if (statusCode != HttpStatus.SC_OK) {
-                log.warn("Unexpected response from {} endpoint. Status: {} body: {}", url, statusCode, body);
+                apimlLog.log("org.zowe.apiml.security.common.verify.invalidResponse", url, statusCode, body);
                 return null;
             }
             log.debug("Trusted certificates from {}: {}", url, body);
             return body;
 
         } catch (URISyntaxException e) {
-            log.warn("Configuration error: Invalid URL specified in {} parameter.", e.getMessage());
-        } catch (ClientProtocolException e) {
-            throw new RuntimeException(e);
+            apimlLog.log("org.zowe.apiml.security.common.verify.invalidURL", e.getMessage());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            apimlLog.log("org.zowe.apiml.security.common.verify.httpError", e.getMessage());
         }
         return null;
     }

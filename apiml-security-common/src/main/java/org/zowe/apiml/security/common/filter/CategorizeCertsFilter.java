@@ -16,12 +16,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,10 +32,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -48,6 +48,9 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
     private static final String CLIENT_CERT_HEADER = "Client-Cert";
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     @Getter
     private final Set<String> publicKeyCertificatesBase64;
 
@@ -56,17 +59,20 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     /**
      * Get certificates from request (if exists), separate them (to use only APIML certificate to request sign and
      * other for authentication) and store again into request.
-     * If authentication via certificate in header is enabled, get certificate from a custom authentication header,
-     * decrypt it to validate its authenticity using the public key and store it in the request.
+     * If authentication via certificate in header is enabled, get client certificate from the Client-Cert header
+     * only if the request certificates are all trusted and validated by {@link CertificateValidator} service.
+     * The client certificate is then stored in a separate custom request attribute. The APIML certificates stays
+     * in the default attribute.
      *
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certificateValidator.isCertInHeader() && certificateValidator.isTrusted(certs)) {
+        if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
             Optional<Certificate> clientCert = getClientCert((HttpServletRequest) request);
             if (clientCert.isPresent()) {
                 // add the client certificate to the certs array
+                log.debug("Found client certificate in header, adding it to the request.");
                 certs = Arrays.copyOf(certs, certs.length + 1);
                 certs[certs.length - 1] = (X509Certificate) clientCert.get();
             }
@@ -78,6 +84,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     private Optional<Certificate> getClientCert(HttpServletRequest request) {
         String certFromHeader = request.getHeader(CLIENT_CERT_HEADER);
+
         if (StringUtils.isNotEmpty(certFromHeader)) {
             try {
                 Certificate certificate = CertificateFactory
@@ -85,10 +92,38 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                     .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader)));
                 return Optional.of(certificate);
             } catch (CertificateException e) {
-                log.error("Cannot extract X509 certificate from the authentication header {}", CLIENT_CERT_HEADER, e);
+                apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", e.getMessage(), certFromHeader);
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Wraps the http servlet request into wrapper which makes sure that the Client-Cert header
+     * will not be accessible anymore from the request
+     *
+     * @param originalRequest incoming original http request object
+     * @return wrapped http request object with overridden functions
+     */
+    private HttpServletRequest mutate(HttpServletRequest originalRequest) {
+        return new HttpServletRequestWrapper(originalRequest) {
+
+            @Override
+            public String getHeader(String name) {
+                if (CLIENT_CERT_HEADER.equalsIgnoreCase(name)) {
+                    return null;
+                }
+                return super.getHeader(name);
+            }
+
+            @Override
+            public Enumeration<String> getHeaders(String name) {
+                if (CLIENT_CERT_HEADER.equalsIgnoreCase(name)) {
+                    return Collections.enumeration(new LinkedList<>());
+                }
+                return super.getHeaders(name);
+            }
+        };
     }
 
     /**
@@ -102,7 +137,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         categorizeCerts(request);
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(mutate(request), response);
     }
 
     private X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {

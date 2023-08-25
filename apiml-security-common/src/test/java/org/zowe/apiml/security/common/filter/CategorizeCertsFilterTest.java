@@ -48,7 +48,7 @@ class CategorizeCertsFilterTest {
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
         certificateValidator = mock(CertificateValidator.class);
-        when(certificateValidator.isCertInHeader()).thenReturn(false);
+        when(certificateValidator.isForwardingEnabled()).thenReturn(false);
     }
 
     @Nested
@@ -219,7 +219,7 @@ class CategorizeCertsFilterTest {
                 "-----END CERTIFICATE-----\n";
             @Test
             void thenAllClientCertificates() throws IOException, ServletException {
-                ReflectionTestUtils.setField(filter, "x509AuthViaHeader", true);
+                ReflectionTestUtils.setField(filter, "acceptForwardedCert", true);
                 X509Certificate certificate = X509Utils.getCertificate(X509Utils.correctBase64(cert));
                 request.addHeader("x-auth-source", filter.base64EncodePublicKey(certificate));
                 filter.doFilter(request, response, chain);

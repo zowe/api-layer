@@ -64,7 +64,7 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
-        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName, Client-Cert
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         allowTokenRefresh: false
         jwtInitializerTimeout: 5
         personalAccessToken:
@@ -86,8 +86,8 @@ apiml:
             provider: zosmf
         x509:
             enabled: false
-            authViaHeader: false
-            publicKeyUrl:
+            acceptForwardedCert: false
+            certificatesUrl:
             externalMapperUrl:
         saf:
             provider: rest
