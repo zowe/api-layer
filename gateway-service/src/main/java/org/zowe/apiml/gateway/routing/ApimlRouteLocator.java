@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
 
@@ -149,6 +150,7 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
             .flatMap(
                 metadata -> eurekaMetadataParser.parseToListRoute(metadata).stream()
             )
+            .sorted(Comparator.<RoutedService>comparingInt(x -> x.getGatewayUrl().length()).reversed())
             .forEach(routedService -> {
                 keys.add("/" + mapRouteToService(serviceId) + "/" + routedService.getGatewayUrl() + "/**");
                 routes.addRoutedService(routedService);
