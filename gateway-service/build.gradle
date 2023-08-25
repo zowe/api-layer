@@ -75,6 +75,8 @@ dependencies {
 
     implementation libs.ribbon.eureka
     implementation libs.swagger3.parser
+    implementation libs.swagger.models
+    implementation libs.swagger.inflector
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind

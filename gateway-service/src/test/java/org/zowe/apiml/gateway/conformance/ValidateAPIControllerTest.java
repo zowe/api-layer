@@ -29,13 +29,16 @@ import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -56,6 +59,8 @@ public class ValidateAPIControllerTest {
     @Mock
     ServiceInstance serviceInstance;
 
+    @Mock
+    private GatewayClient gatewayClient;
 
     ResponseEntity<String> result;
 
@@ -174,14 +179,15 @@ public class ValidateAPIControllerTest {
         @Test
         void whenEmpty_thenCorrectResponse() {
             HashMap<String, String> metadata = new HashMap<>();
-            assertEquals("Cannot Retrieve MetaData", validateAPIController.metaDataCheck(metadata));
+            ValidationException exception = assertThrows(ValidationException.class, () -> validateAPIController.checkMetadataCanBeRetrieved(metadata));
+            assertEquals("Cannot Retrieve MetaData", exception.getMessage());
         }
 
         @Test
         void whenNotEmpty_thenCorrectResponse() {
             HashMap<String, String> metadata = new HashMap<>();
             metadata.put("key", "value");
-            assertEquals("", validateAPIController.metaDataCheck(metadata));
+            assertDoesNotThrow(() -> validateAPIController.checkMetadataCanBeRetrieved(metadata));
         }
 
         @Test
@@ -204,15 +210,14 @@ public class ValidateAPIControllerTest {
         @Test
         void whenEmpty_thenCorrectResponse() {
             List<ServiceInstance> list = new ArrayList<>();
-            assertTrue(validateAPIController.instanceCheck(list).contains("Cannot retrieve metadata"));
+            ValidationException exception = assertThrows(ValidationException.class, () -> validateAPIController.checkInstanceCanBeRetrieved(list));
+            assertTrue(exception.getMessage().contains("Cannot retrieve metadata"));
         }
     }
 
 
     @Nested
-    class GivenValidEverything {
-
-
+    class GivenDifferentMetadata {
         @AfterEach
         void checkValidJson() {
             ObjectMapper mapper = new ObjectMapper()
@@ -227,19 +232,46 @@ public class ValidateAPIControllerTest {
             assertTrue(valid);
         }
 
-
-        @Test
-        void thenOkResponse() {
+        @ParameterizedTest
+        @ValueSource(strings = {"src/test/resources/api-doc.json", "src/test/resources/api-doc-v2.json"})
+        void whenEverythingOk_thenOkResponse(String mockSwaggerFileLocation) throws IOException {
             String serviceId = "testservice";
             HashMap<String, String> mockMetadata = new HashMap<>();
-            mockMetadata.put("key", "value");
+            mockMetadata.put("swaggerUrl", "https://sample.swagger.url");
+
+            File mockSwaggerFile = new File(mockSwaggerFileLocation);
+
             when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
             when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
+            when(verificationOnboardService.findSwaggerUrl(mockMetadata)).thenReturn(Optional.of("a"));
+            when(gatewayClient.getGatewayConfigProperties()).thenReturn(GatewayConfigProperties.builder().build());
+
+            when(verificationOnboardService.getSwagger("a")).thenReturn(new String(Files.readAllBytes(mockSwaggerFile.getAbsoluteFile().toPath())));
+            when(verificationOnboardService.testGetEndpoints(any())).thenReturn(new ArrayList<>());
+            when(verificationOnboardService.getProblemsWithEndpointUrls(any())).thenReturn(new ArrayList<>());
+
             result = validateAPIController.checkConformance(serviceId);
+
             assertEquals(HttpStatus.OK, result.getStatusCode());
         }
 
+        @Test
+        void whenBadMetadata_thenBadMetadataResponse() {
+            String serviceId = "testservice";
+
+            HashMap<String, String> mockMetadata = new HashMap<>();
+
+            when(verificationOnboardService.checkOnboarding(serviceId)).thenReturn(true);
+            when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
+            when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
+            when(messageService.createMessage(NO_METADATA_KEY, "ThisWillBeRemoved")).thenReturn(NO_METADATA_MESSAGE);
+
+            result = validateAPIController.checkConformance(serviceId);
+            assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+            assertNotNull(result.getBody());
+            assertTrue(result.getBody().contains("Cannot Retrieve MetaData"));
+        }
     }
 }
 
