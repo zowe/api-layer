@@ -20,7 +20,6 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
  * This class fires on ApplicationReadyEvent event during Spring context initialization
  */
 @Component
-//@ConditionalOnExpression("!T(java.lang.Boolean).valueOf(${apiml.catalog.standalone.enabled})")
 @ConditionalOnProperty(
     value = "apiml.catalog.standalone.enabled",
     havingValue = "false",
