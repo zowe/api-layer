@@ -139,6 +139,7 @@ public class GatewayIndexService {
     List<ServiceInfo> filterServicesByApiId(List<ServiceInfo> apimlIdServices, String apiId) {
         if (!CollectionUtils.isEmpty(apimlIdServices)) {
             return apimlIdServices.stream()
+                    .filter(Objects::nonNull)
                     .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
                     .collect(Collectors.toList());
         }
