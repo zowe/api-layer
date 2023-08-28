@@ -22,7 +22,7 @@ import java.util.*;
 /**
  * Java class that is used to keep track of found conformance issues
  */
-public class ConformanceProblemsContainer extends HashMap<String, ArrayList<String>> {
+public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
 
 
     private final String serviceId;
@@ -38,13 +38,11 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
             return;
         }
         if (this.get(key) == null || this.get(key).isEmpty()) {
-            super.put(key, new ArrayList<>(values));
+            super.put(key, new HashSet<>(values));
             return;
         }
         for (String value : values) {
-            if (this.get(key).contains(value)) {
                 this.get(key).add(value);
-            }
         }
     }
 
@@ -59,7 +57,7 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     @Override
     public int size() {
         int result = 0;
-        for (ArrayList<String> value : this.values()) {
+        for (Set<String> value : this.values()) {
             if (value == null) {
                 continue;
             }

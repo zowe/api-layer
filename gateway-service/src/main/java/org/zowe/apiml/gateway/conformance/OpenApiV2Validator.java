@@ -29,7 +29,11 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
     }
 
     public List<String> getMessages() {
-        return swagger.getMessages();
+        ArrayList<String> result = new ArrayList<>();
+        for (String message : swagger.getMessages()){
+            result.add("Problem with swagger documentation: " + message);
+        }
+        return result;
     }
 
     public Set<Endpoint> getAllEndpoints() {

@@ -14,9 +14,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -56,6 +54,8 @@ public class ValidateAPIController {
     private final GatewayClient gatewayClient;
 
 
+
+
     /**
      * Accepts serviceID and checks conformance criteria
      *
@@ -72,6 +72,9 @@ public class ValidateAPIController {
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
+
+
+
 
         try {
             checkServiceIsOnboarded(serviceId);
@@ -107,6 +110,8 @@ public class ValidateAPIController {
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
 
+
+
     private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl) throws ValidationException {
         if (!swaggerUrl.isPresent()) {
             throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
@@ -119,9 +124,9 @@ public class ValidateAPIController {
         List<String> parserResponses = swaggerParser.getMessages();
         if (parserResponses != null) foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, parserResponses);
 
-        Set<Endpoint> getMethodEndpoints = swaggerParser.getGetMethodEndpoints();
+        Set<Endpoint> getMethodEndpoints = swaggerParser.getAllEndpoints();
         if (!getMethodEndpoints.isEmpty())
-            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testGetEndpoints(getMethodEndpoints));
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints));
 
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }

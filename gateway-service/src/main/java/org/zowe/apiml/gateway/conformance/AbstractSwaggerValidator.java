@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.conformance;
 
 
-import org.springframework.http.HttpMethod;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.*;
@@ -76,16 +75,6 @@ public abstract class AbstractSwaggerValidator {
         return result;
     }
 
-    public Set<Endpoint> getGetMethodEndpoints() {
-        Set<Endpoint> result = new HashSet<>();
-
-        for (Endpoint endpoint : getAllEndpoints()) {
-            if (endpoint.getHttpMethods().contains(HttpMethod.GET)) {
-                result.add(endpoint);
-            }
-        }
-        return result;
-    }
 
     public String searchMetadata(Map<String, String> metadata, String... partsOfKey) {
         for (Map.Entry<String, String> metadataEntry : metadata.entrySet()) {

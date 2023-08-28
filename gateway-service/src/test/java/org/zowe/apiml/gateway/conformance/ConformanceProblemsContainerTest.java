@@ -39,30 +39,38 @@ class ConformanceProblemsContainerTest {
         void whenInserting_thenCorrectSize(int size) {
             ArrayList<String> testList = new ArrayList<>();
             for (int i = 0; i < size; i++) {
-                testList.add("testString");
+                testList.add("testString" + i);
             }
             container.add("test", testList);
 
             assertEquals(container.size(), testList.size());
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {1, 5, 20})
+        void whenInsertingSameValue_thenCorrectSize(int size) {
+            for (int i = 0; i < size; i++) {
+                container.add("test", "value");
+            }
+            assertEquals(1, container.size());
         }
 
         @Test
         void whenInserting_thenCanRetrieve() {
             ArrayList<String> testList = new ArrayList<>();
             for (int i = 0; i < 5; i++) {
-                testList.add("testString");
+                testList.add("testString" + i);
             }
             container.add("test", testList);
-            assertEquals(container.size(), testList.size());
-            assertTrue(container.get("test").contains("testString"));
+            assertEquals(testList.size(), container.size());
+            assertTrue(container.get("test").contains("testString1"));
         }
 
         @ParameterizedTest
         @ValueSource(ints = {10, 5, 0})
         void whenInsertingToSameKey_thenCorrectSize(int size) {
-            ArrayList<String> testList = new ArrayList<>(Collections.singleton("TestString"));
             for (int i = 0; i < size; i++) {
-                container.add("test", testList);
+                container.add("test", "TestString" + i);
             }
             assertEquals(container.size(), size);
         }
@@ -70,9 +78,10 @@ class ConformanceProblemsContainerTest {
         @ParameterizedTest
         @ValueSource(ints = {10, 5, 0})
         void whenInsertingToMultipleKeys_thenCorrectSize(int size) {
-            ArrayList<String> testList = new ArrayList<>(Collections.singleton("TestString"));
-            ArrayList<String> testList2 = new ArrayList<>(Collections.singleton("TestString"));
             for (int i = 0; i < size; i++) {
+                ArrayList<String> testList = new ArrayList<>(Collections.singleton("TestString" + i));
+                ArrayList<String> testList2 = new ArrayList<>(Collections.singleton("TestString" + i));
+                container.add("test", testList);
                 container.add("test", testList);
                 container.add("test2", testList2);
             }

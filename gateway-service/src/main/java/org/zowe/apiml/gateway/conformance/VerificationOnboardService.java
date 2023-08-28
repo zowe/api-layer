@@ -12,12 +12,14 @@ package org.zowe.apiml.gateway.conformance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
 
 import java.util.*;
 
@@ -32,7 +34,9 @@ public class VerificationOnboardService {
     private final DiscoveryClient discoveryClient;
 
     private final RestTemplate restTemplate;
-
+    private final AuthenticationService authenticationService;
+    private final TokenCreationService tokenCreationService;
+    private final ApimlAccessTokenProvider apimlAccessTokenProvider;
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -93,39 +97,66 @@ public class VerificationOnboardService {
      * @param getEndpoints GET endpoints to check
      * @return List of problems
      */
-    public List<String> testGetEndpoints(Set<Endpoint> getEndpoints) {
+    public List<String> testEndpointsByCalling(Set<Endpoint> getEndpoints) {
         ArrayList<String> result = new ArrayList<>();
 
+        HttpHeaders headersNoSSO = new HttpHeaders();
+        headersNoSSO.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> requestNoSSO = new HttpEntity<>(headersNoSSO);
+
         for (Endpoint endpoint : getEndpoints) {
-            String urlFromSwagger = endpoint.getUrl();
-            // replaces parameters in {} in query
-            String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
+            for (HttpMethod method : endpoint.getHttpMethods()) {
+                if (method == HttpMethod.DELETE) {
+                    continue;
+                }
 
-            ResponseEntity<String> response;
-            try {
-                response = restTemplate.getForEntity(url, String.class);
-            } catch (HttpClientErrorException | HttpServerErrorException e) {
-                response = ResponseEntity.status(e.getRawStatusCode())
-                    .headers(e.getResponseHeaders())
-                    .body(e.getResponseBodyAsString());
-            }
+                String urlFromSwagger = endpoint.getUrl();
+                // replaces parameters in {} in query
+                String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
 
-            String responseBody = response.getBody();
+                ResponseEntity<String> responseNoSSO = getResponse(requestNoSSO, method, url);
 
-            if (responseBody != null && response.getStatusCode() == HttpStatus.NOT_FOUND && responseBody.contains("ZWEAM104E")) {
-                result.add("Documented endpoint at " + endpoint.getUrl() + " could not be located, attempting to call it through gateway gives the ZWEAM104E error");
-            }
+                result.addAll(fromResponseReturnFoundProblems(responseNoSSO, endpoint, method));
 
-            if (!endpoint.isGetResponseCodeDocumented(String.valueOf(response.getStatusCode().value()))) {
-                result.add("Calling endpoint at " + endpoint.getUrl() + " gives undocumented " + response.getStatusCode().value()
-                    + " status code, documented responses are:" + endpoint.getValidResponses().get("GET"));
             }
         }
 
         return result;
     }
 
+    private ResponseEntity<String> getResponse(HttpEntity<String> request, HttpMethod method, String url) {
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.exchange(url, method, request, String.class);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            response = ResponseEntity.status(e.getRawStatusCode())
+                .headers(e.getResponseHeaders())
+                .body(e.getResponseBodyAsString());
+        }
+        return response;
+    }
+
+
+    private List<String> fromResponseReturnFoundProblems(ResponseEntity<String> response, Endpoint currentEndpoint, HttpMethod method){
+        ArrayList<String> result = new ArrayList<>();
+
+        String responseBody = response.getBody();
+
+        if (responseBody != null && response.getStatusCode() == HttpStatus.NOT_FOUND && responseBody.contains("ZWEAM104E")) {
+            result.add("Documented endpoint at " + currentEndpoint.getUrl() + " could not be located, attempting to call it through gateway gives the ZWEAM104E error");
+        }
+
+        if (!currentEndpoint.isResponseCodeForMethodDocumented(String.valueOf(response.getStatusCode().value()), method)) {
+            result.add(method + " request to documented endpoint at " + currentEndpoint.getUrl() + " returns undocumented " + response.getStatusCode().value()
+                + " status code, documented responses are:" + currentEndpoint.getValidResponses().get(method.toString()));
+        }
+        return result;
+    }
+
     public List<String> getProblemsWithEndpointUrls(AbstractSwaggerValidator swaggerParser) {
         return swaggerParser.getProblemsWithEndpointUrls();
     }
+
 }
+
+
