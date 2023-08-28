@@ -34,6 +34,9 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
 
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL_URL;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableRetry
@@ -96,10 +99,22 @@ public class GatewayConfig {
             instance.setIpAddress(ipAddress);
         }
 
-
         if (StringUtils.hasText(hostname)) {
             instance.setHostname(hostname);
         }
+
+        String externalUrl = getProperty("apiml.service.external-url");
+        if (!StringUtils.hasText(externalUrl)) {
+            externalUrl = (isSecurePortEnabled ? "https" : "http") + "://" + hostname + ":" + serverPort;
+        }
+        instance.getMetadataMap().put(SERVICE_EXTERNAL_URL, externalUrl);
+
+        String apimlId = getProperty("apiml.service.apiml-id");
+        if (!StringUtils.hasText(apimlId)) {
+            apimlId = hostname + "_" + serverPort;
+        }
+        instance.getMetadataMap().put(APIML_ID, apimlId);
+
         String statusPageUrlPath = getProperty("eureka.instance.status-page-url-path");
         String healthCheckUrlPath = getProperty("eureka.instance.health-check-url-path");
 

@@ -48,6 +48,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
@@ -174,8 +175,8 @@ public class ConnectionsConfig {
             return SslContextBuilder.forClient().keyManager(keyManagerFactory).trustManager(trustManagerFactory).build();
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
-            System.exit(1);
-            return null;
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, factory().getConfig());
         }
     }
 

@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.routing;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -20,6 +21,7 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -60,9 +62,11 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
             .map(ServiceInstance::getMetadata)
             .flatMap(
                 metadata -> metadataParser.parseToListRoute(metadata).stream()
-            ).forEach( routedService -> {
-                    routesMap.putAll(buildRoute(serviceId, routedService));
-                    routedServices.addRoutedService(routedService);
+            )
+            .sorted(Comparator.<RoutedService>comparingInt(x -> x.getGatewayUrl().length()).reversed())
+            .forEach( routedService -> {
+                routesMap.putAll(buildRoute(serviceId, routedService));
+                routedServices.addRoutedService(routedService);
             });
 
         routedServicesNotifier.addRoutedServices(serviceId, routedServices);
@@ -72,7 +76,13 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
     private Map<String, ZuulProperties.ZuulRoute> buildRoute(String serviceId, RoutedService routedService) {
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
-        String routeKey = "/" + serviceId + "/" + routedService.getGatewayUrl() + "/**";
+        StringBuilder sb = new StringBuilder();
+        sb.append('/').append(serviceId).append('/');
+        if (!StringUtils.isEmpty(routedService.getGatewayUrl())) {
+            sb.append(routedService.getGatewayUrl()).append('/');
+        }
+        sb.append("**");
+        String routeKey = sb.toString();
         ZuulProperties.ZuulRoute routeFormat = new ZuulProperties.ZuulRoute(routeKey, serviceId);
 
         routesMap.put(routeKey, routeFormat);
