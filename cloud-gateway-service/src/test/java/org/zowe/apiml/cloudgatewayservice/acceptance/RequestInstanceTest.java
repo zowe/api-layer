@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -26,7 +27,12 @@ import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "apiml.service.corsEnabled=false"
+})
 class RequestInstanceTest extends AcceptanceTestWithTwoServices {
+
+    private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
     @BeforeEach
     void setUp() throws IOException {
@@ -40,7 +46,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
         @Test
         void routeToCorrectService() {
             given()
-                .header("X-Request-Id", "serviceid1localhost")
+                .header(HEADER_X_FORWARD_TO, "serviceid1")
                 .when()
                 .get(basePath + serviceWithCustomConfiguration.getPath())
                 .then().statusCode(Matchers.is(SC_OK));
@@ -52,7 +58,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
         @Test
         void cantRouteToServer() {
             given()
-                .header("X-Request-Id", "non-existing").
+                .header(HEADER_X_FORWARD_TO, "non-existing").
                 when()
                 .get(basePath + serviceWithCustomConfiguration.getPath())
                 .then()
@@ -65,7 +71,7 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
         given()
             .header("Origin", "https://localhost:3000")
-            .header("X-Request-Id", "serviceid1localhost")
+            .header(HEADER_X_FORWARD_TO, "serviceid1")
             .when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
             .then().statusCode(Matchers.is(SC_FORBIDDEN));

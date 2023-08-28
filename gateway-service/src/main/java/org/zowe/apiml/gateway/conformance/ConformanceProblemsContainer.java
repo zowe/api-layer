@@ -33,32 +33,28 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
         this.serviceId = serviceId;
     }
 
-    @Override
-    public ArrayList<String> put(String key, ArrayList<String> values) {
+    public void add(String key, List<String> values) {
         if (values == null) {
-            return new ArrayList<>();
+            return;
         }
         if (this.get(key) == null || this.get(key).isEmpty()) {
-            return super.put(key, new ArrayList<>(values));
+            super.put(key, new ArrayList<>(values));
+            return;
         }
         for (String value : values) {
             if (this.get(key).contains(value)) {
                 this.get(key).add(value);
             }
         }
-        return new ArrayList<>();
     }
 
-    public List<String> put(String key, String value) {
+    public void add(String key, String value) {
         if (value == null || value.equals("")) {
-            return new ArrayList<>();
+            return;
         }
-        return put(key, new ArrayList<>(Collections.singleton(value)));
+        this.add(key, new ArrayList<>(Collections.singleton(value)));
     }
 
-    public List<String> put(String key, List<String> value) {
-        return put(key, new ArrayList<>(value));
-    }
 
     @Override
     public int size() {
@@ -70,6 +66,11 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
             result += value.size();
         }
         return result;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size() == 0;
     }
 
     @Override

@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @AcceptanceTest
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
+    private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
+
     @Test
     void routeToServiceWithCorsEnabled() throws IOException {
         mockServerWithSpecificHttpResponse(200, "/serviceid2/test", 0, (headers) ->
@@ -32,7 +34,7 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
         );
         given()
             .header("Origin", "https://localhost:3000")
-            .header("X-Request-Id", "serviceid2localhost")
+            .header(HEADER_X_FORWARD_TO, "serviceid2")
             .when()
             .get(basePath + serviceWithDefaultConfiguration.getPath())
             .then().statusCode(Matchers.is(SC_OK));
