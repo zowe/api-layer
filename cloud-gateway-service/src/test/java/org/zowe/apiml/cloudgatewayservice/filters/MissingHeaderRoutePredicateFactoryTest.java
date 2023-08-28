@@ -33,7 +33,7 @@ class MissingHeaderRoutePredicateFactoryTest {
         predicate = new MissingHeaderRoutePredicateFactory().apply(config);
     }
 
-    @ParameterizedTest(name = "When header {1} is set to {2} and the filter works with header {0} the value after processing should be {3}")
+    @ParameterizedTest(name = "When header {0} is set to {1}, the value after processing should be {2}")
     @CsvSource({
         "myheader,GW,false",
         "myheader,,false",

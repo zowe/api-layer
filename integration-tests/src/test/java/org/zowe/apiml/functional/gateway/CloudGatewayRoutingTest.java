@@ -11,6 +11,7 @@
 package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -36,14 +37,17 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
 
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
+    @BeforeEach
+    void setup() {
+        RestAssured.useRelaxedHTTPSValidation();
+    }
+
     @ParameterizedTest(name = "When base path is {0} should return 200")
     @CsvSource({
         "/apiml1" + DISCOVERABLE_GREET,
         DISCOVERABLE_GREET,
     })
     void testRoutingWithBasePath(String basePath) throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
         given().get(new URI(scgUrl)).then().statusCode(200);
     }
@@ -54,8 +58,6 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         "discoverableclient",
     })
     void testRoutingWithHeader(String forwardTo) throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET);
         given().header(HEADER_X_FORWARD_TO, forwardTo)
             .get(new URI(scgUrl)).then().statusCode(200);
@@ -67,8 +69,6 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         NON_EXISTING_SERVICE_ENDPOINT,
     })
     void testRoutingWithIncorrectServiceInBasePath(String basePath) throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
         given().get(new URI(scgUrl)).then().statusCode(404);
     }
@@ -79,8 +79,6 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         NON_EXISTING_SERVICE_ID,
     })
     void testRoutingWithIncorrectServiceInHeader(String forwardTo) throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), NON_EXISTING_SERVICE_ENDPOINT);
         given().header(HEADER_X_FORWARD_TO, forwardTo)
             .get(new URI(scgUrl)).then().statusCode(404);
@@ -91,8 +89,6 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         "apiml1,/apiml1" + DISCOVERABLE_GREET,
     })
     void testWrongRoutingWithHeader(String forwardTo, String endpoint) throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), endpoint);
         given().header(HEADER_X_FORWARD_TO, forwardTo)
             .get(new URI(scgUrl)).then().statusCode(404);
@@ -104,8 +100,6 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         WRONG_VERSION_ENPOINT,
     })
     void testWrongRoutingWithBasePath(String basePath) throws URISyntaxException {
-        RestAssured.useRelaxedHTTPSValidation();
-
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
         given().get(new URI(scgUrl)).then().statusCode(404);
     }

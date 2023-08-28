@@ -21,6 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ServerWebExchange;
 
+/**
+ * This predicate is responsible for checking if the request header is missing. If the header is missing, routing
+ * will continue.
+ * It is used in org.zowe.apiml.cloudgatewayservice.service.routing.ByBasePath to prevent routing if the header is set.
+ */
 @Service
 public class MissingHeaderRoutePredicateFactory extends AbstractRoutePredicateFactory<MissingHeaderRoutePredicateFactory.Config> {
 
