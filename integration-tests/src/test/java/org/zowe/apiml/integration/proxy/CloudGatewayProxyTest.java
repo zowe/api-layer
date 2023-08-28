@@ -14,23 +14,15 @@ import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
-import org.zowe.apiml.util.config.CloudGatewayConfiguration;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.TlsConfiguration;
+import org.zowe.apiml.util.config.*;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.Base64;
 
@@ -51,7 +43,10 @@ class CloudGatewayProxyTest {
     static String trustedCerts;
 
     @BeforeAll
-    static void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    static void init() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+
         conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
         TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
         HttpsConfig httpsConf = HttpsConfig.builder()
@@ -72,11 +67,6 @@ class CloudGatewayProxyTest {
         }
         trustedCerts = sb.toString();
         assertTrue(StringUtils.isNotEmpty(trustedCerts));
-    }
-
-    @BeforeEach
-    void setUp() {
-        RestAssured.useRelaxedHTTPSValidation();
     }
 
     @Test
@@ -102,7 +92,7 @@ class CloudGatewayProxyTest {
     }
 
     @Test
-    void givenClientCertInRequest_thenCertPassedToDomainGateway() throws URISyntaxException {
+    void givenClientCertInRequest_thenCertPassedToDomainGateway() {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
         given()
             .config(SslContext.clientCertValid)
