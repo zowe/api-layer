@@ -67,28 +67,28 @@ messages:
 
     - key: org.zowe.apiml.security.common.verify.invalidResponse
       number: ZWEAT501
-      type: WARN
+      type: WARNING
       text: "Failed to get trusted certificates from central gateway. Unexpected response from %s endpoint. Status code: %s. Response body: %s"
       reason: "The response status code is different from expected 200 OK."
       action: "Ensure that the parameter apiml.security.x509.certificatesUrl is correctly configured with the complete URL to the central gateway certificates endpoint. Test the URL manually."
 
     - key: org.zowe.apiml.security.common.verify.invalidURL
       number: ZWEAT502
-      type: WARN
+      type: WARNING
       text: "Invalid URL specified to get trusted certificates from central gateway. Error message: %s"
       reason: "The parameter apiml.security.x509.certificatesUrl is not correctly configured with the complete URL to the central gateway certificates endpoint."
       action: "Ensure that the parameter apiml.security.x509.certificatesUrl is correctly configured."
 
     - key: org.zowe.apiml.security.common.verify.httpError
       number: ZWEAT503
-      type: WARN
+      type: WARNING
       text: "An error occurred during retrieval of trusted certificates from central gateway. Error message: %s"
       reason: "The communication with the cloud gateway got interrupted or an error occurred during processing the response."
       action: "Check the provided error message. Contact the support."
 
     - key: org.zowe.apiml.security.common.verify.errorParsingCertificates
       number: ZWEAT504
-      type: WARN
+      type: WARNING
       text: "Failed to parse the trusted certificates provided by the central gateway. Error message %s"
       reason: "The string sent by the central gateway was not recognized as valid DER-encoded certificates."
       action: "Check that the URL configured in apiml.security.x509.certificatesUrl responds with valid DER-encoded certificates in the Base64 printable form."
