@@ -68,16 +68,17 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
-            Optional<Certificate> clientCert = getClientCert((HttpServletRequest) request);
-            if (clientCert.isPresent()) {
-                // add the client certificate to the certs array
-                log.debug("Found client certificate in header, adding it to the request.");
-                certs = Arrays.copyOf(certs, certs.length + 1);
-                certs[certs.length - 1] = (X509Certificate) clientCert.get();
-            }
-        }
         if (certs != null) {
+            if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
+                Optional<Certificate> clientCert = getClientCert((HttpServletRequest) request);
+                if (clientCert.isPresent()) {
+                    // add the client certificate to the certs array
+                    log.debug("Found client certificate in header, adding it to the request.");
+                    certs = Arrays.copyOf(certs, certs.length + 1);
+                    certs[certs.length - 1] = (X509Certificate) clientCert.get();
+                }
+            }
+
             request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
             request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
