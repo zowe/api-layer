@@ -34,6 +34,7 @@ import reactor.netty.tcp.SslProvider;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -56,14 +57,14 @@ public class GatewayIndexService {
     public GatewayIndexService(WebClient defaultWebClient,
                                @Value("${apiml.cloudGateway.cachePeriodSec:120}") int cachePeriodSec,
                                @Value("${apiml.cloudGateway.clientKeystore:#{null}}") String clientKeystorePath,
-                               @Value("${apiml.cloudGateway.clientKeystorePassword:#{null}}") String clientKeystorePassword) {
+                               @Value("${apiml.cloudGateway.clientKeystorePassword:#{null}}") char[] clientKeystorePassword) {
         this.defaultWebClient = defaultWebClient;
 
         gatewayInstanceLookup = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
         gatewayServicesCache = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
 
-        if (isNotBlank(clientKeystorePath) && isNotBlank(clientKeystorePassword)) {
-            customClientSslContext = load(clientKeystorePath, clientKeystorePassword.toCharArray());
+        if (isNotBlank(clientKeystorePath) && nonNull(clientKeystorePassword)) {
+            customClientSslContext = load(clientKeystorePath, clientKeystorePassword);
         }
     }
 

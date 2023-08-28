@@ -15,17 +15,19 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.HttpsConfigError;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class WebClientHelperTest {
-    private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+    static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
     private static final char[] WRONG_PASSWORD = "wrong_password".toCharArray(); // NOSONAR
-    private final String KEYSTORE_PATH = "../keystore/localhost/localhost.keystore.p12";
+    static final String KEYSTORE_PATH = "../keystore/localhost/localhost.keystore.p12";
+
     @Nested
     class WhenLoading {
         @Test
         void givenWrongPath_thenThrowException() {
-            assertThrows(IllegalArgumentException.class, () ->  WebClientHelper.load("../wrong/path", PASSWORD));
+            assertThrows(IllegalArgumentException.class, () -> WebClientHelper.load("../wrong/path", PASSWORD));
         }
 
         @Test
@@ -36,7 +38,7 @@ class WebClientHelperTest {
 
         @Test
         void givenWrongPassword_thenExit() {
-            assertThrows(HttpsConfigError.class, () ->  WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", WRONG_PASSWORD));
+            assertThrows(HttpsConfigError.class, () -> WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", WRONG_PASSWORD));
         }
     }
 }

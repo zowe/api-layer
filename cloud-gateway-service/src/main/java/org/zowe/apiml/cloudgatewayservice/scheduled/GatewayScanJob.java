@@ -25,7 +25,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Scheduled job to refresh registry of all registered gateways services.
@@ -59,7 +58,6 @@ public class GatewayScanJob {
                 .subscribe();
     }
 
-
     /**
      * reactive entry point  for the external gateways index refresh
      */
@@ -72,22 +70,4 @@ public class GatewayScanJob {
                 .flatMap(gatewayIndexerService::indexGatewayServices, parallelismLevel);
     }
 
-
-    @Scheduled(initialDelay = 10000, fixedDelayString = "5000")
-    public void listCaches() {
-
-        Map<String, List<ServiceInfo>> fullState = gatewayIndexerService.listRegistry(null, null);
-
-        log.debug("Cache having {} apimlId records", fullState.keySet().size());
-        for (String apimlId : fullState.keySet()) {
-            List<ServiceInfo> servicesInfo = gatewayIndexerService.listRegistry(apimlId, null).get(apimlId);
-            log.debug("\t {}-{} : found {} external services", apimlId, apimlId, servicesInfo.size());
-        }
-
-        Map<String, List<ServiceInfo>> allSysviews = gatewayIndexerService.listRegistry(null, "bcm.sysview");
-        for (Map.Entry<String, List<ServiceInfo>> apimlEntiry : allSysviews.entrySet()) {
-            log.debug("Listing all sysview services at: {}", apimlEntiry.getKey());
-            apimlEntiry.getValue().forEach(serviceInfo -> log.debug("\t {} - {}", serviceInfo.getServiceId(), serviceInfo.getInstances()));
-        }
-    }
 }
