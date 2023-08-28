@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.services.cached;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocCacheKey;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
@@ -43,7 +42,6 @@ public class CachedApiDocService {
 
     private static final UnaryOperator<String> exceptionMessage = serviceId -> "No API Documentation was retrieved for the service " + serviceId + ".";
 
-    @Autowired
     public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService) {
         this.apiDocRetrievalService = apiDocRetrievalService;
         this.transformApiDocService = transformApiDocService;
