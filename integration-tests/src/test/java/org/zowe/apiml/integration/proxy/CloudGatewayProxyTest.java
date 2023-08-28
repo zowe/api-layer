@@ -106,7 +106,7 @@ class CloudGatewayProxyTest {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
         given()
             .config(SslContext.clientCertValid)
-            .header(HEADER_X_FORWARD_TO, "gatewaygateway-service")
+            .header(HEADER_X_FORWARD_TO, "apiml1")
             .when()
             .get(scgUrl)
             .then()
