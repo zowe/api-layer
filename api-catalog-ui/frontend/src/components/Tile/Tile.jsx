@@ -68,22 +68,13 @@ export default class Tile extends Component {
 
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
-                <CardActionArea>
+                <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
                     <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
                         <Typography id="tileLabel" className="grid-tile-status">
                             {!apiPortalEnabled && this.getTileStatus(tile)}
                             {!apiPortalEnabled && this.getTileStatusText(tile)}
                         </Typography>
-                        <Typography
-                            variant="subtitle1"
-                            style={{
-                                fontFamily: 'Roboto',
-                                fontSize: '24px',
-                                fontWeight: '700',
-                                lineHeight: '28px',
-                                color: 'black',
-                            }}
-                        >
+                        <Typography id="service-title" variant="subtitle1">
                             {service.title}
                         </Typography>
                         {!apiPortalEnabled && service.sso && (

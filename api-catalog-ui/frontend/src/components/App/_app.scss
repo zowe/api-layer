@@ -49,7 +49,7 @@ body {
     .MuiDialogTitle-root {
       padding: var( --spaceSmaller ) var( --spaceMedium );
       color: var(--controlText15);
-      
+
       h2 {
         margin: 0px;
       }
@@ -184,6 +184,14 @@ body {
     > button:not(:last-child) {
       margin-right: var( --spaceSmaller );
     }
+  }
+
+  #service-title {
+      font-family: var( --fontFamily00 );
+      font-size: var(--spaceLarger);
+      font-weight: var( --fontWeightBold);
+      line-height: 28px;
+      color: var( --text10 );
   }
   // button {
   &.MuiIconButton-root,
