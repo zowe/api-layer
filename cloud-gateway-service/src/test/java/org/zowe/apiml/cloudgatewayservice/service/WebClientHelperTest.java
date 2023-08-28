@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WebClientHelperTest {
     private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
-
+    private final String KEYSTORE_PATH = "../keystore/localhost/localhost.keystore.p12";
     @Nested
     class WhenLoading {
         @Test
@@ -28,7 +28,7 @@ class WebClientHelperTest {
 
         @Test
         void givenCorrectPath_thenLoadSSLContext() {
-            final SslContext sslContext = WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", PASSWORD);
+            final SslContext sslContext = WebClientHelper.load(KEYSTORE_PATH, PASSWORD);
             assertNotNull(sslContext);
         }
     }
