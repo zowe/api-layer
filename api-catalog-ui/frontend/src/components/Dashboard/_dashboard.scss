@@ -41,6 +41,9 @@
 
     .MuiInput-root {
       width: 100%;
+      &.Mui-focused, &:hover {
+        border: 1px solid var(--linkHover);
+      }
     }
     input {
       margin-left: auto;

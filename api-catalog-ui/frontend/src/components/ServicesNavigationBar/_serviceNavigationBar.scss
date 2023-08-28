@@ -92,3 +92,7 @@ svg.MuiSvgIcon-root.clear-text-search {
         }
     }
 }//end search2
+
+#search2:has(.Mui-focused, :hover) {
+    border: 1px solid var(--linkHover);
+}
