@@ -39,6 +39,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -76,7 +77,7 @@ class GatewayIndexServiceTest {
 
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
-        webClient = WebClient.builder().exchangeFunction(exchangeFunction).build();
+        webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
         gatewayIndexService = new GatewayIndexService(webClient, 60, null, null);
     }
 
@@ -137,6 +138,16 @@ class GatewayIndexServiceTest {
         }
 
         @Test
+        void shouldCloneWebClientBean(){
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                    .expectNext(asList(serviceInfoA, serviceInfoB))
+                    .verifyComplete();
+
+            verify(webClient).mutate();
+        }
+
+        @Test
         void shouldReturnEmptyMapForNotExistingApimlId() {
             assertThat(gatewayIndexService.listRegistry("unknownId", null)).isEmpty();
             assertThat(gatewayIndexService.listRegistry(null, "unknownApiId")).isEmpty();
@@ -155,6 +166,16 @@ class GatewayIndexServiceTest {
             SslContext customClientSslContext = (SslContext) ReflectionTestUtils.getField(gatewayIndexService, "customClientSslContext");
 
             assertThat(customClientSslContext).isNotNull();
+        }
+
+        @Test
+        void shouldSkipIfPasswordNotDefined() {
+
+            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, null);
+
+            SslContext customClientSslContext = (SslContext) ReflectionTestUtils.getField(gatewayIndexService, "customClientSslContext");
+
+            assertThat(customClientSslContext).isNull();
         }
     }
 }

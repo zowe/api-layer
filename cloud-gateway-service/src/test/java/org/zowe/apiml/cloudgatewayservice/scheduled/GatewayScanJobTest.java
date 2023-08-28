@@ -30,7 +30,10 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -71,9 +74,9 @@ class GatewayScanJobTest {
         @Test
         void shouldTriggerIndexingForRegisteredGateways() {
             StepVerifier.create(gatewayScanJob.doScanExternalGateway())
-                .expectNext(apimlServicesOne)
-                .expectNext(apimlServicesTwo)
-                .verifyComplete();
+                    .expectNext(apimlServicesOne)
+                    .expectNext(apimlServicesTwo)
+                    .verifyComplete();
 
             verify(gatewayIndexerService).indexGatewayServices(instanceOne);
             verify(gatewayIndexerService).indexGatewayServices(instanceTwo);
@@ -89,5 +92,17 @@ class GatewayScanJobTest {
         spy.startScanExternalGatewayJob();
 
         verify(spy).doScanExternalGateway();
+    }
+
+    @Test
+    void shouldListRegistry() {
+        ServiceInfo serviceInfo = mock(ServiceInfo.class);
+        when(gatewayIndexerService.listRegistry(null, null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
+        when(gatewayIndexerService.listRegistry("testApimlId", null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
+
+        gatewayScanJob.listCaches();
+
+        verify(gatewayIndexerService).listRegistry(null, null);
+        verify(gatewayIndexerService).listRegistry("testApimlId", null);
     }
 }
