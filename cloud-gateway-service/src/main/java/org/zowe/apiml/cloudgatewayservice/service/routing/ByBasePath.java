@@ -29,6 +29,8 @@ import org.zowe.apiml.util.StringUtils;
 @Component
 public class ByBasePath extends RouteDefinitionProducer {
 
+    private static final String TARGET_HEADER_NAME = "X-Forward-To";
+
     public ByBasePath(DiscoveryLocatorProperties properties) {
         super(properties);
     }
@@ -47,11 +49,16 @@ public class ByBasePath extends RouteDefinitionProducer {
 
     @Override
     protected void setCondition(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
-        PredicateDefinition predicate = new PredicateDefinition();
-        predicate.setName("Path");
+        PredicateDefinition headerPredicate = new PredicateDefinition();
+        headerPredicate.setName("MissingHeader");
+        headerPredicate.addArg("header", TARGET_HEADER_NAME);
+        routeDefinition.getPredicates().add(headerPredicate);
+
+        PredicateDefinition pathPredicate = new PredicateDefinition();
+        pathPredicate.setName("Path");
         String predicateValue = constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "**");
-        predicate.addArg("pattern", predicateValue);
-        routeDefinition.getPredicates().add(predicate);
+        pathPredicate.addArg("pattern", predicateValue);
+        routeDefinition.getPredicates().add(pathPredicate);
     }
 
     @Override
