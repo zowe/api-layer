@@ -54,9 +54,10 @@ svg.MuiSvgIcon-root.clear-text-search {
     .tabs {
         &.Mui-selected {
             box-shadow: $red-selected-bx;
+            color: black;
+            font-weight: 600;
         }
         &:hover {
-            box-shadow: $red-selected-bx;
         }
     }
 }// end .custom-tabs
@@ -91,3 +92,7 @@ svg.MuiSvgIcon-root.clear-text-search {
         }
     }
 }//end search2
+
+#search2:has(.Mui-focused, :hover) {
+    border: 1px solid var(--linkHover);
+}
