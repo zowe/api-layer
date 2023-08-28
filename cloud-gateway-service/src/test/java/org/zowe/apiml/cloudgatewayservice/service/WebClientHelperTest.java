@@ -11,16 +11,13 @@
 package org.zowe.apiml.cloudgatewayservice.service;
 
 import io.netty.handler.ssl.SslContext;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Slf4j
 class WebClientHelperTest {
     private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
-    private static final char[] WRONG = "wrong".toCharArray(); // NOSONAR
 
     @Nested
     class WhenLoading {
