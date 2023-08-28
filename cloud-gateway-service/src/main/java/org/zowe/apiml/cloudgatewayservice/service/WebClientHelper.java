@@ -31,7 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WebClientHelper {
     private static final ApimlLogger apimlLog = ApimlLogger.of(WebClientHelper.class, YamlMessageServiceInstance.getInstance());
 
