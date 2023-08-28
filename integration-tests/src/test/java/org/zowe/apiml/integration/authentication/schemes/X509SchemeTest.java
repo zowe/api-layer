@@ -49,7 +49,7 @@ class X509SchemeTest implements TestWithStartedInstances {
 
     @Test
     @Tag("CloudGatewayServiceRouting")
-    void givenValidCLientCert_thenForwardDetailsInHeader() {
+    void givenValidClientCert_thenForwardDetailsInHeader() {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
         given().config(SslContext.clientCertValid)
             .when()
