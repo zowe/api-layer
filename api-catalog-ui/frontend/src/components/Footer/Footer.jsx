@@ -22,18 +22,18 @@ export default class Footer extends Component {
                 <footer id="pageFooter">
                     <div id="bottom-info-div">
                         <Container>
-                            <strong>Broadcom Mainframe Software</strong>
-                            <Link className="links">Mainframe Software Solutions</Link>
-                            <Link className="links">Mainframe Software Products</Link>
+                            <strong />
+                            <Link className="links" />
+                            <Link className="links" />
                         </Container>
                         <Container>
                             <strong>News & Information</strong>
-                            <Link className="links">Broadcom in the News</Link>
-                            <Link className="links">About Broadcom</Link>
-                            <Link className="links">Customer Programs</Link>
-                            <Link className="links">Education & Training</Link>
-                            <Link className="links">Support Portal</Link>
-                            <Link className="links">Professional Services</Link>
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
                         </Container>
                         <Container>
                             <strong>Contact Us</strong>

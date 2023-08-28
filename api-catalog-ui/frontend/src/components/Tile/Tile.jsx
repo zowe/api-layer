@@ -27,7 +27,7 @@ export default class Tile extends Component {
         const { status } = tile;
         switch (status) {
             case 'UP':
-                return '';
+                return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)', fontSize: '12px' }} />;
             case 'DOWN':
                 return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)', fontSize: '12px' }} />;
             default:
@@ -35,23 +35,23 @@ export default class Tile extends Component {
         }
     };
 
-    // getTileStatusText = (tile) => {
-    //     if (tile === null || tile === undefined) {
-    //         return 'Status unknown';
-    //     }
-    //     const apiPortalEnabled = isAPIPortal();
-    //     if (!apiPortalEnabled) {
-    //         const { status } = tile;
-    //         switch (status) {
-    //             case 'UP':
-    //                 return 'The service is running';
-    //             case 'DOWN':
-    //                 return 'The service is not running';
-    //             default:
-    //                 return 'Status unknown';
-    //         }
-    //     }
-    // };
+    getTileStatusText = (tile) => {
+        if (tile === null || tile === undefined) {
+            return 'Status unknown';
+        }
+        const apiPortalEnabled = isAPIPortal();
+        if (!apiPortalEnabled) {
+            const { status } = tile;
+            switch (status) {
+                case 'UP':
+                    return 'The service is running';
+                case 'DOWN':
+                    return 'The service is not running';
+                default:
+                    return 'Status unknown';
+            }
+        }
+    };
 
     handleClick = () => {
         const { tile, history, storeCurrentTileId, service } = this.props;
@@ -71,8 +71,8 @@ export default class Tile extends Component {
                 <CardActionArea>
                     <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
                         <Typography id="tileLabel" className="grid-tile-status">
-                            {this.getTileStatus(tile)}
-                            {/* {this.getTileStatusText(tile)} */}
+                            {!apiPortalEnabled && this.getTileStatus(tile)}
+                            {!apiPortalEnabled && this.getTileStatusText(tile)}
                         </Typography>
                         <Typography
                             variant="subtitle1"
@@ -86,11 +86,11 @@ export default class Tile extends Component {
                         >
                             {service.title}
                         </Typography>
-                        {/* {service.sso && (
+                        {!apiPortalEnabled && service.sso && (
                             <Typography variant="h6" id="grid-tile-sso">
                                 (SSO)
                             </Typography>
-                        )} */}
+                        )}
                         {apiPortalEnabled && (
                             <div id="media-icons">
                                 <div id="swagger">{hasSwagger && <img alt="Swagger" src={swaggerImg} />}</div>
