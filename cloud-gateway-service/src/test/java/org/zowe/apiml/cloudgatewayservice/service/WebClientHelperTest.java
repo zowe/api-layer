@@ -13,11 +13,13 @@ package org.zowe.apiml.cloudgatewayservice.service;
 import io.netty.handler.ssl.SslContext;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.security.HttpsConfigError;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WebClientHelperTest {
     private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+    private static final char[] WRONG_PASSWORD = "wrong_password".toCharArray(); // NOSONAR
     private final String KEYSTORE_PATH = "../keystore/localhost/localhost.keystore.p12";
     @Nested
     class WhenLoading {
@@ -30,6 +32,11 @@ class WebClientHelperTest {
         void givenCorrectPath_thenLoadSSLContext() {
             final SslContext sslContext = WebClientHelper.load(KEYSTORE_PATH, PASSWORD);
             assertNotNull(sslContext);
+        }
+
+        @Test
+        void givenWrongPassword_thenExit() {
+            assertThrows(HttpsConfigError.class, () ->  WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", WRONG_PASSWORD));
         }
     }
 }

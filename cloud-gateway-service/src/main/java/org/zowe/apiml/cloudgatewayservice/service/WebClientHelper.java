@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.security.HttpsConfigError;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
@@ -44,8 +45,8 @@ public class WebClientHelper {
                 return initSslContext(keyStore, password);
             } catch (Exception e) {
                 apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
-                System.exit(1);
-                return null;
+                throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                    HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED);
             }
         } else {
             throw new IllegalArgumentException("Not existing file: " + keystorePath);
