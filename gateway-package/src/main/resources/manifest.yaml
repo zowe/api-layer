@@ -54,6 +54,10 @@ configs:
         externalMapperUrl:
         # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
         externalMapperUser:
+        # Enables consumption of forwarded client certificate from proxy gateway in a special request header
+        acceptForwardedCert: false
+        # full URL to proxy gateway endpoint which provides certificate chain (/gateway/certificates)
+        certificatesUrl:
       oidc:
         enabled: false
         clientId:
