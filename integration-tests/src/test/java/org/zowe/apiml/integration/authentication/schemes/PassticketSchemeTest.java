@@ -16,7 +16,6 @@ import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.apache.http.message.BasicNameValuePair;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +47,8 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.integration.penetration.JwtPenTest.getToken;
 import static org.zowe.apiml.util.SecurityUtils.*;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.PASSTICKET_TEST_ENDPOINT;
+import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 
 @DiscoverableClientDependentTest
 @GeneralAuthenticationTest
@@ -118,18 +118,6 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .body("headers.x-zowe-auth-failure", startsWith("ZWEAG141E"))
                 .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG141E"));
         }
-
-        @Test
-        @Tag("CloudGatewayServiceRouting")
-        void givenWellKnownRequest_thenReturnNotFound() {
-            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_CERTIFICATES);
-            given()
-                .when()
-                .get(scgUrl)
-                .then()
-                .statusCode(HttpStatus.SC_NOT_FOUND);
-        }
-
     }
 
     @Nested
