@@ -41,6 +41,8 @@
 # - ZWE_configs_apiml_security_x509_enabled
 # - ZWE_configs_apiml_security_x509_externalMapperUrl
 # - ZWE_configs_apiml_security_x509_externalMapperUser
+# - ZWE_configs_apiml_security_x509_acceptForwardedCert
+# - ZWE_configs_apiml_security_x509_certificatesUrl
 # - ZWE_configs_apiml_security_zosmf_applid
 # - ZWE_configs_apiml_security_oidc_enabled
 # - ZWE_configs_apiml_security_oidc_clientId
@@ -239,6 +241,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/x509/map"} \
     -Dapiml.security.x509.externalMapperUser=${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
+    -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_acceptForwardedCert:-false} \
+    -Dapiml.security.x509.certificatesUrl=${ZWE_configs_apiml_security_x509_certificatesUrl:-} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-} \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_configs_apiml_security_authorization_endpoint_enabled:-false} \
     -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/saf-auth"} \
