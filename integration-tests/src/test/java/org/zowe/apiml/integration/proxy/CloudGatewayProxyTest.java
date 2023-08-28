@@ -14,6 +14,7 @@ import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.HttpsConfig;
@@ -40,7 +41,6 @@ class CloudGatewayProxyTest {
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
     static CloudGatewayConfiguration conf;
-    static String trustedCerts;
 
     @BeforeAll
     static void init() throws Exception {
@@ -48,25 +48,6 @@ class CloudGatewayProxyTest {
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
         conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
-        TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
-        HttpsConfig httpsConf = HttpsConfig.builder()
-            .keyAlias(tlsConf.getKeyAlias())
-            .keyStore(tlsConf.getKeyStore())
-            .keyPassword(tlsConf.getKeyPassword())
-            .keyStorePassword(tlsConf.getKeyStorePassword())
-            .keyStoreType(tlsConf.getKeyStoreType())
-            .build();
-
-        // build the expected certificate chain
-        final Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, "\n".getBytes());
-        StringBuilder sb = new StringBuilder();
-        for (Certificate cert : SecurityUtils.loadCertificateChain(httpsConf)) {
-            sb.append("-----BEGIN CERTIFICATE-----\n")
-                .append(mimeEncoder.encodeToString(cert.getEncoded())).append("\n")
-                .append("-----END CERTIFICATE-----\n");
-        }
-        trustedCerts = sb.toString();
-        assertTrue(StringUtils.isNotEmpty(trustedCerts));
     }
 
     @Test
@@ -101,32 +82,82 @@ class CloudGatewayProxyTest {
         });
     }
 
-    @Test
-    void givenClientCertInRequest_thenCertPassedToDomainGateway() {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
-        given()
-            .config(SslContext.clientCertValid)
-            .header(HEADER_X_FORWARD_TO, "apiml1")
-            .when()
-            .get(scgUrl)
-            .then()
-            .statusCode(HttpStatus.SC_OK)
-            .body("dn", startsWith("CN=APIMTST"))
-            .body("cn", is("APIMTST"));
-    }
+    @Nested
+    class GivenClientCertificateInRequest {
 
-    @Test
-    void givenGatewayCertificatesRequest_thenCertificatesChainProvided() throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_CERTIFICATES);
-        String response =
+        @Test
+        void givenRequestHeader_thenCertPassedToDomainGateway() {
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
             given()
+                .config(SslContext.clientCertValid)
+                .header(HEADER_X_FORWARD_TO, "apiml1")
                 .when()
-                .get(new URI(scgUrl))
+                .get(scgUrl)
                 .then()
                 .statusCode(HttpStatus.SC_OK)
-                .extract().body().asString();
+                .body("dn", startsWith("CN=APIMTST"))
+                .body("cn", is("APIMTST"));
+        }
 
-        assertTrue(StringUtils.isNotEmpty(response));
-        assertEquals(trustedCerts, response);
+        @Test
+        void givenBasePath_thenCertPassedToDomainGateway() {
+            String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1", X509_ENDPOINT);
+            given()
+                .config(SslContext.clientCertValid)
+                .when()
+                .get(scgUrl)
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .body("dn", startsWith("CN=APIMTST"))
+                .body("cn", is("APIMTST"));
+        }
+    }
+
+    @Nested
+    class GivenGatewayCertificatesRequest {
+
+        private final String trustedCerts;
+
+        {
+            TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
+            HttpsConfig httpsConf = HttpsConfig.builder()
+                .keyAlias(tlsConf.getKeyAlias())
+                .keyStore(tlsConf.getKeyStore())
+                .keyPassword(tlsConf.getKeyPassword())
+                .keyStorePassword(tlsConf.getKeyStorePassword())
+                .keyStoreType(tlsConf.getKeyStoreType())
+                .build();
+
+            // build the expected certificate chain
+            final Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, "\n".getBytes());
+            StringBuilder sb = new StringBuilder();
+            try {
+                for (Certificate cert : SecurityUtils.loadCertificateChain(httpsConf)) {
+                    sb.append("-----BEGIN CERTIFICATE-----\n")
+                        .append(mimeEncoder.encodeToString(cert.getEncoded())).append("\n")
+                        .append("-----END CERTIFICATE-----\n");
+                }
+            } catch (Exception e) {
+                fail("Failed to load certificate chain.", e);
+            }
+            trustedCerts = sb.toString();
+            assertTrue(StringUtils.isNotEmpty(trustedCerts));
+        }
+
+        @Test
+        void thenCertificatesChainProvided() throws URISyntaxException {
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_CERTIFICATES);
+            String response =
+                given()
+                    .when()
+                    .get(new URI(scgUrl))
+                    .then()
+                    .statusCode(HttpStatus.SC_OK)
+                    .extract().body().asString();
+
+            assertTrue(StringUtils.isNotEmpty(response));
+            assertEquals(trustedCerts, response);
+        }
+
     }
 }
