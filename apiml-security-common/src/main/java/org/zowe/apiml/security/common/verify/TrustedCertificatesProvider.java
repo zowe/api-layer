@@ -19,6 +19,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -50,7 +51,7 @@ public class TrustedCertificatesProvider {
         this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
     }
 
-    //    @Cacheable(value = "certificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
+    @Cacheable(value = "trustedCertificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
     public List<Certificate> getTrustedCerts(String certificatesEndpoint) {
         List<Certificate> trustedCerts = new ArrayList<>();
         String pem = callCertificatesEndpoint(certificatesEndpoint);
