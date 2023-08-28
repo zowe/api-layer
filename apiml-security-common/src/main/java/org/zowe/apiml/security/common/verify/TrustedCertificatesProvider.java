@@ -51,6 +51,13 @@ public class TrustedCertificatesProvider {
         this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
     }
 
+    /**
+     * Query given rest endpoint to get the certificate chain from remote proxy gateway.
+     * The endpoint should be publicly available and should provide the certificate chain in PEM format.
+     *
+     * @param certificatesEndpoint Given full URL to the remote proxy gateway certificates endpoint
+     * @return List of certificates or empty list
+     */
     @Cacheable(value = "trustedCertificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
     public List<Certificate> getTrustedCerts(String certificatesEndpoint) {
         List<Certificate> trustedCerts = new ArrayList<>();
@@ -93,6 +100,11 @@ public class TrustedCertificatesProvider {
         return null;
     }
 
+    /**
+     * Updates the list of public keys of APIML trusted certificates
+     *
+     * @param certs List of trusted certificates
+     */
     private void updateTrustedPublicKeys(List<Certificate> certs) {
         for (Certificate cert : certs) {
             String publicKey = Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
