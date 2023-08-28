@@ -373,6 +373,6 @@ messages:
     - key: org.zowe.apiml.gateway.servicesRequestFailed
       number: ZWESG100
       type: WARNING
-      text: "The /services request through external Gateway with apimlId %s failed. Error returned: '%s'"
-      reason: "The external Gateway service is not available."
-      action: "Make sure that the external Gateway service is running and that the /services API is accessible."
+      text: "Cannot receive information about services on API Gateway with apimlId '%s' because: %s"
+      reason: "Cannot connect to the Gateway service."
+      action: "Make sure that the external Gateway service is running and the truststore of the both Gateways contain the corresponding certificate."

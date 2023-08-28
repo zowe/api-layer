@@ -92,7 +92,7 @@ public class GatewayIndexService {
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
         gatewayInstanceLookup.put(apimlIdKey, registration);
         return fetchServices(apimlIdKey, registration)
-                .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex))
+                .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex.getMessage()))
                 .onErrorComplete()
                 .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
     }
