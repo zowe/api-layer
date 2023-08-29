@@ -14,7 +14,9 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -121,12 +123,15 @@ public class ValidateAPIController {
         AbstractSwaggerValidator swaggerParser;
         swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
 
+
+        boolean serviceUsesSSO = verificationOnboardService.supportsSSO(metadata);
+
         List<String> parserResponses = swaggerParser.getMessages();
         if (parserResponses != null) foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, parserResponses);
 
         Set<Endpoint> getMethodEndpoints = swaggerParser.getAllEndpoints();
         if (!getMethodEndpoints.isEmpty())
-            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints));
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints, serviceUsesSSO));
 
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }

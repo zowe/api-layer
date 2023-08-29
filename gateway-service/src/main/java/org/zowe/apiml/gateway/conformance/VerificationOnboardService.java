@@ -19,7 +19,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
-import org.zowe.apiml.gateway.security.service.token.ApimlAccessTokenProvider;
 
 import java.util.*;
 
@@ -36,7 +35,6 @@ public class VerificationOnboardService {
     private final RestTemplate restTemplate;
     private final AuthenticationService authenticationService;
     private final TokenCreationService tokenCreationService;
-    private final ApimlAccessTokenProvider apimlAccessTokenProvider;
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -94,11 +92,26 @@ public class VerificationOnboardService {
     /**
      * Checks if endpoints can be called and return documented responses
      *
-     * @param getEndpoints GET endpoints to check
+     * @param getEndpoints   GET endpoints to check
+     * @param serviceUsesSSO flag describing if a service allows for SSO
      * @return List of problems
      */
-    public List<String> testEndpointsByCalling(Set<Endpoint> getEndpoints) {
+    public List<String> testEndpointsByCalling(Set<Endpoint> getEndpoints, boolean serviceUsesSSO) {
         ArrayList<String> result = new ArrayList<>();
+        HttpEntity<String> requestSSO = null;
+
+
+        if (serviceUsesSSO) {
+            String ssoCookie = getSsoCookie();
+            if (!isCookieAuthenticated(ssoCookie)) {
+                result.add("Did not verify if SSO is functional, could not generate a valid JWT token.");
+            }
+
+            HttpHeaders headersSSO = new HttpHeaders();
+            headersSSO.setContentType(MediaType.APPLICATION_JSON);
+            headersSSO.add("Cookie", "apimlAuthenticationToken=" + ssoCookie);
+            requestSSO = new HttpEntity<>(headersSSO);
+        }
 
         HttpHeaders headersNoSSO = new HttpHeaders();
         headersNoSSO.setContentType(MediaType.APPLICATION_JSON);
@@ -114,9 +127,14 @@ public class VerificationOnboardService {
                 // replaces parameters in {} in query
                 String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
 
-                ResponseEntity<String> responseNoSSO = getResponse(requestNoSSO, method, url);
 
-                result.addAll(fromResponseReturnFoundProblems(responseNoSSO, endpoint, method));
+                if (serviceUsesSSO) {
+                    ResponseEntity<String> responseWithSSO = getResponse(requestSSO, method, url);
+                    result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, true));
+                }
+
+                ResponseEntity<String> responseNoSSO = getResponse(requestNoSSO, method, url);
+                result.addAll(fromResponseReturnFoundProblems(responseNoSSO, endpoint, method, false));
 
             }
         }
@@ -137,13 +155,17 @@ public class VerificationOnboardService {
     }
 
 
-    private List<String> fromResponseReturnFoundProblems(ResponseEntity<String> response, Endpoint currentEndpoint, HttpMethod method){
+    private List<String> fromResponseReturnFoundProblems(ResponseEntity<String> response, Endpoint currentEndpoint, HttpMethod method, boolean attemptWithSSO) {
         ArrayList<String> result = new ArrayList<>();
 
         String responseBody = response.getBody();
 
         if (responseBody != null && response.getStatusCode() == HttpStatus.NOT_FOUND && responseBody.contains("ZWEAM104E")) {
             result.add("Documented endpoint at " + currentEndpoint.getUrl() + " could not be located, attempting to call it through gateway gives the ZWEAM104E error");
+        }
+
+        if (attemptWithSSO && responseBody != null && (response.getStatusCode() == HttpStatus.FORBIDDEN || response.getStatusCode() == HttpStatus.UNAUTHORIZED)) {
+            result.add(method + " request to documented endpoint at " + currentEndpoint.getUrl() + " responded with status code " + response.getStatusCode().value() + ", despite being called with the SSO authorization");
         }
 
         if (!currentEndpoint.isResponseCodeForMethodDocumented(String.valueOf(response.getStatusCode().value()), method)) {
@@ -157,6 +179,23 @@ public class VerificationOnboardService {
         return swaggerParser.getProblemsWithEndpointUrls();
     }
 
+
+    private boolean isCookieAuthenticated(String ssoCookie) {
+        return authenticationService.validateJwtToken(ssoCookie).isAuthenticated();
+    }
+
+
+    private String getSsoCookie() {
+
+        return tokenCreationService.createJwtTokenWithoutCredentials("validate");
+    }
+
+    public boolean supportsSSO(Map<String, String> metadata) {
+        if (metadata.containsKey("apiml.authentication.sso")) {
+            return metadata.get("apiml.authentication.sso").equals("true");
+        }
+        return false;
+    }
 }
 
 

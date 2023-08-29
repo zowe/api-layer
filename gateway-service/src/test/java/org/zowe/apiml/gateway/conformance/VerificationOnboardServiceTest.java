@@ -21,6 +21,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 
 import java.util.*;
 
@@ -40,6 +42,12 @@ class VerificationOnboardServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private TokenCreationService tokenCreationService;
+
+    @Mock
+    private AuthenticationService authenticationService;
 
 
     @Test
@@ -75,9 +83,28 @@ class VerificationOnboardServiceTest {
         assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
     }
 
+    @Test
+    void whenEndpointNotFound_thenReturnCorrectError() {
+        String url = "https://localhost:8000/test";
+        ResponseEntity<String> response = new ResponseEntity<>("ZWEAM104E", HttpStatus.NOT_FOUND);
+        Set<HttpMethod> methods = new HashSet<>();
+        methods.add(HttpMethod.GET);
+
+        HashMap<String, Set<String>> responses = new HashMap<>();
+        responses.put("GET", new HashSet<>(Collections.singleton("404")));
+
+        when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+        Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
+        HashSet<Endpoint> endpoints = new HashSet<>();
+        endpoints.add(endpoint);
+        List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, false);
+        assertTrue(result.get(0).contains("could not be located, attempting to call it through gateway gives the ZWEAM104E"));
+    }
 
     @Nested
     class GivenEndpoint {
+
+
         @Test
         void whenEndpointReturnsDocumented400_thenReturnEmptyList() {
             String url = "https://localhost:8000/test";
@@ -93,7 +120,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, false);
 
             assertTrue(result.isEmpty());
 
@@ -113,7 +140,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, false);
 
             assertTrue(result.isEmpty());
 
@@ -133,27 +160,9 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, false);
             assertTrue(result.get(0).contains("returns undocumented"));
         }
-    }
-
-    @Test
-    void whenEndpointNotFound_thenReturnCorrectError() {
-        String url = "https://localhost:8000/test";
-        ResponseEntity<String> response = new ResponseEntity<>("ZWEAM104E", HttpStatus.NOT_FOUND);
-        Set<HttpMethod> methods = new HashSet<>();
-        methods.add(HttpMethod.GET);
-
-        HashMap<String, Set<String>> responses = new HashMap<>();
-        responses.put("GET", new HashSet<>(Collections.singleton("404")));
-
-        when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
-        Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
-        HashSet<Endpoint> endpoints = new HashSet<>();
-        endpoints.add(endpoint);
-        List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
-        assertTrue(result.get(0).contains("could not be located, attempting to call it through gateway gives the ZWEAM104E"));
     }
 
 
