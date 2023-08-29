@@ -41,6 +41,9 @@
 
     .MuiInput-root {
       width: 100%;
+      &.Mui-focused, &:hover {
+        border: 1px solid var(--linkHover);
+      }
     }
     input {
       margin-left: auto;
@@ -80,22 +83,13 @@
     padding-bottom: var( --spaceLargest );
 
     .MuiSvgIcon-root {
-      color: var( --text20 );
-      position: relative;
+      color: var(--text20);
       left: var( --spaceSmaller );
-      margin-top: 0px;
-      margin-left: 156px;
     }
 
-      /* For Firefox */
-      @-moz-document url-prefix() {
-          .MuiSvgIcon-root {
-              margin-left: 130px;
-          }
-          #search #search-icon {
-              margin-left: 130px;
-          }
-      }
+    .MuiSvgIcon-root.clear-text-search {
+      color: var( --link20 );
+    }
 
     .MuiInputBase-input {
       margin-top: auto;
@@ -103,6 +97,14 @@
       padding: var( --spaceMedium ) var( --spaceSmall ) var( --spaceMedium ) var( --spaceLargest );
     }
   }//end filtering-container
+  // hidden div to make footer not underlap spinner
+  .loadingDiv {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    width: 128px;
+    height: 200px;
+  }
 }
 
 #separator2 {

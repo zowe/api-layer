@@ -7,6 +7,23 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+function checkForSwagger(service, hasSwagger) {
+    const serviceAPIKeys = Object.keys(service.apis);
+    serviceAPIKeys.forEach((api) => {
+        // Statically defined api service has a swagger url for default, but details page doesn't like that.
+        // So filter it out for the moment
+        if (api !== 'default') {
+            const apiObject = service.apis[api];
+            if (apiObject?.swaggerUrl) {
+                // eslint-disable-next-line no-param-reassign
+                hasSwagger = true;
+            }
+        }
+    });
+    return hasSwagger;
+}
+
 /**
  * Counts the additional contents
  * @param service
@@ -16,6 +33,7 @@ export default function countAdditionalContents(service) {
     let useCasesCounter = 0;
     let tutorialsCounter = 0;
     let videosCounter = 0;
+    let hasSwagger = false;
     if (service) {
         if ('useCases' in service && service.useCases) {
             useCasesCounter = service.useCases.length;
@@ -26,8 +44,11 @@ export default function countAdditionalContents(service) {
         if ('videos' in service && service.videos) {
             videosCounter = service.videos.length;
         }
+        if (service.apis) {
+            hasSwagger = checkForSwagger(service, hasSwagger);
+        }
     }
-    return { useCasesCounter, tutorialsCounter, videosCounter };
+    return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger };
 }
 
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {
