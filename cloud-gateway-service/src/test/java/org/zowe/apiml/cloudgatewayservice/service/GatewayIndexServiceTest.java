@@ -41,6 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService.METADATA_APIML_ID_KEY;
@@ -159,7 +160,17 @@ class GatewayIndexServiceTest {
         }
 
         @Test
-        void shouldSkipCustomSslContextIfPasswordNotDefined() {
+        void shouldNotUseDefaultWebClientWhenCustomContextIdProvided() {
+            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD);
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                    .verifyComplete();
+
+            verifyNoInteractions(webClient);
+        }
+
+        @Test
+        void shouldSkipCustomSslContextCreationIfPasswordNotDefined() {
 
             gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, null);
 
@@ -169,17 +180,7 @@ class GatewayIndexServiceTest {
         }
 
         @Test
-        void shouldNotUseDefaultWebClient() {
-            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD);
-
-            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
-                    .verifyComplete();
-
-            verifyNoMoreInteractions(webClient);
-        }
-
-        @Test
-        void shouldCloneDefaultWebClientBeanWhenCustomSslContextIsNotProvided() {
+        void shouldUseDefaultWebClientWhenCustomSslContextIsNotProvided() {
             gatewayIndexService = new GatewayIndexService(webClient, 60, null, null);
 
             StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
@@ -187,5 +188,6 @@ class GatewayIndexServiceTest {
 
             verify(webClient).mutate();
         }
+
     }
 }
