@@ -39,7 +39,6 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 
@@ -247,9 +246,10 @@ public class ValidateAPIControllerTest {
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
             when(verificationOnboardService.findSwaggerUrl(mockMetadata)).thenReturn(Optional.of("a"));
             when(gatewayClient.getGatewayConfigProperties()).thenReturn(GatewayConfigProperties.builder().build());
+            when(verificationOnboardService.supportsSSO(mockMetadata)).thenReturn(true);
 
             when(verificationOnboardService.getSwagger("a")).thenReturn(new String(Files.readAllBytes(mockSwaggerFile.getAbsoluteFile().toPath())));
-            when(verificationOnboardService.testEndpointsByCalling(any(), eq(false))).thenReturn(new ArrayList<>());
+            when(verificationOnboardService.testEndpointsByCalling(any())).thenReturn(new ArrayList<>());
             when(verificationOnboardService.getProblemsWithEndpointUrls(any())).thenReturn(new ArrayList<>());
 
             result = validateAPIController.checkConformance(serviceId);

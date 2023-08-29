@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -36,7 +37,6 @@ public class ValidateAPIController {
     private static final int MAXIMUM_SERVICE_ID_LENGTH = 64;
     private static final String INVALID_SERVICE_ID_REGEX_PATTERN = "[^a-z0-9]";
 
-
     private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
     private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
     private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
@@ -48,11 +48,8 @@ public class ValidateAPIController {
 
 
     private final MessageService messageService;
-
     private final VerificationOnboardService verificationOnboardService;
-
     private final DiscoveryClient discoveryClient;
-
     private final GatewayClient gatewayClient;
 
 
@@ -118,15 +115,16 @@ public class ValidateAPIController {
         AbstractSwaggerValidator swaggerParser;
         swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
 
-
-        boolean serviceUsesSSO = verificationOnboardService.supportsSSO(metadata);
+        if (!verificationOnboardService.supportsSSO(metadata)) {
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, "Service doesn't claim to support SSO in its metadata, flag should be set to true for " + EurekaMetadataDefinition.AUTHENTICATION_SSO);
+        }
 
         List<String> parserResponses = swaggerParser.getMessages();
         if (parserResponses != null) foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, parserResponses);
 
         Set<Endpoint> getMethodEndpoints = swaggerParser.getAllEndpoints();
         if (!getMethodEndpoints.isEmpty())
-            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints, serviceUsesSSO));
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints));
 
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }

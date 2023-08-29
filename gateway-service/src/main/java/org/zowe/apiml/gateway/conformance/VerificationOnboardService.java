@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 
@@ -84,34 +85,34 @@ public class VerificationOnboardService {
      * @return Swagger as string
      */
     public String getSwagger(String swaggerUrl) {
-        String response;
-        response = restTemplate.getForEntity(swaggerUrl, String.class).getBody();
+        String authenticationCookie = getAuthenticationCookie();
+        HttpHeaders headersSSO = new HttpHeaders();
+        headersSSO.setContentType(MediaType.APPLICATION_JSON);
+        headersSSO.add("Cookie", "apimlAuthenticationToken=" + authenticationCookie);
+        HttpEntity<Object> requestSSO = new HttpEntity<>(headersSSO);
+        String response = restTemplate.exchange(swaggerUrl, HttpMethod.GET, requestSSO, String.class).getBody();
+        authenticationService.invalidateJwtToken(authenticationCookie, true);
         return response;
     }
 
     /**
      * Checks if endpoints can be called and return documented responses
      *
-     * @param getEndpoints   GET endpoints to check
-     * @param serviceUsesSSO flag describing if a service allows for SSO
+     * @param getEndpoints GET endpoints to check
      * @return List of problems
      */
-    public List<String> testEndpointsByCalling(Set<Endpoint> getEndpoints, boolean serviceUsesSSO) {
+    public List<String> testEndpointsByCalling(Set<Endpoint> getEndpoints) {
         ArrayList<String> result = new ArrayList<>();
-        HttpEntity<String> requestSSO = null;
 
-
-        if (serviceUsesSSO) {
-            String ssoCookie = getSsoCookie();
-            if (!isCookieAuthenticated(ssoCookie)) {
-                result.add("Did not verify if SSO is functional, could not generate a valid JWT token.");
-            }
-
-            HttpHeaders headersSSO = new HttpHeaders();
-            headersSSO.setContentType(MediaType.APPLICATION_JSON);
-            headersSSO.add("Cookie", "apimlAuthenticationToken=" + ssoCookie);
-            requestSSO = new HttpEntity<>(headersSSO);
+        String ssoCookie = getAuthenticationCookie();
+        if (!isCookieAuthenticated(ssoCookie)) {
+            result.add("Did not verify if SSO is functional, could not generate a valid JWT token.");
         }
+
+        HttpHeaders headersSSO = new HttpHeaders();
+        headersSSO.setContentType(MediaType.APPLICATION_JSON);
+        headersSSO.add("Cookie", "apimlAuthenticationToken=" + ssoCookie);
+        HttpEntity<String> requestSSO = new HttpEntity<>(headersSSO);
 
         HttpHeaders headersNoSSO = new HttpHeaders();
         headersNoSSO.setContentType(MediaType.APPLICATION_JSON);
@@ -127,18 +128,14 @@ public class VerificationOnboardService {
                 // replaces parameters in {} in query
                 String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
 
-
-                if (serviceUsesSSO) {
-                    ResponseEntity<String> responseWithSSO = getResponse(requestSSO, method, url);
-                    result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, true));
-                }
+                ResponseEntity<String> responseWithSSO = getResponse(requestSSO, method, url);
+                result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, true));
 
                 ResponseEntity<String> responseNoSSO = getResponse(requestNoSSO, method, url);
                 result.addAll(fromResponseReturnFoundProblems(responseNoSSO, endpoint, method, false));
-
             }
         }
-
+        authenticationService.invalidateJwtToken(ssoCookie, true);
         return result;
     }
 
@@ -185,14 +182,13 @@ public class VerificationOnboardService {
     }
 
 
-    private String getSsoCookie() {
-
+    private String getAuthenticationCookie() {
         return tokenCreationService.createJwtTokenWithoutCredentials("validate");
     }
 
     public boolean supportsSSO(Map<String, String> metadata) {
-        if (metadata.containsKey("apiml.authentication.sso")) {
-            return metadata.get("apiml.authentication.sso").equals("true");
+        if (metadata.containsKey(EurekaMetadataDefinition.AUTHENTICATION_SSO)) {
+            return metadata.get(EurekaMetadataDefinition.AUTHENTICATION_SSO).equals("true");
         }
         return false;
     }
