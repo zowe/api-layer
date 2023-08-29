@@ -112,6 +112,7 @@ body {
         align-items: center;
         max-width: 368px;
         width: var( --sideNavWidth );
+        min-height: 100dvh;
         min-width: var( --sideNavWidth );
         padding: var( --spaceSmall ) var( --spaceSmaller ) var( --spaceSmall ) var( --spaceSmall );
         position: relative;
