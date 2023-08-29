@@ -30,7 +30,7 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
 
     public List<String> getMessages() {
         ArrayList<String> result = new ArrayList<>();
-        for (String message : swagger.getMessages()){
+        for (String message : swagger.getMessages()) {
             result.add("Problem with swagger documentation: " + message);
         }
         return result;

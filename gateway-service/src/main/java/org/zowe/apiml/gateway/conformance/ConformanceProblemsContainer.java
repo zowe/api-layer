@@ -42,7 +42,7 @@ public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
             return;
         }
         for (String value : values) {
-                this.get(key).add(value);
+            this.get(key).add(value);
         }
     }
 

@@ -56,8 +56,6 @@ public class ValidateAPIController {
     private final GatewayClient gatewayClient;
 
 
-
-
     /**
      * Accepts serviceID and checks conformance criteria
      *
@@ -74,8 +72,6 @@ public class ValidateAPIController {
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
-
-
 
 
         try {
@@ -111,7 +107,6 @@ public class ValidateAPIController {
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
-
 
 
     private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl) throws ValidationException {
