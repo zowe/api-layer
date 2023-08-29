@@ -84,25 +84,11 @@
 
     .MuiSvgIcon-root {
       color: var(--text20);
-      // position: relative;
       left: var( --spaceSmaller );
-      // margin-top: 0px;
-      // margin-left: 156px;
     }
 
     .MuiSvgIcon-root.clear-text-search {
       color: var( --link20 );
-    }
-
-    /* For Firefox */
-    @-moz-document url-prefix() {
-      .MuiSvgIcon-root {
-        // margin-left: 130px;
-      }
-
-      #search #search-icon {
-        // margin-left: 130px;
-      }
     }
 
     .MuiInputBase-input {

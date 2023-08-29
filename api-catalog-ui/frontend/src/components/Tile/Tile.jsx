@@ -103,7 +103,7 @@ export default class Tile extends Component {
                                 </Typography>
                                 <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
                                 <Typography
-                                    className="fmedia-labels"
+                                    className="media-labels"
                                     id="videos-counter"
                                     size="medium"
                                     variant="outlined"
