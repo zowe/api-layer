@@ -61,6 +61,26 @@ describe('>>> Util Functions tests', () => {
         });
     });
 
+    it('should check for swagger when not default one available', () => {
+        const service = {
+            id: 'service',
+            useCases: ['usecase1', 'usecase2'],
+            tutorials: [],
+            videos: [],
+            apis: {
+                'org.zowe v1': {
+                    swaggerUrl: 'swagger',
+                },
+            },
+        };
+        expect(countAdditionalContents(service)).toEqual({
+            hasSwagger: true,
+            tutorialsCounter: 0,
+            useCasesCounter: 2,
+            videosCounter: 0,
+        });
+    });
+
     it('should apply UI changes', async () => {
         const uiConfig = {
             logo: '/path/img.png',
