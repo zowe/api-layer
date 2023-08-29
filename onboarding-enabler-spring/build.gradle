@@ -27,7 +27,6 @@ dependencies {
     implementation libs.spring.expression
     implementation libs.spring.web
     implementation libs.spring.webmvc
-    implementation libs.spring.cloud.commons
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
