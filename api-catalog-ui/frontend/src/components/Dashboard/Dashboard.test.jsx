@@ -249,4 +249,23 @@ describe('>>> Dashboard component tests', () => {
         expect(dashboardHeader.length).toEqual(1);
         expect(apiHeading.length).toEqual(1);
     });
+
+    it('should display loading div', () => {
+        process.env.REACT_APP_API_PORTAL = false;
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                isLoading="true"
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                closeAlert={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
+        );
+        const button = wrapper.find('.loadingDiv');
+        expect(button.length).toEqual(1);
+    });
 });
