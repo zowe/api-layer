@@ -15,8 +15,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.HttpsConfigError;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowableOfType;
+import static org.zowe.apiml.security.HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED;
 
 class WebClientHelperTest {
     static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
@@ -27,18 +29,20 @@ class WebClientHelperTest {
     class WhenLoading {
         @Test
         void givenWrongPath_thenThrowException() {
-            assertThrows(IllegalArgumentException.class, () -> WebClientHelper.load("../wrong/path", PASSWORD));
+            assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> WebClientHelper.load("../wrong/path", PASSWORD));
         }
 
         @Test
         void givenCorrectPath_thenLoadSSLContext() {
             final SslContext sslContext = WebClientHelper.load(KEYSTORE_PATH, PASSWORD);
-            assertNotNull(sslContext);
+            assertThat(sslContext).isNotNull();
         }
 
         @Test
-        void givenWrongPassword_thenExit() {
-            assertThrows(HttpsConfigError.class, () -> WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", WRONG_PASSWORD));
+        void givenWrongPassword_httpConfigErrorIsExpected() {
+            HttpsConfigError error = catchThrowableOfType(() -> WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", WRONG_PASSWORD), HttpsConfigError.class);
+            assertThat(error.getCode()).isEqualTo(HTTP_CLIENT_INITIALIZATION_FAILED);
+            assertThat(error.getConfig()).isNull();
         }
     }
 }
