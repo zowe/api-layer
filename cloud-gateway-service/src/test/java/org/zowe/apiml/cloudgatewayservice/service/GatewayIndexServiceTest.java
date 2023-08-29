@@ -138,7 +138,7 @@ class GatewayIndexServiceTest {
         }
 
         @Test
-        void shouldCloneWebClientBean(){
+        void shouldCloneWebClientBean() {
 
             StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
                     .expectNext(asList(serviceInfoA, serviceInfoB))
