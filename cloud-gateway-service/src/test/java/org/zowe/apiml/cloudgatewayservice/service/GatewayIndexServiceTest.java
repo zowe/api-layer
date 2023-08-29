@@ -138,16 +138,6 @@ class GatewayIndexServiceTest {
         }
 
         @Test
-        void shouldCloneWebClientBean() {
-
-            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
-                    .expectNext(asList(serviceInfoA, serviceInfoB))
-                    .verifyComplete();
-
-            verify(webClient).mutate();
-        }
-
-        @Test
         void shouldReturnEmptyMapForNotExistingApimlId() {
             assertThat(gatewayIndexService.listRegistry("unknownId", null)).isEmpty();
             assertThat(gatewayIndexService.listRegistry(null, "unknownApiId")).isEmpty();
@@ -169,13 +159,33 @@ class GatewayIndexServiceTest {
         }
 
         @Test
-        void shouldSkipIfPasswordNotDefined() {
+        void shouldSkipCustomSslContextIfPasswordNotDefined() {
 
             gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, null);
 
             SslContext customClientSslContext = (SslContext) ReflectionTestUtils.getField(gatewayIndexService, "customClientSslContext");
 
             assertThat(customClientSslContext).isNull();
+        }
+
+        @Test
+        void shouldNotUseDefaultWebClient() {
+            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD);
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                    .verifyComplete();
+
+            verifyNoMoreInteractions(webClient);
+        }
+
+        @Test
+        void shouldCloneDefaultWebClientBeanWhenCustomSslContextIsNotProvided() {
+            gatewayIndexService = new GatewayIndexService(webClient, 60, null, null);
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                    .verifyComplete();
+
+            verify(webClient).mutate();
         }
     }
 }
