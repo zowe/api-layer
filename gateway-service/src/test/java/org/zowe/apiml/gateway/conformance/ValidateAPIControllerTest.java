@@ -21,11 +21,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -39,6 +41,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 
@@ -61,6 +64,8 @@ public class ValidateAPIControllerTest {
 
     @Mock
     private GatewayClient gatewayClient;
+    @Mock
+    private AbstractSwaggerValidator swaggerValidator;
 
     ResponseEntity<String> result;
 
@@ -238,6 +243,7 @@ public class ValidateAPIControllerTest {
             String serviceId = "testservice";
             HashMap<String, String> mockMetadata = new HashMap<>();
             mockMetadata.put("swaggerUrl", "https://sample.swagger.url");
+            mockMetadata.put(EurekaMetadataDefinition.AUTHENTICATION_SSO, "true");
 
             File mockSwaggerFile = new File(mockSwaggerFileLocation);
 
@@ -246,15 +252,20 @@ public class ValidateAPIControllerTest {
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
             when(verificationOnboardService.findSwaggerUrl(mockMetadata)).thenReturn(Optional.of("a"));
             when(gatewayClient.getGatewayConfigProperties()).thenReturn(GatewayConfigProperties.builder().build());
-            when(verificationOnboardService.supportsSSO(mockMetadata)).thenReturn(true);
+
+            when(swaggerValidator.getMessages()).thenReturn(new ArrayList<>());
+            when(swaggerValidator.getAllEndpoints()).thenReturn(new HashSet<>(Collections.singletonList(new Endpoint(null, null, null, null))));
+            when(swaggerValidator.getProblemsWithEndpointUrls()).thenReturn(new ArrayList<>());
 
             when(verificationOnboardService.getSwagger("a")).thenReturn(new String(Files.readAllBytes(mockSwaggerFile.getAbsoluteFile().toPath())));
+
             when(verificationOnboardService.testEndpointsByCalling(any())).thenReturn(new ArrayList<>());
-            when(verificationOnboardService.getProblemsWithEndpointUrls(any())).thenReturn(new ArrayList<>());
 
-            result = validateAPIController.checkConformance(serviceId);
-
-            assertEquals(HttpStatus.OK, result.getStatusCode());
+            try (MockedStatic<ValidatorFactory> validatorFactoryMockedStatic = mockStatic(ValidatorFactory.class)) {
+                validatorFactoryMockedStatic.when(() -> ValidatorFactory.parseSwagger(any(), any(), any(), any())).thenReturn(swaggerValidator);
+                result = validateAPIController.checkConformance(serviceId);
+                assertEquals(HttpStatus.OK, result.getStatusCode());
+            }
         }
 
         @Test

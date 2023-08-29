@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.conformance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.zowe.apiml.message.api.ApiMessage;
 
@@ -22,6 +23,7 @@ import java.util.*;
 /**
  * Java class that is used to keep track of found conformance issues
  */
+@EqualsAndHashCode(callSuper = true)
 public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
 
 
@@ -70,17 +72,6 @@ public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
     public boolean isEmpty() {
         return size() == 0;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
 
     @Override
     public String toString() {

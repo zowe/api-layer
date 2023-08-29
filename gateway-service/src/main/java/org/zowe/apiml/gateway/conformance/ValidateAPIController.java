@@ -99,6 +99,7 @@ public class ValidateAPIController {
             return generateBadRequestResponseEntity(e.getKey(), foundNonConformanceIssues);
         }
 
+
         if (!foundNonConformanceIssues.isEmpty())
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
 
@@ -115,7 +116,7 @@ public class ValidateAPIController {
         AbstractSwaggerValidator swaggerParser;
         swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
 
-        if (!verificationOnboardService.supportsSSO(metadata)) {
+        if (!VerificationOnboardService.supportsSSO(metadata)) {
             foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, "Service doesn't claim to support SSO in its metadata, flag should be set to true for " + EurekaMetadataDefinition.AUTHENTICATION_SSO);
         }
 
@@ -126,7 +127,7 @@ public class ValidateAPIController {
         if (!getMethodEndpoints.isEmpty())
             foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints));
 
-        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
+        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, VerificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }
 
 

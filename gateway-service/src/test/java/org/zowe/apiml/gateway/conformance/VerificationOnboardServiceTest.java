@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -52,6 +53,8 @@ class VerificationOnboardServiceTest {
 
     @Mock
     private TokenAuthentication tokenAuthentication;
+    @Mock
+    private ResponseEntity<String> responseEntity;
 
     @Test
     void whenCheckingOnboardedService_thenCorrectResults() {
@@ -59,6 +62,7 @@ class VerificationOnboardServiceTest {
         assertFalse(verificationOnboardService.checkOnboarding("Test"));
         assertTrue(verificationOnboardService.checkOnboarding("OnboardedService"));
     }
+
 
     @Test
     void whenRetrievingSwaggerUrl_thenCorrectlyRetrieves() {
@@ -70,20 +74,54 @@ class VerificationOnboardServiceTest {
         assertEquals(swaggerUrl, result.get());
     }
 
+
     @Test
-    void whenRetrievingNullSwaggerUrl_thenEmptyMetadata() {
-        final String swaggerUrl = null;
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
-        assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
+    void whenGetSwagger_thenOk() {
+        when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("mockCookie");
+        when(authenticationService.invalidateJwtToken("mockCookie", true)).thenReturn(true);
+        when(restTemplate.exchange(
+            anyString(),
+            any(HttpMethod.class),
+            any(),
+            ArgumentMatchers.<Class<String>>any()))
+            .thenReturn(responseEntity);
+        when(responseEntity.getBody()).thenReturn("returned");
+
+        assertEquals("returned", verificationOnboardService.getSwagger("mock"));
     }
 
 
-    @Test
-    void whenRetrievingEmptySwaggerUrl_thenEmptyMetadata() {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.api-v2.swaggerUrl", null);
-        assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
+    @Nested
+    class GivenMetadata {
+        @Test
+        void whenRetrievingNullSwaggerUrl_thenEmptyMetadata() {
+            final String swaggerUrl = null;
+            HashMap<String, String> metadata = new HashMap<>();
+            metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
+            assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
+        }
+
+
+        @Test
+        void whenRetrievingEmptySwaggerUrl_thenEmptyMetadata() {
+            HashMap<String, String> metadata = new HashMap<>();
+            metadata.put("apiml.apiInfo.api-v2.swaggerUrl", null);
+            assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
+        }
+
+        @Test
+        void whenSwaggerUrlNotInMetadata_thenReturnsNull() {
+            Map<String, String> mockMetadata = new HashMap<>();
+            mockMetadata.put("", null);
+            assertFalse(verificationOnboardService.findSwaggerUrl(mockMetadata).isPresent());
+        }
+
+        @Test
+        void whenDoesntSupportSSO_thenFalse() {
+            Map<String, String> mockMetadata = new HashMap<>();
+            mockMetadata.put("swaggerUrl", "x");
+            assertFalse(VerificationOnboardService.supportsSSO(mockMetadata));
+        }
     }
 
 

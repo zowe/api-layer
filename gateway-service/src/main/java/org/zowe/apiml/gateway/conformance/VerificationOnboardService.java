@@ -172,7 +172,7 @@ public class VerificationOnboardService {
         return result;
     }
 
-    public List<String> getProblemsWithEndpointUrls(AbstractSwaggerValidator swaggerParser) {
+    public static List<String> getProblemsWithEndpointUrls(AbstractSwaggerValidator swaggerParser) {
         return swaggerParser.getProblemsWithEndpointUrls();
     }
 
@@ -186,7 +186,7 @@ public class VerificationOnboardService {
         return tokenCreationService.createJwtTokenWithoutCredentials("validate");
     }
 
-    public boolean supportsSSO(Map<String, String> metadata) {
+    public static boolean supportsSSO(Map<String, String> metadata) {
         if (metadata.containsKey(EurekaMetadataDefinition.AUTHENTICATION_SSO)) {
             return metadata.get(EurekaMetadataDefinition.AUTHENTICATION_SSO).equals("true");
         }
