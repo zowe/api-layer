@@ -150,12 +150,15 @@ export default class Dashboard extends Component {
                             </div>
                             {apiPortalEnabled && (
                                 <div className="dashboard-grid-header">
+                                    <h4 className="description-header">Swagger</h4>
                                     <h4 className="description-header">Use Cases</h4>
                                     <h4 className="description-header">Tutorials</h4>
                                     <h4 className="description-header">Videos</h4>
                                 </div>
                             )}
                             <hr id="separator2" />
+                            {isLoading && <div className="loadingDiv" />}
+
                             {hasTiles &&
                                 tiles.map((tile) =>
                                     tile.services.map((service) => (

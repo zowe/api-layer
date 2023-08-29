@@ -49,7 +49,7 @@ body {
     .MuiDialogTitle-root {
       padding: var( --spaceSmaller ) var( --spaceMedium );
       color: var(--controlText15);
-      
+
       h2 {
         margin: 0px;
       }
@@ -112,6 +112,8 @@ body {
         align-items: center;
         max-width: 368px;
         width: var( --sideNavWidth );
+        min-height: 100dvh;
+        min-width: var( --sideNavWidth );
         padding: var( --spaceSmall ) var( --spaceSmaller ) var( --spaceSmall ) var( --spaceSmall );
         position: relative;
       }
@@ -156,7 +158,7 @@ body {
       color: var( --link10 );
 
       &:not(:disabled):hover {
-        color: var( --link10Hover );
+        color: var( --linkHover );
         cursor: pointer;
       }
     }
@@ -184,53 +186,61 @@ body {
       margin-right: var( --spaceSmaller );
     }
   }
-  button {
-    &.MuiIconButton-root,
-    &.MuiButtonBase-root,
-    &.btn,
-    &.tablinks {
-      padding: var( --spaceSmallest ) var( --spaceSmaller );
-      font-size: var( --fontSmall );
-      border: 1px solid var( --controlText15 );
-      color: var( --controlText15 );
-      border-radius: var( --borderRadius1 );
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      background: var( --surface05 );
 
-      &:hover {
-        background: var( --surface15 );
+  #service-title {
+      font-family: var( --fontFamily00 );
+      font-size: var(--spaceLarger);
+      font-weight: var( --fontWeightBold);
+      line-height: 28px;
+      color: var( --text10 );
+  }
+  // button {
+  &.MuiIconButton-root,
+  &.MuiButtonBase-root,
+  &.btn,
+  &.tablinks {
+    padding: var( --spaceSmallest ) var( --spaceSmaller );
+    font-size: var( --fontSmall );
+    border: 1px solid var( --controlText15 );
+    color: var( --controlText15 );
+    border-radius: var( --borderRadius1 );
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background: var( --surface05 );
+
+    &:hover {
+      background: var( --surface15 );
+    }
+
+    svg {
+      fill: var( --controlText15 );
+
+      &:last-child {
+        margin-left: var( --spaceSmallest );
       }
-
-      svg {
-        fill: var( --controlText15 );
-
-        &:last-child {
-          margin-left: var( --spaceSmallest );
-        }
-        &:first-child {
-          margin-right: var( --spaceSmallest );
-        }
-      }
-
-      &.MuiButton-containedPrimary,
-      &#diff-button {
-        background-color: var( --control00 );
-        color: var( --text100 );
-        border-color: var( --control00 );
-      }
-      &.Mui-disabled,
-      &:disabled {
-        background-color: var( --unknown10 ) !important;
-        color: var( --controlText15Disabled ) !important;
-        border-color: var( --controlText15Disabled ) !important;
+      &:first-child {
+        margin-right: var( --spaceSmallest );
       }
     }
-    &.MuiButton-outlined {
-      padding: 0px var( --spaceSmall );
+
+    &.MuiButton-containedPrimary,
+    &#diff-button {
+      background-color: var( --control00 );
+      color: var( --text100 );
+      border-color: var( --control00 );
     }
-  }//end button
+    &.Mui-disabled,
+    &:disabled {
+      background-color: var( --unknown10 ) !important;
+      color: var( --controlText15Disabled ) !important;
+      border-color: var( --controlText15Disabled ) !important;
+    }
+  }
+  &.MuiButton-outlined {
+    padding: 0px var( --spaceSmall );
+  }
+  // }//end button
 
   select, .MuiSelect-select, .MuiSelect-select.MuiSelect-select {
     font-size: var( --fontSmall );

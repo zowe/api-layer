@@ -22,7 +22,7 @@ body {
     align-items: center;
 
     &, &:last-child {
-      padding: var( --spaceMedium );
+      padding: var( --spaceLarge );
     }
     > * {
       margin-left: var( --spaceLarge );
@@ -86,6 +86,10 @@ body {
     #tutorials-counter {
         color: #9B51E0;
         margin-right: 5px;
+    }
+    #swagger {
+      margin-right: 130px;
+
     }
 }
 

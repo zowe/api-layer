@@ -48,11 +48,37 @@ describe('>>> Util Functions tests', () => {
     it('should count medias', () => {
         const service = {
             id: 'service',
+            hasSwagger: false,
             useCases: ['usecase1', 'usecase2'],
             tutorials: [],
             videos: [],
         };
-        expect(countAdditionalContents(service)).toEqual({ tutorialsCounter: 0, useCasesCounter: 2, videosCounter: 0 });
+        expect(countAdditionalContents(service)).toEqual({
+            hasSwagger: false,
+            tutorialsCounter: 0,
+            useCasesCounter: 2,
+            videosCounter: 0,
+        });
+    });
+
+    it('should check for swagger when not default one available', () => {
+        const service = {
+            id: 'service',
+            useCases: ['usecase1', 'usecase2'],
+            tutorials: [],
+            videos: [],
+            apis: {
+                'org.zowe v1': {
+                    swaggerUrl: 'swagger',
+                },
+            },
+        };
+        expect(countAdditionalContents(service)).toEqual({
+            hasSwagger: true,
+            tutorialsCounter: 0,
+            useCasesCounter: 2,
+            videosCounter: 0,
+        });
     });
 
     it('should apply UI changes', async () => {
