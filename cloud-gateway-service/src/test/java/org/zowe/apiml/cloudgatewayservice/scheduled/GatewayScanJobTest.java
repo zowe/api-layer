@@ -99,10 +99,12 @@ class GatewayScanJobTest {
         ServiceInfo serviceInfo = mock(ServiceInfo.class);
         when(gatewayIndexerService.listRegistry(null, null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
         when(gatewayIndexerService.listRegistry("testApimlId", null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
+        when(gatewayIndexerService.listRegistry(null, "bcm.sysview")).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
 
         gatewayScanJob.listCaches();
 
         verify(gatewayIndexerService).listRegistry(null, null);
         verify(gatewayIndexerService).listRegistry("testApimlId", null);
+        verify(gatewayIndexerService).listRegistry(null, "bcm.sysview");
     }
 }
