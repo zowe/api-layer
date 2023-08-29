@@ -229,4 +229,43 @@ describe('>>> Dashboard component tests', () => {
         );
         expect(screen.getByText('Your mainframe password was successfully changed.')).toBeInTheDocument();
     });
+
+    it('should display the dashboard grid header and API heading when portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const dashboard = shallow(
+            <Dashboard
+                tiles={[]}
+                fetchTilesStart={jest.fn()}
+                clearService={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clear={jest.fn()}
+                fetchTilesFailed={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
+        );
+        const dashboardHeader = dashboard.find('.dashboard-grid-header');
+        const apiHeading = dashboard.find('.api-heading');
+        expect(dashboardHeader.length).toEqual(1);
+        expect(apiHeading.length).toEqual(1);
+    });
+
+    it('should display loading div', () => {
+        process.env.REACT_APP_API_PORTAL = false;
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                isLoading="true"
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                closeAlert={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
+        );
+        const button = wrapper.find('.loadingDiv');
+        expect(button.length).toEqual(1);
+    });
 });
