@@ -31,11 +31,23 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
+/**
+ * Utility class for the custom Netty {@link SslContext} creation.
+ * Does not support keyring because client keystore override mainly used in development mode and not supposed be run on the Mainframe.
+ */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WebClientHelper {
     private static final ApimlLogger apimlLog = ApimlLogger.of(WebClientHelper.class, YamlMessageServiceInstance.getInstance());
 
+    /**
+     * Load {@link SslContext} from the specified keystore
+     *
+     * @param keystorePath path to the keystore file
+     * @param password     keystore password
+     * @throws IllegalArgumentException if keystore file does not exist.
+     * @throws HttpsConfigError         if any error occur during the context creation.
+     */
     public static SslContext load(String keystorePath, char[] password) {
         File keyStoreFile = new File(keystorePath);
         if (keyStoreFile.exists()) {
@@ -46,7 +58,7 @@ public class WebClientHelper {
             } catch (Exception e) {
                 apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                    HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED);
+                        HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED);
             }
         } else {
             throw new IllegalArgumentException("Not existing file: " + keystorePath);
