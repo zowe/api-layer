@@ -7,6 +7,23 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+function checkForSwagger(service, hasSwagger) {
+    const serviceAPIKeys = Object.keys(service.apis);
+    serviceAPIKeys.forEach((api) => {
+        // Statically defined api service has a swagger url for default, but details page doesn't like that.
+        // So filter it out for the moment
+        if (api !== 'default') {
+            const apiObject = service.apis[api];
+            if (apiObject?.swaggerUrl) {
+                // eslint-disable-next-line no-param-reassign
+                hasSwagger = true;
+            }
+        }
+    });
+    return hasSwagger;
+}
+
 /**
  * Counts the additional contents
  * @param service
@@ -28,17 +45,7 @@ export default function countAdditionalContents(service) {
             videosCounter = service.videos.length;
         }
         if (service.apis) {
-            const serviceAPIKeys = Object.keys(service.apis);
-            serviceAPIKeys.forEach((api) => {
-                // Statically defined api service has a swagger url for default, but details page doesn't like that.
-                // So filter it out for the moment
-                if (api !== 'default') {
-                    const apiObject = service.apis[api];
-                    if (apiObject !== null && apiObject.swaggerUrl !== null) {
-                        hasSwagger = true;
-                    }
-                }
-            });
+            hasSwagger = checkForSwagger(service, hasSwagger);
         }
     }
     return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger };
