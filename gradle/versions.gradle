@@ -33,7 +33,7 @@ dependencyResolutionManagement {
             version('commonsCodec', '1.15')
             version('commonsConfiguration', '1.10')
             version('commonsLang3', '3.12.0')
-            version('commonsLogging', '1.1.3')
+            version('commonsLogging', '1.2')
             version('commonsText', '1.10.0')
             version('commonsIo') {
                 // older versions are vulnerable to CVE-2021-29425
