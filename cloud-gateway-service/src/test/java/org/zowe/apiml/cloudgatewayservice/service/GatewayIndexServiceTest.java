@@ -26,6 +26,7 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.product.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 

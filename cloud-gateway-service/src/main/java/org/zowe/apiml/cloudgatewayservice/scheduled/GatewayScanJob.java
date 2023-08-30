@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
-import org.zowe.apiml.cloudgatewayservice.service.ServiceInfo;
+import org.zowe.apiml.product.services.ServiceInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -79,7 +79,7 @@ public class GatewayScanJob {
 
         Map<String, List<ServiceInfo>> fullState = gatewayIndexerService.listRegistry(null, null);
 
-        log.debug("Cache having {} apimlId records", fullState.keySet().size());
+        log.warn("Cache having {} apimlId records", fullState.keySet().size());
         for (String apimlId : fullState.keySet()) {
             List<ServiceInfo> servicesInfo = gatewayIndexerService.listRegistry(apimlId, null).get(apimlId);
             log.debug("\t {}-{} : found {} external services", apimlId, apimlId, servicesInfo.size());

@@ -22,7 +22,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
-import org.zowe.apiml.cloudgatewayservice.service.ServiceInfo;
+import org.zowe.apiml.product.services.ServiceInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;

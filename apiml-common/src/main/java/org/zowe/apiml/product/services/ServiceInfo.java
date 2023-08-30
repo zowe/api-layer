@@ -12,9 +12,11 @@ package org.zowe.apiml.product.services;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.netflix.appinfo.InstanceInfo;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
@@ -24,6 +26,8 @@ import java.util.Map;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServiceInfo {
     private String serviceId;
@@ -33,6 +37,8 @@ public class ServiceInfo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Apiml {
         private List<ApiInfoExtended> apiInfo;
@@ -42,6 +48,8 @@ public class ServiceInfo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Instances {
         private InstanceInfo.InstanceStatus status;
@@ -57,6 +65,8 @@ public class ServiceInfo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Service {
         private String title;
@@ -67,6 +77,8 @@ public class ServiceInfo {
     @Data
     @SuperBuilder
     @EqualsAndHashCode(callSuper = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ApiInfoExtended extends ApiInfo {
         private String baseUrl;
