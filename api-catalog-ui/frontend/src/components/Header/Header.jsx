@@ -90,9 +90,11 @@ function Header(props) {
                         <img id="logo" alt="API Catalog" src={productImage} />
                     </div>
                 </Link>
-                <Typography id="product-title" variant="subtitle2">
-                    API Catalog
-                </Typography>
+                <Link href={dashboard}>
+                    <Typography id="product-title" variant="subtitle2">
+                        API Catalog
+                    </Typography>
+                </Link>
             </div>
             <div className="right-icons">
                 {docLink && docLink.length === 2 && (
