@@ -38,9 +38,9 @@ public class ValidateAPIController {
     private static final String INVALID_SERVICE_ID_REGEX_PATTERN = "[^a-z0-9]";
 
 
-    private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
-    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
-    private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
+    static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
+    static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
+    static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
 
     private static final String REGISTRATION_PROBLEMS = "Registration problems";
@@ -120,9 +120,9 @@ public class ValidateAPIController {
         List<String> parserResponses = swaggerParser.getMessages();
         if (parserResponses != null) foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, parserResponses);
 
-        Set<Endpoint> getMethodEndpoints = swaggerParser.getAllEndpoints();
-        if (!getMethodEndpoints.isEmpty())
-            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints, token));
+        Set<Endpoint> allEndpoints = swaggerParser.getAllEndpoints();
+        if (!allEndpoints.isEmpty())
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(allEndpoints, token));
 
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, VerificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }

@@ -18,6 +18,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 
 import java.util.*;
@@ -31,7 +32,7 @@ import java.util.*;
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
-
+    private final Providers providers;
     private final RestTemplate restTemplate;
     private final TokenCreationService tokenCreationService;
 
@@ -88,11 +89,22 @@ public class VerificationOnboardService {
     /**
      * Checks if endpoints can be called and return documented responses
      *
-     * @param getEndpoints              GET endpoints to check
+     * @param endpoints                 endpoints to check
      * @param passedAuthenticationToken Token used to call endpoints that support SSO
      * @return List of problems
      */
-    public List<String> testEndpointsByCalling(Set<Endpoint> getEndpoints, String passedAuthenticationToken) {
+    public List<String> testEndpointsByCalling(Set<Endpoint> endpoints, String passedAuthenticationToken) {
+        ArrayList<String> result = new ArrayList<>(checkEndpointsNoSSO(endpoints));
+        try {
+            result.addAll(checkEndpointsWithSSO(endpoints, passedAuthenticationToken));
+        } catch (ValidationException e) {
+            result.add(e.getMessage());
+        }
+
+        return result;
+    }
+
+    private List<String> checkEndpointsWithSSO(Set<Endpoint> endpoints, String passedAuthenticationToken) {
         ArrayList<String> result = new ArrayList<>();
 
         String ssoCookie = getAuthenticationCookie(passedAuthenticationToken);
@@ -102,32 +114,41 @@ public class VerificationOnboardService {
         headersSSO.add("Cookie", "apimlAuthenticationToken=" + ssoCookie);
         HttpEntity<String> requestSSO = new HttpEntity<>(headersSSO);
 
-        HttpHeaders headersNoSSO = new HttpHeaders();
-        headersNoSSO.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> requestNoSSO = new HttpEntity<>(headersNoSSO);
-
-        for (Endpoint endpoint : getEndpoints) {
+        for (Endpoint endpoint : endpoints) {
             for (HttpMethod method : endpoint.getHttpMethods()) {
-                checkEndpoint(endpoint, result, method, requestSSO, requestNoSSO);
+                checkEndpoint(endpoint, result, method, requestSSO, true);
             }
         }
         return result;
     }
 
-    private void checkEndpoint(Endpoint endpoint, ArrayList<String> result, HttpMethod method, HttpEntity<String> requestSSO, HttpEntity<String> requestNoSSO) {
+    private List<String> checkEndpointsNoSSO(Set<Endpoint> endpoints) {
+        ArrayList<String> result = new ArrayList<>();
+
+        HttpHeaders headersNoSSO = new HttpHeaders();
+        headersNoSSO.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> requestNoSSO = new HttpEntity<>(headersNoSSO);
+
+        for (Endpoint endpoint : endpoints) {
+            for (HttpMethod method : endpoint.getHttpMethods()) {
+                checkEndpoint(endpoint, result, method, requestNoSSO, false);
+            }
+        }
+        return result;
+    }
+
+    private void checkEndpoint(Endpoint endpoint, ArrayList<String> result, HttpMethod method, HttpEntity<String> request, boolean attemptWithSSO) {
         if (method == HttpMethod.DELETE) {
             return;
         }
 
         String urlFromSwagger = endpoint.getUrl();
-        // replaces parameters in {} in query
+        // replaces parameters in {} in query, so it can be called
+        // Example: transforms https://localhost:10010/discoverableclient/api/v1/pets/{id} to https://localhost:10010/discoverableclient/api/v1/pets/dummy
         String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
 
-        ResponseEntity<String> responseWithSSO = getResponse(requestSSO, method, url);
-        result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, true));
-
-        ResponseEntity<String> responseNoSSO = getResponse(requestNoSSO, method, url);
-        result.addAll(fromResponseReturnFoundProblems(responseNoSSO, endpoint, method, false));
+        ResponseEntity<String> responseWithSSO = getResponse(request, method, url);
+        result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, attemptWithSSO));
     }
 
     private ResponseEntity<String> getResponse(HttpEntity<String> request, HttpMethod method, String url) {
@@ -168,7 +189,9 @@ public class VerificationOnboardService {
 
 
     private String getAuthenticationCookie(String passedAuthenticationToken) {
+        final String message = "Cannot verify SSO functionality, apimlAuthenticationToken cookie wasn't provided and a passticket can't be generate with the zOSMF provider";
         if (passedAuthenticationToken.equals("dummy")) {
+            if (providers.isZosfmUsed()) throw new ValidationException(message, ValidateAPIController.NON_CONFORMANT_KEY);
             return tokenCreationService.createJwtTokenWithoutCredentials("validate");
         }
         return passedAuthenticationToken;

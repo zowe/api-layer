@@ -23,6 +23,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 
 import java.util.*;
@@ -49,6 +50,9 @@ class VerificationOnboardServiceTest {
 
     @Mock
     private ResponseEntity<String> responseEntity;
+
+    @Mock
+    private Providers providers;
 
     @Test
     void whenCheckingOnboardedService_thenCorrectResults() {
@@ -120,6 +124,7 @@ class VerificationOnboardServiceTest {
         @BeforeEach
         void setup() {
             when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("mockCookie");
+            when(providers.isZosfmUsed()).thenReturn(false);
         }
 
 
