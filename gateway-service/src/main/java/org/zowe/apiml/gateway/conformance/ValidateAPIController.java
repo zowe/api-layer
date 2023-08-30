@@ -64,7 +64,7 @@ public class ValidateAPIController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @HystrixCommand
-    public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
+    public ResponseEntity<String> checkConformance(@PathVariable String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
@@ -84,7 +84,7 @@ public class ValidateAPIController {
 
             Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
-            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl);
+            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl, authenticationToken);
         } catch (ValidationException e) {
             switch (e.getKey()) {
                 case WRONG_SERVICE_ID_KEY:
@@ -107,7 +107,7 @@ public class ValidateAPIController {
     }
 
 
-    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl) throws ValidationException {
+    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl, String token) throws ValidationException {
         if (!swaggerUrl.isPresent()) {
             throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
         }
@@ -125,11 +125,10 @@ public class ValidateAPIController {
 
         Set<Endpoint> getMethodEndpoints = swaggerParser.getAllEndpoints();
         if (!getMethodEndpoints.isEmpty())
-            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints));
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(getMethodEndpoints, token));
 
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, VerificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }
-
 
     /**
      * Mapping so the old endpoint keeps working.
@@ -139,11 +138,11 @@ public class ValidateAPIController {
      */
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand
-    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
+    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
         }
-        return checkConformance(serviceId);
+        return checkConformance(serviceId, authenticationToken);
     }
 
 

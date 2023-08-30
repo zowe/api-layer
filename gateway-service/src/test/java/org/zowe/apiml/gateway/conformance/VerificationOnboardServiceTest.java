@@ -23,9 +23,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.*;
 
@@ -48,11 +46,7 @@ class VerificationOnboardServiceTest {
     @Mock
     private TokenCreationService tokenCreationService;
 
-    @Mock
-    private AuthenticationService authenticationService;
 
-    @Mock
-    private TokenAuthentication tokenAuthentication;
     @Mock
     private ResponseEntity<String> responseEntity;
 
@@ -77,8 +71,6 @@ class VerificationOnboardServiceTest {
 
     @Test
     void whenGetSwagger_thenOk() {
-        when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("mockCookie");
-        when(authenticationService.invalidateJwtToken("mockCookie", true)).thenReturn(true);
         when(restTemplate.exchange(
             anyString(),
             any(HttpMethod.class),
@@ -130,9 +122,6 @@ class VerificationOnboardServiceTest {
         @BeforeEach
         void setup() {
             when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("mockCookie");
-            when(authenticationService.validateJwtToken("mockCookie")).thenReturn(tokenAuthentication);
-            when(tokenAuthentication.isAuthenticated()).thenReturn(true);
-            when(authenticationService.invalidateJwtToken("mockCookie", true)).thenReturn(true);
         }
 
 
@@ -150,7 +139,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, "dummy");
             assertTrue(result.get(0).contains("could not be located, attempting to call it through gateway gives the ZWEAM104E"));
         }
 
@@ -169,7 +158,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, "dummy");
 
             assertTrue(result.isEmpty());
 
@@ -189,7 +178,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, "dummy");
 
             assertTrue(result.isEmpty());
 
@@ -210,7 +199,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, "dummy");
             assertTrue(result.get(0).contains("returns undocumented"));
         }
     }

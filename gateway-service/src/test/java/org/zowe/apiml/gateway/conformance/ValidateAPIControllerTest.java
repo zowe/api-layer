@@ -41,6 +41,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -106,7 +107,7 @@ public class ValidateAPIControllerTest {
         void whenServiceIdTooLong_thenNonconformant() {
             when(messageService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved")).thenReturn(NON_CONFORMANT_MESSAGE);
             String testString = "qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop";
-            result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString, "dummy");
             assertNotNull(result.getBody());
             assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
         }
@@ -115,7 +116,7 @@ public class ValidateAPIControllerTest {
         void whenServiceIdTooLongAndSymbols_thenNonconformant() {
             when(messageService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved")).thenReturn(NON_CONFORMANT_MESSAGE);
             String testString = "qwertyuiopqwertyuiop--qwertyuiopqwertyuio-pqwertyuio-pqwertyuiopqwertyuiop";
-            result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString, "dummy");
             assertNotNull(result.getBody());
             assertTrue(result.getBody().contains("The serviceId is longer than 64 characters"));
             assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
@@ -126,7 +127,7 @@ public class ValidateAPIControllerTest {
         @ValueSource(strings = {"test-test", "TEST", "Test"})
         void whenServiceIdNonAlphaNumeric_thenNonconformant(String testString) {
             when(messageService.createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved")).thenReturn(NON_CONFORMANT_MESSAGE);
-            result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString, "dummy");
             assertNotNull(result.getBody());
             assertTrue(result.getBody().contains("The serviceId contains symbols or upper case letters"));
         }
@@ -135,7 +136,7 @@ public class ValidateAPIControllerTest {
         void notInvalidTextFormat() {
             when(messageService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved")).thenReturn(WRONG_SERVICE_ID_MESSAGE);
             String testString = "test";
-            result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString, "dummy");
             assertNotNull(result.getBody());
             assertFalse(result.getBody().contains("Message service is requested to create a message with an invalid text format"));
         }
@@ -162,7 +163,7 @@ public class ValidateAPIControllerTest {
         void whenServiceNotOboarded_thenError() {
             when(messageService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved")).thenReturn(WRONG_SERVICE_ID_MESSAGE);
             String testString = "notonboarded";
-            result = validateAPIController.checkConformance(testString);
+            result = validateAPIController.checkConformance(testString, "dummy");
             assertNotNull(result.getBody());
             assertTrue(result.getBody().contains("The service is not registered"));
         }
@@ -171,7 +172,7 @@ public class ValidateAPIControllerTest {
         void legacyWhenServiceNotOboarded_thenError() {
             when(messageService.createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved")).thenReturn(WRONG_SERVICE_ID_MESSAGE);
             String testString = "notonboarded";
-            result = validateAPIController.checkValidateLegacy(testString);
+            result = validateAPIController.checkValidateLegacy(testString, "dummy");
             assertNotNull(result.getBody());
             assertTrue(result.getBody().contains("The service is not registered"));
 
@@ -203,7 +204,7 @@ public class ValidateAPIControllerTest {
             when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
             when(messageService.createMessage(NO_METADATA_KEY, "ThisWillBeRemoved")).thenReturn(NO_METADATA_MESSAGE);
-            result = validateAPIController.checkConformance(serviceId);
+            result = validateAPIController.checkConformance(serviceId, "dummy");
             assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
         }
 
@@ -259,11 +260,11 @@ public class ValidateAPIControllerTest {
 
             when(verificationOnboardService.getSwagger("a")).thenReturn(new String(Files.readAllBytes(mockSwaggerFile.getAbsoluteFile().toPath())));
 
-            when(verificationOnboardService.testEndpointsByCalling(any())).thenReturn(new ArrayList<>());
+            when(verificationOnboardService.testEndpointsByCalling(any(), eq("dummy"))).thenReturn(new ArrayList<>());
 
             try (MockedStatic<ValidatorFactory> validatorFactoryMockedStatic = mockStatic(ValidatorFactory.class)) {
                 validatorFactoryMockedStatic.when(() -> ValidatorFactory.parseSwagger(any(), any(), any(), any())).thenReturn(swaggerValidator);
-                result = validateAPIController.checkConformance(serviceId);
+                result = validateAPIController.checkConformance(serviceId, "dummy");
                 assertEquals(HttpStatus.OK, result.getStatusCode());
             }
         }
@@ -279,7 +280,7 @@ public class ValidateAPIControllerTest {
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
             when(messageService.createMessage(NO_METADATA_KEY, "ThisWillBeRemoved")).thenReturn(NO_METADATA_MESSAGE);
 
-            result = validateAPIController.checkConformance(serviceId);
+            result = validateAPIController.checkConformance(serviceId, "dummy");
             assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
             assertNotNull(result.getBody());
             assertTrue(result.getBody().contains("Cannot Retrieve MetaData"));
