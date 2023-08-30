@@ -68,7 +68,7 @@ public class TrustedCertificatesProvider {
                     .getInstance("X.509")
                     .generateCertificates(new ByteArrayInputStream(pem.getBytes()));
                 trustedCerts.addAll(certs);
-                updateTrustedPublicKeys(trustedCerts);
+                updateAPIMLPublicKeyCertificates(trustedCerts);
             } catch (CertificateException e) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.errorParsingCertificates", e.getMessage());
             }
@@ -101,11 +101,11 @@ public class TrustedCertificatesProvider {
     }
 
     /**
-     * Updates the list of public keys of APIML trusted certificates
+     * Updates the list of public keys from certificates that belong to APIML
      *
-     * @param certs List of trusted certificates
+     * @param certs List of certificates coming from the central Gateway
      */
-    private void updateTrustedPublicKeys(List<Certificate> certs) {
+    private void updateAPIMLPublicKeyCertificates(List<Certificate> certs) {
         for (Certificate cert : certs) {
             String publicKey = Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
             publicKeyCertificatesBase64.add(publicKey);

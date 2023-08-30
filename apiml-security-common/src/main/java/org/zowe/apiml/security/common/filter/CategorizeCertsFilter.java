@@ -70,7 +70,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null) {
             if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
-                Optional<Certificate> clientCert = getClientCert((HttpServletRequest) request);
+                Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
                 if (clientCert.isPresent()) {
                     // add the client certificate to the certs array
                     String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
@@ -86,7 +86,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         }
     }
 
-    private Optional<Certificate> getClientCert(HttpServletRequest request) {
+    private Optional<Certificate> getClientCertFromHeader(HttpServletRequest request) {
         String certFromHeader = request.getHeader(CLIENT_CERT_HEADER);
 
         if (StringUtils.isNotEmpty(certFromHeader)) {

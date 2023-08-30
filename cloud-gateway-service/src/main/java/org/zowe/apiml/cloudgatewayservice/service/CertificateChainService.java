@@ -14,7 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
@@ -44,6 +47,7 @@ public class CertificateChainService {
     @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
+    private static final ApimlLogger apimlLog = ApimlLogger.of(CertificateChainService.class, YamlMessageServiceInstance.getInstance());
     Certificate[] certificates;
 
     public String getCertificatesInPEMFormat() {
@@ -74,8 +78,9 @@ public class CertificateChainService {
         try {
             certificates = SecurityUtils.loadCertificateChain(config);
         } catch (Exception e) {
-            log.error("Exception while loading certificate chain.", e);
-            System.exit(1);
+            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(),
+                e, HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
         }
     }
 }
