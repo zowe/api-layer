@@ -28,7 +28,6 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
-spring:
     cloud:
         gateway:
             discovery:
@@ -39,6 +38,8 @@ spring:
         name: cloudGateway
     main:
         allow-circular-references: true
+
+logbackServiceName: ZWEACG1
 
 logging:
     level:
