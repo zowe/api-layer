@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.product.services.ServiceInfo;
+import org.zowe.apiml.product.services.ServicesInfoService;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,8 +26,8 @@ import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_URL;
-import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSION;
-import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
+import static org.zowe.apiml.product.services.ServicesInfoService.CURRENT_VERSION;
+import static org.zowe.apiml.product.services.ServicesInfoService.VERSION_HEADER;
 
 @ExtendWith(MockitoExtension.class)
 class ServicesInfoControllerTest {
