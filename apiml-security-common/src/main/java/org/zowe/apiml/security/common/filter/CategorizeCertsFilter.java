@@ -73,7 +73,8 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                 Optional<Certificate> clientCert = getClientCert((HttpServletRequest) request);
                 if (clientCert.isPresent()) {
                     // add the client certificate to the certs array
-                    log.debug("Found client certificate in header, adding it to the request.");
+                    String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
+                    log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
                     certs = Arrays.copyOf(certs, certs.length + 1);
                     certs[certs.length - 1] = (X509Certificate) clientCert.get();
                 }
