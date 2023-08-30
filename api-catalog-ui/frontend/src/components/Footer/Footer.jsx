@@ -10,6 +10,10 @@
 import { Component } from 'react';
 import { Container, Link, Typography } from '@material-ui/core';
 import { isAPIPortal } from '../../utils/utilFunctions';
+import linkedInImg from '../../assets/images/linkedin-red.png';
+import twitterImg from '../../assets/images/twitter-square.png';
+import youtubeImg from '../../assets/images/youtube-square.png';
+import mailImg from '../../assets/images/square-envelope.png';
 
 export default class Footer extends Component {
     render() {
@@ -18,16 +22,33 @@ export default class Footer extends Component {
                 <footer id="pageFooter">
                     <div id="bottom-info-div">
                         <Container>
-                            <strong>Capabilities</strong>
+                            <strong />
+                            <Link className="links" />
                             <Link className="links" />
                         </Container>
                         <Container>
                             <strong>News & Information</strong>
-                            <Link className="links">Support Portal</Link>
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
+                            <Link className="links" />
                         </Container>
                         <Container>
                             <strong>Contact Us</strong>
-                            <Link className="links" />
+                            <Link className="footer-links" style={{ paddingRight: '5px' }}>
+                                <img id="linkedin" alt="linkedin" src={linkedInImg} />
+                            </Link>
+                            <Link className="footer-links" style={{ paddingRight: '5px' }}>
+                                <img id="twitter" alt="twitter" src={twitterImg} />
+                            </Link>
+                            <Link className="footer-links" style={{ paddingRight: '5px' }}>
+                                <img id="youtube" alt="youtube" src={youtubeImg} />
+                            </Link>
+                            <Link className="footer-links">
+                                <img id="email" alt="email" src={mailImg} />
+                            </Link>
                         </Container>
                     </div>
                     <div className="left">

@@ -27,6 +27,8 @@ import static org.mockito.Mockito.mock;
 
 class ByBasePathTest {
 
+    private static final String TARGET_HEADER_NAME = "X-Forward-To";
+
     @Nested
     class CommonParts {
 
@@ -67,10 +69,14 @@ class ByBasePathTest {
 
             new ByBasePath(new DiscoveryLocatorProperties()).setCondition(routeDefinition, serviceInstance, routedService);
 
-            assertEquals(1, routeDefinition.getPredicates().size());
-            PredicateDefinition predicateDefinition = routeDefinition.getPredicates().get(0);
-            assertEquals("Path", predicateDefinition.getName());
-            assertEquals(pattern, predicateDefinition.getArgs().get("pattern"));
+            assertEquals(2, routeDefinition.getPredicates().size());
+            PredicateDefinition headerPredicate = routeDefinition.getPredicates().get(0);
+            assertEquals("MissingHeader", headerPredicate.getName());
+            assertEquals(TARGET_HEADER_NAME, headerPredicate.getArgs().get("header"));
+
+            PredicateDefinition pathPredicate = routeDefinition.getPredicates().get(1);
+            assertEquals("Path", pathPredicate.getName());
+            assertEquals(pattern, pathPredicate.getArgs().get("pattern"));
         }
 
         @ParameterizedTest(name = "to map URLs of service {0} from {1} to {2} is constructed pattern {3} and replacement {4} arguments")
