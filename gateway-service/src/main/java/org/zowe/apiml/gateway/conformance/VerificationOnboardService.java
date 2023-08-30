@@ -31,6 +31,7 @@ import java.util.*;
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
+
     private final RestTemplate restTemplate;
     private final TokenCreationService tokenCreationService;
 
@@ -69,6 +70,7 @@ public class VerificationOnboardService {
         }
         return Optional.empty();
     }
+
 
     /**
      * Retrieves swagger from the url

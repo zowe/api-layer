@@ -57,7 +57,6 @@ class VerificationOnboardServiceTest {
         assertTrue(verificationOnboardService.checkOnboarding("OnboardedService"));
     }
 
-
     @Test
     void whenRetrievingSwaggerUrl_thenCorrectlyRetrieves() {
         final String swaggerUrl = "https://hostname/sampleclient/api-doc";
@@ -67,7 +66,6 @@ class VerificationOnboardServiceTest {
         assertTrue(result.isPresent());
         assertEquals(swaggerUrl, result.get());
     }
-
 
     @Test
     void whenGetSwagger_thenOk() {

@@ -21,7 +21,6 @@ import java.util.Map;
 @UtilityClass
 public class ValidatorFactory {
     private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
-
     public AbstractSwaggerValidator parseSwagger(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
         JsonNode root;
         try {

@@ -37,6 +37,7 @@ public class ValidateAPIController {
     private static final int MAXIMUM_SERVICE_ID_LENGTH = 64;
     private static final String INVALID_SERVICE_ID_REGEX_PATTERN = "[^a-z0-9]";
 
+
     private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
     private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
     private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
