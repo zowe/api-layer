@@ -13,6 +13,8 @@ package org.zowe.apiml.cloudgatewayservice.filters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
@@ -128,6 +130,48 @@ class ClientCertFilterFactoryTest {
                 assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
                 assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
             }
+
+            @Nested
+            class WhenNoSSLSessionInformation {
+
+                @BeforeEach
+                void setup() {
+                    when(request.getSslInfo()).thenReturn(null);
+                }
+
+                @ParameterizedTest
+                @ValueSource(strings = {"true", "false"})
+                void thenNoHeadersInRequest(String enabled) {
+                    filterConfig.setForwardingEnabled(enabled);
+                    GatewayFilter filter = filterFactory.apply(filterConfig);
+                    Mono<Void> result = filter.filter(exchange, chain);
+                    result.block();
+
+                    assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
+                    assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
+                }
+            }
+        }
+
+        @Nested
+        class WhenNoSSLSessionInformation {
+
+            @BeforeEach
+            void setup() {
+                when(request.getSslInfo()).thenReturn(null);
+            }
+
+            @ParameterizedTest
+            @ValueSource(strings = {"true", "false"})
+            void thenNoHeadersInRequest(String enabled) {
+                filterConfig.setForwardingEnabled(enabled);
+                GatewayFilter filter = filterFactory.apply(filterConfig);
+                Mono<Void> result = filter.filter(exchange, chain);
+                result.block();
+
+                assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
+                assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
+            }
         }
     }
 
@@ -160,15 +204,15 @@ class ClientCertFilterFactoryTest {
 
         @BeforeEach
         void setup() {
-            filterConfig.setForwardingEnabled("true");
             requestBuilder.header(CLIENT_CERT_HEADER, "This value cannot pass through the filter.");
             when(sslInfo.getPeerCertificates()).thenReturn(new X509Certificate[0]);
         }
 
-        @Test
-        void thenContinueFilterChainWithoutClientCertHeader() {
+        @ParameterizedTest
+        @ValueSource(strings = {"true", "false"})
+        void thenContinueFilterChainWithoutClientCertHeader(String enabled) {
+            filterConfig.setForwardingEnabled(enabled);
             GatewayFilter filter = filterFactory.apply(filterConfig);
-            when(sslInfo.getPeerCertificates()).thenReturn(null);
             Mono<Void> result = filter.filter(exchange, chain);
             result.block();
             assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
@@ -181,19 +225,20 @@ class ClientCertFilterFactoryTest {
 
         @BeforeEach
         void setup() {
-            filterConfig.setForwardingEnabled("true");
             requestBuilder.header(CLIENT_CERT_HEADER, "This value cannot pass through the filter.");
             when(request.getSslInfo()).thenReturn(null);
         }
 
-        @Test
-        void thenContinueFilterChainWithoutClientCertHeader() {
+        @ParameterizedTest
+        @ValueSource(strings = {"true", "false"})
+        void thenContinueFilterChainWithoutClientCertHeader(String enabled) {
+            filterConfig.setForwardingEnabled(enabled);
             GatewayFilter filter = filterFactory.apply(filterConfig);
-            when(sslInfo.getPeerCertificates()).thenReturn(null);
             Mono<Void> result = filter.filter(exchange, chain);
             result.block();
-            assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
+
             assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
+            assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
         }
     }
 
