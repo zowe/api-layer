@@ -59,7 +59,7 @@
         "cy:e2e:localhost-headful": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser chrome",
         "cy:e2e:localhost-firefox": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless",
         "the-scripts-below-might-be-stale": "",
-        "start": "cross-env HTTPS=true react-scripts start",
+        "start": "cross-env HTTPS=true react-app-rewired start",
         "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
         "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
         "analyze": "source-map-explorer build/static/js/main.*",

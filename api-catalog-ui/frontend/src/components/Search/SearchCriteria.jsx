@@ -49,7 +49,7 @@ export default class SearchCriteria extends Component {
         const iconClear = (
             <ClearIcon data-testid="clear-button" className="clear-text-search" onClick={this.clearSearch} />
         );
-        const icon = criteria.length === 0 ? iconSearch : iconClear;
+        const icon = criteria.length > 0 ? iconClear : '';
         return (
             <TextField
                 className="search-bar"
@@ -61,6 +61,7 @@ export default class SearchCriteria extends Component {
                             {icon}
                         </InputAdornment>
                     ),
+                    startAdornment: <InputAdornment position="end">{iconSearch}</InputAdornment>,
                 }}
                 placeholder={placeholder}
                 value={criteria}

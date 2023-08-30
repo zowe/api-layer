@@ -72,5 +72,11 @@ body {
           height: 15px;
           width: 15px;
       }
+      img:hover {
+
+        border-radius: 3px;
+        border: 1px solid var(--light-primary-color-060052-cc-default, #0052CC);
+        background: var(--light-primary-alternate-shade-ffffff, #FFF);
+      }
   }//end header
 }

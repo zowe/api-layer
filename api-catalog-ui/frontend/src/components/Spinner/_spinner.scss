@@ -12,8 +12,9 @@ $border-color_1: #CC092F transparent transparent transparent;
 }
 .lds-ring {
     display: inline-block;
+    // this is what makes loading overlap on dashboard page
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     width: 128px;
     height: 128px;
