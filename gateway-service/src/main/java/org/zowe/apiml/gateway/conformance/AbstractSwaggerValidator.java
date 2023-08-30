@@ -13,7 +13,10 @@ package org.zowe.apiml.gateway.conformance;
 
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
@@ -74,7 +77,6 @@ public abstract class AbstractSwaggerValidator {
         }
         return result;
     }
-
 
     public String searchMetadata(Map<String, String> metadata, String... partsOfKey) {
         for (Map.Entry<String, String> metadataEntry : metadata.entrySet()) {

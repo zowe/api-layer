@@ -21,5 +21,4 @@ public class ValidationException extends RuntimeException {
         super(msg);
         this.key = key;
     }
-
 }

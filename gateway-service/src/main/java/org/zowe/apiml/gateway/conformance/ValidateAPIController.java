@@ -70,7 +70,6 @@ public class ValidateAPIController {
         if (!foundNonConformanceIssues.isEmpty())
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
 
-
         try {
             checkServiceIsOnboarded(serviceId);
 
@@ -81,7 +80,6 @@ public class ValidateAPIController {
             Map<String, String> metadata = getMetadata(serviceInstance);
 
             checkMetadataCanBeRetrieved(metadata);
-
             Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
             validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl, authenticationToken);
@@ -99,13 +97,11 @@ public class ValidateAPIController {
             return generateBadRequestResponseEntity(e.getKey(), foundNonConformanceIssues);
         }
 
-
         if (!foundNonConformanceIssues.isEmpty())
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
-
 
     private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl, String token) throws ValidationException {
         if (!swaggerUrl.isPresent()) {
@@ -144,7 +140,6 @@ public class ValidateAPIController {
         }
         return checkConformance(serviceId, authenticationToken);
     }
-
 
     /**
      * Creates a response when a conformance criteria is failed.
@@ -230,6 +225,4 @@ public class ValidateAPIController {
 
         return result;
     }
-
-
 }

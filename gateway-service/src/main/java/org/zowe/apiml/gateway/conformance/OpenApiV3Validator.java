@@ -22,7 +22,6 @@ import java.util.*;
 public class OpenApiV3Validator extends AbstractSwaggerValidator {
     private final SwaggerParseResult swagger;
 
-
     public OpenApiV3Validator(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
         super(metadata, gatewayConfigProperties, serviceId);
         swagger = new OpenAPIV3Parser().readContents(swaggerDoc);
@@ -35,7 +34,6 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
         }
         return result;
     }
-
 
     public Set<Endpoint> getAllEndpoints() {
         HashSet<Endpoint> result = new HashSet<>();
@@ -120,5 +118,3 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
         }
     }
 }
-
-

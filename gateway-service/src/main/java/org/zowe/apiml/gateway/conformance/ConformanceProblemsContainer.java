@@ -26,7 +26,6 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = true)
 public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
 
-
     private final String serviceId;
     private static final String RESPONSE_MESSAGE_TEMPLATE = "{\n" + "\"messageAction\": \"${messageAction}\",\n" + "\"messageContent\": {\n" + "    \"The service ${serviceId} is not conformant\": \n" + "        ${messageContent}\n" + "},\n" + "\"messageKey\": \"${messageKey}\",\n" + "\"messageNumber\": \"${messageNumber}\",\n" + "\"messageReason\": \"${messageReason}\",\n" + "\"messageType\": \"${messageType}\"\n" + "}";
 
@@ -113,7 +112,6 @@ public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
         result.append("}");
         return result.toString();
     }
-
 
     public String createBadRequestAPIResponseBody(String key, ApiMessage correspondingAPIMessage) {
         Map<String, String> valuesMap = new HashMap<>();

@@ -31,7 +31,6 @@ import java.util.*;
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
-
     private final RestTemplate restTemplate;
     private final TokenCreationService tokenCreationService;
 
@@ -42,13 +41,9 @@ public class VerificationOnboardService {
      * @return true if the service is known by Eureka otherwise false.
      */
     public boolean checkOnboarding(String serviceId) {
-
         List<String> serviceLists = discoveryClient.getServices();
-
         return serviceLists.contains(serviceId);
-
     }
-
 
     /**
      * Accepts metadata and retrieves the Swagger url if it exists
@@ -74,7 +69,6 @@ public class VerificationOnboardService {
         }
         return Optional.empty();
     }
-
 
     /**
      * Retrieves swagger from the url
@@ -112,22 +106,26 @@ public class VerificationOnboardService {
 
         for (Endpoint endpoint : getEndpoints) {
             for (HttpMethod method : endpoint.getHttpMethods()) {
-                if (method == HttpMethod.DELETE) {
-                    continue;
-                }
-
-                String urlFromSwagger = endpoint.getUrl();
-                // replaces parameters in {} in query
-                String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
-
-                ResponseEntity<String> responseWithSSO = getResponse(requestSSO, method, url);
-                result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, true));
-
-                ResponseEntity<String> responseNoSSO = getResponse(requestNoSSO, method, url);
-                result.addAll(fromResponseReturnFoundProblems(responseNoSSO, endpoint, method, false));
+                checkEndpoint(endpoint, result, method, requestSSO, requestNoSSO);
             }
         }
         return result;
+    }
+
+    private void checkEndpoint(Endpoint endpoint, ArrayList<String> result, HttpMethod method, HttpEntity<String> requestSSO, HttpEntity<String> requestNoSSO) {
+        if (method == HttpMethod.DELETE) {
+            return;
+        }
+
+        String urlFromSwagger = endpoint.getUrl();
+        // replaces parameters in {} in query
+        String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
+
+        ResponseEntity<String> responseWithSSO = getResponse(requestSSO, method, url);
+        result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, true));
+
+        ResponseEntity<String> responseNoSSO = getResponse(requestNoSSO, method, url);
+        result.addAll(fromResponseReturnFoundProblems(responseNoSSO, endpoint, method, false));
     }
 
     private ResponseEntity<String> getResponse(HttpEntity<String> request, HttpMethod method, String url) {
@@ -141,7 +139,6 @@ public class VerificationOnboardService {
         }
         return response;
     }
-
 
     private List<String> fromResponseReturnFoundProblems(ResponseEntity<String> response, Endpoint currentEndpoint, HttpMethod method, boolean attemptWithSSO) {
         ArrayList<String> result = new ArrayList<>();

@@ -35,7 +35,6 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
         }
         return result;
     }
-
     public Set<Endpoint> getAllEndpoints() {
         HashSet<Endpoint> result = new HashSet<>();
         for (Map.Entry<String, Path> pathEntry : swagger.getSwagger().getPaths().entrySet()) {
@@ -49,7 +48,6 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
         }
         return result;
     }
-
     private HashMap<String, Set<String>> getValidResponses(Path value) {
         HashMap<String, Set<String>> result = new HashMap<>();
         for (HttpMethod httpMethod : getMethod(value)) {
