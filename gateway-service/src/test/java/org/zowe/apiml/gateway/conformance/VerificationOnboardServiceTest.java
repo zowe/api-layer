@@ -95,9 +95,8 @@ class VerificationOnboardServiceTest {
     class GivenMetadata {
         @Test
         void whenRetrievingNullSwaggerUrl_thenEmptyMetadata() {
-            final String swaggerUrl = null;
             HashMap<String, String> metadata = new HashMap<>();
-            metadata.put("apiml.apiInfo.api-v2.swaggerUrl", swaggerUrl);
+            metadata.put("apiml.apiInfo.api-v2.swaggerUrl", null);
             assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
         }
 

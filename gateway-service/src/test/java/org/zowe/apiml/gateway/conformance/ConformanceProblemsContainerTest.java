@@ -90,15 +90,13 @@ class ConformanceProblemsContainerTest {
 
         @Test
         void whenAddingNullValue_thenCorrectSize() {
-            ArrayList<String> test = null;
-            container.add("test", test);
+            container.add("test", (ArrayList<String>) null);
             assertEquals(0, container.size());
         }
 
         @Test
         void whenAddingNullValue2_thenCorrectSize() {
-            String test = null;
-            container.add("test", test);
+            container.add("test", (String) null);
             assertEquals(0, container.size());
 
         }
