@@ -112,7 +112,7 @@ function Header(props) {
                 {isAPIPortal() && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">
-                            <img id="doc" alt="Zowe docs" src={zoweDocsImage} />
+                            <img id="doc" alt="Zowe docs" src={zoweDocsImage} className="hover" />
                         </Link>
                         <Link
                             rel="noopener noreferrer"

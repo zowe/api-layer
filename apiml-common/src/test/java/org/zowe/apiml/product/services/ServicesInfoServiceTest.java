@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.services;
+package org.zowe.apiml.product.services;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -21,24 +21,37 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.gateway.config.GatewayConfig;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
 @ExtendWith(MockitoExtension.class)
 class ServicesInfoServiceTest {
@@ -81,15 +94,12 @@ class ServicesInfoServiceTest {
     private static final String SERVICE_SERVICE_ID = "serviceId";
     private static final String SERVICE_API_ID = "apiId";
     private static final String SERVICE_API_VERSION = "version";
-
     @Mock
     private EurekaClient eurekaClient;
 
-    @Mock
-    ConfigurableEnvironment env;
+    private final GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
+            .scheme(GW_SCHEME).hostname(GW_HOSTNAME + ":" + GW_PORT).build();
 
-    private final GatewayConfigProperties gatewayConfigProperties = new GatewayConfig(env)
-            .getGatewayConfigProperties(GW_HOSTNAME, GW_PORT, GW_SCHEME);
     private final EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
     private final TransformService transformService = new TransformService(new GatewayClient(gatewayConfigProperties));
 
@@ -97,7 +107,7 @@ class ServicesInfoServiceTest {
 
     @BeforeEach
     void setUp() {
-        servicesInfoService = new ServicesInfoService(eurekaClient, gatewayConfigProperties, eurekaMetadataParser, transformService);
+        servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties, transformService);
     }
 
     @Test

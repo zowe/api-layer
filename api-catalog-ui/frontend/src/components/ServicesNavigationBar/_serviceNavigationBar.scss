@@ -33,7 +33,7 @@ span.MuiTab-wrapper {
 }
 svg.MuiSvgIcon-root.clear-text-search {
     margin-left: 120px;
-    margin-bottom: var( --spaceTiny );
+    margin-top: var(--spaceSmaller);
 }
 .tabs {
     height: 100%;
@@ -54,9 +54,8 @@ svg.MuiSvgIcon-root.clear-text-search {
     .tabs {
         &.Mui-selected {
             box-shadow: $red-selected-bx;
-        }
-        &:hover {
-            box-shadow: $red-selected-bx;
+            color: black;
+            font-weight: 600;
         }
     }
 }// end .custom-tabs
@@ -91,3 +90,7 @@ svg.MuiSvgIcon-root.clear-text-search {
         }
     }
 }//end search2
+
+#search2:has(.Mui-focused, :hover) {
+    border: 1px solid var(--linkHover);
+}
