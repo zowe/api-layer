@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -37,9 +38,9 @@ public class ValidateAPIController {
     private static final String INVALID_SERVICE_ID_REGEX_PATTERN = "[^a-z0-9]";
 
 
-    private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
-    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
-    private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
+    static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
+    static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
+    static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
 
     private static final String REGISTRATION_PROBLEMS = "Registration problems";
@@ -48,11 +49,8 @@ public class ValidateAPIController {
 
 
     private final MessageService messageService;
-
     private final VerificationOnboardService verificationOnboardService;
-
     private final DiscoveryClient discoveryClient;
-
     private final GatewayClient gatewayClient;
 
 
@@ -67,7 +65,7 @@ public class ValidateAPIController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @HystrixCommand
-    public ResponseEntity<String> checkConformance(@PathVariable String serviceId) {
+    public ResponseEntity<String> checkConformance(@PathVariable String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
@@ -83,10 +81,9 @@ public class ValidateAPIController {
             Map<String, String> metadata = getMetadata(serviceInstance);
 
             checkMetadataCanBeRetrieved(metadata);
-
             Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
-            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl);
+            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl, authenticationToken);
         } catch (ValidationException e) {
             switch (e.getKey()) {
                 case WRONG_SERVICE_ID_KEY:
@@ -107,7 +104,7 @@ public class ValidateAPIController {
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
 
-    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl) throws ValidationException {
+    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl, String token) throws ValidationException {
         if (!swaggerUrl.isPresent()) {
             throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
         }
@@ -116,16 +113,19 @@ public class ValidateAPIController {
         AbstractSwaggerValidator swaggerParser;
         swaggerParser = ValidatorFactory.parseSwagger(swagger, metadata, gatewayClient.getGatewayConfigProperties(), serviceId);
 
+        if (!VerificationOnboardService.supportsSSO(metadata)) {
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, "Service doesn't claim to support SSO in its metadata, flag should be set to true for " + EurekaMetadataDefinition.AUTHENTICATION_SSO);
+        }
+
         List<String> parserResponses = swaggerParser.getMessages();
         if (parserResponses != null) foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, parserResponses);
 
-        Set<Endpoint> getMethodEndpoints = swaggerParser.getGetMethodEndpoints();
-        if (!getMethodEndpoints.isEmpty())
-            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testGetEndpoints(getMethodEndpoints));
+        Set<Endpoint> allEndpoints = swaggerParser.getAllEndpoints();
+        if (!allEndpoints.isEmpty())
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(allEndpoints, token));
 
-        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
+        foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, VerificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }
-
 
     /**
      * Mapping so the old endpoint keeps working.
@@ -135,13 +135,12 @@ public class ValidateAPIController {
      */
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand
-    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
+    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
         }
-        return checkConformance(serviceId);
+        return checkConformance(serviceId, authenticationToken);
     }
-
 
     /**
      * Creates a response when a conformance criteria is failed.
@@ -227,6 +226,4 @@ public class ValidateAPIController {
 
         return result;
     }
-
-
 }

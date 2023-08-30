@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.conformance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.zowe.apiml.message.api.ApiMessage;
 
@@ -22,8 +23,8 @@ import java.util.*;
 /**
  * Java class that is used to keep track of found conformance issues
  */
-public class ConformanceProblemsContainer extends HashMap<String, ArrayList<String>> {
-
+@EqualsAndHashCode(callSuper = true)
+public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
 
     private final String serviceId;
     private static final String RESPONSE_MESSAGE_TEMPLATE = "{\n" + "\"messageAction\": \"${messageAction}\",\n" + "\"messageContent\": {\n" + "    \"The service ${serviceId} is not conformant\": \n" + "        ${messageContent}\n" + "},\n" + "\"messageKey\": \"${messageKey}\",\n" + "\"messageNumber\": \"${messageNumber}\",\n" + "\"messageReason\": \"${messageReason}\",\n" + "\"messageType\": \"${messageType}\"\n" + "}";
@@ -38,13 +39,11 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
             return;
         }
         if (this.get(key) == null || this.get(key).isEmpty()) {
-            super.put(key, new ArrayList<>(values));
+            super.put(key, new HashSet<>(values));
             return;
         }
         for (String value : values) {
-            if (this.get(key).contains(value)) {
-                this.get(key).add(value);
-            }
+            this.get(key).add(value);
         }
     }
 
@@ -59,7 +58,7 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     @Override
     public int size() {
         int result = 0;
-        for (ArrayList<String> value : this.values()) {
+        for (Set<String> value : this.values()) {
             if (value == null) {
                 continue;
             }
@@ -72,17 +71,6 @@ public class ConformanceProblemsContainer extends HashMap<String, ArrayList<Stri
     public boolean isEmpty() {
         return size() == 0;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
 
     @Override
     public String toString() {
