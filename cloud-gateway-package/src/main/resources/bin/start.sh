@@ -27,6 +27,7 @@
 # - LIBPATH
 # - LIBRARY_PATH
 # - ZWE_components_discovery_port - the port the discovery service will use
+# - ZWE_configs_apiml_service_forwardClientCertEnabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
 # - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
@@ -94,6 +95,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-10023} \
+    -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_service_forwardClientCertEnabled:-false} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dserver.address=0.0.0.0 \

@@ -123,7 +123,7 @@ class SafMethodSecurityExpressionControllerTest {
 
         @Bean
         public MessageService messageService() {
-            return new YamlMessageService("/security-common-log-messages.yml");
+            return new YamlMessageService("/security-service-messages.yml");
         }
 
         @Bean

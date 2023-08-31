@@ -97,7 +97,6 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         @Test
         @Tag("CloudGatewayServiceRouting")
         void givenValidJWT_thenTranslateToPassticket() {
-            RestAssured.useRelaxedHTTPSValidation();
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             verifyPassTicketHeaders(
                 given().cookie(COOKIE_NAME, jwt)
@@ -110,15 +109,14 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         @Test
         @Tag("CloudGatewayServiceRouting")
         void givenNoJWT_thenErrorHeaderIsCreated() {
-            RestAssured.useRelaxedHTTPSValidation();
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             given()
                 .when()
                 .get(scgUrl)
                 .then()
+                .statusCode(SC_OK)
                 .body("headers.x-zowe-auth-failure", startsWith("ZWEAG141E"))
-                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG141E"))
-                .statusCode(200);
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG141E"));
         }
     }
 
