@@ -30,7 +30,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.*;
 
@@ -38,17 +37,14 @@ import java.util.*;
 @Slf4j
 public class TrustedCertificatesProvider {
 
-    private final Set<String> publicKeyCertificatesBase64;
     private final CloseableHttpClient httpClient;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Autowired
-    public TrustedCertificatesProvider(@Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient httpClient,
-                                       @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64) {
+    public TrustedCertificatesProvider(@Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
-        this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
     }
 
     /**
@@ -68,7 +64,6 @@ public class TrustedCertificatesProvider {
                     .getInstance("X.509")
                     .generateCertificates(new ByteArrayInputStream(pem.getBytes()));
                 trustedCerts.addAll(certs);
-                updateAPIMLPublicKeyCertificates(trustedCerts);
             } catch (Exception e) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.errorParsingCertificates", e.getMessage());
             }
@@ -98,17 +93,5 @@ public class TrustedCertificatesProvider {
             apimlLog.log("org.zowe.apiml.security.common.verify.httpError", e.getMessage());
         }
         return null;
-    }
-
-    /**
-     * Updates the list of public keys from certificates that belong to APIML
-     *
-     * @param certs List of certificates coming from the central Gateway
-     */
-    private void updateAPIMLPublicKeyCertificates(List<Certificate> certs) {
-        for (Certificate cert : certs) {
-            String publicKey = Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
-            publicKeyCertificatesBase64.add(publicKey);
-        }
     }
 }

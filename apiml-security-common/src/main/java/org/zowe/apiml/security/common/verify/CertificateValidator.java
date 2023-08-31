@@ -13,6 +13,7 @@ package org.zowe.apiml.security.common.verify;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -20,7 +21,9 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service to verify if given certificate chain can be trusted.
@@ -40,10 +43,14 @@ public class CertificateValidator {
 
     @Value("${apiml.security.x509.certificatesUrl:}")
     private String proxyCertificatesEndpoint;
+    private final Set<String> publicKeyCertificatesBase64;
+
 
     @Autowired
-    public CertificateValidator(TrustedCertificatesProvider trustedCertificatesProvider) {
+    public CertificateValidator(TrustedCertificatesProvider trustedCertificatesProvider,
+                                @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64) {
         this.trustedCertificatesProvider = trustedCertificatesProvider;
+        this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
     }
 
     /**
@@ -63,5 +70,17 @@ public class CertificateValidator {
         }
         log.debug("All certificates are trusted.");
         return true;
+    }
+
+    /**
+     * Updates the list of public keys from certificates that belong to APIML
+     *
+     * @param certs List of certificates coming from the central Gateway
+     */
+    public void updateAPIMLPublicKeyCertificates(X509Certificate[] certs) {
+        for (X509Certificate cert : certs) {
+            String publicKey = Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
+            publicKeyCertificatesBase64.add(publicKey);
+        }
     }
 }

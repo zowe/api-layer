@@ -18,12 +18,11 @@ import org.zowe.apiml.security.common.utils.X509Utils;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +34,7 @@ public class CertificateValidatorTest {
     private static final X509Certificate cert2 = X509Utils.getCertificate(X509Utils.correctBase64("correct_certificate_2"));
     private static final X509Certificate cert3 = X509Utils.getCertificate(X509Utils.correctBase64("correct_certificate_3"));
     private CertificateValidator certificateValidator;
+    private Set<String> publicKeys;
 
     @BeforeEach
     void setUp() {
@@ -44,7 +44,7 @@ public class CertificateValidatorTest {
         TrustedCertificatesProvider mockProvider = mock(TrustedCertificatesProvider.class);
         when(mockProvider.getTrustedCerts(URL_PROVIDE_TRUSTED_CERTS)).thenReturn(trustedCerts);
         when(mockProvider.getTrustedCerts(URL_WITH_NO_TRUSTED_CERTS)).thenReturn(Collections.emptyList());
-        certificateValidator = new CertificateValidator(mockProvider);
+        certificateValidator = new CertificateValidator(mockProvider, Collections.emptySet());
     }
 
     @Nested
@@ -81,6 +81,27 @@ public class CertificateValidatorTest {
             assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
             assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
             assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
+        }
+    }
+
+    @Nested
+    class WhenUpdatePublicKeys {
+
+        @BeforeEach
+        void setUp() {
+            publicKeys = Stream.of("public_key_1", "public_key_2").collect(Collectors.toCollection(HashSet::new));
+            certificateValidator = new CertificateValidator(mock(TrustedCertificatesProvider.class), publicKeys);
+        }
+
+        @Test
+        void whenUpdatePublicKeys_thenSetUpdated() {
+            certificateValidator.updateAPIMLPublicKeyCertificates(new X509Certificate[]{cert1, cert2, cert3});
+
+            assertEquals(5, publicKeys.size());
+            assertTrue(publicKeys.contains(Base64.getEncoder().encodeToString(cert1.getPublicKey().getEncoded())));
+            assertTrue(publicKeys.contains(Base64.getEncoder().encodeToString(cert2.getPublicKey().getEncoded())));
+            assertTrue(publicKeys.contains(Base64.getEncoder().encodeToString(cert3.getPublicKey().getEncoded())));
+
         }
     }
 }

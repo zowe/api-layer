@@ -69,6 +69,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null) {
             if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
+                certificateValidator.updateAPIMLPublicKeyCertificates(certs);
                 Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
                 if (clientCert.isPresent()) {
                     // add the client certificate to the certs array

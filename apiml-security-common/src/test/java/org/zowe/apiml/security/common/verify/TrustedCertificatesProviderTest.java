@@ -23,11 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,19 +57,13 @@ class TrustedCertificatesProviderTest {
             "M/iHeamNblckK/r1roDjhCAQz9DtmETad/o7qGNFxDTRRShRV9Lww0fFB7PaV7u/\n" +
             "VPx2\n" +
             "-----END CERTIFICATE-----";
-    private static final String VALID_CERT_PUBLIC_KEY =
-        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAujq3PxCef7dqmptQ4mFP8VWx2k" +
-            "K43err6Y9h07zjqIbRWe/yscjAHs4AfAwUePu+6l17HT/Z4J05f4ttshsL6O05c+nY" +
-            "Z0C55LO1Ra9XhhgtpLPqywSbBf0UHsZjjRvXXXsVg/EjmKFvUUWqUKhE23JZcTnp78" +
-            "167jhM2l4TGs5CvQoPibnDW/R3H4SDNK4y2YahvBnPHQLQnMRf8R5VchUKvH6+Ltqf" +
-            "8BpgETNeImXkJbUFexd4MZsN3Y33DTOUt7Yqz6x5WW++mZpkBJ+EIi0j9ffC5vuECg" +
-            "DsNXVKTH+HhCzuHBBVB10FAhy1nOTc7WcVluNDaw22RI3ESOWoewIDAQAB";
 
     private static final String VALID_CERT_SUBJECT_DN =
         "CN=Zowe Service,OU=API Mediation Layer,O=Zowe Sample,L=Prague,ST=Prague,C=CZ";
 
+    private static final String CERTS_URL = "https://localhost/gateway/certificates";
+
     private TrustedCertificatesProvider provider;
-    private Set<String> publicKeys;
     private CloseableHttpClient closeableHttpClient;
     private CloseableHttpResponse httpResponse;
     private StatusLine statusLine;
@@ -99,49 +89,34 @@ class TrustedCertificatesProviderTest {
             when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream(VALID_CERTIFICATE.getBytes()));
         }
 
-        @Nested
-        class WhenPublicKeysExists {
+        @Test
+        void whenGetTrustedCerts_thenCertificatesReturned() {
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
+            assertNotNull(result);
+            assertEquals(1, result.size());
 
-            @BeforeEach
-            void setup() {
-                publicKeys = Stream.of("public_key_1", "public_key_2").collect(Collectors.toCollection(HashSet::new));
-            }
-
-            @Test
-            void whenGetTrustedCerts_thenCertificatesReturned() {
-                provider = new TrustedCertificatesProvider(closeableHttpClient, publicKeys);
-                List<Certificate> result = provider.getTrustedCerts("certificates/endpoint");
-                assertNotNull(result);
-                assertEquals(1, result.size());
-
-                X509Certificate trustedCert = (X509Certificate) result.get(0);
-                assertEquals(VALID_CERT_SUBJECT_DN, trustedCert.getSubjectX500Principal().getName());
-                assertEquals(3, publicKeys.size());
-                assertTrue(publicKeys.contains(VALID_CERT_PUBLIC_KEY));
-            }
+            X509Certificate trustedCert = (X509Certificate) result.get(0);
+            assertEquals(VALID_CERT_SUBJECT_DN, trustedCert.getSubjectX500Principal().getName());
         }
 
-        @Nested
-        class WhenNoPublicKeys {
-
-            @BeforeEach
-            void setup() {
-                publicKeys = new HashSet<>();
-            }
-
-            @Test
-            void whenGetTrustedCerts_thenCertificatesReturned() {
-                provider = new TrustedCertificatesProvider(closeableHttpClient, publicKeys);
-                List<Certificate> result = provider.getTrustedCerts("certificates/endpoint");
-                assertNotNull(result);
-                assertEquals(1, result.size());
-
-                X509Certificate trustedCert = (X509Certificate) result.get(0);
-                assertEquals(VALID_CERT_SUBJECT_DN, trustedCert.getSubjectX500Principal().getName());
-                assertEquals(1, publicKeys.size());
-                assertTrue(publicKeys.contains(VALID_CERT_PUBLIC_KEY));
-            }
+        @Test
+        void whenInvalidUrl_thenNoCertificatesReturned() {
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts("htpp>\\\\//wrong.url");
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
         }
+
+        @Test
+        void whenIOError_thenNoCertificatesReturned() throws IOException {
+            when(closeableHttpClient.execute(any())).thenThrow(new IOException("communication error"));
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
+        }
+
     }
 
     @Nested
@@ -149,16 +124,14 @@ class TrustedCertificatesProviderTest {
         @BeforeEach
         void setup() throws IOException {
             when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("invalid_certificate".getBytes()));
-            publicKeys = Stream.of("public_key_1", "public_key_2").collect(Collectors.toCollection(HashSet::new));
         }
 
         @Test
         void whenGetTrustedCerts_thenNoCertificatesReturned() {
-            provider = new TrustedCertificatesProvider(closeableHttpClient, publicKeys);
-            List<Certificate> result = provider.getTrustedCerts("certificates/endpoint");
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
-            assertEquals(2, publicKeys.size());
             // check for log message
         }
     }
@@ -168,16 +141,24 @@ class TrustedCertificatesProviderTest {
         @BeforeEach
         void setup() throws IOException {
             when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
-            publicKeys = Stream.of("public_key_1", "public_key_2").collect(Collectors.toCollection(HashSet::new));
         }
 
         @Test
         void whenGetTrustedCerts_thenNoCertificatesReturned() {
-            provider = new TrustedCertificatesProvider(closeableHttpClient, publicKeys);
-            List<Certificate> result = provider.getTrustedCerts("certificates/endpoint");
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
-            assertEquals(2, publicKeys.size());
+        }
+
+        @Test
+        void whenNoHttpEntity_thenNoCertificatesReturned() {
+            when(httpResponse.getEntity()).thenReturn(null);
+
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
         }
     }
 
@@ -186,16 +167,25 @@ class TrustedCertificatesProviderTest {
         @BeforeEach
         void setup() {
             when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
-            publicKeys = Stream.of("public_key_1", "public_key_2").collect(Collectors.toCollection(HashSet::new));
         }
 
         @Test
         void whenGetTrustedCerts_thenNoCertificatesReturned() {
-            provider = new TrustedCertificatesProvider(closeableHttpClient, publicKeys);
-            List<Certificate> result = provider.getTrustedCerts("certificates/endpoint");
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
-            assertEquals(2, publicKeys.size());
+            //check for log message
+        }
+
+        @Test
+        void whenNoStatusLine_thenNoCertificatesReturned() {
+            when(httpResponse.getStatusLine()).thenReturn(null);
+
+            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
             //check for log message
         }
     }

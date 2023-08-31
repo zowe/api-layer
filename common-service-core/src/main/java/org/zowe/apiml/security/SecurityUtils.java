@@ -25,6 +25,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,7 +114,7 @@ public class SecurityUtils {
      * @throws IOException
      */
     public static Set<String> loadCertificateChainBase64(HttpsConfig config) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        final Set<String> out = new HashSet<>();
+        final Set<String> out = ConcurrentHashMap.newKeySet();
         for (Certificate certificate : loadCertificateChain(config)) {
             final byte[] certificateEncoded = certificate.getPublicKey().getEncoded();
             final String base64 = Base64.getEncoder().encodeToString(certificateEncoded);
