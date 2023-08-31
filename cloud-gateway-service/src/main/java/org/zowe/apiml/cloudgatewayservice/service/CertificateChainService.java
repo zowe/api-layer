@@ -32,6 +32,7 @@ import java.security.cert.Certificate;
 @Slf4j
 public class CertificateChainService {
 
+    //TODO Once the separate configuration of keystore for client is implemented (PR https://github.com/zowe/api-layer/pull/3051) then update this SSL configuration.
     @Value("${server.ssl.keyStore:#{null}}")
     private String keyStore;
 
@@ -67,7 +68,7 @@ public class CertificateChainService {
     }
 
     @PostConstruct
-    private void loadCertChain() {
+    void loadCertChain() {
         HttpsConfig config = HttpsConfig.builder()
             .keyAlias(keyAlias)
             .keyStore(keyStore)

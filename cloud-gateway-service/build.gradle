@@ -89,6 +89,8 @@ dependencies {
     testAnnotationProcessor libs.lombok
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.rest.assured
+
+    testImplementation libs.mockito.inline
 }
 
 bootJar {

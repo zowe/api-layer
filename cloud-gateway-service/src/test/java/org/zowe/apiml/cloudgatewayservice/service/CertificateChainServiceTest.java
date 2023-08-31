@@ -14,16 +14,19 @@ import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.SecurityUtils;
 
 import java.io.ByteArrayInputStream;
+import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class CertificateChainServiceTest {
     private CertificateChainService certificateChainService;
@@ -133,6 +136,25 @@ class CertificateChainServiceTest {
         void whenGetCertificates_thenNullReturned() {
             String result = certificateChainService.getCertificatesInPEMFormat();
             assertNull(result);
+        }
+    }
+
+    @Nested
+    class GivenExceptionDuringChainLoad {
+
+        @BeforeEach
+        void setup() {
+            certificateChainService = new CertificateChainService();
+        }
+
+        @Test
+        void whenConstructService_thenExceptionThrown() {
+            try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class)) {
+                securityUtilsMockedStatic.when(() -> SecurityUtils.loadCertificateChain(any()))
+                    .thenThrow(new KeyStoreException("invalid keystore"));
+                Exception thrown = assertThrows(HttpsConfigError.class, () -> certificateChainService.loadCertChain());
+                assertEquals("Error initializing SSL Context: invalid keystore", thrown.getMessage());
+            }
         }
     }
 
