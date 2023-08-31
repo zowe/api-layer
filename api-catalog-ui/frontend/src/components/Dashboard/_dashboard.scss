@@ -115,3 +115,11 @@
     width: 99%;
     display: block;
 }
+
+.floating-button {
+  position: fixed;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  flex-direction: row-reverse;
+  z-index: 1000;
+}
