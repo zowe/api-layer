@@ -34,20 +34,20 @@ public class CacheServiceController {
     public static final String CONTROLLER_PATH = "/gateway/cache/services";  // NOSONAR: URL is always using / to separate path segments
 
     private final List<ServiceCacheEvict> toEvict;
-    private final ApimlDiscoveryClient discoveryClient;
+    private final List<ApimlDiscoveryClient> discoveryClientList;
 
     @DeleteMapping(path = "")
     @HystrixCommand
     public void evictAll() {
         toEvict.forEach(ServiceCacheEvict::evictCacheAllService);
-        discoveryClient.fetchRegistry();
+        discoveryClientList.forEach(ApimlDiscoveryClient::fetchRegistry);
     }
 
     @DeleteMapping(path = "/{serviceId}")
     @HystrixCommand
     public void evict(@PathVariable("serviceId") String serviceId) {
         toEvict.forEach(s -> s.evictCacheService(serviceId));
-        discoveryClient.fetchRegistry();
+        discoveryClientList.forEach(ApimlDiscoveryClient::fetchRegistry);
     }
 
 }

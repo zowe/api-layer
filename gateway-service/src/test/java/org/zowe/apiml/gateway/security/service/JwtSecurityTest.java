@@ -25,6 +25,8 @@ import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.security.HttpsConfigError;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -39,8 +41,8 @@ class JwtSecurityTest {
     private JwtSecurity underTest;
     private Providers providers;
 
-    @Mock
-    private ApimlDiscoveryClient discoveryClient;
+   private ApimlDiscoveryClient discoveryClient = mock(ApimlDiscoveryClient.class);
+    private List<ApimlDiscoveryClient> discoveryClientList = Arrays.asList(discoveryClient);
 
     @BeforeEach
     void setUp() {
@@ -54,7 +56,7 @@ class JwtSecurityTest {
     class WhenInitializedWithValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClientList);
         }
 
         @Test
@@ -86,7 +88,7 @@ class JwtSecurityTest {
     class WhenInitializedWithoutValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClientList);
         }
 
         @Test
@@ -124,7 +126,7 @@ class JwtSecurityTest {
 
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClientList);
         }
 
         @Test
@@ -192,7 +194,7 @@ class JwtSecurityTest {
     class GetJwkPublicKey {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClientList);
 
             when(providers.isZosfmUsed()).thenReturn(false);
         }

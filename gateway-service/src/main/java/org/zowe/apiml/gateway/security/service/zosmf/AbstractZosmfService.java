@@ -56,7 +56,7 @@ public abstract class AbstractZosmfService {
 
     protected AbstractZosmfService(
         AuthConfigurationProperties authConfigurationProperties,
-        DiscoveryClient discovery,
+        @Qualifier("primaryDiscoveryClient") DiscoveryClient discovery,
         @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         ObjectMapper securityObjectMapper
     ) {
