@@ -5,43 +5,11 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## `2.11.0 (2023-08-30)`
 
 * Feature:  Spring cloud gateway routing (#3031) ([a1dd492](https://github.com/zowe/api-layer/commit/a1dd492)), closes [#3031](https://github.com/zowe/api-layer/issues/3031)
-* Feature:  swagger validation in gateway (#3039) ([b5ad040](https://github.com/zowe/api-layer/commit/b5ad040)), closes [#3039](https://github.com/zowe/api-layer/issues/3039)
-* Feature:  fix z/OSMF not available logging before validation (#3013) ([7d5faad](https://github.com/zowe/api-layer/commit/7d5faad)), closes [#3013](https://github.com/zowe/api-layer/issues/3013)
-* Feature:  Style API Portal and  add templating mechanism (#2965) ([b286cef](https://github.com/zowe/api-layer/commit/b286cef)), closes [#2965](https://github.com/zowe/api-layer/issues/2965) [#2956](https://github.com/zowe/api-layer/issues/2956)
-* Feature:  Redesign Catalog detail page (#2932) ([73a1d89](https://github.com/zowe/api-layer/commit/73a1d89)), closes [#2932](https://github.com/zowe/api-layer/issues/2932)
-* Feature:  Accept all tokens in the Bearer header or in the APIML cookie (#2908) ([7c393a6](https://github.com/zowe/api-layer/commit/7c393a6)), closes [#2908](https://github.com/zowe/api-layer/issues/2908)
-* Feature:  separate x509 and oidc mapper configuration (#2922) ([3809622](https://github.com/zowe/api-layer/commit/3809622)), closes [#2922](https://github.com/zowe/api-layer/issues/2922)
-* Feature:  websocket timeout and close server on error (#2914) ([020da87](https://github.com/zowe/api-layer/commit/020da87)), closes [#2914](https://github.com/zowe/api-layer/issues/2914)
-* Feature:  add OIDC auth source (#2850) ([b9c11c1](https://github.com/zowe/api-layer/commit/b9c11c1)), closes [#2850](https://github.com/zowe/api-layer/issues/2850)
-* Feature:  Redesign API Catalog dashboard (#2899) ([def07f2](https://github.com/zowe/api-layer/commit/def07f2)), closes [#2899](https://github.com/zowe/api-layer/issues/2899)
-* Feature:  IDF distributed ID mapping for ACF2 security manager (#2847) ([1bb8281](https://github.com/zowe/api-layer/commit/1bb8281)), closes [#2847](https://github.com/zowe/api-layer/issues/2847)
-* Feature:  IDF distributed ID mapping for TSS security manager (#2846) ([e49b663](https://github.com/zowe/api-layer/commit/e49b663)), closes [#2846](https://github.com/zowe/api-layer/issues/2846)
-* Feature:  Implements Zowe CLI Identity Federation plugin - RACF part (#2811) ([2870a21](https://github.com/zowe/api-layer/commit/2870a21)), closes [#2811](https://github.com/zowe/api-layer/issues/2811)
-* Feature:  Unique authentication cookie name for multi instance deployment (#2812) ([6654271](https://github.com/zowe/api-layer/commit/6654271)), closes [#2812](https://github.com/zowe/api-layer/issues/2812)
-
-
-* Bugfix:  Integration tests for new Cloud Gateway routing (#3044) ([31423e3](https://github.com/zowe/api-layer/commit/31423e3)), closes [#3044](https://github.com/zowe/api-layer/issues/3044)
-* Bugfix:  update messages after docs review (#3032) ([52ec39b](https://github.com/zowe/api-layer/commit/52ec39b)), closes [#3032](https://github.com/zowe/api-layer/issues/3032)
-* Bugfix:  setting default value of nonStrictVerifySslCertificatesOfServices to … (#3029) ([75b658c](https://github.com/zowe/api-layer/commit/75b658c)), closes [#3029](https://github.com/zowe/api-layer/issues/3029)
-* Bugfix:  newlines and ssl error message in z/OSMF validation (#3024) ([0a0b27b](https://github.com/zowe/api-layer/commit/0a0b27b)), closes [#3024](https://github.com/zowe/api-layer/issues/3024)
+* Feature:  Swagger validation for registered services. (#3039) ([b5ad040](https://github.com/zowe/api-layer/commit/b5ad040)), closes [#3039](https://github.com/zowe/api-layer/issues/3039)
+  
+* Bugfix:  Set default value of nonStrictVerifySslCertificatesOfServices to false (#3029) ([75b658c](https://github.com/zowe/api-layer/commit/75b658c)), closes [#3029](https://github.com/zowe/api-layer/issues/3029)
+* Bugfix:  newlines and SSL error message in z/OSMF validation (#3024) ([0a0b27b](https://github.com/zowe/api-layer/commit/0a0b27b)), closes [#3024](https://github.com/zowe/api-layer/issues/3024)
 * Bugfix:  z/OSMF logging improvements (#2998) ([eb7b02e](https://github.com/zowe/api-layer/commit/eb7b02e)), closes [#2998](https://github.com/zowe/api-layer/issues/2998)
-* Bugfix:  dynamically update favicon (#2980) ([d1617b2](https://github.com/zowe/api-layer/commit/d1617b2)), closes [#2980](https://github.com/zowe/api-layer/issues/2980)
-* Bugfix:  Fix responses of security provider including expired account (#2969) ([c4dc217](https://github.com/zowe/api-layer/commit/c4dc217)), closes [#2969](https://github.com/zowe/api-layer/issues/2969)
-* Bugfix:  broken link in readme (#2945) ([016e0e3](https://github.com/zowe/api-layer/commit/016e0e3)), closes [#2945](https://github.com/zowe/api-layer/issues/2945)
-* Bugfix:  Add check for x509 enabled flag (#2930) ([406f588](https://github.com/zowe/api-layer/commit/406f588)), closes [#2930](https://github.com/zowe/api-layer/issues/2930)
-* Bugfix:  return correct JWK when zOSMF is not available (#2936) ([030a34f](https://github.com/zowe/api-layer/commit/030a34f)), closes [#2936](https://github.com/zowe/api-layer/issues/2936)
-* Bugfix:  Validate OIDC token against known IDP's introspect endpoint  (#2934) ([59a077d](https://github.com/zowe/api-layer/commit/59a077d)), closes [#2934](https://github.com/zowe/api-layer/issues/2934)
-* Bugfix:  verify zOSMF JWT support remotely (#2938) ([94acee7](https://github.com/zowe/api-layer/commit/94acee7)), closes [#2938](https://github.com/zowe/api-layer/issues/2938)
-* Bugfix:  fixing the repo link on readme (#2911) ([41f36d1](https://github.com/zowe/api-layer/commit/41f36d1)), closes [#2911](https://github.com/zowe/api-layer/issues/2911)
-* Bugfix:  handle zosmf exceptions (#2901) ([1dcbabd](https://github.com/zowe/api-layer/commit/1dcbabd)), closes [#2901](https://github.com/zowe/api-layer/issues/2901)
-* Bugfix:  update zowe cli deploy component (#2898) ([8fbfb8f](https://github.com/zowe/api-layer/commit/8fbfb8f)), closes [#2898](https://github.com/zowe/api-layer/issues/2898)
-* Bugfix:  Fix parsing swagger2 by API Catalog (#2876) ([cc45774](https://github.com/zowe/api-layer/commit/cc45774)), closes [#2876](https://github.com/zowe/api-layer/issues/2876)
-* Bugfix:  mitigate storing password in the memory (#2858) ([b1596eb](https://github.com/zowe/api-layer/commit/b1596eb)), closes [#2858](https://github.com/zowe/api-layer/issues/2858)
-* Bugfix:  mitigate storing password in the memory (#2867) ([3356b7c](https://github.com/zowe/api-layer/commit/3356b7c)), closes [#2867](https://github.com/zowe/api-layer/issues/2867)
-* Bugfix:  read response from http client (#2854) ([137be23](https://github.com/zowe/api-layer/commit/137be23)), closes [#2854](https://github.com/zowe/api-layer/issues/2854)
-* Bugfix:  passticket generation and limit eureka replication peers threads (#2845) ([42b491e](https://github.com/zowe/api-layer/commit/42b491e)), closes [#2845](https://github.com/zowe/api-layer/issues/2845)
-* Bugfix:  refactor SSL configuration (#2832) ([33f4882](https://github.com/zowe/api-layer/commit/33f4882)), closes [#2832](https://github.com/zowe/api-layer/issues/2832)
-* Bugfix:  update keyring config (#2828) ([c1e1cc9](https://github.com/zowe/api-layer/commit/c1e1cc9)), closes [#2828](https://github.com/zowe/api-layer/issues/2828)
 
 ## `2.10.0 (2023-07-28)`
 
