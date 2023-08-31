@@ -21,6 +21,9 @@ apiml:
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
+    cloudGateway:
+        enableServiceRegistry: true
+
 server:
     port: ${apiml.service.port}
     ssl:
