@@ -27,7 +27,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.requests.Endpoints.X509_ENDPOINT;
 

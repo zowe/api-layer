@@ -33,6 +33,9 @@ apiml:
             verifySslCertificatesOfServices: true
         x509:
             enabled: true
+            acceptForwardedCert: false
+            certificatesUrl: https://localhost:10023/gateway/certificates
+
     banner: console
 
 spring:
