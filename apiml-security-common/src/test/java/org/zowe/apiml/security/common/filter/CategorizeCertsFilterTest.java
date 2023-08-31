@@ -102,11 +102,34 @@ class CategorizeCertsFilterTest {
             void thenRequestNotChanged() throws IOException, ServletException {
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                assertNotNull(nextRequest);
 
                 assertNull(nextRequest.getAttribute("javax.servlet.request.X509Certificate"));
                 assertNull(nextRequest.getAttribute("client.auth.X509Certificate"));
                 assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
                 assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());
+            }
+
+            @Nested
+            class WhenForwardingEnabled {
+
+                @BeforeEach
+                void setUp() {
+                    when(certificateValidator.isForwardingEnabled()).thenReturn(true);
+                    when(certificateValidator.isTrusted(any())).thenReturn(true);
+                }
+
+                @Test
+                void thenRequestNotChanged() throws ServletException, IOException {
+                    filter.doFilter(request, response, chain);
+                    HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
+
+                    assertNull(nextRequest.getAttribute("javax.servlet.request.X509Certificate"));
+                    assertNull(nextRequest.getAttribute("client.auth.X509Certificate"));
+                    assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
+                    assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());
+                }
             }
         }
 
@@ -128,6 +151,7 @@ class CategorizeCertsFilterTest {
             void thenAllClientCertificates() throws IOException, ServletException {
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                assertNotNull(nextRequest);
 
                 X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                 assertNotNull(apimlCerts);
@@ -149,6 +173,7 @@ class CategorizeCertsFilterTest {
 
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                assertNotNull(nextRequest);
 
                 X509Certificate[] cientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                 assertNotNull(cientCerts);
@@ -183,6 +208,7 @@ class CategorizeCertsFilterTest {
 
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
 
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
@@ -203,6 +229,7 @@ class CategorizeCertsFilterTest {
                     when(certificateValidator.isTrusted(certificates)).thenReturn(false);
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
 
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
@@ -231,6 +258,37 @@ class CategorizeCertsFilterTest {
                 void thenClientCertHeaderIgnored() throws ServletException, IOException {
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
+
+                    X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
+                    assertNotNull(apimlCerts);
+                    assertEquals(0, apimlCerts.length);
+
+                    X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
+                    assertNotNull(clientCerts);
+                    assertEquals(4, clientCerts.length);
+                    assertArrayEquals(certificates, clientCerts);
+
+                    assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
+                    assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());
+                }
+            }
+
+            @Nested
+            class WhenInvalidCertificateInHeaderAndForwardingEnabled {
+
+                @BeforeEach
+                public void setUp() {
+                    request.addHeader(CLIENT_CERT_HEADER, "invalid_cert");
+                    when(certificateValidator.isForwardingEnabled()).thenReturn(true);
+                    when(certificateValidator.isTrusted(certificates)).thenReturn(true);
+                }
+
+                @Test
+                void thenCertificateInHeaderIgnored() throws ServletException, IOException {
+                    filter.doFilter(request, response, chain);
+                    HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
 
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
@@ -246,6 +304,28 @@ class CategorizeCertsFilterTest {
                 }
             }
         }
+
+        @Nested
+        class WhenOtherHeadersInRequest {
+
+            private static final String COMMON_HEADER = "User-Agent";
+            private static final String COMMON_HEADER_VALUE = "dummy";
+            @BeforeEach
+            void setUp() {
+                request.addHeader(COMMON_HEADER, COMMON_HEADER_VALUE);
+            }
+
+            @Test
+            void thenOtherHeadersPassThrough() throws ServletException, IOException {
+                filter.doFilter(request, response, chain);
+                HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                assertNotNull(nextRequest);
+
+                assertEquals(COMMON_HEADER_VALUE, nextRequest.getHeader(COMMON_HEADER));
+                assertEquals(COMMON_HEADER_VALUE, nextRequest.getHeaders(COMMON_HEADER).nextElement());
+            }
+        }
+
     }
 
     @Nested
@@ -277,6 +357,7 @@ class CategorizeCertsFilterTest {
             void thenCategorizedCerts() throws IOException, ServletException {
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                assertNotNull(nextRequest);
 
                 X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                 assertNotNull(apimlCerts);
@@ -301,6 +382,7 @@ class CategorizeCertsFilterTest {
 
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                assertNotNull(nextRequest);
 
                 X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                 assertNotNull(clientCerts);
@@ -338,6 +420,7 @@ class CategorizeCertsFilterTest {
 
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
 
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
@@ -358,14 +441,15 @@ class CategorizeCertsFilterTest {
                     when(certificateValidator.isTrusted(certificates)).thenReturn(false);
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
 
-                    X509Certificate[] apimlCerts = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                    X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
                     assertEquals(2, apimlCerts.length);
                     assertSame(certificates[1], apimlCerts[0]);
                     assertSame(certificates[3], apimlCerts[1]);
 
-                    X509Certificate[] clientCerts = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+                    X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                     assertNotNull(clientCerts);
                     assertEquals(2, clientCerts.length);
                     assertSame(certificates[0], clientCerts[0]);
@@ -389,14 +473,15 @@ class CategorizeCertsFilterTest {
                 void thenClientCertHeaderIgnored() throws ServletException, IOException {
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
+                    assertNotNull(nextRequest);
 
-                    X509Certificate[] apimlCerts = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                    X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("javax.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
                     assertEquals(2, apimlCerts.length);
                     assertSame(certificates[1], apimlCerts[0]);
                     assertSame(certificates[3], apimlCerts[1]);
 
-                    X509Certificate[] clientCerts = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+                    X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                     assertNotNull(clientCerts);
                     assertEquals(2, clientCerts.length);
                     assertSame(certificates[0], clientCerts[0]);

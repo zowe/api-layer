@@ -69,7 +69,7 @@ public class TrustedCertificatesProvider {
                     .generateCertificates(new ByteArrayInputStream(pem.getBytes()));
                 trustedCerts.addAll(certs);
                 updateAPIMLPublicKeyCertificates(trustedCerts);
-            } catch (CertificateException e) {
+            } catch (Exception e) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.errorParsingCertificates", e.getMessage());
             }
         }

@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -95,7 +94,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                     .getInstance("X.509")
                     .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader)));
                 return Optional.of(certificate);
-            } catch (CertificateException e) {
+            } catch (Exception e) {
                 apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", e.getMessage(), certFromHeader);
             }
         }
