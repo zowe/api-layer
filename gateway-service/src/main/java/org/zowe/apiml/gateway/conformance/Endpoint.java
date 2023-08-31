@@ -39,8 +39,8 @@ public class Endpoint {
      */
     private final HashMap<String, Set<String>> validResponses;
 
-
-    public boolean isGetResponseCodeDocumented(String responseCode) {
-        return getValidResponses().get("GET").contains(responseCode) || getValidResponses().get("GET").contains("default");
+    public boolean isResponseCodeForMethodDocumented(String responseCode, HttpMethod httpMethod) {
+        String method = httpMethod.toString();
+        return getValidResponses().get(method).contains(responseCode) || getValidResponses().get(method).contains("default");
     }
 }
