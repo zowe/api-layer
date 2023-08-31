@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
@@ -53,6 +54,8 @@ class GatewayScanJobTest {
     private List<ServiceInfo> apimlServicesOne;
     @Mock
     private List<ServiceInfo> apimlServicesTwo;
+    @Mock
+    private EurekaRegistration eurekaRegistration;
     @Mock
     private GatewayIndexService gatewayIndexerService;
     @Mock

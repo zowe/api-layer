@@ -31,6 +31,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
+import javax.validation.constraints.NotNull;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
@@ -108,7 +109,7 @@ public class GatewayIndexService {
      * @param apimlId  unique apimlId
      * @param services List of the services
      */
-    public void putApimlServices(String apimlId, List<ServiceInfo> services) {
+    public void putApimlServices(@NotNull String apimlId, List<ServiceInfo> services) {
         apimlServicesCache.put(apimlId, services);
     }
 
