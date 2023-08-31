@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -58,7 +57,6 @@ public class GatewayScanJob {
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
     private final ServicesInfoService servicesInfoService;
-    private final EurekaRegistration serviceRegistration;
 
     @Value("${apiml.service.apimlId:#{null}}")
     private String currentApimlId;
@@ -74,7 +72,7 @@ public class GatewayScanJob {
     }
 
     private void addLocalServices() {
-        String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(serviceRegistration.getInstanceId());
+        String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(APIML_ID);
         List<ServiceInfo> localServices = servicesInfoService.getServicesInfo();
         gatewayIndexerService.putApimlServices(apimlIdKey, localServices);
     }
