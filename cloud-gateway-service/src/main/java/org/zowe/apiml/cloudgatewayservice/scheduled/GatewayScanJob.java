@@ -43,13 +43,13 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
  *       maxSimultaneousRequests:  - default value 20
  *       clientKeystore: - default value null
  *       clientKeystorePassword: - default value null
- *       enableServiceRegistry: - default value false
+ *       serviceRegistryEnabled: - default value false
  * </pre>
  */
 @EnableScheduling
 @Slf4j
 @Component
-@ConditionalOnExpression("${apiml.cloudGateway.enableServiceRegistry:false}")
+@ConditionalOnExpression("${apiml.cloudGateway.serviceRegistryEnabled:false}")
 @RequiredArgsConstructor
 public class GatewayScanJob {
     public static final String GATEWAY_SERVICE_ID = "GATEWAY";
