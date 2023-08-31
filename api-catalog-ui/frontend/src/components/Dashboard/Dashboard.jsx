@@ -88,13 +88,15 @@ export default class Dashboard extends Component {
             <div className="main-content dashboard-content">
                 <div className="floating-button">
                     <Fab
+                        variant="extended"
                         style={{
                             position: 'absolute',
                             top: '85vh',
-                            left: '80vw',
+                            left: '70vw',
+                            whiteSpace: 'nowrap',
                         }}
                     >
-                        test
+                        Give us Feedback
                     </Fab>
                 </div>
                 {!apiPortalEnabled && (
