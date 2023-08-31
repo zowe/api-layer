@@ -45,9 +45,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService.METADATA_APIML_ID_KEY;
 import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelperTest.KEYSTORE_PATH;
 import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelperTest.PASSWORD;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @ExtendWith(MockitoExtension.class)
 class GatewayIndexServiceTest {
@@ -67,7 +67,7 @@ class GatewayIndexServiceTest {
     @BeforeEach
     public void setUp() {
 
-        lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(METADATA_APIML_ID_KEY, "testApimlIdA"));
+        lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(APIML_ID, "testApimlIdA"));
         lenient().when(eurekaInstance.getInstanceId()).thenReturn("testInstanceIdA");
 
         serviceInfoA = new ServiceInfo();

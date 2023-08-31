@@ -12,6 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.scheduled;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.cloud.client.ServiceInstance;
@@ -21,11 +22,15 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.product.services.ServiceInfo;
+import org.zowe.apiml.product.services.ServicesInfoService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 /**
  * Scheduled job to refresh registry of all registered gateways services.
@@ -34,7 +39,7 @@ import java.util.Map;
  *   apiml:
  *     cloudGateway:
  *       cachePeriodSec: - default value 120 seconds
- *       parallelismLevel:  - default value 20
+ *       maxSimultaneousRequests:  - default value 20
  *       clientKeystore: - default value null
  *       clientKeystorePassword: - default value null
  *       gatewayScanJobEnabled: - default value true
@@ -47,16 +52,28 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GatewayScanJob {
     public static final String GATEWAY_SERVICE_ID = "GATEWAY";
+
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
-    @Value("${apiml.cloudGateway.parallelismLevel:20}")
-    private int parallelismLevel;
+    private final ServicesInfoService servicesInfoService;
+
+    @Value("${apiml.service.apimlId:#{null}}")
+    private String currentApimlId;
+    @Value("${apiml.cloudGateway.maxSimultaneousRequests:20}")
+    private int maxSimultaneousRequests;
 
     @Scheduled(initialDelay = 5000, fixedDelayString = "${apiml.cloudGateway.refresh-interval-ms:30000}")
     public void startScanExternalGatewayJob() {
         log.debug("Scan gateways job start");
         doScanExternalGateway()
                 .subscribe();
+
+        addLocalServices();
+    }
+
+    private void addLocalServices() {
+        List<ServiceInfo> localServices = servicesInfoService.getServicesInfo();
+        gatewayIndexerService.putApimlServices(currentApimlId, localServices);
     }
 
     /**
@@ -64,11 +81,13 @@ public class GatewayScanJob {
      */
     protected Flux<List<ServiceInfo>> doScanExternalGateway() {
 
-        Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID);
+        Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID)
+                .map(gateways -> gateways.stream().filter(info -> !StringUtils.equals(info.getMetadata().getOrDefault(APIML_ID, "N/A"), currentApimlId)).collect(Collectors.toList()));
+
         Flux<ServiceInstance> serviceInstanceFlux = registeredGateways.flatMapMany(Flux::fromIterable);
 
         return serviceInstanceFlux
-                .flatMap(gatewayIndexerService::indexGatewayServices, parallelismLevel);
+                .flatMap(gatewayIndexerService::indexGatewayServices, maxSimultaneousRequests);
     }
 
     /**
@@ -79,7 +98,7 @@ public class GatewayScanJob {
 
         Map<String, List<ServiceInfo>> fullState = gatewayIndexerService.listRegistry(null, null);
 
-        log.warn("Cache having {} apimlId records", fullState.keySet().size());
+        log.debug("Cache having {} apimlId records, {}", fullState.keySet().size(), System.currentTimeMillis());
         for (String apimlId : fullState.keySet()) {
             List<ServiceInfo> servicesInfo = gatewayIndexerService.listRegistry(apimlId, null).get(apimlId);
             log.debug("\t {}-{} : found {} external services", apimlId, apimlId, servicesInfo.size());

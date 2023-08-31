@@ -8,18 +8,24 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.services;
+package org.zowe.apiml.cloudgatewayservice.config;
 
 import com.netflix.discovery.EurekaClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.services.ServicesInfoService;
 
 @Configuration
-public class ServerInfoConfig {
+public class RegistryConfig {
+
+    @Bean
+    public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.service.hostname}") String hostname,
+                                                              @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
+        return GatewayConfigProperties.builder().scheme(scheme).hostname(hostname + ":" + port).build();
+    }
 
     @Bean
     public EurekaMetadataParser getEurekaMetadataParser() {
@@ -28,10 +34,7 @@ public class ServerInfoConfig {
 
     @Bean
     public ServicesInfoService servicesInfoService(EurekaClient eurekaClient,
-                                                   EurekaMetadataParser eurekaMetadataParser, GatewayConfigProperties gatewayConfigProperties, TransformService transformService) {
-        ServicesInfoService servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties);
-        servicesInfoService.setTransformService(transformService);
-        return servicesInfoService;
+                                                   EurekaMetadataParser eurekaMetadataParser, GatewayConfigProperties gatewayConfigProperties) {
+        return new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties);
     }
-
 }

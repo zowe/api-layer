@@ -15,6 +15,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ObjectUtils;
@@ -52,7 +53,8 @@ public class ServicesInfoService {
     private final EurekaClient eurekaClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final GatewayConfigProperties gatewayConfigProperties;
-    private final TransformService transformService;
+    @Setter
+    private TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
         List<ServiceInfo> servicesInfo = new LinkedList<>();
@@ -195,6 +197,10 @@ public class ServicesInfoService {
 
     private String getGatewayUrl(String url, String serviceId, ServiceType type, RoutedServices routes) {
         if (url == null) return null;
+
+        if (transformService == null) {
+            return url;
+        }
 
         try {
             return transformService.transformURL(

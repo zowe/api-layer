@@ -23,6 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.product.services.ServiceInfo;
+import org.zowe.apiml.product.services.ServicesInfoService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -56,12 +57,14 @@ class GatewayScanJobTest {
     private GatewayIndexService gatewayIndexerService;
     @Mock
     private InstanceInfoService instanceInfoService;
+    @Mock
+    private ServicesInfoService servicesInfoService;
     @InjectMocks
     private GatewayScanJob gatewayScanJob;
 
     @BeforeEach
     public void setUp() {
-        ReflectionTestUtils.setField(gatewayScanJob, "parallelismLevel", 3);
+        ReflectionTestUtils.setField(gatewayScanJob, "maxSimultaneousRequests", 3);
 
         lenient().when(instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID)).thenReturn(Mono.just(asList(instanceOne, instanceTwo)));
 

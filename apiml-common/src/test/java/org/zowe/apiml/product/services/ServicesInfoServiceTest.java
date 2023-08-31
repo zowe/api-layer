@@ -107,7 +107,8 @@ class ServicesInfoServiceTest {
 
     @BeforeEach
     void setUp() {
-        servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties, transformService);
+        servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties);
+        servicesInfoService.setTransformService(transformService);
     }
 
     @Test

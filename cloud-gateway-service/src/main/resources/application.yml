@@ -3,13 +3,19 @@ eureka:
         serviceUrl:
             defaultZone: https://localhost:10011/eureka/
 
+spring:
+    application:
+        name: ${apiml.service.id}
+
 apiml:
     gateway:
         timeout: 60
     service:
+        apimlId: apiml1
         id: cloud-gateway
         port: 10023
         hostname: localhost
+        scheme: https  # "https" or "http"
         corsEnabled: true
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
     security:
