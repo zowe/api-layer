@@ -59,6 +59,7 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_debug
 # - ZWE_configs_port - the port the api gateway service will use
+# - ZWE_configs_apimlId
 # - ZWE_configs_server_internal_ssl_certificate_keystore_alias
 # - ZWE_configs_server_internal_ssl_certificate_keystore_file
 # - ZWE_configs_server_internal_enabled
@@ -131,6 +132,12 @@ else
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" ]; then
+    httpProtocol="https"
+else
+    httpProtocol="http"
+fi
+
 if [ -z "${ZWE_configs_apiml_catalog_serviceId}" ]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
@@ -200,6 +207,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
+    -Dapiml.service.externalUrl="${httpProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
+    -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_PARAMETER_HA_INSTANCE:-localhost} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \

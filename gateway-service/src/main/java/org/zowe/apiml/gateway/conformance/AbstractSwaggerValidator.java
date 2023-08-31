@@ -11,10 +11,12 @@
 package org.zowe.apiml.gateway.conformance;
 
 
-import org.springframework.http.HttpMethod;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
@@ -71,17 +73,6 @@ public abstract class AbstractSwaggerValidator {
                 if (!(version.startsWith("v") && isCreatable(version.substring(1)))) {
                     result.add("REST endpoint at " + result + " is not versioned according to item 8 of the conformance criteria");
                 }
-            }
-        }
-        return result;
-    }
-
-    public Set<Endpoint> getGetMethodEndpoints() {
-        Set<Endpoint> result = new HashSet<>();
-
-        for (Endpoint endpoint : getAllEndpoints()) {
-            if (endpoint.getHttpMethods().contains(HttpMethod.GET)) {
-                result.add(endpoint);
             }
         }
         return result;

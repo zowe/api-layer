@@ -18,7 +18,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpMethod;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.io.File;
@@ -127,10 +126,9 @@ class ValidatorFactoryTest {
             String sampleSwagger = swaggerFromPath(path);
 
             AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
-            Set<Endpoint> endpoints = result.getGetMethodEndpoints();
+            Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
-            assertTrue(endpoints.iterator().next().getHttpMethods().contains(HttpMethod.GET));
             List<String> problems = result.getProblemsWithEndpointUrls();
             assertTrue(problems.isEmpty());
         }
@@ -152,10 +150,9 @@ class ValidatorFactoryTest {
             }
 
             AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
-            Set<Endpoint> endpoints = result.getGetMethodEndpoints();
+            Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
-            assertTrue(endpoints.iterator().next().getHttpMethods().contains(HttpMethod.GET));
             List<String> problems = result.getProblemsWithEndpointUrls();
             assertTrue(problems.toString().contains("is not versioned according to item 8 of the conformance criteria"));
         }
@@ -177,11 +174,10 @@ class ValidatorFactoryTest {
             }
 
             AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
-            Set<Endpoint> endpoints = result.getGetMethodEndpoints();
+            Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
 
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice"));
-            assertTrue(endpoints.iterator().next().getHttpMethods().contains(HttpMethod.GET));
             List<String> problems = result.getProblemsWithEndpointUrls();
             assertTrue(problems.toString().contains("missing /api/"));
         }

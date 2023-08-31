@@ -41,8 +41,18 @@ class CloudGatewayProxyTest {
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
         given().header(HEADER_X_FORWARD_TO, "apiml1")
             .get(new URI(scgUrl)).then().statusCode(200);
-        given().header(HEADER_X_FORWARD_TO, "apiml1")
+        given().header(HEADER_X_FORWARD_TO, "apiml2")
             .get(new URI(scgUrl)).then().statusCode(200);
+    }
+
+    @Test
+    void givenBasePath_thenRouteToProvidedHost() throws URISyntaxException {
+        RestAssured.useRelaxedHTTPSValidation();
+
+        String scgUrl1 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1/gateway/version");
+        String scgUrl2 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml2/gateway/version");
+        given().get(new URI(scgUrl1)).then().statusCode(200);
+        given().get(new URI(scgUrl2)).then().statusCode(200);
     }
 
     @Test

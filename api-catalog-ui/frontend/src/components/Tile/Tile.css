@@ -102,3 +102,18 @@ a {
         margin: -11px;
     }
 }
+
+.card-action {
+    position: relative;
+    overflow: hidden;
+    height: 79px;
+    width: 1096px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    z-index: 0;
+    transition: z-index .7s, box-shadow .7s;
+}
+
+#service-title {
+    color: rgb(88, 96, 110);
+    font-weight: bold;
+}
