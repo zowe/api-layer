@@ -119,19 +119,19 @@ export default class ServiceTab extends Component {
         return apiVersions;
     }
 
-    handleDialogOpen = (currentService) => {
-        const { selectedVersion } = this.state;
-        if (selectedVersion === null) {
-            this.setState({ previousVersion: currentService.defaultApiVersion });
-        } else {
-            this.setState({ previousVersion: selectedVersion });
-        }
-        this.setState({
-            isDialogOpen: true,
-            selectedVersion: 'diff',
-            previousVersion: selectedVersion ?? currentService.defaultApiVersion,
-        });
-    };
+    // handleDialogOpen = (currentService) => {
+    //     const { selectedVersion } = this.state;
+    //     if (selectedVersion === null) {
+    //         this.setState({ previousVersion: currentService.defaultApiVersion });
+    //     } else {
+    //         this.setState({ previousVersion: selectedVersion });
+    //     }
+    //     this.setState({
+    //         isDialogOpen: true,
+    //         selectedVersion: 'diff',
+    //         previousVersion: selectedVersion ?? currentService.defaultApiVersion,
+    //     });
+    // };
 
     handleDialogClose = () => {
         this.setState({ isDialogOpen: false, selectedVersion: null });
@@ -252,13 +252,13 @@ export default class ServiceTab extends Component {
                             <Typography id="swagger-label" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
-                            {containsVersion && currentService && (
+                            {/* {containsVersion && currentService && (
                                 <Typography id="version-label" variant="subtitle2">
                                     Version
                                 </Typography>
-                            )}
+                            )} */}
                         </div>
-                        {containsVersion && currentService && (
+                        {/* {containsVersion && currentService && (
                             <div id="version-div">
                                 <Select
                                     displayEmpty
@@ -287,7 +287,7 @@ export default class ServiceTab extends Component {
                                     <Typography className="version-text">Compare API Versions</Typography>
                                 </Button>
                             </div>
-                        )}
+                        )} */}
                         {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
                         {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer

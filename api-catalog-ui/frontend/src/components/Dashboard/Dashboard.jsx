@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Typography, IconButton, Snackbar } from '@material-ui/core';
+import { Typography, IconButton, Snackbar, Fab } from '@material-ui/core';
 import { Alert } from '@mui/material';
 import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
@@ -86,6 +86,17 @@ export default class Dashboard extends Component {
         }
         return (
             <div className="main-content dashboard-content">
+                <div className="floating-button">
+                    <Fab
+                        style={{
+                            position: 'absolute',
+                            top: '85vh',
+                            left: '80vw',
+                        }}
+                    >
+                        test
+                    </Fab>
+                </div>
                 {!apiPortalEnabled && (
                     <div id="dash-buttons">
                         <DialogDropdown
