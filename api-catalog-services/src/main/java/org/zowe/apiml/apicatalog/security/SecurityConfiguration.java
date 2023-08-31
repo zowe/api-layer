@@ -45,6 +45,7 @@ import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.util.Collections;
 import java.util.Set;
@@ -69,6 +70,7 @@ public class SecurityConfiguration {
     private final HandlerInitializer handlerInitializer;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
+    private final CertificateValidator certificateValidator;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     @Value("${server.attls.enabled:false}")
@@ -124,9 +126,9 @@ public class SecurityConfiguration {
         }
 
         private CategorizeCertsFilter reversedCategorizeCertFilter() {
-            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64);
+            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
             out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
             return out;
         }
     }
