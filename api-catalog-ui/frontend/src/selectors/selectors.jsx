@@ -49,6 +49,7 @@ export const getFilteredServices = (tiles, searchCriteria) => {
     const filteredTiles = JSON.parse(JSON.stringify(tiles));
 
     return filteredTiles
+        .filter((tile) => tile?.title)
         .filter((tile) => {
             const filteredServices = tile.services.filter((service) => filterService(searchCriteria, service));
 
