@@ -1,4 +1,4 @@
-package org.zowe.apiml.cloudgatewayservice.service;
+package org.zowe.apiml.services;
 
 
 import com.netflix.appinfo.InstanceInfo;
@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +35,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
 @ExtendWith(MockitoExtension.class)
 class BasicInfoServiceTest {
-
 
     // Client test configuration
     private final static String CLIENT_SERVICE_ID = "testclient";

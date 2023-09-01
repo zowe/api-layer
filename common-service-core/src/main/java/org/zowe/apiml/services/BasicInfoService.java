@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.cloudgatewayservice.service;
+package org.zowe.apiml.services;
 
 
 import com.fasterxml.jackson.core.Version;
@@ -17,13 +17,10 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.services.ServiceInfo;
-import org.zowe.apiml.services.ServiceInfoUtils;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -51,7 +48,6 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
  */
 @Slf4j
 @RequiredArgsConstructor
-@Service
 public class BasicInfoService {
 
     private final EurekaClient eurekaClient;

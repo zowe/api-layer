@@ -20,7 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.cloudgatewayservice.service.BasicInfoService;
+import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.services.ServiceInfo;

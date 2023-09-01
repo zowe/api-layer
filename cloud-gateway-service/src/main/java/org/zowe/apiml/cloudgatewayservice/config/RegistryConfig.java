@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
+import com.netflix.discovery.EurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 
 @Configuration
@@ -20,5 +22,10 @@ public class RegistryConfig {
     @Bean
     public EurekaMetadataParser getEurekaMetadataParser() {
         return new EurekaMetadataParser();
+    }
+
+    @Bean
+    public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
+        return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }
 }

@@ -19,7 +19,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.cloudgatewayservice.service.BasicInfoService;
+import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.services.ServiceInfo;
