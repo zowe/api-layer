@@ -29,9 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
@@ -47,7 +45,7 @@ public class DiscoveryClientConfig {
     private final ApplicationContext context;
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
 
-    @Bean(destroyMethod = "shutdown")
+    @Bean
     @RefreshScope
     @Qualifier("primaryApimlEurekaClient")
     public ApimlDiscoveryClient primaryApimlEurekaClient(ApplicationInfoManager manager,
@@ -66,9 +64,11 @@ public class DiscoveryClientConfig {
         return discoveryClientClient;
     }
 
-    public ApimlDiscoveryClient secondaryApimlEurekaClient(ApplicationInfoManager manager,
-                                              EurekaClientConfig config,
-                                              @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    @Bean(destroyMethod = "shutdown")
+    @RefreshScope
+    public DiscoveryClientWrapper secondaryApimlEurekaClient(@Qualifier("primaryApimlEurekaClient") ApimlDiscoveryClient client1, ApplicationInfoManager manager,
+                                                         EurekaClientConfig config,
+                                                         @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
@@ -81,34 +81,14 @@ public class DiscoveryClientConfig {
         ((EurekaClientConfigBean)config).setServiceUrl(urls);
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
-
-        return discoveryClientClient;
+        return new DiscoveryClientWrapper(Arrays.asList(discoveryClientClient, client1));
     }
-
     @Bean
     @Qualifier("primaryDiscoveryClient")
-    public EurekaDiscoveryClient discoveryClient( EurekaClient client,
+    public EurekaDiscoveryClient discoveryClient(@Qualifier("primaryApimlEurekaClient") EurekaClient client,
                                                  EurekaClientConfig clientConfig) {
         return new EurekaDiscoveryClient(client, clientConfig);
     }
-    @Bean
-    @Qualifier("secondaryDiscoveryClient")
-    public EurekaDiscoveryClient discoveryClient2(ApplicationInfoManager manager,
-                                                  EurekaClientConfig config,
-                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                                  EurekaClientConfig clientConfig) {
-        ApplicationInfoManager appManager;
-        if (AopUtils.isAopProxy(manager)) {
-            appManager = ProxyUtils.getTargetObject(manager);
-        } else {
-            appManager = manager;
-        }
-        Map<String,String> urls = new HashMap<>();
-        urls.put("defaultZone","https://localhost:10021/eureka/");
-        ((EurekaClientConfigBean)config).setServiceUrl(urls);
-        final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
-        discoveryClientClient.registerHealthCheck(healthCheckHandler);
-        return new EurekaDiscoveryClient(discoveryClientClient, clientConfig);
-    }
+
 
 }

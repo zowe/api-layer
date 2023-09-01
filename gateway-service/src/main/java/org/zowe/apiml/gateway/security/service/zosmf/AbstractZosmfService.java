@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -38,6 +39,7 @@ import java.util.function.Supplier;
 
 import static org.zowe.apiml.security.SecurityUtils.readPassword;
 
+@RequiredArgsConstructor
 @Slf4j
 public abstract class AbstractZosmfService {
 
@@ -53,18 +55,6 @@ public abstract class AbstractZosmfService {
     protected final DiscoveryClient discovery;
     protected final RestTemplate restTemplateWithoutKeystore;
     protected final ObjectMapper securityObjectMapper;
-
-    protected AbstractZosmfService(
-        AuthConfigurationProperties authConfigurationProperties,
-        @Qualifier("primaryDiscoveryClient") DiscoveryClient discovery,
-        @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-        ObjectMapper securityObjectMapper
-    ) {
-        this.authConfigurationProperties = authConfigurationProperties;
-        this.discovery = discovery;
-        this.restTemplateWithoutKeystore = restTemplateWithoutKeystore;
-        this.securityObjectMapper = securityObjectMapper;
-    }
 
     /**
      * @return serviceId of z/OSMF service from configuration, which is used
