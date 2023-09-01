@@ -19,10 +19,10 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.cloudgatewayservice.service.BasicInfoService;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
-import org.zowe.apiml.product.services.ServiceInfo;
-import org.zowe.apiml.product.services.ServicesInfoService;
+import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -56,7 +56,7 @@ public class GatewayScanJob {
 
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
-    private final ServicesInfoService servicesInfoService;
+    private final BasicInfoService basicInfoService;
 
     @Value("${apiml.service.apimlId:#{null}}")
     private String currentApimlId;
@@ -73,7 +73,7 @@ public class GatewayScanJob {
 
     private void addLocalServices() {
         String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(APIML_ID);
-        List<ServiceInfo> localServices = servicesInfoService.getServicesInfo();
+        List<ServiceInfo> localServices = basicInfoService.getServicesInfo();
         gatewayIndexerService.putApimlServices(apimlIdKey, localServices);
     }
 

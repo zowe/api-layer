@@ -61,7 +61,6 @@ configurations.all {
 dependencies {
     api project(':common-service-core')
     api project(':apiml-utility')
-    api project(path: ':apiml-common')
 
     implementation libs.eh.cache
     implementation libs.spring.cloud.starter.gateway

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.zowe.apiml.product.services.ServiceInfo;
+import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.product.services.ServicesInfoService;
 
 import java.util.Arrays;

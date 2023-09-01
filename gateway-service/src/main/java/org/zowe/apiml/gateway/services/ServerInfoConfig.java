@@ -29,9 +29,8 @@ public class ServerInfoConfig {
     @Bean
     public ServicesInfoService servicesInfoService(EurekaClient eurekaClient,
                                                    EurekaMetadataParser eurekaMetadataParser, GatewayConfigProperties gatewayConfigProperties, TransformService transformService) {
-        ServicesInfoService servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties);
-        servicesInfoService.setTransformService(transformService);
-        return servicesInfoService;
+        return new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties, transformService);
+
     }
 
 }

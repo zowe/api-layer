@@ -27,6 +27,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
+import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -53,8 +54,7 @@ public class ServicesInfoService {
     private final EurekaClient eurekaClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final GatewayConfigProperties gatewayConfigProperties;
-    @Setter
-    private TransformService transformService;
+    private final TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
         List<ServiceInfo> servicesInfo = new LinkedList<>();

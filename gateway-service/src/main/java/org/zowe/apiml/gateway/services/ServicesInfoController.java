@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.product.services.ServiceInfo;
+import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.product.services.ServicesInfoService;
 
 import java.util.List;
