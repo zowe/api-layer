@@ -12,11 +12,11 @@ body #bottom-info-div {
     margin-bottom: var( --spaceMedium );
   }
   a {
-    color: var( --text10Disabled );
+    color: #53565A;
     font-size: var( --fontSmall );
 
     &:hover {
-      color: var( --text15 );
+      color: #1976D2;
     }
   }
     .links {

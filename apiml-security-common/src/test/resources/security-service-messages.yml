@@ -55,6 +55,51 @@ messages:
       type: ERROR
       text: "No authorization token provided for URL '%s'"
 
+    # TLS,Certificate messages
+    # 500-599
+
+    - key: org.zowe.apiml.security.common.filter.errorParsingCertificate
+      number: ZWEAT500
+      type: ERROR
+      text: "Failed to parse the client certificate forwarded from the central Gateway. Error message %s. The client certificate was %s"
+      reason: "The string sent by the central Gateway was not recognized as valid DER-encoded certificate in the Base64 printable form."
+      action: "Ensure that the forwarding of client certificate is enabled also in the central Gateway. Check for any error messages from the central Gateway."
+
+    - key: org.zowe.apiml.security.common.verify.invalidResponse
+      number: ZWEAT501
+      type: ERROR
+      text: "Failed to get trusted certificates from the central Gateway. Unexpected response from %s endpoint. Status code: %s. Response body: %s"
+      reason: "The response status code is different from expected 200 OK."
+      action: "Ensure that the parameter apiml.security.x509.certificatesUrl is correctly configured with the complete URL to the central Gateway certificates endpoint. Test the URL manually."
+
+    - key: org.zowe.apiml.security.common.verify.invalidURL
+      number: ZWEAT502
+      type: ERROR
+      text: "Invalid URL specified to get trusted certificates from the central Gateway. Error message: %s"
+      reason: "The parameter apiml.security.x509.certificatesUrl is not correctly configured with the complete URL to the central Gateway certificates endpoint."
+      action: "Ensure that the parameter apiml.security.x509.certificatesUrl is correctly configured."
+
+    - key: org.zowe.apiml.security.common.verify.httpError
+      number: ZWEAT503
+      type: ERROR
+      text: "An error occurred during retrieval of trusted certificates from the central Gateway. Error message: %s"
+      reason: "The communication with the cloud gateway got interrupted or an error occurred during processing the response."
+      action: "Check the provided error message. Contact the support."
+
+    - key: org.zowe.apiml.security.common.verify.errorParsingCertificates
+      number: ZWEAT504
+      type: ERROR
+      text: "Failed to parse the trusted certificates provided by the central Gateway. Error message %s"
+      reason: "The string sent by the central Gateway was not recognized as valid DER-encoded certificates in the Base64 printable form."
+      action: "Check that the URL configured in apiml.security.x509.certificatesUrl responds with valid DER-encoded certificates in the Base64 printable form."
+
+    - key: org.zowe.apiml.security.common.verify.untrustedCert
+      number: ZWEAT505
+      type: ERROR
+      text: "Incoming request certificate is not one of the trusted certificates provided by the central Gateway."
+      reason: "The Gateway performs additional check of request certificates when the central Gateway forwards incoming client certificate to the domain Gateway. This check may fail when the certificatesUrl parameter does not point to proper central Gateway certificates endpoint."
+      action: "Check that the URL configured in apiml.security.x509.certificatesUrl points to the central Gateway and it responds with valid DER-encoded certificates in the Base64 printable form."
+
     # Personal access token messages
     - key: org.zowe.apiml.security.query.invalidAccessTokenBody
       number: ZWEAT605
