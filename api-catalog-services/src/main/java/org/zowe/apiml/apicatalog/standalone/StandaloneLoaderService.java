@@ -69,11 +69,7 @@ public class StandaloneLoaderService {
 
         for (File file : appFiles) {
             log.debug("Processing file {}", file.getName());
-            try {
-                createContainerFromFile(file);
-            } catch (Exception e) {
-                log.error("Failed to load file {} because {}", file.getName(), e.getMessage());
-            }
+            createContainerFromFile(file);
         }
     }
 
@@ -87,16 +83,12 @@ public class StandaloneLoaderService {
 
         for (File openAPIFile : openAPIFiles) {
             log.debug("Processing {}", openAPIFile.getName());
-            try {
-                loadApiDocCache(openAPIFile);
-            } catch (Exception e) {
-                log.error("Fail to load API Doc from {} because {}", openAPIFile.getName(), e.getMessage());
-            }
+            loadApiDocCache(openAPIFile);
         }
     }
 
     private void createContainerFromFile(File file) {
-        log.debug("Initialising services from '{}' file.", file.getName());
+        log.info("Initialising services from '{}' file.", file.getName());
 
         try {
             Applications apps = objectMapper.readValue(file, Applications.class);
@@ -107,8 +99,6 @@ public class StandaloneLoaderService {
             });
         } catch (IOException e) {
             log.error("Unable to parse service definition '{}' because {}", file.getName(), e.getMessage());
-        } catch (Exception e) {
-            log.error("Exception encountered while loading '{}' because {}", file.getName(), e.getMessage());
         }
     }
 
