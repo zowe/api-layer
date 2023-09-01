@@ -32,3 +32,11 @@ h6#footer-message {
     font-weight: 400;
     line-height: 18.7px;
 }
+
+@media (max-width: 800px) {
+  body #bottom-info-div {
+    flex-direction: column;
+  }
+
+}
+

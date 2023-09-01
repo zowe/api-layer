@@ -71,6 +71,7 @@ class App extends Component {
                                         />
                                     </Switch>
                                 </div>
+                                {/* Adding scroll broke the footer */}
                                 <Route path="/(dashboard|service/.*)/" component={Footer} />
                             </>
                         </Router>
