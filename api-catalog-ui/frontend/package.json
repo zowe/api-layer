@@ -4,7 +4,7 @@
     "private": true,
     "homepage": ".",
     "dependencies": {
-        "@babel/core": "7.14.2",
+
         "@emotion/core": "10.1.1",
         "@emotion/is-prop-valid": "1.1.0",
         "@emotion/react": "11.5.0",
@@ -26,6 +26,7 @@
         "lodash": "4.17.21",
         "loglevel": "1.7.1",
         "openapi-snippet": "0.13.0",
+        "querystring-es3": "0.2.1",
         "react": "17.0.2",
         "react-app-polyfill": "2.0.0",
         "react-dom": "17.0.2",
@@ -49,16 +50,16 @@
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
-        "build": "react-scripts build",
+        "build": "react-app-rewired build",
         "postbuild": "rimraf build/**/*.map",
-        "test": "react-scripts test --silent --watchAll=false --env=jsdom components/* utils/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* helpers/* --reporters=default --reporters=jest-html-reporter --coverage",
+        "test": "react-app-rewired test --silent --watchAll=false --env=jsdom components/* utils/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* helpers/* --reporters=default --reporters=jest-html-reporter --coverage",
         "cy:open": "cypress open",
         "cy:e2e:ci": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --env catalogHomePage=https://gateway-service:10010/apicatalog/ui/v1 --browser chrome --headless",
         "cy:e2e:localhost": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser chrome --headless",
         "cy:e2e:localhost-headful": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser chrome",
         "cy:e2e:localhost-firefox": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless",
         "the-scripts-below-might-be-stale": "",
-        "start": "cross-env HTTPS=true react-scripts start",
+        "start": "cross-env HTTPS=true react-app-rewired start",
         "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
         "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
         "analyze": "source-map-explorer build/static/js/main.*",
@@ -71,6 +72,8 @@
         "includeFailureMsg": true
     },
     "devDependencies": {
+        "@babel/core": "7.22.11",
+        "@babel/plugin-proposal-private-property-in-object": "7.21.11",
         "@babel/eslint-parser": "7.18.2",
         "@babel/preset-react": "7.18.6",
         "@testing-library/dom": "8.11.1",
@@ -88,13 +91,13 @@
         "eslint": "7.32.0",
         "eslint-config-airbnb": "19.0.4",
         "eslint-config-prettier": "8.3.0",
+        "eslint-plugin-cypress": "2.13.3",
         "eslint-plugin-flowtype": "5.7.2",
         "eslint-plugin-header": "3.1.1",
         "eslint-plugin-import": "2.26.0",
         "eslint-plugin-jsx-a11y": "6.6.0",
         "eslint-plugin-prettier": "3.4.0",
         "eslint-plugin-react": "7.30.1",
-        "eslint-plugin-cypress": "2.13.3",
         "express": "4.17.3",
         "jest": "26.6.0",
         "jest-environment-enzyme": "7.1.2",
@@ -108,6 +111,7 @@
         "nodemon": "2.0.18",
         "nth-check": "2.0.1",
         "prettier": "2.3.0",
+        "react-app-rewired": "2.2.1",
         "react-error-overlay": "6.0.9",
         "react-scripts": "5.0.1",
         "react-testing-library": "5.3.0",
@@ -123,19 +127,6 @@
         "jsdom": "16.5.0",
         "got": "12.1.0",
         "react-error-overlay": "6.0.9"
-    },
-    "jest": {
-        "transformIgnorePatterns": [
-            "/node_modules/?!(swagger-ui-react/swagger-ui-es-bundle-core.js)"
-        ],
-        "collectCoverageFrom": [
-            "src/App.{jsx,js}",
-            "src/**/*.{jsx,js}",
-            "src/**/reducers/*.{jsx,js}",
-            "!src/index.js",
-            "!src/responsive-tests/**",
-            "!cypress/*"
-        ]
     },
     "engines": {
         "npm": "=9.3.1",
