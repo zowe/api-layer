@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.services;
+package org.zowe.apiml.product.services;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.netflix.appinfo.InstanceInfo;

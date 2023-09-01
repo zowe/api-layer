@@ -27,3 +27,7 @@ configs:
   port: 7563
   debug: false
   sslDebug: ""
+  apiml:
+    service:
+      # Enables forwarding client certificate from request to next gateway in a special request header
+      forwardClientCertEnabled: false

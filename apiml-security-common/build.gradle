@@ -10,6 +10,7 @@ dependencies {
     implementation libs.apache.commons.lang3
     implementation libs.bcprov;
     implementation libs.bcpkix;
+    implementation libs.http.client;
 
     implementation libs.spring.aop
     implementation libs.spring.beans

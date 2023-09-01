@@ -14,6 +14,7 @@ import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GatewayTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -33,11 +34,14 @@ import static io.restassured.RestAssured.given;
  */
 @GatewayTest
 class ValidateAPITest implements TestWithStartedInstances {
-
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
     @BeforeEach
     public void relaxedHTTPS() {
         RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
     @Test
@@ -46,6 +50,7 @@ class ValidateAPITest implements TestWithStartedInstances {
         given()
             .log().all()
             .param("serviceID", "discoverableclient")
+            .header("Cookie", "apimlAuthenticationToken=" + token)
             .when()
             .post(getLegacyEndpointURLPost())
             .then()
@@ -59,6 +64,7 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testGetEndpoint() {
         given()
             .log().all()
+            .header("Cookie", "apimlAuthenticationToken=" + token)
             .when()
             .get(getEndpointURLGet() + "/discoverableclient")
             .then()

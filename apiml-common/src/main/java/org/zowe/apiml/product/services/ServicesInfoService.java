@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.services;
+package org.zowe.apiml.product.services;
 
 import com.fasterxml.jackson.core.Version;
 import com.netflix.appinfo.InstanceInfo;
@@ -17,7 +17,6 @@ import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
@@ -28,7 +27,14 @@ import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -37,7 +43,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPT
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class ServicesInfoService {
 
@@ -45,8 +50,8 @@ public class ServicesInfoService {
     public static final String CURRENT_VERSION = "1";
 
     private final EurekaClient eurekaClient;
-    private final GatewayConfigProperties gatewayConfigProperties;
     private final EurekaMetadataParser eurekaMetadataParser;
+    private final GatewayConfigProperties gatewayConfigProperties;
     private final TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
