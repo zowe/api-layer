@@ -18,6 +18,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,6 +40,8 @@ public class StandaloneInitializer {
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (isStandalone(event.getApplicationContext()) && hasRun.compareAndSet(false, true)) {
             standaloneLoaderService.initializeCache();
+            new ServiceStartupEventHandler().onServiceStartup("API Catalog Service Standalone",
+                ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         }
     }
 
