@@ -84,8 +84,7 @@ body {
     &, .main-content dashboard-content {
       display: flex;
       flex-direction: column;
-      height: 100%;
-      overflow: auto;
+      overflow: hidden;
     }
     > .header {
       align-items: center;
@@ -286,5 +285,4 @@ body {
 }
 .App {
   height: 100dvh;
-  overflow: hidden;
 }
