@@ -8,14 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.product.services;
+package org.zowe.apiml.gateway.services;
 
 import com.fasterxml.jackson.core.Version;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ObjectUtils;
@@ -28,13 +27,13 @@ import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import org.zowe.apiml.services.ServiceInfo;
+import org.zowe.apiml.services.ServiceInfoUtils;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,6 +42,10 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
+import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
+import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
+import static org.zowe.apiml.services.ServiceInfoUtils.getMajorVersion;
+import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -90,6 +93,11 @@ public class ServicesInfoService {
         }
 
         return getServiceInfo(application);
+    }
+
+    private String getBaseUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
+        return String.format("%s://%s%s",
+                gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname(), getBasePath(apiInfo, instanceInfo));
     }
 
     private ServiceInfo getServiceInfo(Application application) {
@@ -147,7 +155,7 @@ public class ServicesInfoService {
         return completeList.stream()
                 .collect(groupingBy(
                         apiInfo -> new AbstractMap.SimpleEntry<>(apiInfo.getApiId(), getMajorVersion(apiInfo)),
-                        minBy(Comparator.comparingInt(this::getMajorVersion))
+                        minBy(Comparator.comparingInt(ServiceInfoUtils::getMajorVersion))
                 ))
                 .values()
                 .stream()
@@ -177,24 +185,6 @@ public class ServicesInfoService {
                 .collect(Collectors.toList());
     }
 
-    private Map<String, ServiceInfo.Instances> getInstances(List<InstanceInfo> appInstances) {
-        return appInstances.stream()
-                .collect(Collectors.toMap(
-                        InstanceInfo::getInstanceId,
-                        instanceInfo -> ServiceInfo.Instances.builder()
-                                .status(instanceInfo.getStatus())
-                                .hostname(instanceInfo.getHostName())
-                                .ipAddr(instanceInfo.getIPAddr())
-                                .protocol(getProtocol(instanceInfo))
-                                .port(getPort(instanceInfo))
-                                .homePageUrl(instanceInfo.getHomePageUrl())
-                                .healthCheckUrl(getHealthCheckUrl(instanceInfo))
-                                .statusPageUrl(instanceInfo.getStatusPageUrl())
-                                .customMetadata(getCustomMetadata(instanceInfo.getMetadata()))
-                                .build()
-                ));
-    }
-
     private String getGatewayUrl(String url, String serviceId, ServiceType type, RoutedServices routes) {
         if (url == null) return null;
 
@@ -213,64 +203,12 @@ public class ServicesInfoService {
         }
     }
 
-    private Version getVersion(String version) {
-        if (version == null) return Version.unknownVersion();
-
-        String[] versions = version.split("\\.");
-
-        int major = 0;
-        int minor = 0;
-        int patch = 0;
-        try {
-            if (versions.length >= 1) major = Integer.parseInt(versions[0]);
-            if (versions.length >= 2) minor = Integer.parseInt(versions[1]);
-            if (versions.length >= 3) patch = Integer.parseInt(versions[2]);
-        } catch (NumberFormatException ex) {
-            log.debug("Incorrect version {}", version);
-        }
-
-        return new Version(major, minor, patch, null, null, null);
-    }
-
     private InstanceInfo.InstanceStatus getStatus(List<InstanceInfo> instances) {
         if (instances.stream().anyMatch(instance -> instance.getStatus().equals(InstanceInfo.InstanceStatus.UP))) {
             return InstanceInfo.InstanceStatus.UP;
         } else {
             return InstanceInfo.InstanceStatus.DOWN;
         }
-    }
-
-    private Map<String, String> getCustomMetadata(Map<String, String> metadata) {
-        return metadata.entrySet().stream()
-                .filter(entry -> !entry.getKey().startsWith("apiml."))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    private String getBasePath(ApiInfo apiInfo, InstanceInfo instanceInfo) {
-        return String.format("/%s/%s", instanceInfo.getAppName().toLowerCase(), apiInfo.getGatewayUrl());
-    }
-
-    private String getBaseUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
-        return String.format("%s://%s%s",
-                gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname(), getBasePath(apiInfo, instanceInfo));
-    }
-
-    private String getHealthCheckUrl(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ?
-                instanceInfo.getSecureHealthCheckUrl() : instanceInfo.getHealthCheckUrl();
-    }
-
-    private int getPort(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ?
-                instanceInfo.getSecurePort() : instanceInfo.getPort();
-    }
-
-    private String getProtocol(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http";
-    }
-
-    private int getMajorVersion(ServiceInfo.ApiInfoExtended apiInfo) {
-        return getVersion(apiInfo.getVersion()).getMajorVersion();
     }
 
     private InstanceInfo getInstanceWithHighestVersion(List<InstanceInfo> appInstances) {

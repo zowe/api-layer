@@ -82,6 +82,7 @@ dependencies {
     implementation libs.spring.expression
     implementation libs.bcpkix
     implementation libs.nimbusJoseJwt
+    implementation libs.janino
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

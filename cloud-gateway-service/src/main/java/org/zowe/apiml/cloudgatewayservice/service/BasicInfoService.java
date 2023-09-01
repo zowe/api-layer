@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 package org.zowe.apiml.cloudgatewayservice.service;
 
 
@@ -13,14 +23,13 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.services.ServiceInfo;
-
+import org.zowe.apiml.services.ServiceInfoUtils;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,7 +38,17 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
+import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
+import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
+import static org.zowe.apiml.services.ServiceInfoUtils.getMajorVersion;
+import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
+import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
 
+/**
+ * Similar to {@link org.zowe.apiml.gateway.services.ServicesInfoService} service which does not depend on gateway-service components.
+ * Following properties left blank:
+ * {@link ServiceInfo.Service#homePageUrl} and {@link ServiceInfo.ApiInfoExtended#swaggerUrl}
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -66,14 +85,11 @@ public class BasicInfoService {
                 .build();
     }
 
-    private InstanceInfo.InstanceStatus getStatus(List<InstanceInfo> instances) {
-        if (instances.stream().anyMatch(instance -> instance.getStatus().equals(InstanceInfo.InstanceStatus.UP))) {
-            return InstanceInfo.InstanceStatus.UP;
-        } else {
-            return InstanceInfo.InstanceStatus.DOWN;
-        }
-    }
-
+    /**
+     * uses simplified:
+     * - getApiInfos
+     * - getApiInfos
+     */
     private ServiceInfo.Apiml getApiml(List<InstanceInfo> appInstances) {
         return ServiceInfo.Apiml.builder()
                 .apiInfo(getApiInfos(appInstances))
@@ -81,6 +97,7 @@ public class BasicInfoService {
                 .authentication(getAuthentication(appInstances))
                 .build();
     }
+
 
     /**
      * simplified version, following part is excluded:
@@ -94,54 +111,6 @@ public class BasicInfoService {
                 .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
                 .build();
     }
-
-    private Map<String, ServiceInfo.Instances> getInstances(List<InstanceInfo> appInstances) {
-        return appInstances.stream()
-                .collect(Collectors.toMap(
-                        InstanceInfo::getInstanceId,
-                        instanceInfo -> ServiceInfo.Instances.builder()
-                                .status(instanceInfo.getStatus())
-                                .hostname(instanceInfo.getHostName())
-                                .ipAddr(instanceInfo.getIPAddr())
-                                .protocol(getProtocol(instanceInfo))
-                                .port(getPort(instanceInfo))
-                                .homePageUrl(instanceInfo.getHomePageUrl())
-                                .healthCheckUrl(getHealthCheckUrl(instanceInfo))
-                                .statusPageUrl(instanceInfo.getStatusPageUrl())
-                                .customMetadata(getCustomMetadata(instanceInfo.getMetadata()))
-                                .build()
-                ));
-    }
-
-    private InstanceInfo getInstanceWithHighestVersion(List<InstanceInfo> appInstances) {
-        InstanceInfo instanceInfo = appInstances.get(0);
-        Version highestVersion = Version.unknownVersion();
-
-        for (InstanceInfo currentInfo : appInstances) {
-            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.getMetadata());
-            for (ApiInfo apiInfo : apiInfoList) {
-                Version version = getVersion(apiInfo.getVersion());
-                if (version.compareTo(highestVersion) > 0) {
-                    highestVersion = version;
-                    instanceInfo = currentInfo;
-                }
-            }
-        }
-
-        return instanceInfo;
-    }
-
-    private List<Authentication> getAuthentication(List<InstanceInfo> appInstances) {
-        return appInstances.stream()
-                .map(instanceInfo -> {
-                    Authentication authentication = eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
-                    return authentication.isEmpty() ? null : authentication;
-                })
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
 
     /**
      * Simplified version, following properties are excluded:
@@ -169,7 +138,7 @@ public class BasicInfoService {
         return completeList.stream()
                 .collect(groupingBy(
                         apiInfo -> new AbstractMap.SimpleEntry<>(apiInfo.getApiId(), getMajorVersion(apiInfo)),
-                        minBy(Comparator.comparingInt(this::getMajorVersion))
+                        minBy(Comparator.comparingInt(ServiceInfoUtils::getMajorVersion))
                 ))
                 .values()
                 .stream()
@@ -177,52 +146,31 @@ public class BasicInfoService {
                 .collect(Collectors.toList());
     }
 
-    private String getBasePath(ApiInfo apiInfo, InstanceInfo instanceInfo) {
-        return String.format("/%s/%s", instanceInfo.getAppName().toLowerCase(), apiInfo.getGatewayUrl());
+    private List<Authentication> getAuthentication(List<InstanceInfo> appInstances) {
+        return appInstances.stream()
+                .map(instanceInfo -> {
+                    Authentication authentication = eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
+                    return authentication.isEmpty() ? null : authentication;
+                })
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
-    private String getHealthCheckUrl(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ?
-                instanceInfo.getSecureHealthCheckUrl() : instanceInfo.getHealthCheckUrl();
-    }
+    private InstanceInfo getInstanceWithHighestVersion(List<InstanceInfo> appInstances) {
+        InstanceInfo instanceInfo = appInstances.get(0);
+        Version highestVersion = Version.unknownVersion();
 
-    private int getPort(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ?
-                instanceInfo.getSecurePort() : instanceInfo.getPort();
-    }
-
-    private String getProtocol(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http";
-    }
-
-    private int getMajorVersion(ServiceInfo.ApiInfoExtended apiInfo) {
-        return getVersion(apiInfo.getVersion()).getMajorVersion();
-    }
-
-    private Map<String, String> getCustomMetadata(Map<String, String> metadata) {
-        return metadata.entrySet().stream()
-                .filter(entry -> !entry.getKey().startsWith("apiml."))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    private Version getVersion(String version) {
-        if (version == null) return Version.unknownVersion();
-
-        String[] versions = version.split("\\.");
-
-        int major = 0;
-        int minor = 0;
-        int patch = 0;
-        try {
-            if (versions.length >= 1) major = Integer.parseInt(versions[0]);
-            if (versions.length >= 2) minor = Integer.parseInt(versions[1]);
-            if (versions.length >= 3) patch = Integer.parseInt(versions[2]);
-        } catch (NumberFormatException ex) {
-            log.debug("Incorrect version {}", version);
+        for (InstanceInfo currentInfo : appInstances) {
+            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.getMetadata());
+            for (ApiInfo apiInfo : apiInfoList) {
+                Version version = getVersion(apiInfo.getVersion());
+                if (version.compareTo(highestVersion) > 0) {
+                    highestVersion = version;
+                    instanceInfo = currentInfo;
+                }
+            }
         }
-
-        return new Version(major, minor, patch, null, null, null);
+        return instanceInfo;
     }
-
-
 }

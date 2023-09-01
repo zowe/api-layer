@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
-import org.zowe.apiml.product.services.ServicesInfoService;
 
 @Configuration
 public class ServerInfoConfig {

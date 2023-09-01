@@ -8,7 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.product.services;
+package org.zowe.apiml.gateway.services;
+
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
