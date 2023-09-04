@@ -8,6 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import getBaseUrl from '../helpers/urls';
+
 function checkForSwagger(service, hasSwagger) {
     const serviceAPIKeys = Object.keys(service.apis);
     serviceAPIKeys.forEach((api) => {
@@ -95,7 +97,7 @@ function setMultipleElements(uiConfig) {
  * @returns {Promise<T>}
  */
 function fetchImagePath() {
-    const getImgUrl = `${process.env.REACT_APP_GATEWAY_URL}/apicatalog/api/v1/custom-logo`;
+    const getImgUrl = `${getBaseUrl()}/custom-logo`;
 
     return fetch(getImgUrl)
         .then((response) => {
