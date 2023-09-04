@@ -12,11 +12,9 @@ package org.zowe.apiml.services;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.netflix.appinfo.InstanceInfo;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
@@ -33,8 +31,6 @@ public class ServiceInfo {
     private Apiml apiml;
     private Map<String, Instances> instances;
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -44,8 +40,6 @@ public class ServiceInfo {
         private List<Authentication> authentication;
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -61,8 +55,6 @@ public class ServiceInfo {
         private Map<String, String> customMetadata;
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -72,8 +64,6 @@ public class ServiceInfo {
         private String homePageUrl;
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
     @SuperBuilder
     @EqualsAndHashCode(callSuper = true)
