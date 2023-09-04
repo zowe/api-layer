@@ -26,6 +26,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
+import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
