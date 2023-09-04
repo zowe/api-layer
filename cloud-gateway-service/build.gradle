@@ -60,6 +60,8 @@ configurations.all {
 
 dependencies {
     api project(':common-service-core')
+    api project(':apiml-utility')
+
     implementation libs.eh.cache
     implementation libs.spring.cloud.starter.gateway
 
@@ -80,6 +82,7 @@ dependencies {
     implementation libs.spring.expression
     implementation libs.bcpkix
     implementation libs.nimbusJoseJwt
+    implementation libs.janino
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -89,7 +92,7 @@ dependencies {
     testAnnotationProcessor libs.lombok
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.rest.assured
-
+    testImplementation libs.reactorTest
     testImplementation libs.mockito.inline
 }
 

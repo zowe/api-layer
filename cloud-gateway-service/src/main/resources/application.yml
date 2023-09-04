@@ -3,19 +3,28 @@ eureka:
         serviceUrl:
             defaultZone: https://localhost:10011/eureka/
 
+spring:
+    application:
+        name: ${apiml.service.id}
+
 apiml:
     gateway:
         timeout: 60
     service:
+        apimlId: apiml1
         id: cloud-gateway
         port: 10023
         hostname: localhost
+        scheme: https  # "https" or "http"
         corsEnabled: true
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         forwardClientCertEnabled: false
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
+    cloudGateway:
+        serviceRegistryEnabled: false
+
 server:
     port: ${apiml.service.port}
     ssl:
@@ -29,7 +38,6 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
-spring:
     cloud:
         gateway:
             discovery:
@@ -41,10 +49,13 @@ spring:
     main:
         allow-circular-references: true
 
+logbackServiceName: ZWEACG1
+
 logging:
     level:
         org.springframework.cloud.gateway: DEBUG
         reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClientConnect: OFF
 
 management:
     endpoint:

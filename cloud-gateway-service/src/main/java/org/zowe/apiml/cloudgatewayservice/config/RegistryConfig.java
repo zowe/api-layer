@@ -8,18 +8,16 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.services;
+package org.zowe.apiml.cloudgatewayservice.config;
 
 import com.netflix.discovery.EurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.cloudgatewayservice.service.BasicInfoService;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.transform.TransformService;
-import org.zowe.apiml.product.services.ServicesInfoService;
 
 @Configuration
-public class ServerInfoConfig {
+public class RegistryConfig {
 
     @Bean
     public EurekaMetadataParser getEurekaMetadataParser() {
@@ -27,9 +25,7 @@ public class ServerInfoConfig {
     }
 
     @Bean
-    public ServicesInfoService servicesInfoService(EurekaClient eurekaClient,
-                                                   EurekaMetadataParser eurekaMetadataParser, GatewayConfigProperties gatewayConfigProperties, TransformService transformService) {
-        return new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties, transformService);
+    public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
+        return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }
-
 }

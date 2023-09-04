@@ -45,8 +45,10 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
@@ -112,6 +114,7 @@ public class ConnectionsConfig {
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
     private final ApplicationContext context;
+    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
@@ -171,9 +174,9 @@ public class ConnectionsConfig {
             trustManagerFactory.init(trustStore);
             return SslContextBuilder.forClient().keyManager(keyManagerFactory).trustManager(trustManagerFactory).build();
         } catch (Exception e) {
-            log.error("Exception while creating SSL context", e);
-            System.exit(1);
-            return null;
+            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, factory().getConfig());
         }
     }
 
