@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InstanceInfoService {
@@ -25,6 +27,7 @@ public class InstanceInfoService {
     private final ReactiveDiscoveryClient discoveryClient;
 
     public Mono<List<ServiceInstance>> getServiceInstance(String serviceId) {
+        log.trace("serviceId {}", serviceId);
         return discoveryClient.getInstances(serviceId).collectList();
     }
 
