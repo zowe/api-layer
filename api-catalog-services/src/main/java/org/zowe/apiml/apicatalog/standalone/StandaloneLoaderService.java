@@ -61,24 +61,28 @@ public class StandaloneLoaderService {
 
     private void loadApplicationCache() {
         File[] appFiles = getFiles(servicesDirectory + "/apps");
+        log.debug("Found {} files", appFiles.length);
         if (appFiles.length == 0) {
             log.error("No service definition files found.");
             return;
         }
 
         for (File file : appFiles) {
+            log.debug("Processing file {}", file.getName());
             createContainerFromFile(file);
         }
     }
 
     private void loadOpenAPICache() {
         File[] openAPIFiles = getFiles(servicesDirectory + "/apiDocs");
+        log.debug("Found {} API Doc files", openAPIFiles.length);
         if (openAPIFiles.length == 0) {
             log.error("No apiDocs files found.");
             return;
         }
 
         for (File openAPIFile : openAPIFiles) {
+            log.debug("Processing {}", openAPIFile.getName());
             loadApiDocCache(openAPIFile);
         }
     }
@@ -118,7 +122,6 @@ public class StandaloneLoaderService {
             }
             String serviceId = name[0];
             String apiVersion = name[1];
-
 
             String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
 
