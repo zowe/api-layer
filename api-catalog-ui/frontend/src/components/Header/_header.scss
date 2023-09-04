@@ -6,10 +6,7 @@ body {
         }
     }
   #product-title {
-      font-size: var( --spaceLarger );
-      font-family: var( --fontFamily00 );
-      font-weight: 600;
-      margin-left: 20px;
+    display: none;
   }
   #user-info-text {
     padding: var( --spaceSmaller ) var( --spaceSmaller ) 0px;
