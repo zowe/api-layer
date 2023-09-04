@@ -52,7 +52,6 @@ public class DiscoveryClientConfig {
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
-    @Qualifier("primaryApimlEurekaClient")
     public ApimlDiscoveryClient primaryApimlEurekaClient(ApplicationInfoManager manager,
                                                          EurekaClientConfig config,
                                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler
@@ -71,8 +70,7 @@ public class DiscoveryClientConfig {
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
-    @Autowired
-    public DiscoveryClientWrapper secondaryApimlEurekaClient(ApplicationInfoManager manager,
+    public DiscoveryClientWrapper additionalDiscoverClientWrapper(ApplicationInfoManager manager,
                                                              EurekaClientConfig config,
                                                              @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
@@ -97,8 +95,7 @@ public class DiscoveryClientConfig {
     }
 
     @Bean
-    @Qualifier("primaryDiscoveryClient")
-    public EurekaDiscoveryClient discoveryClient(@Qualifier("primaryApimlEurekaClient") EurekaClient client,
+    public EurekaDiscoveryClient discoveryClient(EurekaClient client,
                                                  EurekaClientConfig clientConfig) {
         return new EurekaDiscoveryClient(client, clientConfig);
     }

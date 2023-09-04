@@ -123,7 +123,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     public ZosmfService(
         final AuthConfigurationProperties authConfigurationProperties,
-        final @Qualifier("primaryApimlEurekaClient") DiscoveryClient discovery,
+        final DiscoveryClient discovery,
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         final ObjectMapper securityObjectMapper,
         final ApplicationContext applicationContext,

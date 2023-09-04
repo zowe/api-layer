@@ -29,7 +29,7 @@ public class ServerInfoConfig {
 
 
     @Bean
-    public ServicesInfoService servicesInfoService(@Qualifier("primaryApimlEurekaClient") EurekaClient eurekaClient,
+    public ServicesInfoService servicesInfoService(EurekaClient eurekaClient,
                                                    EurekaMetadataParser eurekaMetadataParser, GatewayConfigProperties gatewayConfigProperties, TransformService transformService) {
         return new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties, transformService);
     }
