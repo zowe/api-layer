@@ -188,10 +188,6 @@ public class ServicesInfoService {
     private String getGatewayUrl(String url, String serviceId, ServiceType type, RoutedServices routes) {
         if (url == null) return null;
 
-        if (transformService == null) {
-            return url;
-        }
-
         try {
             return transformService.transformURL(
                     type,
