@@ -43,6 +43,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
  *       maxSimultaneousRequests:  - default value 20
  *       clientKeystore: - default value null
  *       clientKeystorePassword: - default value null
+ *       clientKeystoreType: - default PKCS12
  *       serviceRegistryEnabled: - default value false
  * </pre>
  */

@@ -27,4 +27,5 @@ public class InstanceInfoService {
     public Mono<List<ServiceInstance>> getServiceInstance(String serviceId) {
         return discoveryClient.getInstances(serviceId).collectList();
     }
+
 }

@@ -63,14 +63,16 @@ public class GatewayIndexService {
     public GatewayIndexService(WebClient defaultWebClient,
                                @Value("${apiml.cloudGateway.cachePeriodSec:120}") int cachePeriodSec,
                                @Value("${apiml.cloudGateway.clientKeystore:#{null}}") String clientKeystorePath,
-                               @Value("${apiml.cloudGateway.clientKeystorePassword:#{null}}") char[] clientKeystorePassword) {
+                               @Value("${apiml.cloudGateway.clientKeystorePassword:#{null}}") char[] clientKeystorePassword,
+                               @Value("${apiml.cloudGateway.clientKeystoreType:PKCS12}") String keystoreType
+                               ) {
         this.defaultWebClient = defaultWebClient;
 
         apimlGatewayLookup = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
         apimlServicesCache = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
 
         if (isNotBlank(clientKeystorePath) && nonNull(clientKeystorePassword)) {
-            customClientSslContext = load(clientKeystorePath, clientKeystorePassword);
+            customClientSslContext = load(clientKeystorePath, clientKeystorePassword, keystoreType);
         }
     }
 

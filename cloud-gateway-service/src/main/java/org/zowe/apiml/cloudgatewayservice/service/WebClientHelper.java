@@ -45,14 +45,15 @@ public class WebClientHelper {
      *
      * @param keystorePath path to the keystore file
      * @param password     keystore password
+     * @param keystoreType keystore type
      * @throws IllegalArgumentException if keystore file does not exist.
      * @throws HttpsConfigError         if any error occur during the context creation.
      */
-    public static SslContext load(String keystorePath, char[] password) {
+    public static SslContext load(String keystorePath, char[] password, String keystoreType) {
         File keyStoreFile = new File(keystorePath);
         if (keyStoreFile.exists()) {
             try (InputStream is = Files.newInputStream(Paths.get(keystorePath))) {
-                KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                KeyStore keyStore = KeyStore.getInstance(keystoreType);
                 keyStore.load(is, password);
                 return initSslContext(keyStore, password);
             } catch (Exception e) {

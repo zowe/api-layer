@@ -80,7 +80,7 @@ class GatewayIndexServiceTest {
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        gatewayIndexService = new GatewayIndexService(webClient, 60, null, null);
+        gatewayIndexService = new GatewayIndexService(webClient, 60, null, null, null);
     }
 
     @Nested
@@ -153,7 +153,7 @@ class GatewayIndexServiceTest {
         @Test
         void shouldInitializeCustomSslContext() {
 
-            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD);
+            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD, "PKCS12");
 
             SslContext customClientSslContext = (SslContext) ReflectionTestUtils.getField(gatewayIndexService, "customClientSslContext");
 
@@ -162,7 +162,7 @@ class GatewayIndexServiceTest {
 
         @Test
         void shouldNotUseDefaultWebClientWhenCustomContextIdProvided() {
-            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD);
+            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD, "PKCS12");
 
             StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
                     .verifyComplete();
@@ -173,7 +173,7 @@ class GatewayIndexServiceTest {
         @Test
         void shouldSkipCustomSslContextCreationIfPasswordNotDefined() {
 
-            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, null);
+            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, null, null);
 
             SslContext customClientSslContext = (SslContext) ReflectionTestUtils.getField(gatewayIndexService, "customClientSslContext");
 
@@ -182,7 +182,7 @@ class GatewayIndexServiceTest {
 
         @Test
         void shouldUseDefaultWebClientWhenCustomSslContextIsNotProvided() {
-            gatewayIndexService = new GatewayIndexService(webClient, 60, null, null);
+            gatewayIndexService = new GatewayIndexService(webClient, 60, null, null, null);
 
             StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
                     .verifyComplete();

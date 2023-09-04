@@ -29,18 +29,18 @@ class WebClientHelperTest {
     class WhenLoading {
         @Test
         void givenWrongPath_thenThrowException() {
-            assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> WebClientHelper.load("../wrong/path", PASSWORD));
+            assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> WebClientHelper.load("../wrong/path", PASSWORD, "PKCS12"));
         }
 
         @Test
         void givenCorrectPath_thenLoadSSLContext() {
-            final SslContext sslContext = WebClientHelper.load(KEYSTORE_PATH, PASSWORD);
+            final SslContext sslContext = WebClientHelper.load(KEYSTORE_PATH, PASSWORD, "PKCS12");
             assertThat(sslContext).isNotNull();
         }
 
         @Test
         void givenWrongPassword_httpConfigErrorIsExpected() {
-            HttpsConfigError error = catchThrowableOfType(() -> WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", WRONG_PASSWORD), HttpsConfigError.class);
+            HttpsConfigError error = catchThrowableOfType(() -> WebClientHelper.load("../keystore/localhost/localhost.keystore.p12", WRONG_PASSWORD, "PKCS12"), HttpsConfigError.class);
             assertThat(error.getCode()).isEqualTo(HTTP_CLIENT_INITIALIZATION_FAILED);
             assertThat(error.getConfig()).isNull();
         }
