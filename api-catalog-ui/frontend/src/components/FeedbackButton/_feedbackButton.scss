@@ -1,0 +1,12 @@
+.floating-button {
+  position: fixed;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  flex-direction: row-reverse;
+  z-index: 1000;
+  .MuiButtonBase-root, &.MuiFab-root, &.MuiFab-extended {
+    background-color: var( --criticalShade10 ) !important;
+    color: white;
+
+  }
+}

@@ -21,6 +21,7 @@ import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
 export default class Dashboard extends Component {
     componentDidMount() {
@@ -86,19 +87,7 @@ export default class Dashboard extends Component {
         }
         return (
             <div className="main-content dashboard-content">
-                <div className="floating-button">
-                    <Fab
-                        variant="extended"
-                        style={{
-                            position: 'absolute',
-                            top: '85vh',
-                            left: '70vw',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        Give us Feedback
-                    </Fab>
-                </div>
+                <FeedbackButton />
                 {!apiPortalEnabled && (
                     <div id="dash-buttons">
                         <DialogDropdown
