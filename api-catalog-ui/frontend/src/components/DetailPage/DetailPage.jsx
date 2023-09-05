@@ -19,6 +19,7 @@ import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
 export default class DetailPage extends Component {
     componentDidMount() {
@@ -97,6 +98,7 @@ export default class DetailPage extends Component {
         }
         return (
             <div className="main">
+                <FeedbackButton />
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
