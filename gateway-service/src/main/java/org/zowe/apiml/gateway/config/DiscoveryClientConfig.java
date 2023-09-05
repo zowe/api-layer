@@ -83,7 +83,7 @@ public class DiscoveryClientConfig {
         EurekaClientConfigBean configBean = new EurekaClientConfigBean();
         BeanUtils.copyProperties(config, configBean);
         Map<String, String> urls = new HashMap<>();
-        urls.put("defaultZone", "https://localhost:10021/eureka/");
+        urls.put("defaultZone", "https://discovery-service-2:10011/eureka/");
         configBean.setServiceUrl(urls);
 
         MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
