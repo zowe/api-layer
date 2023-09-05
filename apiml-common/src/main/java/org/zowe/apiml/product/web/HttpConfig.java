@@ -300,6 +300,8 @@ public class HttpConfig {
     }
 
     @Bean
-    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {return eurekaJerseyClientBuilder;}
+    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
+        return eurekaJerseyClientBuilder;
+    }
 
 }

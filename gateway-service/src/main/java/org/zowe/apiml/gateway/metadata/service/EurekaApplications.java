@@ -16,7 +16,6 @@ import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,17 +26,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EurekaApplications {
 
-    private final List<EurekaClient> eurekaClientList;
+    private final EurekaClient eurekaClient;
 
     public List<Application> getRegistered() {
-        List<Application> result = new ArrayList<>();
-        for(EurekaClient eurekaClient : eurekaClientList) {
-            Applications applications = eurekaClient.getApplications();
-            if (applications == null) {
-                continue;
-            }
-            result.addAll(applications.getRegisteredApplications());
+        Applications applications = eurekaClient.getApplications();
+        if (applications == null) {
+            return Collections.emptyList();
         }
-        return result;
+        return applications.getRegisteredApplications();
     }
 }

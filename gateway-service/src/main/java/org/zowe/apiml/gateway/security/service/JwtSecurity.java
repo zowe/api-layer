@@ -80,14 +80,14 @@ public class JwtSecurity {
     private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
     @Autowired
-    public JwtSecurity(Providers providers, List<ApimlDiscoveryClient> discoveryClient) {
+    public JwtSecurity(Providers providers, ApimlDiscoveryClient discoveryClient) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
         this.zosmfListener = new ZosmfListener(discoveryClient);
     }
 
     @VisibleForTesting
-    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, List<ApimlDiscoveryClient> discoveryClient) {
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient) {
         this(providers, discoveryClient);
 
         this.keyStore = keyStore;
@@ -288,10 +288,10 @@ public class JwtSecurity {
 
     class ZosmfListener {
         private boolean isZosmfReady = false;
-        private final List<ApimlDiscoveryClient> discoveryClientList;
+        private final ApimlDiscoveryClient discoveryClient;
 
-        private ZosmfListener(List<ApimlDiscoveryClient> discoveryClientList) {
-            this.discoveryClientList = discoveryClientList;
+        private ZosmfListener(ApimlDiscoveryClient discoveryClient) {
+            this.discoveryClient = discoveryClient;
         }
 
         // instance variable so can create an accessor for unit testing purposes
@@ -307,8 +307,8 @@ public class JwtSecurity {
                 if (providers.isZosmfAvailableAndOnline()) {
                     events.add("z/OSMF instance " + zosmfServiceId + " is available and online.");
                     log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);
-                    for (ApimlDiscoveryClient discoveryClient : discoveryClientList)
-                        discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
+
+                    discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
                     isZosmfReady = true;
 
                     try {
@@ -326,9 +326,7 @@ public class JwtSecurity {
         };
 
         public void register() {
-            for (ApimlDiscoveryClient discoveryClient : discoveryClientList) {
-                discoveryClient.registerEventListener(zosmfRegisteredListener);
-            }
+            discoveryClient.registerEventListener(zosmfRegisteredListener);
         }
 
         public boolean isZosmfReady() {

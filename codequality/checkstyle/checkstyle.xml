@@ -51,9 +51,5 @@
 
     </module>
 
-    <!-- Read checkstyle suppressions from a file -->
-    <module name="SuppressionFilter">
-        <property name="file" value="${configDir}/suppressions.xml"/>
-    </module>
 
 </module>
