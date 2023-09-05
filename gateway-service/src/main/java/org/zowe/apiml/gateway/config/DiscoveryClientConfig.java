@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
@@ -71,8 +70,8 @@ public class DiscoveryClientConfig {
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     public DiscoveryClientWrapper additionalDiscoverClientWrapper(ApplicationInfoManager manager,
-                                                             EurekaClientConfig config,
-                                                             @Autowired(required = false) HealthCheckHandler healthCheckHandler
+                                                                  EurekaClientConfig config,
+                                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {

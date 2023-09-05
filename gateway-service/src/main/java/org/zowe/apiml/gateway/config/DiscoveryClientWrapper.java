@@ -19,7 +19,7 @@ import java.util.List;
 public class DiscoveryClientWrapper {
     private List<ApimlDiscoveryClient> discoveryClients;
 
-    public void shutdown(){
+    public void shutdown() {
         discoveryClients.forEach(ApimlDiscoveryClient::shutdown);
     }
 }
