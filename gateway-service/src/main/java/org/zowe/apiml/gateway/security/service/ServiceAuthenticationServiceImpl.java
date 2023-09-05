@@ -13,8 +13,8 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -54,6 +54,7 @@ import java.util.Optional;
  * also in loadbalancer
  */
 @Service
+@AllArgsConstructor
 public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationService {
 
     private static final String CACHE_BY_SERVICE_ID = "serviceAuthenticationByServiceId";
@@ -64,14 +65,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
-
-    public ServiceAuthenticationServiceImpl(@Qualifier("primaryApimlEurekaClient") EurekaClient discoveryClient, EurekaMetadataParser eurekaMetadataParser, AuthenticationSchemeFactory authenticationSchemeFactory, CacheManager cacheManager, CacheUtils cacheUtils) {
-        this.discoveryClient = discoveryClient;
-        this.eurekaMetadataParser = eurekaMetadataParser;
-        this.authenticationSchemeFactory = authenticationSchemeFactory;
-        this.cacheManager = cacheManager;
-        this.cacheUtils = cacheUtils;
-    }
 
     public Authentication getAuthentication(InstanceInfo instanceInfo) {
         return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
