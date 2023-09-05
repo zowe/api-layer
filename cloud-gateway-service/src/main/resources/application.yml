@@ -5,14 +5,14 @@ eureka:
 
 spring:
     application:
-        name: ${apiml.service.id}
+        name: cloud-gateway
 
 apiml:
     gateway:
         timeout: 60
     service:
         apimlId: apiml1
-        id: cloud-gateway
+        id: ${apiml.service.id}
         port: 10023
         hostname: localhost
         scheme: https  # "https" or "http"
@@ -23,7 +23,7 @@ apiml:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
     cloudGateway:
-        serviceRegistryEnabled: false
+        serviceRegistryEnabled: true
 
 server:
     port: ${apiml.service.port}
