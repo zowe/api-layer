@@ -131,10 +131,7 @@ public class GatewayIndexService {
     }
 
     private Optional<String> extractApimlId(ServiceInstance registration) {
-        if (registration.getMetadata() != null) {
-            return Optional.ofNullable(registration.getMetadata().get(APIML_ID));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(registration.getMetadata()).map(m -> m.get(APIML_ID));
     }
 
     /**
