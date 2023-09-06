@@ -65,7 +65,7 @@ class GatewayIndexServiceTest {
     private ServiceInstance eurekaInstance;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(APIML_ID, "testApimlIdA"));
         lenient().when(eurekaInstance.getInstanceId()).thenReturn("testInstanceIdA");
