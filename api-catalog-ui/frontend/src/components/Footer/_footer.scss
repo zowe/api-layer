@@ -37,6 +37,19 @@ h6#footer-message {
   body #bottom-info-div {
     flex-direction: column;
   }
+  .left {
+    .MuiTypography-root, .MuiTypography-subtitle2 {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-left: 0 !important;
+      #footer-logo {
+        width: auto !important;
+        margin-right: 0 !important;
+        margin-bottom: 6px !important;
+      }
+    }
+  }
 
 }
 
