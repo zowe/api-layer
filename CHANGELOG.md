@@ -2,6 +2,15 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.11.0 (2023-08-30)`
+
+* Feature:  Spring cloud gateway routing (#3031) ([a1dd492](https://github.com/zowe/api-layer/commit/a1dd492)), closes [#3031](https://github.com/zowe/api-layer/issues/3031)
+* Feature:  Swagger validation for registered services. (#3039) ([b5ad040](https://github.com/zowe/api-layer/commit/b5ad040)), closes [#3039](https://github.com/zowe/api-layer/issues/3039)
+  
+* Bugfix:  Set default value of nonStrictVerifySslCertificatesOfServices to false (#3029) ([75b658c](https://github.com/zowe/api-layer/commit/75b658c)), closes [#3029](https://github.com/zowe/api-layer/issues/3029)
+* Bugfix:  newlines and SSL error message in z/OSMF validation (#3024) ([0a0b27b](https://github.com/zowe/api-layer/commit/0a0b27b)), closes [#3024](https://github.com/zowe/api-layer/issues/3024)
+* Bugfix:  z/OSMF logging improvements (#2998) ([eb7b02e](https://github.com/zowe/api-layer/commit/eb7b02e)), closes [#2998](https://github.com/zowe/api-layer/issues/2998)
+
 ## `2.10.0 (2023-07-28)`
 
 * Feature: The API Catalog now allows pre-defined style customizations (#2965) ([b286cef](https://github.com/zowe/api-layer/commit/b286cef))
