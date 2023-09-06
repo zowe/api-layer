@@ -26,7 +26,7 @@ apiml:
             passticket:
                 customUserHeader:
                 customAuthHeader:
-            provider: zosmf
+            provider: dummy
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         ssl:
