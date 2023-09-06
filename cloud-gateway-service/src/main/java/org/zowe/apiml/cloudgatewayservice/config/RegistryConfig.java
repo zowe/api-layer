@@ -20,7 +20,7 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 public class RegistryConfig {
 
     @Bean
-    public EurekaMetadataParser getEurekaMetadataParser() {
+    public EurekaMetadataParser eurekaMetadataParser() {
         return new EurekaMetadataParser();
     }
 
