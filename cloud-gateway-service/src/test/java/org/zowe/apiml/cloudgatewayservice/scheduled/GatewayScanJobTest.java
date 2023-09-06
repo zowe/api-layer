@@ -19,10 +19,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -39,7 +41,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.cloudgatewayservice.scheduled.GatewayScanJob.GATEWAY_SERVICE_ID;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +60,8 @@ class GatewayScanJobTest {
     private InstanceInfoService instanceInfoService;
     @Mock
     private BasicInfoService basicInfoService;
+    @Mock
+    private EurekaRegistration serviceRegistration;
     @InjectMocks
     private GatewayScanJob gatewayScanJob;
 
@@ -66,7 +69,7 @@ class GatewayScanJobTest {
     public void setUp() {
         ReflectionTestUtils.setField(gatewayScanJob, "maxSimultaneousRequests", 3);
 
-        lenient().when(instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID)).thenReturn(Mono.just(asList(instanceOne, instanceTwo)));
+        lenient().when(instanceInfoService.getServiceInstance(CoreService.GATEWAY.getServiceId())).thenReturn(Mono.just(asList(instanceOne, instanceTwo)));
 
         lenient().when(gatewayIndexerService.indexGatewayServices(instanceOne)).thenReturn(Mono.just(apimlServicesOne));
         lenient().when(gatewayIndexerService.indexGatewayServices(instanceTwo)).thenReturn(Mono.just(apimlServicesTwo));
@@ -102,12 +105,12 @@ class GatewayScanJobTest {
         ServiceInfo serviceInfo = mock(ServiceInfo.class);
         when(gatewayIndexerService.listRegistry(null, null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
         when(gatewayIndexerService.listRegistry("testApimlId", null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
-        when(gatewayIndexerService.listRegistry(null, "bcm.sysview")).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
+        when(gatewayIndexerService.listRegistry(null, "zowe.apiml.gateway")).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
 
         gatewayScanJob.listCaches();
 
         verify(gatewayIndexerService).listRegistry(null, null);
         verify(gatewayIndexerService).listRegistry("testApimlId", null);
-        verify(gatewayIndexerService).listRegistry(null, "bcm.sysview");
+        verify(gatewayIndexerService).listRegistry(null, "zowe.apiml.gateway");
     }
 }

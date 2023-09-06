@@ -56,7 +56,7 @@ class GatewayIndexServiceTest {
     };
     private ServiceInfo serviceInfoA, serviceInfoB;
     private WebClient webClient;
-    private final String sysviewApiId = "bcm.sysview";
+    private final String apiCatalogApiId = "zowe.apiml.apicatalog";
     @Mock
     private ClientResponse clientResponse;
     @Mock
@@ -75,7 +75,7 @@ class GatewayIndexServiceTest {
 
         serviceInfoB.setApiml(new ServiceInfo.Apiml());
         ServiceInfo.ApiInfoExtended sysviewApiInfo = new ServiceInfo.ApiInfoExtended();
-        sysviewApiInfo.setApiId(sysviewApiId);
+        sysviewApiInfo.setApiId(apiCatalogApiId);
 
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
@@ -134,7 +134,7 @@ class GatewayIndexServiceTest {
                     .expectNext(asList(serviceInfoA, serviceInfoB))
                     .verifyComplete();
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, sysviewApiId);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, apiCatalogApiId);
 
             assertThat(allServices).containsOnly(new AbstractMap.SimpleEntry<>("testApimlIdA", Collections.singletonList(serviceInfoB)));
         }

@@ -16,12 +16,14 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -53,11 +55,12 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 @ConditionalOnExpression("${apiml.cloudGateway.serviceRegistryEnabled:false}")
 @RequiredArgsConstructor
 public class GatewayScanJob {
-    public static final String GATEWAY_SERVICE_ID = "GATEWAY";
 
+    private final BasicInfoService basicInfoService;
+    private final EurekaRegistration serviceRegistration;
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
-    private final BasicInfoService basicInfoService;
+
 
     @Value("${apiml.service.apimlId:#{null}}")
     private String currentApimlId;
@@ -66,6 +69,7 @@ public class GatewayScanJob {
 
     @Scheduled(initialDelay = 5000, fixedDelayString = "${apiml.cloudGateway.refresh-interval-ms:30000}")
     public void startScanExternalGatewayJob() {
+
         log.debug("Scan gateways job start");
         doScanExternalGateway()
                 .subscribe();
@@ -73,7 +77,7 @@ public class GatewayScanJob {
     }
 
     private void addLocalServices() {
-        String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(APIML_ID);
+        String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(serviceRegistration.getInstanceId());
         List<ServiceInfo> localServices = basicInfoService.getServicesInfo();
         gatewayIndexerService.putApimlServices(apimlIdKey, localServices);
     }
@@ -83,7 +87,7 @@ public class GatewayScanJob {
      */
     protected Flux<List<ServiceInfo>> doScanExternalGateway() {
 
-        Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(GATEWAY_SERVICE_ID)
+        Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(CoreService.GATEWAY.getServiceId())
                 .map(gateways -> gateways.stream().filter(info -> !StringUtils.equals(info.getMetadata().getOrDefault(APIML_ID, "N/A"), currentApimlId)).collect(Collectors.toList()));
 
         Flux<ServiceInstance> serviceInstanceFlux = registeredGateways.flatMapMany(Flux::fromIterable);
@@ -106,9 +110,9 @@ public class GatewayScanJob {
             log.debug("\t {}-{} : found {} external services", apimlId, apimlId, servicesInfo.size());
         }
 
-        Map<String, List<ServiceInfo>> allSysviews = gatewayIndexerService.listRegistry(null, "bcm.sysview");
-        for (Map.Entry<String, List<ServiceInfo>> apimlEntiry : allSysviews.entrySet()) {
-            log.debug("Listing all sysview services at: {}", apimlEntiry.getKey());
+        Map<String, List<ServiceInfo>> allGateways = gatewayIndexerService.listRegistry(null, "zowe.apiml.gateway");
+        for (Map.Entry<String, List<ServiceInfo>> apimlEntiry : allGateways.entrySet()) {
+            log.debug("Listing all gateway services at: {}", apimlEntiry.getKey());
             apimlEntiry.getValue().forEach(serviceInfo -> log.debug("\t {} - {}", serviceInfo.getServiceId(), serviceInfo.getInstances()));
         }
     }

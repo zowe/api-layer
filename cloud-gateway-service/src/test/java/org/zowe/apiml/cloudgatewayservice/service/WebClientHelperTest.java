@@ -21,9 +21,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.catchThrowableOfType;
 import static org.zowe.apiml.security.HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED;
 
 class WebClientHelperTest {
-    static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
     private static final char[] WRONG_PASSWORD = "wrong_password".toCharArray(); // NOSONAR
     static final String KEYSTORE_PATH = "../keystore/localhost/localhost.keystore.p12";
+    static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
 
     @Nested
     class WhenLoading {
