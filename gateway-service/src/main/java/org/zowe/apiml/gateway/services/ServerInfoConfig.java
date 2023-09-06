@@ -29,7 +29,6 @@ public class ServerInfoConfig {
     public ServicesInfoService servicesInfoService(EurekaClient eurekaClient,
                                                    EurekaMetadataParser eurekaMetadataParser, GatewayConfigProperties gatewayConfigProperties, TransformService transformService) {
         return new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties, transformService);
-
     }
 
 }
