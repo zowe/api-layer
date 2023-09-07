@@ -33,7 +33,6 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
@@ -50,8 +49,8 @@ public class DiscoveryClientConfig {
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
     private final EurekaJerseyClientImpl.EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
 
-    @Value("${apiml.service.discoveryServiceUrlsList:-}")
-    private String[] discoveryServiceUrlsList;
+    @Value("${apiml.service.centralRegistryUrls:-}")
+    private String[] centralRegistryUrls;
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
@@ -73,7 +72,7 @@ public class DiscoveryClientConfig {
     }
 
     @Bean(destroyMethod = "shutdown")
-    @ConditionalOnProperty(name = "apiml.service.discoveryServiceUrlsList")
+    @ConditionalOnProperty(name = "apiml.service.centralRegistryUrls")
     @RefreshScope
     public DiscoveryClientWrapper additionalDiscoverClientWrapper(ApplicationInfoManager manager,
                                                                   EurekaClientConfig config,
@@ -88,8 +87,8 @@ public class DiscoveryClientConfig {
         List<ApimlDiscoveryClient> listOfDiscoveryClientClient = new ArrayList<>();
 
 
-        if(discoveryServiceUrlsList != null) {
-            for (String s : discoveryServiceUrlsList) {
+        if(centralRegistryUrls != null) {
+            for (String s : centralRegistryUrls) {
 
                 EurekaClientConfigBean configBean = new EurekaClientConfigBean();
                 BeanUtils.copyProperties(config, configBean);
