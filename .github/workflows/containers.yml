@@ -67,6 +67,7 @@ jobs:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    APIML_SERVICE_CENTRALREGISTRYURLS: https://discovery-service-2:10011/eureka
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             metrics-service:
