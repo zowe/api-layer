@@ -32,7 +32,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
@@ -87,7 +90,7 @@ public class DiscoveryClientConfig {
         List<ApimlDiscoveryClient> listOfDiscoveryClientClient = new ArrayList<>();
 
 
-        if(centralRegistryUrls != null) {
+        if (centralRegistryUrls != null) {
             for (String url : centralRegistryUrls) {
 
                 EurekaClientConfigBean configBean = new EurekaClientConfigBean();
@@ -108,7 +111,7 @@ public class DiscoveryClientConfig {
                 listOfDiscoveryClientClient.add(discoveryClientClient);
             }
         }
-          return new DiscoveryClientWrapper(listOfDiscoveryClientClient);
+        return new DiscoveryClientWrapper(listOfDiscoveryClientClient);
     }
 
     @Bean
