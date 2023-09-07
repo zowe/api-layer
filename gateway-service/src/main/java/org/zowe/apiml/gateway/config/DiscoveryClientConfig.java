@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
@@ -30,16 +31,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
  * fetchRegistry. User can call this method to asynchronously fetch new data from discovery service. There is no time
  * to fetching.
  * <p>
- * Configuration also add listeners to call other beans waiting for fetch new registry. It speed up distribution of
+ * Configuration also add listeners to call other beans waiting for fetch new registry. It speeds up distribution of
  * changes in whole gateway.
  */
 @Configuration
@@ -48,6 +48,9 @@ public class DiscoveryClientConfig {
     private final ApplicationContext context;
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
     private final EurekaJerseyClientImpl.EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+
+    @Value("${apiml.service.discoveryServiceUrlsList}")
+    private String[] discoveryServiceUrlsList;
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
@@ -61,6 +64,7 @@ public class DiscoveryClientConfig {
         } else {
             appManager = manager;
         }
+
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
 
@@ -79,18 +83,31 @@ public class DiscoveryClientConfig {
         } else {
             appManager = manager;
         }
-        EurekaClientConfigBean configBean = new EurekaClientConfigBean();
-        BeanUtils.copyProperties(config, configBean);
-        Map<String, String> urls = new HashMap<>();
-        urls.put("defaultZone", "https://discovery-service-2:10011/eureka/");
-        configBean.setServiceUrl(urls);
+        List<ApimlDiscoveryClient> listOfDiscoveryClientClient = new ArrayList<>();
 
-        MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
-        args.setEurekaJerseyClient(eurekaJerseyClientBuilder.build());
 
-        final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, configBean, args, this.context);
-        discoveryClientClient.registerHealthCheck(healthCheckHandler);
-        return new DiscoveryClientWrapper(Arrays.asList(discoveryClientClient));
+        if(discoveryServiceUrlsList != null) {
+            for (String s : discoveryServiceUrlsList) {
+
+                EurekaClientConfigBean configBean = new EurekaClientConfigBean();
+                BeanUtils.copyProperties(config, configBean);
+
+                Map<String, String> urls = new HashMap<>();
+                urls.put("defaultZone", s);
+
+                configBean.setServiceUrl(urls);
+
+                MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
+                args.setEurekaJerseyClient(eurekaJerseyClientBuilder.build());
+
+                final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, configBean, args, this.context);
+                discoveryClientClient.registerHealthCheck(healthCheckHandler);
+
+
+                listOfDiscoveryClientClient.add(discoveryClientClient);
+            }
+        }
+          return new DiscoveryClientWrapper(listOfDiscoveryClientClient);
     }
 
     @Bean

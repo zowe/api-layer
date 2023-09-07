@@ -5,7 +5,10 @@ apiml:
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10010
+        discoveryServiceUrlsList: https://discovery-service-1.localhost:10011/eureka/,https://discovery-service-2.localhost:10011/eureka/
         discoveryServiceUrls: https://localhost:10011/eureka/
+#
+
     security:
         allowTokenRefresh: true
         webfinger:
