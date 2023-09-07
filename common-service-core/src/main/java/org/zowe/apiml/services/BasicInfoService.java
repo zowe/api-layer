@@ -23,7 +23,6 @@ import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,12 +52,9 @@ public class BasicInfoService {
     private final EurekaMetadataParser eurekaMetadataParser;
 
     public List<ServiceInfo> getServicesInfo() {
-        List<ServiceInfo> servicesInfo = new LinkedList<>();
-        for (Application application : eurekaClient.getApplications().getRegisteredApplications()) {
-            servicesInfo.add(getServiceInfo(application));
-        }
-
-        return servicesInfo;
+        return eurekaClient.getApplications().getRegisteredApplications()
+                .stream().map(this::getServiceInfo)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     private ServiceInfo getServiceInfo(Application application) {
@@ -113,30 +109,25 @@ public class BasicInfoService {
      * - swaggerUrl
      */
     private List<ServiceInfo.ApiInfoExtended> getApiInfos(List<InstanceInfo> appInstances) {
-        List<ServiceInfo.ApiInfoExtended> completeList = new ArrayList<>();
-
-        for (InstanceInfo instanceInfo : appInstances) {
-            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(instanceInfo.getMetadata());
-            completeList.addAll(apiInfoList.stream()
-                    .map(apiInfo -> ServiceInfo.ApiInfoExtended.builder()
-                            .apiId(apiInfo.getApiId())
-                            .basePath(getBasePath(apiInfo, instanceInfo))
-                            .gatewayUrl(apiInfo.getGatewayUrl())
-                            .documentationUrl(apiInfo.getDocumentationUrl())
-                            .version(apiInfo.getVersion())
-                            .codeSnippet(apiInfo.getCodeSnippet())
-                            .isDefaultApi(apiInfo.isDefaultApi())
-                            .build())
-                    .collect(Collectors.toList()));
-        }
-
-        return completeList.stream()
+        return appInstances.stream()
+                .map(instanceInfo -> new AbstractMap.SimpleEntry<>(instanceInfo, eurekaMetadataParser.parseApiInfo(instanceInfo.getMetadata())))
+                .flatMap(entry -> entry.getValue().stream()
+                        .map(apiInfo -> ServiceInfo.ApiInfoExtended.builder()
+                                .apiId(apiInfo.getApiId())
+                                .basePath(getBasePath(apiInfo, entry.getKey()))
+                                .gatewayUrl(apiInfo.getGatewayUrl())
+                                .documentationUrl(apiInfo.getDocumentationUrl())
+                                .version(apiInfo.getVersion())
+                                .codeSnippet(apiInfo.getCodeSnippet())
+                                .isDefaultApi(apiInfo.isDefaultApi())
+                                .build()))
                 .collect(groupingBy(
                         apiInfo -> new AbstractMap.SimpleEntry<>(apiInfo.getApiId(), getMajorVersion(apiInfo)),
                         minBy(Comparator.comparingInt(ServiceInfoUtils::getMajorVersion))
                 ))
                 .values()
                 .stream()
+                .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
     }
