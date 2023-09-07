@@ -144,11 +144,8 @@ public class BasicInfoService {
 
     private List<Authentication> getAuthentication(List<InstanceInfo> appInstances) {
         return appInstances.stream()
-                .map(instanceInfo -> {
-                    Authentication authentication = eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
-                    return authentication.isEmpty() ? null : authentication;
-                })
-                .filter(Objects::nonNull)
+                .map(instanceInfo -> eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata())
+                .filter(a -> !a.isEmpty())
                 .distinct()
                 .collect(Collectors.toList());
     }
