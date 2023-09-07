@@ -70,7 +70,7 @@ export default class Tile extends Component {
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
                 <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
                     <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
-                        <div>
+                        <div style={{ flex: '1' }}>
                             <Typography id="tileLabel" className="grid-tile-status">
                                 {!apiPortalEnabled && this.getTileStatus(tile)}
                                 {!apiPortalEnabled && this.getTileStatusText(tile)}
@@ -88,18 +88,22 @@ export default class Tile extends Component {
                         {apiPortalEnabled && (
                             <div id="media-icons">
                                 <div id="swagger" style={{ flexGrow: '1', justifyContent: 'center' }}>
-                                    {hasSwagger && <img alt="Swagger" src={swaggerImg} />}
+                                    {hasSwagger ? (
+                                        <img alt="Swagger" src={swaggerImg} />
+                                    ) : (
+                                        <div style={{ height: '24px', width: '24px' }} />
+                                    )}
                                 </div>
                                 <Typography
                                     className="media-labels"
                                     id="use-cases-counter"
                                     size="medium"
                                     variant="outlined"
-                                    style={{ flexGrow: '1', justifyContent: 'center' }}
+                                    style={{ flexGrow: '1', display: 'flex', justifyContent: 'end' }}
                                 >
                                     {useCasesCounter}
                                 </Typography>
-                                <div className="imageCounter" style={{ flexGrow: '1', justifyContent: 'center' }}>
+                                <div className="imageCounter" style={{ flexGrow: '1', justifyContent: 'end' }}>
                                     <Typography
                                         className="media-labels"
                                         id="tutorials-counter"
@@ -110,7 +114,10 @@ export default class Tile extends Component {
                                     </Typography>
                                     <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
                                 </div>
-                                <div className="imageCounter" style={{ flexGrow: '1', justifyContent: 'center' }}>
+                                <div
+                                    className="imageCounter"
+                                    style={{ flexGrow: '1', justifyContent: 'end', marginRight: '1.5vw' }}
+                                >
                                     <Typography
                                         className="media-labels"
                                         id="videos-counter"
