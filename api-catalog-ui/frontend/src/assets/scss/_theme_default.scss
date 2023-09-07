@@ -124,6 +124,24 @@
   --borderRadius1: 3px;
   --borderRadius2: 6px;
 
+  //various
   --sideNavWidth: 25%;
-  --contentLeftPadding: 4%;
+  --defaultBottomPadding: var( --spaceSmall);
+
+  --sideNavMobileWidth: 80%;
+
+  --sideNavLeftPadding: var( --spaceSmall );
+  --sideNavRightPadding: var( --spaceMedium );
+  --sideNavBottomPadding: var( --defaultBottomPadding );
+
+  --contentLeftPadding: 3%;
+  --contentRightPadding: var( --spaceMedium );
+  --contentBottomPadding: var( --defaultBottomPadding );
+  --contentTopPadding: var( --spaceLarge );
+
+  --headerVPadding: var( --spaceSmall );
+  --headerInternalHeight: 28px;
+  --headerHeight: calc(#{var( --headerVPadding )} + #{var( --headerInternalHeight )});
+
+  --contentHeightAdj: calc(100dvh - calc(#{var( --headerHeight )} + #{var( --contentBottomPadding )}));
 }

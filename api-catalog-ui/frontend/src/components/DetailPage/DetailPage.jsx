@@ -11,6 +11,7 @@ import { Component, Suspense } from 'react';
 import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
@@ -231,6 +232,8 @@ export default class DetailPage extends Component {
                         )}
                         {apiPortalEnabled && <Divider light id="footer-divider" />}
                     </div>
+
+                    <Footer />
                 </div>
 
                 {showSideBar && <div className="side-bar" />}

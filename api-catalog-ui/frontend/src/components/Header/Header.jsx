@@ -14,8 +14,11 @@ import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
 import zoweDocsImage from '../../assets/images/zowe-docs.png';
 import zoweAuthImage from '../../assets/images/zowe-auth.png';
+import MenuImage from '../../assets/images/hamburger.svg';
 import customDoc from '../../assets/images/custom-doc.png';
 import { isAPIPortal } from '../../utils/utilFunctions';
+import MenuCloseImage from '../../assets/images/xmark.svg';
+import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
 const useStyles = makeStyles({
     root: {
@@ -63,6 +66,10 @@ function Header(props) {
         logout();
     };
 
+    const closeMobileMenu = () => {
+        document.body.classList.remove("mobile-menu-open");
+    };
+
     const closeMenu = () => {
         setOpen(false);
     };
@@ -70,6 +77,10 @@ function Header(props) {
     const openMenu = (event) => {
         setOpen(true);
         setAnchorEl(event.target);
+    };
+
+    const openMobileMenu = (event) => {
+        document.body.classList.toggle("mobile-menu-open");
     };
 
     const s = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
@@ -84,7 +95,18 @@ function Header(props) {
     }
     return (
         <div className="header">
+            <div className="mobile-view mobile-menu-trigger-ctn">
+                <Button
+                    className="mobile-menu-trigger-btn icon-btn"
+                    aria-label="menu"
+                    onClick={openMobileMenu}
+                >
+                    <img alt="Menu" src={MenuImage} className="mobile-menu-trigger" />
+                </Button>
+            </div>
+
             <div className="product-name">
+                
                 <Link data-testid="link" href={dashboard}>
                     <div className="app-icon-container">
                         <img id="logo" alt="API Catalog" src={productImage} />
@@ -96,6 +118,19 @@ function Header(props) {
                     </Typography>
                 </Link>
             </div>
+
+            <div className="mobile-view mobile-menu-close-ctn">
+                <Button
+                    className="mobile-menu-close-btn icon-btn mobile-view"
+                    aria-label="close-menu"
+                    onClick={closeMobileMenu}
+                >
+                    <img alt="Menu" src={MenuCloseImage} className="mobile-menu-close" />
+                </Button>
+            </div>
+
+            <h2 className="title1 mobile-view">Useful Links</h2>
+
             <div className="right-icons">
                 {docLink && docLink.length === 2 && (
                     <Link
@@ -164,6 +199,11 @@ function Header(props) {
                         </StyledMenu>
                     </div>
                 )}
+            </div>
+
+            <div className="mobile-view feedback-ctn">
+                <h2 className="title1 mobile-view">Get in Touch</h2>
+                <FeedbackButton noFloat />
             </div>
         </div>
     );

@@ -10,6 +10,7 @@
 import { Typography, IconButton, Snackbar, Fab } from '@material-ui/core';
 import { Alert } from '@mui/material';
 import { Component } from 'react';
+import Footer from '../Footer/Footer';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import Tile from '../Tile/Tile';
@@ -159,25 +160,28 @@ export default class Dashboard extends Component {
                                 </div>
                             )}
                             <hr id="separator2" />
-                            {isLoading && <div className="loadingDiv" />}
+                            <div className="tile-container">
+                                {isLoading && <div className="loadingDiv" />}
 
-                            {hasTiles &&
-                                tiles.map((tile) =>
-                                    tile.services.map((service) => (
-                                        <Tile
-                                            storeCurrentTileId={storeCurrentTileId}
-                                            service={service}
-                                            key={service}
-                                            tile={tile}
-                                            history={history}
-                                        />
-                                    ))
+                                {hasTiles &&
+                                    tiles.map((tile) =>
+                                        tile.services.map((service) => (
+                                            <Tile
+                                                storeCurrentTileId={storeCurrentTileId}
+                                                service={service}
+                                                key={service}
+                                                tile={tile}
+                                                history={history}
+                                            />
+                                        ))
+                                    )}
+                                {!hasTiles && hasSearchCriteria && (
+                                    <Typography id="search_no_results" variant="subtitle2">
+                                        No services found matching search criteria
+                                    </Typography>
                                 )}
-                            {!hasTiles && hasSearchCriteria && (
-                                <Typography id="search_no_results" variant="subtitle2">
-                                    No services found matching search criteria
-                                </Typography>
-                            )}
+                                <Footer />
+                            </div>
                         </div>
                     </div>
                 )}

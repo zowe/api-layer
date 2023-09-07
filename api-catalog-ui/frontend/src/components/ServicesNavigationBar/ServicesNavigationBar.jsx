@@ -9,10 +9,11 @@
  */
 
 import { Component } from 'react';
-import { Tab, Tabs, Tooltip, Typography, withStyles } from '@material-ui/core';
+import { Tab, Tabs, Tooltip, Typography, withStyles, Button } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
+import MenuCloseImage from '../../assets/images/xmark.svg';
 
 export default class ServicesNavigationBar extends Component {
     componentWillUnmount() {
@@ -30,11 +31,16 @@ export default class ServicesNavigationBar extends Component {
         localStorage.setItem('selectedTab', selectedTab);
     };
 
+    closeMobileMenu = () => {
+        document.body.classList.remove("mobile-menu-open");
+    };
+
     handleTabClick = (id) => {
         const { storeCurrentTileId, services } = this.props;
         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
         if (correctTile) {
             storeCurrentTileId(correctTile.id);
+            this.closeMobileMenu();
         }
     };
 
@@ -70,8 +76,19 @@ export default class ServicesNavigationBar extends Component {
                 <div className={classes.truncatedTabLabel}>{label}</div>
             </Tooltip>
         ));
+    
         return (
             <div>
+                <div className="mobile-view mobile-menu-close-ctn">
+                    <h2 className="title1">API Catalog</h2>
+                    <Button
+                        className="mobile-menu-close-btn icon-btn"
+                        aria-label="close-menu"
+                        onClick={this.closeMobileMenu}
+                    >
+                        <img alt="Menu" src={MenuCloseImage} className="mobile-menu-close" />
+                    </Button>
+                </div>
                 <div id="search2">
                     <Shield title="Search Bar is broken !">
                         <SearchCriteria

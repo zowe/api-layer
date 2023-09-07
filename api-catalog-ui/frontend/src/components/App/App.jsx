@@ -38,6 +38,11 @@ class App extends Component {
                             <>
                                 <div className="content">
                                     <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
+
+                                    <div className="dashboard-mobile-menu mobile-view">
+                                        <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
+                                    </div>
+
                                     <Switch>
                                         <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
                                         <Route
@@ -71,7 +76,6 @@ class App extends Component {
                                         />
                                     </Switch>
                                 </div>
-                                <Route path="/(dashboard|service/.*)/" component={Footer} />
                             </>
                         </Router>
                     </Suspense>
