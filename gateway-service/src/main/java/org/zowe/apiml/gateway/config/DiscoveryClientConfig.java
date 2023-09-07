@@ -88,13 +88,13 @@ public class DiscoveryClientConfig {
 
 
         if(centralRegistryUrls != null) {
-            for (String s : centralRegistryUrls) {
+            for (String url : centralRegistryUrls) {
 
                 EurekaClientConfigBean configBean = new EurekaClientConfigBean();
                 BeanUtils.copyProperties(config, configBean);
 
                 Map<String, String> urls = new HashMap<>();
-                urls.put("defaultZone", s);
+                urls.put("defaultZone", url);
 
                 configBean.setServiceUrl(urls);
 
