@@ -22,15 +22,6 @@ It can be useful to know what code is used. This is available at `/application/i
 
     https://localhost:10010/application/info
 
-
-It is also printed to the log as the very first messsage:
-
-    [DS] 16:32:04.022 [main] INFO org.zowe.apiml.product.service.BuildInfo - Service discovery-service version xyz #n/a on 2018-08-23T14:28:33.223Z by plape03mac850 commit 6fd7c53
-    [GS] 16:32:04.098 [main] INFO org.zowe.apiml.product.service.BuildInfo - Service gateway-service version xyz #n/a on 2018-08-23T14:28:33.231Z by plape03mac850 commit 6fd7c53
-    [DC] 16:32:04.195 [main] INFO org.zowe.apiml.product.service.BuildInfo - Service discoverable-client version xyz #n/a on 2018-08-23T14:28:33.217Z by plape03mac850 commit 6fd7c53
-    [AC] 16:32:04.317 [main] INFO org.zowe.apiml.product.service.BuildInfo - Service api-catalog-services version xyz #n/a on 2018-08-23T14:28:33.201Z by plape03mac850 commit 6fd7c53
-
-
 ## Version Information
 
 It is also possible to know the version of API ML and Zowe (if API ML used as part of Zowe), using the `/gateway/api/v1/version` endpoint in the API Gateway service. E.g.:
