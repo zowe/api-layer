@@ -267,8 +267,6 @@ eureka:
         region: default
         serviceUrl:
             defaultZone: ${apiml.service.discoveryServiceUrls}
-        serviceUrlsList:
-            defaultZone: ${apiml.service.discoveryServiceUrlsList}
         healthcheck:
             enabled: true
 

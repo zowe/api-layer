@@ -21,6 +21,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
@@ -49,7 +50,7 @@ public class DiscoveryClientConfig {
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
     private final EurekaJerseyClientImpl.EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
 
-    @Value("${apiml.service.discoveryServiceUrlsList}")
+    @Value("${apiml.service.discoveryServiceUrlsList:-}")
     private String[] discoveryServiceUrlsList;
 
     @Bean(destroyMethod = "shutdown")
@@ -72,6 +73,7 @@ public class DiscoveryClientConfig {
     }
 
     @Bean(destroyMethod = "shutdown")
+    @ConditionalOnProperty(name = "apiml.service.discoveryServiceUrlsList")
     @RefreshScope
     public DiscoveryClientWrapper additionalDiscoverClientWrapper(ApplicationInfoManager manager,
                                                                   EurekaClientConfig config,
