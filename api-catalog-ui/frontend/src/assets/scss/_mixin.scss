@@ -14,3 +14,13 @@
     cursor: default;
   }
 }
+
+@mixin mobileNav() {
+  position: absolute;
+  top: 0;
+  height: 100dvh;
+  left: calc(calc(#{var(--sideNavWidth)} * -1) - calc(#{var(--sideNavLeftPadding)} + var(--sideNavRightPadding)));
+  width: var( --sideNavWidth );
+  z-index: 2;
+  background-color: var( --surface05 );
+}

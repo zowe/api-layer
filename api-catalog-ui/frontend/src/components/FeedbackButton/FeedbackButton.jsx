@@ -9,6 +9,7 @@
  */
 import { Fab } from '@material-ui/core';
 import { Component } from 'react';
+import FeedbackImage from '../../assets/images/square-envelope.svg';
 import formatError from '../Error/ErrorFormatter';
 import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
@@ -26,13 +27,16 @@ export default class FeedbackButton extends Component {
     // };
 
     render() {
-        const { isLoading } = this.props;
+        const { 
+            isLoading,
+            noFloat
+        } = this.props;
 
         return (
-            <div className="floating-button">
+            <div className={noFloat ? "" : "floating-button"}>
                 <Fab
                     variant="extended"
-                    style={{
+                    style={noFloat ? {} : {
                         position: 'absolute',
                         top: '85vh',
                         left: '70vw',
@@ -40,9 +44,11 @@ export default class FeedbackButton extends Component {
                     }}
                     onClick={() => {
                         // eslint-disable-next-line no-console
+                        document.body.classList.remove("mobile-menu-open");
                         console.log('feedback clicked');
                     }}
                 >
+                    { noFloat && <img alt="" src={FeedbackImage} className="feedback-img" style={{marginRight: "8px"}} /> }
                     Give us Feedback
                 </Fab>
             </div>

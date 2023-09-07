@@ -7,6 +7,9 @@ body {
   height: 100%;
   min-height: 100vh;
 
+  * {
+    box-sizing: border-box;
+  }
   h1, h2, h3, h4, h5, h6, .MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3, .MuiTypography-h4, .MuiTypography-h5, .MuiTypography-h6 {
     margin: var( --spaceMedium ) 0;
   }
@@ -23,12 +26,54 @@ body {
   h5, .MuiTypography-h5 {
     font-size: var( --fontMedium );
   }
+  #grid-container,
+  .main-content2,
+  .nav-bar {
+    height: var( --contentHeightAdj );
+    overflow: auto;
+  }
+  .title1 {
+    font-size: var( --fontLarger );
+    font-weight: var( --fontWeightMedium );
+    color: var( --controlText15 );
+  }
   .MuiTypography-colorPrimary {
     color: var( --control00 );
   }
   .MuiTab-textColorInherit {
     opacity: 1;
   }
+  .MuiButton-root {
+    &.icon-btn {
+      min-width: 0px;
+
+      img {
+        height: 20px;
+      }
+    }
+  }
+  .mobile-view {
+    display: none !important;
+  }
+  .mobile-menu-close-ctn {
+    justify-content: space-between;
+  }
+  .mobile-menu-trigger-ctn {
+    margin-bottom: var( --spaceSmallest );
+
+    .mobile-menu-trigger-btn {
+      padding: 0px;
+  
+      &.MuiButton-root:hover {
+        background-color: transparent;
+      }
+      .mobile-menu-trigger {
+        margin-right: var( --spaceSmaller );
+        padding: var( --spaceTiny );
+      }
+    }
+  }//end mobile-menu-trigger
+  
 
   .MuiTab-root {
     overflow: visible;
@@ -108,6 +153,7 @@ body {
 
       .nav-bar,
       .side-bar {
+        transition: all .5s ease;
         overflow: auto;
         display: flex;
         flex-direction: column;
@@ -115,10 +161,11 @@ body {
         max-width: 368px;
         min-width: 19.3%;
         width: var( --sideNavWidth );
-        height: 100dvh;
+        
         min-width: var( --sideNavWidth );
-        padding: var( --spaceSmall ) var( --spaceSmaller ) var( --spaceSmall ) var( --spaceSmall );
+        padding: var( --spaceSmall ) var( --sideNavRightPadding ) var( --sideNavBottomPadding ) var( --sideNavLeftPadding );
         position: relative;
+        z-index: 2;
       }
 
       .nav-bar {
@@ -132,11 +179,11 @@ body {
 
       .main-content2 {
         width: 100%;
-        padding: var( --spaceLarge ) var( --spaceSmaller ) 0 var( --contentLeftPadding );
+        padding: var( --contentTopPadding ) var( --contentRightPadding ) var( --contentBottomPadding ) var( --contentLeftPadding );
         position: relative;
         // overflow-x: auto;
-        height: 100dvh;
         overflow:auto;
+
         &:before {
           width: calc(100% - #{var( --contentLeftPadding )} - #{var( --spaceLarger )});
           height: 2px;
@@ -285,4 +332,5 @@ body {
 }
 .App {
   height: 100dvh;
+  overflow: hidden;
 }
