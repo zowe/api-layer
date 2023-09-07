@@ -60,17 +60,18 @@ body {
   }
 
     #videos {
-        margin-right: var( --spaceMedium );
+        // margin-right: var( --spaceMedium );
         width: 30px;
         height: 20px;
     }
     #tutorials {
-        margin-right: 90px;
+        // margin-right: 90px;
         height: 20px;
     }
 
     .MuiCardContent-root.tile {
         display: flex;
+        justify-content: space-between;
     }
     .media-labels {
         font-size: 14px;
@@ -81,15 +82,17 @@ body {
     }
     #use-cases-counter {
         color: #D61A00;
-        margin-right: 120px;
+        // margin-right: 120px;
     }
     #tutorials-counter {
         color: #9B51E0;
         margin-right: 5px;
     }
     #swagger {
-      margin-right: 130px;
-
+      // margin-right: 130px;
+    }
+    .imageCounter {
+      display: flex
     }
 }
 
@@ -112,6 +115,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin-left: auto;
+    // margin-left: auto;
+    flex: 1 1 0;
 }
 
