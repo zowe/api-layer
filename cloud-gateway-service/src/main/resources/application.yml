@@ -49,7 +49,7 @@ server:
     main:
         allow-circular-references: true
 
-logbackServiceName: ${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE}
+logbackServiceName: ZWEACG1
 
 logging:
     level:
