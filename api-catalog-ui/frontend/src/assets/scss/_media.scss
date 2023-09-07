@@ -73,7 +73,6 @@
         .main-content2 {
           --contentLeftPadding: var( --spaceMedium );
           --contentRightPadding: var( --spaceMedium );
-          // width: calc(100% - #{var(--sideNavWidth)} - #{var(--contentLeftPadding)});
           width: 100%;
           overflow: auto;
 

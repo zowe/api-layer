@@ -13,6 +13,7 @@ import { Tab, Tabs, Tooltip, Typography, withStyles, Button } from '@material-ui
 import { Link as RouterLink } from 'react-router-dom';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
+import { closeMobileMenu } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
 
 export default class ServicesNavigationBar extends Component {
@@ -31,16 +32,12 @@ export default class ServicesNavigationBar extends Component {
         localStorage.setItem('selectedTab', selectedTab);
     };
 
-    closeMobileMenu = () => {
-        document.body.classList.remove("mobile-menu-open");
-    };
-
     handleTabClick = (id) => {
         const { storeCurrentTileId, services } = this.props;
         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
         if (correctTile) {
             storeCurrentTileId(correctTile.id);
-            this.closeMobileMenu();
+            closeMobileMenu();
         }
     };
 
@@ -84,7 +81,7 @@ export default class ServicesNavigationBar extends Component {
                     <Button
                         className="mobile-menu-close-btn icon-btn"
                         aria-label="close-menu"
-                        onClick={this.closeMobileMenu}
+                        onClick={closeMobileMenu}
                     >
                         <img alt="Menu" src={MenuCloseImage} className="mobile-menu-close" />
                     </Button>

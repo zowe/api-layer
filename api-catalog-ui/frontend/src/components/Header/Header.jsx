@@ -16,7 +16,7 @@ import zoweDocsImage from '../../assets/images/zowe-docs.png';
 import zoweAuthImage from '../../assets/images/zowe-auth.png';
 import MenuImage from '../../assets/images/hamburger.svg';
 import customDoc from '../../assets/images/custom-doc.png';
-import { isAPIPortal } from '../../utils/utilFunctions';
+import { isAPIPortal, openMobileMenu, closeMobileMenu } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
 import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
@@ -66,10 +66,6 @@ function Header(props) {
         logout();
     };
 
-    const closeMobileMenu = () => {
-        document.body.classList.remove("mobile-menu-open");
-    };
-
     const closeMenu = () => {
         setOpen(false);
     };
@@ -77,10 +73,6 @@ function Header(props) {
     const openMenu = (event) => {
         setOpen(true);
         setAnchorEl(event.target);
-    };
-
-    const openMobileMenu = (event) => {
-        document.body.classList.toggle("mobile-menu-open");
     };
 
     const s = <PersonIcon id="profileIcon" style={{ color: 'white' }} />;
