@@ -87,31 +87,27 @@ public class DiscoveryClientConfig {
         } else {
             appManager = manager;
         }
-        List<ApimlDiscoveryClient> listOfDiscoveryClientClient = new ArrayList<>();
+        List<ApimlDiscoveryClient> listOfDiscoveryClients = new ArrayList<>();
 
+        for (String url : centralRegistryUrls) {
 
-        if (centralRegistryUrls != null) {
-            for (String url : centralRegistryUrls) {
+            EurekaClientConfigBean configBean = new EurekaClientConfigBean();
+            BeanUtils.copyProperties(config, configBean);
 
-                EurekaClientConfigBean configBean = new EurekaClientConfigBean();
-                BeanUtils.copyProperties(config, configBean);
+            Map<String, String> urls = new HashMap<>();
+            urls.put("defaultZone", url);
 
-                Map<String, String> urls = new HashMap<>();
-                urls.put("defaultZone", url);
+            configBean.setServiceUrl(urls);
 
-                configBean.setServiceUrl(urls);
+            MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
+            args.setEurekaJerseyClient(eurekaJerseyClientBuilder.build());
 
-                MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
-                args.setEurekaJerseyClient(eurekaJerseyClientBuilder.build());
-
-                final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, configBean, args, this.context);
-                discoveryClientClient.registerHealthCheck(healthCheckHandler);
-
-
-                listOfDiscoveryClientClient.add(discoveryClientClient);
-            }
+            final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, configBean, args, this.context);
+            discoveryClientClient.registerHealthCheck(healthCheckHandler);
+            listOfDiscoveryClients.add(discoveryClientClient);
         }
-        return new DiscoveryClientWrapper(listOfDiscoveryClientClient);
+
+        return new DiscoveryClientWrapper(listOfDiscoveryClients);
     }
 
     @Bean

@@ -36,5 +36,11 @@ jobs:
                     name: CITests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        gateway-service/build/reports/**
+                        api-catalog-services/build/reports/**
+                        caching-service/build/reports/**
+                        cloud-gateway-service/build/reports/**
+                        discovery-service/build/reports/**
+                        metrics-service/build/reports/**
 
             -   uses: ./.github/actions/teardown
