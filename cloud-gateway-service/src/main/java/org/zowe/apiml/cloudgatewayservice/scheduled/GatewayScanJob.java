@@ -29,7 +29,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -60,7 +59,6 @@ public class GatewayScanJob {
     private final EurekaRegistration serviceRegistration;
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
-
 
     @Value("${apiml.service.apimlId:#{null}}")
     private String currentApimlId;
@@ -94,26 +92,5 @@ public class GatewayScanJob {
 
         return serviceInstanceFlux
                 .flatMap(gatewayIndexerService::indexGatewayServices, maxSimultaneousRequests);
-    }
-
-    /**
-     * Helper to echo state os the services caches. Will be removed later when REST api
-     */
-    @Scheduled(initialDelay = 10000, fixedDelayString = "5000")
-    void listCaches() {
-
-        Map<String, List<ServiceInfo>> fullState = gatewayIndexerService.listRegistry(null, null);
-
-        log.debug("Cache having {} apimlId records, {}", fullState.keySet().size(), System.currentTimeMillis());
-        for (String apimlId : fullState.keySet()) {
-            List<ServiceInfo> servicesInfo = gatewayIndexerService.listRegistry(apimlId, null).get(apimlId);
-            log.debug("\t {}-{} : found {} external services", apimlId, apimlId, servicesInfo.size());
-        }
-
-        Map<String, List<ServiceInfo>> allGateways = gatewayIndexerService.listRegistry(null, "zowe.apiml.gateway");
-        for (Map.Entry<String, List<ServiceInfo>> apimlEntiry : allGateways.entrySet()) {
-            log.debug("Listing all gateway services at: {}", apimlEntiry.getKey());
-            apimlEntiry.getValue().forEach(serviceInfo -> log.debug("\t {} - {}", serviceInfo.getServiceId(), serviceInfo.getInstances()));
-        }
     }
 }

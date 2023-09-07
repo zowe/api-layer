@@ -47,10 +47,10 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 class BasicInfoServiceTest {
 
     // Client test configuration
-    private final static String CLIENT_SERVICE_ID = "testclient";
-    private final static String CLIENT_INSTANCE_ID = CLIENT_SERVICE_ID + ":";
-    private final static String CLIENT_HOSTNAME = "client";
-    private final static String CLIENT_IP = "192.168.0.1";
+    private static final String CLIENT_SERVICE_ID = "testclient";
+    private static final String CLIENT_INSTANCE_ID = CLIENT_SERVICE_ID + ":";
+    private static final String CLIENT_HOSTNAME = "client";
+    private static final String CLIENT_IP = "192.168.0.1";
     private static final int CLIENT_PORT = 10;
     private static final String CLIENT_HOMEPAGE = "https://client:10";
     private static final String CLIENT_RELATIVE_HEALTH_URL = "/actuator/health";

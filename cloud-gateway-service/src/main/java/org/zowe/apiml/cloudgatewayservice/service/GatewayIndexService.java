@@ -65,7 +65,7 @@ public class GatewayIndexService {
                                @Value("${apiml.cloudGateway.clientKeystore:#{null}}") String clientKeystorePath,
                                @Value("${apiml.cloudGateway.clientKeystorePassword:#{null}}") char[] clientKeystorePassword,
                                @Value("${apiml.cloudGateway.clientKeystoreType:PKCS12}") String keystoreType
-                               ) {
+    ) {
         this.defaultWebClient = defaultWebClient;
 
         apimlGatewayLookup = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
@@ -138,7 +138,7 @@ public class GatewayIndexService {
      * list currently cached apiml registry with option to filter by the <code>apimlId</code> and <code>apiId</code>
      *
      * @param apimlId - filter for only services from the particular apiml instance, NULL - filter not applied
-     * @param apiId   - filter for only services of particular type e.g. <code>bcm.sysview</code>
+     * @param apiId   - filter for only services of particular type e.g. <code>zowe.apiml.apicatalog</code>
      * @return full of filter immutable map of the registry
      */
     public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId) {

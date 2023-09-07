@@ -12,7 +12,7 @@ apiml:
         timeout: 60
     service:
         apimlId: apiml1
-        id: ${apiml.service.id}
+        id: ${apiml.application.name}
         port: 10023
         hostname: localhost
         scheme: https  # "https" or "http"
@@ -49,7 +49,7 @@ server:
     main:
         allow-circular-references: true
 
-logbackServiceName: ZWEACG1
+logbackServiceName: ${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE}
 
 logging:
     level:

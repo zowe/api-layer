@@ -33,10 +33,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -98,19 +95,5 @@ class GatewayScanJobTest {
         spy.startScanExternalGatewayJob();
 
         verify(spy).doScanExternalGateway();
-    }
-
-    @Test
-    void shouldListRegistry() {
-        ServiceInfo serviceInfo = mock(ServiceInfo.class);
-        when(gatewayIndexerService.listRegistry(null, null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
-        when(gatewayIndexerService.listRegistry("testApimlId", null)).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
-        when(gatewayIndexerService.listRegistry(null, "zowe.apiml.gateway")).thenReturn(singletonMap("testApimlId", singletonList(serviceInfo)));
-
-        gatewayScanJob.listCaches();
-
-        verify(gatewayIndexerService).listRegistry(null, null);
-        verify(gatewayIndexerService).listRegistry("testApimlId", null);
-        verify(gatewayIndexerService).listRegistry(null, "zowe.apiml.gateway");
     }
 }

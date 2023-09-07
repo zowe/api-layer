@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -144,7 +143,7 @@ public class BasicInfoService {
 
     private List<Authentication> getAuthentication(List<InstanceInfo> appInstances) {
         return appInstances.stream()
-                .map(instanceInfo -> eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata())
+                .map(instanceInfo -> eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata()))
                 .filter(a -> !a.isEmpty())
                 .distinct()
                 .collect(Collectors.toList());
