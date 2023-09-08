@@ -70,66 +70,66 @@ export default class Tile extends Component {
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
                 <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
                     <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
-                        <div style={{ flex: '1' }}>
-                            <Typography id="tileLabel" className="grid-tile-status">
-                                {!apiPortalEnabled && this.getTileStatus(tile)}
-                                {!apiPortalEnabled && this.getTileStatusText(tile)}
-                            </Typography>
-                            <Typography id="service-title" variant="subtitle1">
-                                {service.title}
-                            </Typography>
-                            {!apiPortalEnabled && service.sso && (
-                                <Typography variant="h6" id="grid-tile-sso">
-                                    (SSO)
+                        <div className="tile-ctn">
+                            <div className="tile-title">
+                                <Typography id="tileLabel" className="grid-tile-status">
+                                    {!apiPortalEnabled && this.getTileStatus(tile)}
+                                    {!apiPortalEnabled && this.getTileStatusText(tile)}
                                 </Typography>
+                                <Typography id="service-title" variant="subtitle1">
+                                    {service.title}
+                                </Typography>
+                                {!apiPortalEnabled && service.sso && (
+                                    <Typography variant="h6" id="grid-tile-sso">
+                                        (SSO)
+                                    </Typography>
+                                )}
+                            </div>
+
+                            {apiPortalEnabled && (
+                                <>
+                                    <div id="swagger">
+                                        {hasSwagger ? (
+                                            <img alt="Swagger" src={swaggerImg} />
+                                        ) : (
+                                            <div style={{ height: '24px', width: '24px' }} />
+                                        )}
+                                    </div>
+                                    <Typography
+                                        className="media-labels"
+                                        id="use-cases-counter"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        {useCasesCounter}
+                                    </Typography>
+                                    <div className="imageCounter">
+                                        <Typography
+                                            className="media-labels"
+                                            id="tutorials-counter"
+                                            size="medium"
+                                            variant="outlined"
+                                        >
+                                            {tutorialsCounter}
+                                        </Typography>
+                                        <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
+                                    </div>
+                                    <div
+                                        className="imageCounter"
+                                    >
+                                        <Typography
+                                            className="media-labels"
+                                            id="videos-counter"
+                                            size="medium"
+                                            variant="outlined"
+                                        >
+                                            {videosCounter}
+                                        </Typography>
+                                        <img id="videos" alt="Videos" src={videosImg} />
+                                    </div>
+                                </>
                             )}
                         </div>
-
-                        {apiPortalEnabled && (
-                            <div id="media-icons">
-                                <div id="swagger" style={{ flexGrow: '1', justifyContent: 'center' }}>
-                                    {hasSwagger ? (
-                                        <img alt="Swagger" src={swaggerImg} />
-                                    ) : (
-                                        <div style={{ height: '24px', width: '24px' }} />
-                                    )}
-                                </div>
-                                <Typography
-                                    className="media-labels"
-                                    id="use-cases-counter"
-                                    size="medium"
-                                    variant="outlined"
-                                    style={{ flexGrow: '.8', display: 'flex', justifyContent: 'end' }}
-                                >
-                                    {useCasesCounter}
-                                </Typography>
-                                <div className="imageCounter" style={{ flexGrow: '1', justifyContent: 'end' }}>
-                                    <Typography
-                                        className="media-labels"
-                                        id="tutorials-counter"
-                                        size="medium"
-                                        variant="outlined"
-                                    >
-                                        {tutorialsCounter}
-                                    </Typography>
-                                    <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
-                                </div>
-                                <div
-                                    className="imageCounter"
-                                    style={{ flexGrow: '1', justifyContent: 'end', marginRight: '1.5vw' }}
-                                >
-                                    <Typography
-                                        className="media-labels"
-                                        id="videos-counter"
-                                        size="medium"
-                                        variant="outlined"
-                                    >
-                                        {videosCounter}
-                                    </Typography>
-                                    <img id="videos" alt="Videos" src={videosImg} />
-                                </div>
-                            </div>
-                        )}
                     </CardContent>
                 </CardActionArea>
             </Card>

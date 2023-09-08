@@ -27,6 +27,28 @@
       bottom: 0;
       left: calc(50% - #{calc(var( --headerLineWidth ) / 2)});
     }
+  }//end h1
+
+  .tile-ctn,
+  .dashboard-grid-header {
+    display: flex;
+    margin: 0 var( --spaceSmaller );
+    flex: 1 1 100%;
+
+    > * {
+      display: flex;
+      flex: 1 1;
+      align-items: center;
+      justify-content: center;
+    }
+    .empty, .tile-title {
+      flex: 4 1;
+      justify-content: flex-start;
+    }
+  }
+  .dashboard-grid-header {
+    flex-basis: content;
+    padding: 0 var( --spaceMedium );
   }
 
   #search {

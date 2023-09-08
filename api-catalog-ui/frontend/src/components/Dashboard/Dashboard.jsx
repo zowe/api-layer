@@ -177,7 +177,7 @@ export default class Dashboard extends Component {
                                         ))
                                     )}
                                 {!hasTiles && hasSearchCriteria && (
-                                    <Typography id="search_no_results" variant="subtitle2">
+                                    <Typography id="search_no_results" variant="subtitle2" className="no-content">
                                         No services found matching search criteria
                                     </Typography>
                                 )}
