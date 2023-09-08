@@ -59,7 +59,6 @@ public class GatewayScanJob {
     private final EurekaRegistration serviceRegistration;
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
-
     @Value("${apiml.service.apimlId:#{null}}")
     private String currentApimlId;
     @Value("${apiml.cloudGateway.maxSimultaneousRequests:20}")
