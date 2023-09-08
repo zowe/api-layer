@@ -119,18 +119,16 @@ function Header(props) {
             <h2 className="title1 mobile-view">Useful Links</h2>
 
             <div className="right-icons">
-                {docLink && docLink.length === 2 && (
-                    <Link
-                        data-testid="internal-link"
-                        id="internal-link"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                        href={docLink[1]}
-                    >
-                        {docLink[0]}
-                        <img id="img-internal-link" alt="Internal doc" src={customDoc} />
-                    </Link>
-                )}
+                <Link
+                    data-testid="internal-link"
+                    id="internal-link"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    href="https://techdocs.broadcom.com/"
+                >
+                    Broadcom TechDoc
+                    <img id="img-internal-link" alt="Internal doc" src={customDoc} />
+                </Link>
                 {isAPIPortal() && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">

@@ -27,7 +27,7 @@ export default class FeedbackButton extends Component {
     // };
 
     render() {
-        const { isLoading, noFloat } = this.props;
+        const { isLoading, noFloat, leftPlacement } = this.props;
 
         return (
             <div className={noFloat ? '' : 'floating-button'}>
@@ -39,7 +39,7 @@ export default class FeedbackButton extends Component {
                             : {
                                   position: 'absolute',
                                   top: '85vh',
-                                  left: '70vw',
+                                  left: leftPlacement,
                                   whiteSpace: 'nowrap',
                               }
                     }
