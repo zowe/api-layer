@@ -27,28 +27,31 @@ export default class FeedbackButton extends Component {
     // };
 
     render() {
-        const { 
-            isLoading,
-            noFloat
-        } = this.props;
+        const { isLoading, noFloat } = this.props;
 
         return (
-            <div className={noFloat ? "" : "floating-button"}>
+            <div className={noFloat ? '' : 'floating-button'}>
                 <Fab
                     variant="extended"
-                    style={noFloat ? {} : {
-                        position: 'absolute',
-                        top: '85vh',
-                        left: '70vw',
-                        whiteSpace: 'nowrap',
-                    }}
+                    style={
+                        noFloat
+                            ? {}
+                            : {
+                                  position: 'absolute',
+                                  top: '85vh',
+                                  left: '70vw',
+                                  whiteSpace: 'nowrap',
+                              }
+                    }
                     onClick={() => {
+                        document.body.classList.remove('mobile-menu-open');
                         // eslint-disable-next-line no-console
-                        document.body.classList.remove("mobile-menu-open");
                         console.log('feedback clicked');
                     }}
                 >
-                    { noFloat && <img alt="" src={FeedbackImage} className="feedback-img" style={{marginRight: "8px"}} /> }
+                    {noFloat && (
+                        <img alt="" src={FeedbackImage} className="feedback-img" style={{ marginRight: '8px' }} />
+                    )}
                     Give us Feedback
                 </Fab>
             </div>
