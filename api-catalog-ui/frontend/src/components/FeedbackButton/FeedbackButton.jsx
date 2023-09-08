@@ -37,8 +37,8 @@ export default class FeedbackButton extends Component {
                         noFloat
                             ? {}
                             : {
-                                  position: 'absolute',
-                                  top: '85vh',
+                                  position: 'fixed',
+                                  top: '90vh',
                                   left: leftPlacement,
                                   whiteSpace: 'nowrap',
                               }
