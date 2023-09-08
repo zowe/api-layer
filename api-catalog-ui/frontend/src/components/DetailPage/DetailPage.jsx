@@ -99,7 +99,7 @@ export default class DetailPage extends Component {
         }
         return (
             <div className="main">
-                <FeedbackButton leftPlacement="88.2vw" />
+                <FeedbackButton leftPlacement="80vw" />
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
