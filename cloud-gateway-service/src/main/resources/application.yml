@@ -12,7 +12,7 @@ apiml:
         timeout: 60
     service:
         apimlId: apiml1
-        id: ${apiml.application.name}
+        id: ${spring.application.name}
         port: 10023
         hostname: localhost
         scheme: https  # "https" or "http"
