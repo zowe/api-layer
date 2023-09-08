@@ -99,7 +99,7 @@ export default class Tile extends Component {
                                     id="use-cases-counter"
                                     size="medium"
                                     variant="outlined"
-                                    style={{ flexGrow: '1', display: 'flex', justifyContent: 'end' }}
+                                    style={{ flexGrow: '.8', display: 'flex', justifyContent: 'end' }}
                                 >
                                     {useCasesCounter}
                                 </Typography>
