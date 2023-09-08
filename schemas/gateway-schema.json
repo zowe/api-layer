@@ -148,6 +148,10 @@
                                                             "description": "Allow URLs on gateway to contain encoded slashes.",
                                                             "default": true
                                                         },
+                                                        "centralRegistryUrls": {
+                                                            "type": "string",
+                                                            "description": "List of additional Discovery Services URLs to register with."
+                                                        },
                                                         "corsEnabled": {
                                                             "type": "boolean",
                                                             "description": "Allow CORS on gateway.",
