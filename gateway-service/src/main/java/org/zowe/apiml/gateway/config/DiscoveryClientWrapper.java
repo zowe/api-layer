@@ -11,15 +11,19 @@
 package org.zowe.apiml.gateway.config;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 
 import java.util.List;
 
 @AllArgsConstructor
+@Getter
 public class DiscoveryClientWrapper {
     private List<ApimlDiscoveryClient> discoveryClients;
 
     public void shutdown() {
-        discoveryClients.forEach(ApimlDiscoveryClient::shutdown);
+        if (discoveryClients != null) {
+            discoveryClients.forEach(ApimlDiscoveryClient::shutdown);
+        }
     }
 }

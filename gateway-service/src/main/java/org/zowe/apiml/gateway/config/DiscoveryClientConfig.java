@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.config;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
-import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
@@ -61,12 +59,7 @@ public class DiscoveryClientConfig {
                                                          EurekaClientConfig config,
                                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
-        ApplicationInfoManager appManager;
-        if (AopUtils.isAopProxy(manager)) {
-            appManager = ProxyUtils.getTargetObject(manager);
-        } else {
-            appManager = manager;
-        }
+        ApplicationInfoManager appManager = AopUtils.isAopProxy(manager) ? ProxyUtils.getTargetObject(manager) : manager;
 
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
@@ -81,12 +74,7 @@ public class DiscoveryClientConfig {
                                                                   EurekaClientConfig config,
                                                                   @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
-        ApplicationInfoManager appManager;
-        if (AopUtils.isAopProxy(manager)) {
-            appManager = ProxyUtils.getTargetObject(manager);
-        } else {
-            appManager = manager;
-        }
+        ApplicationInfoManager appManager = AopUtils.isAopProxy(manager) ? ProxyUtils.getTargetObject(manager) : manager;
         List<ApimlDiscoveryClient> listOfDiscoveryClients = new ArrayList<>();
 
         for (String url : centralRegistryUrls) {
@@ -109,12 +97,4 @@ public class DiscoveryClientConfig {
 
         return new DiscoveryClientWrapper(listOfDiscoveryClients);
     }
-
-    @Bean
-    public EurekaDiscoveryClient discoveryClient(EurekaClient client,
-                                                 EurekaClientConfig clientConfig) {
-        return new EurekaDiscoveryClient(client, clientConfig);
-    }
-
-
 }
