@@ -88,17 +88,12 @@ function Header(props) {
     return (
         <div className="header">
             <div className="mobile-view mobile-menu-trigger-ctn">
-                <Button
-                    className="mobile-menu-trigger-btn icon-btn"
-                    aria-label="menu"
-                    onClick={openMobileMenu}
-                >
+                <Button className="mobile-menu-trigger-btn icon-btn" aria-label="menu" onClick={openMobileMenu}>
                     <img alt="Menu" src={MenuImage} className="mobile-menu-trigger" />
                 </Button>
             </div>
 
             <div className="product-name">
-                
                 <Link data-testid="link" href={dashboard}>
                     <div className="app-icon-container">
                         <img id="logo" alt="API Catalog" src={productImage} />

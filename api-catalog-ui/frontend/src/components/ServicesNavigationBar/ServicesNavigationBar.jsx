@@ -73,7 +73,6 @@ export default class ServicesNavigationBar extends Component {
                 <div className={classes.truncatedTabLabel}>{label}</div>
             </Tooltip>
         ));
-    
         return (
             <div>
                 <div className="mobile-view mobile-menu-close-ctn">

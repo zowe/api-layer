@@ -145,11 +145,11 @@ function handleWhiteHeader(uiConfig) {
 }
 
 export const closeMobileMenu = () => {
-    document.body.classList.remove("mobile-menu-open");
+    document.body.classList.remove('mobile-menu-open');
 };
 
 export const openMobileMenu = (event) => {
-    document.body.classList.toggle("mobile-menu-open");
+    document.body.classList.toggle('mobile-menu-open');
 };
 
 /**

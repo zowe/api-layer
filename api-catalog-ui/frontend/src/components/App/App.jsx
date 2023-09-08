@@ -17,7 +17,6 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import { closeMobileMenu } from '../../utils/utilFunctions';
-import Footer from '../Footer/Footer';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
 
 class App extends Component {
@@ -28,7 +27,7 @@ class App extends Component {
             if (document.body.offsetWidth > 767) {
                 closeMobileMenu();
             }
-        }
+        };
     }
 
     render() {
@@ -41,6 +40,7 @@ class App extends Component {
                     <ErrorContainer />
                     <Suspense fallback={<Spinner isLoading={isLoading} />}>
                         <Router history={history}>
+                            {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
                             <>
                                 <div className="content">
                                     <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
