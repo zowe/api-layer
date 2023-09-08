@@ -16,7 +16,6 @@ import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +58,7 @@ public class DiscoveryClientConfig {
                                                          EurekaClientConfig config,
                                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
-        ApplicationInfoManager appManager = AopUtils.isAopProxy(manager) ? ProxyUtils.getTargetObject(manager) : manager;
+        ApplicationInfoManager appManager = ProxyUtils.getTargetObject(manager);
 
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
@@ -74,7 +73,7 @@ public class DiscoveryClientConfig {
                                                                   EurekaClientConfig config,
                                                                   @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
-        ApplicationInfoManager appManager = AopUtils.isAopProxy(manager) ? ProxyUtils.getTargetObject(manager) : manager;
+        ApplicationInfoManager appManager = ProxyUtils.getTargetObject(manager);
         List<ApimlDiscoveryClient> listOfDiscoveryClients = new ArrayList<>();
 
         for (String url : centralRegistryUrls) {
