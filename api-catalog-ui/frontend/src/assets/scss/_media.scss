@@ -6,6 +6,9 @@
     .mobile-view {
       display: flex !important;
     }
+    .desktop-view {
+      display: none;
+    }
     .header {
       #doc, .product-name {
         margin-right: var( --spaceSmaller );

@@ -37,6 +37,10 @@ body {
     font-weight: var( --fontWeightMedium );
     color: var( --controlText15 );
   }
+  .no-content {
+    padding: var( --spaceLarger );
+    text-align: center;
+  }
   .MuiTypography-colorPrimary {
     color: var( --control00 );
   }

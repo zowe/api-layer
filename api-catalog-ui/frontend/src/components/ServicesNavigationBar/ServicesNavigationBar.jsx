@@ -98,7 +98,7 @@ export default class ServicesNavigationBar extends Component {
                     Product APIs
                 </Typography>
                 {!hasTiles && hasSearchCriteria && (
-                    <Typography id="search_no_results" variant="subtitle2">
+                    <Typography id="search_no_results" variant="subtitle2" className="no-content">
                         No services found matching search criteria
                     </Typography>
                 )}

@@ -117,7 +117,7 @@ function Header(props) {
 
             <h2 className="title1 mobile-view">Useful Links</h2>
 
-            <div className="right-icons">
+            <div className="right-icons desktop-view">
                 <Link
                     data-testid="internal-link"
                     rel="noopener noreferrer"
