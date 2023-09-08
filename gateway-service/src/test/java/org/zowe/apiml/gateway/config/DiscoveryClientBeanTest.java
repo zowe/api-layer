@@ -47,9 +47,4 @@ class DiscoveryClientBeanTest {
         DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoverClientWrapper(manager, bean, null);
         assertEquals(2, wrapper.getDiscoveryClients().size());
     }
-
-    @Test
-    void discoveryClient() {
-
-    }
 }
