@@ -12,10 +12,9 @@ import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled }
 import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
-import zoweDocsImage from '../../assets/images/zowe-docs.png';
-import zoweAuthImage from '../../assets/images/zowe-auth.png';
+import zoweImage from '../../assets/images/zowe.png';
 import MenuImage from '../../assets/images/hamburger.svg';
-import customDoc from '../../assets/images/custom-doc.png';
+import customDoc from '../../assets/images/ExternalLink.svg';
 import { isAPIPortal, openMobileMenu, closeMobileMenu } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
 import FeedbackButton from '../FeedbackButton/FeedbackButton';
@@ -121,25 +120,28 @@ function Header(props) {
             <div className="right-icons">
                 <Link
                     data-testid="internal-link"
-                    id="internal-link"
                     rel="noopener noreferrer"
                     target="_blank"
                     href="https://techdocs.broadcom.com/"
                 >
                     Broadcom TechDoc
-                    <img id="img-internal-link" alt="Internal doc" src={customDoc} />
+                    <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
                 </Link>
                 {isAPIPortal() && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">
-                            <img id="doc" alt="Zowe docs" src={zoweDocsImage} className="hover" />
+                            <img id="doc" alt="Zowe docs" src={zoweImage} className="hover" />
+                            Zowe Docs
+                            <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
                         </Link>
                         <Link
                             rel="noopener noreferrer"
                             target="_blank"
                             href="https://docs.zowe.org/stable/extend/extend-apiml/authentication-for-apiml-services/#authentication-endpoints"
                         >
-                            <img id="auth" alt="Zowe authentication" src={zoweAuthImage} />
+                            <img id="auth" alt="Zowe authentication" src={zoweImage} />
+                            Zowe Authentication
+                            <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
                         </Link>
                     </div>
                 )}

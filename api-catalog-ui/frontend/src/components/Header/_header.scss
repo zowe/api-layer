@@ -26,16 +26,20 @@ body {
       height: 26px;
     }
     #auth {
-        width: 177px;
+        height: 18px;
     }
 
     #doc {
-        margin-right: 31px;
-        width: 120px;
+        height: 18px;
     }
     .right-icons {
       margin-left: auto;
       margin-right: var( --spaceSmall );
+
+      .MuiLink-root:hover .ext{
+        color: var(--controlText15Hover);
+        filter: invert(28%) sepia(93%) saturate(1803%) hue-rotate(190deg) brightness(96%) contrast(101%);
+      }
 
       .logout-container > button {
         min-width: 50px;
@@ -44,6 +48,7 @@ body {
           padding: 0px;
           margin: 0px;
         }
+
       }
     }// end right icons
 
@@ -54,32 +59,12 @@ body {
         margin-left: var( --spaceSmall);
       }
     }
-      #internal-link {
-          margin-right: var( --spaceSmall );
-          margin-top: 1px;
-          color: black;
-          text-align: center;
-          font-size: 14px;
-          font-style: normal;
-          font-weight: 400;
-          line-height: 22.653px;
-          letter-spacing: 1.01px;
-      }
 
       #img-internal-link {
           margin-right: 20px;
           margin-left: var( --spaceSmall );
           height: 15px;
           width: 15px;
-      }
-      img {
-        border: 1px solid transparent;
-
-        &:hover {
-          border-radius: 3px;
-          border-color: var(--light-primary-color-060052-cc-default, #0052CC);
-          background: var(--light-primary-alternate-shade-ffffff, #FFF);
-        }
       }
   }//end header
 
@@ -99,6 +84,7 @@ body {
         display: flex;
         flex-direction: column;
         width: 100%;
+
       }
 
       a {
