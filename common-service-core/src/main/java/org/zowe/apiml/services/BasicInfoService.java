@@ -33,6 +33,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
+import static org.zowe.apiml.services.ServiceInfo.ApiInfoExtended;
 import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
 import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
 import static org.zowe.apiml.services.ServiceInfoUtils.getMajorVersion;
@@ -112,7 +113,7 @@ public class BasicInfoService {
         return appInstances.stream()
                 .map(instanceInfo -> new AbstractMap.SimpleEntry<>(instanceInfo, eurekaMetadataParser.parseApiInfo(instanceInfo.getMetadata())))
                 .flatMap(entry -> entry.getValue().stream()
-                        .map(apiInfo -> ServiceInfo.ApiInfoExtended.builder()
+                        .map(apiInfo -> ApiInfoExtended.builder()
                                 .apiId(apiInfo.getApiId())
                                 .basePath(getBasePath(apiInfo, entry.getKey()))
                                 .gatewayUrl(apiInfo.getGatewayUrl())
