@@ -144,4 +144,6 @@
   --headerHeight: calc(#{var( --headerVPadding )} + #{var( --headerInternalHeight )});
 
   --contentHeightAdj: calc(100dvh - calc(#{var( --headerHeight )} + #{var( --contentBottomPadding )}));
+
+  --scrollPadding: var( --spaceSmaller );
 }
