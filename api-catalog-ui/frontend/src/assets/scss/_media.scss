@@ -7,7 +7,7 @@
       display: flex !important;
     }
     .desktop-view {
-      display: none;
+      display: none !important;
     }
     .header {
       #doc, .product-name {
@@ -50,6 +50,9 @@
 
           .mobile-view {
             display: flex !important;
+          }
+          .right-icons a {
+            width: 100%;
           }
         }
       }

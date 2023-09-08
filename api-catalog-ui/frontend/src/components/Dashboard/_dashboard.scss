@@ -46,9 +46,11 @@
       justify-content: flex-start;
     }
   }
+
   .dashboard-grid-header {
     flex-basis: content;
     padding: 0 var( --spaceMedium );
+    padding-right: calc( #{var( --spaceMedium )} + #{var( --scrollPadding )});
   }
 
   #search {
@@ -82,6 +84,10 @@
   .tile-container {
     height: 100%;
     overflow: auto;
+
+    &::-webkit-scrollbar {
+      width: 0px;
+    }
   }
   .scrollable-flex-content {
     border-top: 1px solid var( --criticalShade00 );

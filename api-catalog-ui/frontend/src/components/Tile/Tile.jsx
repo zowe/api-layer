@@ -88,7 +88,7 @@ export default class Tile extends Component {
 
                             {apiPortalEnabled && (
                                 <>
-                                    <div id="swagger">
+                                    <div id="swagger" className="desktop-view">
                                         {hasSwagger ? (
                                             <img alt="Swagger" src={swaggerImg} />
                                         ) : (
@@ -96,16 +96,16 @@ export default class Tile extends Component {
                                         )}
                                     </div>
                                     <Typography
-                                        className="media-labels"
+                                        className="media-labels desktop-view"
                                         id="use-cases-counter"
                                         size="medium"
                                         variant="outlined"
                                     >
                                         {useCasesCounter}
                                     </Typography>
-                                    <div className="imageCounter">
+                                    <div className="imageCounter desktop-view">
                                         <Typography
-                                            className="media-labels"
+                                            className="media-labels desktop-view"
                                             id="tutorials-counter"
                                             size="medium"
                                             variant="outlined"
@@ -115,7 +115,7 @@ export default class Tile extends Component {
                                         <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
                                     </div>
                                     <div
-                                        className="imageCounter"
+                                        className="imageCounter desktop-view"
                                     >
                                         <Typography
                                             className="media-labels"
