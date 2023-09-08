@@ -45,6 +45,12 @@ public class HttpsConfigError extends RuntimeException {
         this.config = config;
     }
 
+    public HttpsConfigError(String message, Throwable cause, ErrorCode code) {
+        super(message, cause);
+        this.code = code;
+        this.config = null;
+    }
+
     public ErrorCode getCode() {
         return this.code;
     }

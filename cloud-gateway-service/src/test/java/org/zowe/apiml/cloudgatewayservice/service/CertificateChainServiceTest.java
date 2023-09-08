@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.service;
 
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -97,11 +98,15 @@ class CertificateChainServiceTest {
             ReflectionTestUtils.setField(certificateChainService, "certificates", certificates, Certificate[].class);
         }
 
+        private String normalizeText(String input) {
+            return StringUtils.replace(input, "\r\n", "\n");
+        }
+
         @Test
         void whenGetCertificates_thenPEMIsProduced() {
-            String result = certificateChainService.getCertificatesInPEMFormat();
+            String result = normalizeText(certificateChainService.getCertificatesInPEMFormat());
             assertNotNull(result);
-            assertEquals(CERTIFICATE_1 + CERTIFICATE_2, result);
+            assertEquals(normalizeText(CERTIFICATE_1 + CERTIFICATE_2), result);
         }
     }
 
