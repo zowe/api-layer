@@ -60,6 +60,7 @@ ext {
     openApiDiffVersion = '2.0.1'
     reactorTestVersion = '3.5.0'
     restAssuredVersion = '4.4.0'
+    rhinoVersion = '1.7.14'
     slf4jVersion = '1.7.36'
     snakeyamlVersion = '2.2'
     springFoxVersion = '2.9.2'
@@ -68,7 +69,7 @@ ext {
     swagger3CoreVersion = '2.2.11'
     swagger3ParserVersion = '2.1.15'
     swaggerCoreVersion = '1.6.11'
-    thymeleafVersion = '3.0.15.RELEASE'
+    thymeleafVersion = '3.1.2.RELEASE'
     tomcatVersion = '9.0.75'
     velocityVersion = '2.3'
     woodstoxVersion = '6.5.1'
@@ -219,6 +220,7 @@ ext {
         rest_assured                       : "io.rest-assured:rest-assured:${restAssuredVersion}",
         rest_assured_json_path             : "io.rest-assured:json-path:${restAssuredVersion}",
         rest_assured_xml_path              : "io.rest-assured:xml-path:${restAssuredVersion}",
+        rhino                              : "org.mozilla:rhino:${rhinoVersion}",
         slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
         snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
         spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
