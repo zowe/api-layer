@@ -84,6 +84,8 @@ body {
     &, .main-content dashboard-content {
       display: flex;
       flex-direction: column;
+      height: 100%;
+      overflow: auto;
     }
     > .header {
       align-items: center;
@@ -107,13 +109,15 @@ body {
 
       .nav-bar,
       .side-bar {
+        overflow: auto;
         display: flex;
         flex-direction: column;
         align-items: center;
         max-width: 368px;
         min-width: 19.3%;
         width: var( --sideNavWidth );
-        min-height: 100dvh;
+        height: 100dvh;
+        min-width: var( --sideNavWidth );
         padding: var( --spaceSmall ) var( --spaceSmaller ) var( --spaceSmall ) var( --spaceSmall );
         position: relative;
       }
@@ -131,8 +135,9 @@ body {
         width: 100%;
         padding: var( --spaceLarge ) var( --spaceSmaller ) 0 var( --contentLeftPadding );
         position: relative;
-        overflow-x: auto;
-
+        // overflow-x: auto;
+        height: 100dvh;
+        overflow:auto;
         &:before {
           width: calc(100% - #{var( --contentLeftPadding )} - #{var( --spaceLarger )});
           height: 2px;
@@ -278,4 +283,8 @@ body {
 
 #ot-sdk-btn.ot-sdk-show-settings, #ot-sdk-btn.optanon-show-settings {
     display: none;
+}
+.App {
+  height: 100dvh;
+  overflow: hidden;
 }

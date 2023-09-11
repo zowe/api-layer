@@ -91,6 +91,7 @@ export default class DetailPage extends Component {
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(services);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
+        const showSideBar = false;
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);
         }
@@ -230,7 +231,7 @@ export default class DetailPage extends Component {
                     </div>
                 </div>
 
-                <div className="side-bar" />
+                {showSideBar && <div className="side-bar" />}
             </div>
         );
     }
