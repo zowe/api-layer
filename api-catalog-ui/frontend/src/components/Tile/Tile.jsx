@@ -114,9 +114,7 @@ export default class Tile extends Component {
                                         </Typography>
                                         <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
                                     </div>
-                                    <div
-                                        className="imageCounter desktop-view"
-                                    >
+                                    <div className="imageCounter desktop-view">
                                         <Typography
                                             className="media-labels"
                                             id="videos-counter"
