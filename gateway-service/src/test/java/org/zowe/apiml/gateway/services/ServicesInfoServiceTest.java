@@ -8,7 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.product.services;
+package org.zowe.apiml.gateway.services;
+
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -27,6 +28,7 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
+import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.Arrays;
 import java.util.Collections;

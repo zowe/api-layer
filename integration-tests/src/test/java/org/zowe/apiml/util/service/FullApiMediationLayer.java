@@ -65,8 +65,8 @@ public class FullApiMediationLayer {
 
         // If NODE_HOME is defined in environment variable, use it, otherwise assume in PATH
         String path = Optional.ofNullable(System.getenv("NODE_HOME"))
-                                .map(javaHome -> javaHome + "/bin/")
-                                .orElse("");
+                .map(javaHome -> javaHome + "/bin/")
+                .orElse("");
         parameters.add(path + "node");
         parameters.add("src/index.js");
 
@@ -92,7 +92,7 @@ public class FullApiMediationLayer {
     }
 
     public void prepareCloudGateway() {
-        cloudGatewayService = new RunningService("cloudgateway","cloud-gateway-service/build/libs", null,null);
+        cloudGatewayService = new RunningService("cloud-gateway", "cloud-gateway-service/build/libs", null, null);
     }
 
     private void prepareMockServices() {
@@ -134,9 +134,9 @@ public class FullApiMediationLayer {
             Map<String, String> cachingEnv = new HashMap<>(env);
             cachingEnv.put("ZWE_configs_port", "10016");
             cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
-            Map<String,String> cloudGWEnv = new HashMap<>(env);
-            cloudGWEnv.put("ZWE_configs_port","10023");
-            cloudGatewayService.startWithScript("cloud-gateway-package/src/main/resources/bin",cloudGWEnv);
+            Map<String, String> cloudGWEnv = new HashMap<>(env);
+            cloudGWEnv.put("ZWE_configs_port", "10023");
+            cloudGatewayService.startWithScript("cloud-gateway-package/src/main/resources/bin", cloudGWEnv);
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
