@@ -53,10 +53,10 @@ The following tools are required to build and develop the API Mediation Layer:
    ./gradlew build
    ```
 
-2. Install `concurrently` globally:
+2. Install the same version of the `concurrently` globally:
 
   ```sh
-   npm install -g concurrently
+   npm install -g concurrently@^6.0.0
    ```
 
 3. Run all service on your local machine:
@@ -71,7 +71,21 @@ Alternatively, to use Docker to run the API ML, consult the [Docker README](dock
 
 By default the API Mediation Layer for local development uses mock zOSMF as the authentication provider. For development purposes, log in using the default setting `USER` for the username, and `validPassword` as the password
 
-The API Mediation Layer can also use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and `user` as the password.   
+The API Mediation Layer can also use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and `user` as the password.  
+<details>
+  <summary>Configure dummy credentials provider</summary>
+  ### Configure `dummy` credentials provider
+
+  Modify [gateway-service.yml](/config/local/gateway-service.yml) 
+  ```yaml
+        apiml:
+          security:
+            auth:
+              #provider: zosmf
+              provider: dummy
+
+  ```
+</details>
 
 For more information, see [API Mediation Layer Security](https://docs.zowe.org/stable/extend/extend-apiml/zowe-api-mediation-layer-security-overview).
 
